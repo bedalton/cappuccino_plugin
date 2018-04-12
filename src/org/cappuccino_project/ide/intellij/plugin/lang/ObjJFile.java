@@ -49,6 +49,11 @@ public class ObjJFile extends PsiFileBase implements ObjJCompositeElement {
         return ObjJFilePsiUtil.getImportsAsStrings(this);
     }
 
+    @Override
+    @Nullable
+    public <PsiT extends PsiElement> PsiT getChildOfType(Class<PsiT> childClass) {
+        return ObjJTreeUtil.getChildOfType(this, childClass);
+    }
 
     @Override
     @NotNull

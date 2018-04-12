@@ -6,6 +6,7 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
@@ -175,6 +176,9 @@ public class ObjJVariableNameUtil {
         variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction.class)), filter);
         if (variableName != null) {
             return !variableName.isEquivalentTo(element) ? variableName : null;
+        }
+        if (DumbService.isDumb(element.getProject())) {
+            throw new IndexNotReadyRuntimeException();
         }
         List<ObjJGlobalVariableDeclaration> globalVariableDeclarations = ObjJGlobalVariableNamesIndex.getInstance().get(element.getText(), element.getProject());
         if (!globalVariableDeclarations.isEmpty()) {

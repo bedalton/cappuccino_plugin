@@ -4,14 +4,20 @@ import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodHeader;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJProtocolDeclaration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ObjJProtocolDeclarationPsiUtil {
 
-    public static ProtocolMethods getHeaders(@NotNull ObjJProtocolDeclaration declaration) {
-        final List<ObjJMethodHeader> required;
-        final List<ObjJMethodHeader> optional;
+    public static final ProtocolMethods EMPTY_PROTOCOL_METHODS_RESULT = new ProtocolMethods(Collections.emptyList(), Collections.emptyList());
 
+    public static ProtocolMethods getHeaders(@NotNull ObjJProtocolDeclaration declaration) {
+        final List<ObjJMethodHeader> required = new ArrayList<>();
+        final List<ObjJMethodHeader> optional = new ArrayList<>();
+
+
+        return new ProtocolMethods(required, optional);
     }
 
 

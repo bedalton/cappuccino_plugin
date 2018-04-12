@@ -32,6 +32,8 @@ public interface ObjJCompositeElement extends PsiElement {
         return ObjJPsiImplUtil.isIn(this, parentClass);
     }
 
+    @Nullable
+    <PsiT extends PsiElement> PsiT getChildOfType(Class<PsiT> childClass);
 
     @NotNull
     <PsiT extends PsiElement> List<PsiT> getChildrenOfType(Class<PsiT> childClass);

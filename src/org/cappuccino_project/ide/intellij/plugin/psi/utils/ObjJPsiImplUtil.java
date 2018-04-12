@@ -706,11 +706,27 @@ public class ObjJPsiImplUtil {
         } else if (psiElement instanceof ObjJVariableName) {
             return ((ObjJVariableName)psiElement).getText();
         } else if (psiElement instanceof ObjJClassName) {
-            return ((ObjJClassName) psiElement).getText();
+            return getClassDescriptiveText((ObjJClassName) psiElement);
         } else if (psiElement instanceof  ObjJFunctionName) {
             return psiElement.getText();
         }
         return "";
+    }
+
+    private static String getClassDescriptiveText(ObjJClassName classNameElement)
+    {
+        ObjJClassDeclarationElement classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement.class);
+        String className = classNameElement.getText();
+        if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
+            return className;
+        }
+        if (classDeclarationElement instanceof ObjJImplementationDeclaration) {
+            final ObjJImplementationDeclaration implementationDeclaration = ((ObjJImplementationDeclaration) classDeclarationElement);
+            if (implementationDeclaration.getCategoryName() != null) {
+                className += " (" + implementationDeclaration.getCategoryName().getClassName().getText() + ")";
+            }
+        }
+        return className;
     }
 
     @NotNull
@@ -911,7 +927,7 @@ public class ObjJPsiImplUtil {
                         (ahead == ObjJTypes.ObjJ_SEMI_COLON);
         if (isLineTerminator || !ObjJPluginSettings.inferEOS()) {
             if (!isLineTerminator) {
-                LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
+                //LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
             }
             return isLineTerminator;
         }
@@ -938,18 +954,37 @@ public class ObjJPsiImplUtil {
         return element != null && element.getNode().getElementType() == elementType;
     }
 
+    // ============================== //
+    // ======= Presentation ========= //
+    // ============================== //
+
+    public static ItemPresentation getPresentation(@NotNull ObjJImplementationDeclaration implementationDeclaration) {
+        return ObjJClassDeclarationPsiUtil.getPresentation(implementationDeclaration);
+    }
+
+    public static ItemPresentation getPresentation(@NotNull ObjJProtocolDeclaration protocolDeclaration) {
+        return ObjJClassDeclarationPsiUtil.getPresentation(protocolDeclaration);
+    }
+
     public static Icon getIcon(PsiElement element) {
         if (element instanceof ObjJClassName) {
-            if (element.getParent() instanceof ObjJImplementationDeclaration) {
+
+            ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName)element).getParentOfType(ObjJClassDeclarationElement.class);
+            String className = element.getText();
+            if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
+                return null;
+            }
+            if (classDeclarationElement instanceof ObjJImplementationDeclaration) {
                 ObjJImplementationDeclaration implementationDeclaration = ((ObjJImplementationDeclaration) element.getParent());
                 if (implementationDeclaration.isCategory()) {
                     return ObjJIcons.CATEGORY_ICON;
                 } else {
                     return ObjJIcons.CLASS_ICON;
                 }
-            } else if (element.getParent() instanceof ObjJProtocolDeclaration) {
+            } else if (classDeclarationElement instanceof ObjJProtocolDeclaration) {
                 return ObjJIcons.PROTOCOL_ICON;
             }
+            return null;
         }
 
         if (element instanceof ObjJFunctionName) {

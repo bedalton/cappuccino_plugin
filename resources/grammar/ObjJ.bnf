@@ -900,6 +900,7 @@ implementationDeclaration
 			getSuperClassName
 			getMethodHeaders
 			hasMethod
+			getPresentation
 		]
 	}
 	;
@@ -1129,7 +1130,7 @@ protocolDeclaration
 		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"]
 		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationMixin"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub"
-		methods=[getMethodHeaders hasMethod]
+		methods=[getMethodHeaders hasMethod getPresentation]
 	}
 	;
 

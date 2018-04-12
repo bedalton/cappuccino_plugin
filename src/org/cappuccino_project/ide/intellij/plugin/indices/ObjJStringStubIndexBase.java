@@ -20,7 +20,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
 
     private static final Logger LOGGER = Logger.getLogger(ObjJStringStubIndexBase.class.getName());
     private static final Map emptyList = Collections.emptyMap();
-    private static final int VERSION = 1;
+    private static final int VERSION = 3;
 
     @Override
     public int getVersion() {

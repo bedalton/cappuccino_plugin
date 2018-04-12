@@ -35,6 +35,10 @@ public class ObjJPlistVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitKeyName(@NotNull ObjJPlistKeyName o) {
+    visitPsiElement(o);
+  }
+
   public void visitKeyProperty(@NotNull ObjJPlistKeyProperty o) {
     visitPsiElement(o);
   }

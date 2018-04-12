@@ -1,0 +1,4 @@
+.idea
+/gen
+resources/definitions/Foundation
+resources/definitions/AppKit

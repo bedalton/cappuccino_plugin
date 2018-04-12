@@ -27,15 +27,15 @@ public class ObjJPlistDataValueImpl extends ASTWrapperPsiElement implements ObjJ
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getDataClose() {
-    return findNotNullChildByType(ObjJPlist_DATA_CLOSE);
+    return findChildByType(ObjJPlist_DATA_CLOSE);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getDataLiteral() {
-    return findNotNullChildByType(ObjJPlist_DATA_LITERAL);
+    return findChildByType(ObjJPlist_DATA_LITERAL);
   }
 
   @Override

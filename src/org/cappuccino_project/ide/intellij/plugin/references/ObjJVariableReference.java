@@ -1,9 +1,11 @@
 package org.cappuccino_project.ide.intellij.plugin.references;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReferenceBase;
 import com.intellij.util.IncorrectOperationException;
+import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
@@ -158,6 +160,9 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
     }
 
     private PsiElement getGlobalVariableNameElement() {
+        if (DumbService.isDumb(myElement.getProject())) {
+            throw new IndexNotReadyRuntimeException();
+        }
         ObjJFile file = myElement.getContainingObjJFile();
         List<String> imports = file != null ? file.getImportStrings() : null;
         List<ObjJGlobalVariableDeclaration> globalVariableDeclarations = ObjJGlobalVariableNamesIndex.getInstance().get(myElement.getText(), myElement.getProject());

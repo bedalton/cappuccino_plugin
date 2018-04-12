@@ -8,6 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.cappuccino_project.ide.intellij.plugin.annotator.IgnoreUtil;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJLanguage;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -83,7 +84,56 @@ public class ObjJElementFactory {
     }
 
     private static ObjJFile createFileFromText(Project project, String text) {
-        return (ObjJFile) PsiFileFactory.getInstance(project).createFileFromText("_x.j", ObjJLanguage.INSTANCE, text);
+        return (ObjJFile) PsiFileFactory.getInstance(project).createFileFromText("dummy.j", ObjJLanguage.INSTANCE, text);
+    }
+
+    @NotNull
+    private static ObjJMethodDeclaration createMethodDeclaration(@NotNull Project project, @NotNull ObjJMethodHeader methodHeader) {
+        String script = "@implementation "+PLACEHOLDER_CLASS_NAME+" \n " +
+                methodHeader.getText() + "\n" +
+                "{" + "\n" +
+                "    " + getDefaultReturnValueString(methodHeader.getMethodHeaderReturnTypeElement()) + "\n" +
+                "}" + "\n" +
+                "@end";
+        ObjJFile file = createFileFromText(project, script);
+        ObjJImplementationDeclaration implementationDeclaration = file.getChildOfType(ObjJImplementationDeclaration.class);
+        assert implementationDeclaration != null;
+        ObjJMethodDeclaration declaration = implementationDeclaration.getMethodDeclarationList().get(0);
+        assert declaration != null;
+        return declaration;
+    }
+
+    private static String getDefaultReturnValueString(@Nullable ObjJMethodHeaderReturnTypeElement returnTypeElement) {
+        if (returnTypeElement == null || returnTypeElement.getFormalVariableType() == null) {
+            return "";
+        }
+        String defaultValue = "nil";
+        final ObjJFormalVariableType formalVariableType = returnTypeElement.getFormalVariableType();
+        if (formalVariableType.getVarTypeBool() != null) {
+            defaultValue = "NO";
+        } else if (formalVariableType.getVarTypeId() != null || formalVariableType.getClassName() != null) {
+            defaultValue = "Nil";
+        }
+        return "return " + defaultValue + ";";
+    }
+
+    @NotNull
+    public static ObjJReturnStatement createReturnStatement(@NotNull Project project, String returnValue) {
+        String scriptString =
+                "function x() {\n" +
+                    "return " + returnValue + ";" + "\n" +
+                "}";
+        ObjJFile file = createFileFromText(project, scriptString);
+        ObjJFunctionDeclarationElement functionDeclarationElement = file.getChildOfType(ObjJFunctionDeclarationElement.class);
+        assert functionDeclarationElement != null;
+        ObjJReturnStatement returnStatement = functionDeclarationElement.getChildOfType(ObjJReturnStatement.class);
+        assert returnStatement != null;
+        return returnStatement;
+    }
+
+    public static PsiElement createCRLF(Project project) {
+        final ObjJFile file = createFileFromText(project, "\n");
+        return file.getFirstChild();
     }
 
 }

@@ -28,8 +28,8 @@ public class ObjJPlistKeyPropertyImpl extends ASTWrapperPsiElement implements Ob
 
   @Override
   @Nullable
-  public PsiElement getId() {
-    return findChildByType(ObjJPlist_ID);
+  public ObjJPlistKeyName getKeyName() {
+    return findChildByClass(ObjJPlistKeyName.class);
   }
 
   @Override

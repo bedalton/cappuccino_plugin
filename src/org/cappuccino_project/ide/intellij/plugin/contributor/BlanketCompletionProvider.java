@@ -11,6 +11,7 @@ import org.cappuccino_project.ide.intellij.plugin.contributor.handlers.ObjJFunct
 import org.cappuccino_project.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement;
@@ -75,6 +76,8 @@ public class BlanketCompletionProvider  extends CompletionProvider<CompletionPar
             //LOGGER.log(Level.INFO, "Searching for selector completions.");
             ObjJMethodCallCompletionContributorUtil.addSelectorLookupElementsFromSelectorList(resultSet, element);
             return;
+        } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList.class) != null) {
+            results = ObjJProtocolDeclarationsIndex.getInstance().getKeysByPattern(queryString+"(.+)", element.getProject());
         } else {
             results = new ArrayList<>();
         }

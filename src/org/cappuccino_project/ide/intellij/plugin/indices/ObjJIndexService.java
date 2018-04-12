@@ -4,6 +4,7 @@ import com.intellij.psi.stubs.IndexSink;
 
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -111,6 +112,8 @@ public class ObjJIndexService extends StubIndexService {
         indexSink.occurrence(ObjJClassDeclarationsIndex.getInstance().getKey(), stub.getClassName());
         if (stub instanceof ObjJImplementationStub) {
             indexImplementationClassDeclaration((ObjJImplementationStub)stub, indexSink);
+        } else if (stub instanceof  ObjJProtocolDeclarationStub){
+            indexSink.occurrence(ObjJProtocolDeclarationsIndex.getInstance().getKey(), stub.getClassName());
         }
         for (Object protocol : stub.getInheritedProtocols()) {
             if (protocol instanceof String) {
@@ -122,10 +125,12 @@ public class ObjJIndexService extends StubIndexService {
     private void indexImplementationClassDeclaration(@NotNull ObjJImplementationStub implementationStub, @NotNull IndexSink indexSink) {
         if (implementationStub.isCategory()) {
             indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), implementationStub.getClassName());
+            indexSink.occurrence(ObjJImplementationCategoryDeclarationsIndex.getInstance().getKey(),implementationStub.getClassName());
         } else if (implementationStub.getSuperClassName() != null && !implementationStub.getSuperClassName().equals(ObjJClassType.CPOBJECT)) {
          //   LOGGER.log(Level.INFO, "Setting super class to: " + implementationStub.getSuperClassName());
             indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), implementationStub.getSuperClassName());
         }
+        indexSink.occurrence(ObjJImplementationDeclarationsIndex.getInstance().getKey(), implementationStub.getClassName());
     }
 
     /**

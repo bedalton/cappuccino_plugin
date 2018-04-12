@@ -73,6 +73,12 @@ public class ObjJCompositeElementImpl extends ASTWrapperPsiElement implements Ob
     }
 
     @Override
+    @Nullable
+    public <PsiT extends PsiElement> PsiT getChildOfType(Class<PsiT> childClass) {
+        return ObjJTreeUtil.getChildOfType(this, childClass);
+    }
+
+    @Override
     @NotNull
     public <PsiT extends PsiElement> List<PsiT> getChildrenOfType(Class<PsiT> childClass) {
         return ObjJTreeUtil.getChildrenOfTypeAsList(this, childClass);

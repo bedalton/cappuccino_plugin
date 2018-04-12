@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ObjJClassInheritanceIndex extends ObjJStringStubIndexBase<ObjJClassDeclarationElement> {
-    private static final ObjJClassInheritanceIndex INSTANCE = new ObjJClassInheritanceIndex();
-    private static final StubIndexKey<String, ObjJClassDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJClassInheritanceIndex.class);
+public class ObjJProtocolInheritanceIndex extends ObjJStringStubIndexBase<ObjJClassDeclarationElement> {
+    private static final ObjJProtocolInheritanceIndex INSTANCE = new ObjJProtocolInheritanceIndex();
+    private static final StubIndexKey<String, ObjJClassDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJProtocolInheritanceIndex.class);
     private static final int VERSION = 1;
-    private ObjJClassInheritanceIndex() {}
+    private ObjJProtocolInheritanceIndex() {}
 
-    public static ObjJClassInheritanceIndex getInstance() {
+    public static ObjJProtocolInheritanceIndex getInstance() {
         return INSTANCE;
     }
 

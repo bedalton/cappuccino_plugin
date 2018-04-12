@@ -112,6 +112,12 @@ public class ObjJElementImplStub<T extends StubElement<? extends PsiElement>> ex
 
     @Override
     @Nullable
+    public <PsiT extends PsiElement> PsiT getChildOfType(Class<PsiT> parentClass) {
+        return ObjJTreeUtil.getChildOfType(this, parentClass);
+    }
+
+    @Override
+    @Nullable
     public <PsiT extends PsiElement> PsiT getParentOfType(Class<PsiT> parentClass) {
         return ObjJTreeUtil.getParentOfType(this, parentClass);
     }

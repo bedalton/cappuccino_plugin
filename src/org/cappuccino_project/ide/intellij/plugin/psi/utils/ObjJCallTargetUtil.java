@@ -3,24 +3,19 @@ package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
-import org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJExpressionReturnTypeUtil.ExpressionReturnTypeReference;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJExpressionReturnTypeUtil.ExpressionReturnTypeResults;
-import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJCallTargetUtil {
 
@@ -47,7 +42,7 @@ public class ObjJCallTargetUtil {
                 }
         }
 
-        if (!DumbService.isDumb(callTarget.getProject()) && !ObjJClassDeclarationsIndex.getInstance().getKeysByPattern(callTarget.getText(), project).isEmpty()) {
+        if (!DumbService.isDumb(callTarget.getProject()) && !ObjJImplementationDeclarationsIndex.getInstance().getKeysByPattern(callTarget.getText(), project).isEmpty()) {
              return ObjJInheritanceUtil.getAllInheritedClasses(callTarget.getText(), project);
         }
         List<String> out = new ArrayList<>();

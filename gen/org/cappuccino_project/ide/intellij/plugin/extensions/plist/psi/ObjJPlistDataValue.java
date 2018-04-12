@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface ObjJPlistDataValue extends PsiElement {
 
-  @NotNull
+  @Nullable
   PsiElement getDataClose();
 
-  @NotNull
+  @Nullable
   PsiElement getDataLiteral();
 
   @NotNull

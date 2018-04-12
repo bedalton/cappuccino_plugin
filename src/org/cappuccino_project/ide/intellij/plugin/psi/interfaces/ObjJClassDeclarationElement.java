@@ -2,6 +2,7 @@ package org.cappuccino_project.ide.intellij.plugin.psi.interfaces;
 
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJClassName;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodHeader;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,8 @@ public interface ObjJClassDeclarationElement<StubT extends ObjJClassDeclarationS
     @NotNull
     @Override
     default ObjJClassType getClassType() {
-        return getClassNameString() != null ? ObjJClassType.getClassType(getClassNameString()) : ObjJClassType.UNDEF;
+        final String classNameString = getClassNameString();
+        return !ObjJMethodCallPsiUtil.isUniversalMethodCaller(classNameString) ? ObjJClassType.getClassType(classNameString) : ObjJClassType.UNDEF;
     }
 
     @NotNull
@@ -32,7 +34,7 @@ public interface ObjJClassDeclarationElement<StubT extends ObjJClassDeclarationS
     boolean hasMethod(@NotNull String selector);
 
     @Nullable
-    public StubT getStub();
+    StubT getStub();
 
     @Nullable
     ObjJClassName getClassName();

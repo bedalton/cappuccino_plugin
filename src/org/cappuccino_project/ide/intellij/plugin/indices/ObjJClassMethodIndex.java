@@ -1,13 +1,14 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
 import com.intellij.psi.stubs.StubIndexKey;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodHeader;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
 import org.jetbrains.annotations.NotNull;
 
-public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHeaderDeclaration> {
-    private static final StubIndexKey<String, ObjJMethodHeaderDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJClassMethodIndex.class);
+public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHeader> {
+    private static final StubIndexKey<String, ObjJMethodHeader> KEY = IndexKeyUtil.createIndexKey(ObjJClassMethodIndex.class);
     private static final ObjJClassMethodIndex INSTANCE = new ObjJClassMethodIndex();
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
 
     private ObjJClassMethodIndex() {
@@ -19,7 +20,7 @@ public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHead
 
     @NotNull
     @Override
-    public StubIndexKey<String, ObjJMethodHeaderDeclaration> getKey() {
+    public StubIndexKey<String, ObjJMethodHeader> getKey() {
         return KEY;
     }
 
@@ -30,8 +31,8 @@ public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHead
 
     @NotNull
     @Override
-    protected Class<ObjJMethodHeaderDeclaration> getIndexedElementClass() {
-        return ObjJMethodHeaderDeclaration.class;
+    protected Class<ObjJMethodHeader> getIndexedElementClass() {
+        return ObjJMethodHeader.class;
     }
 
 

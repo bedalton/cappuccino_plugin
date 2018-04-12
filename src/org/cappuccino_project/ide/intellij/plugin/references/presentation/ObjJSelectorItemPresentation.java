@@ -31,7 +31,7 @@ public class ObjJSelectorItemPresentation implements ItemPresentation {
         ObjJClassDeclarationElement classDeclarationElement = selector.getContainingClass();
         if (classDeclarationElement instanceof ObjJImplementationDeclaration) {
             ObjJImplementationDeclaration implementationDeclaration = ((ObjJImplementationDeclaration) classDeclarationElement);
-            className = classDeclarationElement.getClassNameString() + (implementationDeclaration.getCategoryName() != null ? " (" + implementationDeclaration.getCategoryName().getClassName() + ")" : "");
+            className = classDeclarationElement.getClassNameString() + (implementationDeclaration.getCategoryName() != null ? " (" + implementationDeclaration.getCategoryName().getClassName().getText() + ")" : "");
         } else {
             className = classDeclarationElement != null ? classDeclarationElement.getClassNameString() : null;
         }
