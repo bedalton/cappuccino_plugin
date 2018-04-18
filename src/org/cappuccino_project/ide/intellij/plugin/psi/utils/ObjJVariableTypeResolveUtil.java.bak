@@ -1,0 +1,631 @@
+package org.cappuccino_project.ide.intellij.plugin.psi.utils;
+
+import com.intellij.openapi.project.DumbService;
+import com.intellij.psi.PsiElement;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
+import org.cappuccino_project.ide.intellij.plugin.psi.*;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment;
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
+import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class ObjJVariableTypeResolveUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(ObjJVariableTypeResolveUtil.class.getName());
+
+    @Nullable
+    public static String getVariableType(
+            @NotNull
+                    ObjJReturnStatement returnStatement, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        if (returnStatement.getExpr() == null) {
+            return null;
+        }
+        List<String> returnTypes = getExpressionReturnTypes(returnStatement.getExpr(), validateCallTarget);
+        return !returnTypes.isEmpty() ? returnTypes.get(0) : null;
+    }
+
+    /*
+        @SuppressWarnings("Duplicates")
+        @Nullable
+        public static String getVariableType(@NotNull ObjJVariableName variableName, boolean validateCallTarget) {
+            String type = getVariableTypeIfTypeDeclared(variableName);
+            if (type != null) {
+                return type;
+            }
+            switch (variableName.getText()) {
+                case "self":
+                    ObjJClassDeclarationElement classDec = ObjJPsiImplUtil.getContainingClass(variableName);
+                    type = classDec != null ? classDec.getClassNameString() : null;
+                 LOGGER.log(Level.INFO, "<self> var references class: <"+type+">");
+                    break;
+                case "super":
+                    ObjJClassName superClassName = ObjJClassDeclarationPsiUtil.getContainingSuperClass(variableName, true);
+                    type = superClassName != null ? superClassName.getText() : null;
+                 LOGGER.log(Level.INFO, "<super> var references class: <"+type+">");
+                    break;
+                default:
+                    type = getVariableTypeIfClass(variableName);
+                    if (type != null) {
+                     LOGGER.log(Level.INFO, "Var is an actual class name: <"+type+">");
+                    }
+                    break;
+            }
+            if (type != null) {
+             LOGGER.log(Level.INFO, "Var was a simple reference of type <"+variableName.getText()+">, referencing class: <"+type+">");
+                return type;
+            }
+         LOGGER.log(Level.INFO, "Var was not a simple reference.");
+            return getVariableTypeFromDec(variableName, validateCallTarget);
+        }
+
+        */
+    @SuppressWarnings("Duplicates")
+    @NotNull
+    public static List<String> getVariableTypes(
+            @NotNull
+                    ObjJVariableName variableName, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        String type = getVariableTypeIfTypeDeclared(variableName);
+        if (type != null) {
+            return Collections.singletonList(type);
+        }
+        switch (variableName.getText()) {
+            case "self":
+                ObjJClassDeclarationElement classDec = ObjJPsiImplUtil.getContainingClass(variableName);
+                type = classDec != null ? classDec.getClassNameString() : null;
+                LOGGER.log(Level.INFO, "<self> var references class: <" + type + ">");
+                break;
+            case "super":
+                ObjJClassName superClassName = ObjJClassDeclarationPsiUtil.getContainingSuperClass(variableName, true);
+                type = superClassName != null ? superClassName.getText() : null;
+                LOGGER.log(Level.INFO, "<super> var references class: <" + type + ">");
+                break;
+            default:
+                type = getVariableTypeIfClass(variableName);
+                if (type != null) {
+                    LOGGER.log(Level.INFO, "Var is an actual class name: <" + type + ">");
+                }
+                break;
+        }
+        if (type != null) {
+            LOGGER.log(Level.INFO, "Var was a simple reference of type <" + variableName.getText() + ">, referencing class: <" + type + ">");
+            return Collections.singletonList(type);
+        }
+        LOGGER.log(Level.INFO, "Var was not a simple reference.");
+        return toStringArray(getVariableTypesFromDec(variableName, validateCallTarget));
+    }
+
+    @Nullable
+    public static String getVariableTypeIfTypeDeclared(ObjJVariableName variableName) {
+        //ProgressIndicatorProvider.checkCanceled();
+        final PsiElement reference = ObjJVariableNameResolveUtil.getVariableDeclarationElement(variableName, true);
+        if (reference == null) {
+            return null;
+        }
+        if (reference instanceof ObjJClassName) {
+            return reference.getText();
+        }
+        final ObjJMethodDeclarationSelector methodHeaderSelector = ObjJTreeUtil.getParentOfType(reference, ObjJMethodDeclarationSelector.class);
+        if (methodHeaderSelector != null && methodHeaderSelector.getFormalVariableType() != null) {
+            final ObjJFormalVariableType formalVariableType = methodHeaderSelector.getFormalVariableType();
+            if (formalVariableType.getVarTypeId() != null) {
+                if (formalVariableType.getClassName() != null) {
+                    return formalVariableType.getClassName().getText();
+                }
+                return ObjJClassType.UNDETERMINED;
+            }
+            LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is declared in header as " + formalVariableType.getText() + ">");
+            return formalVariableType.getText();
+        }
+
+        final ObjJInstanceVariableDeclaration instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(reference, ObjJInstanceVariableDeclaration.class);
+        if (instanceVariableDeclaration != null) {
+            if (instanceVariableDeclaration.getFormalVariableType().getVarTypeId() != null && instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName() != null && !instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName().getText().isEmpty()) {
+                return instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName().getText();
+            }
+            final String variableType = instanceVariableDeclaration.getFormalVariableType().getText();
+            LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is declared in instance vars as " + variableType + ">");
+            return variableType;
+        }
+        return null;
+    }
+
+    private static String getVariableTypeIfClass(ObjJVariableName variableName) {
+        if (variableName.getText().equals(ObjJClassType.CPAPP)) {
+            return ObjJClassType.CPAPPLICATION;
+        }
+        return !ObjJClassDeclarationsIndex.getInstance().get(variableName.getText(), variableName.getProject()).isEmpty() ? variableName.getText() : null;
+    }
+
+    /*
+        private static String getVariableTypeFromDec(ObjJVariableName variableName, boolean validateCallTarget) {
+            final List<ObjJVariableDeclaration> bodyVariableAssignments = getAllAssignments(variableName);
+            for (ObjJVariableDeclaration variableAssignment : bodyVariableAssignments) {
+                if (variableAssignment.getExpr() != null) {
+                    String result = getExpressionReturnType(variableAssignment.getExpr(), validateCallTarget);
+                    if (result == null || result.equals(ObjJClassType.VOID_CLASS_NAME) || result.equals(ObjJClassType.UNDEF_CLASS_NAME)) {
+                        continue;
+                    }
+                    return result;
+                }
+            }
+            return null;
+        }
+    */
+    private static List<Result> getVariableTypesFromDec(
+            @NotNull
+                    ObjJVariableName variableName, boolean validateCallTarget) {
+        final List<Result> possibleTypes = new ArrayList<>();
+        final List<ObjJVariableAssignment> bodyVariableAssignments = ObjJVariableAssignmentsPsiUtil.getAllVariableAssignmentsMatchingName(variableName, ObjJVariableNameUtil.getQualifiedNameAsString(variableName));
+        final ObjJBodyVariableAssignment parentAssignment = ObjJTreeUtil.getParentOfType(variableName, ObjJBodyVariableAssignment.class);
+        for (ObjJVariableAssignment variableAssignment : bodyVariableAssignments) {
+            //ProgressIndicatorProvider.checkCanceled();
+            if (!Objects.equals(variableAssignment, parentAssignment)) {
+                getExpressionReturnTypes(possibleTypes, variableAssignment.getAssignedValue(), validateCallTarget);
+            }
+        }
+        appendIsKindOfClassClasses(possibleTypes, variableName, validateCallTarget);
+        return possibleTypes;
+    }
+
+    private static void appendIsKindOfClassClasses(
+            @NotNull
+                    List<Result> possibleTypes,
+            @NotNull
+                    ObjJVariableName variableName, boolean validateCallTarget) {
+        /*for (ObjJConditionalStatement conditionalStatement : ObjJBlockPsiUtil.getParentBlockChildrenOfType(variableName, ObjJConditionalStatement.class, true)) {
+            ObjJExpr conditionalExpression = conditionalStatement.getConditionalExpression();
+            List<ObjJMethodCall> allMethodCalls = ObjJExprPsiUtil.getAllInternalMethodCallExpressions(conditionalExpression);
+            for (ObjJMethodCall methodCall : allMethodCalls) {
+                if (methodCall.getSelectorString().equals(ObjJMethodCallPsiUtil.IS_KIND_OF_CLASS_METHOD_SELECTOR) && methodCall.getExprList().size() == 1) {
+                    ObjJExpr expr = methodCall.getExprList().get(0);
+                    List<ObjJMethodCall> subMethodCalls = ObjJExprPsiUtil.getAllInternalMethodCallExpressions(expr);
+                    if (subMethodCalls.size() == 1) {
+                        List<String> returnTypes = ObjJMethodCallPsiUtil.getReturnTypes(subMethodCalls.get(0), validateCallTarget);
+                        for (String returnType : returnTypes) {
+                            if (returnType.equals(ObjJClassType.CLASS)) {
+                                for (String callTargetType : ObjJMethodCallPsiUtil.getCallTargetTypes(subMethodCalls.get(0).getCallTarget(), validateCallTarget)) {
+                                    append(possibleTypes,callTargetType);
+                                }
+                            } else {
+                                append(possibleTypes, returnType);
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
+    }
+
+
+    public static List<String> getExpressionReturnTypes(
+            @NotNull
+                    ObjJExpr expr, boolean validateCallTarget) {
+        List<Result> results = new ArrayList<>();
+        getExpressionReturnTypes(results, expr, validateCallTarget);
+        return toStringArray(results);
+    }
+
+    /*
+    public static String getExpressionReturnType(ObjJExpr expr, boolean validateCallTarget) {
+        String result;
+        if (!expr.getRightExprList().isEmpty()) {
+            result = getExpressionReturnType(expr.getRightExprList(), validateCallTarget);
+            if (result != null) {
+                return result;
+            }
+        }
+        if (expr.getLeftExpr() != null) {
+            result = getExpressionReturnType(expr.getLeftExpr(), validateCallTarget);
+            if (result != null) {
+                return result;
+            }
+        }
+        if (expr.getVariableDeclaration() != null && expr.getVariableDeclaration().getExpr() != null) {
+            result = getExpressionReturnType(expr.getVariableDeclaration().getExpr(), validateCallTarget);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        if (expr.getExpr() != null) {
+            result = getExpressionReturnType(expr.getExpr(), validateCallTarget);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+*/
+    private static void getExpressionReturnTypes(
+            @NotNull
+                    List<Result> possibleTypes,
+            @NotNull
+                    ObjJExpr expr, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        if (!expr.getRightExprList().isEmpty()) {
+            getExpressionReturnTypes(possibleTypes, expr.getRightExprList(), validateCallTarget);
+            if (!possibleTypes.isEmpty()) {
+                return;
+            }
+        }
+        if (expr.getLeftExpr() != null) {
+            LOGGER.log(Level.INFO, "Getting expression left return type for expression <" + expr.getLeftExpr().getText() + ">");
+            getExpressionReturnTypes(possibleTypes, expr.getLeftExpr(), validateCallTarget);
+            if (!possibleTypes.isEmpty()) {
+                return;
+            }
+        }
+        if (expr.getLeftExpr() != null && expr.getLeftExpr().getVariableDeclaration() != null) {
+            LOGGER.log(Level.INFO, "Getting expression return type for var dec <" + expr.getLeftExpr().getVariableDeclaration().getText() + ">");
+            getExpressionReturnTypes(possibleTypes, expr.getLeftExpr().getVariableDeclaration().getExpr(), validateCallTarget);
+            if (!possibleTypes.isEmpty()) {
+                return;
+            }
+        }
+
+        if (expr.getExpr() != null) {
+            LOGGER.log(Level.INFO, "Getting expression return type for expr's expr <" + expr.getExpr().getText() + ">");
+            getExpressionReturnTypes(possibleTypes, expr.getExpr(), validateCallTarget);
+            if (!possibleTypes.isEmpty()) {
+                return;
+            }
+        }
+    }
+
+    /*
+        private static String getExpressionReturnType(List<ObjJRightExpr> exprRights, boolean validateCallTarget) {
+            String result;
+            for (ObjJRightExpr exprRight : exprRights) {
+                if (exprRight.getBoolAssignExprPrime() != null) {
+                    ObjJBoolAssignExprPrime assignPrime = exprRight.getBoolAssignExprPrime();
+                    result = getExpressionReturnType(assignPrime.getIfTrue(), validateCallTarget);
+                    if (result == null && assignPrime.getIfFalse() != null) {
+                        result = getExpressionReturnType(assignPrime.getIfFalse(), validateCallTarget);
+                    }
+                    return result;
+                }
+                if (exprRight.getInstanceOfExprPrime() != null) {
+                    return ObjJClassType.BOOL;
+                }
+                if (exprRight.getMathExprPrime() != null) {
+                    ObjJMathExprPrime MathExprPrime = exprRight.getMathExprPrime();
+                    if (    MathExprPrime.getBitAnd() != null ||
+                            MathExprPrime.getBitNot() != null ||
+                            MathExprPrime.getBitOr()  != null||
+                            MathExprPrime.getBitXor() != null ||
+                            MathExprPrime.getLeftShiftArithmatic() != null ||
+                            MathExprPrime.getLeftShiftLogical()  != null||
+                            MathExprPrime.getRightShiftArithmatic()  != null||
+                            MathExprPrime.getRightShiftLogical() != null ||
+                            MathExprPrime.getModulus() != null) {
+                        return ObjJClassType.INT;
+                    }
+                    return getExpressionReturnType(MathExprPrime.getExpr(), validateCallTarget);
+                }
+                if (exprRight.getJoinExprPrime() != null) {
+                 LOGGER.log(Level.INFO, "Checking type of join expression prime. Right side value: <"+exprRight.getJoinExprPrime().getExpr().getText()+">");
+                    ObjJJoinExprPrime joinExprPrime = exprRight.getJoinExprPrime();
+                    if (joinExprPrime.getAnd() != null) {
+                        return ObjJClassType.BOOL;
+                    }
+                    String joinExprExprType = getExpressionReturnType(exprRight.getJoinExprPrime().getExpr(), validateCallTarget);;
+                 LOGGER.log(Level.INFO, "Checking type of join expression prime. Right side value: <"+exprRight.getJoinExprPrime().getExpr().getText()+">, Inferred type: <" + joinExprExprType+">");
+                    return joinExprExprType;
+                }
+                if (exprRight.getExpr() != null) {
+                    return getExpressionReturnType(exprRight.getExpr(), validateCallTarget);
+                }
+            }
+            return null;
+        }
+    */
+    private static void getExpressionReturnTypes(List<Result> possibleTypes, List<ObjJRightExpr> exprRights, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        for (ObjJRightExpr exprRight : exprRights) {
+            //ProgressIndicatorProvider.checkCanceled();
+            if (exprRight.getBoolAssignExprPrime() != null) {
+                ObjJBoolAssignExprPrime assignPrime = exprRight.getBoolAssignExprPrime();
+                getExpressionReturnTypes(possibleTypes, assignPrime.getIfTrue(), validateCallTarget);
+                if (assignPrime.getIfFalse() != null) {
+                    getExpressionReturnTypes(possibleTypes, assignPrime.getIfFalse(), validateCallTarget);
+                }
+                continue;
+            }
+            if (exprRight.getInstanceOfExprPrime() != null) {
+                append(possibleTypes, ObjJClassType.BOOL);
+                continue;
+            }
+            if (exprRight.getMathExprPrime() != null) {
+                ObjJMathExprPrime MathExprPrime = exprRight.getMathExprPrime();
+                if (MathExprPrime.getBitAnd() != null ||
+                        MathExprPrime.getBitNot() != null ||
+                        MathExprPrime.getBitOr() != null ||
+                        MathExprPrime.getBitXor() != null ||
+                        MathExprPrime.getLeftShiftArithmatic() != null ||
+                        MathExprPrime.getLeftShiftLogical() != null ||
+                        MathExprPrime.getRightShiftArithmatic() != null ||
+                        MathExprPrime.getRightShiftLogical() != null ||
+                        MathExprPrime.getModulus() != null) {
+                    append(possibleTypes, ObjJClassType.INT);
+                    continue;
+                }
+                if (MathExprPrime.getExpr().getLeftExpr() != null) {
+                    if (MathExprPrime.getExpr().getLeftExpr().getPrimary() != null) {
+                        final ObjJPrimary primary = MathExprPrime.getExpr().getLeftExpr().getPrimary();
+                        if (primary.getInteger() != null) {
+                            append(possibleTypes, ObjJClassType.INT);
+                        } else if (primary.getStringLiteral() != null) {
+                            append(possibleTypes, ObjJClassType.STRING);
+                        } else if (primary.getDecimalLiteral() != null) {
+                            append(possibleTypes, ObjJClassType.DOUBLE);
+                        } else if (primary.getBooleanLiteral() != null) {
+                            append(possibleTypes, ObjJClassType.BOOL);
+                        }
+                    }
+                }
+                continue;
+            }
+            if (exprRight.getJoinExprPrime() != null) {
+                LOGGER.log(Level.INFO, "Checking type of join expression prime. Right side value: <" + exprRight.getJoinExprPrime().getExpr().getText() + ">");
+                ObjJJoinExprPrime joinExprPrime = exprRight.getJoinExprPrime();
+                if (joinExprPrime.getAnd() != null) {
+                    append(possibleTypes, ObjJClassType.BOOL);
+                }
+                getExpressionReturnTypes(possibleTypes, exprRight.getJoinExprPrime().getExpr(), validateCallTarget);
+            }
+            /*
+            if (exprRight.getExpr() != null) {
+                getExpressionReturnTypes(possibleTypes,exprRight.getExpr(), validateCallTarget);
+            }
+            */
+        }
+    }
+
+    /*
+        private static String getExpressionReturnType(@NotNull ObjJLeftExpr expr, boolean validateCallTarget) {
+            if (expr.getQualifiedReference() != null) {
+                ObjJVariableName variableName = expr.getQualifiedReference().getLastVar() != null ? expr.getQualifiedReference().getLastVar() : expr.getQualifiedReference().getPrimaryVar();
+                if (variableName != null) {
+                    if (!expr.getQualifiedReference().getArrayIndexSelectorList().isEmpty()) {
+                        return ObjJClassType.UNDETERMINED;
+                    }
+                    for (String variableType : getVariableTypes(variableName, validateCallTarget)) {
+                        if (variableType != null) {
+                            return variableType;
+                        }
+                    }
+                }
+            } else if (expr.getArrayLiteral() != null) {
+                return ObjJClassType.ARRAY;
+            } else if (expr.getObjectLiteral() != null) {
+                return ObjJClassType.OBJECT;
+            } else if (expr.getSelectorLiteral() != null) {
+                return ObjJClassType.SELECTOR;
+            } else if (expr.getFunctionLiteral() != null) {
+                return ObjJClassType.FUNCTION;
+            } else if (expr.getRegularExpressionLiteral() != null) {
+                return ObjJClassType.REGEX;
+            } else if (expr.getPrimary() != null) {
+                return getTypeFromPrimarySingular(expr.getPrimary(), validateCallTarget);
+            } else if (expr.getTypeOfExprPrime() != null) {
+                return ObjJClassType.STRING;
+            } else if (expr.getFunctionCall() != null) {
+                return getFunctionCallReturnType(expr.getFunctionCall());
+            } else if (expr.getMinusMinus() != null || expr.getPlusPlus() != null) {
+                return ObjJClassType.INT;
+            } else if (expr.getMethodCall() != null) {
+                for (String returnType : ObjJMethodCallPsiUtil.getReturnTypes(expr.getMethodCall(), validateCallTarget)) {
+                    if(returnType.equals(ObjJClassType.UNDEF_CLASS_NAME) || returnType.equals(ObjJClassType.VOID_CLASS_NAME)) {
+                        continue;
+                    }
+                  return returnType;
+                }
+            }
+            return null;
+        }
+    */
+    private static void getExpressionReturnTypes(
+            @NotNull
+                    List<Result> possibleTypes,
+            @NotNull
+                    ObjJLeftExpr expr, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        if (expr.getArrayLiteral() != null) {
+            append(possibleTypes, ObjJClassType.ARRAY);
+        } else if (expr.getObjectLiteral() != null) {
+            append(possibleTypes, ObjJClassType.OBJECT);
+        } else if (expr.getSelectorLiteral() != null) {
+            append(possibleTypes, ObjJClassType.SELECTOR);
+        } else if (expr.getFunctionLiteral() != null) {
+            append(possibleTypes, ObjJClassType.FUNCTION);
+        } else if (expr.getRegularExpressionLiteral() != null) {
+            append(possibleTypes, ObjJClassType.REGEX);
+        } else if (expr.getPrimary() != null) {
+            getTypeFromPrimary(possibleTypes, expr.getPrimary(), validateCallTarget);
+        } else if (expr.getTypeOfExprPrime() != null) {
+            append(possibleTypes, ObjJClassType.STRING);
+        } else if (expr.getFunctionCall() != null) {
+            append(possibleTypes, getFunctionCallReturnType(expr.getFunctionCall()));
+        } else if (expr.getMinusMinus() != null || expr.getPlusPlus() != null) {
+            append(possibleTypes, ObjJClassType.INT);
+        } else if (expr.getMethodCall() != null && validateCallTarget) {
+            LOGGER.log(Level.INFO, "Evaluating Method Call: <" + expr.getMethodCall().getText() + ">");
+            List<String> methodCallPossibleReturnTypes;
+            if (!DumbService.isDumb(expr.getProject())) {
+                methodCallPossibleReturnTypes = ObjJMethodCallPsiUtil.getReturnTypes(expr.getMethodCall(), validateCallTarget);
+                LOGGER.log(Level.INFO, "Method Call <" + expr.getMethodCall().getText() + "> has possible return type of [" + ArrayUtils.join(methodCallPossibleReturnTypes) + "]");
+                for (String returnType : methodCallPossibleReturnTypes) {
+                    //ProgressIndicatorProvider.checkCanceled();
+                    append(possibleTypes, returnType);
+                }
+            } else {
+                append(possibleTypes, ObjJClassType.UNDETERMINED);
+            }
+        } else if (expr.getQualifiedReference() != null) {
+            //ProgressIndicatorProvider.checkCanceled();
+            ObjJVariableName variableName = expr.getQualifiedReference().getLastVar() != null ? expr.getQualifiedReference().getLastVar() : expr.getQualifiedReference().getPrimaryVar();
+            if (variableName != null) {
+                if (!expr.getQualifiedReference().getArrayIndexSelectorList().isEmpty()) {
+                    append(possibleTypes, ObjJClassType.UNDETERMINED);
+                    return;
+                }
+                if (!possibleTypes.isEmpty()) {
+                    return;
+                }
+
+                for (String variableType : getVariableTypes(variableName, false)) {
+                    //ProgressIndicatorProvider.checkCanceled();
+                    if (variableType == null || variableType.equals(ObjJClassType.UNDEF_CLASS_NAME)) {
+                        continue;
+                    }
+                    append(possibleTypes, variableType);
+                }
+            } else if (expr.getQualifiedReference().getMethodCall() != null) {
+                //ProgressIndicatorProvider.checkCanceled();
+                List<String> methodCallPossibleReturnTypes = ObjJMethodCallPsiUtil.getReturnTypes(expr.getQualifiedReference().getMethodCall(), validateCallTarget);
+                LOGGER.log(Level.INFO, "Method Call <" + expr.getQualifiedReference().getMethodCall() + "> has possible return type of [" + ArrayUtils.join(methodCallPossibleReturnTypes) + "]");
+                for (String returnType : methodCallPossibleReturnTypes) {
+                    //ProgressIndicatorProvider.checkCanceled();
+                    append(possibleTypes, returnType);
+                }
+            }
+        }
+    }
+
+    /*
+        private static String getTypeFromPrimarySingular(ObjJPrimary primary, boolean validateCallTarget) {
+            if (primary.getBooleanLiteral() != null) {
+                return ObjJClassType.BOOL;
+            }
+            if (primary.getDecimalLiteral() != null) {
+                return ObjJClassType.DOUBLE;
+            }
+            if (primary.getInteger() != null) {
+                return ObjJClassType.INT;
+            }
+            if (primary.getStringLiteral() != null) {
+                if (primary.getStringLiteral().getSingleQuoteStringLiteral() != null) {
+                    String text = primary.getStringLiteral().getSingleQuoteStringLiteral().getText();
+                    if (text.length() == 3 || (text.length() == 4 && text.substring(0,1).equals("\\"))) {
+                        return ObjJClassType.CHAR;
+                    }
+                }
+                return ObjJClassType.STRING;
+            }
+            if (primary.getNullLiterals() != null) {
+                return ObjJClassType.VOID_CLASS_NAME;
+            }
+            if (primary.getExpr() != null) {
+                return getExpressionReturnType(primary.getExpr(), validateCallTarget);
+            }
+            return null;
+        }
+    */
+    private static void getTypeFromPrimary(
+            @NotNull
+                    List<Result> possibleTypes,
+            @NotNull
+                    ObjJPrimary primary, boolean validateCallTarget) {
+        //ProgressIndicatorProvider.checkCanceled();
+        if (primary.getBooleanLiteral() != null) {
+            append(possibleTypes, ObjJClassType.BOOL);
+            return;
+        }
+        if (primary.getDecimalLiteral() != null) {
+            append(possibleTypes, ObjJClassType.DOUBLE);
+            return;
+        }
+        if (primary.getInteger() != null) {
+            append(possibleTypes, ObjJClassType.INT);
+            return;
+        }
+        if (primary.getStringLiteral() != null) {
+            if (primary.getStringLiteral().getSingleQuoteStringLiteral() != null) {
+                String text = primary.getStringLiteral().getSingleQuoteStringLiteral().getText();
+                if (text.length() == 3 || (text.length() == 4 && text.substring(0, 1).equals("\\"))) {
+                    append(possibleTypes, ObjJClassType.CHAR);
+                    return;
+                }
+            }
+            append(possibleTypes, ObjJClassType.STRING);
+            return;
+        }
+        if (primary.getNullLiterals() != null) {
+            return;
+        }
+    }
+
+    private static String getFunctionCallReturnType(
+            @SuppressWarnings("unused")
+                    ObjJFunctionCall functionCall) {
+        //Todo
+        return null;
+    }
+
+    private static void append(
+            @NotNull
+                    List<Result> results,
+            @Nullable
+                    String value) {
+        //ProgressIndicatorProvider.checkCanceled();
+        if (value == null) {
+            return;
+        }
+        for (Result result : results) {
+            //ProgressIndicatorProvider.checkCanceled();
+            if (result.name.equals(value)) {
+                result.hits++;
+                LOGGER.log(Level.INFO, "VariableType <" + value + "> inferred: <" + result.hits + "> times");
+                return;
+            }
+        }
+        results.add(new Result(value));
+    }
+
+    private static String getAccessorPropertyType(
+            @NotNull
+                    ObjJAccessorProperty accessorProperty) {
+        //ProgressIndicatorProvider.checkCanceled();
+        ObjJInstanceVariableDeclaration instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(accessorProperty);
+        return instanceVariableDeclaration != null ? instanceVariableDeclaration.getFormalVariableType().getText() : null;
+    }
+
+    private static class Result {
+        final String name;
+        int hits = 1;
+
+        Result(
+                @NotNull
+                        String name) {
+            this.name = name;
+        }
+
+        int getHits() {
+            return hits;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj) || obj instanceof Result && ((Result) obj).name.equals(name);
+        }
+    }
+
+    private static List<String> toStringArray(List<Result> results) {
+        results.sort(Comparator.comparingInt(Result::getHits));
+        List<String> out = new ArrayList<>();
+        for (Result result : results) {
+            //ProgressIndicatorProvider.checkCanceled();
+            out.add(result.name);
+        }
+        return out;
+    }
+
+}
