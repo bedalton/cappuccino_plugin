@@ -261,6 +261,7 @@ public class ObjJVariableNameUtil {
         }
         return null;
     }
+    
     @Nullable
     private static ObjJVariableName getVariableNameDeclarationInContainingBlocks(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         ObjJBlock block = ObjJTreeUtil.getTopmostParentOfType(element, ObjJBlock.class);
