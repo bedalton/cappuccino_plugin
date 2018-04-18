@@ -992,8 +992,8 @@ public class ObjJPsiImplUtil {
 
     public static Icon getIcon(PsiElement element) {
         if (element instanceof ObjJClassName) {
-
-            ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName) element).getParentOfType(ObjJClassDeclarationElement.class);
+            ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName)element).getParentOfType(ObjJClassDeclarationElement.class);
+          
             String className = element.getText();
             if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
                 return null;

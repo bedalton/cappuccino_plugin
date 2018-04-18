@@ -80,7 +80,6 @@
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
 
-
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
     <!-- =============================== -->
