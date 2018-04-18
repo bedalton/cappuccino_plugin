@@ -1,7 +1,9 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.stubs.StubIndexKey;
+import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,6 +44,9 @@ public class ObjJClassInheritanceIndex extends ObjJStringStubIndexBase<ObjJClass
     }
 
     private List<String> getChildClassesRecursive(@NotNull final List<String> descendants, @NotNull final String className, @NotNull Project project) {
+        if (DumbService.isDumb(project)) {
+            throw new IndexNotReadyRuntimeException();
+        }
         for (ObjJClassDeclarationElement classDeclarationElement : get(className, project)) {
             String currentClassName = classDeclarationElement.getClassNameString();
             if (descendants.contains(currentClassName)) {

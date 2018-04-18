@@ -20,7 +20,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
 
     private static final Logger LOGGER = Logger.getLogger(ObjJStringStubIndexBase.class.getName());
     private static final Map emptyList = Collections.emptyMap();
-    private static final int VERSION = 1;
+    private static final int VERSION = 3;
 
     @Override
     public int getVersion() {
@@ -152,7 +152,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
     }
 
     @NotNull
-    private List<ObjJElemT> getAllForKeysFlat(@NotNull List<String> keys, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException  {
+    protected List<ObjJElemT> getAllForKeysFlat(@NotNull List<String> keys, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException  {
         List<ObjJElemT> out = new ArrayList<>();
         List<String> done = new ArrayList<>();
         for (String key : keys) {

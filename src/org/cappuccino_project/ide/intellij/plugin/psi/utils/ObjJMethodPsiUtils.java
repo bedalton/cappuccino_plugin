@@ -127,6 +127,14 @@ public class ObjJMethodPsiUtils {
         }
     }
 
+    @NotNull
+    public static String getSelectorString(ObjJSelectorLiteral selectorLiteral) {
+        if (selectorLiteral.getStub() != null) {
+            return selectorLiteral.getStub().getSelectorString();
+        }
+        return getSelectorStringFromSelectorStrings(selectorLiteral.getSelectorStrings());
+    }
+
 
     @Nullable
     public static String getSelectorUntil(ObjJSelector targetSelectorElement, boolean include) {

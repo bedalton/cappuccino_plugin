@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.references;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
@@ -10,6 +11,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclar
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -28,16 +30,18 @@ public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClas
         if (className == null) {
             return new ResolveResult[0];
         }
+        if (DumbService.isDumb(myElement.getProject())) {
+            return ResolveResult.EMPTY_ARRAY;
+        }
         List<ObjJClassName> classNames = new ArrayList<>();
         Collection<ObjJClassDeclarationElement> classDeclarations = ObjJClassDeclarationsIndex.getInstance().get(className, myElement.getProject());
         if (classDeclarations.isEmpty()) {
-         //   LOGGER.log(Level.INFO, "Failed to find resolve class declaration for class: <"+className+">");
-            return new ResolveResult[0];
+            return ResolveResult.EMPTY_ARRAY;
         }
 
         for (ObjJClassDeclarationElement classDec : classDeclarations) {
             ObjJClassName classDecName = classDec.getClassName();
-            if (classDecName != null && !classDec.isEquivalentTo(myElement) && !classDecName.getText().isEmpty()) {
+            if (classDecName != null && !classDecName.getText().isEmpty() && !classDecName.isEquivalentTo(myElement)) {
                 classNames.add(classDecName);
             }
         }
@@ -47,6 +51,7 @@ public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClas
     @NotNull
     @Override
     public Object[] getVariants() {
-        return new Object[0];
+        List<Object> keys = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().getAllKeys(myElement.getProject()));
+        return keys.toArray();
     }
 }

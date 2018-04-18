@@ -14,6 +14,9 @@ public class ObjJNamedPsiUtil {
     @NotNull
     public static String getName(@NotNull
                                          ObjJVariableName variableName) {
+        if (variableName.getStub() != null) {
+            return variableName.getStub().getVariableName();
+        }
         return variableName.getText();
     }
 

@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.utils;
 
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import org.cappuccino_project.ide.intellij.plugin.exceptions.CannotDetermineException;
@@ -7,7 +8,11 @@ import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyInterr
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInheritanceIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJClassName;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImplementationDeclaration;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJInheritedProtocolList;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJProtocolDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil;
@@ -60,6 +65,68 @@ public class ObjJInheritanceUtil {
         List<String> inheritedClasses = new ArrayList<>();
         getAllInheritedClasses(inheritedClasses, className, project);
         return inheritedClasses;
+    }
+
+
+    @NotNull
+    public static List<ObjJProtocolDeclaration> getAllInheritedProtocols(@NotNull String className, @NotNull Project project) {
+        List<ObjJProtocolDeclaration> out = new ArrayList<>();
+        getAllInheritedProtocols(out, className, project);
+        return out;
+    }
+
+    @NotNull
+    public static void getAllInheritedProtocols(@NotNull List<ObjJProtocolDeclaration> out, @NotNull String className, @NotNull Project project) {
+        ProgressIndicatorProvider.checkCanceled();
+        if (className.equals(UNDETERMINED) || className.equals(ObjJClassType.CLASS) || ObjJClassType.isPrimitive(className)) {
+            return;
+        }
+
+        if (isProtocolInArray(out, className)) {
+            return;
+        }
+
+        //ProgressIndicatorProvider.checkCanceled();
+        if (DumbService.isDumb(project)) {
+            throw new IndexNotReadyRuntimeException();
+        }
+
+        List<ObjJProtocolDeclaration> temp = ObjJProtocolDeclarationsIndex.getInstance().get(className, project);
+        if (temp.isEmpty()) {
+            return;
+        }
+        ObjJProtocolDeclaration thisProtocol = temp.get(0);
+        out.add(thisProtocol);
+        ObjJInheritedProtocolList protocolList = thisProtocol.getInheritedProtocolList();
+        if (protocolList == null) {
+            return;
+        }
+        for (ObjJClassName parentProtocolNameElement : protocolList.getClassNameList()) {
+            ProgressIndicatorProvider.checkCanceled();
+            getAllInheritedProtocols(out, parentProtocolNameElement.getText(), project);
+            /*
+            for (ObjJProtocolDeclaration currentProtocolInLoop: ObjJProtocolDeclarationsIndex.getInstance().get(parentProtocolNameElement.getText(), project)) {
+                ProgressIndicatorProvider.checkCanceled();
+                inheritedProtocolList = currentProtocolInLoop != null ? currentProtocolInLoop.getInheritedProtocolList() : null;
+                if (inheritedProtocolList == null) {
+                    continue;
+                }
+                for (ObjJClassName currentLoopClassName : inheritedProtocolList.getClassNameList()) {
+                    getAllInheritedProtocols(out, currentLoopClassName.getText(), project);
+                }
+            }
+            */
+        }
+    }
+
+    private static boolean isProtocolInArray(@NotNull List<ObjJProtocolDeclaration> protocolDeclarations, @NotNull String className) {
+        for (ObjJProtocolDeclaration protocolDeclaration : protocolDeclarations) {
+            ProgressIndicatorProvider.checkCanceled();
+            if (protocolDeclaration.getClassNameString().equals(className)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void getAllInheritedClasses(@NotNull List<String> classNames, @NotNull String className, @NotNull Project project) {

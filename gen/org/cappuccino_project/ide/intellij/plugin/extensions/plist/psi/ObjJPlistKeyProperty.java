@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface ObjJPlistKeyProperty extends PsiElement {
 
   @Nullable
-  PsiElement getId();
+  ObjJPlistKeyName getKeyName();
 
   @Nullable
   PsiElement getKeyClose();

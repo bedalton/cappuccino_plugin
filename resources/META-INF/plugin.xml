@@ -51,29 +51,33 @@
     <lang.namesValidator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJNameValidator" />
 
     <!-- Annotators -->
-    <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJMethodCallAnnotatorUtil"/>
-    <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJSemiColonAnnotatorUtil"/>
-    <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJVariableAnnotatorUtil"/>
+    <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJAnnotator" />
 
     <!-- Indices -->
     <applicationService serviceInterface="org.cappuccino_project.ide.intellij.plugin.indices.StubIndexService"
                         serviceImplementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJIndexService" />
     <stubElementTypeHolder class="org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJAccessorMethodIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJFilesByNameIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariablesByFileNameIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImportsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJFilesByNameIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassChildrenIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
 
 

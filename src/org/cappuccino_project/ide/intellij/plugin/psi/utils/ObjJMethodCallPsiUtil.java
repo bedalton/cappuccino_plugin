@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME;
-import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED;
-import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.isPrimitive;
+import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.*;
 
 public class ObjJMethodCallPsiUtil {
 
@@ -41,7 +39,7 @@ public class ObjJMethodCallPsiUtil {
 
 
     public static boolean isUniversalMethodCaller(@NotNull final String className) {
-        return !isPrimitive(className) &&  (UNDETERMINED.equals(className) || UNDEF_CLASS_NAME.equals(className));
+        return !isPrimitive(className) &&  (UNDETERMINED.equals(className) || UNDEF_CLASS_NAME.equals(className)) || ID.equals(className);
     }
 
     @NotNull

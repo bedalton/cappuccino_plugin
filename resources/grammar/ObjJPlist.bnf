@@ -12,6 +12,7 @@
 	psiPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi"
 	psiImplPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.impl"
 	generateTokenAccessors=true
+	
 	//Tokens
 	tokens = [
 		//Line Terminator
@@ -83,7 +84,7 @@ plist
 private propertyList
 	::= property+
 	{
-		//recoverWhile=propertyList_recover
+		recoverWhile=propertyList_recover
 	}
 	;
 
@@ -101,7 +102,7 @@ docType
 docTypeParamList
 	::= (XML_TAG_PROPERTY_KEY|stringLiteral)+
 	{
-		//recoverWhile=docTypeParamList_recover
+		recoverWhile=docTypeParamList_recover
 	}
 	;
 
@@ -124,7 +125,7 @@ xmlHeader
 private xmlTagPropertiesList
 	::= xmlTagProperty+
 	{
-		//recoverWhile=xmlTagPropertiesList_recover
+		recoverWhile=xmlTagPropertiesList_recover
 	}
 	;
 
@@ -148,11 +149,47 @@ dict
 	;
 
 keyProperty
-	::= '<key>' ID '</key>'
+	::= '<key>' keyName '</key>'
 	{
 		pin=1
 	}
 	;
+
+keyName
+	::= ID ('.' ID)?
+	{
+		recoverWhile=recover_keyName
+	}
+	;
+
+private recover_keyName
+	::= !(
+		'<key>'|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	);
+
+/*
+private recover_All
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
+*/
 
 property
 	::= COMMENT* keyProperty COMMENT*  value* COMMENT*
@@ -173,23 +210,69 @@ string
 	::= '<string>' COMMENT* stringValue COMMENT* '</string>'
 	{
 		pin=1
-		//recoverWhile=property_recover
+		recoverWhile=recover_string
 	}
 	;
+
+
+private recover_string
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
 
 realNumber
 	::= '<real>'COMMENT*  DECIMAL_LITERAL COMMENT*  '</real>'
 	{
 		pin=1
+		recoverWhile=recover_realNumber
 	}
 	;
+
+
+private recover_realNumber
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
 
 integer
 	::= '<integer>' COMMENT*  INTEGER_LITERAL COMMENT*  '</integer>'
 	{
 		pin=1
+		recoverWhile=recover_integer
 	}
 	;
+
+private recover_integer
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
 
 boolean
 	::= '<true/>'|'<false/>'
@@ -199,13 +282,29 @@ array
 	::= '<array>' COMMENT* arrayValueList? COMMENT*  '</array>'
 	{
 		pin=1
+		recoverWhile=recover_array
 	}
 	;
+
+
+private recover_array
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'|'</data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
 
 private arrayValueList
 	::= value
 	{
-		//recoverWhile=arrayValueList_recover
+		recoverWhile=arrayValueList_recover
 	}
 	;
 
@@ -215,7 +314,25 @@ private arrayValueList_recover
 
 dataValue
 	::= '<data>' COMMENT*  DATA_LITERAL COMMENT*  '</data>'
+	{
+		pin=1;
+		recoverWhile=recover_dataValue
+	}
 	;
+
+private recover_dataValue
+	::= !(
+		'<key>'	|'</key>'
+	|	'<data>'
+	|	'<dict>'|'</dict>'
+	|	'<array>'|'</array>'
+	|	'<real>'|'</real>'
+	|	'<integer>'|'</integer>'
+	|	'<string>'|'</string>'
+	|	'<true/>' | '<false/>'
+	|	'</plist>'
+	|	<<eof>>
+	);
 
 private property_recover
 	::= !('<array>'|'<data>'|'<string>'|'<integer>'|'<real>'|'<key>'|'</plist>')
@@ -225,6 +342,8 @@ stringLiteral
 	::= DOUBLE_QUOTE_STRING_LITERAL
 	|	SINGLE_QUOTE_STRING_LITERAL
 	;
+
 stringValue
 	::= STRING_TAG_LITERAL
 	;
+	

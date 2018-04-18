@@ -8,10 +8,4 @@ public class ObjJElementUtils {
         //todo
     }
 
-    public static PsiElement getParentSubstitute(PsiElement child) {
-        //todo
-        return null;
-    }
-
-
 }

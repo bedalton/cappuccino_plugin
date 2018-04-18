@@ -5,6 +5,7 @@ import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceService;
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry;
@@ -61,13 +62,18 @@ public class ObjJPsiImplUtil {
     }
 
     @NotNull
-    public static PsiElement setName(@NotNull ObjJPreprocessorDefineFunction defineFunction, @NotNull String name) {
-        return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name);
+    public static String getName(ObjJFunctionName functionName) {
+        return functionName.getText();
     }
 
     @NotNull
     public static String getName(ObjJMethodHeader methodHeader) {
         return ObjJMethodPsiUtils.getName(methodHeader);
+    }
+
+    @NotNull
+    public static String getName(ObjJInstanceVariableDeclaration variableDeclaration) {
+        return variableDeclaration.getVariableName() != null ? variableDeclaration.getVariableName().getText() : "";
     }
 
     @NotNull
@@ -82,7 +88,12 @@ public class ObjJPsiImplUtil {
 
     @NotNull
     public static TextRange getRangeInElement(@NotNull final ObjJVariableName variableName) {
-        return variableName.getTextRange();
+        return new TextRange(0, variableName.getTextLength());
+    }
+
+    @NotNull
+    public static PsiElement setName(@NotNull ObjJPreprocessorDefineFunction defineFunction, @NotNull String name) {
+        return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name);
     }
 
     @NotNull
@@ -105,10 +116,6 @@ public class ObjJPsiImplUtil {
         return ObjJVariablePsiUtil.setName(instanceVariableDeclaration, newName);
     }
 
-    @NotNull
-    public static String getName(ObjJFunctionName functionName) {
-        return functionName.getText();
-    }
 
     @NotNull
     public static ObjJFunctionName setName(ObjJFunctionName oldFunctionName, @NotNull String newFunctionName) {
@@ -244,6 +251,11 @@ public class ObjJPsiImplUtil {
     @NotNull
     public static String getSelectorString(ObjJMethodCall methodCall) {
         return ObjJMethodCallPsiUtil.getSelectorString(methodCall);
+    }
+
+    @NotNull
+    public static String getSelectorString(ObjJSelectorLiteral selectorLiteral) {
+        return ObjJMethodPsiUtils.getSelectorString(selectorLiteral);
     }
 
     @NotNull
@@ -618,8 +630,8 @@ public class ObjJPsiImplUtil {
     }
 
     @NotNull
-    public static List<String> getFunctionNames(ObjJFunctionLiteral functionLiteral) {
-        return ObjJFunctionDeclarationPsiUtil.getFunctionNames(functionLiteral);
+    public static List<String> getFunctionNamesAsString(ObjJFunctionLiteral functionLiteral) {
+        return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral);
     }
 
     @NotNull
@@ -706,11 +718,27 @@ public class ObjJPsiImplUtil {
         } else if (psiElement instanceof ObjJVariableName) {
             return ((ObjJVariableName)psiElement).getText();
         } else if (psiElement instanceof ObjJClassName) {
-            return ((ObjJClassName) psiElement).getText();
+            return getClassDescriptiveText((ObjJClassName) psiElement);
         } else if (psiElement instanceof  ObjJFunctionName) {
             return psiElement.getText();
         }
         return "";
+    }
+
+    private static String getClassDescriptiveText(ObjJClassName classNameElement)
+    {
+        ObjJClassDeclarationElement classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement.class);
+        String className = classNameElement.getText();
+        if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
+            return className;
+        }
+        if (classDeclarationElement instanceof ObjJImplementationDeclaration) {
+            final ObjJImplementationDeclaration implementationDeclaration = ((ObjJImplementationDeclaration) classDeclarationElement);
+            if (implementationDeclaration.getCategoryName() != null) {
+                className += " (" + implementationDeclaration.getCategoryName().getClassName().getText() + ")";
+            }
+        }
+        return className;
     }
 
     @NotNull
@@ -851,6 +879,18 @@ public class ObjJPsiImplUtil {
     }
 
     // ============================== //
+    // ====== Iterator Elements ===== //
+    // ============================== //
+
+    @Nullable
+    public static ObjJExpr getConditionalExpression(@Nullable ObjJDoWhileStatement doWhileStatement) {
+        if (doWhileStatement == null || doWhileStatement.getConditionExpression() == null) {
+            return null;
+        }
+        return doWhileStatement.getConditionExpression().getExpr();
+    }
+
+    // ============================== //
     // =========== PARSER =========== //
     // ============================== //
 
@@ -911,7 +951,7 @@ public class ObjJPsiImplUtil {
                         (ahead == ObjJTypes.ObjJ_SEMI_COLON);
         if (isLineTerminator || !ObjJPluginSettings.inferEOS()) {
             if (!isLineTerminator) {
-                LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
+                //LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
             }
             return isLineTerminator;
         }
@@ -938,18 +978,37 @@ public class ObjJPsiImplUtil {
         return element != null && element.getNode().getElementType() == elementType;
     }
 
+    // ============================== //
+    // ======= Presentation ========= //
+    // ============================== //
+
+    public static ItemPresentation getPresentation(@NotNull ObjJImplementationDeclaration implementationDeclaration) {
+        return ObjJClassDeclarationPsiUtil.getPresentation(implementationDeclaration);
+    }
+
+    public static ItemPresentation getPresentation(@NotNull ObjJProtocolDeclaration protocolDeclaration) {
+        return ObjJClassDeclarationPsiUtil.getPresentation(protocolDeclaration);
+    }
+
     public static Icon getIcon(PsiElement element) {
         if (element instanceof ObjJClassName) {
-            if (element.getParent() instanceof ObjJImplementationDeclaration) {
+
+            ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName) element).getParentOfType(ObjJClassDeclarationElement.class);
+            String className = element.getText();
+            if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
+                return null;
+            }
+            if (classDeclarationElement instanceof ObjJImplementationDeclaration) {
                 ObjJImplementationDeclaration implementationDeclaration = ((ObjJImplementationDeclaration) element.getParent());
                 if (implementationDeclaration.isCategory()) {
                     return ObjJIcons.CATEGORY_ICON;
                 } else {
                     return ObjJIcons.CLASS_ICON;
                 }
-            } else if (element.getParent() instanceof ObjJProtocolDeclaration) {
+            } else if (classDeclarationElement instanceof ObjJProtocolDeclaration) {
                 return ObjJIcons.PROTOCOL_ICON;
             }
+            return null;
         }
 
         if (element instanceof ObjJFunctionName) {

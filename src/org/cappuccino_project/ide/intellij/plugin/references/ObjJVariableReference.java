@@ -1,9 +1,11 @@
 package org.cappuccino_project.ide.intellij.plugin.references;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReferenceBase;
 import com.intellij.util.IncorrectOperationException;
+import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
@@ -29,15 +31,22 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJVariableReference.class.getName());
     private final String fqName;
-    private final List<String> allInheritedClasses;
+    private List<String> allInheritedClasses;
     private ReferencedInScope referencedInScope;
     public ObjJVariableReference(
             @NotNull
                     ObjJVariableName element) {
         super(element, TextRange.create(0, element.getTextLength()));
         fqName = getQualifiedNameAsString(element);
+        LOGGER.log(Level.INFO, "Creating reference resolver for var <"+element.getName()+"> in file: <"+ObjJFileUtil.getContainingFileName(element.getContainingFile())+">");
+    }
+
+    private List<String> getAllInheritedClasses() {
+        if (allInheritedClasses != null) {
+            return allInheritedClasses;
+        }
         allInheritedClasses = ObjJInheritanceUtil.getAllInheritedClasses(myElement.getContainingClassName(), myElement.getProject());
-        //LOGGER.log(Level.INFO, "Creating reference resolver for var <"+fqName+"> in file: <"+element.getContainingFile().getVirtualFile().getName()+">");
+        return allInheritedClasses;
     }
 
     @Override
@@ -113,7 +122,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
         }
         if (referencedInScope == ReferencedInScope.CLASS) {
             String otherClassName = variableName.getContainingClassName();
-            return allInheritedClasses.contains(otherClassName);
+            return getAllInheritedClasses().contains(otherClassName);
         }
 
         if (referencedInScope == ReferencedInScope.FILE) {
@@ -149,7 +158,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
     @Nullable
     @Override
     public PsiElement resolve() {
-        //LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
+        LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
         PsiElement variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement, false);
         if (variableName == null) {
             variableName = getGlobalVariableNameElement();
@@ -158,6 +167,9 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
     }
 
     private PsiElement getGlobalVariableNameElement() {
+        if (DumbService.isDumb(myElement.getProject())) {
+            throw new IndexNotReadyRuntimeException();
+        }
         ObjJFile file = myElement.getContainingObjJFile();
         List<String> imports = file != null ? file.getImportStrings() : null;
         List<ObjJGlobalVariableDeclaration> globalVariableDeclarations = ObjJGlobalVariableNamesIndex.getInstance().get(myElement.getText(), myElement.getProject());
@@ -177,7 +189,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
             ObjJNamedElement namedElement = functionDeclarationElements.get(0).getFunctionNameNode();
             if (namedElement == null) {
                 for (ObjJFunctionDeclarationElement declarationElement : functionDeclarationElements) {
-                    namedElement = functionDeclarationElements.get(0).getFunctionNameNode();
+                    namedElement = declarationElement.getFunctionNameNode();
                     if (namedElement != null) {
                         break;
                     }

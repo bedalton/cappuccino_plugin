@@ -44,6 +44,9 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
     else if (t == ObjJPlist_INTEGER) {
       r = integer(b, 0);
     }
+    else if (t == ObjJPlist_KEY_NAME) {
+      r = keyName(b, 0);
+    }
     else if (t == ObjJPlist_KEY_PROPERTY) {
       r = keyProperty(b, 0);
     }
@@ -88,16 +91,15 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   // '<array>' COMMENT* arrayValueList? COMMENT*  '</array>'
   public static boolean array(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "array")) return false;
-    if (!nextTokenIs(b, ObjJPlist_ARRAY_OPEN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_ARRAY, null);
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_ARRAY, "<array>");
     r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
     p = r; // pin = 1
     r = r && report_error_(b, array_1(b, l + 1));
     r = p && report_error_(b, array_2(b, l + 1)) && r;
     r = p && report_error_(b, array_3(b, l + 1)) && r;
     r = p && consumeToken(b, ObjJPlist_ARRAY_CLOSE) && r;
-    exit_section_(b, l, m, r, p, null);
+    exit_section_(b, l, m, r, p, recover_array_parser_);
     return r || p;
   }
 
@@ -134,24 +136,13 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // value
-  // 	{
-  // 		//recoverWhile=arrayValueList_recover
-  // 	}
   static boolean arrayValueList(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arrayValueList")) return false;
     boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _NONE_);
     r = value(b, l + 1);
-    r = r && arrayValueList_1(b, l + 1);
-    exit_section_(b, m, null, r);
+    exit_section_(b, l, m, r, false, arrayValueList_recover_parser_);
     return r;
-  }
-
-  // {
-  // 		//recoverWhile=arrayValueList_recover
-  // 	}
-  private static boolean arrayValueList_1(PsiBuilder b, int l) {
-    return true;
   }
 
   /* ********************************************************** */
@@ -193,16 +184,16 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   // '<data>' COMMENT*  DATA_LITERAL COMMENT*  '</data>'
   public static boolean dataValue(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "dataValue")) return false;
-    if (!nextTokenIs(b, ObjJPlist_DATA_OPEN)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_DATA_VALUE, "<data value>");
     r = consumeToken(b, ObjJPlist_DATA_OPEN);
-    r = r && dataValue_1(b, l + 1);
-    r = r && consumeToken(b, ObjJPlist_DATA_LITERAL);
-    r = r && dataValue_3(b, l + 1);
-    r = r && consumeToken(b, ObjJPlist_DATA_CLOSE);
-    exit_section_(b, m, ObjJPlist_DATA_VALUE, r);
-    return r;
+    p = r; // pin = 1
+    r = r && report_error_(b, dataValue_1(b, l + 1));
+    r = p && report_error_(b, consumeToken(b, ObjJPlist_DATA_LITERAL)) && r;
+    r = p && report_error_(b, dataValue_3(b, l + 1)) && r;
+    r = p && consumeToken(b, ObjJPlist_DATA_CLOSE) && r;
+    exit_section_(b, l, m, r, p, recover_dataValue_parser_);
+    return r || p;
   }
 
   // COMMENT*
@@ -275,51 +266,30 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // (XML_TAG_PROPERTY_KEY|stringLiteral)+
-  // 	{
-  // 		//recoverWhile=docTypeParamList_recover
-  // 	}
   public static boolean docTypeParamList(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "docTypeParamList")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, ObjJPlist_DOC_TYPE_PARAM_LIST, "<doc type param list>");
     r = docTypeParamList_0(b, l + 1);
-    r = r && docTypeParamList_1(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // (XML_TAG_PROPERTY_KEY|stringLiteral)+
-  private static boolean docTypeParamList_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "docTypeParamList_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = docTypeParamList_0_0(b, l + 1);
     int c = current_position_(b);
     while (r) {
-      if (!docTypeParamList_0_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "docTypeParamList_0", c)) break;
+      if (!docTypeParamList_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "docTypeParamList", c)) break;
       c = current_position_(b);
     }
-    exit_section_(b, m, null, r);
+    exit_section_(b, l, m, r, false, docTypeParamList_recover_parser_);
     return r;
   }
 
   // XML_TAG_PROPERTY_KEY|stringLiteral
-  private static boolean docTypeParamList_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "docTypeParamList_0_0")) return false;
+  private static boolean docTypeParamList_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "docTypeParamList_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, ObjJPlist_XML_TAG_PROPERTY_KEY);
     if (!r) r = stringLiteral(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
-  }
-
-  // {
-  // 		//recoverWhile=docTypeParamList_recover
-  // 	}
-  private static boolean docTypeParamList_1(PsiBuilder b, int l) {
-    return true;
   }
 
   /* ********************************************************** */
@@ -349,16 +319,15 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   // '<integer>' COMMENT*  INTEGER_LITERAL COMMENT*  '</integer>'
   public static boolean integer(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "integer")) return false;
-    if (!nextTokenIs(b, ObjJPlist_INTEGER_OPEN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_INTEGER, null);
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_INTEGER, "<integer>");
     r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
     p = r; // pin = 1
     r = r && report_error_(b, integer_1(b, l + 1));
     r = p && report_error_(b, consumeToken(b, ObjJPlist_INTEGER_LITERAL)) && r;
     r = p && report_error_(b, integer_3(b, l + 1)) && r;
     r = p && consumeToken(b, ObjJPlist_INTEGER_CLOSE) && r;
-    exit_section_(b, l, m, r, p, null);
+    exit_section_(b, l, m, r, p, recover_integer_parser_);
     return r || p;
   }
 
@@ -387,14 +356,46 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '<key>' ID '</key>'
+  // ID ('.' ID)?
+  public static boolean keyName(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "keyName")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_KEY_NAME, "<key name>");
+    r = consumeToken(b, ObjJPlist_ID);
+    r = r && keyName_1(b, l + 1);
+    exit_section_(b, l, m, r, false, recover_keyName_parser_);
+    return r;
+  }
+
+  // ('.' ID)?
+  private static boolean keyName_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "keyName_1")) return false;
+    keyName_1_0(b, l + 1);
+    return true;
+  }
+
+  // '.' ID
+  private static boolean keyName_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "keyName_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ".");
+    r = r && consumeToken(b, ObjJPlist_ID);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // '<key>' keyName '</key>'
   public static boolean keyProperty(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "keyProperty")) return false;
     if (!nextTokenIs(b, ObjJPlist_KEY_OPEN)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, ObjJPlist_KEY_PROPERTY, null);
-    r = consumeTokens(b, 1, ObjJPlist_KEY_OPEN, ObjJPlist_ID, ObjJPlist_KEY_CLOSE);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
     p = r; // pin = 1
+    r = r && report_error_(b, keyName(b, l + 1));
+    r = p && consumeToken(b, ObjJPlist_KEY_CLOSE) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -621,41 +622,19 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // property+
-  // 	{
-  // 		//recoverWhile=propertyList_recover
-  // 	}
   static boolean propertyList(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "propertyList")) return false;
-    if (!nextTokenIs(b, "", ObjJPlist_KEY_OPEN, ObjJPlist_COMMENT)) return false;
     boolean r;
-    Marker m = enter_section_(b);
-    r = propertyList_0(b, l + 1);
-    r = r && propertyList_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // property+
-  private static boolean propertyList_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "propertyList_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _NONE_);
     r = property(b, l + 1);
     int c = current_position_(b);
     while (r) {
       if (!property(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "propertyList_0", c)) break;
+      if (!empty_element_parsed_guard_(b, "propertyList", c)) break;
       c = current_position_(b);
     }
-    exit_section_(b, m, null, r);
+    exit_section_(b, l, m, r, false, propertyList_recover_parser_);
     return r;
-  }
-
-  // {
-  // 		//recoverWhile=propertyList_recover
-  // 	}
-  private static boolean propertyList_1(PsiBuilder b, int l) {
-    return true;
   }
 
   /* ********************************************************** */
@@ -711,16 +690,15 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   // '<real>'COMMENT*  DECIMAL_LITERAL COMMENT*  '</real>'
   public static boolean realNumber(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "realNumber")) return false;
-    if (!nextTokenIs(b, ObjJPlist_REAL_OPEN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_REAL_NUMBER, null);
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_REAL_NUMBER, "<real number>");
     r = consumeToken(b, ObjJPlist_REAL_OPEN);
     p = r; // pin = 1
     r = r && report_error_(b, realNumber_1(b, l + 1));
     r = p && report_error_(b, consumeToken(b, ObjJPlist_DECIMAL_LITERAL)) && r;
     r = p && report_error_(b, realNumber_3(b, l + 1)) && r;
     r = p && consumeToken(b, ObjJPlist_REAL_CLOSE) && r;
-    exit_section_(b, l, m, r, p, null);
+    exit_section_(b, l, m, r, p, recover_realNumber_parser_);
     return r || p;
   }
 
@@ -749,19 +727,358 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // !(
+  // 		'<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  // 	)
+  static boolean recover_array(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_array")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_array_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  private static boolean recover_array_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_array_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(
+  // 		'<key>'	|'</key>'
+  // 	|	'<data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  // 	)
+  static boolean recover_dataValue(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_dataValue")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_dataValue_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'	|'</key>'
+  // 	|	'<data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  private static boolean recover_dataValue_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_dataValue_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(
+  // 		'<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  // 	)
+  static boolean recover_integer(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_integer")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_integer_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  private static boolean recover_integer_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_integer_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(
+  // 		'<key>'|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	)
+  static boolean recover_keyName(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_keyName")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_keyName_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  private static boolean recover_keyName_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_keyName_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(
+  // 		'<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  // 	)
+  static boolean recover_realNumber(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_realNumber")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_realNumber_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'|'</string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  private static boolean recover_realNumber_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_realNumber_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(
+  // 		'<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  // 	)
+  static boolean recover_string(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_string")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !recover_string_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // '<key>'	|'</key>'
+  // 	|	'<data>'|'</data>'
+  // 	|	'<dict>'|'</dict>'
+  // 	|	'<array>'|'</array>'
+  // 	|	'<real>'|'</real>'
+  // 	|	'<integer>'|'</integer>'
+  // 	|	'<string>'
+  // 	|	'<true/>' | '<false/>'
+  // 	|	'</plist>'
+  // 	|	<<eof>>
+  private static boolean recover_string_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "recover_string_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ObjJPlist_KEY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_KEY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DATA_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_DICT_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_ARRAY_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_REAL_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_INTEGER_CLOSE);
+    if (!r) r = consumeToken(b, ObjJPlist_STRING_OPEN);
+    if (!r) r = consumeToken(b, ObjJPlist_TRUE);
+    if (!r) r = consumeToken(b, ObjJPlist_FALSE);
+    if (!r) r = consumeToken(b, ObjJPlist_PLIST_CLOSE);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // '<string>' COMMENT* stringValue COMMENT* '</string>'
   public static boolean string(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string")) return false;
-    if (!nextTokenIs(b, ObjJPlist_STRING_OPEN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_STRING, null);
+    Marker m = enter_section_(b, l, _NONE_, ObjJPlist_STRING, "<string>");
     r = consumeToken(b, ObjJPlist_STRING_OPEN);
     p = r; // pin = 1
     r = r && report_error_(b, string_1(b, l + 1));
     r = p && report_error_(b, stringValue(b, l + 1)) && r;
     r = p && report_error_(b, string_3(b, l + 1)) && r;
     r = p && consumeToken(b, ObjJPlist_STRING_CLOSE) && r;
-    exit_section_(b, l, m, r, p, null);
+    exit_section_(b, l, m, r, p, recover_string_parser_);
     return r || p;
   }
 
@@ -862,41 +1179,19 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // xmlTagProperty+
-  // 	{
-  // 		//recoverWhile=xmlTagPropertiesList_recover
-  // 	}
   static boolean xmlTagPropertiesList(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "xmlTagPropertiesList")) return false;
-    if (!nextTokenIs(b, "", ObjJPlist_VERSION, ObjJPlist_XML_TAG_PROPERTY_KEY)) return false;
     boolean r;
-    Marker m = enter_section_(b);
-    r = xmlTagPropertiesList_0(b, l + 1);
-    r = r && xmlTagPropertiesList_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // xmlTagProperty+
-  private static boolean xmlTagPropertiesList_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "xmlTagPropertiesList_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _NONE_);
     r = xmlTagProperty(b, l + 1);
     int c = current_position_(b);
     while (r) {
       if (!xmlTagProperty(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "xmlTagPropertiesList_0", c)) break;
+      if (!empty_element_parsed_guard_(b, "xmlTagPropertiesList", c)) break;
       c = current_position_(b);
     }
-    exit_section_(b, m, null, r);
+    exit_section_(b, l, m, r, false, xmlTagPropertiesList_recover_parser_);
     return r;
-  }
-
-  // {
-  // 		//recoverWhile=xmlTagPropertiesList_recover
-  // 	}
-  private static boolean xmlTagPropertiesList_1(PsiBuilder b, int l) {
-    return true;
   }
 
   /* ********************************************************** */
@@ -961,4 +1256,54 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
+  final static Parser arrayValueList_recover_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return arrayValueList_recover(b, l + 1);
+    }
+  };
+  final static Parser docTypeParamList_recover_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return docTypeParamList_recover(b, l + 1);
+    }
+  };
+  final static Parser propertyList_recover_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return propertyList_recover(b, l + 1);
+    }
+  };
+  final static Parser recover_array_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_array(b, l + 1);
+    }
+  };
+  final static Parser recover_dataValue_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_dataValue(b, l + 1);
+    }
+  };
+  final static Parser recover_integer_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_integer(b, l + 1);
+    }
+  };
+  final static Parser recover_keyName_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_keyName(b, l + 1);
+    }
+  };
+  final static Parser recover_realNumber_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_realNumber(b, l + 1);
+    }
+  };
+  final static Parser recover_string_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return recover_string(b, l + 1);
+    }
+  };
+  final static Parser xmlTagPropertiesList_recover_parser_ = new Parser() {
+    public boolean parse(PsiBuilder b, int l) {
+      return xmlTagPropertiesList_recover(b, l + 1);
+    }
+  };
 }

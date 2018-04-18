@@ -6,8 +6,10 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
@@ -15,6 +17,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDec
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils.Filter;
+import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,21 +44,42 @@ public class ObjJVariableNameUtil {
             variableNameQualifiedString = variableName.getText();
         }
         boolean hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null;
-        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, (thisVariable) -> {
-            String thisVariablesFqName = getQualifiedNameAsString(thisVariable, qualifiedIndex);
-            //LOGGER.log(Level.INFO, "getMatchingPrecedingVariableNameElements: <"+variableNameQualifiedString+"> ?= <"+thisVariablesFqName+">");
-            if (!variableNameQualifiedString.equals(thisVariablesFqName)) {
-                return false;
+        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, (thisVariable) -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex));
+    }
+
+    @NotNull
+    public static List<ObjJVariableName> getMatchingPrecedingVariableAssignmentNameElements(final ObjJCompositeElement variableName, int qualifiedIndex) {
+        final int startOffset = variableName.getTextRange().getStartOffset();
+        String variableNameQualifiedString;
+        if (variableName instanceof ObjJVariableName) {
+            variableNameQualifiedString = getQualifiedNameAsString((ObjJVariableName)variableName, qualifiedIndex);
+        } else {
+            //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
+            variableNameQualifiedString = variableName.getText();
+        }
+        boolean hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null;
+        return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, (thisVariable) -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex));
+    }
+
+    private static boolean isMatchingElement(@NotNull String variableNameQualifiedString, ObjJVariableName variableToCheck, boolean hasContainingClass, int startOffset, int qualifiedIndex) {
+        if (variableToCheck == null) {
+            LOGGER.log(Level.SEVERE, "Variable name to check should not be null");
+            return false;
+        }
+        String thisVariablesFqName = getQualifiedNameAsString(variableToCheck, qualifiedIndex);
+        //LOGGER.log(Level.INFO, "getMatchingPrecedingVariableNameElements: <"+variableNameQualifiedString+"> ?= <"+thisVariablesFqName+">");
+        if (!variableNameQualifiedString.equals(thisVariablesFqName)) {
+            return false;
+        }
+        LOGGER.log(Level.INFO, "Variable names match for variable: <"+variableNameQualifiedString+">; Is Offset <"+startOffset+" < "+variableToCheck.getTextRange().getStartOffset() + "? " + (variableToCheck.getTextRange().getStartOffset() < startOffset));
+        if (variableToCheck.getContainingClass() == null) {
+            if (hasContainingClass) {
+                return true;
             }
-            if (thisVariable.getContainingClass() == null) {
-                if (hasContainingClass) {
-                    return true;
-                }
-            } else if (hasContainingClass) {
-                //return false;
-            }
-            return thisVariable.getTextRange().getStartOffset() < startOffset;
-        });
+        } else if (hasContainingClass) {
+            //return false;
+        }
+        return variableToCheck.getTextRange().getStartOffset() < startOffset;
     }
 
     @NotNull
@@ -91,11 +115,27 @@ public class ObjJVariableNameUtil {
     }
 
     @NotNull
+    public static List<ObjJVariableName> getPrecedingVariableAssignmentNameElements(final PsiElement variableName, int qualifiedIndex) {
+        final int startOffset = variableName.getTextRange().getStartOffset();
+        PsiFile file = variableName.getContainingFile();
+        //LOGGER.log(Level.INFO, String.format("Qualified Index: <%d>; TextOffset: <%d>; TextRange: <%d,%d>", qualifiedIndex, variableName.getTextOffset(), variableName.getTextRange().getStartOffset(), variableName.getTextRange().getEndOffset()));
+        return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, (var) -> var != variableName && (var.getContainingFile().isEquivalentTo(file) || var.getTextRange().getStartOffset() < startOffset));
+    }
+
+    @NotNull
     public static List<ObjJVariableName> getPrecedingVariableNameElements(final PsiElement variableName, int qualifiedIndex) {
         final int startOffset = variableName.getTextRange().getStartOffset();
         PsiFile file = variableName.getContainingFile();
         //LOGGER.log(Level.INFO, String.format("Qualified Index: <%d>; TextOffset: <%d>; TextRange: <%d,%d>", qualifiedIndex, variableName.getTextOffset(), variableName.getTextRange().getStartOffset(), variableName.getTextRange().getEndOffset()));
         return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, (var) -> var != variableName && (var.getContainingFile().isEquivalentTo(file) || var.getTextRange().getStartOffset() < startOffset));
+    }
+
+    @NotNull
+    public static List<ObjJVariableName> getAndFilterSiblingVariableAssignmentNameElements(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
+        List<ObjJVariableName> rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex);
+        List<ObjJVariableName> out = ArrayUtils.filter(rawVariableNameElements, filter);
+        //LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
+        return out;
     }
 
     @NotNull
@@ -106,9 +146,41 @@ public class ObjJVariableNameUtil {
         return out;
     }
 
-    @NotNull
+
+    /**
+     * Gets every preceding variable name element, even if it is not an assignment
+     * @param element element to find siblings for
+     * @param qualifiedNameIndex variable name index in chain, should be 0 for right now
+     * @return list of variable name elements
+     *
+     * todo Allow checking of non 0 qualified name index
+     */
     public static List<ObjJVariableName> getSiblingVariableNameElements(PsiElement element, int qualifiedNameIndex) {
-        List<ObjJVariableName> result = getAllVariableNamesInContainingBlocks(element, qualifiedNameIndex);
+        List<ObjJVariableName> result = new ArrayList<>(getAllVariableNamesInContainingBlocks(element, qualifiedNameIndex));
+        int currentSize = result.size();
+        //LOGGER.log(Level.INFO, "Num from blocks: <"+currentSize+">");
+        if (qualifiedNameIndex <= 1) {
+            result.addAll(getAllContainingClassInstanceVariables(element));
+            //LOGGER.log(Level.INFO, "Num VariableNames after class vars: <"+result.size()+">");
+            currentSize = result.size();
+        }
+
+        result.addAll(getAllAtGlobalFileVariables(element.getContainingFile()));
+        result.addAll(getAllGlobalScopedFileVariables(element.getContainingFile()));
+        result.addAll(getAllMethodDeclarationSelectorVars(element));
+        result.addAll(getAllIterationVariables(ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement.class)));
+        result.addAll(getAllFileScopedVariables(element.getContainingFile(), qualifiedNameIndex));
+        result.addAll(getAllFunctionScopeVariables(ObjJTreeUtil.getParentOfType(element, ObjJFunctionDeclarationElement.class)));
+        result.addAll(getCatchProductionVariables(ObjJTreeUtil.getParentOfType(element, ObjJCatchProduction.class)));
+        result.addAll(getPreprocessorDefineFunctionVariables(ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction.class)));
+        //LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
+        return result;
+    }
+
+
+    @NotNull
+    public static List<ObjJVariableName> getSiblingVariableAssignmentNameElements(PsiElement element, int qualifiedNameIndex) {
+        List<ObjJVariableName> result = getAllVariableNamesInAssignmentsInContainingBlocks(element, qualifiedNameIndex);
         int currentSize = result.size();
         //LOGGER.log(Level.INFO, "Num from blocks: <"+currentSize+">");
         if (qualifiedNameIndex <= 1) {
@@ -131,7 +203,7 @@ public class ObjJVariableNameUtil {
 
 
     @Nullable
-    public static ObjJVariableName getSiblingVariableNameElement(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
+    public static ObjJVariableName getSiblingVariableAssignmentNameElement(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         ObjJVariableName variableName;
         variableName = getVariableNameDeclarationInContainingBlocks(element, qualifiedNameIndex, filter);
         if (variableName != null) {
@@ -176,17 +248,41 @@ public class ObjJVariableNameUtil {
         if (variableName != null) {
             return !variableName.isEquivalentTo(element) ? variableName : null;
         }
+        if (DumbService.isDumb(element.getProject())) {
+            throw new IndexNotReadyRuntimeException();
+        }
         List<ObjJGlobalVariableDeclaration> globalVariableDeclarations = ObjJGlobalVariableNamesIndex.getInstance().get(element.getText(), element.getProject());
         if (!globalVariableDeclarations.isEmpty()) {
             return globalVariableDeclarations.get(0).getVariableName();
         }
         ObjJBlock block = ObjJTreeUtil.getParentOfType(element, ObjJBlock.class);
         if (block != null) {
-            return getSiblingVariableNameElement(block, qualifiedNameIndex, filter);
+            return getSiblingVariableAssignmentNameElement(block, qualifiedNameIndex, filter);
         }
         return null;
     }
+    @Nullable
+    private static ObjJVariableName getVariableNameDeclarationInContainingBlocks(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
+        ObjJBlock block = ObjJTreeUtil.getTopmostParentOfType(element, ObjJBlock.class);
+        if (block == null) {
+            return null;
+        }
+        final String varName = element.getText();
+        List<ObjJVariableName> variableNames = ObjJVariableNameByScopeIndex.getInstance().getInRange(ObjJFileUtil.getContainingFileName(element.getContainingFile()), block.getTextRange(), element.getProject());
+        return getFirstMatchOrNull(variableNames, (variableName) -> {
+            if (!variableName.getText().equals(varName)) {
+                return false;
+            }
+            PsiElement parent = variableName.getParent();
+            if (!(parent instanceof ObjJQualifiedReference)) {
+                return false;
+            }
+            parent = parent.getParent();
+            return parent instanceof ObjJBodyVariableAssignment || parent instanceof ObjJVariableDeclaration;
+        });
+    }
 
+    /*
     @Nullable
     private static ObjJVariableName getVariableNameDeclarationInContainingBlocks(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         ObjJBlock block = element instanceof ObjJBlock ? ((ObjJBlock)element) : PsiTreeUtil.getParentOfType(element, ObjJBlock.class);
@@ -202,6 +298,7 @@ public class ObjJVariableNameUtil {
         }
         return null;
     }
+    */
 
     public static ObjJVariableName getFirstMatchOrNull(List<ObjJVariableName> variableNameElements, Filter<ObjJVariableName> filter) {
         for (ObjJVariableName variableName : variableNameElements) {
@@ -213,7 +310,7 @@ public class ObjJVariableNameUtil {
         return null;
     }
 
-    private static List<ObjJVariableName> getAllVariableNamesInContainingBlocks(PsiElement element, int qualifiedNameIndex) {
+    private static List<ObjJVariableName> getAllVariableNamesInAssignmentsInContainingBlocks(PsiElement element, int qualifiedNameIndex) {
         List<ObjJVariableName> result = new ArrayList<>();
         ObjJBlock block = element instanceof ObjJBlock ? ((ObjJBlock)element) : PsiTreeUtil.getParentOfType(element, ObjJBlock.class);
         List<ObjJBodyVariableAssignment> bodyVariableAssignments = ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJBodyVariableAssignment.class, true);
@@ -223,6 +320,28 @@ public class ObjJVariableNameUtil {
             result.addAll(getAllVariablesFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex));
         }
         return result;
+    }
+
+    private static List<ObjJVariableName> getAllVariableNamesInContainingBlocks(PsiElement element, int qualifiedNameIndex) {
+
+        ObjJBlock containingBlock = ObjJTreeUtil.getParentOfType(element,ObjJBlock.class);
+        ObjJBlock tempBlock = containingBlock;
+        while (tempBlock != null) {
+            tempBlock = containingBlock.getParentOfType(ObjJBlock.class);
+            if (tempBlock == null) {
+                break;
+            }
+            containingBlock = tempBlock;
+        }
+        if (containingBlock == null) {
+            LOGGER.log(Level.INFO, "Variable <"+element.getText()+">  is not in block");
+            return EMPTY_VARIABLE_NAME_LIST;
+        }
+        final PsiFile containingFile = element.getContainingFile();
+        final String fileName = ObjJFileUtil.getContainingFileName(containingFile);
+        assert fileName != null;
+        LOGGER.log(Level.INFO, "Variable <"+element.getText()+"> is in block in file: <"+fileName+"> at offset: "+containingBlock.getTextRange().getStartOffset());
+        return ObjJVariableNameByScopeIndex.getInstance().getInRange(fileName, containingBlock.getTextRange(), element.getProject());
     }
 
     private static List<ObjJVariableName> getAllContainingClassInstanceVariables(PsiElement element) {
@@ -239,7 +358,9 @@ public class ObjJVariableNameUtil {
             ProgressIndicatorProvider.checkCanceled();
             for (ObjJInstanceVariableDeclaration declaration : ObjJInstanceVariablesByClassIndex.getInstance().get(variableHoldingClassName, element.getProject())) {
                 ProgressIndicatorProvider.checkCanceled();
-                result.add(declaration.getVariableName());
+                if (declaration.getVariableName() != null) {
+                    result.add(declaration.getVariableName());
+                }
             }
         }
         return result;
@@ -344,7 +465,9 @@ public class ObjJVariableNameUtil {
         }
         List<ObjJVariableName> result = new ArrayList<>();
         for (ObjJGlobalVariableDeclaration variableDeclaration : ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJGlobalVariableDeclaration.class)) {
-            result.add(variableDeclaration.getVariableName());
+            if (variableDeclaration.getVariableName() != null) {
+                result.add(variableDeclaration.getVariableName());
+            }
         }
         return result;
     }
@@ -510,7 +633,7 @@ public class ObjJVariableNameUtil {
         return result;
     }
 
-    public static boolean isInstanceVarDeclaredInClassOrInheritance(ObjJVariableName variableName) {
+    public static boolean isInstanceVarDeclaredInClassOrInheritance(@NotNull final ObjJVariableName variableName) {
         return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableName), (var) -> var.getText().equals(variableName.getText())) != null;
     }
 }

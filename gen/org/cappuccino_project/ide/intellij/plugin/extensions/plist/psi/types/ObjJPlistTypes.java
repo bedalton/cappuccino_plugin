@@ -15,6 +15,7 @@ public interface ObjJPlistTypes {
   IElementType ObjJPlist_DOC_TYPE = new IElementType("ObjJPlist_DOC_TYPE", null);
   IElementType ObjJPlist_DOC_TYPE_PARAM_LIST = new IElementType("ObjJPlist_DOC_TYPE_PARAM_LIST", null);
   IElementType ObjJPlist_INTEGER = new IElementType("ObjJPlist_INTEGER", null);
+  IElementType ObjJPlist_KEY_NAME = new IElementType("ObjJPlist_KEY_NAME", null);
   IElementType ObjJPlist_KEY_PROPERTY = new IElementType("ObjJPlist_KEY_PROPERTY", null);
   IElementType ObjJPlist_PLIST = new IElementType("ObjJPlist_PLIST", null);
   IElementType ObjJPlist_PLIST_OPEN_TAG = new IElementType("ObjJPlist_PLIST_OPEN_TAG", null);
@@ -89,6 +90,9 @@ public interface ObjJPlistTypes {
       }
       else if (type == ObjJPlist_INTEGER) {
         return new ObjJPlistIntegerImpl(node);
+      }
+      else if (type == ObjJPlist_KEY_NAME) {
+        return new ObjJPlistKeyNameImpl(node);
       }
       else if (type == ObjJPlist_KEY_PROPERTY) {
         return new ObjJPlistKeyPropertyImpl(node);
