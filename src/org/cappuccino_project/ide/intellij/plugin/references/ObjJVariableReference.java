@@ -31,15 +31,22 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJVariableReference.class.getName());
     private final String fqName;
-    private final List<String> allInheritedClasses;
+    private List<String> allInheritedClasses;
     private ReferencedInScope referencedInScope;
     public ObjJVariableReference(
             @NotNull
                     ObjJVariableName element) {
         super(element, TextRange.create(0, element.getTextLength()));
         fqName = getQualifiedNameAsString(element);
+        LOGGER.log(Level.INFO, "Creating reference resolver for var <"+element.getName()+"> in file: <"+ObjJFileUtil.getContainingFileName(element.getContainingFile())+">");
+    }
+
+    private List<String> getAllInheritedClasses() {
+        if (allInheritedClasses != null) {
+            return allInheritedClasses;
+        }
         allInheritedClasses = ObjJInheritanceUtil.getAllInheritedClasses(myElement.getContainingClassName(), myElement.getProject());
-        //LOGGER.log(Level.INFO, "Creating reference resolver for var <"+fqName+"> in file: <"+element.getContainingFile().getVirtualFile().getName()+">");
+        return allInheritedClasses;
     }
 
     @Override
@@ -115,7 +122,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
         }
         if (referencedInScope == ReferencedInScope.CLASS) {
             String otherClassName = variableName.getContainingClassName();
-            return allInheritedClasses.contains(otherClassName);
+            return getAllInheritedClasses().contains(otherClassName);
         }
 
         if (referencedInScope == ReferencedInScope.FILE) {
@@ -151,7 +158,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
     @Nullable
     @Override
     public PsiElement resolve() {
-        //LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
+        LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
         PsiElement variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement, false);
         if (variableName == null) {
             variableName = getGlobalVariableNameElement();
@@ -182,7 +189,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
             ObjJNamedElement namedElement = functionDeclarationElements.get(0).getFunctionNameNode();
             if (namedElement == null) {
                 for (ObjJFunctionDeclarationElement declarationElement : functionDeclarationElements) {
-                    namedElement = functionDeclarationElements.get(0).getFunctionNameNode();
+                    namedElement = declarationElement.getFunctionNameNode();
                     if (namedElement != null) {
                         break;
                     }

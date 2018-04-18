@@ -3,6 +3,7 @@ package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJAccessorProperty;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJSelector;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJSelectorLiteral;
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.utils.Strings;

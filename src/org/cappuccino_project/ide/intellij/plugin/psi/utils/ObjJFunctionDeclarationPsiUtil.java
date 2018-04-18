@@ -128,7 +128,7 @@ public class ObjJFunctionDeclarationPsiUtil {
     }
 
     @NotNull
-    public static List<String> getFunctionNames(ObjJFunctionLiteral functionLiteral) {
+    public static List<String> getFunctionNamesAsString(ObjJFunctionLiteral functionLiteral) {
         List<String> out = new ArrayList<>();
         ObjJVariableDeclaration variableDeclaration = ObjJTreeUtil.getParentOfType(functionLiteral, ObjJVariableDeclaration.class);
         if (variableDeclaration == null || variableDeclaration.getQualifiedReferenceList().isEmpty()) {

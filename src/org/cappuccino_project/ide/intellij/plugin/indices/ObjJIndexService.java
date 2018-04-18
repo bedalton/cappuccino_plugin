@@ -1,14 +1,19 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.stubs.IndexSink;
 
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
+import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -190,6 +195,25 @@ public class ObjJIndexService extends StubIndexService {
 
     public void indexVarTypeId(@NotNull ObjJVarTypeIdStub stub, IndexSink indexSink) {
 
+    }
+
+    public void indexVariableName(@NotNull ObjJVariableNameStub stub, @NotNull IndexSink indexSink) {
+        final String containingFileName = ObjJFileUtil.getContainingFileName(stub.getPsi().getContainingFile());
+        if (containingFileName == null) {
+            LOGGER.log(Level.SEVERE, "Cannot index variable name, containing file name is null");
+            return;
+        } else {
+            LOGGER.log(Level.INFO, "Indexing variable: "+containingFileName+": "+stub.getVariableName());
+        }
+        indexSink.occurrence(ObjJVariableNameByScopeIndex.KEY, containingFileName+"-ALL");
+        List<Pair<Integer,Integer>> blockRanges = stub.getContainingBlockRanges();
+        if (blockRanges.isEmpty()) {
+            indexSink.occurrence(ObjJVariableNameByScopeIndex.KEY, containingFileName+"-TOP");
+        }
+
+        for (Pair<Integer,Integer> blockRange : blockRanges) {
+            indexSink.occurrence(ObjJVariableNameByScopeIndex.KEY, ObjJVariableNameByScopeIndex.getIndexKey(containingFileName, blockRange));
+        }
     }
 
 }

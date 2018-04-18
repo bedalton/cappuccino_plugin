@@ -77,7 +77,7 @@
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
-
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
 
     <!-- =============================== -->

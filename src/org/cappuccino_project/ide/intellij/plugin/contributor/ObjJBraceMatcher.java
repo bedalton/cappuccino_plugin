@@ -16,10 +16,13 @@ public class ObjJBraceMatcher implements PairedBraceMatcher {
             new BracePair(ObjJ_OPEN_BRACKET, ObjJ_CLOSE_BRACKET, false),
             new BracePair(ObjJ_OPEN_BRACE, ObjJ_CLOSE_BRACE, false),
             new BracePair(ObjJ_AT_OPENBRACKET, ObjJ_CLOSE_BRACKET, false),
-            new BracePair(ObjJ_AT_OPEN_BRACE, ObjJ_CLOSE_BRACE, false)
+            new BracePair(ObjJ_AT_OPEN_BRACE, ObjJ_CLOSE_BRACE, false),
+            new BracePair(ObjJ_DOUBLE_QUO, ObjJ_DOUBLE_QUO, false),
+            new BracePair(ObjJ_SINGLE_QUO, ObjJ_SINGLE_QUO, false),
+            new BracePair(ObjJ_BLOCK_COMMENT_START, ObjJ_BLOCK_COMMENT_END, false)
     };
 
-    private static final IElementType[] NOT_BEFORE = new IElementType[] {ObjJ_RETURN, ObjJ_CONTINUE, ObjJ_BREAK, ObjJ_VAR, ObjJ_FOR, ObjJ_WHILE, ObjJ_DO, ObjJ_IF, ObjJ_OPEN_BRACE, ObjJ_OPEN_BRACKET, ObjJ_OPEN_PAREN, ObjJ_AT_OPEN_BRACE, ObjJ_AT_OPENBRACKET};
+    private static final IElementType[] NOT_BEFORE = new IElementType[] {ObjJ_RETURN, ObjJ_CONTINUE, ObjJ_BREAK, ObjJ_VAR, ObjJ_FOR, ObjJ_WHILE, ObjJ_DO, ObjJ_IF, ObjJ_OPEN_BRACE, ObjJ_OPEN_BRACKET, ObjJ_OPEN_PAREN, ObjJ_AT_OPEN_BRACE, ObjJ_AT_OPENBRACKET, ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO};
     private static final IElementType[] NO_BRACE_BEFORE = new IElementType[] {ObjJ_VAR};
 
 

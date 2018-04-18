@@ -9,7 +9,6 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJKeywordsList;
-import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex;
@@ -20,6 +19,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDec
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.*;
+import org.cappuccino_project.ide.intellij.plugin.references.ObjJVariableReference;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.*;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJVariableAnnotatorSettings;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
@@ -171,7 +171,7 @@ public class ObjJVariableAnnotatorUtil {
         return ObjJVariableNameUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
                 isDeclaredInContainingMethodHeader(variableName) ||
                 isDeclaredInFunctionScope(variableName) ||
-                ObjJVariableNameResolveUtil.getVariableDeclarationElement(variableName, true) != null;
+                !ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty();
     }
 
     private static boolean isDeclaredInContainingMethodHeader(@NotNull ObjJVariableName variableName) {

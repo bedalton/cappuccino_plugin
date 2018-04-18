@@ -12,7 +12,7 @@
 	psiPackage="org.cappuccino_project.ide.intellij.plugin.psi"
 	psiImplPackage="org.cappuccino_project.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId")="org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName")="org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -73,6 +73,12 @@
 		BIT_XOR_ASSIGN =                   	'^='
 		BIT_OR_ASSIGN =                    	'|='
 		ARROW =                          	'=>'
+		DOUBLE_QUO =						'"'
+		AT_DOUBLE_QUOTE	=					"@\""
+		SINGLE_QUO = 						"'"
+		BLOCK_COMMENT_START =				"/*"
+		BLOCK_COMMENT_END =				 	"*/"
+
 
 		// At Statements
 		AT_IMPORT  = 						'@import'
@@ -164,8 +170,8 @@
 		ERROR_SEQUENCE_TOKEN				'?*__ERR_SEMICOLON__*?'
 
 		//Literals
-		SINGLE_QUOTE_STRING_LITERAL = 		"regexp:'([^'\\\r\n]|\\['\\bfnrtv])*'"
-		DOUBLE_QUOTE_STRING_LITERAL = 		'regexp:(@"|")([^"\\\r\n]|\\["\\bfnrtv])*"'
+		//SINGLE_QUOTE_STRING_LITERAL = 		"regexp:'([^'\\\r\n]|\\['\\bfnrtv])*'"
+		//DOUBLE_QUOTE_STRING_LITERAL = 		'regexp:(@"|")([^"\\\r\n]|\\["\\bfnrtv])*"'
 		BOOLEAN_LITERAL = 					'regexp:(true|false|YES|yes|NO|no)'
 
 		HEX_INTEGER_LITERAL =               'regexp:0 [xX] [0-9a-fA-F]+'
@@ -177,7 +183,7 @@
 		//REGULAR_EXPRESSION_LITERAL_TOKEN_LITERAL = 'regexp:^((?:(?:[^?+*{}()[\]\\|]+|\\.|\[(?:\^?\\.|\^[^\\]|[^\\^])(?:[^\]\\]+|\\.)*\]|\((?:\?[:=!]|\?<[=!]|\?>)?(?1)??\)|\(\?(?:R|[+-]?\d+)\))(?:(?:[?+*]|\{\d+(?:,\d*)?\})[?+]?)?|\|)*)$'
 
 		//Comments
-		BLOCK_COMMENT =             		'regexp:/\*([^*]|\*[^/])*\*/'
+		//BLOCK_COMMENT =             		'regexp:/\*([^*]|\*[^/])*\*/'
 		SINGLE_LINE_COMMENT =       		'regexp://[^\r\n\u2028\u2029]*'
 		ID = 								'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
 		PREPROCESSOR_CONTINUE_ON_NEXT_LINE = 	'regexp:\\[ ]*\r?\n'
@@ -234,9 +240,17 @@ errorSequence
 	;
 
 comment
-    ::= BLOCK_COMMENT
+    ::= blockComment
     |   SINGLE_LINE_COMMENT
     ;
+
+blockComment
+	::= BLOCK_COMMENT_START BLOCK_COMMENT_TEXT? BLOCK_COMMENT_END
+	{
+		pin=1
+	}
+	;
+
 
 importFile
 	::= '@import' stringLiteral
@@ -286,8 +300,7 @@ frameworkReference
 	;
 
 private bodyStatement
-	::= comment
-	|	preprocessorIfStatement
+	::= preprocessorIfStatement
     | 	returnStatement
     | 	ifStatement
     | 	iterationStatement
@@ -304,6 +317,7 @@ private bodyStatement
 	|	expr eos?
     |	bodyVariableAssignment eos?
 	|	block
+	| 	comment
 	| 	emptyStatement
 	{
 		implements = [
@@ -494,7 +508,7 @@ accessorProperty
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			]
 		methods=[
-			accessorKind="/variableName"
+			accessorKind="/accessorPropertyType"
 			accessor="/selector"
 			getVarType
 			getContainingClass
@@ -584,9 +598,7 @@ doWhileStatement
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[
-			conditionalExpression = "/whileStatement/conditionExpression/expr"
-		]
+		methods =[ getConditionalExpression]
 	}
 	;
 
@@ -828,7 +840,7 @@ methodHeader
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
-		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClassAsString getContainingClass getContainingClassName getMethodScope isStatic]
+		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic]
 
 		//recoverWhile=recover_methodHeaderSelectorList
 	}
@@ -932,7 +944,7 @@ categoryName
 	::= '(' className ')'
 	{
 		methods = [
-			categoryName="/className[0]"
+			categoryName="/className"
 		]
 	}
 	;
@@ -1043,7 +1055,7 @@ preprocessorUndef
 
 preprocessorPragma
 	::= preprocessorPragmaMark
-	|	'#pragma' (ID|DOUBLE_QUOTE_STRING_LITERAL)* LINE_TERMINATOR {
+	|	'#pragma' (ID|doubleQuoteStringLiteral)* LINE_TERMINATOR {
 		pin(".*")=1
 		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"]
 	}
@@ -1191,12 +1203,12 @@ private protocolStatement
 	;
 
 private implementationElement
-	::= comment
-	|	preprocessorIfStatement
+	::= preprocessorIfStatement
     | 	preprocessorStatement
     |	variableAssignmentSimple eos
 	| 	methodDeclaration
     | 	functionDeclaration
+    |	comment
     {
     	//recoverWhile=implementationElement_recover
     }
@@ -1308,7 +1320,7 @@ methodCall
 		]
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/methodCallSelectorList[0]"]
+		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector"]
 	}
 	;
 
@@ -1662,11 +1674,12 @@ arrayIndexSelector
 	;
 
 stringLiteral
-	::= DOUBLE_QUOTE_STRING_LITERAL | SINGLE_QUOTE_STRING_LITERAL
+	::= doubleQuoteStringLiteral | singleQuoteStringLiteral
 	{
 		methods=[getStringValue]
 	}
 	;
+
 
 private keyword
 	::= BREAK
@@ -1710,6 +1723,9 @@ variableName
 	::= ID
 	|	'this'
 	{
+
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
@@ -1730,7 +1746,23 @@ functionName
 		methods = [getName setName getReference]
 	}
 	;
+doubleQuoteStringLiteral
+	::= ("\""|"@\"") QUO_TEXT? "\""
+	{
+		pin=2
+	}
+	;
 
+singleQuoteStringLiteral
+	::= "'" QUO_TEXT? "'"
+	{
+		pin=2
+	}
+	;
+
+private recover_blockComment
+	::= '*/'
+	;
 
 private eos
 	::= <<lineTerminatorAhead>> ';'?

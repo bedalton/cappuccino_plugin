@@ -58,7 +58,7 @@ public class ObjJCallTargetUtil {
         ExpressionReturnTypeResults results = new ExpressionReturnTypeResults(callTarget.getProject());
         if (callTarget.getQualifiedReference() != null) {
             if (callTarget.getQualifiedReference().getVariableNameList().size() == 1) {
-                for (ObjJVariableName variableName : ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(callTarget.getQualifiedReference().getVariableNameList().get(0), callTarget.getQualifiedReference().getVariableNameList().size() - 1)) {
+                for (ObjJVariableName variableName : ObjJVariableNameUtil.getMatchingPrecedingVariableAssignmentNameElements(callTarget.getQualifiedReference().getVariableNameList().get(0), callTarget.getQualifiedReference().getVariableNameList().size() - 1)) {
                     ObjJVariableDeclaration declaration = variableName.getParentOfType(ObjJVariableDeclaration.class);
                     if (declaration == null) {
                         continue;

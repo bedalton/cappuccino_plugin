@@ -5,6 +5,7 @@ import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceService;
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry;
@@ -61,13 +62,18 @@ public class ObjJPsiImplUtil {
     }
 
     @NotNull
-    public static PsiElement setName(@NotNull ObjJPreprocessorDefineFunction defineFunction, @NotNull String name) {
-        return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name);
+    public static String getName(ObjJFunctionName functionName) {
+        return functionName.getText();
     }
 
     @NotNull
     public static String getName(ObjJMethodHeader methodHeader) {
         return ObjJMethodPsiUtils.getName(methodHeader);
+    }
+
+    @NotNull
+    public static String getName(ObjJInstanceVariableDeclaration variableDeclaration) {
+        return variableDeclaration.getVariableName() != null ? variableDeclaration.getVariableName().getText() : "";
     }
 
     @NotNull
@@ -82,7 +88,12 @@ public class ObjJPsiImplUtil {
 
     @NotNull
     public static TextRange getRangeInElement(@NotNull final ObjJVariableName variableName) {
-        return variableName.getTextRange();
+        return new TextRange(0, variableName.getTextLength());
+    }
+
+    @NotNull
+    public static PsiElement setName(@NotNull ObjJPreprocessorDefineFunction defineFunction, @NotNull String name) {
+        return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name);
     }
 
     @NotNull
@@ -105,10 +116,6 @@ public class ObjJPsiImplUtil {
         return ObjJVariablePsiUtil.setName(instanceVariableDeclaration, newName);
     }
 
-    @NotNull
-    public static String getName(ObjJFunctionName functionName) {
-        return functionName.getText();
-    }
 
     @NotNull
     public static ObjJFunctionName setName(ObjJFunctionName oldFunctionName, @NotNull String newFunctionName) {
@@ -244,6 +251,11 @@ public class ObjJPsiImplUtil {
     @NotNull
     public static String getSelectorString(ObjJMethodCall methodCall) {
         return ObjJMethodCallPsiUtil.getSelectorString(methodCall);
+    }
+
+    @NotNull
+    public static String getSelectorString(ObjJSelectorLiteral selectorLiteral) {
+        return ObjJMethodPsiUtils.getSelectorString(selectorLiteral);
     }
 
     @NotNull
@@ -618,8 +630,8 @@ public class ObjJPsiImplUtil {
     }
 
     @NotNull
-    public static List<String> getFunctionNames(ObjJFunctionLiteral functionLiteral) {
-        return ObjJFunctionDeclarationPsiUtil.getFunctionNames(functionLiteral);
+    public static List<String> getFunctionNamesAsString(ObjJFunctionLiteral functionLiteral) {
+        return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral);
     }
 
     @NotNull
@@ -867,6 +879,18 @@ public class ObjJPsiImplUtil {
     }
 
     // ============================== //
+    // ====== Iterator Elements ===== //
+    // ============================== //
+
+    @Nullable
+    public static ObjJExpr getConditionalExpression(@Nullable ObjJDoWhileStatement doWhileStatement) {
+        if (doWhileStatement == null || doWhileStatement.getConditionExpression() == null) {
+            return null;
+        }
+        return doWhileStatement.getConditionExpression().getExpr();
+    }
+
+    // ============================== //
     // =========== PARSER =========== //
     // ============================== //
 
@@ -968,8 +992,8 @@ public class ObjJPsiImplUtil {
 
     public static Icon getIcon(PsiElement element) {
         if (element instanceof ObjJClassName) {
-
             ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName)element).getParentOfType(ObjJClassDeclarationElement.class);
+          
             String className = element.getText();
             if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
                 return null;

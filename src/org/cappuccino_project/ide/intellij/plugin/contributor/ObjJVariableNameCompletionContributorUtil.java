@@ -8,12 +8,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getIndexInQualifiedNameParent;
-import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getPrecedingVariableNameElements;
+import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements;
 import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString;
 
 public class ObjJVariableNameCompletionContributorUtil {
@@ -30,7 +29,7 @@ public class ObjJVariableNameCompletionContributorUtil {
         final List<String> out = new ArrayList<>();
         final String variableNamePattern = getQualifiedNameAsString(variableName).replace(CARET_INDICATOR, "(.*)");
         final Pattern pattern = Pattern.compile(variableNamePattern);
-        List<ObjJVariableName> rawCompletionElements = getPrecedingVariableNameElements(variableName, qualifiedNameIndex);
+        List<ObjJVariableName> rawCompletionElements = getPrecedingVariableAssignmentNameElements(variableName, qualifiedNameIndex);
         for (ObjJVariableName currentVariableName : ArrayUtils.filter(rawCompletionElements, (var) -> {
             //LOGGER.log(Level.INFO, "Checking var: <"+var.getText()+"> for match");
             return pattern.matcher(getQualifiedNameAsString(var)).matches();

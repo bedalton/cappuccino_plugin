@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ObjJFileUtil {
 
@@ -45,13 +47,14 @@ public class ObjJFileUtil {
         if (psiFile == null) {
             return defaultValue;
         }
-        if (psiFile.getVirtualFile() == null) {
-            return defaultValue;
+        if (psiFile.getVirtualFile() != null) {
+            if (includePath) {
+                return psiFile.getVirtualFile().getPath();
+            }
+            return psiFile.getVirtualFile().getName();
         }
-        if (includePath) {
-            return psiFile.getVirtualFile().getPath();
-        }
-        return psiFile.getVirtualFile().getName();
+        String fileName = psiFile.getOriginalFile().getName();
+        return !fileName.isEmpty() ? fileName : defaultValue;
     }
 
 }

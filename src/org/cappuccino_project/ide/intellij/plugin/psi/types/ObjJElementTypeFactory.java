@@ -23,6 +23,7 @@ public interface ObjJElementTypeFactory {
             case "ObjJ_PROTOCOL_DECLARATION":return PROTOCOL;
             case "ObjJ_SELECTOR_LITERAL": return SELECTOR_LITERAL;
             case "ObjJ_VAR_TYPE_ID": return VAR_TYPE_ID;
+            case "ObjJ_VARIABLE_NAME": return VARIABLE_NAME;
             default:
                 throw new RuntimeException("Failed to find element type in factory for type <"+name+">");
         }
