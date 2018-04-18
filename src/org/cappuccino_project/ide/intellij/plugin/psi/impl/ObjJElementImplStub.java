@@ -71,20 +71,6 @@ public class ObjJElementImplStub<T extends StubElement<? extends PsiElement>> ex
         super.delete();
     }
 
-    @Override
-    public PsiReference getReference() {
-        PsiReference[] references = getReferences();
-        if (references.length == 1) return references[0];
-        else return null;
-    }
-
-    @NotNull
-    @Override
-    public PsiReference[] getReferences() {
-        return ReferenceProvidersRegistry.getReferencesFromProviders(this, PsiReferenceService.Hints.NO_HINTS);
-    }
-
-
     @NotNull
     protected <PsiT extends ObjJStubBasedElement<?>, StubT extends StubElement> List<PsiT> getStubOrPsiChildrenAsList(
             @NotNull
@@ -96,12 +82,6 @@ public class ObjJElementImplStub<T extends StubElement<? extends PsiElement>> ex
     @NotNull
     public ObjJCompositeElement getPsiOrParent() {
         return this;
-    }
-
-    @Override
-    public PsiElement getParent() {
-        PsiElement substitute = ObjJElementUtils.getParentSubstitute(this);
-        return substitute != null ? substitute : super.getParent();
     }
 
     @Override

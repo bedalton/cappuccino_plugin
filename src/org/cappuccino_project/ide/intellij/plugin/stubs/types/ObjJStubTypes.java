@@ -24,4 +24,5 @@ public class ObjJStubTypes {
     public static final ObjJProtocolStubType PROTOCOL = new ObjJProtocolStubType("ObjJ_PROTOCOL");
     public static final ObjJSelectorLiteralStubType SELECTOR_LITERAL = new ObjJSelectorLiteralStubType("ObjJ_SELETOR_LITERAL");
     public static final ObjJVarTypeIdStubType VAR_TYPE_ID = new ObjJVarTypeIdStubType("ObjJ_VAR_TYPE_ID");
+    public static final ObjJVariableNameStubType VARIABLE_NAME = new ObjJVariableNameStubType("ObjJ_VARIABLE_NAME");
 }

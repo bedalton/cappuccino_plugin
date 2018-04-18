@@ -67,7 +67,7 @@ public class ObjJVariableInsertHandler implements InsertHandler<LookupElement> {
     }
 
     public boolean isFunctionCompletion(PsiElement element) {
-        return !DumbService.isDumb(element.getProject()) && ObjJVariableNameUtil.getPrecedingVariableNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.getInstance().get(element.getText(), element.getProject()).isEmpty();
+        return !DumbService.isDumb(element.getProject()) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.getInstance().get(element.getText(), element.getProject()).isEmpty();
     }
 
 

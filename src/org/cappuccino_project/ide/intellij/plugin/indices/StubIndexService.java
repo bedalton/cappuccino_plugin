@@ -3,7 +3,11 @@ package org.cappuccino_project.ide.intellij.plugin.indices;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.IndexSink;
 
+import com.intellij.psi.stubs.StubIndexKey;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJBlockPsiUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.ObjJStubVersions;
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*;
@@ -89,6 +93,10 @@ public class StubIndexService {
     }
 
     public void indexVarTypeId(@NotNull ObjJVarTypeIdStub stub, IndexSink indexSink) {
+
+    }
+
+    public void indexVariableName(@NotNull ObjJVariableNameStub stub, @NotNull IndexSink indexSink) {
 
     }
 

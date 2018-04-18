@@ -136,12 +136,18 @@ public class ObjJSyntaxHighlighter extends SyntaxHighlighterBase {
         } else if (
                 tokenType.equals(ObjJTypes.ObjJ_IMPORT_FRAMEWORK_LITERAL) ||
                         tokenType.equals(ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL) ||
-                        tokenType.equals(ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL)
+                        tokenType.equals(ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL) ||
+                        tokenType.equals(ObjJTypes.ObjJ_SINGLE_QUO) ||
+                        tokenType.equals(ObjJTypes.ObjJ_DOUBLE_QUO) ||
+                        tokenType.equals(ObjJTypes.ObjJ_QUO_TEXT)
         ){
             attrKey = STRING;
         } else if (tokenType.equals(ObjJTypes.ObjJ_SINGLE_LINE_COMMENT)) {
             attrKey = LINE_COMMENT;
-        } else if (tokenType.equals(ObjJTypes.ObjJ_BLOCK_COMMENT)) {
+        } else if (tokenType.equals(ObjJTypes.ObjJ_BLOCK_COMMENT) ||
+                tokenType.equals(ObjJTypes.ObjJ_BLOCK_COMMENT_START) ||
+                tokenType.equals(ObjJTypes.ObjJ_BLOCK_COMMENT_END) ||
+                tokenType.equals(ObjJTypes.ObjJ_BLOCK_COMMENT_TEXT)) {
             attrKey = BLOCK_COMMENT;
         } else if (
                 tokenType.equals(ObjJTypes.ObjJ_PRAGMA_MARKER) ||

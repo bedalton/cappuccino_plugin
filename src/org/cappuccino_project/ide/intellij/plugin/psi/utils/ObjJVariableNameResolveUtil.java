@@ -40,7 +40,7 @@ public class ObjJVariableNameResolveUtil {
             return className;
         }
 
-        return ObjJVariableNameUtil.getSiblingVariableNameElement(variableNameElement, 0, (var) -> isPrecedingVar(variableNameElement, var));
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0, (var) -> isPrecedingVar(variableNameElement, var));
     }
 
 
@@ -93,7 +93,8 @@ public class ObjJVariableNameResolveUtil {
     }
 
 
-    private static boolean isPrecedingVar(ObjJVariableName baseVar, ObjJVariableName possibleFirstDeclaration) {
+    private static boolean isPrecedingVar(@NotNull ObjJVariableName baseVar, @NotNull ObjJVariableName possibleFirstDeclaration) {
+        LOGGER.log(Level.INFO, "BaseVar: "+baseVar.getText() + "@"+baseVar.getTextRange() +" VS. OtherVar: "+possibleFirstDeclaration.getText() + "@"+possibleFirstDeclaration.getTextRange().getStartOffset());
         return baseVar.getText().equals(possibleFirstDeclaration.getText()) && (baseVar.getContainingFile() != possibleFirstDeclaration.getContainingFile() || baseVar.getTextRange().getStartOffset() > possibleFirstDeclaration.getTextRange().getStartOffset());
     }
 
