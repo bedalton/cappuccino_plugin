@@ -57,7 +57,6 @@
     <applicationService serviceInterface="org.cappuccino_project.ide.intellij.plugin.indices.StubIndexService"
                         serviceImplementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJIndexService" />
     <stubElementTypeHolder class="org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJAccessorMethodIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex"/>
@@ -72,6 +71,7 @@
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassChildrenIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>

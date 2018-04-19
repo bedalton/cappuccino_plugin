@@ -38,7 +38,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
                     ObjJVariableName element) {
         super(element, TextRange.create(0, element.getTextLength()));
         fqName = getQualifiedNameAsString(element);
-        LOGGER.log(Level.INFO, "Creating reference resolver for var <"+element.getName()+"> in file: <"+ObjJFileUtil.getContainingFileName(element.getContainingFile())+">");
+        //LOGGER.log(Level.INFO, "Creating reference resolver for var <"+element.getName()+"> in file: <"+ObjJFileUtil.getContainingFileName(element.getContainingFile())+">");
     }
 
     private List<String> getAllInheritedClasses() {
@@ -158,7 +158,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
     @Nullable
     @Override
     public PsiElement resolve() {
-        LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
+        //LOGGER.log(Level.INFO, "Resolving var with name: <" + myElement.getText() + ">");
         PsiElement variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement, false);
         if (variableName == null) {
             variableName = getGlobalVariableNameElement();

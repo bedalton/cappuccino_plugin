@@ -43,6 +43,7 @@ public class ObjJVariableNameUtil {
             //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
             variableNameQualifiedString = variableName.getText();
         }
+
         boolean hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null;
         return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, (thisVariable) -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex));
     }
@@ -71,7 +72,7 @@ public class ObjJVariableNameUtil {
         if (!variableNameQualifiedString.equals(thisVariablesFqName)) {
             return false;
         }
-        LOGGER.log(Level.INFO, "Variable names match for variable: <"+variableNameQualifiedString+">; Is Offset <"+startOffset+" < "+variableToCheck.getTextRange().getStartOffset() + "? " + (variableToCheck.getTextRange().getStartOffset() < startOffset));
+        //LOGGER.log(Level.INFO, "Variable names match for variable: <"+variableNameQualifiedString+">; Is Offset <"+startOffset+" < "+variableToCheck.getTextRange().getStartOffset() + "? " + (variableToCheck.getTextRange().getStartOffset() < startOffset));
         if (variableToCheck.getContainingClass() == null) {
             if (hasContainingClass) {
                 return true;
@@ -157,12 +158,8 @@ public class ObjJVariableNameUtil {
      */
     public static List<ObjJVariableName> getSiblingVariableNameElements(PsiElement element, int qualifiedNameIndex) {
         List<ObjJVariableName> result = new ArrayList<>(getAllVariableNamesInContainingBlocks(element, qualifiedNameIndex));
-        int currentSize = result.size();
-        //LOGGER.log(Level.INFO, "Num from blocks: <"+currentSize+">");
-        if (qualifiedNameIndex <= 1) {
+        if (qualifiedNameIndex == 0) {
             result.addAll(getAllContainingClassInstanceVariables(element));
-            //LOGGER.log(Level.INFO, "Num VariableNames after class vars: <"+result.size()+">");
-            currentSize = result.size();
         }
 
         result.addAll(getAllAtGlobalFileVariables(element.getContainingFile()));
@@ -339,7 +336,7 @@ public class ObjJVariableNameUtil {
         final PsiFile containingFile = element.getContainingFile();
         final String fileName = ObjJFileUtil.getContainingFileName(containingFile);
         assert fileName != null;
-        LOGGER.log(Level.INFO, "Variable <"+element.getText()+"> is in block in file: <"+fileName+"> at offset: "+containingBlock.getTextRange().getStartOffset());
+        //LOGGER.log(Level.INFO, "Variable <"+element.getText()+"> is in block in file: <"+fileName+"> at offset: "+containingBlock.getTextRange().getStartOffset());
         return ObjJVariableNameByScopeIndex.getInstance().getInRange(fileName, containingBlock.getTextRange(), element.getProject());
     }
 

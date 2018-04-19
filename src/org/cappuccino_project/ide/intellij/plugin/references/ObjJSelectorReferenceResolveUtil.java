@@ -144,10 +144,10 @@ public class ObjJSelectorReferenceResolveUtil {
         if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
             String pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)")+"(.*)";
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPattern(pattern, project);
-            //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+pattern+">. Found <"+methodHeaders.size()+"> methods");
+            LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+pattern+">. Found <"+methodHeaders.size()+"> methods");
         } else {
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPattern(selector, null, project);
-            //LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
+            LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         }
         //List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodFragmentIndex.getInstance().get(selectorFragment, element.getProject());
         if (!methodHeaders.isEmpty()) {
@@ -194,7 +194,7 @@ public class ObjJSelectorReferenceResolveUtil {
     }
 
     private static void put(Map<String, List<ObjJSelector>> map, String key, ObjJSelector declaration) {
-        if (!map.containsKey(key)) {
+        if (true || !map.containsKey(key)) {
             map.put(key, new ArrayList<>());
         }
         map.get(key).add(declaration);

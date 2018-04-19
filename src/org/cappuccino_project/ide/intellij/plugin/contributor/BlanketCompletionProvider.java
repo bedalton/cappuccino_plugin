@@ -46,7 +46,7 @@ public class BlanketCompletionProvider  extends CompletionProvider<CompletionPar
                     CompletionParameters parameters, ProcessingContext context,
             @NotNull
                     CompletionResultSet resultSet) {
-        //LOGGER.log(Level.INFO, "Trying to get completion parameters.");
+        LOGGER.log(Level.INFO, "Trying to get completion parameters.");
         PsiElement element = parameters.getPosition();
         PsiElement parent = element.getParent();
         /*LOGGER.log(Level.INFO,
@@ -72,8 +72,9 @@ public class BlanketCompletionProvider  extends CompletionProvider<CompletionPar
             appendFunctionCompletions(resultSet, element);
             results.addAll(getKeywordCompletions(variableName));
             results.addAll(getInClassKeywords(variableName));
+            results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"));
         } else if (PsiTreeUtil.getParentOfType(element, ObjJMethodCall.class) != null) {
-            //LOGGER.log(Level.INFO, "Searching for selector completions.");
+            LOGGER.log(Level.INFO, "Searching for selector completions.");
             ObjJMethodCallCompletionContributorUtil.addSelectorLookupElementsFromSelectorList(resultSet, element);
             return;
         } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList.class) != null) {

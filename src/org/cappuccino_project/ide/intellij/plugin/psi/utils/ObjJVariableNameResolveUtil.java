@@ -51,7 +51,7 @@ public class ObjJVariableNameResolveUtil {
         if (className.equals("self")) {
             //LOGGER.log(Level.INFO, "Var name matches 'self'.");
             if (containingClass != null) {
-                LOGGER.log(Level.INFO, "Var name 'self' resolves to <" + variableNameElement.getText() + ">");
+                //LOGGER.log(Level.INFO, "Var name 'self' resolves to <" + variableNameElement.getText() + ">");
                 return containingClass.getClassName();
             }
         }
@@ -94,7 +94,7 @@ public class ObjJVariableNameResolveUtil {
 
 
     private static boolean isPrecedingVar(@NotNull ObjJVariableName baseVar, @NotNull ObjJVariableName possibleFirstDeclaration) {
-        LOGGER.log(Level.INFO, "BaseVar: "+baseVar.getText() + "@"+baseVar.getTextRange() +" VS. OtherVar: "+possibleFirstDeclaration.getText() + "@"+possibleFirstDeclaration.getTextRange().getStartOffset());
+        //LOGGER.log(Level.INFO, "BaseVar: "+baseVar.getText() + "@"+baseVar.getTextRange() +" VS. OtherVar: "+possibleFirstDeclaration.getText() + "@"+possibleFirstDeclaration.getTextRange().getStartOffset());
         return baseVar.getText().equals(possibleFirstDeclaration.getText()) && (baseVar.getContainingFile() != possibleFirstDeclaration.getContainingFile() || baseVar.getTextRange().getStartOffset() > possibleFirstDeclaration.getTextRange().getStartOffset());
     }
 
