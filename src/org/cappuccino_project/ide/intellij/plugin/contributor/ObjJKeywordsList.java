@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ObjJKeywordsList {
 
-    public static final List<String> keywords = Arrays.asList("break","do","case", "else", "new", "var", "catch", "finally", "return", "void","for", "continue", "switch", "while", "debugger", "function", "if", "throw", "delete", "var", "objj_msgSend");
+    public static final List<String> keywords = Arrays.asList("break","do","case", "else", "new", "var", "catch", "finally", "return", "void","for", "continue", "switch", "while", "debugger", "function", "if", "throw", "delete", "var", "objj_msgSend", "YES", "yes", "NO", "no");
 
     @NotNull
     public static List<String> search(@NotNull String queryString) {

@@ -6,7 +6,9 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.indices.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.*;
@@ -62,29 +64,46 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
     @NotNull
     @Override
     public Object[] getVariants() {
-        //LOGGER.log(Level.INFO, "GetVariants");
+        if (true || DumbService.isDumb(myElement.getProject())) {
+            return new Object[0];
+        }
+        LOGGER.log(Level.INFO, "GetVariants");
         String selectorUpToSelf = ObjJPsiImplUtil.getSelectorUntil(myElement, false);
-        if (true || selectorUpToSelf == null) {
+        if (selectorUpToSelf == null) {
             return new Object[0];
         }
-        if (DumbService.isDumb(myElement.getProject())) {
-            return new Object[0];
-        }
-        Collection<ObjJMethodHeaderDeclaration> headers = ObjJUnifiedMethodIndex.getInstance().get(selectorUpToSelf, myElement.getProject());
-        ObjJMethodHeaderDeclaration parent = ObjJTreeUtil.getParentOfType(myElement, ObjJMethodHeaderDeclaration.class);
-        int selectorIndex = parent != null ? parent.getSelectorList().indexOf(myElement) : -1;
-        if (selectorIndex < 0) {
-            selectorIndex = 0;
-        }
-        List<ObjJSelector> results = new ArrayList<>();
-        for (ObjJMethodHeaderDeclaration header : headers) {
-            ProgressIndicatorProvider.checkCanceled();
-            final List<ObjJSelector> selectors = header.getSelectorList();
-            if (selectors.isEmpty()) {
-                continue;
+        List<ObjJMethodHeaderDeclaration> headers = ObjJMethodFragmentIndex.getInstance().get(selectorUpToSelf, myElement.getProject());
+        List<Object> results = new ArrayList<>();
+        ObjJHasMethodSelector parent = myElement.getParentOfType(ObjJHasMethodSelector.class);
+        int selectorIndex = parent != null ? parent.getSelectorList().indexOf(myElement) : 0;
+        ObjJMethodHeader parentHeader = ObjJTreeUtil.getParentOfType(myElement, ObjJMethodHeader.class);
+        if (parentHeader != null) {
+            ObjJClassDeclarationElement classDeclarationElement = myElement.getContainingClass();
+            if (classDeclarationElement == null || classDeclarationElement.getInheritedProtocolList() == null) {
+                return new Object[0];
             }
-            if (selectors.size() > selectorIndex) {
-                results.add(header.getSelectorList().get(selectorIndex));
+            for (ObjJClassName className : classDeclarationElement.getInheritedProtocolList().getClassNameList()) {
+                for (ObjJMethodHeader header : ObjJClassMethodIndex.getInstance().get(className.getText(), className.getProject())) {
+                    if (!(header.getContainingClass() instanceof ObjJProtocolDeclaration)) {
+                        continue;
+                    }
+                    if (header.getSelectorString().startsWith(selectorUpToSelf)) {
+                        continue;
+                    }
+                    results.add(header.getSelectorStrings().get(selectorIndex));
+                }
+            }
+        }
+        if (selectorIndex == 0) {
+            results.addAll(ObjJInstanceVariablesByNameIndex.getInstance().getAll(myElement.getProject()));
+        }
+        while (headers.size() > 0) {
+            for (ObjJMethodHeaderDeclaration header : headers) {
+                ProgressIndicatorProvider.checkCanceled();
+                final List<ObjJSelector> selectors = header.getSelectorList();
+                if (selectors.size() > selectorIndex) {
+                    results.add(header.getSelectorList().get(selectorIndex));
+                }
             }
         }
         return results.toArray();

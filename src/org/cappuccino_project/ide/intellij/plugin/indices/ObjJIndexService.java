@@ -4,8 +4,10 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.psi.stubs.IndexSink;
 
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*;
@@ -53,6 +55,12 @@ public class ObjJIndexService extends StubIndexService {
             LOGGER.log(Level.INFO,"Indexed Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to index selector with error: "+e.getLocalizedMessage());
+        }
+
+        StringBuilder selectorBuilder = new StringBuilder();
+        for (String subSelector : methodHeaderStub.getSelectorStrings()) {
+            selectorBuilder.append(subSelector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
+            indexSink.occurrence(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString());
         }
 
         final String className = methodHeaderStub.getContainingClassName();
@@ -147,6 +155,11 @@ public class ObjJIndexService extends StubIndexService {
     public void indexSelectorLiteral(@NotNull
                                               ObjJSelectorLiteralStub selectorLiteral, @NotNull IndexSink indexSink) {
         indexSink.occurrence(ObjJSelectorInferredMethodIndex.getInstance().getKey(), selectorLiteral.getSelectorString());
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String selector : selectorLiteral.getSelectorStrings()) {
+            stringBuilder.append(selector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
+            indexSink.occurrence(ObjJMethodFragmentIndex.KEY, stringBuilder.toString());
+        }
     }
 
     @Override

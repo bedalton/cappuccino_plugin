@@ -91,14 +91,21 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
         }
         List<String> matchingKeys = new ArrayList<>();
         List<String> notMatchingKeys = new ArrayList<>();
-        Pattern pattern = Pattern.compile(Pattern.quote(patternString));
+        Pattern pattern;
+        try {
+            pattern = Pattern.compile(patternString);
+        } catch (Exception e) {
+            pattern = Pattern.compile(Pattern.quote(patternString));
+        }
         for (String key : getAllKeys(project)) {
             if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {
                 continue;
             }
-            if (pattern.matcher(key).matches()){
+            if (pattern.matcher(key).matches()) {
+                //LOGGER.log(Level.INFO, "Found Matching key for pattern: <"+patternString+">: <"+key+">");
                 matchingKeys.add(key);
             } else {
+                //LOGGER.log(Level.INFO, "Key <"+key+"> does not match pattern: <"+patternString+">");
                 notMatchingKeys.add(key);
             }
         }

@@ -18,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName;
 
@@ -53,7 +55,11 @@ public class ObjJSelectorLookupUtil {
         StringBuilder stringBuilder = new StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
         String paramType = getSelectorVariableType(selector);
         if (paramType != null) {
-            stringBuilder.append("(").append(paramType).append(").. ");
+            stringBuilder.append("(").append(paramType).append(") ");
+            String variableName = getSelectorVariableName(selector);
+            if (variableName != null) {
+                stringBuilder.append(variableName);
+            }
         }
         if (!trailingSelectors.isEmpty()) {
             stringBuilder.append(ArrayUtils.join(trailingSelectors, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true));
@@ -73,6 +79,20 @@ public class ObjJSelectorLookupUtil {
         }
         ObjJInstanceVariableDeclaration instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJInstanceVariableDeclaration.class);
         return instanceVariableDeclaration != null ?  instanceVariableDeclaration.getFormalVariableType().getText() : null;
+    }
+
+    @Contract("null -> null")
+    @Nullable
+    private static String getSelectorVariableName(@Nullable ObjJSelector selector) {
+        if (selector == null) {
+            return null;
+        }
+        ObjJMethodDeclarationSelector declarationSelector = ObjJTreeUtil.getParentOfType(selector, ObjJMethodDeclarationSelector.class);
+        if (declarationSelector != null) {
+            return declarationSelector.getVariableName() != null ? declarationSelector.getVariableName().getText() : null;
+        }
+        ObjJInstanceVariableDeclaration instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJInstanceVariableDeclaration.class);
+        return instanceVariableDeclaration != null && instanceVariableDeclaration.getVariableName() != null ?  instanceVariableDeclaration.getVariableName().getText() : null;
     }
 
     /**
@@ -124,6 +144,7 @@ public class ObjJSelectorLookupUtil {
         if (useInsertHandler) {
             elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler.getInstance());
         }
+        Logger.getLogger("ObjJSelectorLookupUtil").log(Level.SEVERE, "Creating selector lookup element for <"+suggestedText+">");
         return elementBuilder;
     }
 

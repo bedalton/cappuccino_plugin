@@ -147,7 +147,7 @@ public class ObjJVariableAnnotatorUtil {
             return true;
         }
         List<ObjJVariableName> precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0);
-        return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.getInstance().get(variableName.getText(), variableName.getProject()).isEmpty();
+        return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.getInstance().get(variableName.getText(), variableName.getProject()).isEmpty() || new ObjJVariableReference(variableName).resolve() != null;
     }
 
     private static void annotateStaticVariableNameReference(@NotNull ObjJVariableName variableName, @NotNull AnnotationHolder annotationHolder) {
