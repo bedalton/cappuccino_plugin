@@ -17,6 +17,9 @@ import org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.Obj
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ObjJPlistParserDefinition implements ParserDefinition {
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
     public static final TokenSet COMMENTS = TokenSet.create(ObjJPlistTypes.ObjJPlist_COMMENT);
@@ -62,6 +65,6 @@ public class ObjJPlistParserDefinition implements ParserDefinition {
 
     @NotNull
     public PsiElement createElement(ASTNode node) {
-        return ObjJTypes.Factory.createElement(node);
+        return ObjJPlistTypes.Factory.createElement(node);
     }
 }

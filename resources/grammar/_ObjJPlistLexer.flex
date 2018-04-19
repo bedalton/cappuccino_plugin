@@ -3,6 +3,9 @@ package org.cappuccino_project.ide.intellij.plugin.extensions.plist.lexer;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes.*;
@@ -10,9 +13,17 @@ import static org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.ty
 %%
 
 %{
-  public _ObjJPlistLexer() {
-    this((java.io.Reader)null);
-  }
+	private int stateBeforeComment;
+	private static final Logger LOGGER = Logger.getLogger("_PLIST_LEXER");
+	public _ObjJPlistLexer() {
+		this((java.io.Reader)null);
+		log("Creating Plist lexer");
+	}
+
+	private static void log(String message) {
+		LOGGER.log(Level.INFO, message);
+	}
+
 %}
 
 %public
@@ -34,13 +45,16 @@ XML_TAG_PROPERTY_KEY = [_a-zA-Z\-][_a-zA-Z0-9\-]*
 %%
 
 
+<IN_DATA, IN_STRING, YYINITIAL> {
+  "<!--"							 { stateBeforeComment = yystate(); yybegin(COMMENT); }
+}
 <IN_STRING> {
-	.+/"</string>" 					{ return ObjJPlist_STRING_TAG_LITERAL; }
+	("."|.)+/"</string>" 					{ return ObjJPlist_STRING_TAG_LITERAL; }
 	"</string>"						{ yybegin(YYINITIAL); return ObjJPlist_STRING_CLOSE; }
 }
 <IN_DATA> {
 	"</data>"						{ yybegin(YYINITIAL); return ObjJPlist_DATA_CLOSE; }
-	.+/"</data>" 					{ return ObjJPlist_DATA_LITERAL; }
+	("."|.)+/"</data>" 					{ return ObjJPlist_DATA_LITERAL; }
 }
 
 <IN_TAG> {
@@ -51,17 +65,16 @@ XML_TAG_PROPERTY_KEY = [_a-zA-Z\-][_a-zA-Z0-9\-]*
   {XML_TAG_PROPERTY_KEY}			 { return ObjJPlist_XML_TAG_PROPERTY_KEY; }
   {SINGLE_QUOTE_STRING_LITERAL}      { return ObjJPlist_SINGLE_QUOTE_STRING_LITERAL; }
   {DOUBLE_QUOTE_STRING_LITERAL}      { return ObjJPlist_DOUBLE_QUOTE_STRING_LITERAL; }
+
 }
 
 <COMMENT> {
 	(.|\s)+/"-->" 					 { }
-	"-->"							 { yybegin(YYINITIAL); return ObjJPlist_COMMENT; }
+	"-->"							 { yybegin(stateBeforeComment >= 0 ? stateBeforeComment : YYINITIAL); stateBeforeComment = -1; return ObjJPlist_COMMENT; }
 }
 
 
 <YYINITIAL> {
-  "<!--"							 { yybegin(COMMENT); }
-
   "<string>"                         { yybegin(IN_STRING); return ObjJPlist_STRING_OPEN; }
   "</string>"                        { return ObjJPlist_STRING_CLOSE; }
   "<real>"                           { return ObjJPlist_REAL_OPEN; }
