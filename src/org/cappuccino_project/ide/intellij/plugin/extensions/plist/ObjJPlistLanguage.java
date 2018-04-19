@@ -6,6 +6,6 @@ public class ObjJPlistLanguage extends Language {
     public static final ObjJPlistLanguage INSTANCE = new ObjJPlistLanguage();
 
     private ObjJPlistLanguage() {
-        super("Plist");
+        super("ObjJPlist");
     }
 }

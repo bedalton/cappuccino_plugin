@@ -12,7 +12,7 @@
 	psiPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi"
 	psiImplPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.impl"
 	generateTokenAccessors=true
-	
+
 	//Tokens
 	tokens = [
 		//Line Terminator
@@ -52,26 +52,26 @@
 		XML =								'xml'
 		VERSION =							'version'
 
-
+/*
 		SINGLE_QUOTE_STRING_LITERAL = 		"regexp:'([^'\\\r\n]|\\['\\bfnrtv])*'"
 		DOUBLE_QUOTE_STRING_LITERAL = 		'regexp:(@"|")([^"\\\r\n]|\\["\\bfnrtv])*"'
 
 		//Literals
 		DECIMAL_LITERAL = 					'regexp:[0-9]*\.[0-9]+([eE] [+-]? [0-9]+)?'
 		INTEGER_LITERAL = 					'regexp:[0-9]+'
-		DATA_LITERAL = 						'regexp=.+?(!</data>)'
+		DATA_LITERAL = 						'regexp=.+?(?=</data>)'
 		STRING_TAG_LITERAL = 				'regexp=.+(!</string>)'
 		ID = 								'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
 		XML_TAG_PROPERTY_KEY =				'regexp:[_a-zA-Z-][_a-zA-Z0-9\-]*'
 		COMMENT = 							'regexp:<\!--.*-->'
+		*/
 	]
 	name("stringValue|INTEGER|DECIMAL_LITERAL|DATA_LITERAL|STRING_TAG_LITERAL")="value"
-	name("XML_TAG_PROPERTY_KEY")="tag property"
-	name("COMMENT")=null
+	name("xmlTagProperty")="tag property"
 }
 
 plistFile
-	::= COMMENT* xmlHeader? COMMENT* docType? COMMENT* plist? COMMENT* <<eof>>
+	::= COMMENT* xmlHeader? COMMENT* docType? COMMENT* plist? COMMENT* <<eof>>?
 	;
 
 plist
@@ -302,7 +302,7 @@ private recover_array
 	);
 
 private arrayValueList
-	::= value
+	::= value+
 	{
 		recoverWhile=arrayValueList_recover
 	}
@@ -346,4 +346,3 @@ stringLiteral
 stringValue
 	::= STRING_TAG_LITERAL
 	;
-	

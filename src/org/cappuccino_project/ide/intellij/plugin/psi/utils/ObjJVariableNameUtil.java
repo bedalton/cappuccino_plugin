@@ -259,11 +259,11 @@ public class ObjJVariableNameUtil {
         if (block != null) {
             return getSiblingVariableAssignmentNameElement(block, qualifiedNameIndex, filter);
         }
-        return null;
+        return getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter);
     }
-    
+
     @Nullable
-    private static ObjJVariableName getVariableNameDeclarationInContainingBlocks(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
+    private static ObjJVariableName getVariableNameDeclarationInContainingBlocksFuzzy(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         ObjJBlock block = ObjJTreeUtil.getTopmostParentOfType(element, ObjJBlock.class);
         if (block == null) {
             return null;
@@ -283,7 +283,6 @@ public class ObjJVariableNameUtil {
         });
     }
 
-    /*
     @Nullable
     private static ObjJVariableName getVariableNameDeclarationInContainingBlocks(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         ObjJBlock block = element instanceof ObjJBlock ? ((ObjJBlock)element) : PsiTreeUtil.getParentOfType(element, ObjJBlock.class);
@@ -299,7 +298,6 @@ public class ObjJVariableNameUtil {
         }
         return null;
     }
-    */
 
     public static ObjJVariableName getFirstMatchOrNull(List<ObjJVariableName> variableNameElements, Filter<ObjJVariableName> filter) {
         for (ObjJVariableName variableName : variableNameElements) {

@@ -6,6 +6,7 @@ import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
 
 public class ObjJPlistFile extends PsiFileBase {
+
     public ObjJPlistFile(
             @NotNull
                     FileViewProvider viewProvider) {
@@ -17,6 +18,7 @@ public class ObjJPlistFile extends PsiFileBase {
     public FileType getFileType() {
         return ObjJPlistFileType.INSTANCE;
     }
+
 
     @Override
     @NotNull
