@@ -700,7 +700,7 @@ private withStatement
 	}
 	;
 
-private switchStatement
+switchStatement
 	::= 'switch' '(' expr ')' '{' switchBody '}'
 	{
 		pin=1
@@ -1027,7 +1027,7 @@ preprocessorDefineFunction
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType]
+		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType getBlock]
 	}
 	;
 
@@ -1114,6 +1114,7 @@ preprocessorIfStatement
 	{
 		pin=1
 		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock"]
+		methods=[getOpenBrace];
 	}
 	;
 

@@ -24,7 +24,7 @@ public class ObjJFindUsagesProvider implements FindUsagesProvider {
                 new ObjJLexer(),
                 TokenSet.create(ObjJTypes.ObjJ_SELECTOR, ObjJTypes.ObjJ_VARIABLE_NAME, ObjJTypes.ObjJ_CLASS_NAME, ObjJTypes.ObjJ_FUNCTION_NAME),
                 TokenSet.create(ObjJTypes.ObjJ_SINGLE_LINE_COMMENT, ObjJTypes.ObjJ_BLOCK_COMMENT),
-                TokenSet.create(ObjJTypes.ObjJ_INTEGER, ObjJTypes.ObjJ_STRING_LITERAL)
+                TokenSet.create(ObjJTypes.ObjJ_INTEGER, ObjJTypes.ObjJ_STRING_LITERAL, ObjJTypes.ObjJ_DECIMAL_LITERAL, ObjJTypes.ObjJ_BOOLEAN_LITERAL)
         );
     }
 
@@ -52,7 +52,7 @@ public class ObjJFindUsagesProvider implements FindUsagesProvider {
             @NotNull
                     PsiElement psiElement) {
         if (psiElement instanceof ObjJSelector) {
-            return "Method Selector";
+            return "method Selector";
         } else if (psiElement instanceof ObjJVariableName) {
             return "variable";
         } else if (psiElement instanceof ObjJClassName) {

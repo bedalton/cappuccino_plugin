@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.stubs;
 
 public class ObjJStubVersions {
-    public static final int SOURCE_STUB_VERSION = 5;
+    private static final int MINOR_VERSION = 0;
+    public static final int SOURCE_STUB_VERSION = 1 + MINOR_VERSION;
 }

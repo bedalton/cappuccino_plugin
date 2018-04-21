@@ -34,13 +34,13 @@ import java.util.logging.Logger;
  * A class used to annotate variable references
  */
 @SuppressWarnings("Duplicates")
-public class ObjJVariableAnnotatorUtil {
+class ObjJVariableAnnotatorUtil {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJVariableAnnotatorUtil.class.getName());
     private static final String OVERSHADOWS_VARIABLE_STRING_FORMAT = "Variable overshadows existing variable in %s";
     private static final String OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT = "Variable overshadows function with name %s";
     private static final String OVERSHADOWS_METHOD_HEADER_VARIABLE = "Variable overshadows method variable";
-    private static final List<String> STATIC_VAR_NAMES = Arrays.asList("self", "super", "this", "Array", "ObjectiveJ", "arguments", "document", "window");
+    private static final List<String> STATIC_VAR_NAMES = Arrays.asList("this", "Array", "ObjectiveJ", "arguments", "document", "window");
     //private static final HashMap<PsiFile, List<Integer>> checked = new HashMap<>();
 
     /**
@@ -48,7 +48,11 @@ public class ObjJVariableAnnotatorUtil {
      * @param variableName variable name element
      * @param annotationHolder annotation holder
      */
-    public static void annotateVariable(@Nullable final ObjJVariableName variableName, @NotNull final AnnotationHolder annotationHolder) {
+    static void annotateVariable(
+            @Nullable
+            final ObjJVariableName variableName,
+            @NotNull
+            final AnnotationHolder annotationHolder) {
         if (variableName == null || variableName.getText().isEmpty()) {
             LOGGER.log(Level.INFO, "Var Name Is Null for annotator.");
             return;
@@ -115,6 +119,7 @@ public class ObjJVariableAnnotatorUtil {
             return;
         }
 
+
         PsiElement tempElement = ObjJTreeUtil.getNextNonEmptySibling(variableName, true);
         if (tempElement != null && tempElement.getText().equals(".")) {
             tempElement = ObjJTreeUtil.getNextNonEmptySibling(tempElement, true);
@@ -137,6 +142,13 @@ public class ObjJVariableAnnotatorUtil {
             //annotationHolder.createWeakWarningAnnotation(variableName,"Variable may reference javascript class");
             return;
         }
+
+        if (variableName.hasText("self") || variableName.hasText("super")) {
+            if (ObjJMethodCallPsiUtil.isUniversalMethodCaller(variableName.getContainingClassName())) {
+                annotationHolder.createErrorAnnotation(variableName, variableName.getText()+ " used outside of class");
+            }
+            return;
+        }
         //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
         annotationHolder.createWarningAnnotation(variableName.getTextRange(), "Variable may not have been declared before use");
 
@@ -153,15 +165,9 @@ public class ObjJVariableAnnotatorUtil {
     private static void annotateStaticVariableNameReference(@NotNull ObjJVariableName variableName, @NotNull AnnotationHolder annotationHolder) {
         String variableNameString = variableName.getText();
         switch (variableNameString) {
-            case "super":
-            case "self":
-                if (ObjJMethodCallPsiUtil.isUniversalMethodCaller(variableName.getContainingClassName())) {
-                    //annotationHolder.createErrorAnnotation(variableName, "Cannot use class referencing variable, outside a class declaration");
-                }
-                break;
             case "this":
                 if (ObjJTreeUtil.getParentOfType(variableName, ObjJBlock.class) == null) {
-                    annotationHolder.createWarningAnnotation(variableName, "Possible misuse of 'this' outside of object scope");
+                    annotationHolder.createWarningAnnotation(variableName, "Possible misuse of 'this' outside of block");
                 }
                 break;
         }
@@ -271,6 +277,21 @@ public class ObjJVariableAnnotatorUtil {
     private static void annotateIfVariableOvershadows(@NotNull final ObjJVariableName variableName, @NotNull AnnotationHolder annotationHolder) {
         if (variableName.getText().isEmpty() || !isItselfAVariableDeclaration(variableName)) {
             return;
+        }
+        ObjJInstanceVariableList variableList = ObjJTreeUtil.getParentOfType(variableName, ObjJInstanceVariableList.class);
+        if (variableList != null) {
+            ObjJInstanceVariableDeclaration thisInstanceVariable = variableName.getParentOfType(ObjJInstanceVariableDeclaration.class);
+            int startOffset = thisInstanceVariable != null ? thisInstanceVariable.getTextRange().getStartOffset() : 0;
+            String variableNameString = variableName.getText();
+            for (ObjJInstanceVariableDeclaration instanceVariableDeclaration : variableList.getInstanceVariableDeclarationList()) {
+                if (instanceVariableDeclaration.getVariableName() == null) {
+                    continue;
+                }
+                if (instanceVariableDeclaration.getVariableName().hasText(variableNameString) && instanceVariableDeclaration.getTextRange().getStartOffset() < startOffset) {
+                    annotationHolder.createErrorAnnotation(variableName, "Variable with name already declared.");
+                    return;
+                }
+            }
         }
         if (isBodyVariableAssignment(variableName)) {
             annotateIfOvershadowsBlocks(variableName, annotationHolder);

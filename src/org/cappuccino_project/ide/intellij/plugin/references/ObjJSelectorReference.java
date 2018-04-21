@@ -1,25 +1,22 @@
 package org.cappuccino_project.ide.intellij.plugin.references;
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider;
-import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
-import org.cappuccino_project.ide.intellij.plugin.indices.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.*;
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult;
+import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,14 +25,15 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
     private static final Logger LOGGER = Logger.getLogger(ObjJSelectorReference.class.getName());
 
     private final ObjJMethodHeaderDeclaration methodHeaderParent;
-    private final ObjJMethodCall methodCallParent;
     private List<String> classConstraints;
     private final String fullSelector;
+    private final Pair<String, String> accessorMethods;
 
     public ObjJSelectorReference(ObjJSelector element) {
         super(element, TextRange.create(0, element.getTextLength()));
-        methodHeaderParent = ObjJTreeUtil.getParentOfType(element, ObjJMethodHeaderDeclaration.class);
-        methodCallParent = ObjJTreeUtil.getParentOfType(element, ObjJMethodCall.class);
+        accessorMethods = getAccessorMethods();
+        methodHeaderParent = accessorMethods == null ? ObjJTreeUtil.getParentOfType(element, ObjJMethodHeaderDeclaration.class) : null;
+        ObjJMethodCall methodCallParent = ObjJTreeUtil.getParentOfType(element, ObjJMethodCall.class);
         fullSelector = methodHeaderParent != null ? methodHeaderParent.getSelectorString() : methodCallParent != null ? methodCallParent.getSelectorString() : null;
         classConstraints = getClassConstraints();
         //LOGGER.log(Level.INFO, "Creating selector resolver for selector <"+fullSelector+">;");
@@ -48,23 +46,24 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         }
         ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(myElement, ObjJMethodCall.class);
         if (methodCall == null) {
-         //   LOGGER.log(Level.INFO, "Selector is not in method call.");
+            //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return null;
         }
 
         classConstraints = ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget());
-        if (!classConstraints.isEmpty()) {
-            LOGGER.log(Level.INFO, "Call target: <"+methodCallParent.getCallTarget().getText()+"> is possibly of type: ["+ ArrayUtils.join(classConstraints)+"]");
-        } else {
-         //   LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCallParent.getCallTarget().getText()+">.");
-        }
         return classConstraints;
     }
 
     @NotNull
     @Override
     public Object[] getVariants() {
-        if (true || DumbService.isDumb(myElement.getProject())) {
+        return new Object[0];
+    }
+    /*
+    @NotNull
+    @Override
+    public Object[] getVariants() {
+        if (DumbService.isDumb(myElement.getProject())) {
             return new Object[0];
         }
         LOGGER.log(Level.INFO, "GetVariants");
@@ -108,34 +107,26 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         }
         return results.toArray();
     }
-
-    /*
-        @Nullable
-        @Override
-        public PsiElement resolve() {
-         //   LOGGER.log(Level.INFO, "Resolving Selector");
-            ResolveResult[] result = multiResolve(false);
-            return result.length > 0 ? result[0].getElement() : null;
-        }
-    */
+*/
     @Override
     public boolean isReferenceTo(
             @NotNull
                     PsiElement elementToCheck) {
-        //LOGGER.log(Level.INFO, "Checking if selector is reference to.");
+        LOGGER.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
         if (!(elementToCheck instanceof ObjJSelector)) {
             return false;
         }
-        if (methodHeaderParent != null) {
-            ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodCall.class);
-            if (methodCall != null) {
-                String callTargets = methodCall.getCallTargetText();
-            }
-            return methodCall != null && methodCall.getSelectorString().equals(fullSelector);
-        }
         ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodCall.class);
+        final String methodCallString = methodCall != null ? methodCall.getSelectorString() : null;
+        if (methodHeaderParent != null) {
+            return Objects.equals(methodCallString, fullSelector);
+        } else if (accessorMethods != null) {
+            LOGGER.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
+            return Objects.equals(accessorMethods.getFirst(), methodCallString) ||
+                    Objects.equals(accessorMethods.getSecond(), methodCallString);
+        }
         if (methodCall != null) {
-            return methodCall.getSelectorString().equals(fullSelector);
+            return Objects.equals(methodCallString, fullSelector);
         }
         ObjJMethodHeaderDeclaration declaration = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodHeaderDeclaration.class);
         return declaration != null && declaration.getSelectorString().equals(fullSelector);
@@ -179,6 +170,22 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         return PsiElementResolveResult.EMPTY_ARRAY;
     }
 
+    @Nullable
+    private Pair<String,String> getAccessorMethods() {
+        ObjJAccessorProperty accessorProperty = myElement.getParentOfType(ObjJAccessorProperty.class);
+        if (accessorProperty != null) {
+            return new Pair<>(accessorProperty.getGetter(), accessorProperty.getSetter());
+        }
+        ObjJInstanceVariableDeclaration instanceVariableDeclaration = myElement.getParentOfType(ObjJInstanceVariableDeclaration.class);
+        if (instanceVariableDeclaration != null) {
+            ObjJMethodHeaderStub getter = instanceVariableDeclaration.getGetter();
+            ObjJMethodHeaderStub setter = instanceVariableDeclaration.getSetter();
+            return new Pair<>(
+                    getter != null ? getter.getSelectorString() : null,
+                    setter != null ? setter.getSelectorString() : null);
+        }
+        return null;
+    }
 
     @Override
     public PsiElement handleElementRename(String selectorString) {

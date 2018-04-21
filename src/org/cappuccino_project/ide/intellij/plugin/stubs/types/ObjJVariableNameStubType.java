@@ -13,7 +13,7 @@ import org.cappuccino_project.ide.intellij.plugin.indices.StubIndexService;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJVariableName;
 import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJVariableNameImpl;
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJBlockPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJVariableNameStubImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub;
 import org.jetbrains.annotations.NotNull;
@@ -51,18 +51,12 @@ public class ObjJVariableNameStubType extends ObjJStubElementType<ObjJVariableNa
 
     @NotNull
     private List<Pair<Integer,Integer>> getBlockRanges(@NotNull ObjJVariableName variableName) {
-        ObjJBlock block = ObjJTreeUtil.getParentOfType(variableName, ObjJBlock.class);
-        if (block == null) {
+        ObjJBlock scopeBlock = ObjJBlockPsiUtil.getScopeBlock(variableName);
+        if (scopeBlock == null) {
             return Collections.emptyList();
         }
-
-        List<Pair<Integer,Integer>> blockRanges = new ArrayList<>();
-        while (block != null) {
-            final TextRange textRange = block.getTextRange();
-            blockRanges.add(new Pair<>(textRange.getStartOffset(), textRange.getEndOffset()));
-            block = ObjJTreeUtil.getParentOfType(block, ObjJBlock.class);
-        }
-        return blockRanges;
+        TextRange scopeTextRange = scopeBlock.getTextRange();
+        return Collections.singletonList(new Pair<>(scopeTextRange.getStartOffset(), scopeTextRange.getEndOffset()));
     }
 
     @Nullable

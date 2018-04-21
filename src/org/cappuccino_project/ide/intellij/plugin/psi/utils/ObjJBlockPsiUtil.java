@@ -1,7 +1,9 @@
 package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -242,4 +244,39 @@ public class ObjJBlockPsiUtil {
         }
         return null;
     }
+
+    /**
+     * Gets the outer scope for a given element
+     * Mostly used to determine whether two variable name elements have the same scope
+     * @param psiElement element to find containing scope block for.
+     * @return scope block for element
+     */
+    @Nullable
+    public static ObjJBlock getScopeBlock(@Nullable PsiElement psiElement) {
+        if (psiElement == null) {
+            return null;
+        }
+        ObjJBlock block = getFunctionBlockRange(psiElement);
+        if (block != null) {
+            return block;
+        }
+        block = getMethodBlockRange(psiElement);
+        if (block != null) {
+            return block;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static ObjJBlock getFunctionBlockRange(@NotNull PsiElement element) {
+        ObjJFunctionDeclarationElement declaration = ObjJTreeUtil.getParentOfType(element,ObjJFunctionDeclarationElement.class);
+        return declaration != null ? declaration.getBlock() : null;
+    }
+
+    @Nullable
+    private static ObjJBlock getMethodBlockRange(@NotNull PsiElement element) {
+        ObjJMethodDeclaration declaration = ObjJTreeUtil.getParentOfType(element, ObjJMethodDeclaration.class);
+        return declaration != null ? declaration.getBlock() : null;
+    }
+
 }

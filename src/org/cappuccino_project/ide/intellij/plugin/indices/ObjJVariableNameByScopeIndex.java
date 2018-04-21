@@ -20,7 +20,7 @@ public class ObjJVariableNameByScopeIndex extends ObjJStringStubIndexBase<ObjJVa
     private static final ObjJVariableNameByScopeIndex INSTANCE = new ObjJVariableNameByScopeIndex();
     public static final StubIndexKey<String, ObjJVariableName> KEY = IndexKeyUtil.createIndexKey(ObjJVariableNameByScopeIndex.class);
     private static final String KEY_FORMAT = "%s-%s-%s";
-    private static final int VERSION = 1;
+    private static final int VERSION = 3;
 
 
     private ObjJVariableNameByScopeIndex(){}

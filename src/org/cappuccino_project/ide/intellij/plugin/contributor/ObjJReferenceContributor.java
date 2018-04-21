@@ -3,7 +3,9 @@ package org.cappuccino_project.ide.intellij.plugin.contributor;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
+import jdk.nashorn.internal.runtime.AccessorProperty;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJAccessorPropertyPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJClassNameReference;
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJFunctionNameReference;
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReference;
@@ -37,7 +39,6 @@ public class ObjJReferenceContributor extends PsiReferenceContributor {
      //   LOGGER.log(Level.INFO, "Registered Providers");
     }
 
-
     private static class SelectorReferenceProvider extends PsiReferenceProvider {
 
         @NotNull
@@ -47,7 +48,32 @@ public class ObjJReferenceContributor extends PsiReferenceContributor {
                         PsiElement psiElement,
                 @NotNull
                         ProcessingContext processingContext) {
-            return psiElement instanceof ObjJSelector ? new PsiReference[]{createReference((ObjJSelector)psiElement)} : PsiReference.EMPTY_ARRAY;
+            if (!(psiElement instanceof ObjJSelector)) {
+                return PsiReference.EMPTY_ARRAY;
+            }
+            ObjJSelector selector = (ObjJSelector)psiElement;
+
+            ObjJSelector getter = null;
+            String baseSelector = selector.getSelectorString(false);
+            String getterString = baseSelector;
+            final boolean startsWithUnderscore = getterString.startsWith("_");
+            if (startsWithUnderscore) {
+                getterString = getterString.substring(1);
+            }
+            if (getterString.startsWith("is")) {
+                getterString = getterString.substring(2);
+            }
+            if (getterString.startsWith("set")) {
+                getterString = getterString.substring(3);
+            }
+            getterString = (startsWithUnderscore ? "_" : "") + (getterString.length() > 1 ? getterString.substring(0, 1).toLowerCase() + getterString.substring(1) : getterString);
+            if (!getterString.equals(baseSelector)) {
+                getter = ObjJElementFactory.createSelector(selector.getProject(), getterString);
+            }
+            if (getter != null) {
+                return new PsiReference[]{createReference(selector), createReference(getter)};
+            }
+            return new PsiReference[]{createReference(selector)};
         }
         @NotNull
         private PsiReference createReference(ObjJSelector selector) {
