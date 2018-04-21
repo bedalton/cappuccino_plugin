@@ -1,25 +1,32 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.stubs.StringStubIndexExtension;
 import com.intellij.psi.stubs.StubIndex;
+import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil;
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.StringUtil;
+import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
+import org.codehaus.groovy.runtime.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeElement>  extends StringStubIndexExtension<ObjJElemT> {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJStringStubIndexBase.class.getName());
-    private static final Map emptyList = Collections.emptyMap();
+    protected static final Map emptyList = Collections.emptyMap();
     private static final int VERSION = 3;
 
     @Override
@@ -50,9 +57,16 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
         return getByPattern(start, tail, project, null);
     }
 
-
     @NotNull
-    public  Map<String, List<ObjJElemT>> getByPattern(@Nullable String start, @Nullable String tail, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException {
+    private Map<String, List<ObjJElemT>> getByPattern(
+            @Nullable
+                    String start,
+            @Nullable
+                    String tail,
+            @NotNull
+                    Project project,
+            @Nullable
+                    GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException {
 
         ArrayList<String> keys = new ArrayList<>();
         List<String> notMatchingKeys = new ArrayList<>();
@@ -76,41 +90,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
         return getByPattern(patternString, project, null);
     }
 
-    @SuppressWarnings("unchecked")
-    @NotNull
-    public  List<String> getKeysByPattern(@Nullable String patternString, @NotNull Project project) throws IndexNotReadyRuntimeException {
-        return getKeysByPattern(patternString, project, null);
-    }
 
-
-    @SuppressWarnings("unchecked")
-    @NotNull
-    public  List<String> getKeysByPattern(@Nullable String patternString, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException {
-        if (patternString == null) {
-            return Collections.emptyList();
-        }
-        List<String> matchingKeys = new ArrayList<>();
-        List<String> notMatchingKeys = new ArrayList<>();
-        Pattern pattern;
-        try {
-            pattern = Pattern.compile(patternString);
-        } catch (Exception e) {
-            pattern = Pattern.compile(Pattern.quote(patternString));
-        }
-        for (String key : getAllKeys(project)) {
-            if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {
-                continue;
-            }
-            if (pattern.matcher(key).matches()) {
-                //LOGGER.log(Level.INFO, "Found Matching key for pattern: <"+patternString+">: <"+key+">");
-                matchingKeys.add(key);
-            } else {
-                //LOGGER.log(Level.INFO, "Key <"+key+"> does not match pattern: <"+patternString+">");
-                notMatchingKeys.add(key);
-            }
-        }
-        return matchingKeys;
-    }
 
     @SuppressWarnings("unchecked")
     @NotNull
@@ -123,12 +103,12 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
 
 
     @NotNull
-    private Map<String, List<ObjJElemT>> getAllForKeys(@NotNull List<String> keys, @NotNull Project project) {
+    protected Map<String, List<ObjJElemT>> getAllForKeys(@NotNull List<String> keys, @NotNull Project project) {
         return getAllForKeys(keys, project, null);
     }
 
     @NotNull
-    private Map<String, List<ObjJElemT>> getAllForKeys(@NotNull List<String> keys, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException  {
+    protected Map<String, List<ObjJElemT>> getAllForKeys(@NotNull List<String> keys, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException  {
         HashMap<String, List<ObjJElemT>> out = new HashMap<>();
           for (String key : keys) {
               if (out.containsKey(key)) {
@@ -171,6 +151,42 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
         return out;
     }
 
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public  List<String> getKeysByPattern(@Nullable String patternString, @NotNull Project project) throws IndexNotReadyRuntimeException {
+        return getKeysByPattern(patternString, project, null);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public  List<String> getKeysByPattern(@Nullable String patternString, @NotNull Project project, @Nullable GlobalSearchScope globalSearchScope) throws IndexNotReadyRuntimeException {
+        if (patternString == null) {
+            return Collections.emptyList();
+        }
+        List<String> matchingKeys = new ArrayList<>();
+        List<String> notMatchingKeys = new ArrayList<>();
+        Pattern pattern;
+        try {
+            pattern = Pattern.compile(patternString);
+        } catch (Exception e) {
+            pattern = Pattern.compile(Pattern.quote(patternString));
+        }
+        for (String key : getAllKeys(project)) {
+            if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {
+                continue;
+            }
+            if (pattern.matcher(key).matches()) {
+                //LOGGER.log(Level.INFO, "Found Matching key for pattern: <"+patternString+">: <"+key+">");
+                matchingKeys.add(key);
+            } else {
+                //LOGGER.log(Level.INFO, "Key <"+key+"> does not match pattern: <"+patternString+">");
+                notMatchingKeys.add(key);
+            }
+        }
+        return matchingKeys;
+    }
 
     @NotNull
     public List<ObjJElemT> getAll (@NotNull Project project) throws IndexNotReadyRuntimeException  {

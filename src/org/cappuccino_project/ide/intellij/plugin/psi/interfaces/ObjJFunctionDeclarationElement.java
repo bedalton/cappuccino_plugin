@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.psi.interfaces;
 
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJFormalParameterArg;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJLastFormalParameterArg;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub;
@@ -19,4 +20,7 @@ public interface ObjJFunctionDeclarationElement<PsiT extends ObjJFunctionDeclara
 
     @Nullable
     ObjJLastFormalParameterArg getLastFormalParameterArg();
+
+    @Nullable
+    ObjJBlock getBlock();
 }

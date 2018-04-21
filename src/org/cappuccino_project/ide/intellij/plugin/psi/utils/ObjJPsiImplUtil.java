@@ -429,6 +429,7 @@ public class ObjJPsiImplUtil {
 
     @NotNull
     public static PsiReference[] getReferences(@NotNull ObjJSelector selector) {
+        LOGGER.log(Level.INFO, "Getting references(plural) for selector");
         return ReferenceProvidersRegistry.getReferencesFromProviders(selector, PsiReferenceService.Hints.NO_HINTS);
     }
 
@@ -573,6 +574,15 @@ public class ObjJPsiImplUtil {
         return Collections.singletonList(element.getBlock());
     }
 
+    @Nullable
+    public static ObjJBlock getBlock(@NotNull ObjJPreprocessorDefineFunction function) {
+        return function.getPreprocessorDefineBody() != null ? function.getPreprocessorDefineBody().getBlock() : null;
+    }
+
+    @Nullable
+    public static ObjJBlock getOpenBrace(@SuppressWarnings("unused") @NotNull ObjJPreprocessorIfStatement ifStatement) {
+        return null;
+    }
 
     // ============================== //
     // ========== Function ========== //
@@ -993,7 +1003,7 @@ public class ObjJPsiImplUtil {
     public static Icon getIcon(PsiElement element) {
         if (element instanceof ObjJClassName) {
             ObjJClassDeclarationElement classDeclarationElement = ((ObjJClassName)element).getParentOfType(ObjJClassDeclarationElement.class);
-          
+
             String className = element.getText();
             if (classDeclarationElement == null || !classDeclarationElement.getClassNameString().equals(className)) {
                 return null;

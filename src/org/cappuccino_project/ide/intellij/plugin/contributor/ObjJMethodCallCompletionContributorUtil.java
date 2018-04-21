@@ -156,12 +156,12 @@ public class ObjJMethodCallCompletionContributorUtil {
                 return;
             }
             for (ObjJSelector selector : selectorResolveResult.getNaturalResult()) {
-                //ProgressIndicatorProvider.checkCanceled();
+                ProgressIndicatorProvider.checkCanceled();
                 //LOGGER.log(Level.INFO, "Adding natural result: <"+selector.getText()+">");
                 addSelectorLookupElement(result, selector, selectorIndex, ObjJCompletionContributor.TARGETTED_METHOD_SUGGESTION_PRIORITY);
             }
             for (ObjJSelector selector : selectorResolveResult.getOtherResult()) {
-                //ProgressIndicatorProvider.checkCanceled();
+                ProgressIndicatorProvider.checkCanceled();
                 //LOGGER.log(Level.INFO, "Adding other result: <"+selector.getText()+">");
                 addSelectorLookupElement(result, selector, selectorIndex, ObjJCompletionContributor.GENERIC_METHOD_SUGGESTION_PRIORITY);
             }
@@ -181,7 +181,7 @@ public class ObjJMethodCallCompletionContributorUtil {
      */
     private static void addSelectorLookupElementsFromSelectorList(CompletionResultSet resultSet, List<ObjJSelector> elements, int selectorIndex, double priority) {
         for (ObjJSelector selector : elements) {
-            //ProgressIndicatorProvider.checkCanceled();
+            ProgressIndicatorProvider.checkCanceled();
             LOGGER.log(Level.SEVERE, "Adding Selector lookup element: <"+selector.getText()+">");
             ObjJInstanceVariableDeclaration instanceVariableDeclaration = selector.getParentOfType(ObjJInstanceVariableDeclaration.class);
             if (instanceVariableDeclaration != null) {

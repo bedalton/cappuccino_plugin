@@ -29,7 +29,7 @@ public class ObjJSelectorReferenceResolveUtil {
     private static final SelectorResolveResult<PsiElement> EMPTY_RESULT = new SelectorResolveResult<PsiElement>(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     private static final SelectorResolveResult<ObjJSelector> EMPTY_SELECTORS_RESULT = new SelectorResolveResult<>(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     private static final List<String> EMPTY_CLASS_CONSTRAINT_LIST = Collections.emptyList();
-    private static final List<String> RETURN_SELF_SELECTORS = Arrays.asList(ObjJMethodPsiUtils.getSelectorString("class"));
+    private static final List<String> RETURN_SELF_SELECTORS = Collections.singletonList(ObjJMethodPsiUtils.getSelectorString("class"));
 
     @NotNull
     public static SelectorResolveResult<ObjJSelector> getMethodCallReferences(@NotNull ObjJSelector element) {
@@ -54,7 +54,9 @@ public class ObjJSelectorReferenceResolveUtil {
     }
 
     @NotNull
-    public static SelectorResolveResult<ObjJSelector> getMethodCallPartialReferences(@Nullable ObjJSelector element, boolean includeSelf) {
+    static SelectorResolveResult<ObjJSelector> getMethodCallPartialReferences(
+            @Nullable
+                    ObjJSelector element, boolean includeSelf) {
         if (element == null) {
             return EMPTY_SELECTORS_RESULT;
         }
@@ -131,20 +133,16 @@ public class ObjJSelectorReferenceResolveUtil {
 
         String selector = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors).replaceAll("\\s+", "");
         //LOGGER.log(Level.INFO, "Selector for method call is: <"+ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)+">");
-        if (selector == null || selector.isEmpty()) {
+        if (selector.isEmpty()) {
             //LOGGER.log(Level.INFO, "Selector search failed with empty selector.");
             return null;
         }
         List<String> classConstraints = parent != null ? getClassConstraints(parent) : Collections.emptyList();
-        if (parent == null) {
-            //LOGGER.log(Level.INFO, "Selector parent for selector <"+selector+"> is null");
-            //return EMPTY_RESULT;
-        }
         Map<String, List<ObjJMethodHeaderDeclaration>> methodHeaders;
         if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
             String pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)")+"(.*)";
-            methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPattern(pattern, project);
-            LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+pattern+">. Found <"+methodHeaders.size()+"> methods");
+            methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPatternFuzzy(pattern, baseSelector.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project);
+            LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         } else {
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPattern(selector, null, project);
             LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
@@ -311,7 +309,7 @@ public class ObjJSelectorReferenceResolveUtil {
     }
 
     private static <T> SelectorResolveResult<T> packageResolveResult(@NotNull List<T> result, @NotNull List<T> otherResult, @Nullable List<String> classConstraints) {
-        return new SelectorResolveResult<T>(result, otherResult, classConstraints != null ? classConstraints : Collections.emptyList());
+        return new SelectorResolveResult<>(result, otherResult, classConstraints != null ? classConstraints : Collections.emptyList());
     }
 
     @NotNull
@@ -322,11 +320,11 @@ public class ObjJSelectorReferenceResolveUtil {
 
     @NotNull
     private static List<String> getClassConstraints(@Nullable ObjJHasMethodSelector element) {
-        if (element == null || !(element instanceof ObjJMethodCall)) {
+        if (!(element instanceof ObjJMethodCall)) {
             //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return Collections.emptyList();
         }
-        List<String> classConstraints = null;
+        List<String> classConstraints;
         ObjJMethodCall methodCall = (ObjJMethodCall) element;
         ObjJCallTarget callTarget = methodCall.getCallTarget();
         String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
@@ -337,7 +335,7 @@ public class ObjJSelectorReferenceResolveUtil {
         }
         classConstraints = ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget());
         if (!classConstraints.isEmpty()) {
-            LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
+            //LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
         } else {
             //   LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCall.getCallTarget().getText()+">.");
         }

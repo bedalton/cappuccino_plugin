@@ -9,6 +9,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import org.cappuccino_project.ide.intellij.plugin.annotator.IgnoreUtil.ElementType;
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.*;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings;
 import org.cappuccino_project.ide.intellij.plugin.indices.*;
@@ -91,7 +92,8 @@ public class ObjJMethodCallAnnotatorUtil {
         }
         String callTarget = methodCall.getCallTarget().getText();
         final List<String> possibleCallTargetClassTypes = ObjJPluginSettings.validateCallTarget() ? ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget()) : null;
-        if (callTarget.equals("self") || callTarget.equals("super") || (possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED))) {
+        if (    callTarget.equals("self") || callTarget.equals("super") ||
+                (possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED))) {
             return;
         }
         boolean isStaticReference = possibleCallTargetClassTypes != null ? possibleCallTargetClassTypes.contains(callTarget) : !ObjJClassDeclarationsIndex.getInstance().get(callTarget, methodCall.getProject()).isEmpty();

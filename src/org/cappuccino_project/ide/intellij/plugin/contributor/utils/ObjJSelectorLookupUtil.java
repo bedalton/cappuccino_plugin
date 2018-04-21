@@ -55,14 +55,14 @@ public class ObjJSelectorLookupUtil {
         StringBuilder stringBuilder = new StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
         String paramType = getSelectorVariableType(selector);
         if (paramType != null) {
-            stringBuilder.append("(").append(paramType).append(") ");
+            stringBuilder.append("(").append(paramType).append(")");
             String variableName = getSelectorVariableName(selector);
             if (variableName != null) {
                 stringBuilder.append(variableName);
             }
         }
         if (!trailingSelectors.isEmpty()) {
-            stringBuilder.append(ArrayUtils.join(trailingSelectors, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true));
+            stringBuilder.append(" ").append(ArrayUtils.join(trailingSelectors, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true));
         }
         return stringBuilder.length() > 1 ? stringBuilder.toString() : null;
     }
