@@ -11,14 +11,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
-import org.cappuccino_project.ide.intellij.plugin.extensions.plist.lexer.ObjJPlistLexer;
 import org.cappuccino_project.ide.intellij.plugin.extensions.plist.parser.ObjJPlistParser;
 import org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes;
-import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJPlistParserDefinition implements ParserDefinition {
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);

@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJFunctionDeclarationElement<? extends ObjJFunctionDeclarationElement>, Stub extends ObjJFunctionDeclarationElementStub<PsiT>> extends ObjJStubElementType<ObjJFunctionDeclarationElementStub<PsiT>, PsiT> {
+public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJFunctionDeclarationElement<? extends ObjJFunctionDeclarationElementStub>, Stub extends ObjJFunctionDeclarationElementStub<PsiT>> extends ObjJStubElementType<ObjJFunctionDeclarationElementStub<PsiT>, PsiT> {
     ObjJAbstractFunctionDeclarationStubType(
             @NotNull
                     String debugName, Class<PsiT> functionDecClass, Class<Stub> stubClass) {
@@ -33,7 +33,8 @@ public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJF
         final String functionNameString = element.getFunctionNameAsString();
         final List<String> paramNames = element.getParamNames();
         final String returnType = element.getReturnType();
-        return createStub(stubParent, fileName, functionNameString, paramNames, returnType);
+        final boolean shouldResolve = element.shouldResolve();
+        return createStub(stubParent, fileName, functionNameString, paramNames, returnType, shouldResolve);
     }
 
     @NotNull
@@ -45,7 +46,8 @@ public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJF
                                                                  @NotNull
                                                                          List<String> paramNames,
                                                                  @Nullable
-                                                                         String returnType);
+                                                                         String returnType,
+                                                                 final boolean shouldResolve);
 
     @Override
     public void serialize(
@@ -61,6 +63,7 @@ public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJF
             stream.writeName((String)param);
         }
         stream.writeName(stub.getReturnType());
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -76,7 +79,8 @@ public abstract class ObjJAbstractFunctionDeclarationStubType<PsiT extends ObjJF
             paramNames.add(StringRef.toString(stream.readName()));
         }
         final String returnType = StringRef.toString(stream.readName());
-        return createStub(stubParent, fileName, fqName, paramNames, returnType);
+        final boolean shouldResolve = stream.readBoolean();
+        return createStub(stubParent, fileName, fqName, paramNames, returnType, shouldResolve);
     }
 
     @Override

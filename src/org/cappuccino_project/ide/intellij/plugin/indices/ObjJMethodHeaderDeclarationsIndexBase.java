@@ -73,14 +73,22 @@ public abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT extend
                 nonMatchingKeys.add(key);
                 continue;
             }
+            if (parts.isEmpty()) {
+                matchingKeys.add(key);
+                continue;
+            }
             String keyPart = matches.group(1).toLowerCase();
+            boolean isMatch = true;
             for (String part : parts) {
                 if (!keyPart.contains(part)) {
                     nonMatchingKeys.add(key);
-                    continue;
+                    isMatch = false;
+                    break;
                 }
             }
-            matchingKeys.add(key);
+            if (isMatch) {
+                matchingKeys.add(key);
+            }
         }
         return matchingKeys;
     }

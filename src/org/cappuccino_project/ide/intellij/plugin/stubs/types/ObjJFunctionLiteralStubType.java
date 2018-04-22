@@ -37,8 +37,10 @@ public class ObjJFunctionLiteralStubType extends ObjJAbstractFunctionDeclaration
                                                                            @NotNull
                                                                                    List<String> paramNames,
                                                                            @Nullable
-                                                                                   String returnType) {
-        return new ObjJFunctionLiteralStubImpl(parent, fileName, fqName, paramNames, returnType);
+                                                                                   String returnType,
+                                                                           final boolean shouldResolve
+    ) {
+        return new ObjJFunctionLiteralStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve);
     }
 
     @Override

@@ -10,15 +10,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ObjJFunctionDeclarationElementStubImpl<PsiT extends ObjJFunctionDeclarationElement<? extends ObjJFunctionDeclarationElement>> extends ObjJStubBaseImpl<PsiT> implements ObjJFunctionDeclarationElementStub<PsiT> {
+public class ObjJFunctionDeclarationElementStubImpl<PsiT extends ObjJFunctionDeclarationElement<? extends ObjJFunctionDeclarationElementStub>> extends ObjJStubBaseImpl<PsiT> implements ObjJFunctionDeclarationElementStub<PsiT> {
 
     private final String fileName;
     private final String fqName;
     private final String functionName;
     private final List<String> paramNames;
     private final String returnType;
+    private final boolean shouldResolve;
 
-    public ObjJFunctionDeclarationElementStubImpl(StubElement parent, @NotNull IStubElementType stubElementType, @NotNull String fileName, @NotNull String fqName, @NotNull List<String> paramNames, @Nullable String returnType) {
+    public ObjJFunctionDeclarationElementStubImpl(StubElement parent, @NotNull IStubElementType stubElementType, @NotNull String fileName, @NotNull String fqName, @NotNull List<String> paramNames, @Nullable String returnType, final boolean shouldResolve) {
         super(parent, stubElementType);
         this.fileName = fileName;
         this.fqName = fqName;
@@ -26,6 +27,7 @@ public class ObjJFunctionDeclarationElementStubImpl<PsiT extends ObjJFunctionDec
         this.functionName = fqName.substring(lastDotIndex >=0 ? lastDotIndex : 0);
         this.paramNames = paramNames;
         this.returnType = returnType;
+        this.shouldResolve = shouldResolve;
     }
 
     @Override
@@ -57,5 +59,10 @@ public class ObjJFunctionDeclarationElementStubImpl<PsiT extends ObjJFunctionDec
     @Override
     public String getReturnType() {
         return returnType;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 }

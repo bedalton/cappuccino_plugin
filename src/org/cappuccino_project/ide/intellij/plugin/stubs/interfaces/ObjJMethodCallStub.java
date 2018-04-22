@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface ObjJMethodCallStub extends StubElement<ObjJMethodCallImpl> {
+public interface ObjJMethodCallStub extends StubElement<ObjJMethodCallImpl>, ObjJResolveableStub<ObjJMethodCallImpl> {
 
     @NotNull
     String getCallTarget();

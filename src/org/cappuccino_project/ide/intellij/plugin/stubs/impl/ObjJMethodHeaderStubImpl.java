@@ -20,8 +20,9 @@ public class ObjJMethodHeaderStubImpl extends ObjJStubBaseImpl<ObjJMethodHeaderI
     private final boolean required;
     private final boolean isStatic;
     private final String selectorString;
+    private final boolean shouldResolve;
 
-    public ObjJMethodHeaderStubImpl(final StubElement parent, @Nullable final String className, final boolean isStatic, @NotNull  final List<String> selectors, @NotNull final List<String> paramTypes, @Nullable final String returnType, final boolean required) {
+    public ObjJMethodHeaderStubImpl(final StubElement parent, @Nullable final String className, final boolean isStatic, @NotNull  final List<String> selectors, @NotNull final List<String> paramTypes, @Nullable final String returnType, final boolean required, final boolean shouldResolve) {
         super(parent, ObjJStubTypes.METHOD_HEADER);
         this.isStatic = isStatic;
         this.selectors = selectors;
@@ -30,6 +31,7 @@ public class ObjJMethodHeaderStubImpl extends ObjJStubBaseImpl<ObjJMethodHeaderI
         this.returnType = returnType != null ? returnType : ObjJClassType.UNDETERMINED;
         this.className = className != null ? className : ObjJClassType.UNDEF_CLASS_NAME;
         this.required = required;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -75,5 +77,10 @@ public class ObjJMethodHeaderStubImpl extends ObjJStubBaseImpl<ObjJMethodHeaderI
     @Override
     public boolean isRequired() {
         return required;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 }

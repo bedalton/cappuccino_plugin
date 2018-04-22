@@ -44,7 +44,8 @@ public class ObjJMethodCallStubType extends ObjJStubElementType<ObjJMethodCallSt
         final String callTarget = methodCall.getCallTargetText();
         final List<String> callTargetTypes = Collections.singletonList(ObjJClassType.UNDETERMINED);//methodCall.getPossibleCallTargetTypes();
         final List<String> selectorStrings = methodCall.getSelectorStrings();
-        return new ObjJMethodCallStubImpl(stubParent, className, callTarget, callTargetTypes, selectorStrings);
+        final boolean shouldResolve = methodCall.shouldResolve();
+        return new ObjJMethodCallStubImpl(stubParent, className, callTarget, callTargetTypes, selectorStrings, shouldResolve);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class ObjJMethodCallStubType extends ObjJStubElementType<ObjJMethodCallSt
         for (String selector : stub.getSelectorStrings()) {
             stream.writeName(selector);
         }
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -82,12 +84,13 @@ public class ObjJMethodCallStubType extends ObjJStubElementType<ObjJMethodCallSt
         for (int i=0;i<numSelectorStrings;i++) {
             selectors.add(StringRef.toString(stream.readName()));
         }
-        return new ObjJMethodCallStubImpl(stubParent, containingClassName, callTarget, callTargetTypes, selectors);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJMethodCallStubImpl(stubParent, containingClassName, callTarget, callTargetTypes, selectors, shouldResolve);
     }
 
     @Override
     public boolean shouldCreateStub(ASTNode node) {
-        return false && node.getPsi() instanceof ObjJMethodCall;
+        return false;
     }
 
     @Override

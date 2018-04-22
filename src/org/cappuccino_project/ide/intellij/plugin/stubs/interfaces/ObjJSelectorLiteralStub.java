@@ -4,7 +4,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJSelectorLiteralIm
 import org.jetbrains.annotations.NotNull;
 
 
-public interface ObjJSelectorLiteralStub extends ObjJMethodHeaderDeclarationStub<ObjJSelectorLiteralImpl> {
+public interface ObjJSelectorLiteralStub extends ObjJMethodHeaderDeclarationStub<ObjJSelectorLiteralImpl>, ObjJResolveableStub<ObjJSelectorLiteralImpl> {
 
 
 }
