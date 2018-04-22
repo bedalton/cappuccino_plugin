@@ -4,11 +4,9 @@ import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiNamedElement;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiReferenceService;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry;
+import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.IncorrectOperationException;
 import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil;
@@ -19,9 +17,11 @@ import org.cappuccino_project.ide.intellij.plugin.references.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings;
+import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
+import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,7 +124,7 @@ public class ObjJPsiImplUtil {
         }
         ObjJFunctionName functionName = ObjJElementFactory.createFunctionName(oldFunctionName.getProject(), newFunctionName);
         if (functionName == null) {
-            LOGGER.log(Level.INFO, "new FunctionName element is null");
+            LOGGER.log(Level.SEVERE, "new function name element is null");
             return oldFunctionName;
         }
         oldFunctionName.getParent().getNode().replaceChild(oldFunctionName.getNode(), functionName.getNode());
@@ -429,7 +429,7 @@ public class ObjJPsiImplUtil {
 
     @NotNull
     public static PsiReference[] getReferences(@NotNull ObjJSelector selector) {
-        LOGGER.log(Level.INFO, "Getting references(plural) for selector");
+        //LOGGER.log(Level.INFO, "Getting references(plural) for selector");
         return ReferenceProvidersRegistry.getReferencesFromProviders(selector, PsiReferenceService.Hints.NO_HINTS);
     }
 
@@ -477,7 +477,7 @@ public class ObjJPsiImplUtil {
     }
 
     @Nullable
-    public static ObjJClassDeclarationElement getContainingClass(@NotNull ObjJCompositeElement element) {
+    public static ObjJClassDeclarationElement getContainingClass(@NotNull PsiElement element) {
         return ObjJHasContainingClassPsiUtil.getContainingClass(element);
     }
 
@@ -901,6 +901,41 @@ public class ObjJPsiImplUtil {
     }
 
     // ============================== //
+    // =========== Misc ============= //
+    // ============================== //
+
+    @Nullable
+    public static String getFileName(@Nullable PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element.getContainingFile() == null || element.getContainingFile().getVirtualFile() == null) {
+            return null;
+        }
+        return element.getContainingFile().getVirtualFile().getName();
+    }
+
+    // ============================== //
+    // ====== Should Resolve ======== //
+    // ============================== //
+
+    public static boolean shouldResolve(@Nullable PsiElement psiElement) {
+        return ObjJResolveableElementUtil.shouldResolve(psiElement);
+    }
+
+    public static boolean shouldResolve(@Nullable ObjJClassDeclarationElement psiElement) {
+        return ObjJResolveableElementUtil.shouldResolve(psiElement);
+    }
+
+    public static boolean shouldResolve(@Nullable PsiElement psiElement, @Nullable String shouldNotResolveLoggingStatement) {
+        return ObjJResolveableElementUtil.shouldResolve(psiElement, shouldNotResolveLoggingStatement);
+    }
+
+    public static boolean shouldResolve(@Nullable ObjJHasContainingClass hasContainingClass) {
+        return ObjJResolveableElementUtil.shouldResolve((PsiElement)hasContainingClass) && shouldResolve(hasContainingClass.getContainingClass());
+    }
+
+    // ============================== //
     // =========== PARSER =========== //
     // ============================== //
 
@@ -923,17 +958,6 @@ public class ObjJPsiImplUtil {
             ahead = ahead.getTreeNext();
         }
         return ahead != null && eosToken(ahead.getElementType(), hadLineTerminator);
-    }
-
-    @Nullable
-    public static String getFileName(@Nullable PsiElement element) {
-        if (element == null) {
-            return null;
-        }
-        if (element.getContainingFile() == null || element.getContainingFile().getVirtualFile() == null) {
-            return null;
-        }
-        return element.getContainingFile().getVirtualFile().getName();
     }
 
     public static boolean eosToken(@Nullable IElementType ahead, boolean hadLineTerminator) {

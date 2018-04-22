@@ -27,7 +27,7 @@ public class ObjJHasContainingClassPsiUtil {
 
     @Nullable
     public static ObjJClassDeclarationElement getContainingClass(@Nullable
-                                                                         ObjJCompositeElement element) {
+                                                                         PsiElement element) {
         return ObjJTreeUtil.getParentOfType(element, ObjJClassDeclarationElement.class);
     }
 

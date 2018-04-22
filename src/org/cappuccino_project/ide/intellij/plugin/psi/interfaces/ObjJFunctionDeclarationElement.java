@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface ObjJFunctionDeclarationElement<PsiT extends ObjJFunctionDeclarationElement> extends ObjJHasFunctionName, ObjJStubBasedElement<ObjJFunctionDeclarationElementStub<PsiT>>, ObjJCompositeElement {
+public interface ObjJFunctionDeclarationElement<StubT extends ObjJFunctionDeclarationElementStub<? extends ObjJFunctionDeclarationElement>> extends ObjJHasFunctionName, ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJResolveableElement<StubT> {
     @NotNull
     List<String> getParamNames();
     @Nullable

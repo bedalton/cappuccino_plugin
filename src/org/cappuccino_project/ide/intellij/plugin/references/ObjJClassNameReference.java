@@ -11,11 +11,8 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclar
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClassName> {
     private final String className;
@@ -41,7 +38,7 @@ public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClas
 
         for (ObjJClassDeclarationElement classDec : classDeclarations) {
             ObjJClassName classDecName = classDec.getClassName();
-            if (classDecName != null && !classDecName.getText().isEmpty() && !classDecName.isEquivalentTo(myElement)) {
+            if (classDecName != null && !classDecName.getText().isEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
                 classNames.add(classDecName);
             }
         }
@@ -51,7 +48,7 @@ public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClas
     @NotNull
     @Override
     public Object[] getVariants() {
-        List<Object> keys = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().getAllKeys(myElement.getProject()));
+        List<Object> keys = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().getAllResolveableKeys(myElement.getProject()));
         return keys.toArray();
     }
 }

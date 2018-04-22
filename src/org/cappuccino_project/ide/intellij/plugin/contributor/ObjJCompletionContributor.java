@@ -32,7 +32,7 @@ public class ObjJCompletionContributor extends CompletionContributor {
                         .psiElement()
                         .withLanguage(ObjJLanguage.INSTANCE),
                 new BlanketCompletionProvider());
-        LOGGER.log(Level.INFO, "Creating completion contributor");
+        //LOGGER.log(Level.INFO, "Creating completion contributor");
     }
     /**
      * Allow autoPopup to appear after custom symbol

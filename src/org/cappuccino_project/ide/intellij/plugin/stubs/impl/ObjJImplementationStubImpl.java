@@ -14,8 +14,8 @@ public class ObjJImplementationStubImpl extends ObjJClassDeclarationStubImpl<Obj
     private final String superClassName;
     public ObjJImplementationStubImpl(
             @NotNull
-                    StubElement parent, @NotNull  String className, @Nullable String superClassName, @Nullable String categoryName, List<String> protocols) {
-        super(parent, ObjJStubTypes.IMPLEMENTATION, className, protocols);
+                    StubElement parent, @NotNull  String className, @Nullable String superClassName, @Nullable String categoryName, @NotNull List<String> protocols, boolean shouldResolve) {
+        super(parent, ObjJStubTypes.IMPLEMENTATION, className, protocols, shouldResolve);
         this.superClassName = superClassName;
         this.categoryName = categoryName;
     }

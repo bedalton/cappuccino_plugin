@@ -255,7 +255,7 @@ blockComment
 importFile
 	::= '@import' stringLiteral
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>"
 		methods=[getFrameworkName getFileName]
@@ -265,7 +265,7 @@ importFile
 importFramework
 	::= '@import' frameworkReference
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
 		methods=[getFrameworkName getFileName]
@@ -275,7 +275,7 @@ importFramework
 includeFile
 	::= '#include' stringLiteral LINE_TERMINATOR
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>"
 		methods=[getFrameworkName getFileName]
@@ -285,7 +285,7 @@ includeFile
 includeFramework
 	::= '#include' frameworkReference LINE_TERMINATOR
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>"
 		methods=[getFrameworkName getFileName]
@@ -442,7 +442,7 @@ private variableDeclarationList
 globalVariableDeclaration
 	::= variableName '=' expr
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
@@ -468,14 +468,15 @@ private recover_variableDeclaration
 instanceVariableDeclaration
 	::= ('@outlet')? formalVariableType variableName accessor?
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getGetter getSetter getName setName]
+		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
 	}
@@ -501,11 +502,12 @@ private recover_accessorPropertyList
 accessorProperty
 	::= accessorPropertyType ('=' selector (':')?)?
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			]
 		methods=[
 			accessorKind="/accessorPropertyType"
@@ -522,6 +524,7 @@ accessorProperty
 			getReturnType
 			getGetter
 			getSetter
+			shouldResolve
 		]
 	}
 	;
@@ -793,16 +796,17 @@ functionDeclaration
 	::= 'function' (<<notInMode "varDec">> functionName) '(' formalParameterList? ')' block
 	{
 		pin=1
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements = [
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
 
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType]
+		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve]
 
 	}
 	;
@@ -832,15 +836,16 @@ methodHeader
 	::= methodScopeMarker '(' (methodHeaderReturnTypeElement) ')' methodHeaderSelectorList
 	{
 		pin=2
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub"
 		implements = [
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"com.intellij.psi.PsiNamedElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
-		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic]
+		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve]
 
 		//recoverWhile=recover_methodHeaderSelectorList
 	}
@@ -849,11 +854,12 @@ methodHeader
 private methodHeaderSelectorList
 	::= firstMethodDeclarationSelector methodDeclarationSelector* methodHeaderMultipleVariableTail?
 	{
+		//recoverWhile=recover_methodHeaderSelectorList
 	}
 	;
 
 private recover_methodHeaderSelectorList
-	::= !('{'|'@end'|'@required'|'@optional'|('-'|'+') '(')
+	::= !('}'|'{'|'@end'|'@required'|'@optional'|('-'|'+') '(')
 	;
 
 methodHeaderReturnTypeElement
@@ -902,8 +908,9 @@ implementationDeclaration
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
 		]
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub"
 		methods = [
 			className = "/className[0]"
@@ -913,6 +920,7 @@ implementationDeclaration
 			getMethodHeaders
 			hasMethod
 			getPresentation
+			shouldResolve
 		]
 	}
 	;
@@ -1020,14 +1028,13 @@ preprocessorDefineFunction
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
-		]
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
-		implements = [
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 		]
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType getBlock]
+		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType getBlock shouldResolve]
 	}
 	;
 
@@ -1140,10 +1147,13 @@ protocolDeclaration
 		//recoverWhile=protocolRecoverDecWhile
 
 		pin=1
-		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"]
+		implements=[
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"
+		]
 		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationMixin"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub"
-		methods=[getMethodHeaders hasMethod getPresentation]
+		methods=[getMethodHeaders hasMethod getPresentation shouldResolve]
 	}
 	;
 
@@ -1314,14 +1324,15 @@ methodCall
 	::= '[' callTarget !(','|']'|mathOp|assignmentOperator|'='|rightExpr) methodCallSelectorList ']'
 	{
 		pin=3
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub>"
 		]
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector"]
+		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve]
 	}
 	;
 
@@ -1366,7 +1377,7 @@ selector
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"com.intellij.navigation.NavigationItem"
 		]
-		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation]
+		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve]
 		//recoverWhile=recover_selector
 	}
 	;
@@ -1408,8 +1419,12 @@ expr
  	|	leftExpr rightExpr*
  	|	leftExpr
     {
-		implements = ["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement" "org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement" "org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"]
-		methods = [getBlock]
+		implements = [
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
+		]
+		methods = [getBlock shouldResolve]
 		//recoverWhile=recover_statement
 	}
 	;
@@ -1566,9 +1581,13 @@ formalVariableType
 varTypeId
 	::= 'id' ('<' varTypeIdClassName '>')?
 	{
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		implements=[
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub>"
+		]
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub"
-		methods=[getIdType]
+		methods=[getIdType shouldResolve]
 	}
 	;
 private varTypeIdClassName
@@ -1594,14 +1613,14 @@ functionLiteral
 	::= 'function' '(' formalParameterList? ')' block
 	{
 		pin=1
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>"
 		implements = [
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>>"
 		]
-		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode]
+		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve]
 	}
 	;
 
@@ -1609,13 +1628,14 @@ selectorLiteral
 	::= '@selector' '(' selectorLiteralSelectorList ')'
 	{
 
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
 		]
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub"
-		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType]
+		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType shouldResolve]
 	}
 	;
 
@@ -1725,15 +1745,16 @@ variableName
 	|	'this'
 	{
 
-		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJElementImplStub<?>"
+		extends="org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub"
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJQualifiedNamePart"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
-		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText]
+		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve]
 	}
 	;
 
@@ -1744,9 +1765,10 @@ functionName
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods = [getName setName getReference]
+		methods = [getName setName getReference shouldResolve]
 	}
 	;
+
 doubleQuoteStringLiteral
 	::= ("\""|"@\"") QUO_TEXT? "\""
 	{

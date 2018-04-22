@@ -1,15 +1,11 @@
 package org.cappuccino_project.ide.intellij.plugin.annotator;
 
 import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
-import org.cappuccino_project.ide.intellij.plugin.annotator.IgnoreUtil.ElementType;
-import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.*;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings;
 import org.cappuccino_project.ide.intellij.plugin.indices.*;
@@ -23,26 +19,28 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Annotator for method calls
  */
-public class ObjJMethodCallAnnotatorUtil {
+class ObjJMethodCallAnnotatorUtil {
     private static final String CPSTRING_INIT_WITH_FORMAT = "initWithFormat";
     private static final String CPSTRING_STRING_WITH_FORMAT = "stringWithFormat";
 
-    private static final Logger LOGGER = Logger.getLogger(ObjJMethodCallAnnotatorUtil.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(ObjJMethodCallAnnotatorUtil.class.getName());
 
     /**
      * Responsible for annotating method calls
      * @param methodCall method call to annotate
      * @param holder annotation holder used for markup
      */
-    public static void annotateMethodCall(@NotNull final ObjJMethodCall methodCall,  @NotNull final AnnotationHolder holder) {
+    static void annotateMethodCall(
+            @NotNull
+            final ObjJMethodCall methodCall,
+            @NotNull
+            final AnnotationHolder holder) {
         //First validate that all selector sub elements are present
         validateMissingSelectorElements(methodCall, holder);
         //Validate the method for selector exists. if not, stop annotation
@@ -87,9 +85,9 @@ public class ObjJMethodCallAnnotatorUtil {
      * @param holder annotation holder
      */
     private static void annotateStaticMethodCall(@NotNull final ObjJMethodCall methodCall, @NotNull final AnnotationHolder holder) {
-        if(false && IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD_SCOPE)) {
+        /*if(IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD_SCOPE)) {
             return;
-        }
+        }*/
         String callTarget = methodCall.getCallTarget().getText();
         final List<String> possibleCallTargetClassTypes = ObjJPluginSettings.validateCallTarget() ? ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget()) : null;
         if (    callTarget.equals("self") || callTarget.equals("super") ||
@@ -128,7 +126,11 @@ public class ObjJMethodCallAnnotatorUtil {
      * @param holder annotation holder
      */
     @SuppressWarnings("unused")
-    public static void annotateSelectorLiteral (@NotNull final ObjJSelectorLiteral selectorLiteral, @NotNull final AnnotationHolder holder) {
+    static void annotateSelectorLiteral(
+            @NotNull
+            final ObjJSelectorLiteral selectorLiteral,
+            @NotNull
+            final AnnotationHolder holder) {
         //TODO annotations for selector literals are in some cases selector contracts or declarations
         /*
         final Project project = selectorLiteral.getProject();
@@ -145,9 +147,9 @@ public class ObjJMethodCallAnnotatorUtil {
      */
     private static boolean validMethodSelector(@NotNull ObjJMethodCall methodCall, @NotNull final AnnotationHolder holder) {
         //noinspection PointlessBooleanExpression
-        if (false && IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD)) {
+        /*if (false && IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD)) {
             return true;
-        }
+        }*/
         //Checks that there are selectors
         final List<ObjJSelector> selectors = methodCall.getSelectorList();
         if (selectors.isEmpty()) {
@@ -159,9 +161,9 @@ public class ObjJMethodCallAnnotatorUtil {
         //Check that method selector signature is valid, and return if it is
         if (isValidMethodCall(fullSelector, project)) {
             return true;
-        } else {
+        }// else {
             //LOGGER.log(Level.INFO, "Failed to find indexed selector matching : <" + fullSelector + ">;");
-        }
+        //}
         if (selectors.size() == 1) {
             ObjJSelector selector = selectors.get(0);
             holder.createErrorAnnotation(selector, "Failed to find selector matching <" + selector.getSelectorString(true) + ">");

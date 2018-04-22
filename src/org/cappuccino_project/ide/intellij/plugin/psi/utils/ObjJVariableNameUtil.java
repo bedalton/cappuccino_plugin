@@ -246,7 +246,7 @@ public class ObjJVariableNameUtil {
             return !variableName.isEquivalentTo(element) ? variableName : null;
         }
         if (DumbService.isDumb(element.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return null;
         }
         List<ObjJGlobalVariableDeclaration> globalVariableDeclarations = ObjJGlobalVariableNamesIndex.getInstance().get(element.getText(), element.getProject());
         if (!globalVariableDeclarations.isEmpty()) {
@@ -330,7 +330,7 @@ public class ObjJVariableNameUtil {
             containingBlock = tempBlock;
         }
         if (containingBlock == null) {
-            LOGGER.log(Level.INFO, "Variable <"+element.getText()+">  is not in block");
+            //LOGGER.log(Level.INFO, "Variable <"+element.getText()+">  is not in block");
             return EMPTY_VARIABLE_NAME_LIST;
         }
         final PsiFile containingFile = element.getContainingFile();
@@ -343,7 +343,7 @@ public class ObjJVariableNameUtil {
     private static List<ObjJVariableName> getAllContainingClassInstanceVariables(PsiElement element) {
         List<ObjJVariableName> result = new ArrayList<>();
         if (DumbService.getInstance(element.getProject()).isDumb()) {
-            LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
+            //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST;
         }
         final String containingClassName = element instanceof ObjJHasContainingClass ? ((ObjJHasContainingClass)element).getContainingClassName() : null;
@@ -402,7 +402,7 @@ public class ObjJVariableNameUtil {
 
     public static List<ObjJVariableName>  getAllFileScopedVariables(@Nullable PsiFile file, int qualifiedNameIndex) {
         if (file == null) {
-            LOGGER.log(Level.INFO, "Cannot get all file scoped variables. File is null");
+            //LOGGER.log(Level.INFO, "Cannot get all file scoped variables. File is null");
             return EMPTY_VARIABLE_NAME_LIST;
         }
         List<ObjJVariableName> result = new ArrayList<>();

@@ -144,7 +144,6 @@ public class ObjJSelectorLookupUtil {
         if (useInsertHandler) {
             elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler.getInstance());
         }
-        Logger.getLogger("ObjJSelectorLookupUtil").log(Level.SEVERE, "Creating selector lookup element for <"+suggestedText+">");
         return elementBuilder;
     }
 

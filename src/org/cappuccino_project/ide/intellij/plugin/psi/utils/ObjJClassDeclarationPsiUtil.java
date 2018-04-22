@@ -89,7 +89,7 @@ public class ObjJClassDeclarationPsiUtil {
         }
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(containingClass.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return null;
         }
         List<ObjJClassDeclarationElement> superClassDeclarations = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().get(superClassName, childElement.getProject()));
         if (superClassDeclarations.size() < 1) {
@@ -228,7 +228,7 @@ public class ObjJClassDeclarationPsiUtil {
         List<ObjJMethodHeader> optional = new ArrayList<>();
         List<ObjJProtocolDeclaration> inheritedProtocols = ObjJInheritanceUtil.getAllInheritedProtocols(protocolName, declaration.getProject());
         for (ObjJProtocolDeclaration protocolDeclaration : inheritedProtocols) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Checking protocol <"+protocolDeclaration.getClassNameString()+"> for unimplemented methods.");
+            //Logger.getAnonymousLogger().log(Level.INFO, "Checking protocol <"+protocolDeclaration.getClassNameString()+"> for unimplemented methods.");
             addUnimplementedProtocolMethods(project, thisClassName, protocolDeclaration.getMethodHeaderList(), required);
             for (ObjJProtocolScopedBlock scopedBlock : protocolDeclaration.getProtocolScopedBlockList()) {
                 ProgressIndicatorProvider.checkCanceled();
@@ -258,7 +258,7 @@ public class ObjJClassDeclarationPsiUtil {
                     return true;
                 }
             }
-            LOGGER.log(Level.INFO, "Class <"+className+"> does not have required protocol method: <"+selector+">");
+            //LOGGER.log(Level.INFO, "Class <"+className+"> does not have required protocol method: <"+selector+">");
             className = ObjJClassDeclarationPsiUtil.getSuperClassName(className, project);
         }
         return false;
@@ -266,7 +266,7 @@ public class ObjJClassDeclarationPsiUtil {
 
 
     public static ItemPresentation getPresentation(@NotNull final ObjJImplementationDeclaration implementationDeclaration) {
-        LOGGER.log(Level.INFO, "Get Presentation <Implementation:"+implementationDeclaration.getClassNameString()+">");
+        //LOGGER.log(Level.INFO, "Get Presentation <Implementation:"+implementationDeclaration.getClassNameString()+">");
         final String text = implementationDeclaration.getClassNameString() + (implementationDeclaration.isCategory() ? " ("+implementationDeclaration.getCategoryName()+")" : "");
         final Icon icon = implementationDeclaration.isCategory() ? ObjJIcons.CATEGORY_ICON : ObjJIcons.CLASS_ICON;
         final String fileName = ObjJFileUtil.getContainingFileName(implementationDeclaration);
@@ -292,7 +292,7 @@ public class ObjJClassDeclarationPsiUtil {
     }
 
     public static ItemPresentation getPresentation(@NotNull final ObjJProtocolDeclaration protocolDeclaration) {
-        LOGGER.log(Level.INFO, "Get Presentation <Protocol:"+protocolDeclaration.getClassNameString()+">");
+        //LOGGER.log(Level.INFO, "Get Presentation <Protocol:"+protocolDeclaration.getClassNameString()+">");
         final String fileName = ObjJFileUtil.getContainingFileName(protocolDeclaration);
         return new ItemPresentation() {
             @NotNull

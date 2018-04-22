@@ -18,7 +18,9 @@ public class ObjJFunctionLiteralStubImpl extends ObjJFunctionDeclarationElementS
                                        @NotNull
                                                    List<String> paramNames,
                                        @Nullable
-                                                   String returnType) {
-        super(parent, ObjJStubTypes.FUNCTION_LITERAL,  fileName, fqName, paramNames, returnType);
+                                                   String returnType,
+                                       final
+                                            boolean shouldResolve) {
+        super(parent, ObjJStubTypes.FUNCTION_LITERAL,  fileName, fqName, paramNames, returnType, shouldResolve);
     }
 }
