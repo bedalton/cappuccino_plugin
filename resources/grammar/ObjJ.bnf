@@ -881,6 +881,7 @@ firstMethodDeclarationSelector
 		pin=1
 		//recoverWhile=methodDeclarationSelector_recover
 		extends=methodDeclarationSelector
+		methods=[getVarType]
 	}
 	;
 
