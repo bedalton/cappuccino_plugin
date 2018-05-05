@@ -168,7 +168,7 @@ public class ObjJVariableReference extends PsiReferenceBase<ObjJVariableName> {
 
     private PsiElement getGlobalVariableNameElement() {
         if (DumbService.isDumb(myElement.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return null;
         }
         ObjJFile file = myElement.getContainingObjJFile();
         List<String> imports = file != null ? file.getImportStrings() : null;

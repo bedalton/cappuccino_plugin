@@ -18,7 +18,8 @@ public class ObjJFunctionDeclarationStubImpl extends ObjJFunctionDeclarationElem
                                            @NotNull
                                                    List<String> paramNames,
                                            @Nullable
-                                                   String returnType) {
-        super(parent, ObjJStubTypes.FUNCTION_DECLARATION, fileName, fqName, paramNames, returnType);
+                                                   String returnType,
+                                           final boolean shouldResolve) {
+        super(parent, ObjJStubTypes.FUNCTION_DECLARATION, fileName, fqName, paramNames, returnType, shouldResolve);
     }
 }

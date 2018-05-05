@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public interface ObjJAccessorPropertyStub extends ObjJMethodHeaderDeclarationStub<ObjJAccessorPropertyImpl> {
+public interface ObjJAccessorPropertyStub extends ObjJMethodHeaderDeclarationStub<ObjJAccessorPropertyImpl>, ObjJResolveableStub<ObjJAccessorPropertyImpl> {
     @NotNull
     String getContainingClass();
     @Nullable

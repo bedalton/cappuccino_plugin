@@ -75,12 +75,6 @@ public class ObjJGlobalVariableDeclarationStubType extends ObjJStubElementType<O
     }
 
     @Override
-    public boolean shouldCreateStub(com.intellij.lang.ASTNode node) {
-        PsiElement element = node.getPsi();
-        return element instanceof ObjJGlobalVariableDeclaration;
-    }
-
-    @Override
     public void indexStub(@NotNull
                                   ObjJGlobalVariableDeclarationStub stub, @NotNull
                                   IndexSink indexSink) {

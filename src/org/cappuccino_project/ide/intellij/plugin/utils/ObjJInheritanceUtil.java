@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED;
@@ -88,7 +89,7 @@ public class ObjJInheritanceUtil {
 
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(project)) {
-            throw new IndexNotReadyRuntimeException();
+            return;
         }
 
         List<ObjJProtocolDeclaration> temp = ObjJProtocolDeclarationsIndex.getInstance().get(className, project);
@@ -136,7 +137,8 @@ public class ObjJInheritanceUtil {
 
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(project)) {
-            throw new IndexNotReadyRuntimeException();
+            classNames.add(ObjJClassType.UNDETERMINED);
+            return;
         }
         Collection<ObjJClassDeclarationElement> classesDeclarations = ObjJClassDeclarationsIndex.getInstance().get(className, project);
         if (classesDeclarations.isEmpty()) {

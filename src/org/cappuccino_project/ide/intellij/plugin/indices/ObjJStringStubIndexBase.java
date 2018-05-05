@@ -10,6 +10,7 @@ import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJMethodCallComp
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.StringUtil;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.codehaus.groovy.runtime.ArrayUtil;
@@ -75,7 +76,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
                 continue;
             }
             if (StringUtil.startsAndEndsWith(key, start, tail)) {
-                LOGGER.log(Level.INFO, "Found selector matching <"+start+"//"+tail+">: <"+key+">");
+                //LOGGER.log(Level.INFO, "Found selector matching <"+start+"//"+tail+">: <"+key+">");
                 keys.add(key);
             } else {
                 notMatchingKeys.add(key);
@@ -205,6 +206,19 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
             out.addAll(get(key, project, globalSearchScope));
         }
         return out;
+    }
+
+    @NotNull
+    public List<String> getAllResolveableKeys(@NotNull Project project) {
+        return ArrayUtils.filter(new ArrayList<>(getAllKeys(project)), (key) -> isResolveableKey((String)key, project));
+    }
+
+    private boolean isResolveableKey(@NotNull String key, @NotNull Project project) {
+        List<ObjJElemT> elementsForKey = get(key, project, null);
+        for (ObjJElemT element : elementsForKey) {
+            return ObjJPsiImplUtil.shouldResolve(element);
+        }
+        return false;
     }
 
     @NotNull

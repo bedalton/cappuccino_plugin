@@ -3,18 +3,15 @@ package org.cappuccino_project.ide.intellij.plugin.annotator;
 import com.intellij.lang.annotation.AnnotationHolder;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJClassName;
-import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImplementationDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJProtocolDeclaration;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class ObjJProtocolDeclarationAnnotatorUtil {
+class ObjJProtocolDeclarationAnnotatorUtil {
 
     static void annotateProtocolDeclaration(@NotNull
                                         ObjJProtocolDeclaration protocolDeclaration, @NotNull AnnotationHolder annotationHolder)

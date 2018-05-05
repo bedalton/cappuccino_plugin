@@ -9,6 +9,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclar
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
+import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,14 +28,15 @@ public class ObjJHasContainingClassPsiUtil {
 
     @Nullable
     public static ObjJClassDeclarationElement getContainingClass(@Nullable
-                                                                         ObjJCompositeElement element) {
+                                                                         PsiElement element) {
         return ObjJTreeUtil.getParentOfType(element, ObjJClassDeclarationElement.class);
     }
 
     @NotNull
-    public static String getContainingClassName(ObjJMethodHeader methodHeader) {
-        if (methodHeader.getStub() != null) {
-            return methodHeader.getStub().getContainingClassName();
+    public static String getContainingClassName(@NotNull ObjJMethodHeader methodHeader) {
+        ObjJMethodHeaderStub stub = methodHeader.getStub();
+        if (stub != null) {
+            return stub.getContainingClassName();
         }
         ObjJClassDeclarationElement containingClass = methodHeader.getContainingClass();
         return containingClass != null ? containingClass.getClassType().getClassName() : ObjJClassType.UNDEF_CLASS_NAME;

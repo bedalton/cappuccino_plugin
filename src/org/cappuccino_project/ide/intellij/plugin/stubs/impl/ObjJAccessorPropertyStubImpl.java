@@ -20,14 +20,20 @@ public class ObjJAccessorPropertyStubImpl extends ObjJStubBaseImpl<ObjJAccessorP
     private final String getter;
     private final String setter;
     private String varType;
+    private final boolean shouldResolve;
 
-    public ObjJAccessorPropertyStubImpl(StubElement parent, String containingClass, @Nullable String varType, @Nullable String variableName, @Nullable String getter, @Nullable String setter) {
+    public ObjJAccessorPropertyStubImpl(final StubElement parent, final String containingClass,
+                                        @Nullable String varType, @Nullable String variableName,
+                                        @Nullable String getter, @Nullable String setter,
+                                        final boolean shouldResolve
+    ) {
         super(parent, ObjJStubTypes.ACCESSOR_PROPERTY);
         this.containingClass = containingClass;
         this.varType = varType != null && !varType.isEmpty() ? varType : null;
         this.variableName = variableName != null && !variableName.isEmpty() ? variableName : null;
         this.getter = getter != null && !getter.isEmpty() ? getter : null;
         this.setter = setter != null && !setter.isEmpty() ? setter : null;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -104,5 +110,10 @@ public class ObjJAccessorPropertyStubImpl extends ObjJStubBaseImpl<ObjJAccessorP
     @Override
     public boolean isStatic() {
         return false;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 }

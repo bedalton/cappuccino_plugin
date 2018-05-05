@@ -12,7 +12,7 @@ public class ObjJProtocolDeclarationStubImpl extends ObjJClassDeclarationStubImp
     public ObjJProtocolDeclarationStubImpl(
             @NotNull
                     StubElement parent, @NotNull
-                    String className, List<String> protocols) {
-        super(parent, ObjJStubTypes.PROTOCOL, className, protocols);
+                    final String className, final List<String> protocols, final boolean shouldResolve) {
+        super(parent, ObjJStubTypes.PROTOCOL, className, protocols, shouldResolve);
     }
 }

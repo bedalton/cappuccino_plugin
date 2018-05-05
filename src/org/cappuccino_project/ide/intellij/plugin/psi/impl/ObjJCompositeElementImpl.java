@@ -46,7 +46,7 @@ public class ObjJCompositeElementImpl extends ASTWrapperPsiElement implements Ob
 
     @Override
     public ItemPresentation getPresentation() {
-        LOGGER.log(Level.INFO, "Get Presentation <"+this.getNode().getElementType().toString()+">");
+        //LOGGER.log(Level.INFO, "Get Presentation <"+this.getNode().getElementType().toString()+">");
         final String text = UsageViewUtil.createNodeText(this);
         if (text != null) {
             return new ItemPresentation() {

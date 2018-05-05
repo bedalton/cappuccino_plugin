@@ -34,7 +34,8 @@ public class ObjJPreprocessorDefineFunctionStubType extends ObjJAbstractFunction
                                                                                  @NotNull
                                                                                          List<String> paramNames,
                                                                                  @Nullable
-                                                                                         String returnType) {
-        return new ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, paramNames, returnType);
+                                                                                         String returnType,
+                                                                                  final boolean shouldResolve) {
+        return new ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve);
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 public class ObjJClassDeclarationStubImpl<PsiT extends ObjJClassDeclarationElement<? extends ObjJClassDeclarationStub>> extends ObjJStubBaseImpl<PsiT> implements ObjJClassDeclarationStub<PsiT> {
     private final String className;
     private final List<String> inheritedProtocols;
+    private final boolean shouldResolve;
 
     ObjJClassDeclarationStubImpl(
             @NotNull
@@ -21,10 +22,12 @@ public class ObjJClassDeclarationStubImpl<PsiT extends ObjJClassDeclarationEleme
             @NotNull
             final String className,
             @NotNull
-            final List<String> inheritedProtocols) {
+            final List<String> inheritedProtocols,
+            boolean shouldResolve) {
         super(parent, elementType);
         this.className = className;
         this.inheritedProtocols = inheritedProtocols;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -37,5 +40,10 @@ public class ObjJClassDeclarationStubImpl<PsiT extends ObjJClassDeclarationEleme
     @Override
     public List<String> getInheritedProtocols() {
         return this.inheritedProtocols;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 }

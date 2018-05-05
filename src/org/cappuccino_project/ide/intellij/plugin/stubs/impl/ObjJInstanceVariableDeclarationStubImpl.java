@@ -15,14 +15,16 @@ public class ObjJInstanceVariableDeclarationStubImpl extends ObjJStubBaseImpl<Ob
     private final String variableName;
     private final String getter;
     private final String setter;
+    private final boolean shouldResolve;
 
-    public ObjJInstanceVariableDeclarationStubImpl(StubElement parent, String containingClass, @NotNull String varType, @NotNull String variableName, @Nullable String getter, @Nullable String setter) {
+    public ObjJInstanceVariableDeclarationStubImpl(StubElement parent, String containingClass, @NotNull String varType, @NotNull String variableName, @Nullable String getter, @Nullable String setter,final boolean shouldResolve) {
         super(parent, ObjJStubTypes.INSTANCE_VAR);
         this.containingClass = containingClass != null ? containingClass : ObjJClassType.UNDEF_CLASS_NAME;
         this.varType = varType;
         this.variableName = variableName;
         this.getter = getter != null && getter.length() > 0 ? getter : null;
         this.setter = setter != null && setter.length() > 0 ? setter : null;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -53,6 +55,11 @@ public class ObjJInstanceVariableDeclarationStubImpl extends ObjJStubBaseImpl<Ob
     @Override
     public String getSetter() {
         return setter;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 
 }
