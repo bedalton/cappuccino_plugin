@@ -5,15 +5,22 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJFrameworkReference;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImportFramework;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportStatement;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class ObjJFile extends PsiFileBase implements ObjJCompositeElement {
 
@@ -66,5 +73,6 @@ public class ObjJFile extends PsiFileBase implements ObjJCompositeElement {
     public <PsiT extends PsiElement> PsiT getParentOfType(Class<PsiT> parentClass) {
         return ObjJTreeUtil.getParentOfType(this, parentClass);
     }
+
 
 }
