@@ -57,7 +57,6 @@ public class ObjJAnnotator implements Annotator {
                 ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons((ObjJNeedsSemiColon) psiElement, annotationHolder);
             }
         } catch (IndexNotReadyRuntimeException ignored) {
-
         }
     }
 
