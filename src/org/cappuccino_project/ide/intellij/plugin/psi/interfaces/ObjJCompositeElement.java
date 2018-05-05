@@ -44,5 +44,6 @@ public interface ObjJCompositeElement extends PsiElement {
     @NotNull
     IElementType getElementType();
 
+
     //ObjJCompositeElement getPsiOrParent();
 }

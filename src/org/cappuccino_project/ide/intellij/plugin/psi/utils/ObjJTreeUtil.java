@@ -166,7 +166,9 @@ public class ObjJTreeUtil extends PsiTreeUtil{
         if (keepBlankLines == null) {
             keepBlankLines = 1;
         }
-        return ObjJSpacingBuilder.createSpacingBuilder(0, Integer.MAX_VALUE, minLineFeeds, keepLineBreaks, keepBlankLines);
+        //return ObjJSpacingBuilder.createSpacingBuilder(0, Integer.MAX_VALUE, minLineFeeds, keepLineBreaks, keepBlankLines);
+
+        return Spacing.createSafeSpacing(keepLineBreaks, keepBlankLines);
     }
 
 

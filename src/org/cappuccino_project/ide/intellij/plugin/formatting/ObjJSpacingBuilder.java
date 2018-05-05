@@ -142,7 +142,7 @@ public class ObjJSpacingBuilder {
         */
 }
 
-    public static  Spacing computeSpacing(Block child1, Block child2, ObjJFormatContext ctx) {
+    public static Spacing computeSpacing(Block parent, Block child1, Block child2, ObjJFormatContext ctx) {
         /*
         if (child1 instanceof ASTBlock && child2 instanceof ASTBlock) SpacingContext.create(child1, child2, ctx).apply {
         when {
@@ -192,6 +192,7 @@ public class ObjJSpacingBuilder {
         return ctx.spacingBuilder.getSpacing(this, child1, child2)
         }
         */
+        return ctx.spacingBuilder.getSpacing(parent,child1,child2);
     }
 
 

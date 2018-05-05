@@ -912,6 +912,11 @@ public class ObjJPsiImplUtil {
         return element.getContainingFile().getVirtualFile().getName();
     }
 
+    @NotNull
+    public static IElementType getTokenType(@NotNull ObjJCompositeElement element) {
+        return element.getElementType();
+    }
+
     // ============================== //
     // ====== Should Resolve ======== //
     // ============================== //

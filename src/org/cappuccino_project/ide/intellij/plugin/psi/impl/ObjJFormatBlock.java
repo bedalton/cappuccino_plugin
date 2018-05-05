@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjJBlock implements ASTBlock {
+public class ObjJFormatBlock implements ASTBlock {
     private final ASTNode node;
     private final Alignment alignment;
     private final Indent indent;
@@ -20,10 +20,10 @@ public class ObjJBlock implements ASTBlock {
     private final ObjJFormatContext context;
     private List<Block> children;
 
-    public ObjJBlock(@NotNull ASTNode node, @Nullable Alignment alignment,
-                     @Nullable Indent indent,
-                     @Nullable Wrap wrap,
-                     @NotNull ObjJFormatContext context) {
+    public ObjJFormatBlock(@NotNull ASTNode node, @Nullable Alignment alignment,
+                           @Nullable Indent indent,
+                           @Nullable Wrap wrap,
+                           @NotNull ObjJFormatContext context) {
         this.node = node;
         this.alignment = alignment;
         this.indent = indent;
@@ -81,7 +81,7 @@ public class ObjJBlock implements ASTBlock {
                     Block block,
             @NotNull
                     Block block1) {
-        return ObjJSpacingBuilder.computeSpacing(block, block1, context);
+        return ObjJSpacingBuilder.computeSpacing(this, block, block1, context);
     }
 
     @NotNull

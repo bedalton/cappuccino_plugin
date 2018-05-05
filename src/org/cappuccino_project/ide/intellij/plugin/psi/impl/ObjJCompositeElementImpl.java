@@ -100,6 +100,7 @@ public class ObjJCompositeElementImpl extends ASTWrapperPsiElement implements Ob
         return null;
     }
 
+    @NotNull
     @Override
     public IElementType getElementType() {
         return getNode().getElementType();

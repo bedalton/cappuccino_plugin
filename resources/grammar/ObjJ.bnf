@@ -244,6 +244,7 @@ comment
     |   SINGLE_LINE_COMMENT
     {
     	implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement" "com.intellij.psi.PsiComment"]
+    	methods=[getTokenType]
     }
     ;
 
@@ -252,6 +253,7 @@ blockComment
 	{
 		pin=1
 		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement" "com.intellij.psi.PsiComment"]
+    	methods=[getTokenType]
 	}
 	;
 

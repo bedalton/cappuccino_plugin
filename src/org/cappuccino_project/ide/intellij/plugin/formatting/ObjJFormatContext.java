@@ -17,7 +17,7 @@ public class ObjJFormatContext {
     public ObjJFormatContext(@NotNull final CommonCodeStyleSettings commonSettings, @NotNull final ObjJCodeStyleSettings objJSettings) {
         this.commonSettings = commonSettings;
         this.objJSettings = objJSettings;
-        spacingBuilder = ObjJSpacingBuilder.createSpacingBuilder(commonSettings);
+        spacingBuilder = ObjJSpacingBuilder.createSpacingBuilder();
     }
 
     public Alignment alignment () {

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.cappuccino_project.ide.intellij.plugin.contributor.ObjJCompletionContributor.CARET_INDICATOR;
@@ -37,7 +36,7 @@ public class BlanketCompletionProvider  extends CompletionProvider<CompletionPar
 
     private static final Logger LOGGER = Logger.getLogger(BlanketCompletionProvider.class.getName());
 
-    private static final List<String> ACCESSSOR_PROPERTY_TYPES = Arrays.asList("property", "getter", "setter", "readonly", "copy");
+    private static final List<String> ACCESSOR_PROPERTY_TYPES = Arrays.asList("property", "getter", "setter", "readonly", "copy");
 
 
     @Override
@@ -56,7 +55,7 @@ public class BlanketCompletionProvider  extends CompletionProvider<CompletionPar
         List<String> results;
         final String queryString = element.getText().substring(0, element.getText().indexOf(CARET_INDICATOR));
         if (element instanceof ObjJAccessorPropertyType || ObjJTreeUtil.getParentOfType(element, ObjJAccessorPropertyType.class) != null) {
-            results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString);
+            results = ACCESSOR_PROPERTY_TYPES;
         } else if (element instanceof ObjJVariableName || parent instanceof ObjJVariableName) {
             if (queryString.trim().isEmpty() ) {
                 //LOGGER.log(Level.INFO, "Query string is empty");

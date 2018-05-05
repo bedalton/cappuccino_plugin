@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJSelectorLiteral;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,8 @@ public class ObjJMethodCallReferenceProvider extends PsiPolyVariantReferenceBase
         if (result.size() > 0) {
             return PsiElementResolveResult.createResults(result);
         }
-        return PsiElementResolveResult.createResults(ObjJPsiImplUtil.getSelectorLiteralReference(myElement));
+        final ObjJSelectorLiteral literal = ObjJPsiImplUtil.getSelectorLiteralReference(myElement);
+        return literal != null ? PsiElementResolveResult.createResults(literal) : PsiElementResolveResult.EMPTY_ARRAY;
     }
 
     @NotNull
