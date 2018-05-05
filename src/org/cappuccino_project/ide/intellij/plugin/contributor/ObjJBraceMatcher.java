@@ -22,8 +22,8 @@ public class ObjJBraceMatcher implements PairedBraceMatcher {
             new BracePair(ObjJ_BLOCK_COMMENT_START, ObjJ_BLOCK_COMMENT_END, false)
     };
 
-    private static final IElementType[] NOT_BEFORE = new IElementType[] {ObjJ_RETURN, ObjJ_CONTINUE, ObjJ_BREAK, ObjJ_VAR, ObjJ_FOR, ObjJ_WHILE, ObjJ_DO, ObjJ_IF, ObjJ_OPEN_BRACE, ObjJ_OPEN_BRACKET, ObjJ_OPEN_PAREN, ObjJ_AT_OPEN_BRACE, ObjJ_AT_OPENBRACKET, ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO};
-    private static final IElementType[] NO_BRACE_BEFORE = new IElementType[] {ObjJ_VAR};
+    private static final IElementType[] NOT_IN_CONTEXT = new IElementType[] {};
+    private static final IElementType[] BRACE_NOT_IN_CONTEXT = new IElementType[] {};
 
 
     @NotNull
@@ -38,11 +38,11 @@ public class ObjJBraceMatcher implements PairedBraceMatcher {
         if (lbraceType == ObjJTypes.ObjJ_OPEN_BRACKET) {
             return isPairedBracketAllowedBeforeType(contextType);
         }
-        return isAllowed(NOT_BEFORE, contextType);
+        return isAllowed(NOT_IN_CONTEXT, contextType);
     }
 
     private boolean isPairedBracketAllowedBeforeType(IElementType contextType) {
-        return isAllowed(NOT_BEFORE, contextType) && isAllowed(NO_BRACE_BEFORE, contextType);
+        return isAllowed(NOT_IN_CONTEXT, contextType) && isAllowed(BRACE_NOT_IN_CONTEXT, contextType);
     }
 
     private boolean isAllowed(IElementType[] notBeforeElements, IElementType contextType) {

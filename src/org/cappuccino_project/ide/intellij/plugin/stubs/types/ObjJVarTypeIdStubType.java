@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.stubs.types;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.psi.stubs.IndexSink;
 import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.stubs.StubInputStream;
@@ -61,5 +62,11 @@ public class ObjJVarTypeIdStubType extends ObjJStubElementType<ObjJVarTypeIdStub
             @NotNull
                     ObjJVarTypeIdImpl varTypeId, StubElement stubParent) {
         return new ObjJVarTypeIdStubImpl(stubParent, varTypeId.getIdType(), shouldResolve(varTypeId.getNode()));
+    }
+
+    @NotNull
+    @Override
+    public boolean shouldCreateStub(ASTNode node) {
+        return false;
     }
 }

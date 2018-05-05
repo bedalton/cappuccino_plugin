@@ -8,10 +8,15 @@ public class ObjJImportsIndex extends ObjJStringStubIndexBase<ObjJImportStatemen
 
     private static final ObjJImportsIndex INSTANCE = new ObjJImportsIndex();
     private static final StubIndexKey<String, ObjJImportStatement> KEY = IndexKeyUtil.createIndexKey(ObjJImportsIndex.class);
-
+    private static final int VERSION = 0;
     @NotNull
     public static ObjJImportsIndex getInstance() {
         return INSTANCE;
+    }
+
+    @Override
+    public int getVersion() {
+        return super.getVersion() + VERSION;
     }
 
     @NotNull

@@ -43,6 +43,7 @@ public class ObjJSelectorReferenceResolveUtil {
         }
 
         if (DumbService.isDumb(element.getProject())) {
+            LOGGER.log(Level.INFO, "Cannot get method call references. Service is in dumb mode");
             return EMPTY_SELECTORS_RESULT;
         }
         //LOGGER.log(Level.INFO, "Searching for methods matching selector: <"+fullSelector+">, in file: "+element.getContainingFile().getVirtualFile().getName());
@@ -81,7 +82,7 @@ public class ObjJSelectorReferenceResolveUtil {
     }
 
     @Nullable
-    public static SelectorResolveResult<ObjJSelector> resolveSelectorReferenceAsPsiElement(@NotNull List<ObjJSelector> selectors, int selectorIndex) {
+    public static SelectorResolveResult<ObjJSelector> resolveSelectorReference(@NotNull List<ObjJSelector> selectors, int selectorIndex) {
         RawResult result = resolveSelectorReferenceRaw(selectors, selectorIndex);
         if (result== null) {
             return null;
@@ -138,7 +139,7 @@ public class ObjJSelectorReferenceResolveUtil {
         List<String> classConstraints = parent != null ? getClassConstraints(parent) : Collections.emptyList();
         Map<String, List<ObjJMethodHeaderDeclaration>> methodHeaders;
         if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
-            String pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)")+"(.*)";
+            String pattern = getFuzzyMethodSelectorPattern(selector);
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPatternFuzzy(pattern, baseSelector.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project);
             //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         } else {
@@ -151,6 +152,18 @@ public class ObjJSelectorReferenceResolveUtil {
         } else {
             return null;
         }
+    }
+
+    private static String getFuzzyMethodSelectorPattern(@NotNull String pattern) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String selector : pattern.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL)) {
+            if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
+                selector = "(.+)";
+            }
+            stringBuilder.append(selector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
+        }
+        stringBuilder.append("(.*)");
+        return stringBuilder.toString();
     }
 
     @NotNull

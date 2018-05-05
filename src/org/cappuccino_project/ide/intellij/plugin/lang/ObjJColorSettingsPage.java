@@ -49,8 +49,10 @@ public class ObjJColorSettingsPage implements ColorSettingsPage {
                 "/* block comment */\n"+
                 "@implementation Person : CPObject\n" +
                 "{\n" +
-                "    CPString name;\n" +
+                "    CPString    name;\n" +
+                "    BOOL        _living @accessors(getter=alive,setter=isLiving)\n" +
                 "}\n" +
+                "\n" +
                 "- (void) setName\n" +
                 "{\n" +
                 "   // line comment\n"+
@@ -58,7 +60,7 @@ public class ObjJColorSettingsPage implements ColorSettingsPage {
                 "}\n" +
                 "+ (CPString) getHello:(CPString) name\n" +
                 "{\n" +
-                "    return \"Hello\" + name;\n" +
+                "    return @\"Hello\" + name;\n" +
                 "}\n" +
                 "\n" +
                 "@end";

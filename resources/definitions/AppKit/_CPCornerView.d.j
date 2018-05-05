@@ -64,7 +64,7 @@
     [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id<@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -74,7 +74,7 @@
     return self;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 

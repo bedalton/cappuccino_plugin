@@ -7,26 +7,26 @@ import com.intellij.psi.PsiElement;
 
 public interface ObjJPlistArray extends PsiElement {
 
-  @Nullable
-  ObjJPlistArray getArray();
+  @NotNull
+  List<ObjJPlistArray> getArrayList();
 
-  @Nullable
-  ObjJPlistBoolean getBoolean();
+  @NotNull
+  List<ObjJPlistBoolean> getBooleanList();
 
-  @Nullable
-  ObjJPlistDataValue getDataValue();
+  @NotNull
+  List<ObjJPlistDataValue> getDataValueList();
 
-  @Nullable
-  ObjJPlistDict getDict();
+  @NotNull
+  List<ObjJPlistDict> getDictList();
 
-  @Nullable
-  ObjJPlistInteger getInteger();
+  @NotNull
+  List<ObjJPlistInteger> getIntegerList();
 
-  @Nullable
-  ObjJPlistRealNumber getRealNumber();
+  @NotNull
+  List<ObjJPlistRealNumber> getRealNumberList();
 
-  @Nullable
-  ObjJPlistString getString();
+  @NotNull
+  List<ObjJPlistString> getStringList();
 
   @Nullable
   PsiElement getArrayClose();

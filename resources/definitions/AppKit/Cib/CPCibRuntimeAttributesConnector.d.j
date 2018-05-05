@@ -32,7 +32,7 @@ var CPCibRuntimeAttributesConnectorObjectKey   = @"CPCibRuntimeAttributesConnect
     id _values;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <CPCibRuntimeAttributesConnector>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

@@ -163,7 +163,7 @@ var _CPToolTipHeight = 24.0,
     @param aString the content of the tooltip
     @param aStyleMask the tooltip's style mask
 */
-- (id)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask toolTipWindow:(CPWindow)aWindow
+- (id<@self>)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask toolTipWindow:(CPWindow)aWindow
 {
     var toolTipFrame = CGRectMake(0.0, 0.0, 250.0, _CPToolTipHeight),
         layout = [_CPToolTip computeCorrectSize:toolTipFrame.size text:aString],

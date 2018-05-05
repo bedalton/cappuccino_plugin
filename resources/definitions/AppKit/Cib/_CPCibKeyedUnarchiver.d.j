@@ -31,12 +31,12 @@
     CPString        _cibName                            @accessors(getter=cibName);
 }
 
-- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources
+- (id <_CPCibKeyedUnarchiver>)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources
 {
     return [self initForReadingWithData:data bundle:aBundle awakenCustomResources:shouldAwakenCustomResources cibName:@""];
 }
 
-- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources cibName:(CPString)aCibName
+- (id <_CPCibKeyedUnarchiver>)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources cibName:(CPString)aCibName
 {
     self = [super initForReadingWithData:data];
 

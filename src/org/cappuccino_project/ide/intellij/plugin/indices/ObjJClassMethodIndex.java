@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHeader> {
     private static final StubIndexKey<String, ObjJMethodHeader> KEY = IndexKeyUtil.createIndexKey(ObjJClassMethodIndex.class);
     private static final ObjJClassMethodIndex INSTANCE = new ObjJClassMethodIndex();
-    private static final int VERSION = 3;
+    private static final int VERSION = 0;
 
 
     private ObjJClassMethodIndex() {
@@ -26,7 +26,7 @@ public class ObjJClassMethodIndex extends ObjJStringStubIndexBase<ObjJMethodHead
 
     @Override
     public int getVersion() {
-        return ObjJIndexService.INDEX_VERSION + VERSION;
+        return super.getVersion() + VERSION;
     }
 
     @NotNull

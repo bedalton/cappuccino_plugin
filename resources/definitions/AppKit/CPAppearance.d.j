@@ -105,7 +105,7 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 /*! Creates a CPAppearance object initialized to the specified appearance file in the specified bundle
     This method does actually nothing special. It just creates a default appearance object
 */
-- (id)initWithAppearanceNamed:(CPString)aName bundle:(CPBundle)bundle
+- (id<@self>)initWithAppearanceNamed:(CPString)aName bundle:(CPBundle)bundle
 {
     if (self = [super init])
     {
@@ -142,7 +142,7 @@ CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark")
 #pragma mark -
 #pragma mark CPCoding
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super init])
     {

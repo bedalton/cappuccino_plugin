@@ -1,13 +1,14 @@
 package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 
+import com.intellij.formatting.Spacing;
 import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiErrorElement;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.TreeUtil;
 import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.apache.velocity.runtime.parser.node.ASTMap;
+import org.cappuccino_project.ide.intellij.plugin.formatting.ObjJSpacingBuilder;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJComment;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,12 +17,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.cappuccino_project.ide.intellij.plugin.psi.types.TokenSets.*;
 
 public class ObjJTreeUtil extends PsiTreeUtil{
 
     private static final Logger LOGGER = Logger.getLogger(ObjJTreeUtil.class.getName());
+
     @NotNull
     public static <StubT extends StubElement>  List<StubT> filterStubChildren(StubElement<com.intellij.psi.PsiElement> parent, Class<StubT> stubClass) {
         if (parent == null) {
@@ -49,38 +52,6 @@ public class ObjJTreeUtil extends PsiTreeUtil{
             }
         }
         return out;
-    }
-
-    @Nullable
-    public static PsiElement getPreviousSiblingOfType(@NotNull PsiElement element, @NotNull IElementType siblingElementType) {
-        while (element.getPrevSibling() != null) {
-            element = element.getPrevSibling();
-            if (hasElementType(element, siblingElementType)) {
-                return element;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    public static PsiElement getNextSiblingOfType(@NotNull PsiElement element, @NotNull IElementType siblingElementType) {
-        while (element.getNextSibling() != null) {
-            element = element.getNextSibling();
-            if (hasElementType(element, siblingElementType)) {
-                return element;
-            }
-        }
-        return null;
-    }
-
-    private static boolean hasElementType(PsiElement element, IElementType elementType) {
-        return element.getNode().getElementType() == elementType;
-    }
-
-    @Nullable
-    public static IElementType getNextNodeType(PsiElement compositeElement) {
-        ASTNode astNode = getNextNode(compositeElement);
-        return astNode != null ? astNode.getElementType() : null;
     }
 
     @Nullable
@@ -140,8 +111,16 @@ public class ObjJTreeUtil extends PsiTreeUtil{
         return out;
     }
 
+    public static boolean isWhitespaceOrEmpty(@Nullable PsiElement psiElement) {
+        return psiElement == null || psiElement.getTextLength() == 0 || psiElement.getNode().getElementType() == TokenType.WHITE_SPACE;
+    }
+
+    public static boolean isWhitespaceOrEmpty(@Nullable ASTNode node) {
+        return node == null || node.getTextLength() == 0 || node.getElementType() == TokenType.WHITE_SPACE;
+    }
+
     private static boolean shouldSkipNode(ASTNode out, boolean ignoreLineTerminator) {
-        return out != null && ((ignoreLineTerminator && out.getElementType() == ObjJTypes.ObjJ_LINE_TERMINATOR) || out.getElementType() == com.intellij.psi.TokenType.WHITE_SPACE || out.getPsi() instanceof PsiErrorElement);
+        return out != null && ((ignoreLineTerminator && out.getElementType() == ObjJTypes.ObjJ_LINE_TERMINATOR) || isWhitespaceOrEmpty(out) || out.getPsi() instanceof PsiErrorElement);
     }
 
 
@@ -175,6 +154,70 @@ public class ObjJTreeUtil extends PsiTreeUtil{
             }
         }
         return false;
+    }
+
+
+    public static Spacing getLineBreak(Integer minLineFeeds,
+                          boolean keepLineBreaks,
+                          Integer keepBlankLines) {
+        if (minLineFeeds == null) {
+            minLineFeeds = 1;
+        }
+        if (keepBlankLines == null) {
+            keepBlankLines = 1;
+        }
+        return ObjJSpacingBuilder.createSpacingBuilder(0, Integer.MAX_VALUE, minLineFeeds, keepLineBreaks, keepBlankLines);
+    }
+
+
+    public static boolean hasLineBreakAfterInSameParent(@Nullable ASTNode node) {
+        node = node != null ? node.getTreeNext() : null;
+        return node != null &&  isWhitespaceWithLineBreak(TreeUtil.findLastLeaf(node));
+    }
+
+    public static boolean hasLineBreakBreakBeforeInSameParent(@Nullable ASTNode node) {
+        node = node != null ? node.getTreePrev() : null;
+        return node != null &&  isWhitespaceWithLineBreak(TreeUtil.findLastLeaf(node));
+    }
+
+    public static boolean isWhitespaceWithLineBreak(@Nullable ASTNode node) {
+        return node != null && node.getElementType() == TokenType.WHITE_SPACE && node.textContains('\n');
+    }
+
+    public static boolean needsBlankLineBetweenItems(IElementType elementType1, IElementType elementType2) {
+        if (COMMENTS.contains(elementType1) || COMMENTS.contains(elementType2)) {
+            return false;
+        }
+
+        // Allow to keep consecutive runs of `use`, `const` or other "one line" items without blank lines
+        if (elementType1 == elementType2 && ONE_LINE_ITEMS.contains(elementType1)) {
+            return false;
+        }
+
+        return elementType1 != ObjJTypes.ObjJ_LINE_TERMINATOR;
+    }
+
+    @Nullable
+    public static PsiElement getThisOrPreviousNonCommentElement(@Nullable PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element instanceof ObjJComment) {
+            return PsiTreeUtil.skipSiblingsBackward(element, PsiWhiteSpace.class, PsiComment.class);
+        }
+        return element;
+    }
+
+
+    @Nullable
+    public static PsiElement getThisOrNextNonCommentElement(@Nullable PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element instanceof ObjJComment) {
+            return PsiTreeUtil.skipSiblingsForward(element, PsiWhiteSpace.class, PsiComment.class);
+        }
+        return element;
     }
 
 }

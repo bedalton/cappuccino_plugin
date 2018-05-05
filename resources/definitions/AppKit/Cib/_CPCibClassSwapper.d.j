@@ -33,44 +33,12 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
 + (void)allocObjectWithCoder:(CPCoder)aCoder className:(CPString)aClassName
 {
-    // FIXME: Also check class classForClassName:
-    var theClass = [aCoder classForClassName:aClassName];
-
-    if (!theClass)
-    {
-        theClass = objj_lookUpClass(aClassName);
-
-        if (!theClass)
-            return nil;
-    }
-
-    return [theClass alloc];
+	//...
 }
 
 + (id)allocWithCoder:(CPCoder)aCoder
 {
-    if ([aCoder respondsToSelector:@selector(usesOriginalClasses)] && [aCoder usesOriginalClasses])
-    {
-        var theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey],
-            object = [self allocObjectWithCoder:aCoder className:theClassName];
-    }
-    else
-    {
-        var theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperClassNameKey],
-            object = [self allocObjectWithCoder:aCoder className:theClassName];
-
-        if (!object)
-        {
-            CPLog.error("Unable to find class " + theClassName + " referenced in cib file.");
-
-            object = [self allocObjectWithCoder:aCoder className:[aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey]];
-        }
-    }
-
-    if (!object)
-        [CPException raise:CPInvalidArgumentException reason:@"Unable to find class " + theClassName + " referenced in cib file."];
-
-    return object;
+	//...
 }
 
 @end

@@ -67,7 +67,7 @@ var ListColumnIdentifier = @"1";
 
 @implementation _CPPopUpPanel : CPPanel
 
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
+- (id<@self>)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;
@@ -140,7 +140,7 @@ var ListColumnIdentifier = @"1";
     BOOL _acceptFirstResponder;
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id<@self>)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -217,7 +217,7 @@ var ListColumnIdentifier = @"1";
 
     @param aDataSource    A subclass of _CPPopUpListDataSource
 */
-- (id)initWithDataSource:(_CPPopUpListDataSource)aDataSource
+- (id<@self>)initWithDataSource:(_CPPopUpListDataSource)aDataSource
 {
     self = [super init];
 
@@ -874,7 +874,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 
 @implementation _CPPopUpList (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 
@@ -910,12 +910,12 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 
 @implementation _CPPopUpList (CPTableViewDataSource)
 
-- (int)numberOfRowsInTableView:(id)aTableView
+- (int)numberOfRowsInTableView:(id<CPTableView>)aTableView
 {
     return MAX([_dataSource numberOfItemsInList:self], 1);
 }
 
-- (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
+- (id)tableView:(id<CPTableView>)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return [_dataSource list:self displayValueForObjectValue:[_dataSource list:self objectValueForItemAtIndex:aRow]];
 }

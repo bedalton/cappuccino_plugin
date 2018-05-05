@@ -15,10 +15,10 @@ import java.util.List;
 /**
  * Meant to find parent classes of a class
  */
-public class ObjJParentClassesByChildIndex extends StringStubIndexExtension<ObjJClassDeclarationElement> {
+public class ObjJParentClassesByChildIndex extends ObjJStringStubIndexBase<ObjJClassDeclarationElement> {
     private static final ObjJParentClassesByChildIndex INSTANCE = new ObjJParentClassesByChildIndex();
     private static final StubIndexKey<String, ObjJClassDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJParentClassesByChildIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
     private ObjJParentClassesByChildIndex() {}
 
     public static ObjJParentClassesByChildIndex getInstance() {
@@ -27,7 +27,13 @@ public class ObjJParentClassesByChildIndex extends StringStubIndexExtension<ObjJ
 
     @Override
     public int getVersion() {
-        return super.getVersion()+ ObjJIndexService.INDEX_VERSION+VERSION;
+        return super.getVersion() + VERSION;
+    }
+
+    @NotNull
+    @Override
+    protected Class<ObjJClassDeclarationElement> getIndexedElementClass() {
+        return ObjJClassDeclarationElement.class;
     }
 
     @NotNull

@@ -113,7 +113,7 @@
 }
 
 
-- (id)init
+- (id<@self>)init
 {
     self = [super init];
 
@@ -351,7 +351,7 @@
     Returns the content array of the controller.
     @return id the content array of the receiver
 */
-- (id)contentArray
+- (id<CPArray>)contentArray
 {
     return [self content];
 }
@@ -361,7 +361,7 @@
 
     @return id - the content of the controller as a set.
 */
-- (id)contentSet
+- (id<CPSet>)contentSet
 {
     return [CPSet setWithArray:[self content]];
 }
@@ -442,7 +442,7 @@
     Returns an array of the controller's objects sorted and filtered.
     @return - array of objects
 */
-- (id)arrangedObjects
+- (id<CPArray>)arrangedObjects
 {
     return _arrangedObjects;
 }
@@ -1196,7 +1196,7 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
 
 @implementation CPArrayController (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 

@@ -43,7 +43,7 @@
     CPString    _label @accessors(property=label);
 }
 
-- (id)init
+- (id<@self>)init
 {
     return [self initWithIdentifier:@""];
 }
@@ -52,7 +52,7 @@
   Initializes a new CPAccordionViewItem with the specified identifier. This identifier may
   then be used in subsequent methods to provide abstract introspection of the CPAccordionView.
 */
-- (id)initWithIdentifier:(CPString)anIdentifier
+- (id<@self>)initWithIdentifier:(CPString)anIdentifier
 {
     self = [super init];
 
@@ -96,7 +96,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
     Initializes the receiver for usage with the specified bounding rectangle
     @return the initialized view
 */
-- (id)initWithFrame:(CGRect)aFrame
+- (id<@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -308,7 +308,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
     CPView          _contentView;
 }
 
-- (id)initWithAccordionView:(CPAccordionView)anAccordionView
+- (id<@self>)initWithAccordionView:(CPAccordionView)anAccordionView
 {
     self = [super initWithFrame:CGRectMakeZero()];
 

@@ -28,7 +28,7 @@
 {
 }
 
-- (id)initWithItemIdentifier:(CPString)anIgnoredIdentifier
+- (id<@self>)initWithItemIdentifier:(CPString)anIgnoredIdentifier
 {
     self = [super initWithItemIdentifier:CPToolbarShowColorsItemIdentifier];
 
@@ -50,7 +50,7 @@
     return self;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     return [self init];
 }

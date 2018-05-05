@@ -135,12 +135,18 @@ public class ObjJPlistParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // value
+  // value+
   static boolean arrayValueList(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arrayValueList")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_);
     r = value(b, l + 1);
+    int c = current_position_(b);
+    while (r) {
+      if (!value(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "arrayValueList", c)) break;
+      c = current_position_(b);
+    }
     exit_section_(b, l, m, r, false, arrayValueList_recover_parser_);
     return r;
   }

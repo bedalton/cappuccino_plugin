@@ -101,7 +101,7 @@ ACTUAL_FRAME_RATE = 0;
     @param anAnimationCurve defines the animation's pace
     @throws CPInvalidArgumentException if an invalid animation curve is specified
 */
-- (id)initWithDuration:(float)aDuration animationCurve:(CPAnimationCurve)anAnimationCurve
+- (id<@self>)initWithDuration:(float)aDuration animationCurve:(CPAnimationCurve)anAnimationCurve
 {
     self = [super init];
 
@@ -207,7 +207,7 @@ ACTUAL_FRAME_RATE = 0;
 /*!
     Returns the animation's delegate
 */
-- (id)delegate
+- (id<CPAnimationDelegate>)delegate
 {
     return _delegate;
 }

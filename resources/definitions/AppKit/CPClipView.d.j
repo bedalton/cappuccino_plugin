@@ -57,7 +57,7 @@
 /*!
     Returns the document view.
 */
-- (id)documentView
+- (id <CPView>)documentView
 {
     return _documentView;
 }
@@ -205,7 +205,7 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 
 @implementation CPClipView (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

@@ -1,10 +1,11 @@
 package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 
-import b.e.P;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.StubBasedPsiElement;
 import com.intellij.psi.stubs.StubElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlockComment;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJComment;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImplementationDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass;
@@ -28,34 +29,22 @@ public class ObjJResolveableElementUtil {
             return out;
         }
         for (PsiT element : elements) {
-            if (true || shouldResolve(element) || file.isEquivalentTo(element.getContainingFile())) {
+            if (shouldResolve(element) || file.isEquivalentTo(element.getContainingFile())) {
                 out.add(element);
             }
         }
         return out;
     }
 
-    public static <PsiT extends PsiElement> List<PsiT> onlyResolveableElements(List<PsiT> elements) {
-        List<PsiT> out = new ArrayList<>();
-        if (elements == null) {
-            return out;
-        }
-        for (PsiT element : elements) {
-            if (shouldResolve(element)) {
-                out.add(element);
-            }
-        }
-        return out;
-    }
 
-    public static <PsiT extends ObjJResolveableElement> List<PsiT> onlyResolveables(List<PsiT> elements) {
+    public static <PsiT extends ObjJResolveableElement> List<PsiT> onlyResolveables(List<PsiT> elements, @NotNull PsiFile file) {
         List<PsiT> out = new ArrayList<>();
         if (elements == null) {
             return out;
         }
         for (PsiT element : elements) {
             ObjJResolveableStub stub = (ObjJResolveableStub)element.getStub();
-            if ((stub != null && stub.shouldResolve()) || element.shouldResolve()) {
+            if (((stub != null && stub.shouldResolve()) || element.shouldResolve()) || file.isEquivalentTo(element.getContainingFile())) {
                 out.add(element);
             }
         }
@@ -79,9 +68,6 @@ public class ObjJResolveableElementUtil {
 
     public static boolean shouldResolve(@Nullable
                                                 PsiElement psiElement, @Nullable String shouldNotResolveLoggingStatement) {
-        if (true) {
-            return true;
-        }
         if (psiElement == null) {
             return false;
         }
@@ -89,26 +75,25 @@ public class ObjJResolveableElementUtil {
         if (stubElement instanceof ObjJResolveableStub) {
             return ((ObjJResolveableStub)stubElement).shouldResolve();
         }
-        PsiElement comment = ObjJTreeUtil.getPreviousNonEmptySibling(psiElement, true);
-        if (comment == null) {
+        PsiElement previousSibling = ObjJTreeUtil.getPreviousNonEmptySibling(psiElement, true);
+        final boolean previousSiblingIsComment = previousSibling instanceof ObjJBlockComment || previousSibling instanceof ObjJComment;
+        if (!previousSiblingIsComment) {
             return true;
         }
-        boolean shouldResolveThisElement = !comment.getText().contains("@ignore");
+        boolean shouldResolveThisElement = !previousSibling.getText().contains("@ignore");
         if (!shouldResolveThisElement) {
             if (shouldNotResolveLoggingStatement != null) {
-                LOGGER.log(Level.INFO, shouldNotResolveLoggingStatement);
+                LOGGER.log(Level.INFO, shouldNotResolveLoggingStatement + "; Comment <"+previousSibling.getText()+">");
+            } else {
+                LOGGER.log(Level.INFO, "Ignoring element of type <"+psiElement.getNode().getElementType().toString()+"> in file: <"+ObjJFileUtil.getContainingFileName(psiElement)+">");
             }
             return false;
         }
-        boolean shouldResolveParent = true;
         ObjJResolveableElement parentResolveableElement = ObjJTreeUtil.getParentOfType(psiElement, ObjJResolveableElement.class);
-        if (parentResolveableElement != null) {
-            shouldResolveParent = parentResolveableElement.shouldResolve();
-        }
-        return shouldResolveParent;
+        return parentResolveableElement == null || parentResolveableElement.shouldResolve();
     }
 
     public static boolean shouldResolve(@Nullable ObjJHasContainingClass hasContainingClass) {
-        return shouldResolve((PsiElement)hasContainingClass) && shouldResolve(hasContainingClass.getContainingClass());
+        return shouldResolve((PsiElement)hasContainingClass) && (hasContainingClass.getContainingClass() == null || shouldResolve(hasContainingClass.getContainingClass()));
     }
 }

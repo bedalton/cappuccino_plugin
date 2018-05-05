@@ -68,7 +68,7 @@
     JSObject            _replacementObjects;
 }
 
-- (id)init
+- (id <_CPCibObjectData>)init
 {
     self = [super init];
 
@@ -145,7 +145,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
 @implementation _CPCibObjectData (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <_CPCibObjectData>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 

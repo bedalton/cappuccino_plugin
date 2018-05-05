@@ -27,45 +27,45 @@ public class ObjJPlistArrayImpl extends ASTWrapperPsiElement implements ObjJPlis
   }
 
   @Override
-  @Nullable
-  public ObjJPlistArray getArray() {
-    return findChildByClass(ObjJPlistArray.class);
+  @NotNull
+  public List<ObjJPlistArray> getArrayList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistArray.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistBoolean getBoolean() {
-    return findChildByClass(ObjJPlistBoolean.class);
+  @NotNull
+  public List<ObjJPlistBoolean> getBooleanList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistBoolean.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistDataValue getDataValue() {
-    return findChildByClass(ObjJPlistDataValue.class);
+  @NotNull
+  public List<ObjJPlistDataValue> getDataValueList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistDataValue.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistDict getDict() {
-    return findChildByClass(ObjJPlistDict.class);
+  @NotNull
+  public List<ObjJPlistDict> getDictList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistDict.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistInteger getInteger() {
-    return findChildByClass(ObjJPlistInteger.class);
+  @NotNull
+  public List<ObjJPlistInteger> getIntegerList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistInteger.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistRealNumber getRealNumber() {
-    return findChildByClass(ObjJPlistRealNumber.class);
+  @NotNull
+  public List<ObjJPlistRealNumber> getRealNumberList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistRealNumber.class);
   }
 
   @Override
-  @Nullable
-  public ObjJPlistString getString() {
-    return findChildByClass(ObjJPlistString.class);
+  @NotNull
+  public List<ObjJPlistString> getStringList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJPlistString.class);
   }
 
   @Override

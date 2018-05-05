@@ -50,7 +50,7 @@
     @param aMask a unique unsigned int identifying your color picker
     @param aPanel the color panel that owns this picker
 */
-- (id)initWithPickerMask:(int)aMask colorPanel:(CPColorPanel)aPanel
+- (id <@self>)initWithPickerMask:(int)aMask colorPanel:(CPColorPanel)aPanel
 {
     if (self = [super init])
     {
@@ -110,12 +110,12 @@
     CPColor         _cachedColor;
 }
 
-- (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel
+- (id <@self>)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel
 {
     return [super initWithPickerMask:mask colorPanel: owningColorPanel];
 }
 
-- (id)initView
+- (id <@self>)initView
 {
     var aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
@@ -231,7 +231,7 @@
     float       _radius;
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id <@self>)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {

@@ -93,7 +93,7 @@ CPBelowBottom = 6;
         };
 }
 
-+ (id)boxEnclosingView:(CPView)aView
++ (id<@self>)boxEnclosingView:(CPView)aView
 {
     var box = [[self alloc] initWithFrame:CGRectMakeZero()],
         enclosingView = [aView superview];
@@ -108,7 +108,7 @@ CPBelowBottom = 6;
     return box;
 }
 
-- (id)initWithFrame:(CGRect)frameRect
+- (id<@self>)initWithFrame:(CGRect)frameRect
 {
     self = [super initWithFrame:frameRect];
 
@@ -603,7 +603,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
 
 @implementation CPBox (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 
@@ -632,9 +632,9 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         }
         else
         {
-            _titlePosition = CPNoTitle;        
+            _titlePosition = CPNoTitle;
         }
-        
+
         [self setAutoresizesSubviews:YES];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 

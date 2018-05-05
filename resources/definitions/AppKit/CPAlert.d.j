@@ -222,7 +222,7 @@ var bottomHeight = 71;
 /*!
     Initializes a \c CPAlert panel with the default alert style \c CPWarningAlertStyle.
 */
-- (id)init
+- (id<@self>)init
 {
     self = [super init];
 

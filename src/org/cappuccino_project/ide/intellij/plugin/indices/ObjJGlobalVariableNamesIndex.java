@@ -1,6 +1,5 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
-import com.intellij.psi.stubs.StringStubIndexExtension;
 import com.intellij.psi.stubs.StubIndexKey;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJGlobalVariableDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJGlobalVariableDeclarationStubType;

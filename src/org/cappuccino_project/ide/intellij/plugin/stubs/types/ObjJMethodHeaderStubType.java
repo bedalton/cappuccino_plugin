@@ -102,7 +102,7 @@ public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHead
 
     @Override
     public boolean shouldCreateStub(ASTNode node) {
-        return !Objects.equals(((ObjJMethodHeaderDeclaration)node.getPsi()).getContainingClassName(), ObjJElementFactory.PLACEHOLDER_CLASS_NAME);
+        return true;
     }
 
 

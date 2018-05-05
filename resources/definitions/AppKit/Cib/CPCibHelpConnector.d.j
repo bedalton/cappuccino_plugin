@@ -28,7 +28,7 @@
     id _marker;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<CPCibHelpConnector>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

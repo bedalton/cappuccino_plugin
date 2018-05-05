@@ -144,11 +144,11 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         SelectorResolveResult<ObjJSelector> selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement);
         List<PsiElement> out = new ArrayList<>();
         if (!selectorResult.isEmpty()) {
-            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult()));
+            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement);
         if (!selectorResult.isEmpty()) {
-            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult()));
+            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         if (!out.isEmpty()) {
             if (classConstraints != null && classConstraints.size() > 0 && !classConstraints.contains(ObjJClassType.UNDETERMINED) && classConstraints.contains(ObjJClassType.ID)) {
@@ -161,15 +161,15 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         }
         SelectorResolveResult<PsiElement> result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.getPossibleContainingClassNames());
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult()));
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         result = ObjJSelectorReferenceResolveUtil.getVariableReferences(myElement, result.getPossibleContainingClassNames());
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult()));
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallPartialReferences(myElement, true);
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult()));
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         //LOGGER.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
         return PsiElementResolveResult.EMPTY_ARRAY;

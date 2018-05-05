@@ -17,7 +17,7 @@ public class ObjJInstanceVariablesByClassIndex extends ObjJStringStubIndexBase<O
 
     private static final ObjJInstanceVariablesByClassIndex INSTANCE = new ObjJInstanceVariablesByClassIndex();
     private static final StubIndexKey<String, ObjJInstanceVariableDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJInstanceVariablesByClassIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     public static ObjJInstanceVariablesByClassIndex getInstance() {
         return INSTANCE;
@@ -31,7 +31,7 @@ public class ObjJInstanceVariablesByClassIndex extends ObjJStringStubIndexBase<O
 
     @Override
     public int getVersion() {
-        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION;
+        return super.getVersion() + VERSION;
     }
 
     @NotNull

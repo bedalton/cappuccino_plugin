@@ -38,7 +38,7 @@
     CPArray _buttons;
 }
 
-+ (id)plusButton
++ (id <CPButton>)plusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
         image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]];
@@ -50,7 +50,7 @@
     return button;
 }
 
-+ (id)minusButton
++ (id <CPButton>)minusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
         image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-minus" forClass:[CPButtonBar class]];
@@ -62,7 +62,7 @@
     return button;
 }
 
-+ (id)actionPopupButton
++ (id <CPPopUpButton>)actionPopupButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
         image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-action" forClass:[CPButtonBar class]];
@@ -97,7 +97,7 @@
         };
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id <@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -327,7 +327,7 @@ var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
     [aCoder encodeObject:_buttons forKey:CPButtonBarButtonsKey];
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

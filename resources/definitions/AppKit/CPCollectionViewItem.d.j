@@ -31,7 +31,7 @@
     CPData  _cachedArchive;
 }
 
-- (id)copy
+- (id <@self>)copy
 {
     var cibName = [self cibName],
         copy;

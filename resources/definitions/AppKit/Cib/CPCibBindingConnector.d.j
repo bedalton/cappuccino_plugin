@@ -33,7 +33,7 @@ var CPCibBindingConnectorBindingKey = @"CPCibBindingConnectorBindingKey",
     id _options;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <CPCibBindingConnector>)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

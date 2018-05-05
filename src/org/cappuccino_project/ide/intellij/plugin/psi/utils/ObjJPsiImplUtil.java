@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry;
-import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.IncorrectOperationException;
 import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil;
@@ -17,11 +16,9 @@ import org.cappuccino_project.ide.intellij.plugin.references.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation;
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings;
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
-import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -932,7 +929,7 @@ public class ObjJPsiImplUtil {
     }
 
     public static boolean shouldResolve(@Nullable ObjJHasContainingClass hasContainingClass) {
-        return ObjJResolveableElementUtil.shouldResolve((PsiElement)hasContainingClass) && shouldResolve(hasContainingClass.getContainingClass());
+        return ObjJResolveableElementUtil.shouldResolve(hasContainingClass);
     }
 
     // ============================== //

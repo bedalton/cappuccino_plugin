@@ -242,12 +242,16 @@ errorSequence
 comment
     ::= blockComment
     |   SINGLE_LINE_COMMENT
+    {
+    	implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement" "com.intellij.psi.PsiComment"]
+    }
     ;
 
 blockComment
 	::= BLOCK_COMMENT_START BLOCK_COMMENT_TEXT? BLOCK_COMMENT_END
 	{
 		pin=1
+		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement" "com.intellij.psi.PsiComment"]
 	}
 	;
 
@@ -354,6 +358,7 @@ private statementOrBlock
 singleBodyStatement
 	::= bodyStatement eos?
 	{
+		extends=block
 		implements=["org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"]
 	}
 	;
@@ -366,6 +371,9 @@ block
 		implements=[
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+
+
 		]
 	}
 	;

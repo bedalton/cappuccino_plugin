@@ -8,7 +8,7 @@ public class ObjJProtocolDeclarationsIndex extends ObjJStringStubIndexBase<ObjJP
 
     private static final ObjJProtocolDeclarationsIndex INSTANCE = new ObjJProtocolDeclarationsIndex();
     private static final StubIndexKey<String, ObjJProtocolDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJProtocolDeclarationsIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     private ObjJProtocolDeclarationsIndex(){}
 

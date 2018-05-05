@@ -128,12 +128,12 @@ CPButtonImageOffset   = 3.0;
     return [super _binderClassForBinding:aBinding];
 }
 
-+ (id)buttonWithTitle:(CPString)aTitle
++ (id <@self>)buttonWithTitle:(CPString)aTitle
 {
     return [self buttonWithTitle:aTitle theme:[CPTheme defaultTheme]];
 }
 
-+ (id)buttonWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
++ (id <@self>)buttonWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
 {
     var button = [[self alloc] init];
 
@@ -165,7 +165,7 @@ CPButtonImageOffset   = 3.0;
     @param aFrame The frame rectangle for the created button object.
     @return An initialized CPView object or nil if the object couldn't be created.
 */
-- (id)initWithFrame:(CGRect)aFrame
+- (id <@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -950,7 +950,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     Initializes the button by unarchiving data from \c aCoder.
     @param aCoder the coder containing the archived CPButton.
 */
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 

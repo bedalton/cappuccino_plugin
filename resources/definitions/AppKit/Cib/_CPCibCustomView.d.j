@@ -52,7 +52,7 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
 
 @implementation _CPCibCustomView (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <_CPCibCustomView>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 
@@ -74,7 +74,7 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
     return _className;
 }
 
-- (id)_cibInstantiate
+- (id <CPView>)_cibInstantiate
 {
     var theClass = CPClassFromString(_className);
 

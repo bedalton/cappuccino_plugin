@@ -49,7 +49,7 @@ public class ObjJMethodCallCompletionContributorUtil {
         }
         ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(psiElement, ObjJMethodCall.class);
         if (methodCall == null) {
-            //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method call is null.");
+            LOGGER.log(Level.WARNING, "Cannot get completion parameters. Method call is null.");
             return;
         }
         addMethodCallCompletions(result, psiElement, methodCall);
@@ -66,7 +66,7 @@ public class ObjJMethodCallCompletionContributorUtil {
         }
         List<ObjJSelector> selectors = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall);
         if (selectors.isEmpty()) {
-            //selectors = Collections.singletonList(ObjJElementFactory.createSelector(psiElement.getProject(), psiElement.getText()));
+            selectors = Collections.singletonList(ObjJElementFactory.createSelector(psiElement.getProject(), psiElement.getText()));
         }
         String selectorString = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors);
         int selectorIndex = selectors.size() - 1;
@@ -143,13 +143,14 @@ public class ObjJMethodCallCompletionContributorUtil {
      */
     private static void addMethodDeclarationLookupElements(@NotNull CompletionResultSet result, @NotNull List<ObjJSelector> selectors, int selectorIndex) {
         if (selectors.isEmpty()) {
+            LOGGER.log(Level.INFO, "Cannot get method declaration lookup elements. SELECTOR ARRAY IS NULL");
             return;
         }
         PsiFile file = selectors.get(0).getContainingFile();
         String selectorString = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors);
-        ObjJSelectorReferenceResolveUtil.SelectorResolveResult<ObjJSelector> resolveResult = ObjJSelectorReferenceResolveUtil.resolveSelectorReferenceAsPsiElement(selectors, selectorIndex);
+        ObjJSelectorReferenceResolveUtil.SelectorResolveResult<ObjJSelector> resolveResult = ObjJSelectorReferenceResolveUtil.resolveSelectorReference(selectors, selectorIndex);
         if (resolveResult == null) {
-            //LOGGER.log(Level.INFO, "Resolve result is null");
+            LOGGER.log(Level.INFO, "Resolve result is null for selector: " + selectorString);
             if (selectors.size()<=selectorIndex) {
                 //LOGGER.log(Level.INFO, "Cannot add method selector elements to result set. Selector index out of bounds.");
                 return;

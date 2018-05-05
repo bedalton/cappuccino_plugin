@@ -123,6 +123,7 @@ public class ObjJIndexService extends StubIndexService {
         for (Object protocol : stub.getInheritedProtocols()) {
             if (protocol instanceof String) {
                 indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), (String)protocol);
+                indexSink.occurrence(ObjJInheritsProtocolIndex.getInstance().getKey(), (String)protocol);
             }
         }
     }

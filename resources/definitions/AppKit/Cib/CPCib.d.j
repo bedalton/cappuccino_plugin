@@ -55,7 +55,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     id          _loadDelegate;
 }
 
-- (id)_initWithData:(CPData)data bundle:(CPBundle)aBundle cibName:(CPString)aCibName
+- (id <CPCib>)_initWithData:(CPData)data bundle:(CPBundle)aBundle cibName:(CPString)aCibName
 {
     self = [super init];
 
@@ -67,7 +67,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
-- (id)initWithContentsOfURL:(CPURL)aURL
+- (id <CPCib>)initWithContentsOfURL:(CPURL)aURL
 {
     self = [super init];
 
@@ -86,7 +86,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
-- (id)initWithContentsOfURL:(CPURL)aURL loadDelegate:(id)aLoadDelegate
+- (id <CPCib>)initWithContentsOfURL:(CPURL)aURL loadDelegate:(id)aLoadDelegate
 {
     self = [super init];
 
@@ -104,7 +104,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
-- (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle
+- (id <CPCib>)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
@@ -120,7 +120,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
-- (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle loadDelegate:(id)aLoadDelegate
+- (id <CPCib>)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle loadDelegate:(id)aLoadDelegate
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
@@ -223,7 +223,7 @@ var CPCibDataFileKey = @"CPCibDataFileKey",
 
 @implementation CPCib (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <CPCib>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 

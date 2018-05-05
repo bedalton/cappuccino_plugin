@@ -8,7 +8,7 @@ public class ObjJImplementationCategoryDeclarationsIndex extends ObjJStringStubI
 
     private static final ObjJImplementationCategoryDeclarationsIndex INSTANCE = new ObjJImplementationCategoryDeclarationsIndex();
     private static final StubIndexKey<String, ObjJImplementationDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJImplementationCategoryDeclarationsIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     private ObjJImplementationCategoryDeclarationsIndex(){}
 

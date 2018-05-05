@@ -58,17 +58,17 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
         "CPRemoveTemplate": "button-image-minus"
     };
 }
-+ (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
++ (id <_CPCibCustomResource>)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
 {
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize }];
 }
 
-+ (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize bundleClass:(CPString)aBundleClass
++ (id <_CPCibCustomResource>)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize bundleClass:(CPString)aBundleClass
 {
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize, @"bundleClass": aBundleClass }];
 }
 
-- (id)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties
+- (id <_CPCibCustomResource>)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties
 {
     self = [super init];
 
@@ -83,7 +83,7 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     return self;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <_CPCibCustomResource>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 
@@ -105,7 +105,7 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     [aCoder encodeObject:_properties forKey:_CPCibCustomResourcePropertiesKey];
 }
 
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
+- (id <_CPCibCustomResource>)awakeAfterUsingCoder:(CPCoder)aCoder
 {
     if ([aCoder respondsToSelector:@selector(bundle)] &&
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))

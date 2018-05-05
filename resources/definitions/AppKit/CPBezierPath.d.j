@@ -141,7 +141,7 @@ var DefaultLineWidth = 1.0;
 /*!
     Create a new CPBezierPath object using the default line width.
 */
-- (id)init
+- (id<@self>)init
 {
     if (self = [super init])
     {

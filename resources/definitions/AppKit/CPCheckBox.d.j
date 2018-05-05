@@ -29,12 +29,12 @@ CPCheckBoxImageOffset = 4.0;
 {
 }
 
-+ (id)checkBoxWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
++ (id <@self>)checkBoxWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
 {
     return [self buttonWithTitle:aTitle theme:aTheme];
 }
 
-+ (id)checkBoxWithTitle:(CPString)aTitle
++ (id <@self>)checkBoxWithTitle:(CPString)aTitle
 {
     return [self buttonWithTitle:aTitle];
 }
@@ -52,7 +52,7 @@ CPCheckBoxImageOffset = 4.0;
     return [super _binderClassForBinding:aBinding];
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id <@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 

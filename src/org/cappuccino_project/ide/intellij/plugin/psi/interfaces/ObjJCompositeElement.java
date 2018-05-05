@@ -2,6 +2,7 @@ package org.cappuccino_project.ide.intellij.plugin.psi.interfaces;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +40,9 @@ public interface ObjJCompositeElement extends PsiElement {
     <PsiT extends PsiElement> List<PsiT> getChildrenOfType(Class<PsiT> childClass);
     @Nullable
     <PsiT extends PsiElement> PsiT getParentOfType(Class<PsiT> childClass);
+
+    @NotNull
+    IElementType getElementType();
 
     //ObjJCompositeElement getPsiOrParent();
 }
