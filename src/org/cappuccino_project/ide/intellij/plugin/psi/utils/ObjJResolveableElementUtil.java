@@ -1,6 +1,5 @@
 package org.cappuccino_project.ide.intellij.plugin.psi.utils;
 
-import b.e.P;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.StubBasedPsiElement;
@@ -11,7 +10,6 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContaini
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

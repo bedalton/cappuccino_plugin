@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 	private static final Logger LOGGER = Logger.getLogger("_ObjJLexer.flex");
 	private boolean inPreProc = false;
 
-  	public _ObjectiveJLexer() {
+  	public _ObjLexer() {
     	this((java.io.Reader)null);
   	}
 
@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 %}
 
 %public
-%class _ObjectiveJLexer
+%class _ObjJLexer
 %implements FlexLexer
 %function advance
 %type IElementType
