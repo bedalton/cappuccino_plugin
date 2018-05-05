@@ -77,7 +77,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 #endif
 }
 
-- (id)initWithFrame:(CGRect)aFrame control:(CPControl)aControl
+- (id<@self>)initWithFrame:(CGRect)aFrame control:(CPControl)aControl
 {
     self = [super initWithFrame:aFrame];
 
@@ -116,7 +116,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     return self;
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id<@self>)initWithFrame:(CGRect)aFrame
 {
     return [self initWithFrame:aFrame control:nil];
 }

@@ -109,11 +109,11 @@ var CPCibOwner = @"CPCibOwner",
 
 @implementation _CPCibLoadDelegate : CPObject
 {
-    id              _loadDelegate;
-    CPDictionary    _externalNameTable;
+    id <_CPCibLoadDelegate>    	_loadDelegate;
+    CPDictionary    			_externalNameTable;
 }
 
-- (id)initWithLoadDelegate:(id)aLoadDelegate externalNameTable:(id)anExternalNameTable
+- (id<_CPCibLoadDelegate>)initWithLoadDelegate:(id)aLoadDelegate externalNameTable:(id)anExternalNameTable
 {
     self = [self init];
 

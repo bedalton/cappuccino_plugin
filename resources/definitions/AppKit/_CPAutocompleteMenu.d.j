@@ -48,7 +48,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     CPTimer         _showCompletionsTimer;
 }
 
-- (id)initWithTextField:(CPTextField)aTextField
+- (id<@self>)initWithTextField:(CPTextField)aTextField
 {
     if (self = [super init])
     {
@@ -282,7 +282,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @implementation _CPAutocompleteWindow : CPPanel
 
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
+- (id<@self>)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;

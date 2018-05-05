@@ -10,7 +10,7 @@ public class ObjJFilesByNameIndex extends ObjJStringStubIndexBase<ObjJFile> {
 
     private static final StubIndexKey<String, ObjJFile> KEY = IndexKeyUtil.createIndexKey(ObjJFilesByNameIndex.class);
 
-    private static final int VERSION = 3;
+    private static final int VERSION = 0;
 
 
     private ObjJFilesByNameIndex(){}

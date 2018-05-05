@@ -1,33 +1,27 @@
 package org.cappuccino_project.ide.intellij.plugin.indices;
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.stubs.StringStubIndexExtension;
 import com.intellij.psi.stubs.StubIndex;
-import org.cappuccino_project.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil;
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.StringUtil;
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
-import org.codehaus.groovy.runtime.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeElement>  extends StringStubIndexExtension<ObjJElemT> {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJStringStubIndexBase.class.getName());
     protected static final Map emptyList = Collections.emptyMap();
-    private static final int VERSION = 3;
+    private static final int VERSION = 0;
 
     @Override
     public int getVersion() {
@@ -75,7 +69,7 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
                 continue;
             }
             if (StringUtil.startsAndEndsWith(key, start, tail)) {
-                LOGGER.log(Level.INFO, "Found selector matching <"+start+"//"+tail+">: <"+key+">");
+                //LOGGER.log(Level.INFO, "Found selector matching <"+start+"//"+tail+">: <"+key+">");
                 keys.add(key);
             } else {
                 notMatchingKeys.add(key);
@@ -205,6 +199,19 @@ public abstract class ObjJStringStubIndexBase<ObjJElemT extends ObjJCompositeEle
             out.addAll(get(key, project, globalSearchScope));
         }
         return out;
+    }
+
+    @NotNull
+    public List<String> getAllResolveableKeys(@NotNull Project project) {
+        return ArrayUtils.filter(new ArrayList<>(getAllKeys(project)), (key) -> isResolveableKey((String)key, project));
+    }
+
+    private boolean isResolveableKey(@NotNull String key, @NotNull Project project) {
+        List<ObjJElemT> elementsForKey = get(key, project, null);
+        for (ObjJElemT element : elementsForKey) {
+            return ObjJPsiImplUtil.shouldResolve(element);
+        }
+        return false;
     }
 
     @NotNull

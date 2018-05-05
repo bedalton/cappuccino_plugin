@@ -192,7 +192,7 @@ public class ObjJClassType {
         }
 
         if (DumbService.isDumb(project)) {
-            throw new IndexNotReadyInterruptingException();
+            return false;
         }
         return ObjJInheritanceUtil.isSubclassOrSelf(parentClass, subclass, project);
     }

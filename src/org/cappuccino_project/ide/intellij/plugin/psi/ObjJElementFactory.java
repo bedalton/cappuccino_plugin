@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 public class ObjJElementFactory {
     private static final Logger LOGGER = Logger.getLogger(ObjJElementFactory.class.getName());
-    public static final String PLACEHOLDER_CLASS_NAME = "_XXX";
+    public static final String PLACEHOLDER_CLASS_NAME = "_XXX__";
 
     @Nullable
     public static ObjJSelector createSelector(Project project, String selector) {

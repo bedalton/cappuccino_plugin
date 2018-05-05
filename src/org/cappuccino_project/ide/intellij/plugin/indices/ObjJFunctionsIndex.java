@@ -12,7 +12,7 @@ import java.util.Map;
 public class ObjJFunctionsIndex extends ObjJStringStubIndexBase<ObjJFunctionDeclarationElement> {
     private static final StubIndexKey<String, ObjJFunctionDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJFunctionsIndex.class);
     private static final ObjJFunctionsIndex INSTANCE = new ObjJFunctionsIndex();
-    private static final int VERSION = 3;
+    private static final int VERSION = 0;
 
 
     private ObjJFunctionsIndex() {
@@ -42,7 +42,7 @@ public class ObjJFunctionsIndex extends ObjJStringStubIndexBase<ObjJFunctionDecl
 
     @Override
     public int getVersion() {
-        return ObjJIndexService.INDEX_VERSION + VERSION;
+        return super.getVersion() + VERSION;
     }
 
     @NotNull

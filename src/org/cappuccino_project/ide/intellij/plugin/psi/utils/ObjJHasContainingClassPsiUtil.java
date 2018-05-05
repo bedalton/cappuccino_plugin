@@ -27,12 +27,12 @@ public class ObjJHasContainingClassPsiUtil {
 
     @Nullable
     public static ObjJClassDeclarationElement getContainingClass(@Nullable
-                                                                         ObjJCompositeElement element) {
+                                                                         PsiElement element) {
         return ObjJTreeUtil.getParentOfType(element, ObjJClassDeclarationElement.class);
     }
 
     @NotNull
-    public static String getContainingClassName(ObjJMethodHeader methodHeader) {
+    public static String getContainingClassName(@NotNull ObjJMethodHeader methodHeader) {
         if (methodHeader.getStub() != null) {
             return methodHeader.getStub().getContainingClassName();
         }
@@ -41,7 +41,7 @@ public class ObjJHasContainingClassPsiUtil {
     }
 
     @NotNull
-    public static String getContainingClassName(ObjJCompositeElement compositeElement) {
+    public static String getContainingClassName(@NotNull ObjJCompositeElement compositeElement) {
         final ObjJClassDeclarationElement classDeclarationElement = getContainingClass(compositeElement);
         if (classDeclarationElement == null) {
             return ObjJClassType.UNDEF.getClassName();

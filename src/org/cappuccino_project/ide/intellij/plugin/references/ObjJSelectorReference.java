@@ -1,8 +1,10 @@
 package org.cappuccino_project.ide.intellij.plugin.references;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
+import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFileTypeFactory;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
@@ -17,12 +19,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelector> {
 
-    private static final Logger LOGGER = Logger.getLogger(ObjJSelectorReference.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(ObjJSelectorReference.class.getName());
 
     private final ObjJMethodHeaderDeclaration methodHeaderParent;
     private List<String> classConstraints;
@@ -49,7 +49,9 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
             //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return null;
         }
-
+        if (DumbService.isDumb(myElement.getProject())) {
+            return null;
+        }
         classConstraints = ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget());
         return classConstraints;
     }
@@ -112,8 +114,11 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
     public boolean isReferenceTo(
             @NotNull
                     PsiElement elementToCheck) {
-        LOGGER.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
+        //LOGGER.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
         if (!(elementToCheck instanceof ObjJSelector)) {
+            return false;
+        }
+        if (Objects.equals(((ObjJSelector)elementToCheck).getContainingClassName(), ObjJElementFactory.PLACEHOLDER_CLASS_NAME)) {
             return false;
         }
         ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodCall.class);
@@ -121,7 +126,7 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         if (methodHeaderParent != null) {
             return Objects.equals(methodCallString, fullSelector);
         } else if (accessorMethods != null) {
-            LOGGER.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
+            //LOGGER.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
             return Objects.equals(accessorMethods.getFirst(), methodCallString) ||
                     Objects.equals(accessorMethods.getSecond(), methodCallString);
         }
@@ -139,14 +144,14 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         SelectorResolveResult<ObjJSelector> selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement);
         List<PsiElement> out = new ArrayList<>();
         if (!selectorResult.isEmpty()) {
-            out.addAll(selectorResult.getResult());
+            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement);
         if (!selectorResult.isEmpty()) {
-            out.addAll(selectorResult.getResult());
+            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         if (!out.isEmpty()) {
-            if (classConstraints != null && classConstraints.size() > 0 && !classConstraints.contains(ObjJClassType.UNDETERMINED)) {
+            if (classConstraints != null && classConstraints.size() > 0 && !classConstraints.contains(ObjJClassType.UNDETERMINED) && classConstraints.contains(ObjJClassType.ID)) {
                 List<PsiElement> tempOut = ArrayUtils.filter(out, (element) -> element instanceof ObjJCompositeElement && classConstraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName((ObjJCompositeElement) element)));
                 if (tempOut.size() > 0) {
                     out = tempOut;
@@ -156,15 +161,15 @@ public class ObjJSelectorReference extends PsiPolyVariantReferenceBase<ObjJSelec
         }
         SelectorResolveResult<PsiElement> result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.getPossibleContainingClassNames());
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(result.getResult());
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         result = ObjJSelectorReferenceResolveUtil.getVariableReferences(myElement, result.getPossibleContainingClassNames());
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(result.getResult());
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallPartialReferences(myElement, true);
         if (!result.isEmpty()) {
-            return PsiElementResolveResult.createResults(selectorResult.getResult());
+            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.getResult(), myElement.getContainingFile()));
         }
         //LOGGER.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
         return PsiElementResolveResult.EMPTY_ARRAY;

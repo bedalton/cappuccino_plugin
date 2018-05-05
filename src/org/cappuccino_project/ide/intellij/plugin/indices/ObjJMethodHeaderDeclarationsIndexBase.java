@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,12 +20,12 @@ import java.util.regex.Pattern;
 public abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT extends ObjJMethodHeaderDeclaration> extends ObjJStringStubIndexBase<MethodHeaderT> {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJMethodHeaderDeclarationsIndexBase.class.getCanonicalName());
-    private static final int VERSION = 1;
-    private static final Pattern PARTS_PATTERN = Pattern.compile("([a-z]*)?([A-Z0-9][a-z]*)*");
+    private static final int VERSION = 0;
+    private static final Pattern PARTS_PATTERN = Pattern.compile("(_?[a-z]*)?(_?[A-Z0-9][a-z]*)*");
 
     @Override
     public int getVersion() {
-        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION;
+        return super.getVersion() + VERSION;
     }
 
 
@@ -60,7 +61,7 @@ public abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT extend
         List<String> nonMatchingKeys = new ArrayList<>();
         Pattern pattern = Pattern.compile(patternString);
         Matcher matches;
-
+        LOGGER.log(Level.INFO, "Searching for keys with pattern: <"+patternString+">");
         for (String key : getAllKeys(project)) {
 
             //Skip already checked key
@@ -69,19 +70,32 @@ public abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT extend
             }
             //Match current key
             matches = pattern.matcher(key);
-            if (!matches.matches() || matches.groupCount() < 2) {
+            if (!matches.matches()) {
                 nonMatchingKeys.add(key);
                 continue;
             }
+            if (matches.groupCount() < 2) {
+                LOGGER.log(Level.INFO, "Match returned with only <"+matches.groupCount()+"> match group instead of the minimum of <2>");
+            }
+            if (parts.isEmpty()) {
+                matchingKeys.add(key);
+                continue;
+            }
             String keyPart = matches.group(1).toLowerCase();
+            boolean isMatch = true;
             for (String part : parts) {
                 if (!keyPart.contains(part)) {
+                    LOGGER.log(Level.INFO, "Key <"+keyPart+"> does not contain part: <"+part+">");
                     nonMatchingKeys.add(key);
-                    continue;
+                    isMatch = false;
+                    break;
                 }
             }
-            matchingKeys.add(key);
+            if (isMatch) {
+                matchingKeys.add(key);
+            }
         }
+        LOGGER.log(Level.INFO, "Found <"+matchingKeys.size()+"> matching keys.");
         return matchingKeys;
     }
 

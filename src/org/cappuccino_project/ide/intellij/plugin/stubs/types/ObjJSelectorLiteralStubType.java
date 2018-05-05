@@ -37,7 +37,7 @@ public class ObjJSelectorLiteralStubType extends ObjJStubElementType<ObjJSelecto
     public ObjJSelectorLiteralStub createStub(
             @NotNull
                     ObjJSelectorLiteralImpl selectorLiteral, StubElement stubParent) {
-        return new ObjJSelectorLiteralStubImpl(stubParent, selectorLiteral.getContainingClassName(), selectorLiteral.getSelectorStrings());
+        return new ObjJSelectorLiteralStubImpl(stubParent, selectorLiteral.getContainingClassName(), selectorLiteral.getSelectorStrings(), selectorLiteral.shouldResolve());
     }
 
     @Override
@@ -51,6 +51,7 @@ public class ObjJSelectorLiteralStubType extends ObjJStubElementType<ObjJSelecto
         for (String selector : stub.getSelectorStrings()) {
             stream.writeName(selector);
         }
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -64,16 +65,12 @@ public class ObjJSelectorLiteralStubType extends ObjJStubElementType<ObjJSelecto
         for (int i=0;i<numSelectorStrings;i++) {
             selectorStrings.add(StringRef.toString(stream.readName()));
         }
-        return new ObjJSelectorLiteralStubImpl(stubParent, containingClassName, selectorStrings);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJSelectorLiteralStubImpl(stubParent, containingClassName, selectorStrings, shouldResolve);
     }
 
     @Override
     public void indexStub(@NotNull ObjJSelectorLiteralStub stub, @NotNull IndexSink indexSink) {
         ServiceManager.getService(StubIndexService.class).indexSelectorLiteral(stub, indexSink);
-    }
-
-    @Override
-    public boolean shouldCreateStub(ASTNode node) {
-        return node.getPsi() instanceof ObjJSelectorLiteral;
     }
 }

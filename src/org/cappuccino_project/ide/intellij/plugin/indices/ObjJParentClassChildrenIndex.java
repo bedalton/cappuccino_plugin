@@ -13,10 +13,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjJParentClassChildrenIndex extends StringStubIndexExtension<ObjJClassDeclarationElement> {
+public class ObjJParentClassChildrenIndex extends ObjJStringStubIndexBase<ObjJClassDeclarationElement> {
     private static final ObjJParentClassChildrenIndex INSTANCE = new ObjJParentClassChildrenIndex();
     private static final StubIndexKey<String, ObjJClassDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJParentClassChildrenIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
     private ObjJParentClassChildrenIndex() {}
 
     public static ObjJParentClassChildrenIndex getInstance() {
@@ -25,7 +25,13 @@ public class ObjJParentClassChildrenIndex extends StringStubIndexExtension<ObjJC
 
     @Override
     public int getVersion() {
-        return super.getVersion()+ ObjJIndexService.INDEX_VERSION+VERSION;
+        return super.getVersion() + VERSION;
+    }
+
+    @NotNull
+    @Override
+    protected Class<ObjJClassDeclarationElement> getIndexedElementClass() {
+        return ObjJClassDeclarationElement.class;
     }
 
     @NotNull

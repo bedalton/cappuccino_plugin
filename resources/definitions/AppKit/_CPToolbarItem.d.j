@@ -74,7 +74,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
     BOOL        _autovalidates;
 }
 
-- (id)init
+- (id<@self>)init
 {
     return [self initWithItemIdentifier:@""];
 }
@@ -85,7 +85,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
     @param anItemIdentifier the item's identifier
     @return the initialized toolbar item
 */
-- (id)initWithItemIdentifier:(CPString)anItemIdentifier
+- (id<@self>)initWithItemIdentifier:(CPString)anItemIdentifier
 {
     self = [super init];
 
@@ -537,7 +537,7 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 
 @implementation CPToolbarItem (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id<@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 
@@ -601,7 +601,7 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 
 @implementation CPToolbarItem (CPCopying)
 
-- (id)copy
+- (id<@self>)copy
 {
     var copy = [[[self class] alloc] initWithItemIdentifier:_itemIdentifier];
 

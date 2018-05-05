@@ -3,33 +3,25 @@ package org.cappuccino_project.ide.intellij.plugin.indices;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.stubs.IndexSink;
 
-import org.cappuccino_project.ide.intellij.plugin.psi.ObjJBlock;
-import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil;
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*;
-import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR;
 import static org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL;
 
 public class ObjJIndexService extends StubIndexService {
 
-    private static final Logger LOGGER = Logger.getLogger("#objj.ObjJIndexService");
+    //private static final Logger LOGGER = Logger.getLogger("#objj.ObjJIndexService");
 
     ObjJIndexService() {
      //   Logger.getGlobal().log(Level.INFO, "Creating ObjJIndexService");
     }
-
 
     /**
      * Index method header stubs
@@ -40,21 +32,21 @@ public class ObjJIndexService extends StubIndexService {
     public void indexMethod(ObjJMethodHeaderStub methodHeaderStub, IndexSink indexSink) {
         final String selector = methodHeaderStub.getSelectorString();
         if (selector.equals(EMPTY_SELECTOR) || selector.equals(EMPTY_SELECTOR + SELECTOR_SYMBOL)) {
-            LOGGER.log(Level.SEVERE, "Method header has no selector to index");
+            //LOGGER.log(Level.SEVERE, "Method header has no selector to index");
             return;
         }
         if (selector.isEmpty()) {
-            LOGGER.log(Level.SEVERE, "Method stub returned with an empty selector");
+            //LOGGER.log(Level.SEVERE, "Method stub returned with an empty selector");
             return;
         }
 
 
         try {
-            LOGGER.log(Level.INFO,"Indexing Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
+            //LOGGER.log(Level.INFO,"Indexing Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
             indexSink.occurrence(ObjJUnifiedMethodIndex.KEY, selector);
-            LOGGER.log(Level.INFO,"Indexed Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
+            //LOGGER.log(Level.INFO,"Indexed Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to index selector with error: "+e.getLocalizedMessage());
+            //LOGGER.log(Level.SEVERE, "Failed to index selector with error: "+e.getLocalizedMessage());
         }
 
         StringBuilder selectorBuilder = new StringBuilder();
@@ -68,7 +60,7 @@ public class ObjJIndexService extends StubIndexService {
             try {
                 indexSink.occurrence(ObjJClassMethodIndex.getInstance().getKey(), className);
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: "+e.getLocalizedMessage());
+                //LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: "+e.getLocalizedMessage());
             }
         }
     }
@@ -82,7 +74,7 @@ public class ObjJIndexService extends StubIndexService {
                                               ObjJInstanceVariableDeclarationStub variableDeclarationStub, IndexSink indexSink) {
         indexSink.occurrence(ObjJInstanceVariablesByClassIndex.getInstance().getKey(), variableDeclarationStub.getContainingClass());
         indexSink.occurrence(ObjJInstanceVariablesByNameIndex.getInstance().getKey(), variableDeclarationStub.getVariableName());
-     //   LOGGER.log(Level.INFO, "Indexing instance variable <"+variableDeclarationStub.getVariableName()+"> for class <"+variableDeclarationStub.getContainingClass()+">");
+     //   //LOGGER.log(Level.INFO, "Indexing instance variable <"+variableDeclarationStub.getVariableName()+"> for class <"+variableDeclarationStub.getContainingClass()+">");
         if (variableDeclarationStub.getGetter() != null && !variableDeclarationStub.getGetter().isEmpty()) {
             indexSink.occurrence(ObjJClassInstanceVariableAccessorMethodIndex.getInstance().getKey(), variableDeclarationStub.getGetter());
         }
@@ -99,13 +91,13 @@ public class ObjJIndexService extends StubIndexService {
     @Override
     public void indexAccessorProperty(@NotNull
                                               ObjJAccessorPropertyStub property, IndexSink indexSink) {
-        LOGGER.log(Level.INFO, "Indexing Accessor Property for var <"+property.getContainingClassName()+":"+property.getVariableName()+">");
+        //LOGGER.log(Level.INFO, "Indexing Accessor Property for var <"+property.getContainingClassName()+":"+property.getVariableName()+">");
         if (property.getGetter() != null) {
-            LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getGetter() + "]");
+            //LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getGetter() + "]");
             indexSink.occurrence(ObjJUnifiedMethodIndex.KEY, property.getGetter());
         }
         if (property.getSetter() != null) {
-            LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getSetter() + "]");
+            //LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getSetter() + "]");
             indexSink.occurrence(ObjJUnifiedMethodIndex.KEY, property.getSetter());
         }
     }
@@ -119,7 +111,7 @@ public class ObjJIndexService extends StubIndexService {
     public void indexClassDeclaration(@NotNull
                                               ObjJClassDeclarationStub stub, @NotNull IndexSink indexSink) {
         if (stub.getClassName().isEmpty()) {
-         //   LOGGER.log(Level.INFO, "ClassName is empty in class declaration for index");
+         //   //LOGGER.log(Level.INFO, "ClassName is empty in class declaration for index");
             return;
         }
         indexSink.occurrence(ObjJClassDeclarationsIndex.getInstance().getKey(), stub.getClassName());
@@ -131,6 +123,7 @@ public class ObjJIndexService extends StubIndexService {
         for (Object protocol : stub.getInheritedProtocols()) {
             if (protocol instanceof String) {
                 indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), (String)protocol);
+                indexSink.occurrence(ObjJInheritsProtocolIndex.getInstance().getKey(), (String)protocol);
             }
         }
     }
@@ -140,7 +133,7 @@ public class ObjJIndexService extends StubIndexService {
             indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), implementationStub.getClassName());
             indexSink.occurrence(ObjJImplementationCategoryDeclarationsIndex.getInstance().getKey(),implementationStub.getClassName());
         } else if (implementationStub.getSuperClassName() != null && !implementationStub.getSuperClassName().equals(ObjJClassType.CPOBJECT)) {
-         //   LOGGER.log(Level.INFO, "Setting super class to: " + implementationStub.getSuperClassName());
+         //   //LOGGER.log(Level.INFO, "Setting super class to: " + implementationStub.getSuperClassName());
             indexSink.occurrence(ObjJClassInheritanceIndex.getInstance().getKey(), implementationStub.getSuperClassName());
         }
         indexSink.occurrence(ObjJImplementationDeclarationsIndex.getInstance().getKey(), implementationStub.getClassName());
@@ -167,19 +160,19 @@ public class ObjJIndexService extends StubIndexService {
                                                  ObjJFunctionDeclarationElementStub functionDeclaration, IndexSink indexSink) {
         if (functionDeclaration.getFunctionName() == null) {
             //noinspection unchecked
-            LOGGER.log(Level.INFO, "function("+ ArrayUtils.join(functionDeclaration.getParamNames()) + ") has no function name");
+            //LOGGER.log(Level.INFO, "function("+ ArrayUtils.join(functionDeclaration.getParamNames()) + ") has no function name");
             return;
         }
-        LOGGER.log(Level.INFO, "Indexing function: <"+functionDeclaration.getFunctionName()+">");
+        //LOGGER.log(Level.INFO, "Indexing function: <"+functionDeclaration.getFunctionName()+">");
         indexSink.occurrence(ObjJFunctionsIndex.getInstance().getKey(), functionDeclaration.getFunctionName());
-        LOGGER.log(Level.INFO, "Did Index function: <"+functionDeclaration.getFunctionName()+">");
+        //LOGGER.log(Level.INFO, "Did Index function: <"+functionDeclaration.getFunctionName()+">");
     }
 
     @Override
     public void indexMethodCall(ObjJMethodCallStub methodHeaderStub, IndexSink indexSink) {
-        LOGGER.log(Level.INFO, "Indexing method call  <["+methodHeaderStub.getCallTarget()+" "+methodHeaderStub.getSelectorString()+"]>");
+        //LOGGER.log(Level.INFO, "Indexing method call  <["+methodHeaderStub.getCallTarget()+" "+methodHeaderStub.getSelectorString()+"]>");
         indexSink.occurrence(ObjJMethodCallIndex.getInstance().getKey(), methodHeaderStub.getSelectorString());
-        LOGGER.log(Level.INFO, "Indexed method call.");
+        //LOGGER.log(Level.INFO, "Indexed method call.");
     }
 
 
@@ -202,7 +195,7 @@ public class ObjJIndexService extends StubIndexService {
     }
 
     public void indexFile(@NotNull ObjJFileStub fileStub, @NotNull IndexSink indexSink) {
-        LOGGER.log(Level.INFO, "Indexing file by name: "+fileStub.getFileName());
+        //LOGGER.log(Level.INFO, "Indexing file by name: "+fileStub.getFileName());
         indexSink.occurrence(ObjJFilesByNameIndex.getInstance().getKey(), fileStub.getFileName());
     }
 
@@ -213,11 +206,11 @@ public class ObjJIndexService extends StubIndexService {
     public void indexVariableName(@NotNull ObjJVariableNameStub stub, @NotNull IndexSink indexSink) {
         final String containingFileName = ObjJFileUtil.getContainingFileName(stub.getPsi().getContainingFile());
         if (containingFileName == null) {
-            LOGGER.log(Level.SEVERE, "Cannot index variable name, containing file name is null");
+            //LOGGER.log(Level.SEVERE, "Cannot index variable name, containing file name is null");
             return;
-        } else {
-            LOGGER.log(Level.INFO, "Indexing variable: "+containingFileName+": "+stub.getVariableName());
-        }
+        }// else {
+            //LOGGER.log(Level.INFO, "Indexing variable: "+containingFileName+": "+stub.getVariableName());
+        //}
         indexSink.occurrence(ObjJVariableNameByScopeIndex.KEY, containingFileName+"-ALL");
         List<Pair<Integer,Integer>> blockRanges = stub.getContainingBlockRanges();
         if (blockRanges.isEmpty()) {

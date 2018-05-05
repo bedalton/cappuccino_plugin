@@ -178,7 +178,7 @@ public class ObjJMethodPsiUtils {
         final String containingClassName = hasSelectorElement.getContainingClassName();
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.getInstance(hasSelectorElement.getProject()).isDumb()) {
-            throw new IndexNotReadyRuntimeException();
+            return null;
         }
         for (ObjJSelectorLiteral selectorLiteral : ObjJSelectorInferredMethodIndex.getInstance().get(containingClassName, hasSelectorElement.getProject())) {
             if (Objects.equals(selectorLiteral.getContainingClassName(),containingClassName)) {
@@ -210,7 +210,7 @@ public class ObjJMethodPsiUtils {
             if (formalVariableType.getVarTypeId() != null) {
                 if (follow) {
                     String returnType = formalVariableType.getVarTypeId().getIdType(false);
-                    LOGGER.log(Level.INFO, "Found return type id to be: <"+returnType+">");
+                    //LOGGER.log(Level.INFO, "Found return type id to be: <"+returnType+">");
                     return returnType;
                 }
             }
@@ -231,12 +231,14 @@ public class ObjJMethodPsiUtils {
         if (varTypeId.getStub() != null) {
             ObjJVarTypeIdStub stub = varTypeId.getStub();
             if (!ObjJMethodCallPsiUtil.isUniversalMethodCaller(stub.getIdType()) && stub.getIdType() != null && !stub.getIdType().equals("id")) {
-                //return stub.getIdType();
+                return stub.getIdType();
             }
         }
         if (varTypeId.getClassName() != null) {
             return varTypeId.getClassName().getText();
         }
+        return varTypeId.getText();
+        /*
         final ObjJMethodDeclaration declaration = varTypeId.getParentOfType(ObjJMethodDeclaration.class);
         if (declaration == null) {
             //LOGGER.log(Level.INFO, "VarTypeId: Not Contained in a method declaration");
@@ -251,12 +253,13 @@ public class ObjJMethodPsiUtils {
         if (Objects.equals(returnType,UNDETERMINED)) {
             returnType = null;
         }
+        /*
         if (returnType != null) {
             LOGGER.log(Level.INFO, !returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
         } else {
             LOGGER.log(Level.INFO, "VarTypeId: getTypeFromReturnStatements returned null");
-        }
-        return returnType != null ? returnType : varTypeId.getText();
+        }* /
+        return returnType != null ? returnType : varTypeId.getText();*/
     }
 
     @Nullable
@@ -274,7 +277,7 @@ public class ObjJMethodPsiUtils {
             if (returnStatement.getExpr() == null) {
                 continue;
             }
-            returnType = ObjJExpressionReturnTypeUtil.getReturnType(returnStatement.getExpr(), follow);
+            returnType = ObjJExpressionReturnTypeUtil.getReturnType(returnStatement.getExpr(), false);
             if (returnType == null) {
                 continue;
             }

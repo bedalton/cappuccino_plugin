@@ -36,10 +36,14 @@
     <fileTypeFactory implementation="org.cappuccino_project.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
     <lang.parserDefinition language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.parser.ObjJParserDefinition"/>
 
-    <!-- Highlighting -->
+    <!-- Editor -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
                                    implementationClass="org.cappuccino_project.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="org.cappuccino_project.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
+    <codeStyleSettingsProvider implementation="org.cappuccino_project.ide.intellij.plugin.formatting.ObjJCodeStyleSettingsProvider" />
+
+    <langCodeStyleSettingsProvider implementation="org.cappuccino_project.ide.intellij.plugin.formatting.ObjJLanguageCodeStyleSettingsProvider" />
+
 
     <!-- Completion -->
     <lang.findUsagesProvider language="ObjectiveJ"
@@ -49,6 +53,8 @@
     <lang.braceMatcher language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJBraceMatcher"/>
     <quoteHandler fileType="ObjectiveJ" className="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJQuoteHandler"/>
     <lang.namesValidator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJNameValidator" />
+    <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.formatting.ObjJBraceEnterHandler" />
+    <codeInsight.gotoSuper language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJGoToSuper" />
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJAnnotator" />
@@ -67,6 +73,7 @@
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariablesByFileNameIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
+    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInheritsProtocolIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImportsIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
     <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
@@ -82,10 +89,11 @@
 
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
-    <!-- =============================== -->
+    <!-- =============================== - ->
     <lang.braceMatcher language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistBraceMatcher"/>
     <lang.parserDefinition language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistParserDefinition"/>
     <lang.syntaxHighlighterFactory key="ObjJPlist"
                                    implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
+                                   -->
   </extensions>
 </idea-plugin>

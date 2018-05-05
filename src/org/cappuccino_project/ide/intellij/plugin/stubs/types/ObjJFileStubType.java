@@ -35,6 +35,7 @@ public class ObjJFileStubType extends IStubFileElementType<ObjJFileStub> {
     public StubBuilder getBuilder() {
         return new ObjJFileStubBuilder();
     }
+
     @Override
     public int getStubVersion() {
         return ObjJStubVersions.SOURCE_STUB_VERSION;

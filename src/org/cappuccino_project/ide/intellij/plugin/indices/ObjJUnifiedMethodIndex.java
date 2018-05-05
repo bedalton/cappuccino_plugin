@@ -9,7 +9,7 @@ public class ObjJUnifiedMethodIndex extends ObjJMethodHeaderDeclarationsIndexBas
     public static final StubIndexKey<String, ObjJMethodHeaderDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJUnifiedMethodIndex.class);
     @NotNull
     private static final ObjJUnifiedMethodIndex INSTANCE = new ObjJUnifiedMethodIndex();
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     private ObjJUnifiedMethodIndex() {
     }

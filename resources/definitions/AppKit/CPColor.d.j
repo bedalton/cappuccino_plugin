@@ -511,7 +511,7 @@ var cachedBlackColor,
 }
 
 /* @ignore */
-- (id)_initWithCSSString:(CPString)aString
+- (id <@self>)_initWithCSSString:(CPString)aString
 {
     if (aString.indexOf("rgb") == CPNotFound)
         return nil;
@@ -540,7 +540,7 @@ var cachedBlackColor,
 }
 
 /* @ignore */
-- (id)_initWithRGBA:(CPArray)components
+- (id <@self>)_initWithRGBA:(CPArray)components
 {
     self = [super init];
 
@@ -570,7 +570,7 @@ var cachedBlackColor,
 }
 
 /* @ignore */
-- (id)_initWithPatternImage:(CPImage)anImage
+- (id <@self>)_initWithPatternImage:(CPImage)anImage
 {
     self = [super init];
 
@@ -887,7 +887,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
     Initializes this color from the data archived in a coder.
     @param aCoder the coder from which the color will be loaded
 */
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
         self = [self _initWithPatternImage:[aCoder decodeObjectForKey:CPColorPatternImageKey]];

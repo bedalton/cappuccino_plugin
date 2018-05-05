@@ -14,7 +14,6 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContaini
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
-import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils;
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,10 +25,8 @@ import java.util.logging.Logger;
 public class ObjJSelectorReferenceResolveUtil {
 
     private static final Logger LOGGER = Logger.getLogger(ObjJSelectorReferenceResolveUtil.class.getName());
-    private static final SelectorResolveResult<PsiElement> EMPTY_RESULT = new SelectorResolveResult<PsiElement>(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+    private static final SelectorResolveResult<PsiElement> EMPTY_RESULT = new SelectorResolveResult<>(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     private static final SelectorResolveResult<ObjJSelector> EMPTY_SELECTORS_RESULT = new SelectorResolveResult<>(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-    private static final List<String> EMPTY_CLASS_CONSTRAINT_LIST = Collections.emptyList();
-    private static final List<String> RETURN_SELF_SELECTORS = Collections.singletonList(ObjJMethodPsiUtils.getSelectorString("class"));
 
     @NotNull
     public static SelectorResolveResult<ObjJSelector> getMethodCallReferences(@NotNull ObjJSelector element) {
@@ -46,7 +43,8 @@ public class ObjJSelectorReferenceResolveUtil {
         }
 
         if (DumbService.isDumb(element.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            LOGGER.log(Level.INFO, "Cannot get method call references. Service is in dumb mode");
+            return EMPTY_SELECTORS_RESULT;
         }
         //LOGGER.log(Level.INFO, "Searching for methods matching selector: <"+fullSelector+">, in file: "+element.getContainingFile().getVirtualFile().getName());
         List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodIndex.getInstance().get(fullSelector, element.getProject());
@@ -56,7 +54,8 @@ public class ObjJSelectorReferenceResolveUtil {
     @NotNull
     static SelectorResolveResult<ObjJSelector> getMethodCallPartialReferences(
             @Nullable
-                    ObjJSelector element, boolean includeSelf) {
+                    ObjJSelector element, @SuppressWarnings("SameParameterValue")
+                    boolean includeSelf) {
         if (element == null) {
             return EMPTY_SELECTORS_RESULT;
         }
@@ -72,7 +71,7 @@ public class ObjJSelectorReferenceResolveUtil {
         }
 
         if (DumbService.isDumb(element.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return EMPTY_SELECTORS_RESULT;
         }
         List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPatternFlat(selectorFragment+"(.*)", element.getProject());
         if (!methodHeaders.isEmpty()) {
@@ -83,7 +82,7 @@ public class ObjJSelectorReferenceResolveUtil {
     }
 
     @Nullable
-    public static SelectorResolveResult<ObjJSelector> resolveSelectorReferenceAsPsiElement(@NotNull List<ObjJSelector> selectors, int selectorIndex) {
+    public static SelectorResolveResult<ObjJSelector> resolveSelectorReference(@NotNull List<ObjJSelector> selectors, int selectorIndex) {
         RawResult result = resolveSelectorReferenceRaw(selectors, selectorIndex);
         if (result== null) {
             return null;
@@ -127,7 +126,7 @@ public class ObjJSelectorReferenceResolveUtil {
             }
         }
         if (project == null) {
-            LOGGER.log(Level.INFO, "Parent and base selector are null");
+            //LOGGER.log(Level.INFO, "Parent and base selector are null");
             return null;
         }
 
@@ -140,12 +139,12 @@ public class ObjJSelectorReferenceResolveUtil {
         List<String> classConstraints = parent != null ? getClassConstraints(parent) : Collections.emptyList();
         Map<String, List<ObjJMethodHeaderDeclaration>> methodHeaders;
         if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
-            String pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)")+"(.*)";
+            String pattern = getFuzzyMethodSelectorPattern(selector);
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPatternFuzzy(pattern, baseSelector.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project);
-            LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
+            //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         } else {
             methodHeaders = ObjJUnifiedMethodIndex.getInstance().getByPattern(selector, null, project);
-            LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
+            //LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         }
         //List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodFragmentIndex.getInstance().get(selectorFragment, element.getProject());
         if (!methodHeaders.isEmpty()) {
@@ -153,6 +152,18 @@ public class ObjJSelectorReferenceResolveUtil {
         } else {
             return null;
         }
+    }
+
+    private static String getFuzzyMethodSelectorPattern(@NotNull String pattern) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String selector : pattern.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL)) {
+            if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
+                selector = "(.+)";
+            }
+            stringBuilder.append(selector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL);
+        }
+        stringBuilder.append("(.*)");
+        return stringBuilder.toString();
     }
 
     @NotNull
@@ -191,8 +202,8 @@ public class ObjJSelectorReferenceResolveUtil {
         return out;
     }
 
-    private static void put(Map<String, List<ObjJSelector>> map, String key, ObjJSelector declaration) {
-        if (true || !map.containsKey(key)) {
+    private static void put(@NotNull Map<String, List<ObjJSelector>> map, @NotNull String key, @NotNull ObjJSelector declaration) {
+        if (!map.containsKey(key)) {
             map.put(key, new ArrayList<>());
         }
         map.get(key).add(declaration);
@@ -242,7 +253,7 @@ public class ObjJSelectorReferenceResolveUtil {
         List<ObjJSelector> otherResults = new ArrayList<>();
 
         if (DumbService.isDumb(selectorElement.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return EMPTY_SELECTORS_RESULT;
         }
         List<ObjJSelectorLiteral> selectorLiterals = ObjJSelectorInferredMethodIndex.getInstance().get(fullSelector, selectorElement.getProject());
         final String subSelector = selectorElement.getSelectorString(false);
@@ -267,7 +278,7 @@ public class ObjJSelectorReferenceResolveUtil {
             classConstraints = getClassConstraints(selectorElement);
         }
         if (DumbService.isDumb(selectorElement.getProject())) {
-            throw new IndexNotReadyRuntimeException();
+            return packageResolveResult(Collections.emptyList(),Collections.emptyList(), classConstraints);
         }
         ObjJHasMethodSelector parent = ObjJTreeUtil.getParentOfType(selectorElement, ObjJHasMethodSelector.class);
         String fullSelector = parent != null ? parent.getSelectorString() : null;
@@ -294,7 +305,6 @@ public class ObjJSelectorReferenceResolveUtil {
         final List<PsiElement> otherResult = new ArrayList<>();
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(selectorElement.getProject())) {
-            //throw new IndexNotReadyRuntimeException();
             return EMPTY_RESULT;
         }
         for (ObjJInstanceVariableDeclaration declaration : ObjJInstanceVariablesByNameIndex.getInstance().get(variableName, selectorElement.getProject())) {
@@ -326,63 +336,20 @@ public class ObjJSelectorReferenceResolveUtil {
         }
         List<String> classConstraints;
         ObjJMethodCall methodCall = (ObjJMethodCall) element;
-        ObjJCallTarget callTarget = methodCall.getCallTarget();
-        String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
+        //ObjJCallTarget callTarget = methodCall.getCallTarget();
+        //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
         //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
         classConstraints = ObjJCallTargetUtil.getPossibleCallTargetTypesFromMethodCall(methodCall);
         if (!ObjJPluginSettings.validateCallTarget() || !classConstraints.isEmpty()) {
             return classConstraints;
         }
         classConstraints = ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.getCallTarget());
-        if (!classConstraints.isEmpty()) {
-            //LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
+        /*if (!classConstraints.isEmpty()) {
+            LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
         } else {
-            //   LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCall.getCallTarget().getText()+">.");
-        }
+            LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCall.getCallTarget().getText()+">.");
+        }*/
         return classConstraints;
-    }
-
-
-    public static class SelectorResolveMapResult<T> {
-        private final boolean natural;
-        private final Map<String, T> naturalResult;
-        private final Map<String, T> otherResult;
-        private final List<String> possibleContainingClassNames;
-        private SelectorResolveMapResult(@NotNull final Map<String, T> naturalResult, @NotNull final Map<String, T> otherResult, @NotNull final List<String> possibleContainingClassNames) {
-            this.naturalResult = naturalResult;
-            this.otherResult = otherResult;
-            this.natural = !naturalResult.isEmpty();
-            this.possibleContainingClassNames = possibleContainingClassNames;
-            //LOGGER.log(Level.INFO, "Selector resolve result has <"+naturalResult.size()+"> natural results, and <"+otherResult.size()+"> other results");
-        }
-
-        public boolean isNatural() {
-            return natural;
-        }
-
-        @NotNull
-        public Map<String, T> getResult() {
-            return natural ? naturalResult : otherResult;
-        }
-
-        @NotNull
-        public Map<String, T> getNaturalResult() {
-            return naturalResult;
-        }
-
-        @NotNull
-        public Map<String, T> getOtherResult() {
-            return otherResult;
-        }
-
-        @NotNull
-        public List<String> getPossibleContainingClassNames() {
-            return possibleContainingClassNames;
-        }
-
-        public boolean isEmpty() {
-            return getResult().isEmpty();
-        }
     }
 
     public static class SelectorResolveResult<T> {
@@ -427,22 +394,6 @@ public class ObjJSelectorReferenceResolveUtil {
         }
     }
 
-    public static class SelectorPsiElementResolveResult extends SelectorResolveResult<PsiElement> {
-        private SelectorPsiElementResolveResult(
-                @NotNull
-                        List<PsiElement> naturalResult,
-                @NotNull
-                        List<PsiElement> otherResult,
-                @NotNull
-                        List<String> possibleContainingClassNames) {
-            super(naturalResult, otherResult, possibleContainingClassNames);
-        }
-    }
-
-    public interface ResultFormatter<T> {
-        T format(int selectorIndex, ObjJMethodHeaderDeclaration methodHeaderDeclaration);
-    }
-
     public static class RawResult {
         private final Map<String, List<ObjJMethodHeaderDeclaration>> methodHeaders;
         private final List<String> classConstraints;
@@ -460,17 +411,6 @@ public class ObjJSelectorReferenceResolveUtil {
             return index;
         }
 
-        public Map<String, List<ObjJMethodHeaderDeclaration>>  getMethodHeaders() {
-            return methodHeaders;
-        }
-
-        public List<String> getClassConstraints() {
-            return classConstraints;
-        }
-
-        public ObjJSelector getBaseSelector() {
-            return baseSelector;
-        }
     }
 
 }

@@ -10,6 +10,8 @@ import com.intellij.util.io.StringRef;
 import org.cappuccino_project.ide.intellij.plugin.indices.StubIndexService;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJMethodHeaderImpl;
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils;
@@ -19,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHeaderStub, ObjJMethodHeaderImpl> {
     ObjJMethodHeaderStubType(
@@ -44,7 +47,8 @@ public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHead
         final List<String> params = objJMethodHeader.getParamTypesAsStrings();
         final String returnType = null;//objJMethodHeader.getReturnType();
         final boolean required = ObjJMethodPsiUtils.methodRequired(objJMethodHeader);
-        return new ObjJMethodHeaderStubImpl(parentStub, containingClassName, objJMethodHeader.isStatic(), selectors, params, returnType, required);
+        final boolean shouldResolve = ObjJPsiImplUtil.shouldResolve(objJMethodHeader);
+        return new ObjJMethodHeaderStubImpl(parentStub, containingClassName, objJMethodHeader.isStatic(), selectors, params, returnType, required, shouldResolve);
     }
 
     @Override
@@ -68,6 +72,7 @@ public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHead
         }
         stubOutputStream.writeName(stub.getReturnType().getClassName());
         stubOutputStream.writeBoolean(stub.isRequired());
+        stubOutputStream.writeBoolean(stub.shouldResolve());
 
     }
 
@@ -90,7 +95,14 @@ public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHead
         }
         final String returnType = StringRef.toString(stream.readName());
         final boolean required = stream.readBoolean();
-        return new ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, returnType, required);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, returnType, required, shouldResolve);
+    }
+
+
+    @Override
+    public boolean shouldCreateStub(ASTNode node) {
+        return true;
     }
 
 
@@ -98,10 +110,5 @@ public class ObjJMethodHeaderStubType extends ObjJStubElementType<ObjJMethodHead
     public void indexStub(@NotNull ObjJMethodHeaderStub stub, @NotNull
             IndexSink sink) {
         ServiceManager.getService(StubIndexService.class).indexMethod(stub, sink);
-    }
-
-    @Override
-    public boolean shouldCreateStub(ASTNode node) {
-        return node.getPsi() instanceof ObjJMethodHeader;
     }
 }

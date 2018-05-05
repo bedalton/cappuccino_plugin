@@ -122,7 +122,7 @@ var SharedColorPanel = nil,
     To obtain the color panel, use \c +sharedColorPanel.
     @ignore
 */
-- (id)init
+- (id <@self>)init
 {
     self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 370.0)
                             styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];

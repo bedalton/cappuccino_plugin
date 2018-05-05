@@ -36,13 +36,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
-public class ObjJElementImplStub<T extends StubElement<? extends PsiElement>> extends StubBasedPsiElementBase<T>
+public class ObjJStubBasedElementImpl<T extends StubElement<? extends PsiElement>> extends StubBasedPsiElementBase<T>
         implements ObjJCompositeElement, ObjJStubBasedElement<T> {
-    public ObjJElementImplStub(@NotNull T stub, @NotNull IStubElementType nodeType) {
+    public ObjJStubBasedElementImpl(@NotNull T stub, @NotNull IStubElementType nodeType) {
         super(stub, nodeType);
     }
 
-    public ObjJElementImplStub(@NotNull ASTNode node) {
+    public ObjJStubBasedElementImpl(@NotNull ASTNode node) {
         super(node);
     }
 

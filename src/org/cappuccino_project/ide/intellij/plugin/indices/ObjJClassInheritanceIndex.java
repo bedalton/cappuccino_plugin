@@ -14,7 +14,7 @@ import java.util.List;
 public class ObjJClassInheritanceIndex extends ObjJStringStubIndexBase<ObjJClassDeclarationElement> {
     private static final ObjJClassInheritanceIndex INSTANCE = new ObjJClassInheritanceIndex();
     private static final StubIndexKey<String, ObjJClassDeclarationElement> KEY = IndexKeyUtil.createIndexKey(ObjJClassInheritanceIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
     private ObjJClassInheritanceIndex() {}
 
     public static ObjJClassInheritanceIndex getInstance() {
@@ -23,7 +23,7 @@ public class ObjJClassInheritanceIndex extends ObjJStringStubIndexBase<ObjJClass
 
     @Override
     public int getVersion() {
-        return super.getVersion()+ ObjJIndexService.INDEX_VERSION+VERSION;
+        return super.getVersion() + VERSION;
     }
 
     @NotNull

@@ -49,81 +49,29 @@
     BOOL        _windowIsFullPlatformWindow;
 }
 
-- (id)init
+- (id <_CPCibWindowTemplate>)init
 {
-    self = [super init];
-
-    if (self)
-    {
-        _windowClass = @"CPWindow";
-        _windowRect = CGRectMake(0.0, 0.0, 400.0, 200.0);
-        _windowStyleMask = CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask;
-
-        _windowTitle = @"Window";
-        _windowView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 200.0)];
-
-        _windowIsFullPlatformWindow = NO;
-
-        _wtFlags = CPWindowPositionFlexibleLeft | CPWindowPositionFlexibleRight | CPWindowPositionFlexibleTop | CPWindowPositionFlexibleBottom;
-    }
-
-    return self;
+    //...
 }
 
 - (CPString)customClassName
 {
-    return _windowClass;
+    //...
 }
 
 - (void)setCustomClassName:(CPString)aClassName
 {
-    _windowClass = aClassName;
+    //...
 }
 
 - (CPString)windowClass
 {
-    return _windowClass;
+    //...
 }
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString([self windowClass]);
-
-    if (!windowClass)
-    {
-#if DEBUG
-        CPLog.warn("Unknown class \"%@\" in cib file, using CPWindow instead.", [self windowClass]);
-#endif
-        windowClass = [CPWindow class];
-    }
-
-    var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
-
-    if (_minSize)
-        [theWindow setMinSize:_minSize];
-
-    if (_maxSize)
-        [theWindow setMaxSize:_maxSize];
-
-    //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
-    [theWindow setTitle:_windowTitle];
-
-    var contentViewAutoresizesSubviews = [_windowView autoresizesSubviews];
-
-    [_windowView setAutoresizesSubviews:NO];
-    [theWindow setContentView:_windowView];
-    [_windowView setAutoresizesSubviews:contentViewAutoresizesSubviews];
-
-    if ([_viewClass isKindOfClass:[CPToolbar class]])
-       [theWindow setToolbar:_viewClass];
-
-    [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
-    [theWindow setFullPlatformWindow:_windowIsFullPlatformWindow];
-
-    theWindow._positioningMask = _wtFlags;
-    theWindow._positioningScreenRect = _screenRect;
-
-    return theWindow;
+   	//...
 }
 
 @end
@@ -146,7 +94,7 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
 @implementation _CPCibWindowTemplate (Coding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <_CPCibWindowTemplate>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 

@@ -13,11 +13,15 @@ import org.cappuccino_project.ide.intellij.plugin.lang.ObjJLanguage;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public abstract class ObjJStubElementType<StubT extends StubElement, PsiT extends ObjJStubBasedElement<?>> extends IStubElementType<StubT, PsiT> {
@@ -61,31 +65,7 @@ public abstract class ObjJStubElementType<StubT extends StubElement, PsiT extend
 
     @Override
     public boolean shouldCreateStub(ASTNode node) {
-        PsiElement psi = node.getPsi();
-        if (
-                psi instanceof ObjJClassDeclarationElement ||
-                psi instanceof ObjJFunctionDeclaration ||
-                psi instanceof ObjJMethodHeader ||
-                psi instanceof ObjJInstanceVariableDeclaration ||
-                psi instanceof ObjJAccessorProperty ||
-                psi instanceof ObjJSelectorLiteral
-
-            ) {
-            return true;
-        }
-        return createStubDependingOnParent(node);
-    }
-
-    private static boolean createStubDependingOnParent(ASTNode node) {
-        ASTNode parent = node.getTreeParent();
-        IElementType parentType = parent.getElementType();
-        if (parentType instanceof IStubElementType) {
-            return ((IStubElementType) parentType).shouldCreateStub(parent);
-        }
-        if (parentType instanceof IStubFileElementType) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -96,5 +76,14 @@ public abstract class ObjJStubElementType<StubT extends StubElement, PsiT extend
     @NotNull
     public ArrayFactory<PsiT> getArrayFactory() {
         return arrayFactory;
+    }
+
+    protected boolean shouldResolve(ASTNode node) {
+        PsiElement psiElement = node.getPsi();
+        ObjJClassDeclarationElement classDeclarationElement = ObjJPsiImplUtil.getContainingClass(psiElement);
+        if (classDeclarationElement == null) {
+            return false;
+        }
+        return ObjJPsiImplUtil.shouldResolve(classDeclarationElement);
     }
 }

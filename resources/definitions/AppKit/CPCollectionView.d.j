@@ -49,12 +49,12 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 @protocol CPCollectionViewDelegate <CPObject>
 
 @optional
-- (BOOL)collectionView:(CPCollectionView)collectionView acceptDrop:(id)draggingInfo index:(CPInteger)index dropOperation:(CPCollectionViewDropOperation)dropOperation;
+- (BOOL)collectionView:(CPCollectionView)collectionView acceptDrop:(id/*<CPDraggingInfo>*/)draggingInfo index:(CPInteger)index dropOperation:(CPCollectionViewDropOperation)dropOperation;
 - (BOOL)collectionView:(CPCollectionView)collectionView canDragItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event;
 - (BOOL)collectionView:(CPCollectionView)collectionView writeItemsAtIndexes:(CPIndexSet)indexes toPasteboard:(CPPasteboard)pasteboard;
 - (CPArray)collectionView:(CPCollectionView)collectionView dragTypesForItemsAtIndexes:(CPIndexSet)indexes;
 - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
-- (CPDragOperation)collectionView:(CPCollectionView)collectionView validateDrop:(id)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation;
+- (CPDragOperation)collectionView:(CPCollectionView)collectionView validateDrop:(id/*<CPDraggingInfo>*/)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation;
 - (CPMenu)collectionView:(CPCollectionView)collectionView menuForItemAtIndex:(CPInteger)anIndex;
 - (CPView)collectionView:(CPCollectionView)collectionView dragginViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
 - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
@@ -148,7 +148,7 @@ var HORIZONTAL_MARGIN = 2;
     return [super _binderClassForBinding:aBinding];
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id <@self>)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -263,7 +263,7 @@ var HORIZONTAL_MARGIN = 2;
     @outlet CPTextField textField;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 
@@ -906,7 +906,7 @@ var HORIZONTAL_MARGIN = 2;
 /*!
     Returns the collection view's delegate
 */
-- (id)delegate
+- (id <CPCollectionViewDelegate>)delegate
 {
     return _delegate;
 }
@@ -1069,7 +1069,7 @@ var HORIZONTAL_MARGIN = 2;
     return [_itemForDragging view];
 }
 
-- (CPDragOperation)draggingEntered:(id)draggingInfo
+- (CPDragOperation)draggingEntered:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     var dropIndex = -1,
         dropIndexRef = @ref(dropIndex),
@@ -1084,7 +1084,7 @@ var HORIZONTAL_MARGIN = 2;
     return _currentDragOperation;
 }
 
-- (CPDragOperation)draggingUpdated:(id)draggingInfo
+- (CPDragOperation)draggingUpdated:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     if (![self _dropIndexDidChange:draggingInfo])
         return _currentDragOperation;
@@ -1101,7 +1101,7 @@ var HORIZONTAL_MARGIN = 2;
     return dragOperation;
 }
 
-- (CPDragOperation)_validateDragWithInfo:(id)draggingInfo dropIndex:(Function)dropIndexRef dropOperation:(int)dropOperation
+- (CPDragOperation)_validateDragWithInfo:(id/*<CPDraggingInfo>*/)draggingInfo dropIndex:(Function)dropIndexRef dropOperation:(int)dropOperation
 {
     var result = CPDragOperationMove,
         dropIndex = [self _dropIndexForDraggingInfo:draggingInfo proposedDropOperation:dropOperation];
@@ -1121,12 +1121,12 @@ var HORIZONTAL_MARGIN = 2;
     return result;
 }
 
-- (void)draggingExited:(id)draggingInfo
+- (void)draggingExited:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:0 newDropIndex:-1 newDropOperation:1];
 }
 
-- (void)draggingEnded:(id)draggingInfo
+- (void)draggingEnded:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:0 newDropIndex:-1 newDropOperation:1];
 }
@@ -1142,7 +1142,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 }
 */
 
-- (BOOL)performDragOperation:(id)draggingInfo
+- (BOOL)performDragOperation:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     var result = NO;
 
@@ -1154,7 +1154,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     return result;
 }
 
-- (void)_updateDragAndDropStateWithDraggingInfo:(id)draggingInfo newDragOperation:(CPDragOperation)dragOperation newDropIndex:(CPInteger)dropIndex newDropOperation:(CPInteger)dropOperation
+- (void)_updateDragAndDropStateWithDraggingInfo:(id/*<CPDraggingInfo>*/)draggingInfo newDragOperation:(CPDragOperation)dragOperation newDropIndex:(CPInteger)dropIndex newDropOperation:(CPInteger)dropOperation
 {
     _currentDropIndex = dropIndex;
     _currentDragOperation = dragOperation;
@@ -1188,7 +1188,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     [_dropView setFrameOrigin:frameOrigin];
 }
 
-- (BOOL)_dropIndexDidChange:(id)draggingInfo
+- (BOOL)_dropIndexDidChange:(id/*<CPDraggingInfo>*/)draggingInfo
 {
     var dropIndex = [self _dropIndexForDraggingInfo:draggingInfo proposedDropOperation:1];
 
@@ -1198,7 +1198,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     return (_currentDropIndex !== dropIndex)
 }
 
-- (CPInteger)_dropIndexForDraggingInfo:(id)draggingInfo proposedDropOperation:(int)dropOperation
+- (CPInteger)_dropIndexForDraggingInfo:(id/*<CPDraggingInfo>*/)draggingInfo proposedDropOperation:(int)dropOperation
 {
     var location = [self convertPoint:[draggingInfo draggingLocation] fromView:nil],
         locationX = location.x + _itemSize.width / 2;
@@ -1427,7 +1427,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     @ignore
     Call delegate collectionView:acceptDrop:index:dropOperation:
 */
-- (BOOL)_sendDelegateAcceptDrop:(id)draggingInfo index:(CPInteger)index dropOperation:(CPCollectionViewDropOperation)dropOperation
+- (BOOL)_sendDelegateAcceptDrop:(id/*<CPDraggingInfo>*/)draggingInfo index:(CPInteger)index dropOperation:(CPCollectionViewDropOperation)dropOperation
 {
     if (!(_implementedDelegateMethods & CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_))
         return NO;
@@ -1487,7 +1487,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     @ignore
     Call delegate collectionView:validateDrop:proposedIndex:dropOperation:
 */
-- (CPDragOperation)_sendDelegateValidateDrop:(id)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation
+- (CPDragOperation)_sendDelegateValidateDrop:(id/*<CPDraggingInfo>*/)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation
 {
     if (!(_implementedDelegateMethods & CPCollectionViewDelegate_collectionView_validateDrop_proposedIndex_dropOperation_))
         return CPDragOperationNone;
@@ -1547,7 +1547,7 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
 @implementation CPCollectionView (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <@self>)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 

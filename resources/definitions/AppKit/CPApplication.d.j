@@ -142,7 +142,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     Functions are \c New, \c Open, \c Undo, \c Redo, \c Save, \c Cut, \c Copy, \c Paste.
     @return the initialized application
 */
-- (id)init
+- (id<@self>)init
 {
     self = [super init];
 
@@ -225,7 +225,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 /*!
     Returns the application's delegate. The app can only have one delegate at a time.
 */
-- (id)delegate
+- (id<CPApplicationDelegate>)delegate
 {
     return _delegate;
 }
@@ -299,6 +299,11 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 
     _finishedLaunching = YES;
 }
+
+@protocol CPApplicationDelegate
+@optional
+-(BOOL)applicationShouldOpenUntitledFile;
+@end
 
 - (void)terminate:(id)aSender
 {

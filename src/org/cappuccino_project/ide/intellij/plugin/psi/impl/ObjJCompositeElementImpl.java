@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.scope.PsiScopeProcessor;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.usageView.UsageViewUtil;
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
@@ -46,7 +47,7 @@ public class ObjJCompositeElementImpl extends ASTWrapperPsiElement implements Ob
 
     @Override
     public ItemPresentation getPresentation() {
-        LOGGER.log(Level.INFO, "Get Presentation <"+this.getNode().getElementType().toString()+">");
+        //LOGGER.log(Level.INFO, "Get Presentation <"+this.getNode().getElementType().toString()+">");
         final String text = UsageViewUtil.createNodeText(this);
         if (text != null) {
             return new ItemPresentation() {
@@ -97,5 +98,10 @@ public class ObjJCompositeElementImpl extends ASTWrapperPsiElement implements Ob
             return (ObjJFile)file;
         }
         return null;
+    }
+
+    @Override
+    public IElementType getElementType() {
+        return getNode().getElementType();
     }
 }

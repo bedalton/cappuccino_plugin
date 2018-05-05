@@ -29,14 +29,14 @@ var _supportsCSSAnimations = null;
     CPSetPlatformFeature(CPCSSAnimationFeature, compat);
 }
 
-- (id)initWithTarget:(id)aTarget
+- (id<_CPObjectAnimator>)initWithTarget:(id<CPAnimatablePropertyContainer>)aTarget
 {
     _target = aTarget;
 
     return self;
 }
 
-- (id)animator
+- (id<_CPObjectAnimator>)animator
 {
     return self;
 }
@@ -46,7 +46,7 @@ var _supportsCSSAnimations = null;
    return [_target isEqual:anObject];
 }
 
-- (id)forwardingTargetForSelector:(SEL)aSelector
+- (id<CPAnimatablePropertyContainer>)forwardingTargetForSelector:(SEL)aSelector
 {
     return _target;
 }

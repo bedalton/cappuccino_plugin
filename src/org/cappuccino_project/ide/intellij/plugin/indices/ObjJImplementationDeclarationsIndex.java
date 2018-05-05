@@ -8,7 +8,7 @@ public class ObjJImplementationDeclarationsIndex extends ObjJStringStubIndexBase
 
     private static final ObjJImplementationDeclarationsIndex INSTANCE = new ObjJImplementationDeclarationsIndex();
     private static final StubIndexKey<String, ObjJImplementationDeclaration> KEY = IndexKeyUtil.createIndexKey(ObjJImplementationDeclarationsIndex.class);
-    private static final int VERSION = 1;
+    private static final int VERSION = 0;
 
     private ObjJImplementationDeclarationsIndex(){}
 

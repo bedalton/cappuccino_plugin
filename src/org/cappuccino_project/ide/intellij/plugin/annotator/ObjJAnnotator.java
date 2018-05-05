@@ -8,8 +8,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClass;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType;
@@ -21,12 +19,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJAnnotator implements Annotator {
 
-    private static final Logger LOGGER = Logger.getLogger(ObjJAnnotator.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(ObjJAnnotator.class.getName());
 
     @Override
     public void annotate(
@@ -87,19 +83,18 @@ public class ObjJAnnotator implements Annotator {
             if (node != null && node.getText().equals(";")) {
                 annotationHolder.createWarningAnnotation(element, "extraneous colon");
             }
-            return;
         }
     }
 
     private static void validateAndAnnotateContinueStatement(@NotNull PsiElement element, @NotNull AnnotationHolder annotationHolder) {
-        LOGGER.log(Level.INFO, "Validating continue element");
+        //LOGGER.log(Level.INFO, "Validating continue element");
         if (ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement.class) == null) {
             annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.");
         }
     }
 
     private static void validateBreakStatement(@NotNull PsiElement element, @NotNull AnnotationHolder annotationHolder) {
-        LOGGER.log(Level.INFO, "Validating break element");
+        //LOGGER.log(Level.INFO, "Validating break element");
         if (ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement.class) != null ||
                 ObjJTreeUtil.getParentOfType(element, ObjJCaseClause.class) != null) {
             return;

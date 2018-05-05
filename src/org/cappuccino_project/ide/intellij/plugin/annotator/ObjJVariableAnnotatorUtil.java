@@ -54,7 +54,7 @@ class ObjJVariableAnnotatorUtil {
             @NotNull
             final AnnotationHolder annotationHolder) {
         if (variableName == null || variableName.getText().isEmpty()) {
-            LOGGER.log(Level.INFO, "Var Name Is Null for annotator.");
+            LOGGER.log(Level.WARNING, "Var Name Is Null for annotator.");
             return;
         }
 
@@ -261,9 +261,9 @@ class ObjJVariableAnnotatorUtil {
                 return true;
             } else if (variableDeclaration.getParent() instanceof ObjJGlobalVariableDeclaration) {
                 return true;
-            } else {
+            }// else {
                 //LOGGER.log(Level.INFO, "Variable declaration has a parent of type: <"+variableDeclaration.getParent().getNode().getElementType().toString()+">");
-            }
+            //}
             assignment = variableDeclaration.getParent() instanceof ObjJBodyVariableAssignment ? ((ObjJBodyVariableAssignment) variableDeclaration.getParent()) : null;
         }
         return assignment != null && assignment.getVarModifier() != null;
@@ -418,7 +418,7 @@ class ObjJVariableAnnotatorUtil {
         for (ObjJFunctionDeclarationElement declarationElement : ObjJFunctionsIndex.getInstance().get(variableName.getText(), variableName.getProject())) {
             ProgressIndicatorProvider.checkCanceled();
             if (declarationElement.getContainingFile().isEquivalentTo(file) && declarationElement.getFunctionNameNode() != null && variableName.getTextRange().getStartOffset() > declarationElement.getFunctionNameNode().getTextRange().getStartOffset()) {
-                //createAnnotation(annotationLevel, variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, variableName.getText()), annotationHolder);
+                createAnnotation(annotationLevel, variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, variableName.getText()), annotationHolder);
             }
 
         }

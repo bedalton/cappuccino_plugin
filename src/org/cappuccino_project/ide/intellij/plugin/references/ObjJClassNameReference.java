@@ -6,16 +6,19 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex;
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJClassName;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImplementationDeclaration;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJInheritedProtocolList;
+import org.cappuccino_project.ide.intellij.plugin.psi.ObjJProtocolDeclaration;
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClassName> {
     private final String className;
@@ -34,24 +37,44 @@ public class ObjJClassNameReference extends PsiPolyVariantReferenceBase<ObjJClas
             return ResolveResult.EMPTY_ARRAY;
         }
         List<ObjJClassName> classNames = new ArrayList<>();
-        Collection<ObjJClassDeclarationElement> classDeclarations = ObjJClassDeclarationsIndex.getInstance().get(className, myElement.getProject());
+        boolean mustBeMain = false;
+        if (myElement.getParent() instanceof ObjJInheritedProtocolList) {
+            List<ObjJProtocolDeclaration>  protocolDeclarations = new ArrayList<>(ObjJProtocolDeclarationsIndex.getInstance().get(className, myElement.getProject()));
+            for (ObjJProtocolDeclaration protocolDeclaration : protocolDeclarations) {
+
+            }
+        } else if (myElement.getParent() instanceof ObjJImplementationDeclaration ){
+            Collection<ObjJImplementationDeclaration> implementationDeclarations = ObjJImplementationDeclarationsIndex.getInstance().get(className, myElement.getProject());
+            mustBeMain = ((ObjJImplementationDeclaration) myElement.getParent()).isCategory();
+        }
+        List<ObjJClassDeclarationElement> classDeclarations = ObjJClassDeclarationsIndex.getInstance().get(className, myElement.getProject());
         if (classDeclarations.isEmpty()) {
             return ResolveResult.EMPTY_ARRAY;
         }
-
-        for (ObjJClassDeclarationElement classDec : classDeclarations) {
-            ObjJClassName classDecName = classDec.getClassName();
-            if (classDecName != null && !classDecName.getText().isEmpty() && !classDecName.isEquivalentTo(myElement)) {
-                classNames.add(classDecName);
+        for (ObjJClassDeclarationElement classDeclarationElement : classDeclarations) {
+            ObjJClassName classDeclarationName = classDeclarationElement.getClassName();
+            if (shouldAdd(classDeclarationElement)) {
+                if (mustBeMain) {
+                    if (classDeclarationElement instanceof ObjJImplementationDeclaration && ((ObjJImplementationDeclaration) classDeclarationElement).isCategory()) {
+                        return PsiElementResolveResult.createResults(Collections.singleton(classDeclarationName));
+                    }
+                } else {
+                    classNames.add(classDeclarationName);
+                }
             }
         }
         return PsiElementResolveResult.createResults(classNames);
     }
 
+    private boolean shouldAdd(ObjJClassDeclarationElement classDeclarationElement) {
+        ObjJClassName classDecName = classDeclarationElement.getClassName();
+        return (classDecName != null && !classDecName.getText().isEmpty() && !classDecName.isEquivalentTo(myElement) && classDeclarationElement.shouldResolve());
+    }
+
     @NotNull
     @Override
     public Object[] getVariants() {
-        List<Object> keys = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().getAllKeys(myElement.getProject()));
+        List<Object> keys = new ArrayList<>(ObjJClassDeclarationsIndex.getInstance().getAllResolveableKeys(myElement.getProject()));
         return keys.toArray();
     }
 }

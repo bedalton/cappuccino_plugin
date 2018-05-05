@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.stubs.types;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.psi.stubs.IndexSink;
 import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.stubs.StubInputStream;
@@ -8,6 +9,7 @@ import com.intellij.util.io.StringRef;
 import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJVarTypeIdImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJVarTypeIdStubImpl;
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub;
+import org.cappuccino_project.ide.intellij.plugin.utils.Strings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -28,6 +30,7 @@ public class ObjJVarTypeIdStubType extends ObjJStubElementType<ObjJVarTypeIdStub
             @NotNull
                     StubOutputStream stream) throws IOException {
         stream.writeName(stub.getIdType());
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -35,8 +38,9 @@ public class ObjJVarTypeIdStubType extends ObjJStubElementType<ObjJVarTypeIdStub
     public ObjJVarTypeIdStub deserialize(
             @NotNull
                     StubInputStream stream, StubElement stubParent) throws IOException {
-        String idType = StringRef.toString(stream.readName());
-        return new ObjJVarTypeIdStubImpl(stubParent, idType);
+        String idType = Strings.notNull(StringRef.toString(stream.readName()), "id");
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJVarTypeIdStubImpl(stubParent, idType, shouldResolve);
     }
 
     @Override
@@ -57,6 +61,12 @@ public class ObjJVarTypeIdStubType extends ObjJStubElementType<ObjJVarTypeIdStub
     public ObjJVarTypeIdStub createStub(
             @NotNull
                     ObjJVarTypeIdImpl varTypeId, StubElement stubParent) {
-        return new ObjJVarTypeIdStubImpl(stubParent, varTypeId.getIdType());
+        return new ObjJVarTypeIdStubImpl(stubParent, varTypeId.getIdType(), shouldResolve(varTypeId.getNode()));
+    }
+
+    @NotNull
+    @Override
+    public boolean shouldCreateStub(ASTNode node) {
+        return false;
     }
 }

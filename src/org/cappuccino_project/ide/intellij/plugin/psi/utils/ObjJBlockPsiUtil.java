@@ -83,8 +83,8 @@ public class ObjJBlockPsiUtil {
                     ObjJBlock firstBlock,
             @NotNull
                     Class<T> aClass, boolean recursive,
-            int offset) {
-        return getBlockChildrenOfType(firstBlock, aClass, recursive, null, false, offset);
+            int maxOffset) {
+        return getBlockChildrenOfType(firstBlock, aClass, recursive, null, false, maxOffset);
     }
 
     /**
@@ -104,8 +104,8 @@ public class ObjJBlockPsiUtil {
                     Class<T> aClass, boolean recursive,
             @NotNull
                     ArrayUtils.Filter<T> filter,
-            int offset) {
-        return getBlockChildrenOfType(firstBlock, aClass, recursive, filter, false, offset);
+            int maxOffset) {
+        return getBlockChildrenOfType(firstBlock, aClass, recursive, filter, false, maxOffset);
     }
     /**
      * Gets list of block children of type using a filter
@@ -147,18 +147,17 @@ public class ObjJBlockPsiUtil {
             @Nullable
                     ArrayUtils.Filter<T> filter,
             boolean returnFirst,
-            int offset) {
+            int maxOffset) {
         if (firstBlock == null) {
             return Collections.emptyList();
         }
-        List<ObjJBlock> currentBlocks = new ArrayList<>();
-        currentBlocks.add(firstBlock);
+        List<ObjJBlock> currentBlocks = Collections.singletonList(firstBlock);
         List<T> out = new ArrayList<>();
         List<T> tempElements;
         do {
             List<ObjJBlock> nextBlocks = new ArrayList<>();
             for (ObjJBlock block : currentBlocks) {
-                if (offset >= 0 && block.getTextRange().getStartOffset() >= offset) {
+                if (maxOffset >= 0 && block.getTextRange().getStartOffset() > maxOffset) {
                     continue;
                 }
                 tempElements = ObjJTreeUtil.getChildrenOfTypeAsList(block, aClass);
@@ -168,25 +167,26 @@ public class ObjJBlockPsiUtil {
                             if (returnFirst) {
                                 return Collections.singletonList(element);
                             }
-                            if (offset < 0 || element.getTextRange().getStartOffset() < offset) {
+                            if (maxOffset < 0 || element.getTextRange().getStartOffset() < maxOffset) {
                                 out.add(element);
                             }
                         }
                     }
                 } else if (returnFirst && tempElements.size() > 0) {
                     for (T element : tempElements) {
-                        if (offset < 0 || element.getTextRange().getStartOffset() < offset) {
+                        if (maxOffset < 0 || element.getTextRange().getStartOffset() < maxOffset) {
                             return Collections.singletonList(element);
                         }
                     }
                 } else {
                     for (T element : tempElements) {
-                        if (offset < 0 || element.getTextRange().getStartOffset() < offset) {
+                        if (maxOffset < 0 || element.getTextRange().getStartOffset() < maxOffset) {
                             out.add(element);
                         }
                     }
                 }
                 if (recursive) {
+                    nextBlocks.addAll(block.getBlockList());
                     for (ObjJHasBlockStatements hasBlockStatements : ObjJTreeUtil.getChildrenOfTypeAsList(block, ObjJHasBlockStatements.class)) {
                         //LOGGER.log(Level.INFO, "Looping block recursive with text: <" + hasBlockStatements.getText() + ">");
                         nextBlocks.addAll(hasBlockStatements.getBlockList());

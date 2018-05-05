@@ -130,7 +130,7 @@ public class ObjJAccessorPropertyPsiUtil {
         if (setter != null) {
             List<String> selectorStrings = Collections.singletonList(setter);
             List<String> paramTypes = Collections.singletonList(varType);
-            return new ObjJMethodHeaderStubImpl(null, declaration.getContainingClassName(), false, selectorStrings, paramTypes, null, true);
+            return new ObjJMethodHeaderStubImpl(null, declaration.getContainingClassName(), false, selectorStrings, paramTypes, null, true, declaration.shouldResolve());
         }
         return null;
     }
@@ -169,7 +169,7 @@ public class ObjJAccessorPropertyPsiUtil {
         if (getter != null) {
             List<String> selectorStrings = Collections.singletonList(getter);
             List<String> paramTypes = Collections.emptyList();
-            return new ObjJMethodHeaderStubImpl(null, declaration.getContainingClassName(), false, selectorStrings, paramTypes, varType, true);
+            return new ObjJMethodHeaderStubImpl(null, declaration.getContainingClassName(), false, selectorStrings, paramTypes, varType, true, declaration.shouldResolve());
         }
         return null;
     }

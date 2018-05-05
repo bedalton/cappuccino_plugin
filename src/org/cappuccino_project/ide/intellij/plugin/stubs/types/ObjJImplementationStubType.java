@@ -39,7 +39,7 @@ public class ObjJImplementationStubType extends ObjJClassDeclarationStubType<Obj
         final String superClassName = element.getSuperClass() != null ? element.getSuperClass().getText() : null;
         final List<String> protocols = element.getInheritedProtocols();
         final String categoryName = element.getCategoryName() != null ? element.getCategoryName().getText() : null;
-        return new ObjJImplementationStubImpl(parentStub, className, superClassName, categoryName, protocols);
+        return new ObjJImplementationStubImpl(parentStub, className, superClassName, categoryName, protocols, shouldResolve(element.getNode()));
     }
 
 
@@ -69,6 +69,7 @@ public class ObjJImplementationStubType extends ObjJClassDeclarationStubType<Obj
         for (String protocol : protocols) {
             stream.writeName(protocol);
         }
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -84,7 +85,8 @@ public class ObjJImplementationStubType extends ObjJClassDeclarationStubType<Obj
         for (int i=0;i<numProtocols;i++) {
             inheritedProtocols.add(StringRef.toString(stream.readName()));
         }
-        return new ObjJImplementationStubImpl(parentStub, className, !superClassName.equals(ObjJClassType.UNDEF_CLASS_NAME) ? superClassName : null, categoryName, inheritedProtocols);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJImplementationStubImpl(parentStub, className, !superClassName.equals(ObjJClassType.UNDEF_CLASS_NAME) ? superClassName : null, categoryName, inheritedProtocols, shouldResolve);
     }
 
     @Override

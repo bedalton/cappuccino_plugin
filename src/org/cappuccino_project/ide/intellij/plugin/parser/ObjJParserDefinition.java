@@ -11,9 +11,9 @@ import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes;
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes;
 import org.jetbrains.annotations.NotNull;
 
+import static org.cappuccino_project.ide.intellij.plugin.psi.types.TokenSets.*;
+
 public class ObjJParserDefinition  implements ParserDefinition {
-    public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    public static final TokenSet COMMENTS = TokenSet.create(ObjJTypes.ObjJ_SINGLE_LINE_COMMENT, ObjJTypes.ObjJ_BLOCK_COMMENT);
 
     @NotNull
     @Override

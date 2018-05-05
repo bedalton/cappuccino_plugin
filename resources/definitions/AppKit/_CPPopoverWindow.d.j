@@ -97,7 +97,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     @param aFrame the frame of the popover window
     @return ready to use _CPPopoverWindow
 */
-- (id)initWithContentRect:(CGRect)aFrame
+- (id<@self>)initWithContentRect:(CGRect)aFrame
 {
     return [self initWithContentRect:aFrame styleMask:0];
 }
@@ -109,7 +109,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
     @return ready to use _CPPopoverWindow
 */
-- (id)initWithContentRect:(CGRect)aFrame styleMask:(unsigned)aStyleMask
+- (id<@self>)initWithContentRect:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aFrame styleMask:aStyleMask])
     {
@@ -171,6 +171,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if ([_delegate respondsToSelector:@selector(_popoverWindowDidShow:)])
         _implementedDelegateMethods |= _CPPopoverWindow_didShow_;
 }
+
+
+
+@end
 
 #pragma mark -
 #pragma mark Observer

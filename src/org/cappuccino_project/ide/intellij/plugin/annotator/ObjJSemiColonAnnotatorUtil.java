@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * @see ObjJNeedsSemiColon
  * @see ObjJChildrenRequireSemiColons
  */
-public class ObjJSemiColonAnnotatorUtil {
+class ObjJSemiColonAnnotatorUtil {
 
     private static final IElementType[] NO_SEMI_COLON_BEFORE = new IElementType[] {ObjJTypes.ObjJ_CLOSE_PAREN,ObjJTypes.ObjJ_OPEN_PAREN, ObjJTypes.ObjJ_OPEN_BRACE, ObjJTypes.ObjJ_CLOSE_BRACE, ObjJTypes.ObjJ_COMMA, ObjJTypes.ObjJ_CLOSE_BRACKET, ObjJTypes.ObjJ_OPEN_BRACKET, ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_SEMI_COLON};
 
@@ -29,8 +29,11 @@ public class ObjJSemiColonAnnotatorUtil {
      * @param element element to possibly annotate
      * @param annotationHolder annotation holder
      */
-    public static void annotateMissingSemiColons(@NotNull
-                                                   ObjJNeedsSemiColon element, @NotNull AnnotationHolder annotationHolder) {
+    static void annotateMissingSemiColons(
+            @NotNull
+                    ObjJNeedsSemiColon element,
+            @NotNull
+                    AnnotationHolder annotationHolder) {
         //Checks whether this element actually requires a semi colon and whether it already has one
         if (!requiresSemiColon(element) || isNextElementSemiColonBlocking(element) || ObjJPsiImplUtil.eos(element)) {
             return;

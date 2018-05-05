@@ -16,13 +16,15 @@ public class ObjJVariableNameStubImpl extends NamedStubBase<ObjJVariableNameImpl
     private final String variableName;
     private final List<Pair<Integer,Integer>> blockRanges;
     private final Pair<Integer,Integer> greatestBlockRange;
+    private final boolean shouldResolve;
 
     public ObjJVariableNameStubImpl(StubElement parent, final @NotNull
-            String variableName, @NotNull List<Pair<Integer,Integer>> blockRanges, @Nullable Pair<Integer,Integer> greatestBlockRange) {
+            String variableName, @NotNull List<Pair<Integer,Integer>> blockRanges, @Nullable Pair<Integer,Integer> greatestBlockRange, final boolean shouldResolve) {
         super(parent, ObjJStubTypes.VARIABLE_NAME, variableName);
         this.variableName = variableName;
         this.blockRanges = blockRanges;
         this.greatestBlockRange = greatestBlockRange;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -40,5 +42,10 @@ public class ObjJVariableNameStubImpl extends NamedStubBase<ObjJVariableNameImpl
     @Override
     public Pair<Integer, Integer> getGreatestContainingBlockRange() {
         return greatestBlockRange;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 }

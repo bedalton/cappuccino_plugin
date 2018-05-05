@@ -54,9 +54,4 @@ public abstract class ObjJImportStatementStubType<PsiT extends ObjJImportStateme
         String fileName = StringRef.toString(stream.readName());
         return new ObjJImportStubImpl<>(stubParent, this, frameworkName, fileName);
     }
-
-    @Override
-    public boolean shouldCreateStub(ASTNode node) {
-        return node.getPsi() instanceof ObjJImportStatement;
-    }
 }

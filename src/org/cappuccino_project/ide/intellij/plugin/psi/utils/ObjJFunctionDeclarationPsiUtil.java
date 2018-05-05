@@ -172,7 +172,7 @@ public class ObjJFunctionDeclarationPsiUtil {
                     ObjJFunctionDeclarationElement functionDeclaration) {
         if (functionDeclaration.getStub() != null) {
             //noinspection unchecked
-            return ((ObjJFunctionDeclarationElementStub<ObjJFunctionDeclarationElement>) functionDeclaration.getStub()).getParamNames();
+            return ((ObjJFunctionDeclarationElementStub) functionDeclaration.getStub()).getParamNames();
         }
         List<String> out = new ArrayList<>();
         for (Object parameterArg : functionDeclaration.getFormalParameterArgList()) {

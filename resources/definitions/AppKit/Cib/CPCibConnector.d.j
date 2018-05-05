@@ -61,7 +61,7 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 @implementation CPCibConnector (CPCoding)
 
-- (id)initWithCoder:(CPCoder)aCoder
+- (id <CPCibConnector>)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
 
