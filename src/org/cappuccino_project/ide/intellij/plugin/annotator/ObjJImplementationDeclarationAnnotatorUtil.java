@@ -2,22 +2,19 @@ package org.cappuccino_project.ide.intellij.plugin.annotator;
 
 
 import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.openapi.project.Project;
 import org.cappuccino_project.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex;
 import org.cappuccino_project.ide.intellij.plugin.psi.*;
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil;
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil;
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ObjJImplementationDeclarationAnnotatorUtil {
+class ObjJImplementationDeclarationAnnotatorUtil {
 
 
     static void annotateImplementationDeclaration(ObjJImplementationDeclaration declaration, @NotNull AnnotationHolder annotationHolder) {
@@ -79,6 +76,7 @@ public class ObjJImplementationDeclarationAnnotatorUtil {
         }
     }
 
+    /*
     private static boolean validateAndAnnotateMethod(ObjJMethodHeader expected, ObjJMethodHeader actual, AnnotationHolder annotationHolder) {
         if (!expected.getSelectorString().equals(actual.getSelectorString())) {
             return false;
@@ -111,6 +109,6 @@ public class ObjJImplementationDeclarationAnnotatorUtil {
         }
         return true;
     }
-
+*/
 
 }

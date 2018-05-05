@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface ObjJClassDeclarationElement<StubT extends ObjJClassDeclarationStub<? extends ObjJClassDeclarationElement>> extends ObjJStubBasedElement<StubT>, ObjJIsOfClassType, ObjJHasProtocolList, ObjJCompositeElement {
+public interface ObjJClassDeclarationElement<StubT extends ObjJClassDeclarationStub<? extends ObjJClassDeclarationElement>> extends ObjJStubBasedElement<StubT>, ObjJIsOfClassType, ObjJHasProtocolList, ObjJCompositeElement, ObjJResolveableElement<StubT> {
 
     @NotNull
     @Override

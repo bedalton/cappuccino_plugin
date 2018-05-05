@@ -44,9 +44,6 @@ public class ObjJProtocolInheritanceIndex extends ObjJStringStubIndexBase<ObjJCl
     }
 
     private List<String> getChildClassesRecursive(@NotNull final List<String> descendants, @NotNull final String className, @NotNull Project project) {
-        if (DumbService.isDumb(project)) {
-            throw new IndexNotReadyRuntimeException();
-        }
         for (ObjJClassDeclarationElement classDeclarationElement : get(className, project)) {
             String currentClassName = classDeclarationElement.getClassNameString();
             if (descendants.contains(currentClassName)) {

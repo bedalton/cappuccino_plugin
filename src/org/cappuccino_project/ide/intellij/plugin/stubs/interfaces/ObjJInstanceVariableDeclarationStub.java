@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public interface ObjJInstanceVariableDeclarationStub extends StubElement<ObjJInstanceVariableDeclarationImpl> {
+public interface ObjJInstanceVariableDeclarationStub extends StubElement<ObjJInstanceVariableDeclarationImpl>, ObjJResolveableStub<ObjJInstanceVariableDeclarationImpl> {
     @NotNull
     String getContainingClass();
     @NotNull

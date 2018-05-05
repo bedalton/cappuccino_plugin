@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 	private static final Logger LOGGER = Logger.getLogger("_ObjJLexer.flex");
 	private boolean inPreProc = false;
 
-  	public _ObjectiveJLexer() {
+  	public _ObjLexer() {
     	this((java.io.Reader)null);
   	}
 
@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 %}
 
 %public
-%class _ObjectiveJLexer
+%class _ObjJLexer
 %implements FlexLexer
 %function advance
 %type IElementType
@@ -66,9 +66,9 @@ BINARY_INTEGER_LITERAL=0 [bB] [01]+
 DECIMAL_LITERAL1=[0-9]*\.([0-9]*([eE] [+-]? [0-9]+)?|[eE] [+-]? [0-9]+)
 DECIMAL_LITERAL2=[0-9]+\.?([eE] [+-]? [0-9]+)
 INTEGER_LITERAL=[0-9]+
-//BAD_BLOCK_COMMENT="/"\*
+BAD_BLOCK_COMMENT="/"\* {BLOCK_COMMENT_TEXT}
 BLOCK_COMMENT_TEXT = ([^*]|\*[^/]|'\n'|'\r'|";"|\s)+
-//BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
+BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 REGULAR_EXPRESSION_LITERAL = \/ [^\r\n\u2028\u2029\*\/] (([^\r\n\u2028\u2029/\[]| "\\" [^\r\n\u2028\u2029]{1})+ | \[ (\\? [^\r\n\u2028\u2029\]/])* \] )* \/ [a-zA-Z]*
 ID=[_a-zA-Z][_a-zA-Z0-9]*
@@ -109,7 +109,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	"?*__ERR_SEMICOLON__*?"			 	 { return ObjJ_ERROR_SEQUENCE_TOKEN; }
 	"'"									 { canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
 	("\""|"@\"")						 { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-	"/*"								 { canRegex(false);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); /*return ObjJ_BLOCK_COMMENT_START;*/ }
+	//"/*"								 { canRegex(false);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); /*return ObjJ_BLOCK_COMMENT_START;*/ }
 	"@["                                 { canRegex(true); return ObjJ_AT_OPENBRACKET; }
 	"["                                  { canRegex(true); return ObjJ_OPEN_BRACKET; }
 	"]"                                  { canRegex(false); return ObjJ_CLOSE_BRACKET; }
@@ -234,7 +234,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	"mark"								 { canRegex(false);  return ObjJ_MARK; }
 	";"                                  { canRegex(true); return ObjJ_SEMI_COLON; }
 
-	//{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
+	{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
 	{SINGLE_LINE_COMMENT}                { canRegex(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
 	{LINE_TERMINATOR}                    { return WHITE_SPACE; }
@@ -285,7 +285,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 										 		return ObjJ_DIVIDE;
 										 	}
 										 }
-	//{BAD_BLOCK_COMMENT}			 		 { canRegex(false); return ObjJ_BLOCK_COMMENT; }
+	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); return ObjJ_BLOCK_COMMENT; }
 	//{BAD_DOUBLE_QUOTE_STRING_LITERAL}	 { canRegex(false);	return ObjJ_QUO_TEXT; }
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }
 

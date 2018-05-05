@@ -46,7 +46,7 @@ public class ObjJVariableNameStubType extends ObjJStubElementType<ObjJVariableNa
                     ObjJVariableNameImpl variableName, StubElement stubElement) {
         List<Pair<Integer,Integer>> blockRanges = getBlockRanges(variableName);
         Pair<Integer, Integer> greatestBlockRange = getGreatestBlockRange(blockRanges);
-        return new ObjJVariableNameStubImpl(stubElement, variableName.getName(), blockRanges, greatestBlockRange);
+        return new ObjJVariableNameStubImpl(stubElement, variableName.getName(), blockRanges, greatestBlockRange, shouldResolve(variableName.getNode()));
     }
 
     @NotNull
@@ -98,6 +98,7 @@ public class ObjJVariableNameStubType extends ObjJStubElementType<ObjJVariableNa
             stream.writeInt(greatestBlock.getFirst());
             stream.writeInt(greatestBlock.getSecond());
         }
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -116,12 +117,8 @@ public class ObjJVariableNameStubType extends ObjJStubElementType<ObjJVariableNa
         if (stream.readBoolean()) {
             greatestRange = new Pair<>(stream.readInt(), stream.readInt());
         }
-        return new ObjJVariableNameStubImpl(parent, name, blockRanges, greatestRange);
-    }
-
-    @Override
-    public boolean shouldCreateStub(ASTNode node) {
-        return node.getPsi() instanceof ObjJVariableName;
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJVariableNameStubImpl(parent, name, blockRanges, greatestRange, shouldResolve);
     }
 
     @Override

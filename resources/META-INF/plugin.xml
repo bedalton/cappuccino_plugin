@@ -82,10 +82,11 @@
 
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
-    <!-- =============================== -->
+    <!-- =============================== - ->
     <lang.braceMatcher language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistBraceMatcher"/>
     <lang.parserDefinition language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistParserDefinition"/>
     <lang.syntaxHighlighterFactory key="ObjJPlist"
                                    implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
+                                   -->
   </extensions>
 </idea-plugin>

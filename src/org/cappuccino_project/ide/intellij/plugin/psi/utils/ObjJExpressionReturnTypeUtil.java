@@ -526,7 +526,7 @@ public class ObjJExpressionReturnTypeUtil {
     private static String getReturnTypeFromMethodCall(@NotNull ObjJMethodCall methodCall, boolean follow, @Nullable String defaultReturnType) throws IndexNotReadyInterruptingException {
         final Project project = methodCall.getProject();
         if (DumbService.isDumb(project)) {
-            throw new IndexNotReadyInterruptingException();
+            return null;
         }
         if (methodCall.getSelectorString().equals("alloc") || methodCall.getSelectorString().equals("new")) {
             if (methodCall.getCallTarget().getText().equals("self") || methodCall.getCallTarget().getText().equals("super")) {

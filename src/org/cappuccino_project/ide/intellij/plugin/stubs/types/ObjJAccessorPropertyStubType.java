@@ -48,14 +48,14 @@ public class ObjJAccessorPropertyStubType extends ObjJStubElementType<ObjJAccess
         if (variableDeclaration != null) {
             final ObjJInstanceVariableDeclarationStub variableDeclarationStub = variableDeclaration.getStub();
             variableType = variableDeclarationStub != null ? variableDeclarationStub.getVarType() : variableDeclaration.getFormalVariableType().getText();
-            variableName = variableDeclarationStub != null ? variableDeclarationStub.getVariableName() : variableDeclaration.getVariableName().getText();
+            variableName = variableDeclarationStub != null ? variableDeclarationStub.getVariableName() : variableDeclaration.getVariableName() != null ? variableDeclaration.getVariableName().getText() : null;
         } else {
             variableName = null;
             variableType = null;
         }
         final String getter = variableName != null && variableType != null ? ObjJPsiImplUtil.getGetterSelector(variableName, variableType, accessorProperty) : null;
         final String setter = variableName != null && variableType != null ? ObjJPsiImplUtil.getSetterSelector(variableName, variableType, accessorProperty) : null;
-        return new ObjJAccessorPropertyStubImpl(parentStub, containingClass, variableType, variableName, getter,setter);
+        return new ObjJAccessorPropertyStubImpl(parentStub, containingClass, variableType, variableName, getter,setter, shouldResolve(accessorProperty.getNode()));
     }
 
     @Override
@@ -69,6 +69,7 @@ public class ObjJAccessorPropertyStubType extends ObjJStubElementType<ObjJAccess
         stream.writeName(Strings.notNull(stub.getVariableName()));
         stream.writeName(Strings.notNull(stub.getGetter()));
         stream.writeName(Strings.notNull(stub.getSetter()));
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -81,16 +82,12 @@ public class ObjJAccessorPropertyStubType extends ObjJStubElementType<ObjJAccess
         final String variableName = StringRef.toString(stream.readName());
         final String getter = StringRef.toString(stream.readName());
         final String setter = StringRef.toString(stream.readName());
-        return new ObjJAccessorPropertyStubImpl(parentStub, containingClass,varType, variableName, getter, setter);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJAccessorPropertyStubImpl(parentStub, containingClass,varType, variableName, getter, setter, shouldResolve);
     }
 
     @Override
     public void indexStub(@NotNull ObjJAccessorPropertyStub stub, @NotNull IndexSink indexSink) {
         ServiceManager.getService(StubIndexService.class).indexAccessorProperty(stub, indexSink);
-    }
-
-    @Override
-    public boolean shouldCreateStub(ASTNode node) {
-        return node.getPsi() instanceof ObjJAccessorProperty;
     }
 }

@@ -68,7 +68,7 @@ public class ObjJReferenceContributor extends PsiReferenceContributor {
             }
             getterString = (startsWithUnderscore ? "_" : "") + (getterString.length() > 1 ? getterString.substring(0, 1).toLowerCase() + getterString.substring(1) : getterString);
             if (!getterString.equals(baseSelector)) {
-                getter = ObjJElementFactory.createSelector(selector.getProject(), getterString);
+                //getter = ObjJElementFactory.createSelector(selector.getProject(), getterString);
             }
             if (getter != null) {
                 return new PsiReference[]{createReference(selector), createReference(getter)};

@@ -17,13 +17,15 @@ public class ObjJMethodCallStubImpl extends ObjJStubBaseImpl<ObjJMethodCallImpl>
     private final List<String> possibleCallTargetTypes;
     private final List<String> selectors;
     private String selectorString;
+    private final boolean shouldResolve;
 
-    public ObjJMethodCallStubImpl(@NotNull final StubElement parent, @Nullable String className, @NotNull final String callTarget, @NotNull List<String> possibleCallTargetTypes, @NotNull final List<String> selectors) {
+    public ObjJMethodCallStubImpl(@NotNull final StubElement parent, @Nullable String className, @NotNull final String callTarget, @NotNull List<String> possibleCallTargetTypes, @NotNull final List<String> selectors, final boolean shouldResolve) {
         super(parent, ObjJStubTypes.METHOD_CALL);
         this.className = className;
         this.callTarget = callTarget;
         this.possibleCallTargetTypes = possibleCallTargetTypes;
         this.selectors = selectors;
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -57,6 +59,11 @@ public class ObjJMethodCallStubImpl extends ObjJStubBaseImpl<ObjJMethodCallImpl>
     @Override
     public String getContainingClassName() {
         return className;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 
 }

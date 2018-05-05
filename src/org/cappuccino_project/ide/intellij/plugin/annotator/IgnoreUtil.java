@@ -13,10 +13,10 @@ import java.util.logging.Logger;
 
 public class IgnoreUtil {
     private static final Logger LOGGER = Logger.getLogger(IgnoreUtil.class.getName());
-    public static final String IGNORE_KEYWORD = "ignore";
-    public static final String IN_KEYWORD = "in";
+    private static final String IGNORE_KEYWORD = "ignore";
+    private static final String IN_KEYWORD = "in";
 
-    public static boolean shouldIgnore(ObjJCompositeElement elementToPossiblyIgnore, ElementType ignoreElementType) {
+    static boolean shouldIgnore(ObjJCompositeElement elementToPossiblyIgnore, ElementType ignoreElementType) {
         ObjJComment commentElement = getPrecedingComment(elementToPossiblyIgnore);
         while (commentElement != null) {
             String commentText = commentElement.getText().trim().toLowerCase();
@@ -47,7 +47,7 @@ public class IgnoreUtil {
             rootElement = rootElement.getParent();
         }
         prev = ObjJTreeUtil.getPreviousNonEmptySibling(rootElement, true);
-        if (prev == null || !(prev instanceof ObjJComment)) {
+        if (!(prev instanceof ObjJComment)) {
             return null;
         }
         LOGGER.log(Level.INFO, "Prev sibling is of comment type.");
@@ -67,6 +67,7 @@ public class IgnoreUtil {
         }
     }
 
+    @SuppressWarnings("unused")
     public enum Scope {
         FILE("file"),
         BLOCK("block"),

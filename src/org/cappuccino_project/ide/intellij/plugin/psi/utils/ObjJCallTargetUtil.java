@@ -23,7 +23,7 @@ public class ObjJCallTargetUtil {
 
     @NotNull
     public static List<String> getPossibleCallTargetTypes(@Nullable ObjJCallTarget callTarget) {
-        if (callTarget == null) {
+        if (callTarget == null || DumbService.isDumb(callTarget.getProject())) {
             return ArrayUtils.EMPTY_STRING_ARRAY;
         }
         List<String> classNames = getPossibleCallTargetTypesFromFormalVariableTypes(callTarget);

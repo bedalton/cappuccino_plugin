@@ -19,7 +19,9 @@ public class ObjJPreprocessorFunctionDeclarationStubImpl extends ObjJFunctionDec
                                                   @NotNull
                                                    List<String> paramNames,
                                                   @Nullable
-                                                   String returnType) {
-        super(parent, ObjJStubTypes.PREPROCESSOR_FUNCTION, fileName, fqName, paramNames, returnType);
+                                                   String returnType,
+                                                   final boolean shouldResolve
+    ) {
+        super(parent, ObjJStubTypes.PREPROCESSOR_FUNCTION, fileName, fqName, paramNames, returnType, shouldResolve);
     }
 }

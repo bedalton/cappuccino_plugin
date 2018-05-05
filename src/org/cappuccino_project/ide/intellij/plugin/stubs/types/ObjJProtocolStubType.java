@@ -1,5 +1,6 @@
 package org.cappuccino_project.ide.intellij.plugin.stubs.types;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.*;
 import com.intellij.util.io.StringRef;
@@ -35,7 +36,8 @@ public class ObjJProtocolStubType extends ObjJClassDeclarationStubType<ObjJProto
                     ObjJProtocolDeclarationImpl element, StubElement parentStub) {
         final String className = element.getClassName() != null ? element.getClassName().getText() : "";
         final List<String> protocols = element.getInheritedProtocols();
-        return new ObjJProtocolDeclarationStubImpl(parentStub, className, protocols);
+        final boolean shouldResolve = shouldResolve(element.getNode());
+        return new ObjJProtocolDeclarationStubImpl(parentStub, className, protocols, shouldResolve);
     }
 
 
@@ -56,6 +58,7 @@ public class ObjJProtocolStubType extends ObjJClassDeclarationStubType<ObjJProto
         for (String protocol : protocols) {
             stream.writeName(protocol);
         }
+        stream.writeBoolean(stub.shouldResolve());
     }
 
     @NotNull
@@ -69,7 +72,8 @@ public class ObjJProtocolStubType extends ObjJClassDeclarationStubType<ObjJProto
         for (int i=0;i<numProtocols;i++) {
             inheritedProtocols.add(StringRef.toString(stream.readName()));
         }
-        return new ObjJProtocolDeclarationStubImpl(parentStub, className, inheritedProtocols);
+        final boolean shouldResolve = stream.readBoolean();
+        return new ObjJProtocolDeclarationStubImpl(parentStub, className, inheritedProtocols, shouldResolve);
     }
 
     @Override

@@ -16,12 +16,14 @@ public class ObjJSelectorLiteralStubImpl extends ObjJStubBaseImpl<ObjJSelectorLi
     private final String containingClass;
     private final String selector;
     private final List<String> selectors;
+    private final boolean shouldResolve;
 
-    public ObjJSelectorLiteralStubImpl(@NotNull StubElement parent, @NotNull String containingClass, @NotNull List<String> selectorStrings) {
+    public ObjJSelectorLiteralStubImpl(@NotNull StubElement parent, @NotNull String containingClass, @NotNull List<String> selectorStrings, final boolean shouldResolve) {
         super(parent, ObjJStubTypes.SELECTOR_LITERAL);
         this.containingClass = containingClass;
         this.selectors = selectorStrings;
         this.selector = ArrayUtils.join(selectorStrings, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true);
+        this.shouldResolve = shouldResolve;
     }
 
     @NotNull
@@ -68,6 +70,11 @@ public class ObjJSelectorLiteralStubImpl extends ObjJStubBaseImpl<ObjJSelectorLi
     @Override
     public boolean isStatic() {
         return false;
+    }
+
+    @Override
+    public boolean shouldResolve() {
+        return shouldResolve;
     }
 
 }
