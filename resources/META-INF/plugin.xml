@@ -35,6 +35,7 @@
     <!-- ObjJLang -->
     <fileTypeFactory implementation="org.cappuccino_project.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
     <lang.parserDefinition language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.parser.ObjJParserDefinition"/>
+    <psi.classFileDecompiler implementation="org.cappuccino_project.ide.intellij.plugin.decompiler.ObjJDecompilerClassFileProcessor"/>
 
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"

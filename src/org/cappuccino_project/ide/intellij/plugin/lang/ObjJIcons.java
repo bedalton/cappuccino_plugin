@@ -6,6 +6,7 @@ import javax.swing.*;
 
 public class ObjJIcons {
     public static final Icon DOCUMENT_ICON = IconLoader.getIcon("/icons/document-icon.png");
+    public static final Icon SJ_DOCUMENT_ICON = IconLoader.getIcon("/icons/sj_doc_icon.png");
     public static final Icon CLASS_ICON = IconLoader.getIcon("/icons/class-icon.png");
     public static final Icon CATEGORY_ICON = IconLoader.getIcon("/icons/class-icon.png");
     public static final Icon PROTOCOL_ICON = IconLoader.getIcon("/icons/protocol-icon.png");
