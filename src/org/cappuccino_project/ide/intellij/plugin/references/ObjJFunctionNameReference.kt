@@ -1,0 +1,69 @@
+package org.cappuccino_project.ide.intellij.plugin.references
+
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbServiceImpl
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.*
+import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import org.cappuccino_project.ide.intellij.plugin.psi.*
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
+
+import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
+
+class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
+    private val functionName: String
+    private val file: PsiFile
+
+    init {
+        this.functionName = functionName.text
+        //LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+getCanonicalText()+">");
+        file = functionName.containingFile
+    }
+
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        var isCorrectReference = element is ObjJVariableName || element is ObjJFunctionName
+        if (ObjJTreeUtil.getParentOfType(element, ObjJFunctionCall::class.java) != null) {
+            isCorrectReference = isCorrectReference && ObjJTreeUtil.getParentOfType(element, ObjJFunctionDeclarationElement<*>::class.java) != null
+        }
+        return isCorrectReference && element.text == functionName
+    }
+
+    override fun resolve(): PsiElement? {
+        if (DumbServiceImpl.isDumb(myElement.project)) {
+            return null
+        }
+        val allOut = ArrayList<PsiElement>()
+        //LOGGER.log(Level.INFO, "There are <"+ObjJFunctionsIndex.getInstance().getAllKeys(myElement.getProject()).size()+"> function in index");
+        for (functionDeclaration in ObjJFunctionsIndex.instance.get(functionName, myElement.project)) {
+            ProgressIndicatorProvider.checkCanceled()
+            allOut.add(functionDeclaration.functionNameNode)
+            if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {
+                return functionDeclaration.functionNameNode
+            }
+        }
+        for (function in ObjJTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
+            if (function.functionName != null && function.functionName!!.text == myElement.text) {
+                return function.functionName
+            }
+        }
+        return if (!allOut.isEmpty()) allOut[0] else null
+    }
+
+    override fun handleElementRename(newFunctionName: String): PsiElement {
+        return ObjJPsiImplUtil.setName(myElement, newFunctionName)
+    }
+
+    override fun getVariants(): Array<Any> {
+        return arrayOfNulls(0)
+    }
+
+    companion object {
+
+        private val LOGGER = Logger.getLogger(ObjJFunctionNameReference::class.java.name)
+    }
+
+}
