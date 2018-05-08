@@ -94,6 +94,9 @@ PProp:							'p;';
 /// Null Literals
 
 NullLiteral:                    'null';
+NilLiteral:						'nil'
+		  |						'NIL'
+		  |						'Nil';
 
 /// Boolean Literals
 
@@ -121,11 +124,17 @@ BinaryIntegerLiteral:           '0' [bB] [01]+;
 AtStatic:						'@STATIC';
 VarTheClass:					'the_class';
 VarMetaClass:					'meta_class';
+VarTheProtocol:					'the_protocol';
 FuncExecuteStatement:			'objj_executeFile';
 FuncAllocateClassPair:			'objj_allocateClassPair';
-FuncGetClass:					'objj_getClass';
+FuncAllocateProtocol:			'objj_allocateProtocol';
+FuncProtocolAddProtocol:		'protocol_addProtocol';
+FuncProtocolAddMethods:			'protocol_addMethodDescriptions';
+FunctRegisterProtocol:			'objj_registerProtocol';
+FuncGetCategoryClass:			'objj_getClass';
 FuncClassAddProtocol:			'class_addProtocol';
 FuncClassAddMethods:			'class_addMethods';
+FuncGetProtocl:					'objj_getProtocol';
 FuncObjJMethod:					'objj_method';
 FuncSelUid:						'sel_getUid';
 FunctAddIVars:					'class_addIvars';

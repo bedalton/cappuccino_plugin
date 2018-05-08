@@ -209,26 +209,28 @@ importStatement
 
 classDeclaration
     : '{'
-    	classVarDec
-    	statementList?
-    	classMetaDec?
-    	statementList?
+    	'var' 'the_class' '=' 'objj_allocateClassPair' '(' Identifier ',' StringLiteral ')'
+    	classMetaDec
     	addIVars?
     	classMethodList
       '}'
     ;
 
-classVarDec
-	: varModifier 'the_class' '=' classDecFunction (',' variableDeclarationList ';')?
+categoryDeclaration
+	: '{'
+		'var' 'the_class' '=' 'objj_getClass' '(' StringLiteral ')'
+		ifStatement
+		classMetaDec
+		addIVars?
+		classMethodList
+	  '}'
 	;
 
 classMetaDec
-	: ('var'|',') 'meta_class' '=' singleExpression ';'?
+	: ('var'|',') 'meta_class' '=' singleExpression ';'
 	;
-classDecFunction
-	: 'objj_allocateClassPair' '(' Identifier ',' StringLiteral ')'		#classWithSuperClass
-	| 'objj_getClass' '(' StringLiteral')'								#classWithoutSuperClass
-	;
+
+
 addIVars
 	: iVarDec+
 	;
@@ -246,6 +248,24 @@ classMethodDeclaration
 	: 'new' 'objj_method''(' 'sel_getUid''(' selector ')' ','
 	  'function' Identifier '(' target ',' cmd methodArgList? ')' '{' functionBody '}' ','
 	  '['returnType methodArgTypes? ']'
+	;
+
+protocol
+	: '{'
+		'var' 'the_protocol' '=' 'objj_allocateProtocol''('StringLiteral')' eos
+	  	'objj_registerProtocol' '(' 'the_protocol' ')' eos
+	  	'protocol_addMethodDescriptions' '(' 'the_protocol'',' '[' protocolMethod* ']' ',' BooleanLiteral ',' BooleanLiteral ')' eos
+	  '}'
+	;
+
+protocolMethod
+	: 'new' 'objj_method' '(' 'sel_getUid''('StringLiteral')'',' 'Nil' ',' '[' returnType (',' Identifier )*']'')'
+	;
+
+protocolAddProtocol
+	: 'var' Identifier '=' 'objj_getProtocol' '('StringLiteral ')' eos
+      ifStatement
+	  'protocol_addProtocol' '(' 'the_protocol' ',' Identifier ')' eos
 	;
 
 methodArgList

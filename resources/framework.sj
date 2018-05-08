@@ -9922,15 +9922,17 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
             self._totalCostLimit = newValue;
         }
 
-        , ["void", "int"]), new objj_method(sel_getUid("delegate"), function $CPCache__delegate(self, _cmd) {
+        , ["void", "int"]),
+
+        new objj_method(sel_getUid("delegate"), function $CPCache__delegate(self, _cmd) {
             return self._delegate;
-        }
+        }, ["id"]),
 
-        , ["id"]), new objj_method(sel_getUid("setDelegate:"), function $CPCache__setDelegate_(self, _cmd, newValue) {
+        new objj_method(sel_getUid("setDelegate:"), function $CPCache__setDelegate_(self, _cmd, newValue) {
             self._delegate = newValue;
-        }
+        }, ["void", "id"]),
 
-        , ["void", "id"]), new objj_method(sel_getUid("init"), function $CPCache__init(self, _cmd) {
+        new objj_method(sel_getUid("init"), function $CPCache__init(self, _cmd) {
             if (self = (objj_getClass("CPCache").super_class.method_dtable["init"] || _objj_forward)(self, "init")) {
                 self._items = ((___r1 = (CPDictionary.isa.method_msgSend["alloc"] || _objj_forward)(CPDictionary, "alloc")), ___r1 == null ? null : (___r1.isa.method_msgSend["init"] || _objj_forward)(___r1, "init"));
                 self._currentPosition = 0;
@@ -9945,7 +9947,9 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
             var ___r1;
         }
 
-        , ["id"]), new objj_method(sel_getUid("objectForKey:"), function $CPCache__objectForKey_(self, _cmd, aKey) {
+        , ["id"]),
+
+        new objj_method(sel_getUid("objectForKey:"), function $CPCache__objectForKey_(self, _cmd, aKey) {
             return ((___r1 = ((___r2 = self._items), ___r2 == null ? null : (___r2.isa.method_msgSend["objectForKey:"] || _objj_forward)(___r2, "objectForKey:", aKey))), ___r1 == null ? null : (___r1.isa.method_msgSend["object"] || _objj_forward)(___r1, "object"));
             var ___r1, ___r2;
         }
