@@ -38,7 +38,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
     public ObjJSelectorReferenceBack(ObjJSelector element) {
         super(element, TextRange.create(0, element.getTextLength()));
         selector = element.getText();
-        parent = ObjJTreeUtil.getParentOfType(element, ObjJHasMethodSelector.class);
+        parent = element.getParentOfType( ObjJHasMethodSelector.class);
         selectorIndex = parent != null ? parent.getSelectorStrings().indexOf(selector) : -1;
         fullSelector = parent != null ? parent.getSelectorString() : null;
         selectorUpToSelf = ObjJPsiImplUtil.getSelectorUntil(element, false);
@@ -50,7 +50,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
         if (classConstraints != null) {
             return classConstraints;
         }
-        ObjJMethodCall methodCall = ObjJTreeUtil.getParentOfType(myElement, ObjJMethodCall.class);
+        ObjJMethodCall methodCall = myElement.getParentOfType( ObjJMethodCall.class);
         if (methodCall == null) {
          //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return classConstraints;
@@ -158,7 +158,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
 
         if (result.size() > 1) {
             for (ObjJSelector selector : new ArrayList<>(result)) {
-                if (ObjJTreeUtil.getParentOfType(selector, ObjJAccessorProperty.class) != null) {
+                if (selector.getParentOfType( ObjJAccessorProperty.class) != null) {
                     result.remove(selector);
                 }
             }

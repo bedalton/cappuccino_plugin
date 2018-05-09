@@ -10,13 +10,10 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeEl
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 import org.cappuccino_project.ide.intellij.plugin.utils.*
 import org.jetbrains.annotations.Contract
 
 import javax.swing.*
-import java.util.logging.Level
-import java.util.logging.Logger
 
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 
@@ -54,11 +51,11 @@ object ObjJSelectorLookupUtil {
         if (selector == null) {
             return null
         }
-        val declarationSelector = ObjJTreeUtil.getParentOfType(selector, ObjJMethodDeclarationSelector::class.java)
+        val declarationSelector = selector.getParentOfType( ObjJMethodDeclarationSelector::class.java)
         if (declarationSelector != null) {
             return if (declarationSelector.formalVariableType != null) declarationSelector.formalVariableType!!.text else null
         }
-        val instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJInstanceVariableDeclaration::class.java)
+        val instanceVariableDeclaration = selector.getParentOfType( ObjJInstanceVariableDeclaration::class.java)
         return instanceVariableDeclaration?.formalVariableType?.text
     }
 
@@ -67,11 +64,11 @@ object ObjJSelectorLookupUtil {
         if (selector == null) {
             return null
         }
-        val declarationSelector = ObjJTreeUtil.getParentOfType(selector, ObjJMethodDeclarationSelector::class.java)
+        val declarationSelector = selector.getParentOfType( ObjJMethodDeclarationSelector::class.java)
         if (declarationSelector != null) {
             return if (declarationSelector.variableName != null) declarationSelector.variableName!!.text else null
         }
-        val instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJInstanceVariableDeclaration::class.java)
+        val instanceVariableDeclaration = selector.getParentOfType( ObjJInstanceVariableDeclaration::class.java)
         return if (instanceVariableDeclaration != null && instanceVariableDeclaration.variableName != null) instanceVariableDeclaration.variableName!!.text else null
     }
 

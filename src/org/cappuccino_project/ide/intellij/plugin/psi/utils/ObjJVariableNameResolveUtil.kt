@@ -4,8 +4,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import org.cappuccino_project.ide.intellij.plugin.psi.*
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object ObjJVariableNameResolveUtil {
@@ -17,7 +15,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.parent is ObjJPropertyAssignment) {
             return null
         }
-        if (ObjJTreeUtil.getParentOfType(variableNameElement, ObjJMethodHeader::class.java) != null) {
+        if (variableNameElement.getParentOfType( ObjJMethodHeader::class.java) != null) {
             return null
         }
 
@@ -48,7 +46,7 @@ object ObjJVariableNameResolveUtil {
             }
         }
         if (variableNameElement.text == "super") {
-            classNameElement = ObjJClassDeclarationPsiUtil.getContainingSuperClass(variableNameElement, true)
+            classNameElement = variableNameElement.getContainingSuperClass(true)
             if (classNameElement == null && containingClass != null) {
                 classNameElement = containingClass.className
             }
@@ -72,7 +70,7 @@ object ObjJVariableNameResolveUtil {
                             return classDeclarationElement.className
                         }
                     } else if (classDeclarationElement is ObjJImplementationDeclaration) {
-                        if (!(classDeclarationElement as ObjJImplementationDeclaration).isCategory) {
+                        if (!(classDeclarationElement as ObjJImplementationDeclaration).isCategory()) {
                             return classDeclarationElement.className
                         }
                     } else {
@@ -98,7 +96,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.getParent() instanceof ObjJPropertyAssignment) {
             return variableNameElement;
         }
-        if (ObjJTreeUtil.getParentOfType(variableNameElement, ObjJMethodHeader.class) != null) {
+        if (variableNameElement.getParentOfType( ObjJMethodHeader.class) != null) {
             return variableNameElement;
         }
 
@@ -134,7 +132,7 @@ object ObjJVariableNameResolveUtil {
         }
 
         LOGGER.log(Level.INFO, "Finding method header var names matching: <"+variableNameString+">");
-        ObjJMethodDeclaration methodDeclaration = ObjJTreeUtil.getParentOfType(variableNameElement, ObjJMethodDeclaration.class);
+        ObjJMethodDeclaration methodDeclaration = variableNameElement.getParentOfType( ObjJMethodDeclaration.class);
         if (methodDeclaration != null) {
             ObjJVariableName headerVariableName = ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration, variableNameString);
             if (headerVariableName != null) {
@@ -143,7 +141,7 @@ object ObjJVariableNameResolveUtil {
         }
 
         LOGGER.log(Level.INFO, "Finding function var name matching: <"+variableNameString+">");
-        ObjJFormalParameterArg functionParameterArg = ObjJTreeUtil.getParentOfType(variableNameElement, ObjJFormalParameterArg.class);
+        ObjJFormalParameterArg functionParameterArg = variableNameElement.getParentOfType( ObjJFormalParameterArg.class);
         if (functionParameterArg != null) {
             LOGGER.log(Level.INFO, "Variable <"+variableNameString+"> references self in function header");
             return variableNameElement;
@@ -162,10 +160,10 @@ object ObjJVariableNameResolveUtil {
 
         List<ObjJVariableName> temp = new ArrayList<>();
 
-        ObjJVariableNameCompletionContributorUtil.addAllFunctionScopedVariables(temp, ObjJTreeUtil.getParentOfType(variableNameElement, ObjJFunctionDeclarationElement.class));
-        ObjJVariableNameCompletionContributorUtil.addAllIterationVariables(temp, ObjJTreeUtil.getParentOfType(variableNameElement, ObjJIterationStatement.class));
-        ObjJVariableNameCompletionContributorUtil.addCatchProductionVariables(temp, ObjJTreeUtil.getParentOfType(variableNameElement, ObjJCatchProduction.class));
-        ObjJVariableNameCompletionContributorUtil.addPreprocessorDefineFunctionVariables(temp, ObjJTreeUtil.getParentOfType(variableNameElement, ObjJPreprocessorDefineFunction.class));
+        ObjJVariableNameCompletionContributorUtil.addAllFunctionScopedVariables(temp, variableNameElement.getParentOfType( ObjJFunctionDeclarationElement.class));
+        ObjJVariableNameCompletionContributorUtil.addAllIterationVariables(temp, variableNameElement.getParentOfType( ObjJIterationStatement.class));
+        ObjJVariableNameCompletionContributorUtil.addCatchProductionVariables(temp, variableNameElement.getParentOfType( ObjJCatchProduction.class));
+        ObjJVariableNameCompletionContributorUtil.addPreprocessorDefineFunctionVariables(temp, variableNameElement.getParentOfType( ObjJPreprocessorDefineFunction.class));
         PsiFile file = variableNameElement.getContainingFile();
         return file != null ? getVariableDeclarationFromFile(file, variableNameElement, mustBeLast) : null;
     }
@@ -173,7 +171,7 @@ object ObjJVariableNameResolveUtil {
     @Nullable
     public static ObjJVariableName getMatchingSiblingFromBodyVariableAssignments(ObjJVariableName variableNameElement, boolean mustBeLast) {
         LOGGER.log(Level.INFO, "Getting matching variable assignments from body variable assignments for var name <"+variableNameElement.getText()+">.");
-        ObjJBlock block = ObjJTreeUtil.getParentOfType(variableNameElement, ObjJBlock.class);
+        ObjJBlock block = variableNameElement.getParentOfType( ObjJBlock.class);
         ObjJVariableName referencedVariableName;
         List<ObjJBodyVariableAssignment> bodyVariableAssignments = ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJBodyVariableAssignment.class, true);
         for (ObjJBodyVariableAssignment assignment : bodyVariableAssignments) {
@@ -329,7 +327,7 @@ object ObjJVariableNameResolveUtil {
                 return referencedVar;
             }
         }
-        List<ObjJExpr> expressions = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJExpr.class);
+        List<ObjJExpr> expressions = file.getChildrenOfType( ObjJExpr.class);
         for (ObjJExpr expression : expressions) {
             if (expression.getLeftExpr() == null || expression.getLeftExpr().getVariableDeclaration() == null) {
                 continue;

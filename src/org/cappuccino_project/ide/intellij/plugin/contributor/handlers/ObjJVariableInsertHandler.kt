@@ -3,7 +3,6 @@ package org.cappuccino_project.ide.intellij.plugin.contributor.handlers
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.lang.ASTNode
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -13,8 +12,9 @@ import org.cappuccino_project.ide.intellij.plugin.psi.ObjJFunctionCall
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJMethodCall
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes
 import org.cappuccino_project.ide.intellij.plugin.utils.EditorUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getParentOfType
 
 class ObjJVariableInsertHandler private constructor() : InsertHandler<LookupElement> {
 
@@ -41,14 +41,14 @@ class ObjJVariableInsertHandler private constructor() : InsertHandler<LookupElem
     }
 
     fun shouldAppendFunctionParamComma(element: PsiElement): Boolean {
-        val parentExpression = ObjJTreeUtil.getParentOfType(element, ObjJExpr::class.java) ?: return false
-        val nextNonEmptyNode = ObjJTreeUtil.getNextNonEmptyNode(parentExpression, true)
+        val parentExpression = element.getParentOfType( ObjJExpr::class.java) ?: return false
+        val nextNonEmptyNode = parentExpression.getNextNonEmptyNode(true)
         return parentExpression.parent is ObjJFunctionCall && (nextNonEmptyNode == null || nextNonEmptyNode.elementType !== ObjJTypes.ObjJ_COMMA)
     }
 
     fun shouldAppendClosingBracket(element: PsiElement?): Boolean {
-        val parentExpression = ObjJTreeUtil.getParentOfType(element, ObjJExpr::class.java) ?: return false
-        val methodCall = ObjJTreeUtil.getParentOfType(parentExpression, ObjJMethodCall::class.java)
+        val parentExpression = element.getParentOfType( ObjJExpr::class.java) ?: return false
+        val methodCall = parentExpression.getParentOfType( ObjJMethodCall::class.java)
         return methodCall != null && methodCall.closeBracket == null
     }
 

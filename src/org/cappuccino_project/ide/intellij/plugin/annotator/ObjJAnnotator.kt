@@ -1,19 +1,18 @@
 package org.cappuccino_project.ide.intellij.plugin.annotator
 
-import com.intellij.lang.ASTNode
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.IElementType
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import org.cappuccino_project.ide.intellij.plugin.psi.*
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJBlockPsiUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getParentOfType
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 
 import java.util.ArrayList
 
@@ -68,12 +67,12 @@ class ObjJAnnotator : Annotator {
             validateBreakStatement(element, annotationHolder)
             return
         }
-        if (elementType === ObjJTypes.ObjJ_CASE && ObjJTreeUtil.getParentOfType(element, ObjJSwitchStatement::class.java) == null) {
+        if (elementType === ObjJTypes.ObjJ_CASE && element.getParentOfType( ObjJSwitchStatement::class.java) == null) {
             annotationHolder.createErrorAnnotation(element, "Case statement used outside of switch statement")
             return
         }
         if (element.text == ";") {
-            val node = ObjJTreeUtil.getPreviousNonEmptyNode(element, true)
+            val node = element.getPreviousNonEmptyNode(true)
             if (node != null && node.text == ";") {
                 annotationHolder.createWarningAnnotation(element, "extraneous colon")
             }
@@ -82,14 +81,14 @@ class ObjJAnnotator : Annotator {
 
     private fun validateAndAnnotateContinueStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating continue element");
-        if (ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement::class.java) == null) {
+        if (element.getParentOfType( ObjJIterationStatement::class.java) == null) {
             annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
         }
     }
 
     private fun validateBreakStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating break element");
-        if (ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement::class.java) != null || ObjJTreeUtil.getParentOfType(element, ObjJCaseClause::class.java) != null) {
+        if (element.getParentOfType( ObjJIterationStatement::class.java) != null || element.getParentOfType( ObjJCaseClause::class.java) != null) {
             return
         }
         annotationHolder.createErrorAnnotation(element, "Break used outside of loop or switch statement")
@@ -101,7 +100,7 @@ class ObjJAnnotator : Annotator {
     }
 
     private fun validateBlockReturnStatements(block: ObjJBlock, annotationHolder: AnnotationHolder) {
-        val returnStatementsList = ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJReturnStatement::class.java, true)
+        val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
         if (returnStatementsList.isEmpty()) {
             return
         }
@@ -154,7 +153,7 @@ class ObjJAnnotator : Annotator {
         if (element.getParentOfType(ObjJBlock::class.java) == null) {
             annotationHolder.createWarningAnnotation(element, "return used outside of block")
         } else if (element.expr != null &&
-                element.getParentOfType(ObjJFunctionDeclarationElement<*>::class.java) == null &&
+                element.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null &&
                 element.getParentOfType(ObjJMethodDeclaration::class.java) == null) {
             annotationHolder.createWarningAnnotation(element, "Return value not captured")
         }

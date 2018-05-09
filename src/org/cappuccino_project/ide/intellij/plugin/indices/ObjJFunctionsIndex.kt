@@ -7,7 +7,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDec
 class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFunctionDeclarationElement<*>>() {
 
     protected override val indexedElementClass: Class<ObjJFunctionDeclarationElement<*>>
-        get() = ObjJFunctionDeclarationElement<*>::class.java
+        get() = ObjJFunctionDeclarationElement::class.java
 
     operator fun get(fileName: String, functionName: String, project: Project): ObjJFunctionDeclarationElement<*>? {
         for (declarationElement in get(fileName, project)) {
@@ -27,7 +27,7 @@ class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFun
     }
 
     companion object {
-        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJFunctionDeclarationElement>(ObjJFunctionsIndex::class.java)
+        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJFunctionDeclarationElement<*>>(ObjJFunctionsIndex::class.java)
         val instance = ObjJFunctionsIndex()
         private val VERSION = 3
     }

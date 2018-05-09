@@ -49,7 +49,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         return classConstraints
     }
 
-    override fun getVariants(): Array<Any> {
+    override fun getVariants(): Array<Any?> {
         return arrayOfNulls(0)
     }
 
@@ -69,7 +69,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         List<Object> results = new ArrayList<>();
         ObjJHasMethodSelector parent = myElement.getParentOfType(ObjJHasMethodSelector.class);
         int selectorIndex = parent != null ? parent.getSelectorList().indexOf(myElement) : 0;
-        ObjJMethodHeader parentHeader = ObjJTreeUtil.getParentOfType(myElement, ObjJMethodHeader.class);
+        ObjJMethodHeader parentHeader = myElement.getParentOfType( ObjJMethodHeader.class);
         if (parentHeader != null) {
             ObjJClassDeclarationElement classDeclarationElement = myElement.getContainingClass();
             if (classDeclarationElement == null || classDeclarationElement.getInheritedProtocolList() == null) {
@@ -111,7 +111,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (elementToCheck.containingClassName == ObjJElementFactory.PLACEHOLDER_CLASS_NAME) {
             return false
         }
-        val methodCall = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodCall::class.java)
+        val methodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
         val methodCallString = methodCall?.selectorString
         if (methodHeaderParent != null) {
             return methodCallString == fullSelector
@@ -122,7 +122,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (methodCall != null) {
             return methodCallString == fullSelector
         }
-        val declaration = ObjJTreeUtil.getParentOfType(elementToCheck, ObjJMethodHeaderDeclaration<*>::class.java)
+        val declaration = elementToCheck.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
         return declaration != null && declaration.selectorString == fullSelector
     }
 

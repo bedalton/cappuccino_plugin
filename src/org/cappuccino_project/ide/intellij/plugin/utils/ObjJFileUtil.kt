@@ -36,7 +36,7 @@ class ObjJFileUtil {
     }
 
     private fun getImportsAsMap(file: PsiFile, imports: MutableMap<String, List<String>>) {
-        val importStatements = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJImportStatement<*>::class.java)
+        val importStatements = file.getChildrenOfType( ObjJImportStatement::class.java)
         val checked = ArrayList<String>()
         val project = file.project
         val searchScope = GlobalSearchScope.everythingScope(project)

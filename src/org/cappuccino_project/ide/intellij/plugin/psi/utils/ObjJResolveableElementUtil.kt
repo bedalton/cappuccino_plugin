@@ -3,7 +3,6 @@ package org.cappuccino_project.ide.intellij.plugin.psi.utils
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBasedPsiElement
-import com.intellij.psi.stubs.StubElement
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
@@ -81,7 +80,7 @@ object ObjJResolveableElementUtil {
         if (stubElement is ObjJResolveableStub<*>) {
             return stubElement.shouldResolve()
         }
-        val comment = ObjJTreeUtil.getPreviousNonEmptySibling(psiElement, true) ?: return true
+        val comment = psiElement.getPreviousNonEmptySibling(true) ?: return true
         val shouldResolveThisElement = !comment.text.contains("@ignore")
         if (!shouldResolveThisElement) {
             if (shouldNotResolveLoggingStatement != null) {
@@ -90,7 +89,7 @@ object ObjJResolveableElementUtil {
             return false
         }
         var shouldResolveParent = true
-        val parentResolveableElement = ObjJTreeUtil.getParentOfType(psiElement, ObjJResolveableElement<*>::class.java)
+        val parentResolveableElement = psiElement.getParentOfType( ObjJResolveableElement::class.java)
         if (parentResolveableElement != null) {
             shouldResolveParent = parentResolveableElement.shouldResolve()
         }

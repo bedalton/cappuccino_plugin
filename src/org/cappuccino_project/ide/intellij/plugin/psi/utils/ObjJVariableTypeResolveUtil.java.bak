@@ -112,7 +112,7 @@ public class ObjJVariableTypeResolveUtil {
         if (reference instanceof ObjJClassName) {
             return reference.getText();
         }
-        final ObjJMethodDeclarationSelector methodHeaderSelector = ObjJTreeUtil.getParentOfType(reference, ObjJMethodDeclarationSelector.class);
+        final ObjJMethodDeclarationSelector methodHeaderSelector = reference.getParentOfType( ObjJMethodDeclarationSelector.class);
         if (methodHeaderSelector != null && methodHeaderSelector.getFormalVariableType() != null) {
             final ObjJFormalVariableType formalVariableType = methodHeaderSelector.getFormalVariableType();
             if (formalVariableType.getVarTypeId() != null) {
@@ -125,7 +125,7 @@ public class ObjJVariableTypeResolveUtil {
             return formalVariableType.getText();
         }
 
-        final ObjJInstanceVariableDeclaration instanceVariableDeclaration = ObjJTreeUtil.getParentOfType(reference, ObjJInstanceVariableDeclaration.class);
+        final ObjJInstanceVariableDeclaration instanceVariableDeclaration = reference.getParentOfType( ObjJInstanceVariableDeclaration.class);
         if (instanceVariableDeclaration != null) {
             if (instanceVariableDeclaration.getFormalVariableType().getVarTypeId() != null && instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName() != null && !instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName().getText().isEmpty()) {
                 return instanceVariableDeclaration.getFormalVariableType().getVarTypeId().getClassName().getText();
@@ -164,7 +164,7 @@ public class ObjJVariableTypeResolveUtil {
                     ObjJVariableName variableName, boolean validateCallTarget) {
         final List<Result> possibleTypes = new ArrayList<>();
         final List<ObjJVariableAssignment> bodyVariableAssignments = ObjJVariableAssignmentsPsiUtil.getAllVariableAssignmentsMatchingName(variableName, ObjJVariableNameUtil.getQualifiedNameAsString(variableName));
-        final ObjJBodyVariableAssignment parentAssignment = ObjJTreeUtil.getParentOfType(variableName, ObjJBodyVariableAssignment.class);
+        final ObjJBodyVariableAssignment parentAssignment = variableName.getParentOfType( ObjJBodyVariableAssignment.class);
         for (ObjJVariableAssignment variableAssignment : bodyVariableAssignments) {
             //ProgressIndicatorProvider.checkCanceled();
             if (!Objects.equals(variableAssignment, parentAssignment)) {

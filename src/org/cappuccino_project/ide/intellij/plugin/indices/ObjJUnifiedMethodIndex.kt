@@ -6,7 +6,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeade
 class ObjJUnifiedMethodIndex private constructor() : ObjJMethodHeaderDeclarationsIndexBase<ObjJMethodHeaderDeclaration<*>>() {
 
     protected override val indexedElementClass: Class<ObjJMethodHeaderDeclaration<*>>
-        get() = ObjJMethodHeaderDeclaration<*>::class.java
+        get() = ObjJMethodHeaderDeclaration::class.java
 
     override fun getVersion(): Int {
         return super.getVersion() + VERSION

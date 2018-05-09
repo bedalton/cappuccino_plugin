@@ -6,11 +6,11 @@ import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarati
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement
 
-interface ObjJFunctionDeclarationElementStub<PsiT : ObjJFunctionDeclarationElement<out ObjJFunctionDeclarationElementStub<*>>> : StubElement<PsiT>, ObjJResolveableStub<PsiT> {
+interface ObjJFunctionDeclarationElementStub<PsiT : ObjJFunctionDeclarationElement> : StubElement<PsiT>, ObjJResolveableStub<PsiT> {
     val fileName: String
     val fqName: String
     val functionName: String
     val numParams: Int
     val paramNames: List<String>
-    val returnType: String
+    val returnType: String?
 }

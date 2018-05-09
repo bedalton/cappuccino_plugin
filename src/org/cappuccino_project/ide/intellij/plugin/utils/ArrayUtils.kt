@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList
 import java.util.ArrayList
 import java.util.Collections
 
+typealias Filter<T> = (T) -> Boolean
 object ArrayUtils {
 
     val EMPTY_STRING_ARRAY: List<String> = ImmutableList.copyOf(arrayOfNulls(0))
@@ -51,7 +52,7 @@ object ArrayUtils {
     fun <T> filter(list: List<T>, filter: Filter<T>): List<T> {
         val out = ArrayList<T>()
         for (item in list) {
-            if (filter.check(item)) {
+            if (filter(item)) {
                 out.add(item)
             }
         }
@@ -59,9 +60,6 @@ object ArrayUtils {
     }
 
 
-    interface Filter<T> {
-        fun check(item: T): Boolean
-    }
 
 
     fun search(keywords: List<String>, queryString: String): List<String> {

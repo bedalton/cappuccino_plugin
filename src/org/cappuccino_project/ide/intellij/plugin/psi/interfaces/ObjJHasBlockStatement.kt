@@ -8,5 +8,5 @@ interface ObjJHasBlockStatement : ObjJHasBlockStatements {
     val block: ObjJBlock?
 
     override val blockList: List<ObjJBlock>
-        get() = if (block != null) listOf<ObjJBlock>(block) else emptyList()
+        get() = if (block != null) listOf(block!!) else emptyList()
 }

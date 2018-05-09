@@ -19,7 +19,6 @@ import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.IncorrectOperationException
@@ -29,7 +28,6 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeEl
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJElementUtils
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubElementType
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 
 import java.util.Arrays
 
@@ -67,17 +65,5 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
             elementType: ObjJStubElementType<StubT, PsiT>
     ): List<PsiT> {
         return Arrays.asList(*getStubOrPsiChildren(elementType, elementType.arrayFactory))
-    }
-
-    override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> {
-        return ObjJTreeUtil.getChildrenOfTypeAsList(this, childClass)
-    }
-
-    override fun <PsiT : PsiElement> getChildOfType(parentClass: Class<PsiT>): PsiT? {
-        return ObjJTreeUtil.getChildOfType(this, parentClass)
-    }
-
-    override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? {
-        return ObjJTreeUtil.getParentOfType(this, parentClass)
     }
 }

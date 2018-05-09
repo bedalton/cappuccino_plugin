@@ -6,7 +6,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex
@@ -16,12 +15,11 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeEl
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils
-import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils.Filter
+import org.cappuccino_project.ide.intellij.plugin.utils.Filter
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
 import java.util.ArrayList
-import java.util.Collections
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -80,8 +78,8 @@ object ObjJVariableNameUtil {
 
     @JvmOverloads
     fun getQualifiedNameAsString(variableName: ObjJVariableName, stopBeforeIndex: Int = -1): String {
-        val qualifiedReference = ObjJTreeUtil.getParentOfType(variableName, ObjJQualifiedReference::class.java)
-        return getQualifiedNameAsString(qualifiedReference, variableName.text, stopBeforeIndex)
+        val qualifiedReference = variableName.getParentOfType( ObjJQualifiedReference::class.java)
+        return getQualifiedNameAsString(qualifiedReference, variableName.text, stopBeforeIndex) ?: ""
     }
 
     @JvmOverloads
@@ -119,13 +117,13 @@ object ObjJVariableNameUtil {
     fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex)
 //LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
-        return ArrayUtils.filter<ObjJVariableName?>(rawVariableNameElements, filter)
+        return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
     fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex)
 //LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
-        return ArrayUtils.filter<ObjJVariableName?>(rawVariableNameElements, filter)
+        return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
 
@@ -146,11 +144,11 @@ object ObjJVariableNameUtil {
         result.addAll(getAllAtGlobalFileVariables(element.containingFile))
         result.addAll(getAllGlobalScopedFileVariables(element.containingFile))
         result.addAll(getAllMethodDeclarationSelectorVars(element))
-        result.addAll(getAllIterationVariables(ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement::class.java)))
+        result.addAll(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)))
         result.addAll(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex))
-        result.addAll(getAllFunctionScopeVariables(ObjJTreeUtil.getParentOfType<ObjJFunctionDeclarationElement>(element, ObjJFunctionDeclarationElement<*>::class.java)))
-        result.addAll(getCatchProductionVariables(ObjJTreeUtil.getParentOfType(element, ObjJCatchProduction::class.java)))
-        result.addAll(getPreprocessorDefineFunctionVariables(ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction::class.java)))
+        result.addAll(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)))
+        result.addAll(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)))
+        result.addAll(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)))
         //LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
         return result
     }
@@ -169,11 +167,11 @@ object ObjJVariableNameUtil {
         result.addAll(getAllAtGlobalFileVariables(element.containingFile))
         result.addAll(getAllGlobalScopedFileVariables(element.containingFile))
         result.addAll(getAllMethodDeclarationSelectorVars(element))
-        result.addAll(getAllIterationVariables(ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement::class.java)))
+        result.addAll(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)))
         result.addAll(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex))
-        result.addAll(getAllFunctionScopeVariables(ObjJTreeUtil.getParentOfType<ObjJFunctionDeclarationElement>(element, ObjJFunctionDeclarationElement<*>::class.java)))
-        result.addAll(getCatchProductionVariables(ObjJTreeUtil.getParentOfType(element, ObjJCatchProduction::class.java)))
-        result.addAll(getPreprocessorDefineFunctionVariables(ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction::class.java)))
+        result.addAll(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)))
+        result.addAll(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)))
+        result.addAll(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)))
         //LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
         return result
     }
@@ -194,11 +192,11 @@ object ObjJVariableNameUtil {
             if (variableName != null) {
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
-            variableName = getFirstMatchOrNull(getAllIterationVariables(ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement::class.java)), filter)
+            variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
             if (variableName != null) {
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
-            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(ObjJTreeUtil.getParentOfType(element, ObjJFunctionDeclarationElement<*>::class.java)), filter)
+            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType( ObjJFunctionDeclarationElement::class.java)), filter)
             if (variableName != null) {
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
@@ -216,45 +214,45 @@ object ObjJVariableNameUtil {
         if (variableName != null) {
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
-        variableName = getFirstMatchOrNull(getCatchProductionVariables(ObjJTreeUtil.getParentOfType(element, ObjJCatchProduction::class.java)), filter)
+        variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
         if (variableName != null) {
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
-        variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction::class.java)), filter)
+        variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
         if (variableName != null) {
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         if (DumbService.isDumb(element.project)) {
             return null
         }
-        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance.get(element.text, element.project)
+        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance.get(element.text, element.project) as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
             return globalVariableDeclarations.get(0).variableName
         }
-        val block = ObjJTreeUtil.getParentOfType(element, ObjJBlock::class.java)
+        val block = element.getParentOfType( ObjJBlock::class.java)
         return if (block != null) {
             getSiblingVariableAssignmentNameElement(block, qualifiedNameIndex, filter)
         } else getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
     }
 
     private fun getVariableNameDeclarationInContainingBlocksFuzzy(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
-        val block = ObjJTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
+        val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
         val varName = element.text
         val variableNames = ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
         return getFirstMatchOrNull(variableNames, { variableName ->
             if (variableName.getText() != varName) {
                 return@getFirstMatchOrNull false
             }
-            var parent = variableName.getParent() as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
+            var parent : PsiElement = variableName.getParent() as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
             parent = parent.parent
             parent is ObjJBodyVariableAssignment || parent is ObjJVariableDeclaration
         })
     }
 
     private fun getVariableNameDeclarationInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
-        val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java)
-        val bodyVariableAssignments = ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJBodyVariableAssignment::class.java, true)
-        bodyVariableAssignments.addAll(ObjJBlockPsiUtil.getParentBlockChildrenOfType(block, ObjJBodyVariableAssignment::class.java, true))
+        val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return null
+        val bodyVariableAssignments = block.getBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true) as MutableList
+        bodyVariableAssignments.addAll(block.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true))
         var out: ObjJVariableName?
         for (bodyVariableAssignment in bodyVariableAssignments) {
             ProgressIndicatorProvider.checkCanceled()
@@ -269,7 +267,7 @@ object ObjJVariableNameUtil {
     fun getFirstMatchOrNull(variableNameElements: List<ObjJVariableName>, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         for (variableName in variableNameElements) {
             ProgressIndicatorProvider.checkCanceled()
-            if (filter.check(variableName)) {
+            if (filter(variableName)) {
                 return variableName
             }
         }
@@ -278,9 +276,9 @@ object ObjJVariableNameUtil {
 
     private fun getAllVariableNamesInAssignmentsInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int): MutableList<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java)
-        val bodyVariableAssignments = ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJBodyVariableAssignment::class.java, true)
-        bodyVariableAssignments.addAll(ObjJBlockPsiUtil.getParentBlockChildrenOfType(block, ObjJBodyVariableAssignment::class.java, true))
+        val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return result
+        val bodyVariableAssignments = block.getBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true) as MutableList
+        bodyVariableAssignments.addAll(block!!.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true))
         for (bodyVariableAssignment in bodyVariableAssignments) {
             ProgressIndicatorProvider.checkCanceled()
             result.addAll(getAllVariablesFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex))
@@ -290,7 +288,7 @@ object ObjJVariableNameUtil {
 
     private fun getAllVariableNamesInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
 
-        var containingBlock = ObjJTreeUtil.getParentOfType(element, ObjJBlock::class.java)
+        var containingBlock = element.getParentOfType( ObjJBlock::class.java)
         var tempBlock = containingBlock
         while (tempBlock != null) {
             tempBlock = containingBlock!!.getParentOfType(ObjJBlock::class.java)
@@ -316,7 +314,7 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val containingClassName = (element as? ObjJHasContainingClass)?.containingClassName
-        if (containingClassName == null || ObjJMethodCallPsiUtil.isUniversalMethodCaller(containingClassName)) {
+        if (containingClassName == null || isUniversalMethodCaller(containingClassName)) {
             return EMPTY_VARIABLE_NAME_LIST
         }
         for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, element.project)) {
@@ -324,7 +322,7 @@ object ObjJVariableNameUtil {
             for (declaration in ObjJInstanceVariablesByClassIndex.instance.get(variableHoldingClassName, element.project)) {
                 ProgressIndicatorProvider.checkCanceled()
                 if (declaration.variableName != null) {
-                    result.add(declaration.variableName)
+                    result.add(declaration.variableName!!)
                 }
             }
         }
@@ -333,7 +331,7 @@ object ObjJVariableNameUtil {
 
     private fun getAllMethodDeclarationSelectorVars(element: PsiElement): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        val declaration = ObjJTreeUtil.getParentOfType(element, ObjJMethodDeclaration::class.java)
+        val declaration = element.getParentOfType( ObjJMethodDeclaration::class.java)
         if (declaration != null) {
             for (methodDeclarationSelector in declaration.methodHeader.methodDeclarationSelectorList) {
                 ProgressIndicatorProvider.checkCanceled()
@@ -342,7 +340,7 @@ object ObjJVariableNameUtil {
                     continue
                 }
                 //LOGGER.log(Level.INFO, "Adding method header selector: "+methodDeclarationSelector.getVariableName().getText());
-                result.add(methodDeclarationSelector.variableName)
+                result.add(methodDeclarationSelector.variableName!!)
             }
         } else {
             //LOGGER.log(Level.INFO, "Psi element is not within a variable declaration");
@@ -354,7 +352,7 @@ object ObjJVariableNameUtil {
         if (variableName == null) {
             return 0
         }
-        val qualifiedReferenceParent = ObjJTreeUtil.getParentOfType(variableName, ObjJQualifiedReference::class.java)
+        val qualifiedReferenceParent = variableName.getParentOfType( ObjJQualifiedReference::class.java)
         var qualifiedNameIndex = qualifiedReferenceParent?.variableNameList?.indexOf(variableName) ?: -1
         if (qualifiedNameIndex < 0) {
             qualifiedNameIndex = 0
@@ -374,7 +372,7 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        val bodyVariableAssignments = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJBodyVariableAssignment::class.java)
+        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java)
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
         result.addAll(getAllFileScopeGlobalVariables(file))
         result.addAll(getAllPreProcDefinedVariables(file))
@@ -386,12 +384,12 @@ object ObjJVariableNameUtil {
         if (file is ObjJFile) {
             definedFunctions = file.getChildrenOfType(ObjJPreprocessorDefineFunction::class.java)
         } else {
-            definedFunctions = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJPreprocessorDefineFunction::class.java)
+            definedFunctions = file.getChildrenOfType( ObjJPreprocessorDefineFunction::class.java)
         }
         val out = ArrayList<ObjJVariableName>()
         for (function in definedFunctions) {
             if (function.variableName != null) {
-                out.add(function.variableName)
+                out.add(function.variableName!!)
             }
         }
         return out
@@ -403,7 +401,7 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        val expressions = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJExpr::class.java)
+        val expressions = file.getChildrenOfType( ObjJExpr::class.java)
         for (expr in expressions) {
             ProgressIndicatorProvider.checkCanceled()
             if (expr == null || expr.leftExpr == null || expr.leftExpr!!.variableDeclaration == null) {
@@ -412,7 +410,7 @@ object ObjJVariableNameUtil {
             val declaration = expr.leftExpr!!.variableDeclaration
             for (qualifiedReference in declaration!!.qualifiedReferenceList) {
                 if (qualifiedReference.primaryVar != null) {
-                    result.add(qualifiedReference.primaryVar)
+                    result.add(qualifiedReference.primaryVar!!)
                 }
             }
         }
@@ -425,7 +423,7 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        for (variableDeclaration in ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJGlobalVariableDeclaration::class.java)) {
+        for (variableDeclaration in file.getChildrenOfType( ObjJGlobalVariableDeclaration::class.java)) {
             if (variableDeclaration.variableName != null) {
                 result.add(variableDeclaration.variableName)
             }
@@ -440,7 +438,7 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        for (variableDeclaration in ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJGlobal::class.java)) {
+        for (variableDeclaration in file.getChildrenOfType( ObjJGlobal::class.java)) {
             result.add(variableDeclaration.variableName)
         }
         return result
@@ -499,13 +497,13 @@ object ObjJVariableNameUtil {
             //LOGGER.log(Level.INFO, "Checking variable dec for qualified reference: <"+qualifiedReference.getText()+">");
             if (qualifiedNameIndex == -1) {
                 for (temp in qualifiedReference.variableNameList) {
-                    if (filter.check(temp)) {
+                    if (filter(temp)) {
                         return temp
                     }
                 }
             } else if (qualifiedReference.variableNameList.size > qualifiedNameIndex) {
                 val suggestion = qualifiedReference.variableNameList[qualifiedNameIndex]
-                if (filter.check(suggestion)) {
+                if (filter(suggestion)) {
                     return suggestion
                 }
             } else {
@@ -532,7 +530,7 @@ object ObjJVariableNameUtil {
         if (element == null) {
             return result
         }
-        for (declaration in ObjJBlockPsiUtil.getParentBlockChildrenOfType(element, ObjJBodyVariableAssignment::class.java, true)) {
+        for (declaration in element.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)) {
             ProgressIndicatorProvider.checkCanceled()
             //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
             result.addAll(getAllVariablesFromBodyVariableAssignment(declaration, qualifiedIndex))
@@ -557,13 +555,13 @@ object ObjJVariableNameUtil {
                 ProgressIndicatorProvider.checkCanceled()
                 //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
                 for (qualifiedReference in declaration.qualifiedReferenceList) {
-                    result.add(qualifiedReference.primaryVar)
+                    result.add(qualifiedReference.primaryVar!!)
                 }
             }
             for (reference in iterationStatement.qualifiedReferenceList) {
-                result.add(reference.primaryVar)
+                result.add(reference.primaryVar!!)
             }
-            iterationStatement = ObjJTreeUtil.getParentOfType(iterationStatement, ObjJIterationStatement::class.java)
+            iterationStatement = iterationStatement.getParentOfType( ObjJIterationStatement::class.java)
         }
         return result
     }
@@ -572,7 +570,7 @@ object ObjJVariableNameUtil {
             catchProduction: ObjJCatchProduction?): List<ObjJVariableName> {
         return if (catchProduction == null) {
             EMPTY_VARIABLE_NAME_LIST
-        } else listOf<ObjJVariableName>(catchProduction.variableName)
+        } else listOf(catchProduction.variableName!!)
     }
 
     private fun getPreprocessorDefineFunctionVariables(

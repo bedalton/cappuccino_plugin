@@ -15,6 +15,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import org.cappuccino_project.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 
@@ -58,14 +59,14 @@ object ObjJInheritanceUtil {
         return superClasses
     }
 
-    fun getAllInheritedClasses(className: String, project: Project): List<String> {
+    fun getAllInheritedClasses(className: String, project: Project): MutableList<String> {
         val inheritedClasses = ArrayList<String>()
         getAllInheritedClasses(inheritedClasses, className, project)
         return inheritedClasses
     }
 
 
-    fun getAllInheritedProtocols(className: String, project: Project): List<ObjJProtocolDeclaration> {
+    fun getAllInheritedProtocols(className: String, project: Project): MutableList<ObjJProtocolDeclaration> {
         val out = ArrayList<ObjJProtocolDeclaration>()
         getAllInheritedProtocols(out, className, project)
         return out
@@ -128,7 +129,7 @@ object ObjJInheritanceUtil {
 
         //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(project)) {
-            classNames.add(ObjJClassType.UNDETERMINED)
+            classNames.add(UNDETERMINED)
             return
         }
         val classesDeclarations = ObjJClassDeclarationsIndex.instance.get(className, project)
@@ -141,7 +142,7 @@ object ObjJInheritanceUtil {
         for (classDeclaration in classesDeclarations) {
             ObjJClassDeclarationPsiUtil.addProtocols(classDeclaration, classNames)
             if (classDeclaration is ObjJImplementationDeclaration) {
-                val superClassName = (classDeclaration as ObjJImplementationDeclaration).superClassName
+                val superClassName = classDeclaration.getSuperClassName()
                 if (superClassName == null || classNames.contains(superClassName)) {
                     continue
                 }

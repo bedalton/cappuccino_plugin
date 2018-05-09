@@ -10,14 +10,11 @@ import org.cappuccino_project.ide.intellij.plugin.psi.utils.*
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings
 import org.cappuccino_project.ide.intellij.plugin.indices.*
 import org.cappuccino_project.ide.intellij.plugin.psi.*
-import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
-import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
 import org.cappuccino_project.ide.intellij.plugin.utils.*
 
 import java.util.ArrayList
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
@@ -85,7 +82,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return;
         }*/
         val callTarget = methodCall.callTarget.text
-        val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall.callTarget) else null
+        val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) methodCall.callTarget.getPossibleCallTargetTypes() else null
         if (callTarget == "self" || callTarget == "super" ||
                 possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED)) {
             return
@@ -329,15 +326,15 @@ internal object ObjJMethodCallAnnotatorUtil {
         val format = expressions.removeAt(0)
         var formatVarType: String?
         try {
-            formatVarType = ObjJExpressionReturnTypeUtil.getReturnType(format, true)
-        } catch (e: ObjJExpressionReturnTypeUtil.MixedReturnTypeException) {
+            formatVarType = getReturnType(format, true)
+        } catch (e: MixedReturnTypeException) {
             formatVarType = e.returnTypesList[0]
         }
 
         if (formatVarType == null) {
             return
         }
-        if (!ObjJMethodCallPsiUtil.isUniversalMethodCaller(formatVarType) && formatVarType != ObjJClassType.STRING) {
+        if (!isUniversalMethodCaller(formatVarType) && formatVarType != ObjJClassType.STRING) {
             annotationHolder.createWarningAnnotation(format, "First parameter should be of type CPString")
             return
         }
@@ -393,7 +390,7 @@ internal object ObjJMethodCallAnnotatorUtil {
      * @return true if method call is string formatting method call, false otherwise.
      */
     private fun isCPStringWithFormat(methodCall: ObjJMethodCall): Boolean {
-        if (methodCall.callTargetText == ObjJClassType.STRING && methodCall.selectorList.size == 1) {
+        if (methodCall.getCallTargetText() == ObjJClassType.STRING && methodCall.selectorList.size == 1) {
             val selectorText = methodCall.selectorList[0].text
             return selectorText == CPSTRING_INIT_WITH_FORMAT || selectorText == CPSTRING_STRING_WITH_FORMAT
         }

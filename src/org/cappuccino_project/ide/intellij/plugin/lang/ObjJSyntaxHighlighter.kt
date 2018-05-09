@@ -125,7 +125,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 
     companion object {
-        private val EMPTY_KEYS = arrayOfNulls<TextAttributesKey>(0)
+        private val EMPTY_KEYS = arrayOf<TextAttributesKey>()
         val ID = createTextAttributesKey("ObjectiveJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
         val AT_STATEMENT = createTextAttributesKey("ObjectiveJ_AT_STATEMENT", DefaultLanguageHighlighterColors.KEYWORD)
         val PRE_PROCESSOR = createTextAttributesKey("ObjectiveJ_PRE_PROC", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE)

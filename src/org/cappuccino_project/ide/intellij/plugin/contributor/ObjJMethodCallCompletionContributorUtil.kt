@@ -5,25 +5,19 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import org.cappuccino_project.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJIcons
 import org.cappuccino_project.ide.intellij.plugin.psi.*
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJResolveableElementUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
-import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 
-import java.util.Collections
 import java.util.logging.Level
 import java.util.logging.Logger
 
 import org.cappuccino_project.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil.addSelectorLookupElement
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.*
 
 object ObjJMethodCallCompletionContributorUtil {
 
@@ -42,12 +36,13 @@ object ObjJMethodCallCompletionContributorUtil {
             LOGGER.log(Level.SEVERE, "Cannot add selector lookup elements. Selector element is null")
             return
         }
-        val methodCall = ObjJTreeUtil.getParentOfType(psiElement, ObjJMethodCall::class.java)
+        val methodCall = psiElement.getParentOfType(ObjJMethodCall::class.java)
                 ?: //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method call is null.");
                 return
         addMethodCallCompletions(result, psiElement, methodCall)
 
     }
+
 
     private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?) {
 
@@ -64,7 +59,7 @@ object ObjJMethodCallCompletionContributorUtil {
         var selectorIndex = selectors.size - 1
         val thisSelectorTrimmedText = psiElement.text.replace("\\s+".toRegex(), "")
         for (i in selectors.indices) {
-            if (selectors[i] != null && selectors[i].text == thisSelectorTrimmedText) {
+            if (selectors[i].text == thisSelectorTrimmedText) {
                 selectorIndex = i
                 break
             }
@@ -95,7 +90,7 @@ object ObjJMethodCallCompletionContributorUtil {
         // then element is well formed, and can return the basic selector list
         // which will hold selectors up to self, which is what is needed for completion
         var selectorIndex: Int
-        val selectors = selectorParentMethodCall.selectorList
+        val selectors = selectorParentMethodCall.selectorList as MutableList
         if (psiElement is ObjJSelector || psiElement.parent is ObjJSelector) {
             return selectors
         }
@@ -105,7 +100,7 @@ object ObjJMethodCallCompletionContributorUtil {
         if (psiElement.parent is ObjJQualifiedMethodCallSelector) {
             val qualifiedMethodCallSelector = psiElement.parent as ObjJQualifiedMethodCallSelector
             if (qualifiedMethodCallSelector.selector != null) {
-                selectorIndex = selectors.indexOf(qualifiedMethodCallSelector.selector)
+                selectorIndex = selectors.indexOf(qualifiedMethodCallSelector.selector!!)
             } else {
                 selectorIndex = selectors.size - 1
             }
@@ -115,7 +110,7 @@ object ObjJMethodCallCompletionContributorUtil {
 
         // Find orphaned elements in method call
         // and create selector elements for later use.
-        val orphanedSelectors = ObjJTreeUtil.getChildrenOfType(psiElement.parent, ObjJTypes.ObjJ_ID)
+        val orphanedSelectors = psiElement.parent.getChildrenOfType(ObjJTypes.ObjJ_ID)
         for (subSelector in orphanedSelectors) {
             if (subSelector.text.isEmpty()) {
                 continue
@@ -248,8 +243,8 @@ object ObjJMethodCallCompletionContributorUtil {
 
     private fun addInstanceVariableAccessorMethods(result: CompletionResultSet, instanceVariable: ObjJInstanceVariableDeclaration, priority: Double) {
         val className = instanceVariable.containingClassName
-        val getter = instanceVariable.getter
-        val setter = instanceVariable.setter
+        val getter = instanceVariable.getGetter()
+        val setter = instanceVariable.getSetter()
         if (getter != null) {
             addSelectorLookupElement(result, getter.selectorString, className, "<" + instanceVariable.formalVariableType.text + ">", priority, false, ObjJIcons.ACCESSOR_ICON)
         }
@@ -257,6 +252,7 @@ object ObjJMethodCallCompletionContributorUtil {
             addSelectorLookupElement(result, setter.selectorString, className, "<" + instanceVariable.formalVariableType.text + ">", priority, false, ObjJIcons.ACCESSOR_ICON)
         }
     }
+}
 
 /*
     /**
@@ -287,6 +283,5 @@ object ObjJMethodCallCompletionContributorUtil {
                     ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY : ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY;
             addSelectorLookupElement(result, instanceVariableDeclaration.getVariableName(),"<"+instanceVariableDeclaration.getFormalVariableType()+">", priority,false, null);
         }
-    }*/
-
-}
+    }
+*/

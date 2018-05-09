@@ -1,16 +1,20 @@
 package org.cappuccino_project.ide.intellij.plugin.indices
 
-import com.intellij.openapi.util.Pair
 import com.intellij.psi.stubs.IndexSink
+import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile
+import org.cappuccino_project.ide.intellij.plugin.psi.*
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJFileUtil
 
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 
 class ObjJIndexService
 //private static final Logger LOGGER = Logger.getLogger("#objj.ObjJIndexService");
@@ -37,7 +41,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
         try {
             //LOGGER.log(Level.INFO,"Indexing Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
-            indexSink.occurrence<ObjJMethodHeaderDeclaration, String>(ObjJUnifiedMethodIndex.KEY, selector)
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, selector)
             //LOGGER.log(Level.INFO,"Indexed Method - ["+methodHeaderStub.getContainingClassName()+" "+selector + "]");
         } catch (e: Exception) {
             //LOGGER.log(Level.SEVERE, "Failed to index selector with error: "+e.getLocalizedMessage());
@@ -46,11 +50,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         val selectorBuilder = StringBuilder()
         for (subSelector in methodHeaderStub.selectorStrings) {
             selectorBuilder.append(subSelector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
-            indexSink.occurrence<ObjJMethodHeaderDeclaration, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
         }
 
         val className = methodHeaderStub.containingClassName
-        if (!ObjJMethodCallPsiUtil.isUniversalMethodCaller(className)) {
+        if (!isUniversalMethodCaller(className)) {
             try {
                 indexSink.occurrence<ObjJMethodHeader, String>(ObjJClassMethodIndex.instance.getKey(), className)
             } catch (e: Exception) {
@@ -86,11 +90,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         //LOGGER.log(Level.INFO, "Indexing Accessor Property for var <"+property.getContainingClassName()+":"+property.getVariableName()+">");
         if (property.getter != null) {
             //LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getGetter() + "]");
-            indexSink.occurrence<ObjJMethodHeaderDeclaration, String>(ObjJUnifiedMethodIndex.KEY, property.getter!!)
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.getter!!)
         }
         if (property.setter != null) {
             //LOGGER.log(Level.INFO, "ObjJIndex: Indexing accessorProperty ["+property.getContainingClass()+" "+ property.getSetter() + "]");
-            indexSink.occurrence<ObjJMethodHeaderDeclaration, String>(ObjJUnifiedMethodIndex.KEY, property.setter!!)
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.setter!!)
         }
     }
 
@@ -104,26 +108,24 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             //   //LOGGER.log(Level.INFO, "ClassName is empty in class declaration for index");
             return
         }
-        indexSink.occurrence<ObjJClassDeclarationElement, String>(ObjJClassDeclarationsIndex.instance.getKey(), stub.className)
+        indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassDeclarationsIndex.instance.getKey(), stub.className)
         if (stub is ObjJImplementationStub) {
             indexImplementationClassDeclaration(stub, indexSink)
         } else if (stub is ObjJProtocolDeclarationStub) {
             indexSink.occurrence<ObjJProtocolDeclaration, String>(ObjJProtocolDeclarationsIndex.instance.getKey(), stub.className)
         }
         for (protocol in stub.inheritedProtocols) {
-            if (protocol is String) {
-                indexSink.occurrence<ObjJClassDeclarationElement, String>(ObjJClassInheritanceIndex.instance.getKey(), protocol)
-            }
+            indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassInheritanceIndex.instance.getKey(), protocol)
         }
     }
 
     private fun indexImplementationClassDeclaration(implementationStub: ObjJImplementationStub, indexSink: IndexSink) {
         if (implementationStub.isCategory) {
-            indexSink.occurrence<ObjJClassDeclarationElement, String>(ObjJClassInheritanceIndex.instance.getKey(), implementationStub.className)
+            indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassInheritanceIndex.instance.getKey(), implementationStub.className)
             indexSink.occurrence<ObjJImplementationDeclaration, String>(ObjJImplementationCategoryDeclarationsIndex.instance.getKey(), implementationStub.className)
         } else if (implementationStub.superClassName != null && implementationStub.superClassName != ObjJClassType.CPOBJECT) {
             //   //LOGGER.log(Level.INFO, "Setting super class to: " + implementationStub.getSuperClassName());
-            indexSink.occurrence<ObjJClassDeclarationElement, String>(ObjJClassInheritanceIndex.instance.getKey(), implementationStub.superClassName!!)
+            indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassInheritanceIndex.instance.getKey(), implementationStub.superClassName!!)
         }
         indexSink.occurrence<ObjJImplementationDeclaration, String>(ObjJImplementationDeclarationsIndex.instance.getKey(), implementationStub.className)
     }
@@ -138,18 +140,13 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         val stringBuilder = StringBuilder()
         for (selector in selectorLiteral.selectorStrings) {
             stringBuilder.append(selector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
-            indexSink.occurrence<ObjJMethodHeaderDeclaration, String>(ObjJMethodFragmentIndex.KEY, stringBuilder.toString())
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, stringBuilder.toString())
         }
     }
 
-    override fun indexFunctionDeclaration(functionDeclaration: ObjJFunctionDeclarationElementStub<*>, indexSink: IndexSink) {
-        if (functionDeclaration.functionName == null) {
-
-            //LOGGER.log(Level.INFO, "function("+ ArrayUtils.join(functionDeclaration.getParamNames()) + ") has no function name");
-            return
-        }
+    override fun indexFunctionDeclaration(variableDeclarationStub: ObjJFunctionDeclarationElementStub<*>, indexSink: IndexSink) {
         //LOGGER.log(Level.INFO, "Indexing function: <"+functionDeclaration.getFunctionName()+">");
-        indexSink.occurrence<ObjJFunctionDeclarationElement, String>(ObjJFunctionsIndex.instance.getKey(), functionDeclaration.functionName)
+        indexSink.occurrence<ObjJFunctionDeclarationElement<*>, String>(ObjJFunctionsIndex.instance.getKey(), variableDeclarationStub.functionName)
         //LOGGER.log(Level.INFO, "Did Index function: <"+functionDeclaration.getFunctionName()+">");
     }
 
@@ -176,9 +173,9 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
     }
 
-    override fun indexFile(fileStub: ObjJFileStub, indexSink: IndexSink) {
+    override fun indexFile(stub: ObjJFileStub, sink: IndexSink) {
         //LOGGER.log(Level.INFO, "Indexing file by name: "+fileStub.getFileName());
-        indexSink.occurrence<ObjJFile, String>(ObjJFilesByNameIndex.instance.getKey(), fileStub.fileName)
+        sink.occurrence<ObjJFile, String>(ObjJFilesByNameIndex.instance.getKey(), stub.fileName)
     }
 
     override fun indexVarTypeId(stub: ObjJVarTypeIdStub, indexSink: IndexSink) {
@@ -203,4 +200,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         }
     }
 
+    companion object {
+        const val INDEX_VERSION = 1
+    }
 }

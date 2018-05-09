@@ -21,7 +21,10 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
 
         private fun getParsingModes(builder_: PsiBuilder): TObjectLongHashMap<String> {
             var flags = builder_.getUserDataUnprotected(MODES_KEY)
-            if (flags == null) builder_.putUserDataUnprotected(MODES_KEY, flags = TObjectLongHashMap<String>())
+            if (flags == null) {
+                flags = TObjectLongHashMap();
+                builder_.putUserDataUnprotected(MODES_KEY, flags)
+            }
             return flags
         }
 
@@ -53,7 +56,7 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             return true
         }
 
-        override fun adapt_builder_(root: IElementType, builder: PsiBuilder, parser: PsiParser, tokenSets: Array<TokenSet>): PsiBuilder {
+        fun adapt_builder_(root: IElementType, builder: PsiBuilder, parser: PsiParser, tokenSets: Array<TokenSet>): PsiBuilder {
             val result = GeneratedParserUtilBase.adapt_builder_(root, builder, parser, tokenSets)
             GeneratedParserUtilBase.ErrorState.get(result).altMode = true
             return result

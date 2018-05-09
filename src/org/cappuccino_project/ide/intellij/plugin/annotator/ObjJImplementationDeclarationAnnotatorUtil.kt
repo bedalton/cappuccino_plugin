@@ -6,15 +6,15 @@ import org.cappuccino_project.ide.intellij.plugin.fixes.ObjJMissingProtocolMetho
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import org.cappuccino_project.ide.intellij.plugin.psi.*
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getUnimplementedProtocolMethods
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.isCategory
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 
 internal object ObjJImplementationDeclarationAnnotatorUtil {
 
 
     fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
-        if (declaration.isCategory) {
+        if (declaration.isCategory()) {
             annotateIfUndefinedImplementationForCategory(declaration.className, annotationHolder)
         } else {
             annotateIfDuplicateImplementation(declaration, annotationHolder)
@@ -27,11 +27,11 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             return
         }
         val className = classNameElement.text
-        if (className.isEmpty() || ObjJMethodCallPsiUtil.isUniversalMethodCaller(className)) {
+        if (className.isEmpty() || isUniversalMethodCaller(className)) {
             return
         }
         for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance.get(className, classNameElement.project)) {
-            if (!implementationDeclaration.isCategory) {
+            if (!implementationDeclaration.isCategory()) {
                 return
             }
         }
@@ -42,7 +42,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         val classNameElement = thisImplementationDeclaration.className ?: return
         val className = classNameElement.text
         for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance.get(className, classNameElement.project)) {
-            if (!implementationDeclaration.isCategory && !implementationDeclaration.isEquivalentTo(thisImplementationDeclaration)) {
+            if (!implementationDeclaration.isCategory() && !implementationDeclaration.isEquivalentTo(thisImplementationDeclaration)) {
                 annotationHolder.createErrorAnnotation(classNameElement, "Duplicate class declared with name: <$className>")
                 return
             }
@@ -57,7 +57,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             if (ObjJProtocolDeclarationsIndex.instance.get(protocolName, declaration.project).isEmpty()) {
                 annotationHolder.createErrorAnnotation(className, "Protocol with name <$protocolName> does not exist in project")
             }
-            val unimplementedMethods = ObjJClassDeclarationPsiUtil.getUnimplementedProtocolMethods(declaration, protocolName)
+            val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
             if (!unimplementedMethods.required.isEmpty()) {
                 annotationHolder.createErrorAnnotation(className, "Missing required protocol methods")
                         .registerFix(ObjJMissingProtocolMethodFix(unimplementedMethods))

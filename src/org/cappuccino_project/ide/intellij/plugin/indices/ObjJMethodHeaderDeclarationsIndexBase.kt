@@ -32,7 +32,7 @@ abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodH
                           project: Project,
                           globalSearchScope: GlobalSearchScope?): Map<String, List<MethodHeaderT>> {
         return if (patternString == null) {
-            ObjJStringStubIndexBase.emptyList
+            Collections.emptyMap()
         } else getAllForKeys(getKeysByPatternFuzzy(patternString, part, project, globalSearchScope), project, globalSearchScope)
     }
 
@@ -81,7 +81,7 @@ abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodH
 
     companion object {
 
-        private val LOGGER = Logger.getLogger(ObjJMethodHeaderDeclarationsIndexBase<*>::class.java.canonicalName)
+        private val LOGGER = Logger.getLogger(ObjJMethodHeaderDeclarationsIndexBase::class.java.canonicalName)
         private val VERSION = 1
         private val PARTS_PATTERN = Pattern.compile("([a-z]*)?([A-Z0-9][a-z]*)*")
 

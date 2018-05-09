@@ -31,7 +31,7 @@ class ObjJAccessorPropertyStubType internal constructor(
     override fun createStub(
             accessorProperty: ObjJAccessorPropertyImpl, parentStub: StubElement<*>): ObjJAccessorPropertyStub {
         val containingClass = accessorProperty.containingClassName
-        val variableDeclaration = ObjJTreeUtil.getParentOfType(accessorProperty, ObjJInstanceVariableDeclaration::class.java)
+        val variableDeclaration = accessorProperty.getParentOfType( ObjJInstanceVariableDeclaration::class.java)
         val variableName: String?
         val variableType: String?
         if (variableDeclaration != null) {

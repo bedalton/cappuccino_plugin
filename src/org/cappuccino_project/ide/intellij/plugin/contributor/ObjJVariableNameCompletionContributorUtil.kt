@@ -77,7 +77,7 @@ object ObjJVariableNameCompletionContributorUtil {
 
     @NotNull
     public static String getQualifiedNameAsString(@NotNull ObjJVariableName variableName) {
-        ObjJQualifiedReference qualifiedReference = ObjJTreeUtil.getParentOfType(variableName, ObjJQualifiedReference.class);
+        ObjJQualifiedReference qualifiedReference = variableName.getParentOfType( ObjJQualifiedReference.class);
         if (qualifiedReference == null) {
             return variableName.getText();
         }
@@ -137,11 +137,11 @@ object ObjJVariableNameCompletionContributorUtil {
         addAllMethodDeclarationSelectorVars(result, element);
         LOGGER.log(Level.INFO, "Num VariableNames after header declaration vars: <"+(result.size()-currentSize)+">");
 
-        addAllIterationVariables(result, ObjJTreeUtil.getParentOfType(element, ObjJIterationStatement.class));
+        addAllIterationVariables(result, element.getParentOfType( ObjJIterationStatement.class));
         addAllFileScopedVariables(result, element.getContainingFile(), qualifiedNameIndex);
-        addAllFunctionScopedVariables(result, ObjJTreeUtil.getParentOfType(element, ObjJFunctionDeclarationElement.class));
-        addCatchProductionVariables(result, ObjJTreeUtil.getParentOfType(element, ObjJCatchProduction.class));
-        addPreprocessorDefineFunctionVariables(result, ObjJTreeUtil.getParentOfType(element, ObjJPreprocessorDefineFunction.class));
+        addAllFunctionScopedVariables(result, element.getParentOfType( ObjJFunctionDeclarationElement.class));
+        addCatchProductionVariables(result, element.getParentOfType( ObjJCatchProduction.class));
+        addPreprocessorDefineFunctionVariables(result, element.getParentOfType( ObjJPreprocessorDefineFunction.class));
         LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
         return result;
 
@@ -165,7 +165,7 @@ object ObjJVariableNameCompletionContributorUtil {
     }
 
     private static void addAllMethodDeclarationSelectorVars(List<ObjJVariableName> result, PsiElement element) {
-        ObjJMethodDeclaration declaration = ObjJTreeUtil.getParentOfType(element,ObjJMethodDeclaration.class);
+        ObjJMethodDeclaration declaration = element.getParentOfType(ObjJMethodDeclaration.class);
         if (declaration != null) {
             for (ObjJMethodDeclarationSelector methodDeclarationSelector : declaration.getMethodHeader().getMethodDeclarationSelectorList()) {
                 ProgressIndicatorProvider.checkCanceled();
@@ -181,7 +181,7 @@ object ObjJVariableNameCompletionContributorUtil {
         if (variableName == null) {
             return 0;
         }
-        ObjJQualifiedReference qualifiedReferenceParent = ObjJTreeUtil.getParentOfType(variableName, ObjJQualifiedReference.class);
+        ObjJQualifiedReference qualifiedReferenceParent = variableName.getParentOfType( ObjJQualifiedReference.class);
         int qualifiedNameIndex = qualifiedReferenceParent != null ? qualifiedReferenceParent.getVariableNameList().indexOf(variableName) : -1;
         if (qualifiedNameIndex < 0) {
             qualifiedNameIndex = 0;
@@ -194,13 +194,13 @@ object ObjJVariableNameCompletionContributorUtil {
             LOGGER.log(Level.INFO, "Cannot get all file scoped variables. File is null");
             return;
         }
-        List<ObjJBodyVariableAssignment> bodyVariableAssignments = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJBodyVariableAssignment.class);
+        List<ObjJBodyVariableAssignment> bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment.class);
         addAllVariablesFromBodyVariableAssignmentsList(result, bodyVariableAssignments, qualifiedNameIndex);
         addAllFileScopeGlobalVariables(result, file);
     }
 
     private static void addAllFileScopeGlobalVariables(List<ObjJVariableName> result, PsiFile file) {
-        List<ObjJExpr> expressions = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJExpr.class);
+        List<ObjJExpr> expressions = file.getChildrenOfType( ObjJExpr.class);
         for (ObjJExpr expr : expressions) {
             ProgressIndicatorProvider.checkCanceled();
             if (expr == null || expr.getLeftExpr() == null || expr.getLeftExpr().getVariableDeclaration() == null) {
