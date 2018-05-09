@@ -36,8 +36,8 @@ class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPo
 
     override fun getVariants(): Array<Any> {
         return if (DumbService.isDumb(myElement.project)) {
-            arrayOfNulls(0)
-        } else arrayOfNulls(0)
+            arrayOf()
+        } else arrayOf()
         //final List<ObjJMethodHeaderDeclaration> result = ObjJUnifiedMethodIndex.getInstance().getKeysByPattern(selector+"(.*)", myElement.getProject());
         //return result.toArray();
     }

@@ -6,13 +6,13 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJConditional
 
 object ObjJSelectorLiteralPsiUtil {
 
+    /*
     fun isRespondToSelector(callTarget: ObjJMethodCall): Boolean {
         if (true) {
             return false
         }
         val selectorString = callTarget.selectorString
-        for (conditionalStatement in ObjJBlockPsiUtil.getParentBlockChildrenOfType(callTarget, ObjJConditionalStatement::class.java, true)) {
-            if (conditionalStatement != null) {
+        for (conditionalStatement in callTarget.getParentBlockChildrenOfType(ObjJConditionalStatement::class.java, true)) {
                 val expr = conditionalStatement.conditionalExpression
                 while (expr != null) {
                     if (expr.leftExpr != null) {
@@ -22,8 +22,7 @@ object ObjJSelectorLiteralPsiUtil {
                     }
 
                 }
-            }
         }
         return false
-    }
+    }*/
 }

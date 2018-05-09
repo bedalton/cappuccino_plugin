@@ -800,7 +800,7 @@ functionDeclaration
 		implements = [
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
 
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
@@ -1619,7 +1619,7 @@ functionLiteral
 		implements = [
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>>"
+			"org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>"
 		]
 		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve]
 	}

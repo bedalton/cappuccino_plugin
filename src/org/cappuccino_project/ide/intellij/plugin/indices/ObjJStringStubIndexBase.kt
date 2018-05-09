@@ -30,21 +30,19 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION
     }
 
-
     @Throws(IndexNotReadyRuntimeException::class)
-    operator fun get(className: String, project: Project): List<ObjJElemT> {
-        return get(className, project, null)
+    operator fun get(variableName: String, project: Project): MutableCollection<ObjJElemT> {
+        return get(variableName, project, GlobalSearchScope.allScope(project))
     }
-
     @Throws(IndexNotReadyRuntimeException::class)
-    override operator fun get(variableName: String, project: Project, searchScope: GlobalSearchScope?): List<ObjJElemT> {
+    override operator fun get(variableName: String, project: Project, scope: GlobalSearchScope): MutableCollection<ObjJElemT> {
 
         if (DumbService.getInstance(project).isDumb) {
             throw IndexNotReadyRuntimeException()
             //return Collections.emptyList();
         }
         //LOGGER.log(Level.INFO, "Index("+getClass().getSimpleName()+")->get("+variableName+")");
-        return ArrayList(StubIndex.getElements(key, variableName, project, searchScope, indexedElementClass))
+        return ArrayList(StubIndex.getElements(key, variableName, project, scope, indexedElementClass))
     }
 
 
@@ -86,19 +84,19 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
     @Throws(IndexNotReadyRuntimeException::class)
     fun getByPattern(patternString: String?, project: Project, globalSearchScope: GlobalSearchScope?): Map<String, List<ObjJElemT>> {
         return if (patternString == null) {
-            emptyList
+            Collections.emptyMap()
         } else getAllForKeys(getKeysByPattern(patternString, project, globalSearchScope), project, globalSearchScope)
     }
 
     @Throws(IndexNotReadyRuntimeException::class)
     @JvmOverloads
     protected fun getAllForKeys(keys: List<String>, project: Project, globalSearchScope: GlobalSearchScope? = null): Map<String, List<ObjJElemT>> {
-        val out = HashMap<String, List<ObjJElemT>>()
+        val out = HashMap<String, MutableList<ObjJElemT>>() as MutableMap<String, MutableList<ObjJElemT>>
         for (key in keys) {
             if (out.containsKey(key)) {
-                out[key].addAll(get(key, project, globalSearchScope))
+                out[key]!!.addAll(get(key, project, globalSearchScope))
             } else {
-                out[key] = get(key, project, globalSearchScope)
+                out[key] = get(key, project, globalSearchScope) as MutableList<ObjJElemT>
             }
         }
         return out
@@ -188,8 +186,8 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
 
     companion object {
 
-        private val LOGGER = Logger.getLogger(ObjJStringStubIndexBase<*>::class.java.name)
-        protected val emptyList: Map<*, *> = emptyMap<Any, Any>()
+        private val LOGGER = Logger.getLogger(ObjJStringStubIndexBase::class.java.name)
+        protected val emptyList: Map<Any, Any> = emptyMap<Any, Any>()
         private val VERSION = 3
     }
 }

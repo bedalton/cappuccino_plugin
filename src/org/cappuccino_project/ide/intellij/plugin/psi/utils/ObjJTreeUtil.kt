@@ -16,145 +16,144 @@ import java.util.Collections
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class ObjJTreeUtil : PsiTreeUtil() {
-    companion object {
 
-        private val LOGGER = Logger.getLogger(ObjJTreeUtil::class.java.name)
-        fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<com.intellij.psi.PsiElement>?, stubClass: Class<StubT>): List<StubT> {
-            return if (parent == null) {
-                emptyList()
-            } else filterStubChildren(parent.childrenStubs, stubClass)
-        }
-
-        fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?, stubClass: Class<StubT>): List<StubT> {
-            return if (children == null) {
-                emptyList()
-            } else ArrayUtils.filter(children, stubClass)
-        }
-
-        fun getChildrenOfType(element: PsiElement, iElementType: IElementType): List<PsiElement> {
-            val out = ArrayList<PsiElement>()
-            for (child in element.children) {
-                //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
-                if (child.node.elementType === iElementType) {
-                    //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
-                    out.add(child)
-                }
-            }
-            return out
-        }
-
-        fun getPreviousSiblingOfType(element: PsiElement, siblingElementType: IElementType): PsiElement? {
-            var element = element
-            while (element.prevSibling != null) {
-                element = element.prevSibling
-                if (hasElementType(element, siblingElementType)) {
-                    return element
-                }
-            }
-            return null
-        }
-
-        fun getNextSiblingOfType(element: PsiElement, siblingElementType: IElementType): PsiElement? {
-            var element = element
-            while (element.nextSibling != null) {
-                element = element.nextSibling
-                if (hasElementType(element, siblingElementType)) {
-                    return element
-                }
-            }
-            return null
-        }
-
-        private fun hasElementType(element: PsiElement, elementType: IElementType): Boolean {
-            return element.node.elementType === elementType
-        }
-
-        fun getNextNodeType(compositeElement: PsiElement): IElementType? {
-            val astNode = getNextNode(compositeElement)
-            return astNode?.elementType
-        }
-
-        fun getNextNode(compositeElement: PsiElement): ASTNode? {
-            return compositeElement.node.treeNext
-        }
-
-        fun getNextNonEmptyNodeType(compositeElement: PsiElement, ignoreLineTerminator: Boolean): IElementType? {
-            val next = getNextNonEmptyNode(compositeElement, ignoreLineTerminator)
-            return next?.elementType
-        }
-
-        fun getPreviousNonEmptySibling(psiElement: PsiElement, ignoreLineTerminator: Boolean): PsiElement? {
-            val node = getPreviousNonEmptyNode(psiElement, ignoreLineTerminator)
-            return node?.psi
-        }
-
-        fun getNextNonEmptySibling(psiElement: PsiElement, ignoreLineTerminator: Boolean): PsiElement? {
-            val node = getNextNonEmptyNode(psiElement, ignoreLineTerminator)
-            return node?.psi
-        }
-
-        fun getPreviousNonEmptyNode(compositeElement: PsiElement?, ignoreLineTerminator: Boolean): ASTNode? {
-            var out: ASTNode? = compositeElement?.node?.treePrev
-            while (shouldSkipNode(out, ignoreLineTerminator)) {
-                if (out!!.treePrev == null) {
-                    out = TreeUtil.prevLeaf(out)
-                } else {
-                    out = out.treePrev
-                }
-                if (out == null) {
-                    return null
-                }
-                //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
-            }
-            return out
-        }
-
-        fun getNextNonEmptyNode(compositeElement: PsiElement?, ignoreLineTerminator: Boolean): ASTNode? {
-            var out: ASTNode? = compositeElement?.node?.treeNext
-            while (shouldSkipNode(out, ignoreLineTerminator)) {
-                if (out!!.treeNext == null) {
-                    out = TreeUtil.nextLeaf(out)
-                } else {
-                    out = out.treeNext
-                }
-                if (out == null) {
-                    return null
-                }
-                //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
-            }
-            return out
-        }
-
-        private fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
-            return out != null && (ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR || out.elementType === com.intellij.psi.TokenType.WHITE_SPACE || out.psi is PsiErrorElement)
-        }
-
-
-        fun <PsiT : PsiElement> getSharedContextOfType(psiElement1: PsiElement?, psiElement2: PsiElement?, sharedClass: Class<PsiT>): PsiT? {
-            if (psiElement1 == null || psiElement2 == null) {
-                return null
-            }
-            val sharedContext = PsiTreeUtil.findCommonContext(psiElement1, psiElement2) ?: return null
-            return if (sharedClass.isInstance(sharedContext)) {
-                sharedClass.cast(sharedContext)
-            } else PsiTreeUtil.getParentOfType(sharedContext, sharedClass)
-        }
-
-        fun <PsiT : PsiElement> hasSharedContextOfType(psiElement1: PsiElement?, psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
-            return getSharedContextOfType(psiElement1, psiElement2, sharedClass) != null
-        }
-
-        fun <PsiT : PsiElement> siblingOfTypeOccursAtLeastOnceBefore(psiElement: PsiElement?, siblingElementClass: Class<PsiT>): Boolean {
-            var psiElement: PsiElement? = psiElement ?: return false
-            while (psiElement!!.prevSibling != null) {
-                psiElement = psiElement.prevSibling
-                if (siblingElementClass.isInstance(psiElement)) {
-                    return true
-                }
-            }
-            return false
+fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> {
+    val out = ArrayList<PsiElement>()
+    if (this == null) {
+        return out
+    }
+    for (child in children) {
+        //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
+        if (child.node.elementType === iElementType) {
+            //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
+            out.add(child)
         }
     }
+    return out
+}
 
+fun PsiElement?.getPreviousSiblingOfType(siblingElementType: IElementType): PsiElement? {
+    var element:PsiElement? = this ?: return null
+    while (element?.prevSibling != null) {
+        element = element.prevSibling
+        if (element.hasElementType(siblingElementType)) {
+            return element
+        }
+    }
+    return null
+}
+
+fun PsiElement?.getNextSiblingOfType(siblingElementType: IElementType): PsiElement? {
+    var element:PsiElement? = this ?: return null
+    while (element?.nextSibling != null) {
+        element = element.nextSibling
+        if (element.hasElementType(siblingElementType)) {
+            return element
+        }
+    }
+    return null
+}
+
+private fun PsiElement?.hasElementType(elementType: IElementType): Boolean {
+    return this?.node?.elementType === elementType
+}
+
+fun PsiElement.getNextNodeType(): IElementType? {
+    return getNextNode()?.elementType
+}
+
+fun PsiElement.getNextNode(): ASTNode? {
+    return node.treeNext
+}
+
+fun PsiElement.getNextNonEmptyNodeType(ignoreLineTerminator: Boolean): IElementType? {
+    val next = getNextNonEmptyNode(ignoreLineTerminator)
+    return next?.elementType
+}
+
+fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
+    val node = getPreviousNonEmptyNode(ignoreLineTerminator)
+    return node?.psi
+}
+
+fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
+    val node = getNextNonEmptyNode(ignoreLineTerminator)
+    return node?.psi
+}
+
+fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
+    var out: ASTNode? = this?.node?.treePrev ?: return null
+    while (shouldSkipNode(out, ignoreLineTerminator)) {
+        if (out!!.treePrev == null) {
+            out = TreeUtil.prevLeaf(out)
+        } else {
+            out = out.treePrev
+        }
+        if (out == null) {
+            return null
+        }
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
+    }
+    return out
+}
+
+fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
+    var out: ASTNode? = this?.node?.treeNext
+    while (shouldSkipNode(out, ignoreLineTerminator)) {
+        if (out!!.treeNext == null) {
+            out = TreeUtil.nextLeaf(out)
+        } else {
+            out = out.treeNext
+        }
+        if (out == null) {
+            return null
+        }
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
+    }
+    return out
+}
+
+
+
+fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfType(psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
+    return this?.getSharedContextOfType(psiElement2, sharedClass) != null
+}
+
+fun <PsiT : PsiElement> PsiElement?.getSharedContextOfType(psiElement2: PsiElement?, sharedClass: Class<PsiT>): PsiT? {
+    if (this == null || psiElement2 == null) {
+        return null
+    }
+    val sharedContext = PsiTreeUtil.findCommonContext(this, psiElement2) ?: return null
+    return if (sharedClass.isInstance(sharedContext)) {
+        sharedClass.cast(sharedContext)
+    } else PsiTreeUtil.getParentOfType(sharedContext, sharedClass)
+}
+
+fun <PsiT : PsiElement> PsiElement?.siblingOfTypeOccursAtLeastOnceBefore(siblingElementClass: Class<PsiT>): Boolean {
+    var psiElement: PsiElement? = this ?: return false
+    while (psiElement!!.prevSibling != null) {
+        psiElement = psiElement.prevSibling
+        if (siblingElementClass.isInstance(psiElement)) {
+            return true
+        }
+    }
+    return false
+}
+
+private val LOGGER = Logger.getLogger("org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtilFunctions")
+fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<com.intellij.psi.PsiElement>?, stubClass: Class<StubT>): List<StubT> {
+    return if (parent == null) {
+        emptyList()
+    } else filterStubChildren(parent.childrenStubs, stubClass)
+}
+
+fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?, stubClass: Class<StubT>): List<StubT> {
+    return if (children == null) {
+        emptyList()
+    } else ArrayUtils.filter(children, stubClass)
+}
+
+
+internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
+    return out != null && (ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR || out.elementType === com.intellij.psi.TokenType.WHITE_SPACE || out.psi is PsiErrorElement)
 }

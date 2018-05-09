@@ -1,16 +1,14 @@
 package org.cappuccino_project.ide.intellij.plugin.contributor
 
 import com.intellij.codeInsight.completion.*
-import com.intellij.openapi.editor.Editor
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJLanguage
 import org.cappuccino_project.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import org.cappuccino_project.ide.intellij.plugin.psi.*
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.isNewVarDec
 import org.cappuccino_project.ide.intellij.plugin.utils.*
 
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJCompletionContributor : CompletionContributor() {
@@ -27,7 +25,7 @@ class ObjJCompletionContributor : CompletionContributor() {
      * Allow autoPopup to appear after custom symbol
      */
     override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean {
-        return position.text.replace(CARET_INDICATOR, "").length > 1 && !ObjJVariablePsiUtil.isNewVarDec(position)
+        return position.text.replace(CARET_INDICATOR, "").length > 1 && !isNewVarDec(position)
     }
 
     override fun handleAutoCompletionPossibility(context: AutoCompletionContext): AutoCompletionDecision? {

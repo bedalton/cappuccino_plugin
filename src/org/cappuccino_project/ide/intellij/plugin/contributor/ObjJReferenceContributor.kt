@@ -1,16 +1,12 @@
 package org.cappuccino_project.ide.intellij.plugin.contributor
 
-import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.*
 import com.intellij.util.ProcessingContext
-import jdk.nashorn.internal.runtime.AccessorProperty
 import org.cappuccino_project.ide.intellij.plugin.psi.*
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJAccessorPropertyPsiUtil
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJClassNameReference
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJFunctionNameReference
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReference
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJVariableReference
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 
 import com.intellij.patterns.PlatformPatterns.psiElement
 
@@ -67,7 +63,7 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
             } else arrayOf(createReference(psiElement))
         }
 
-        private fun createReference(selector: ObjJSelector?): PsiReference {
+        private fun createReference(selector: ObjJSelector): PsiReference {
             return ObjJSelectorReference(selector)
         }
 
@@ -125,7 +121,7 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
         }
 
         override fun acceptsTarget(target: PsiElement): Boolean {
-            return target is ObjJVariableName && ObjJTreeUtil.getParentOfType(target, ObjJFunctionCall::class.java) == null
+            return target is ObjJVariableName && target.getParentOfType( ObjJFunctionCall::class.java) == null
         }
     }
 

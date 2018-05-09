@@ -9,8 +9,8 @@ import org.cappuccino_project.ide.intellij.plugin.annotator.IgnoreUtil
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJLanguage
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getChildOfType
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -20,33 +20,25 @@ object ObjJElementFactory {
     private val LOGGER = Logger.getLogger(ObjJElementFactory::class.java.name)
     val PLACEHOLDER_CLASS_NAME = "_XXX__"
 
-    fun createSelector(project: Project, selector: String?): ObjJSelector? {
-        if (selector == null || selector.isEmpty()) {
-            return null
-        }
+    fun createSelector(project: Project, selector: String): ObjJSelector {
         val scriptText = "@implementation $PLACEHOLDER_CLASS_NAME \n - (void) $selector{} @end"
         val implementationDeclaration = createFileFromText(project, scriptText).classDeclarations[0] as ObjJImplementationDeclaration
-        if (implementationDeclaration.methodDeclarationList.isEmpty()) {
-            return null
-        } else if (implementationDeclaration.methodDeclarationList[0].methodHeader.selectorList.isEmpty()) {
-            return null
-        }
         return implementationDeclaration.methodDeclarationList[0].methodHeader.selectorList[0]
     }
 
     fun createVariableName(project: Project, variableName: String): ObjJVariableName {
         val scriptText = "var $variableName;"
         val file = createFileFromText(project, scriptText)
-        val variableAssignment = ObjJTreeUtil.getChildOfType(file, ObjJBodyVariableAssignment::class.java)!!
+        val variableAssignment = file.getChildOfType( ObjJBodyVariableAssignment::class.java)!!
         return variableAssignment.qualifiedReferenceList[0].variableNameList[0]
     }
 
-    fun createFunctionName(project: Project, functionName: String): ObjJFunctionName? {
+    fun createFunctionName(project: Project, functionName: String): ObjJFunctionName {
         val scriptText = String.format("function %s(){}", functionName)
         LOGGER.log(Level.INFO, "Script text: <$scriptText>")
         val file = createFileFromText(project, scriptText)
-        val functionDeclaration = ObjJTreeUtil.getChildOfType(file, ObjJFunctionDeclaration::class.java)
-        return functionDeclaration?.functionName
+        val functionDeclaration = file.getChildOfType( ObjJFunctionDeclaration::class.java)
+        return functionDeclaration!!.functionName!!
     }
 
     fun createSpace(project: Project): PsiElement {
@@ -58,8 +50,8 @@ object ObjJElementFactory {
     fun createSemiColonErrorElement(project: Project): PsiErrorElement? {
         val scriptText = "?*__ERR_SEMICOLON__*?"
         val file = createFileFromText(project, scriptText)
-        val errorSequence = ObjJTreeUtil.getChildOfType(file, ObjJErrorSequence::class.java)
-        val errorElement = ObjJTreeUtil.getChildOfType(errorSequence, PsiErrorElement::class.java)
+        val errorSequence = file.getChildOfType( ObjJErrorSequence::class.java)
+        val errorElement = errorSequence!!.getChildOfType( PsiErrorElement::class.java)
         if (errorElement == null) {
             val childElementTypes = ArrayList<String>()
             for (child in file.children) {
@@ -70,10 +62,10 @@ object ObjJElementFactory {
         return errorElement
     }
 
-    fun createIgnoreComment(project: Project, elementType: IgnoreUtil.ElementType): ObjJComment? {
+    fun createIgnoreComment(project: Project, elementType: IgnoreUtil.ElementType): ObjJComment {
         val scriptText = "//ignore " + elementType.type
         val file = createFileFromText(project, scriptText)
-        return PsiTreeUtil.getChildOfType(file, ObjJComment::class.java)
+        return file.getChildOfType(ObjJComment::class.java)!!
     }
 
     private fun createFileFromText(project: Project, text: String): ObjJFile {
@@ -111,7 +103,7 @@ object ObjJElementFactory {
                 "return " + returnValue + ";" + "\n" +
                 "}"
         val file = createFileFromText(project, scriptString)
-        val functionDeclarationElement = file.getChildOfType(ObjJFunctionDeclarationElement<*>::class.java)!!
+        val functionDeclarationElement = file.getChildOfType(ObjJFunctionDeclarationElement::class.java)!!
         return functionDeclarationElement.getChildOfType(ObjJReturnStatement::class.java)!!
     }
 

@@ -39,69 +39,83 @@ object ObjJPsiImplUtil {
     // ============================== //
     // ======= Named Ident ========== //
     // ============================== //
-
+    @JvmStatic
     fun hasText(variableName: ObjJVariableName, text: String): Boolean {
         return ObjJNamedPsiUtil.hasText(variableName, text)
     }
 
+    @JvmStatic
     fun getName(variableName: ObjJVariableName): String {
         return ObjJNamedPsiUtil.getName(variableName)
     }
 
+    @JvmStatic
     fun getName(selector: ObjJSelector): String {
         return ObjJMethodPsiUtils.getName(selector)
     }
 
+    @JvmStatic
     fun getName(defineFunction: ObjJPreprocessorDefineFunction): String {
         return defineFunction.functionNameAsString
     }
 
+    @JvmStatic
     fun getName(functionName: ObjJFunctionName): String {
         return functionName.text
     }
 
+    @JvmStatic
     fun getName(methodHeader: ObjJMethodHeader): String {
         return ObjJMethodPsiUtils.getName(methodHeader)
     }
 
+    @JvmStatic
     fun getName(variableDeclaration: ObjJInstanceVariableDeclaration): String {
         return if (variableDeclaration.variableName != null) variableDeclaration.variableName!!.text else ""
     }
 
+    @JvmStatic
     fun getNameIdentifier(selector: ObjJSelector): PsiElement {
         return ObjJMethodPsiUtils.getNameIdentifier(selector)
     }
 
+    @JvmStatic
     fun getRangeInElement(selector: ObjJSelector): TextRange {
         return ObjJMethodPsiUtils.getRangeInElement(selector)
     }
 
+    @JvmStatic
     fun getRangeInElement(variableName: ObjJVariableName): TextRange {
         return TextRange(0, variableName.textLength)
     }
 
+    @JvmStatic
     fun setName(defineFunction: ObjJPreprocessorDefineFunction, name: String): PsiElement {
         return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name)
     }
 
+    @JvmStatic
     fun setName(selectorElement: ObjJSelector, newSelectorValue: String): PsiElement {
         return ObjJMethodPsiUtils.setName(selectorElement, newSelectorValue)
     }
 
+    @JvmStatic
     fun setName(variableName: ObjJVariableName, newName: String): PsiElement {
         return ObjJNamedPsiUtil.setName(variableName, newName)
     }
 
+    @JvmStatic
     @Throws(IncorrectOperationException::class)
     fun setName(header: ObjJHasMethodSelector, name: String): PsiElement {
         return ObjJMethodPsiUtils.setName(header, name)
     }
 
+    @JvmStatic
     fun setName(instanceVariableDeclaration: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
-        return ObjJVariablePsiUtil.setName(instanceVariableDeclaration, newName)
+        return instanceVariableDeclaration.setName(newName)
     }
 
-
+    @JvmStatic
     fun setName(oldFunctionName: ObjJFunctionName, newFunctionName: String): ObjJFunctionName {
         if (newFunctionName.isEmpty()) {
             return oldFunctionName
@@ -119,6 +133,7 @@ object ObjJPsiImplUtil {
     // ====== Navigation Items ====== //
     // ============================== //
 
+    @JvmStatic
     fun getPresentation(selector: ObjJSelector): ItemPresentation {
         //LOGGER.log(Level.INFO, "Getting selector item presentation.");
         return ObjJSelectorItemPresentation(selector)
@@ -129,6 +144,7 @@ object ObjJPsiImplUtil {
     // =========== String =========== //
     // ============================== //
 
+    @JvmStatic
     fun getStringValue(stringLiteral: ObjJStringLiteral): String {
         val rawText = stringLiteral.text
         val pattern = Pattern.compile("@?\"(.*)\"|@?'(.*)'")
@@ -145,181 +161,121 @@ object ObjJPsiImplUtil {
     // ======= Method Misc ========== //
     // ============================== //
 
+    @JvmStatic
     fun getMethodScope(methodHeader: ObjJMethodHeader): MethodScope {
         return ObjJMethodPsiUtils.getMethodScope(methodHeader)
     }
 
+    @JvmStatic
     fun getMethodScope(accessorProperty: ObjJAccessorProperty): MethodScope {
         return ObjJMethodPsiUtils.getMethodScope(accessorProperty)
     }
 
+    @JvmStatic
     fun getMethodScope(literal: ObjJSelectorLiteral): MethodScope {
         return ObjJMethodPsiUtils.getMethodScope(literal)
     }
 
+    @JvmStatic
     fun isStatic(hasMethodSelector: ObjJHasMethodSelector): Boolean {
         return ObjJMethodPsiUtils.isStatic(hasMethodSelector)
-    }
-
-    fun getPossibleCallTargetTypes(callTarget: ObjJMethodCall): List<String> {
-        return if (callTarget.stub != null) {
-            callTarget.stub.possibleCallTargetTypes
-        } else ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget.callTarget)
     }
 
     // ============================== //
     // ======= Return Types ========= //
     // ============================== //
 
+    @JvmStatic
     fun getReturnType(methodHeader: ObjJMethodHeader): String {
         return ObjJMethodPsiUtils.getReturnType(methodHeader, true)
     }
 
+    @JvmStatic
     fun getReturnType(methodHeader: ObjJSelectorLiteral): String {
         return ObjJMethodPsiUtils.getReturnType(methodHeader)
     }
 
+    @JvmStatic
     fun getReturnType(accessorProperty: ObjJAccessorProperty): String {
         return ObjJMethodPsiUtils.getReturnType(accessorProperty)
     }
-
-    fun getCallTargetText(methodCall: ObjJMethodCall): String {
-        return ObjJMethodCallPsiUtil.getCallTargetText(methodCall)
-    }
-
 
     // ============================== //
     // ========= Selectors ========== //
     // ============================== //
 
-    fun getGetter(property: ObjJAccessorProperty): String? {
-        return ObjJAccessorPropertyPsiUtil.getGetter(property)
-    }
-
-    fun getSetter(property: ObjJAccessorProperty): String? {
-        return ObjJAccessorPropertyPsiUtil.getSetter(property)
-    }
-
+    @JvmStatic
     fun getSelectorString(methodHeader: ObjJMethodHeader): String {
         return ObjJMethodPsiUtils.getSelectorString(methodHeader)
     }
 
+    @JvmStatic
     fun getSelectorString(selector: ObjJSelector, addSuffix: Boolean): String {
         return ObjJMethodPsiUtils.getSelectorString(selector, addSuffix)
     }
 
+    @JvmStatic
     fun getSelectorString(selector: ObjJMethodDeclarationSelector, addSuffix: Boolean): String {
         return ObjJMethodPsiUtils.getSelectorString(selector, addSuffix)
     }
 
-    fun getSelectorString(accessorProperty: ObjJAccessorProperty): String {
-        return ObjJAccessorPropertyPsiUtil.getSelectorString(accessorProperty)
-    }
-
-    fun getSelectorString(methodCall: ObjJMethodCall): String {
-        return ObjJMethodCallPsiUtil.getSelectorString(methodCall)
-    }
-
+    @JvmStatic
     fun getSelectorString(selectorLiteral: ObjJSelectorLiteral): String {
         return ObjJMethodPsiUtils.getSelectorString(selectorLiteral)
     }
 
+    @JvmStatic
     fun getSelectorStrings(methodCall: ObjJMethodCall): List<String> {
-        return ObjJMethodCallPsiUtil.getSelectorStrings(methodCall)
+        return methodCall.getSelectorStrings()
     }
 
+    @JvmStatic
     fun getSelectorStrings(methodHeader: ObjJMethodHeader): List<String> {
         return ObjJMethodPsiUtils.getSelectorStrings(methodHeader)
     }
 
+    @JvmStatic
     fun getSelectorList(methodHeader: ObjJMethodHeader): List<ObjJSelector> {
         return ObjJMethodPsiUtils.getSelectorElementsFromMethodDeclarationSelectorList(methodHeader.methodDeclarationSelectorList)
     }
 
-    fun getSelectorList(methodCall: ObjJMethodCall): List<ObjJSelector> {
-        return ObjJMethodCallPsiUtil.getSelectorList(methodCall)
-    }
-
+    @JvmStatic
     fun getSelectorStrings(selectorLiteral: ObjJSelectorLiteral): List<String> {
         return if (selectorLiteral.stub != null && !selectorLiteral.stub.selectorStrings.isEmpty()) {
             selectorLiteral.stub.selectorStrings
         } else ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
     }
 
-    fun getSelectorStrings(accessorProperty: ObjJAccessorProperty): List<String> {
-        return ObjJAccessorPropertyPsiUtil.getSelectorStrings(accessorProperty)
-    }
-
-    fun getSelectorList(accessorProperty: ObjJAccessorProperty): List<ObjJSelector> {
-        return ObjJAccessorPropertyPsiUtil.getSelectorList(accessorProperty)
-    }
-
+    @JvmStatic
     fun findSelectorMatching(method: ObjJHasMethodSelector, selectorString: String): ObjJSelector? {
         return ObjJMethodPsiUtils.findSelectorMatching(method, selectorString)
     }
 
+    @JvmStatic
     fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType> {
         return ObjJMethodPsiUtils.getParamTypes(methodHeader.methodDeclarationSelectorList)
     }
 
+    @JvmStatic
     fun getParamTypesAsStrings(methodHeader: ObjJMethodHeader): List<String> {
         return ObjJMethodPsiUtils.getParamTypesAsString(methodHeader.methodDeclarationSelectorList)
     }
 
+    @JvmStatic
     fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return ObjJMethodPsiUtils.getVarType(selector)
-    }
-
-    fun getMethodHeaders(protocolDeclaration: ObjJProtocolDeclaration): List<ObjJMethodHeader> {
-        return ObjJClassDeclarationPsiUtil.getMethodHeaders(protocolDeclaration)
-    }
-
-    fun hasMethod(classDeclaration: ObjJProtocolDeclaration, selector: String): Boolean {
-        return ObjJClassDeclarationPsiUtil.hasMethod(classDeclaration, selector)
-    }
-
-    fun getMethodHeaders(implementationDeclaration: ObjJImplementationDeclaration): List<ObjJMethodHeader> {
-        return ObjJClassDeclarationPsiUtil.getMethodHeaders(implementationDeclaration)
-    }
-
-    fun hasMethod(classDeclaration: ObjJImplementationDeclaration, selector: String): Boolean {
-        return ObjJClassDeclarationPsiUtil.hasMethod(classDeclaration, selector)
     }
 
     // ============================== //
     // ====== Virtual Methods ======= //
     // ============================== //
 
-
-    fun getAccessorPropertyMethods(variableName: String, varType: String, property: ObjJAccessorProperty): List<String> {
-        return ObjJAccessorPropertyPsiUtil.getAccessorPropertyMethods(variableName, varType, property)
-    }
-
-    fun getGetter(declaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
-        return ObjJAccessorPropertyPsiUtil.getGetter(declaration)
-    }
-
-    fun getGetterSelector(variableName: String, varType: String, property: ObjJAccessorProperty): String? {
-        return ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, varType, property)
-    }
-
-    fun isGetter(accessorProperty: ObjJAccessorProperty): Boolean {
-        return ObjJAccessorPropertyPsiUtil.isGetter(accessorProperty)
-    }
-
-    fun getSetter(declaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
-        return ObjJAccessorPropertyPsiUtil.getSetter(declaration)
-    }
-
-
-    fun getSetterSelector(variableName: String, varType: String, property: ObjJAccessorProperty): String? {
-        return ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, varType, property)
-    }
-
+    @JvmStatic
     fun getSelectorUntil(targetSelectorElement: ObjJSelector, include: Boolean): String? {
         return ObjJMethodPsiUtils.getSelectorUntil(targetSelectorElement, include)
     }
 
+    @JvmStatic
     fun getThisOrPreviousNonNullSelector(hasMethodSelector: ObjJHasMethodSelector?, subSelector: String?, selectorIndex: Int): ObjJSelector? {
         if (hasMethodSelector == null) {
             return null
@@ -358,43 +314,53 @@ object ObjJPsiImplUtil {
     // ======== References ========== //
     // ============================== //
 
+    @JvmStatic
     fun getReference(hasMethodSelector: ObjJHasMethodSelector): PsiReference {
         return ObjJMethodCallReferenceProvider(hasMethodSelector)
     }
 
+    @JvmStatic
     fun getReference(selectorLiteral: ObjJSelectorLiteral): PsiReference {
         return ObjJMethodCallReferenceProvider(selectorLiteral)
     }
 
+    @JvmStatic
     fun getReference(selector: ObjJSelector): PsiReference {
         return ObjJSelectorReference(selector)
     }
 
+    @JvmStatic
     fun getReferences(selector: ObjJSelector): Array<PsiReference> {
         //LOGGER.log(Level.INFO, "Getting references(plural) for selector");
         return ReferenceProvidersRegistry.getReferencesFromProviders(selector, PsiReferenceService.Hints.NO_HINTS)
     }
 
+    @JvmStatic
     fun getReference(className: ObjJClassName): PsiReference {
         return ObjJClassNameReference(className)
     }
 
+    @JvmStatic
     fun getReferences(reference: ObjJQualifiedReference): Array<PsiReference> {
         return PsiReference.EMPTY_ARRAY
     }
 
+    @JvmStatic
     fun getReference(variableName: ObjJVariableName): PsiReference {
         return ObjJVariableReference(variableName)
     }
 
+    @JvmStatic
     fun getReference(functionName: ObjJFunctionName): PsiReference {
         return ObjJFunctionNameReference(functionName)
     }
 
+    @JvmStatic
     fun getReferences(className: ObjJClassName): Array<PsiReference> {
         return ReferenceProvidersRegistry.getReferencesFromProviders(className, PsiReferenceService.Hints.NO_HINTS)
     }
 
+    @JvmStatic
     fun getSelectorLiteralReference(hasSelectorElement: ObjJHasMethodSelector): ObjJSelectorLiteral? {
         return ObjJMethodPsiUtils.getSelectorLiteralReference(hasSelectorElement)
     }
@@ -403,46 +369,42 @@ object ObjJPsiImplUtil {
     // ======== Class Decs ========== //
     // ============================== //
 
-    fun getAllClassNameElements(project: Project): List<ObjJClassName> {
-        return ObjJClassDeclarationPsiUtil.getAllClassNameElements(project)
-    }
-
-    fun isCategory(implementationDeclaration: ObjJImplementationDeclaration): Boolean {
-        return ObjJClassDeclarationPsiUtil.isCategory(implementationDeclaration)
-    }
-
+    @JvmStatic
     fun getContainingClass(element: PsiElement): ObjJClassDeclarationElement<*>? {
         return ObjJHasContainingClassPsiUtil.getContainingClass(element)
     }
 
+    @JvmStatic
     fun getContainingClassName(methodHeader: ObjJMethodHeader): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(methodHeader)
     }
 
+    @JvmStatic
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(compositeElement)
     }
 
+    @JvmStatic
     fun getContainingClassName(classDeclarationElement: ObjJClassDeclarationElement<*>?): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(classDeclarationElement)
     }
 
+    @JvmStatic
     fun getContainingClassName(selectorLiteral: ObjJSelectorLiteral?): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(selectorLiteral)
     }
 
+    @JvmStatic
     fun getAllInheritedClasses(className: String, project: Project): List<String> {
         return ObjJInheritanceUtil.getAllInheritedClasses(className, project)
     }
 
+    @JvmStatic
     fun getContainingSuperClassName(element: ObjJCompositeElement): String? {
         return ObjJHasContainingClassPsiUtil.getContainingSuperClassName(element)
     }
 
-    fun getSuperClassName(implementationDeclaration: ObjJImplementationDeclaration): String? {
-        return ObjJClassDeclarationPsiUtil.getSuperClassName(implementationDeclaration)
-    }
-
+    @JvmStatic
     fun hasContainingClass(hasContainingClass: ObjJHasContainingClass, className: String?): Boolean {
         return className != null && hasContainingClass.containingClassName == className
     }
@@ -451,23 +413,12 @@ object ObjJPsiImplUtil {
     // ========= Var Types ========== //
     // ============================== //
 
-
-    fun getVarType(accessorProperty: ObjJAccessorProperty): String? {
-        return ObjJAccessorPropertyPsiUtil.getVarType(accessorProperty)
-    }
-
-    fun getInstanceVarDeclarationFromDeclarations(instanceVariableDeclarations: List<ObjJInstanceVariableDeclaration>, variableName: String): ObjJVariableName? {
-        return ObjJVariablePsiUtil.getInstanceVarDeclarationFromDeclarations(instanceVariableDeclarations, variableName)
-    }
-
-    fun getLastVar(qualifiedReference: ObjJQualifiedReference): ObjJVariableName? {
-        return ObjJVariablePsiUtil.getLastVar(qualifiedReference)
-    }
-
+    @JvmStatic
     fun getIdType(varTypeId: ObjJVarTypeId): String {
         return ObjJMethodPsiUtils.getIdReturnType(varTypeId)
     }
 
+    @JvmStatic
     fun getIdType(varTypeId: ObjJVarTypeId, follow: Boolean): String {
         return ObjJMethodPsiUtils.getIdReturnType(varTypeId, follow)
     }
@@ -476,26 +427,25 @@ object ObjJPsiImplUtil {
     // =========== Blocks =========== //
     // ============================== //
 
-    fun getBlock(expr: ObjJExpr): ObjJBlock? {
-        return ObjJBlockPsiUtil.getBlock(expr)
-    }
-
-    fun getBlockList(expr: ObjJTryStatement): List<ObjJBlock> {
-        return ObjJBlockPsiUtil.getTryStatementBlockList(expr)
-    }
-
+    @JvmStatic
     fun getBlockList(element: ObjJCompositeElement): List<ObjJBlock> {
-        return ObjJTreeUtil.getChildrenOfTypeAsList(element, ObjJBlock::class.java)
+        return element.getChildrenOfType( ObjJBlock::class.java)
     }
 
+    @JvmStatic
     fun getBlockList(element: ObjJCaseClause): List<ObjJBlock> {
-        return listOf<ObjJBlock>(element.block)
+        return if (element.block != null)
+                    listOf(element.block!!)
+                else
+                    listOf()
     }
 
+    @JvmStatic
     fun getBlock(function: ObjJPreprocessorDefineFunction): ObjJBlock? {
         return if (function.preprocessorDefineBody != null) function.preprocessorDefineBody!!.block else null
     }
 
+    @JvmStatic
     fun getOpenBrace(ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {
         return null
     }
@@ -504,6 +454,7 @@ object ObjJPsiImplUtil {
     // ========== Function ========== //
     // ============================== //
 
+    @JvmStatic
     fun getName(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getName(functionDeclaration)
     }
@@ -515,6 +466,7 @@ object ObjJPsiImplUtil {
      * @return new function name
      * @throws IncorrectOperationException exception
      */
+    @JvmStatic
     @Throws(IncorrectOperationException::class)
     fun setName(functionDeclaration: ObjJFunctionDeclaration, name: String): ObjJFunctionName {
         return ObjJFunctionDeclarationPsiUtil.setName(functionDeclaration, name)
@@ -527,56 +479,69 @@ object ObjJPsiImplUtil {
      * @return this function literal
      * @throws IncorrectOperationException exception
      */
+    @JvmStatic
     @Throws(IncorrectOperationException::class)
     fun setName(functionLiteral: ObjJFunctionLiteral, name: String): ObjJFunctionLiteral {
         return ObjJFunctionDeclarationPsiUtil.setName(functionLiteral, name)
     }
 
 
+    @JvmStatic
     fun getFunctionNameNode(functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameNode(functionLiteral)
     }
 
+    @JvmStatic
     fun getFunctionNameNode(functionDec: ObjJPreprocessorDefineFunction): ObjJNamedElement? {
         return functionDec.functionName
     }
 
+    @JvmStatic
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
-        return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall)
+        return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
     }
 
+    @JvmStatic
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
     }
 
+    @JvmStatic
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral)
     }
 
+    @JvmStatic
     fun getFunctionNameAsString(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
     }
 
+    @JvmStatic
     fun getFunctionNameAsString(functionDeclaration: ObjJPreprocessorDefineFunction): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
     }
 
+    @JvmStatic
     fun getParamNameElements(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
         return ObjJFunctionDeclarationPsiUtil.getParamNameElements(functionDeclaration)
     }
 
+    @JvmStatic
     fun getParamNames(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getParamNames(functionDeclaration)
     }
 
+    @JvmStatic
     fun getReturnType(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDeclaration)
     }
 
+    @JvmStatic
     fun getReturnType(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getReturnType(functionLiteral)
     }
 
+    @JvmStatic
     fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String {
         return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition)
     }
@@ -586,37 +551,39 @@ object ObjJPsiImplUtil {
     // ===== QualifiedReference ===== //
     // ============================== //
 
+    @JvmStatic
     fun getPartsAsString(qualifiedReference: ObjJQualifiedReference): String {
-        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(ObjJTreeUtil.getChildrenOfTypeAsList(qualifiedReference, ObjJQualifiedNamePart::class.java))
+        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType( ObjJQualifiedNamePart::class.java))
     }
 
+    @JvmStatic
     fun getPartsAsStringArray(qualifiedReference: ObjJQualifiedReference): List<String> {
-        return getPartsAsStringArray(ObjJTreeUtil.getChildrenOfTypeAsList(qualifiedReference, ObjJQualifiedNamePart::class.java))
+        return getPartsAsStringArray(qualifiedReference.getChildrenOfType( ObjJQualifiedNamePart::class.java))
     }
 
+    @JvmStatic
     fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedNamePart>?): List<String> {
         if (qualifiedNameParts == null) {
             return emptyList()
         }
         val out = ArrayList<String>()
         for (part in qualifiedNameParts) {
-            out.add(if (part.qualifiedNameText != null) part.qualifiedNameText else "")
+            out.add(if (part.qualifiedNameText != null) part.qualifiedNameText!! else "")
         }
         return out
     }
 
+    @JvmStatic
     fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedNamePart>): String {
         return ArrayUtils.join(getPartsAsStringArray(qualifiedNameParts), ".")
     }
 
+    @JvmStatic
     fun getQualifiedNameText(variableName: ObjJVariableName): String {
         return variableName.text
     }
 
-    fun toString(variableName: ObjJVariableName): String {
-        return ObjJVariablePsiUtil.toString(variableName)
-    }
-
+    @JvmStatic
     fun getDescriptiveText(psiElement: PsiElement): String? {
         if (psiElement is ObjJSelector) {
             return getSelectorDescriptiveName(psiElement)
@@ -631,41 +598,39 @@ object ObjJPsiImplUtil {
     }
 
     private fun getClassDescriptiveText(classNameElement: ObjJClassName): String? {
-        val classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement<*>::class.java)
+        val classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement::class.java)
         var className = classNameElement.text
         if (classDeclarationElement == null || classDeclarationElement.classNameString != className) {
             return className
         }
         if (classDeclarationElement is ObjJImplementationDeclaration) {
-            val implementationDeclaration = classDeclarationElement as ObjJImplementationDeclaration?
-            if (implementationDeclaration.categoryName != null) {
-                className += " (" + implementationDeclaration.categoryName!!.className.text + ")"
+            if (classDeclarationElement.categoryName != null) {
+                className += " (" + classDeclarationElement.categoryName!!.className.text + ")"
             }
         }
         return className
     }
 
+    @JvmStatic
     fun getSelectorDescriptiveName(selector: ObjJSelector): String {
-        val selectorLiteral = ObjJTreeUtil.getParentOfType(selector, ObjJSelectorLiteral::class.java)
+        val selectorLiteral = selector.getParentOfType( ObjJSelectorLiteral::class.java)
         if (selectorLiteral != null) {
             return "@selector(" + selectorLiteral.selectorString + ")"
         }
-        val variableDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJInstanceVariableDeclaration::class.java)
+        val variableDeclaration = selector.getParentOfType( ObjJInstanceVariableDeclaration::class.java)
         if (variableDeclaration != null) {
-            val className = variableDeclaration.containingClassName
-            val property = ObjJTreeUtil.getParentOfType(selector, ObjJAccessorProperty::class.java)
+            val property = selector.getParentOfType( ObjJAccessorProperty::class.java)
             val propertyString = if (property != null) property.accessorPropertyType.text + "=" else ""
             val returnType = if (variableDeclaration.stub != null) variableDeclaration.stub.varType else variableDeclaration.formalVariableType.text
             return "- (" + returnType + ") @accessors(" + propertyString + selector.getSelectorString(false) + ")"
         }
-        val methodCall = ObjJTreeUtil.getParentOfType(selector, ObjJMethodCall::class.java)
+        val methodCall = selector.getParentOfType( ObjJMethodCall::class.java)
         var selectorString: String? = null
-        val className: String? = null
         if (methodCall != null) {
             selectorString = methodCall.selectorString
         }
         if (selectorString == null) {
-            val methodHeader = ObjJTreeUtil.getParentOfType(selector, ObjJMethodHeaderDeclaration<*>::class.java)
+            val methodHeader = selector.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
             if (methodHeader != null) {
                 selectorString = if (methodHeader is ObjJMethodHeader) getFormattedSelector((methodHeader as ObjJMethodHeader?)!!) else methodHeader.selectorString
                 val methodScopeString = if (methodHeader.isStatic) "+" else "-"
@@ -676,6 +641,7 @@ object ObjJPsiImplUtil {
         return "[* $selectorString]"
     }
 
+    @JvmStatic
     private fun getFormattedSelector(methodHeader: ObjJMethodHeader): String {
         val builder = StringBuilder()
         for (selector in methodHeader.methodDeclarationSelectorList) {
@@ -698,78 +664,76 @@ object ObjJPsiImplUtil {
     // ========== Imports =========== //
     // ============================== //
 
+    @JvmStatic
     fun getFileName(reference: ObjJFrameworkReference): String {
         return ObjJImportPsiUtils.getFileName(reference)
     }
 
+    @JvmStatic
     fun getFileName(framework: ObjJImportFramework): String {
         return ObjJImportPsiUtils.getFileName(framework)
     }
 
+    @JvmStatic
     fun getFileName(framework: ObjJIncludeFramework): String {
         return ObjJImportPsiUtils.getFileName(framework)
     }
 
+    @JvmStatic
     fun getFileName(framework: ObjJImportFile): String {
         return ObjJImportPsiUtils.getFileName(framework)
     }
 
+    @JvmStatic
     fun getFileName(framework: ObjJIncludeFile): String {
         return ObjJImportPsiUtils.getFileName(framework)
     }
 
+    @JvmStatic
     fun getFrameworkName(reference: ObjJFrameworkReference): String? {
         return ObjJImportPsiUtils.getFrameworkName(reference)
     }
 
 
+    @JvmStatic
     fun getFrameworkName(framework: ObjJImportFramework): String? {
         return ObjJImportPsiUtils.getFrameworkName(framework)
     }
 
+    @JvmStatic
     fun getFrameworkName(framework: ObjJIncludeFile): String? {
         return ObjJImportPsiUtils.getFrameworkName(framework)
     }
 
+    @JvmStatic
     fun getFrameworkName(framework: ObjJImportFile): String? {
         return ObjJImportPsiUtils.getFrameworkName(framework)
     }
 
+    @JvmStatic
     fun getFrameworkName(framework: ObjJIncludeFramework): String? {
         return ObjJImportPsiUtils.getFrameworkName(framework)
-    }
-
-    // ============================== //
-    // ===== Global Variables ======= //
-    // ============================== //
-    fun getFileName(declaration: ObjJGlobalVariableDeclaration): String? {
-        return ObjJVariablePsiUtil.getFileName(declaration)
-    }
-
-    fun getVariableNameString(declaration: ObjJGlobalVariableDeclaration): String {
-        return ObjJVariablePsiUtil.getVariableNameString(declaration)
-    }
-
-    fun getVariableType(declaration: ObjJGlobalVariableDeclaration): String? {
-        return ObjJVariablePsiUtil.getVariableType(declaration)
     }
 
     // ============================== //
     // ===== VariableAssignments ==== //
     // ============================== //
 
+    @JvmStatic
     fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr {
         return ObjJVariableAssignmentsPsiUtil.getAssignedValue(assignmentLogical)
     }
 
+    @JvmStatic
     fun getQualifiedReferenceList(assignmentLogical: ObjJVariableAssignmentLogical): List<ObjJQualifiedReference> {
-        return listOf<ObjJQualifiedReference>(assignmentLogical.qualifiedReference)
+        return if (assignmentLogical.qualifiedReference != null) listOf(assignmentLogical.qualifiedReference!!) else listOf()
     }
 
     // ============================== //
     // ====== Iterator Elements ===== //
     // ============================== //
 
+    @JvmStatic
     fun getConditionalExpression(doWhileStatement: ObjJDoWhileStatement?): ObjJExpr? {
         return if (doWhileStatement == null || doWhileStatement.conditionExpression == null) {
             null
@@ -780,6 +744,7 @@ object ObjJPsiImplUtil {
     // =========== Misc ============= //
     // ============================== //
 
+    @JvmStatic
     fun getFileName(element: PsiElement?): String? {
         if (element == null) {
             return null
@@ -793,18 +758,22 @@ object ObjJPsiImplUtil {
     // ====== Should Resolve ======== //
     // ============================== //
 
+    @JvmStatic
     fun shouldResolve(psiElement: PsiElement?): Boolean {
         return ObjJResolveableElementUtil.shouldResolve(psiElement)
     }
 
+    @JvmStatic
     fun shouldResolve(psiElement: ObjJClassDeclarationElement<*>?): Boolean {
         return ObjJResolveableElementUtil.shouldResolve(psiElement)
     }
 
+    @JvmStatic
     fun shouldResolve(psiElement: PsiElement?, shouldNotResolveLoggingStatement: String?): Boolean {
         return ObjJResolveableElementUtil.shouldResolve(psiElement, shouldNotResolveLoggingStatement)
     }
 
+    @JvmStatic
     fun shouldResolve(hasContainingClass: ObjJHasContainingClass?): Boolean {
         return ObjJResolveableElementUtil.shouldResolve(hasContainingClass as PsiElement?) && shouldResolve(hasContainingClass!!.containingClass)
     }
@@ -813,11 +782,12 @@ object ObjJPsiImplUtil {
     // =========== PARSER =========== //
     // ============================== //
 
+    @JvmStatic
     fun eos(compositeElement: PsiElement?): Boolean {
         if (compositeElement == null) {
             return false
         }
-        var ahead = ObjJTreeUtil.getNextNode(compositeElement)
+        var ahead = compositeElement.getNextNode()
         if (ahead == null && compositeElement.parent != null) {
             return eos(compositeElement.parent)
         }
@@ -834,6 +804,7 @@ object ObjJPsiImplUtil {
         return ahead != null && eosToken(ahead.elementType, hadLineTerminator)
     }
 
+    @JvmStatic
     fun eosToken(ahead: IElementType?, hadLineTerminator: Boolean): Boolean {
 
         if (ahead == null) {
@@ -879,6 +850,7 @@ object ObjJPsiImplUtil {
         return isLineTerminator
     }
 
+    @JvmStatic
     fun hasNodeType(element: PsiElement?, elementType: IElementType): Boolean {
         return element != null && element.node.elementType === elementType
     }
@@ -887,25 +859,17 @@ object ObjJPsiImplUtil {
     // ======= Presentation ========= //
     // ============================== //
 
-    fun getPresentation(implementationDeclaration: ObjJImplementationDeclaration): ItemPresentation {
-        return ObjJClassDeclarationPsiUtil.getPresentation(implementationDeclaration)
-    }
-
-    fun getPresentation(protocolDeclaration: ObjJProtocolDeclaration): ItemPresentation {
-        return ObjJClassDeclarationPsiUtil.getPresentation(protocolDeclaration)
-    }
-
+    @JvmStatic
     fun getIcon(element: PsiElement): Icon? {
         if (element is ObjJClassName) {
-            val classDeclarationElement = element.getParentOfType(ObjJClassDeclarationElement<*>::class.java)
+            val classDeclarationElement = element.getParentOfType(ObjJClassDeclarationElement::class.java)
 
             val className = element.getText()
             if (classDeclarationElement == null || classDeclarationElement.classNameString != className) {
                 return null
             }
             if (classDeclarationElement is ObjJImplementationDeclaration) {
-                val implementationDeclaration = element.getParent() as ObjJImplementationDeclaration
-                return if (implementationDeclaration.isCategory) {
+                return if (classDeclarationElement.isCategory()) {
                     ObjJIcons.CATEGORY_ICON
                 } else {
                     ObjJIcons.CLASS_ICON
@@ -925,21 +889,22 @@ object ObjJPsiImplUtil {
         }
 
         if (element is ObjJSelector) {
-            if (isIn(element, ObjJMethodHeaderDeclaration<*>::class.java)) {
+            if (element.isIn(ObjJMethodHeaderDeclaration::class.java)) {
                 return ObjJIcons.METHOD_ICON
             }
-            if (isIn(element, ObjJInstanceVariableDeclaration::class.java)) {
+            if (element.isIn(ObjJInstanceVariableDeclaration::class.java)) {
                 return ObjJIcons.ACCESSOR_ICON
             }
-            if (isIn(element, ObjJSelectorLiteral::class.java)) {
+            if (element.isIn(ObjJSelectorLiteral::class.java)) {
                 return ObjJIcons.SELECTOR_ICON
             }
         }
         return null
     }
 
-    fun <PsiT : PsiElement> isIn(element: PsiElement, parentClass: Class<PsiT>): Boolean {
-        return ObjJTreeUtil.getParentOfType(element, parentClass) != null
+    @JvmStatic
+    fun <PsiT : PsiElement> PsiElement.isIn(parentClass: Class<PsiT>): Boolean {
+        return getParentOfType( parentClass) != null
     }
 
 }

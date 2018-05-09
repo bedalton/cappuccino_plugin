@@ -4,13 +4,11 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
-import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import org.cappuccino_project.ide.intellij.plugin.psi.*
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils
 import org.jetbrains.annotations.Contract
 
@@ -19,6 +17,9 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.*
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.Companion.AT_ACTION
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType.Companion.VOID_CLASS_NAME
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 
 object ObjJMethodPsiUtils {
@@ -48,7 +49,7 @@ object ObjJMethodPsiUtils {
         }
         val out = ArrayList<ObjJSelector>()
         for (selector in declarationSelectors) {
-            out.add(selector.selector)
+            out.add(selector.selector!!)
         }
         return out
     }
@@ -60,7 +61,7 @@ object ObjJMethodPsiUtils {
         }
         val out = ArrayList<ObjJFormalVariableType>()
         for (selector in declarationSelectors) {
-            out.add(selector.varType)
+            out.add(selector.varType!!)
         }
         return out
     }
@@ -73,7 +74,7 @@ object ObjJMethodPsiUtils {
         }
         val out = ArrayList<String>()
         for (selector in declarationSelectors) {
-            out.add(if (selector.varType != null) selector.varType!!.text else null)
+            out.add(if (selector.varType != null) selector.varType!!.text else "")
         }
         return out
     }
@@ -124,7 +125,7 @@ object ObjJMethodPsiUtils {
 
 
     fun getSelectorUntil(targetSelectorElement: ObjJSelector, include: Boolean): String? {
-        val parent = ObjJTreeUtil.getParentOfType(targetSelectorElement, ObjJHasMethodSelector::class.java)
+        val parent = targetSelectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
                 ?: return null
 
         val builder = StringBuilder()
@@ -149,10 +150,10 @@ object ObjJMethodPsiUtils {
      * @return list of trailing sibling selectors as strings
      */
     fun getTrailingSelectorStrings(selector: ObjJSelector, selectorIndex: Int): List<String> {
-        val methodHeaderDeclaration = ObjJTreeUtil.getParentOfType(selector, ObjJMethodHeaderDeclaration<*>::class.java)
+        val methodHeaderDeclaration = selector.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
         val temporarySelectorsList = methodHeaderDeclaration?.selectorStrings ?: EMPTY_STRING_ARRAY
         val numSelectors = temporarySelectorsList.size
-        return if (numSelectors > selectorIndex) temporarySelectorsList.subList(selectorIndex + 1, numSelectors) else Collections.EMPTY_LIST
+        return if (numSelectors > selectorIndex) temporarySelectorsList.subList(selectorIndex + 1, numSelectors) else ArrayUtils.EMPTY_STRING_ARRAY
     }
 
 
@@ -179,7 +180,7 @@ object ObjJMethodPsiUtils {
         if (methodHeader.stub != null) {
             return methodHeader.stub.returnTypeAsString
         }
-        val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return UNDETERMINED
+        val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return ObjJClassType.UNDETERMINED
         if (returnTypeElement.atAction != null) {
             return AT_ACTION
         }
@@ -195,14 +196,14 @@ object ObjJMethodPsiUtils {
         }
         return if (returnTypeElement.void != null) {
             VOID_CLASS_NAME
-        } else UNDETERMINED
+        } else ObjJClassType.UNDETERMINED
     }
 
     @JvmOverloads
     fun getIdReturnType(varTypeId: ObjJVarTypeId, follow: Boolean = true): String {
         if (varTypeId.stub != null) {
             val stub = varTypeId.stub
-            if (!ObjJMethodCallPsiUtil.isUniversalMethodCaller(stub.idType) && stub.idType != null && stub.idType != "id") {
+            if (!isUniversalMethodCaller(stub.idType) && stub.idType != null && stub.idType != "id") {
                 //return stub.getIdType();
             }
         }
@@ -215,11 +216,11 @@ object ObjJMethodPsiUtils {
         var returnType: String?
         try {
             returnType = getReturnTypeFromReturnStatements(declaration, follow)
-        } catch (e: ObjJExpressionReturnTypeUtil.MixedReturnTypeException) {
+        } catch (e: MixedReturnTypeException) {
             returnType = e.returnTypesList[0]
         }
 
-        if (returnType == UNDETERMINED) {
+        if (returnType == ObjJClassType.UNDETERMINED) {
             returnType = null
         }
         /*
@@ -231,11 +232,11 @@ object ObjJMethodPsiUtils {
         return returnType ?: varTypeId.text
     }
 
-    @Throws(ObjJExpressionReturnTypeUtil.MixedReturnTypeException::class)
+    @Throws(MixedReturnTypeException::class)
     private fun getReturnTypeFromReturnStatements(declaration: ObjJMethodDeclaration, follow: Boolean): String? {
         var returnType: String?
         val returnTypes = ArrayList<String>()
-        val returnStatements = ObjJBlockPsiUtil.getBlockChildrenOfType(declaration.block, ObjJReturnStatement::class.java, true)
+        val returnStatements = declaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
         if (returnStatements.isEmpty()) {
             //LOGGER.log(Level.INFO, "Cannot get return type from return statements, as no return statements exist");
             return null
@@ -246,7 +247,7 @@ object ObjJMethodPsiUtils {
             if (returnStatement.expr == null) {
                 continue
             }
-            returnType = ObjJExpressionReturnTypeUtil.getReturnType(returnStatement.expr, follow)
+            returnType = getReturnType(returnStatement.expr, follow)
             if (returnType == null) {
                 continue
             }
@@ -271,7 +272,7 @@ object ObjJMethodPsiUtils {
         if (accessorProperty.stub != null) {
             return accessorProperty.stub.returnTypeAsString
         }
-        val variableType = accessorProperty.varType
+        val variableType = accessorProperty.getVarType()
         return variableType ?: UNDETERMINED
     }
 
@@ -393,7 +394,7 @@ object ObjJMethodPsiUtils {
 
 
     fun methodRequired(methodHeader: ObjJMethodHeader): Boolean {
-        val scopedBlock = ObjJTreeUtil.getParentOfType(methodHeader, ObjJProtocolScopedBlock::class.java)
+        val scopedBlock = methodHeader.getParentOfType( ObjJProtocolScopedBlock::class.java)
         return scopedBlock == null || scopedBlock.atOptional == null
     }
 
@@ -414,7 +415,7 @@ object ObjJMethodPsiUtils {
      * Method scope enum.
      * Flags method as either static or instance
      */
-    enum class MethodScope private constructor(private val scopeMarker: String) {
+    enum class MethodScope private constructor(private val scopeMarker: String?) {
         STATIC("+"),
         INSTANCE("-"),
         INVALID(null);

@@ -12,15 +12,11 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclar
 import java.util.ArrayList
 
 class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBase<ObjJClassName>(element, TextRange.create(0, element.textLength)) {
-    private val className: String?
-
-    init {
-        this.className = element.text
-    }
+    private val className: String? = element.text
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         if (className == null) {
-            return arrayOfNulls(0)
+            return arrayOf()
         }
         if (DumbService.isDumb(myElement.project)) {
             return ResolveResult.EMPTY_ARRAY

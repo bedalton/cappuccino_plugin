@@ -16,7 +16,7 @@ import java.io.IOException
 
 abstract class ObjJImportStatementStubType<PsiT : ObjJImportStatement<out ObjJImportStub<PsiT>>>(
         debugName: String,
-        psiClass: Class<PsiT>) : ObjJStubElementType<ObjJImportStub<PsiT>, PsiT>(debugName, psiClass, ObjJImportStub<*>::class.java) {
+        psiClass: Class<PsiT>) : ObjJStubElementType<ObjJImportStub<PsiT>, PsiT>(debugName, psiClass, ObjJImportStub::class.java) {
     override fun createStub(
             statement: PsiT, stubParent: StubElement<*>): ObjJImportStub<PsiT> {
         return ObjJImportStubImpl(stubParent, this, statement.frameworkName, statement.fileName)

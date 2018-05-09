@@ -3,13 +3,13 @@ package org.cappuccino_project.ide.intellij.plugin.contributor.handlers
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.lang.parameterInfo.*
 
-class ObjJSelectorInfoHandler : ParameterInfoHandler<*, *> {
+class ObjJSelectorInfoHandler : ParameterInfoHandler<Any, Any> {
     override fun couldShowInLookup(): Boolean {
         return false
     }
 
     override fun getParametersForLookup(lookupElement: LookupElement, parameterInfoContext: ParameterInfoContext): Array<Any>? {
-        return arrayOfNulls(0)
+        return arrayOf(0)
     }
 
     override fun findElementForParameterInfo(

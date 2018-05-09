@@ -58,7 +58,7 @@ object ObjJFilePsiUtil {
     }
 
     fun getImportsAsStrings(file: ObjJFile): List<String> {
-        val importStatements = ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJImportStatement<*>::class.java)
+        val importStatements = file.getChildrenOfType( ObjJImportStatement::class.java)
         if (importStatements.isEmpty()) {
             return ArrayUtils.EMPTY_STRING_ARRAY
         }

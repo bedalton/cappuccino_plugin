@@ -28,9 +28,9 @@ class ObjJClassImplementationsSearch : QueryExecutor<ObjJClassDeclarationElement
             }
 
             val showInterfaces = Registry.`is`("ide.goto.implementation.show.interfaces")
-            return ObjJClassInheritorsSearch.search(psiClass, scope).forEach(PsiElementProcessorAdapter<ObjJClassDeclarationElement> { classDeclarationElement ->
+            return ObjJClassInheritorsSearch.search(psiClass, scope).forEach(PsiElementProcessorAdapter<ObjJClassDeclarationElement> search@{ classDeclarationElement ->
                 if (!showInterfaces && classDeclarationElement is ObjJProtocolDeclaration) {
-                    return@ObjJClassInheritorsSearch.search(psiClass, scope).forEach true
+                    return@search true
                 }
                 processor.process(classDeclarationElement)
             })

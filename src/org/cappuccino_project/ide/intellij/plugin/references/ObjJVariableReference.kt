@@ -102,7 +102,7 @@ class ObjJVariableReference(
                 referencedInScope = isReferencedInScope(referencedElement as ObjJVariableName?)
             } else {
 
-                if (myElement.isIn(ObjJMethodHeaderDeclaration<*>::class.java)) {
+                if (myElement.isIn(ObjJMethodHeaderDeclaration::class.java)) {
                     referencedInScope = ReferencedInScope.METHOD
                 }
 
@@ -132,7 +132,7 @@ class ObjJVariableReference(
             referencedInScope = ReferencedInScope.UNDETERMINED
         }
         val variableName = psiElement as? ObjJVariableName
-                ?: ObjJTreeUtil.getParentOfType(psiElement, ObjJVariableName::class.java) ?: return false
+                ?: psiElement.getParentOfType( ObjJVariableName::class.java) ?: return false
         variableNameText = getQualifiedNameAsString(variableName)
         if (variableNameText != fqName) {
             return false
@@ -233,7 +233,7 @@ class ObjJVariableReference(
         private val LOGGER = Logger.getLogger(ObjJVariableReference::class.java.name)
 
         private fun <PsiT : PsiElement> hasSharedContextOfType(commonContext: PsiElement?, sharedContextClass: Class<PsiT>): Boolean {
-            return sharedContextClass.isInstance(commonContext) || ObjJTreeUtil.getParentOfType(commonContext, sharedContextClass) != null
+            return sharedContextClass.isInstance(commonContext) || commonContext.getParentOfType( sharedContextClass) != null
         }
     }
 

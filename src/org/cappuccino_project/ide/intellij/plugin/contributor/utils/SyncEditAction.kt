@@ -91,7 +91,7 @@ class SyncEditAction : AnAction("SyncEdit") {
             for (wordIndex in 0 until wordCount) {
                 val word = words[wordIndex]
                 if (isWordChar(word[0])) {
-                    val count = wordCountMap[word]
+                    val count = wordCountMap[word] ?: continue
                     if (count > 1) {
                         val variableIndexInteger = word2VariableIndex[word]
                         val variableIndex: Int

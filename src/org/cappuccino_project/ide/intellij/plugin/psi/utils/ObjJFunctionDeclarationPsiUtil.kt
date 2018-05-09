@@ -100,7 +100,7 @@ object ObjJFunctionDeclarationPsiUtil {
         if (functionLiteral.stub != null) {
             return functionLiteral.stub.fqName
         }
-        val variableDeclaration = ObjJTreeUtil.getParentOfType(functionLiteral, ObjJVariableDeclaration::class.java)
+        val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
         return if (variableDeclaration == null || variableDeclaration.qualifiedReferenceList.isEmpty()) {
             ""
         } else ObjJPsiImplUtil.getPartsAsString(variableDeclaration.qualifiedReferenceList[0])
@@ -115,7 +115,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         val out = ArrayList<String>()
-        val variableDeclaration = ObjJTreeUtil.getParentOfType(functionLiteral, ObjJVariableDeclaration::class.java)
+        val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
         if (variableDeclaration == null || variableDeclaration.qualifiedReferenceList.isEmpty()) {
             return emptyList()
         }
@@ -215,7 +215,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
     fun getFunctionNameNode(
             functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
-        val variableDeclaration = ObjJTreeUtil.getParentOfType(functionLiteral, ObjJVariableDeclaration::class.java)
+        val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
                 ?: return null
         return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].lastVar else null
     }

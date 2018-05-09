@@ -4,4 +4,4 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.StubBasedPsiElement
 import com.intellij.psi.stubs.StubElement
 
-interface ObjJStubBasedElement<StubT : StubElement<*>> : StubBasedPsiElement<StubT>
+interface ObjJStubBasedElement<StubT:StubElement<*>> : StubBasedPsiElement<StubT>

@@ -59,6 +59,6 @@ class ObjJFindUsagesProvider : FindUsagesProvider {
 
     override fun getNodeText(
             psiElement: PsiElement, b: Boolean): String {
-        return ObjJPsiImplUtil.getDescriptiveText(psiElement)
+        return ObjJPsiImplUtil.getDescriptiveText(psiElement) ?: psiElement.text
     }
 }

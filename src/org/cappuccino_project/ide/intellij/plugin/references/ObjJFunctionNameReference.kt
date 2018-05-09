@@ -4,11 +4,12 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import com.intellij.psi.util.PsiTreeUtil
 import org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import org.cappuccino_project.ide.intellij.plugin.psi.*
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getParentOfType
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -26,8 +27,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
 
     override fun isReferenceTo(element: PsiElement): Boolean {
         var isCorrectReference = element is ObjJVariableName || element is ObjJFunctionName
-        if (ObjJTreeUtil.getParentOfType(element, ObjJFunctionCall::class.java) != null) {
-            isCorrectReference = isCorrectReference && ObjJTreeUtil.getParentOfType(element, ObjJFunctionDeclarationElement<*>::class.java) != null
+        if (element.getParentOfType( ObjJFunctionCall::class.java) != null) {
+            isCorrectReference = isCorrectReference && element.getParentOfType( ObjJFunctionDeclarationElement::class.java) != null
         }
         return isCorrectReference && element.text == functionName
     }
@@ -40,12 +41,12 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         //LOGGER.log(Level.INFO, "There are <"+ObjJFunctionsIndex.getInstance().getAllKeys(myElement.getProject()).size()+"> function in index");
         for (functionDeclaration in ObjJFunctionsIndex.instance.get(functionName, myElement.project)) {
             ProgressIndicatorProvider.checkCanceled()
-            allOut.add(functionDeclaration.functionNameNode)
+            allOut.add(functionDeclaration.functionNameNode!!)
             if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {
                 return functionDeclaration.functionNameNode
             }
         }
-        for (function in ObjJTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
+        for (function in PsiTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
             if (function.functionName != null && function.functionName!!.text == myElement.text) {
                 return function.functionName
             }
@@ -58,7 +59,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
     }
 
     override fun getVariants(): Array<Any> {
-        return arrayOfNulls(0)
+        return arrayOf()
     }
 
     companion object {

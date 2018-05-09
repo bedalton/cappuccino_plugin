@@ -22,16 +22,6 @@ interface ObjJCompositeElement : PsiElement {
             LOGGER.log(Level.SEVERE, "ObjJFile is actually of type: " + this.containingFile.javaClass.simpleName)
             return null
         }
-
-    fun <PsiT : PsiElement> isIn(parentClass: Class<PsiT>): Boolean {
-        return ObjJPsiImplUtil.isIn(this, parentClass)
-    }
-
-    fun <PsiT : PsiElement> getChildOfType(childClass: Class<PsiT>): PsiT?
-
-    fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT>
-    fun <PsiT : PsiElement> getParentOfType(childClass: Class<PsiT>): PsiT?
-
     companion object {
         val LOGGER = Logger.getLogger(ObjJCompositeElement::class.java.name)
     }

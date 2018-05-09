@@ -8,20 +8,19 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJVariableAss
 import org.cappuccino_project.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
-import java.util.Objects
 
 object ObjJVariableAssignmentsPsiUtil {
 
     fun getAllVariableAssignmentsMatchingName(element: PsiElement, fqName: String): List<ObjJVariableAssignment> {
         val bodyVariableAssignments = getAllVariableAssignements(element)
-        return ArrayUtils.filter(bodyVariableAssignments) { assignment ->
+        return ArrayUtils.filter(bodyVariableAssignments) filter@ { assignment ->
             for (qualifiedReference in assignment.qualifiedReferenceList) {
                 if (qualifiedReference.variableNameList.isEmpty()) {
                     continue
                 }
                 val currentVariableFqName = ObjJVariableNameUtil.getQualifiedNameAsString(qualifiedReference, null)
                 if (fqName == currentVariableFqName) {
-                    return@ArrayUtils.filter true
+                    return@filter true
                 }
             }
             false
@@ -29,7 +28,7 @@ object ObjJVariableAssignmentsPsiUtil {
     }
 
     fun getAllVariableAssignements(block: PsiElement): List<ObjJVariableAssignment> {
-        val compositeElements = ObjJBlockPsiUtil.getParentBlockChildrenOfType(block, ObjJCompositeElement::class.java, true)
+        val compositeElements = block.getParentBlockChildrenOfType(ObjJCompositeElement::class.java, true)
         val declarations = ArrayList<ObjJVariableAssignment>()
         for (compositeElement in compositeElements) {
             if (compositeElement is ObjJBodyVariableAssignment) {
@@ -43,23 +42,23 @@ object ObjJVariableAssignmentsPsiUtil {
     }
 
     private fun addVariableDeclarationsInFile(declarations: MutableList<ObjJVariableAssignment>, file: PsiFile) {
-        for (variableAssignment in ObjJTreeUtil.getChildrenOfTypeAsList(file, ObjJBodyVariableAssignment::class.java)) {
+        for (variableAssignment in file.getChildrenOfType( ObjJBodyVariableAssignment::class.java)) {
             addVariableDeclarationFromBodyVariableAssignment(declarations, variableAssignment)
         }
     }
 
     private fun addVariableDeclarationFromBodyVariableAssignment(declarations: MutableList<ObjJVariableAssignment>, bodyVariableAssignment: ObjJBodyVariableAssignment) {
-        declarations.addAll(ObjJTreeUtil.getChildrenOfTypeAsList(bodyVariableAssignment, ObjJVariableAssignment::class.java))
+        declarations.addAll(bodyVariableAssignment.getChildrenOfType( ObjJVariableAssignment::class.java))
     }
 
     private fun addVariableDeclarationFromExpression(declarations: MutableList<ObjJVariableAssignment>, expression: ObjJExpr) {
         if (expression.leftExpr == null) {
             return
         }
-        if (expression.leftExpr!!.variableDeclaration == null) {
+        if (expression.leftExpr == null) {
             return
         }
-        declarations.addAll(ObjJTreeUtil.getChildrenOfTypeAsList(expression.leftExpr, ObjJVariableAssignment::class.java))
+        declarations.addAll(expression.leftExpr!!.variableDeclaration!!.getChildrenOfType(ObjJVariableAssignment::class.java))
     }
 
     fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr {

@@ -4,16 +4,13 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.ResolveState
 import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.usageView.UsageViewUtil
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
 
 import javax.swing.*
-import java.util.logging.Level
 
 open class ObjJCompositeElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), ObjJCompositeElement {
 
@@ -59,15 +56,4 @@ open class ObjJCompositeElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
         } else super.getPresentation()
     }
 
-    override fun <PsiT : PsiElement> getChildOfType(childClass: Class<PsiT>): PsiT? {
-        return ObjJTreeUtil.getChildOfType(this, childClass)
-    }
-
-    override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> {
-        return ObjJTreeUtil.getChildrenOfTypeAsList(this, childClass)
-    }
-
-    override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? {
-        return ObjJTreeUtil.getParentOfType(this, parentClass)
-    }
 }

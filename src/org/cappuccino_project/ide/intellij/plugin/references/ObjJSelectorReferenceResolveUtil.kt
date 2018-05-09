@@ -29,7 +29,7 @@ object ObjJSelectorReferenceResolveUtil {
     fun getMethodCallReferences(element: ObjJSelector): SelectorResolveResult<ObjJSelector> {
         val classConstraints = getClassConstraints(element)
         val selector = element.getSelectorString(false)
-        val parent = ObjJTreeUtil.getParentOfType(element, ObjJHasMethodSelector::class.java)
+        val parent = element.getParentOfType( ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorStrings?.indexOf(selector) ?: -1
         val fullSelector = parent?.selectorString ?: return EMPTY_SELECTORS_RESULT
         if (parent is ObjJMethodHeader || parent is ObjJAccessorProperty) {
@@ -50,7 +50,7 @@ object ObjJSelectorReferenceResolveUtil {
             return EMPTY_SELECTORS_RESULT
         }
         val classConstraints = getClassConstraints(element)
-        val parent = ObjJTreeUtil.getParentOfType(element, ObjJHasMethodSelector::class.java)
+        val parent = element.getParentOfType( ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorList?.indexOf(element) ?: -1
         val selectorFragment = ObjJPsiImplUtil.getSelectorUntil(element, includeSelf) ?: return EMPTY_SELECTORS_RESULT
         if (parent is ObjJMethodHeader || parent is ObjJAccessorProperty) {
@@ -91,7 +91,7 @@ object ObjJSelectorReferenceResolveUtil {
         var project: Project? = if (baseSelector != null) baseSelector.project else null
         for (selector in selectors) {
             if (parent == null) {
-                parent = ObjJTreeUtil.getParentOfType(selector, ObjJMethodCall::class.java)
+                parent = selector.getParentOfType( ObjJMethodCall::class.java)
             }
             if (parent != null && parent.containingClassName == ObjJElementFactory.PLACEHOLDER_CLASS_NAME) {
                 parent = null
@@ -210,7 +210,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (selectorElement == null) {
             return EMPTY_SELECTORS_RESULT
         }
-        val parent = ObjJTreeUtil.getParentOfType(selectorElement, ObjJHasMethodSelector::class.java)
+        val parent = selectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorStrings?.indexOf(selectorElement.getSelectorString(false)) ?: -1
         val fullSelector = parent?.selectorString ?: return EMPTY_SELECTORS_RESULT
         val containingClass = selectorElement.containingClassName
@@ -246,7 +246,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (DumbService.isDumb(selectorElement.project)) {
             return packageResolveResult(emptyList(), emptyList(), classConstraints)
         }
-        val parent = ObjJTreeUtil.getParentOfType(selectorElement, ObjJHasMethodSelector::class.java)
+        val parent = selectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
         val fullSelector = parent?.selectorString
         val result = ArrayList<PsiElement>()
         val otherResult = ArrayList<PsiElement>()
@@ -289,7 +289,7 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
     fun getClassConstraints(element: ObjJSelector): List<String> {
-        return getClassConstraints(ObjJTreeUtil.getParentOfType(element, ObjJHasMethodSelector::class.java))
+        return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java))
     }
 
 

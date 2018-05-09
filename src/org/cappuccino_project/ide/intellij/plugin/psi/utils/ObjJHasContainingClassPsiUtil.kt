@@ -9,13 +9,9 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclar
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub
 
 import java.util.ArrayList
-import java.util.Objects
 
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil.isUniversalMethodCaller
 
 object ObjJHasContainingClassPsiUtil {
 
@@ -24,7 +20,7 @@ object ObjJHasContainingClassPsiUtil {
     }
 
     fun getContainingClass(element: PsiElement?): ObjJClassDeclarationElement<*>? {
-        return ObjJTreeUtil.getParentOfType(element, ObjJClassDeclarationElement<*>::class.java)
+        return element.getParentOfType( ObjJClassDeclarationElement::class.java)
     }
 
     fun getContainingClassName(methodHeader: ObjJMethodHeader): String {
@@ -97,7 +93,7 @@ object ObjJHasContainingClassPsiUtil {
             containingClassName = psiElement.containingClassName
         }
         if (containingClassName == null) {
-            val classDeclarationElement = ObjJTreeUtil.getParentOfType(psiElement, ObjJClassDeclarationElement<*>::class.java)
+            val classDeclarationElement = psiElement.getParentOfType( ObjJClassDeclarationElement::class.java)
             if (classDeclarationElement != null) {
                 containingClassName = classDeclarationElement.classNameString
             }
@@ -112,7 +108,7 @@ object ObjJHasContainingClassPsiUtil {
         val classDeclarationElement = getContainingClass(element)
         return if (classDeclarationElement == null || classDeclarationElement !is ObjJImplementationDeclaration) {
             null
-        } else ObjJClassDeclarationPsiUtil.getSuperClassName((classDeclarationElement as ObjJImplementationDeclaration?)!!)
+        } else classDeclarationElement.getSuperClassName()
     }
 
 

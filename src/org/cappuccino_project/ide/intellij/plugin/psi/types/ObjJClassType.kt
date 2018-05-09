@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import org.cappuccino_project.ide.intellij.plugin.exceptions.CannotDetermineException
 import org.cappuccino_project.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJIsOfClassType
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil
 import org.cappuccino_project.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
 import java.util.*
@@ -65,8 +64,7 @@ private constructor(//Class name as string
             // Object is instance of IsClass Type
             // Get class type referenced by interface
         } else if (`object` is ObjJIsOfClassType) {
-            val isOfClassType = `object` as ObjJIsOfClassType?
-            classType = isOfClassType.classType
+            classType = `object`.classType
             // Object does not have known reference to a class type
         } else {
             classType = null

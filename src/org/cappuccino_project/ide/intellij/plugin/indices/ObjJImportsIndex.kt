@@ -6,7 +6,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJImportState
 class ObjJImportsIndex : ObjJStringStubIndexBase<ObjJImportStatement<*>>() {
 
     protected override val indexedElementClass: Class<ObjJImportStatement<*>>
-        get() = ObjJImportStatement<*>::class.java
+        get() = ObjJImportStatement::class.java
 
     override fun getKey(): StubIndexKey<String, ObjJImportStatement<*>> {
         return KEY
@@ -15,6 +15,6 @@ class ObjJImportsIndex : ObjJStringStubIndexBase<ObjJImportStatement<*>>() {
     companion object {
 
         val instance = ObjJImportsIndex()
-        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJImportStatement>(ObjJImportsIndex::class.java)
+        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJImportStatement<*>>(ObjJImportsIndex::class.java)
     }
 }

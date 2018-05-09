@@ -3,12 +3,11 @@ package org.cappuccino_project.ide.intellij.plugin.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.IElementType
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJTreeUtil
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeType
 
 /**
  * Annotator for missing semi-colons.
@@ -97,7 +96,7 @@ internal object ObjJSemiColonAnnotatorUtil {
      * @return `true` if next element blocks semi-colon, `false` otherwise
      */
     private fun isNextElementSemiColonBlocking(psiElement: PsiElement): Boolean {
-        val nextNodeType = ObjJTreeUtil.getNextNonEmptyNodeType(psiElement, true) ?: return false
+        val nextNodeType = psiElement.getNextNonEmptyNodeType(true) ?: return false
         for (elementType in NO_SEMI_COLON_BEFORE) {
             if (nextNodeType === elementType) {
                 return true

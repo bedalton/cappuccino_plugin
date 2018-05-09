@@ -2,6 +2,23 @@ package org.cappuccino_project.ide.intellij.plugin.psi.types
 
 import com.intellij.psi.tree.IElementType
 import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.*
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERTY
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_DECLARATION
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_LITERAL
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.GLOBAL_VARIABLE
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.IMPLEMENTATION
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.IMPORT_FILE
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.IMPORT_FRAMEWORK
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.INCLUDE_FILE
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.INCLUDE_FRAMEWORK
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.INSTANCE_VAR
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_CALL
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_HEADER
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.PREPROCESSOR_FUNCTION
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROTOCOL
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.SELECTOR_LITERAL
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_NAME
+import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes.VAR_TYPE_ID
 
 interface ObjJElementTypeFactory {
     companion object {

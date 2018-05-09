@@ -38,12 +38,12 @@ class ObjJParentClassChildrenIndex private constructor() : StringStubIndexExtens
     @JvmOverloads
     fun getChildClasses(parentClassName: String, project: Project, scope: GlobalSearchScope? = null): List<ObjJClassDeclarationElement<*>> {
         ProgressIndicatorProvider.checkCanceled()
-        return ArrayList(StubIndex.getElements<String, ObjJClassDeclarationElement>(KEY, parentClassName, project, scope, ObjJClassDeclarationElement<*>::class.java))
+        return ArrayList(StubIndex.getElements<String, ObjJClassDeclarationElement<*>>(KEY, parentClassName, project, scope, ObjJClassDeclarationElement::class.java))
     }
 
     companion object {
         val instance = ObjJParentClassChildrenIndex()
-        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJClassDeclarationElement>(ObjJParentClassChildrenIndex::class.java)
+        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJClassDeclarationElement<*>>(ObjJParentClassChildrenIndex::class.java)
         private val VERSION = 1
     }
 }

@@ -5,7 +5,7 @@ import com.intellij.psi.stubs.StubElement
 import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
 
-interface ObjJMethodHeaderDeclarationStub<PsiT : ObjJMethodHeaderDeclaration<out ObjJMethodHeaderDeclarationStub<*>>> : StubElement<PsiT> {
+interface ObjJMethodHeaderDeclarationStub<PsiT : ObjJMethodHeaderDeclaration<ObjJMethodHeaderDeclarationStub<PsiT>>> : StubElement<PsiT> {
     val paramTypes: List<String>
 
     val selectorStrings: List<String>
