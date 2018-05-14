@@ -9,6 +9,7 @@ import org.cappuccino_project.ide.intellij.plugin.references.ObjJSelectorReferen
 import org.cappuccino_project.ide.intellij.plugin.references.ObjJVariableReference
 
 import com.intellij.patterns.PlatformPatterns.psiElement
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getParentOfType
 
 class ObjJReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(

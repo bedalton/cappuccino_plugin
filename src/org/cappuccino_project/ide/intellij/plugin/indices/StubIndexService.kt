@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 
 import org.cappuccino_project.ide.intellij.plugin.lang.ObjJFile
+import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import org.cappuccino_project.ide.intellij.plugin.stubs.ObjJStubVersions
 import org.cappuccino_project.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.*

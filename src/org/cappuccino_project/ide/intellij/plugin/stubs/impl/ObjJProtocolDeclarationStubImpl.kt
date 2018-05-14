@@ -1,9 +1,18 @@
 package org.cappuccino_project.ide.intellij.plugin.stubs.impl
 
+import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import org.cappuccino_project.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationImpl
-import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub
-import org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 
-class ObjJProtocolDeclarationStubImpl(
-        parent: StubElement<*>, className: String, protocols: List<String>, shouldResolve: Boolean) : ObjJClassDeclarationStubImpl<ObjJProtocolDeclarationImpl>(parent, ObjJStubTypes.PROTOCOL, className, protocols, shouldResolve), ObjJProtocolDeclarationStub
+open class ObjJProtocolDeclarationStubImpl internal constructor(
+        parent: StubElement<*>,
+        elementType: IStubElementType<*, *>,
+        override val className: String,
+        override val inheritedProtocols: List<String>,
+        private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJProtocolDeclarationImpl>(parent, elementType), ObjJClassDeclarationStub<ObjJProtocolDeclarationImpl> {
+
+    override fun shouldResolve(): Boolean {
+        return shouldResolve
+    }
+}

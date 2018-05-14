@@ -15,19 +15,10 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
         }
 
     val classNameString: String
-        get() {
-            val stub = stub
-            if (stub != null) {
-                return stub.className
-            }
-            return if (className != null) className!!.text else ObjJClassType.UNDEF.className
-        }
 
-    val methodHeaders: List<ObjJMethodHeader>
+   fun getMethodHeaderList() : List<ObjJMethodHeader>
 
     val className: ObjJClassName?
 
     fun hasMethod(selector: String): Boolean
-
-    override fun getStub(): StubT?
 }

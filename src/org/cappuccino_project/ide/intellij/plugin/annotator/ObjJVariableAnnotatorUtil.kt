@@ -122,7 +122,7 @@ internal object ObjJVariableAnnotatorUtil {
                 }
             }
         }
-        val declarations = ObjJGlobalVariableNamesIndex.instance.get(variableName.text, variableName.project)
+        val declarations : MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance.get(variableName.text, variableName.project)
         if (!declarations.isEmpty()) {
             annotationHolder.createInfoAnnotation(variableName, "References global variable in file <" + (if (declarations.get(0).fileName != null) declarations.get(0).fileName else "UNDEFINED" + ">") + ">")
             return

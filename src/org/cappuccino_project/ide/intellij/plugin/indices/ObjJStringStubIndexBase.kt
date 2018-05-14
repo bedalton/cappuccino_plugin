@@ -31,11 +31,11 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
     }
 
     @Throws(IndexNotReadyRuntimeException::class)
-    operator fun get(variableName: String, project: Project): MutableCollection<ObjJElemT> {
+    operator fun get(variableName: String, project: Project): MutableList<ObjJElemT> {
         return get(variableName, project, GlobalSearchScope.allScope(project))
     }
     @Throws(IndexNotReadyRuntimeException::class)
-    override operator fun get(variableName: String, project: Project, scope: GlobalSearchScope): MutableCollection<ObjJElemT> {
+    override operator fun get(variableName: String, project: Project, scope: GlobalSearchScope): MutableList<ObjJElemT> {
 
         if (DumbService.getInstance(project).isDumb) {
             throw IndexNotReadyRuntimeException()
@@ -94,9 +94,9 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         val out = HashMap<String, MutableList<ObjJElemT>>() as MutableMap<String, MutableList<ObjJElemT>>
         for (key in keys) {
             if (out.containsKey(key)) {
-                out[key]!!.addAll(get(key, project, globalSearchScope))
+                out[key]!!.addAll(get(key, project, if (globalSearchScope != null) globalSearchScope else GlobalSearchScope.allScope(project)))
             } else {
-                out[key] = get(key, project, globalSearchScope) as MutableList<ObjJElemT>
+                out[key] = get(key, project, if (globalSearchScope != null) globalSearchScope else GlobalSearchScope.allScope(project))
             }
         }
         return out
@@ -120,7 +120,7 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         for (key in keys) {
             if (!done.contains(key)) {
                 done.add(key)
-                out.addAll(get(key, project, globalSearchScope))
+                out.addAll(get(key, project, scopeOrDefault(globalSearchScope, project)))
             }
         }
         return out
@@ -167,7 +167,7 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
             //return Collections.emptyList();
         }
         for (key in getAllKeys(project)) {
-            out.addAll(get(key, project, globalSearchScope))
+            out.addAll(get(key, project, scopeOrDefault(globalSearchScope, project)))
         }
         return out
     }
@@ -177,11 +177,18 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
     }
 
     private fun isResolveableKey(key: String, project: Project): Boolean {
-        val elementsForKey = get(key, project, null)
+        val elementsForKey = get(key, project, scopeOrDefault(null, project))
         for (element in elementsForKey) {
             return ObjJPsiImplUtil.shouldResolve(element)
         }
         return false
+    }
+
+    private fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
+        return  if (scope != null)
+                    scope
+                else
+                    GlobalSearchScope.allScope(project)
     }
 
     companion object {

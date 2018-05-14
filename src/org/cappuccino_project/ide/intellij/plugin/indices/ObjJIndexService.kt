@@ -113,11 +113,21 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             indexImplementationClassDeclaration(stub, indexSink)
         } else if (stub is ObjJProtocolDeclarationStub) {
             indexSink.occurrence<ObjJProtocolDeclaration, String>(ObjJProtocolDeclarationsIndex.instance.getKey(), stub.className)
-        }
-        for (protocol in stub.inheritedProtocols) {
-            indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassInheritanceIndex.instance.getKey(), protocol)
+            for (protocol in stub.inheritedProtocols) {
+                indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassInheritanceIndex.instance.getKey(), protocol)
+            }
         }
     }
+
+    /**
+     * Indexes class declarations
+     * @param stub class declaration stub
+     * @param indexSink index sink
+     */
+    override fun indexClassDeclaration(stub: ObjJImple indexSink: IndexSink) {
+
+    }
+
 
     private fun indexImplementationClassDeclaration(implementationStub: ObjJImplementationStub, indexSink: IndexSink) {
         if (implementationStub.isCategory) {
