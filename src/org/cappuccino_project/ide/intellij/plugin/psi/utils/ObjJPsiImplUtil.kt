@@ -15,6 +15,7 @@ import org.cappuccino_project.ide.intellij.plugin.psi.interfaces.*
 import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes
 import org.cappuccino_project.ide.intellij.plugin.references.*
 import org.cappuccino_project.ide.intellij.plugin.psi.*
+import org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJClassType
 import org.cappuccino_project.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
 import org.cappuccino_project.ide.intellij.plugin.settings.ObjJPluginSettings
 import org.cappuccino_project.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub
@@ -127,6 +128,14 @@ object ObjJPsiImplUtil {
         }
         oldFunctionName.parent.node.replaceChild(oldFunctionName.node, functionName.node)
         return functionName
+    }
+
+    @JvmStatic
+    fun getClassNameString(classElement:ObjJImplementationDeclaration) : String {
+        if (classElement.stub != null) {
+            return classElement.stub.className;
+        }
+        return classElement.className?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
     }
 
     // ============================== //
@@ -264,6 +273,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return ObjJMethodPsiUtils.getVarType(selector)
+    }
+
+    @JvmStatic
+    fun hasMethod(classElement:ObjJClassDeclarationElement<*>, selector:String) : Boolean {
+        return !classElement.getMethodHeaderList().filter{ it.selectorString == selector; }.isEmpty()
     }
 
     // ============================== //

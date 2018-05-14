@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Contract
 import javax.swing.*
 
 import org.cappuccino_project.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
+import org.cappuccino_project.ide.intellij.plugin.psi.utils.getParentOfType
 
 object ObjJSelectorLookupUtil {
 

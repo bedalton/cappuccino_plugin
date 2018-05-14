@@ -11,7 +11,7 @@ open class ObjJClassDeclarationStubImpl<PsiT : ObjJClassDeclarationElement<out O
         elementType: IStubElementType<*, *>,
         override val className: String,
         override val inheritedProtocols: List<String>,
-        private val shouldResolve: Boolean) : ObjJStubBaseImpl<PsiT>(parent, elementType), ObjJClassDeclarationStub<PsiT> {
+        private val shouldResolve: Boolean) : ObjJStubBaseImpl<PsiT>(parent, elementType), ObjJClassDeclarationStub {
 
     override fun shouldResolve(): Boolean {
         return shouldResolve
