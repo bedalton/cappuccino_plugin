@@ -4,12 +4,14 @@ import com.intellij.navigation.ItemPresentation
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import javax.swing.*
 
 class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPresentation {
 
     override fun getPresentableText(): String? {
+        ProgressIndicatorProvider.checkCanceled()
         return ObjJPsiImplUtil.getDescriptiveText(selector)
     }
 
@@ -17,7 +19,7 @@ class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPre
         val className: String?
         val classDeclarationElement = selector.containingClass
         className = if (classDeclarationElement is ObjJImplementationDeclaration) {
-                        val categoryName = classDeclarationElement.categoryName?.className?.text
+                        val categoryName = classDeclarationElement.categoryNameString
                         classDeclarationElement.getClassNameString() +
                                 if (categoryName != null && !categoryName.isEmpty()) {
                                     " ($categoryName)"

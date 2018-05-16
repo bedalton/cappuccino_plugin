@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>org.cappuccino_project.intellij.plugin</id>
+  <id>cappuccino.intellij.plugin</id>
   <name>Objective-J Plugin</name>
   <version>0.01</version>
   <vendor url="http://www.cappuccino-project.org">Cappuccino Project</vendor>
@@ -23,7 +23,7 @@
 
   <project-components>
     <!--component>
-      <implementation-class>org.cappuccino_project.intellij.plugin.support.ObjectiveJPluginController</implementation-class>
+      <implementation-class>cappuccino.intellij.plugin.support.ObjectiveJPluginController</implementation-class>
     </component-->
   </project-components>
 
@@ -33,60 +33,60 @@
   <extensions defaultExtensionNs="com.intellij">
 
     <!-- ObjJLang -->
-    <fileTypeFactory implementation="org.cappuccino_project.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
-    <lang.parserDefinition language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.parser.ObjJParserDefinition"/>
-    <filetype.decompiler filetype="ObjJSj" implementationClass="org.cappuccino_project.ide.intellij.plugin.utils.ObjJBinaryDecompiler"/>
+    <fileTypeFactory implementation="cappuccino.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
+    <lang.parserDefinition language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition"/>
+    <filetype.decompiler filetype="ObjJSj" implementationClass="cappuccino.ide.intellij.plugin.utils.ObjJBinaryDecompiler"/>
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
-                                   implementationClass="org.cappuccino_project.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
-    <colorSettingsPage implementation="org.cappuccino_project.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
+                                   implementationClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
+    <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
 
     <!-- Completion -->
     <lang.findUsagesProvider language="ObjectiveJ"
-                             implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
-    <psi.referenceContributor implementation="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJReferenceContributor"/>
-    <completion.contributor language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJCompletionContributor" />
-    <lang.braceMatcher language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJBraceMatcher"/>
-    <quoteHandler fileType="ObjectiveJ" className="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJQuoteHandler"/>
-    <lang.namesValidator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.contributor.ObjJNameValidator" />
+                             implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
+    <psi.referenceContributor implementation="cappuccino.ide.intellij.plugin.contributor.ObjJReferenceContributor"/>
+    <completion.contributor language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor" />
+    <lang.braceMatcher language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJBraceMatcher"/>
+    <quoteHandler fileType="ObjectiveJ" className="cappuccino.ide.intellij.plugin.contributor.ObjJQuoteHandler"/>
+    <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
 
     <!-- Annotators -->
-    <annotator language="ObjectiveJ" implementationClass="org.cappuccino_project.ide.intellij.plugin.annotator.ObjJAnnotator" />
+    <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
 
     <!-- Indices -->
-    <applicationService serviceInterface="org.cappuccino_project.ide.intellij.plugin.indices.StubIndexService"
-                        serviceImplementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJIndexService" />
-    <stubElementTypeHolder class="org.cappuccino_project.ide.intellij.plugin.stubs.types.ObjJStubTypes"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJClassMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJFilesByNameIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJFunctionsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJGlobalVariablesByFileNameIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJImportsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassChildrenIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
-    <stubIndex implementation="org.cappuccino_project.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
+    <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
+                        serviceImplementation="cappuccino.ide.intellij.plugin.indices.ObjJIndexService" />
+    <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJFilesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariablesByFileNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImportsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJParentClassChildrenIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
 
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
     <!-- =============================== - ->
-    <lang.braceMatcher language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistBraceMatcher"/>
-    <lang.parserDefinition language="ObjJPlist" implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistParserDefinition"/>
+    <lang.braceMatcher language="ObjJPlist" implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistBraceMatcher"/>
+    <lang.parserDefinition language="ObjJPlist" implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistParserDefinition"/>
     <lang.syntaxHighlighterFactory key="ObjJPlist"
-                                   implementationClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
+                                   implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
                                    -->
   </extensions>
 </idea-plugin>

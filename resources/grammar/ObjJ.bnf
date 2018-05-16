@@ -926,6 +926,7 @@ implementationDeclaration
 			getClassType
 			getClassNameString
 			getSuperClassName
+			getCategoryNameString
 			hasMethod
 			getPresentation
 			shouldResolve
@@ -1403,7 +1404,7 @@ selector
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"com.intellij.navigation.NavigationItem"
 		]
-		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve getContainingSuperClass]
+		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve getContainingSuperClass getSelectorIndex]
 		//recoverWhile=recover_selector
 	}
 	;
