@@ -76,6 +76,10 @@ open class StubIndexService internal constructor() {
 
     }
 
+    open fun indexTypeDef(stub:ObjJTypeDefStub, indexSink: IndexSink) {
+
+    }
+
 
     // ============================== //
     // ========== File Stub ========= //

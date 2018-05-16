@@ -206,6 +206,10 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         }
     }
 
+    override fun indexTypeDef(stub:ObjJTypeDefStub, indexSink: IndexSink) {
+
+    }
+
     companion object {
         const val INDEX_VERSION = 1
     }

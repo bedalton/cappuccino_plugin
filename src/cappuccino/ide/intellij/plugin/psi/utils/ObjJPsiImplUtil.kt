@@ -126,7 +126,20 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getClassType(classDeclaration:ObjJClassDeclarationElement<*>) : ObjJClassType {
+        val classNameString = classDeclaration.getClassNameString()
+        return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
+    }
+
+    @JvmStatic
     fun getClassNameString(classElement:ObjJImplementationDeclaration) : String {
+        if (classElement.stub != null) {
+            return classElement.stub.className;
+        }
+        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
+    }
+    @JvmStatic
+    fun getClassNameString(classElement:ObjJProtocolDeclaration) : String {
         if (classElement.stub != null) {
             return classElement.stub.className;
         }
@@ -134,8 +147,16 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getClassNameString(typedef:ObjJTypeDef) : String {
+        return typedef.className.text
+    }
+
+    @JvmStatic
     fun getSuperClassName(declaration: ObjJImplementationDeclaration) : String? =
             cappuccino.ide.intellij.plugin.psi.utils.getSuperClassName(declaration)
+
+    @JvmStatic
+    fun getContainingSuperClass(hasContainingClass: ObjJHasContainingClass, returnDefault:Boolean = false) : ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(hasContainingClass, returnDefault)
 
     @JvmStatic
     fun isCategory(declaration:ObjJImplementationDeclaration): Boolean =
@@ -177,12 +198,13 @@ object ObjJPsiImplUtil {
     // ====== MethodHeaders ========= //
     // ============================== //
     @JvmStatic
-    fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> =
+    fun getMethodHeaderList(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> =
             cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> =
-            cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
+    fun getMethodHeaderList(_typedef:ObjJTypeDef): List<ObjJMethodHeader> =
+            listOf()
 
     @JvmStatic
     fun hasMethod(declaration:ObjJImplementationDeclaration, selector:String): Boolean =
@@ -286,6 +308,10 @@ object ObjJPsiImplUtil {
     fun getSelectorStrings(methodHeader: ObjJMethodHeader): List<String> {
         return ObjJMethodPsiUtils.getSelectorStrings(methodHeader)
     }
+
+    @JvmStatic
+    fun getSelectorStrings(methodCall: ObjJMethodCall): List<String> =
+            cappuccino.ide.intellij.plugin.psi.utils.getSelectorStrings(methodCall)
 
     @JvmStatic
     fun getSelectorStrings(selectorLiteral: ObjJSelectorLiteral): List<String> {
@@ -514,6 +540,10 @@ object ObjJPsiImplUtil {
     fun getInheritedProtocols(classDeclaration:ObjJProtocolDeclaration): List<String> =
             cappuccino.ide.intellij.plugin.psi.utils.getInheritedProtocols(classDeclaration)
 
+    @Suppress("UNUSED_PARAMETER")
+    @JvmStatic
+    fun getInheritedProtocols(typedef:ObjJTypeDef): List<String> = listOf()
+
 
     // ============================== //
     // ========= Var Types ========== //
@@ -555,11 +585,23 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(iterationStatement)
 
     @JvmStatic
+    fun getBlockList(expr:ObjJExpr): List<ObjJBlock> =
+            cappuccino.ide.intellij.plugin.psi.utils.getBlockList(expr)
+
+    @JvmStatic
+    fun getBlockList(methodDeclaration:ObjJMethodDeclaration): List<ObjJBlock> {
+        val block = methodDeclaration.block;
+        return if (block != null) listOf(block) else listOf();
+    }
+
+    @JvmStatic
     fun getBlock(function: ObjJPreprocessorDefineFunction): ObjJBlock? {
         return if (function.preprocessorDefineBody != null) function.preprocessorDefineBody!!.block else null
     }
+
+    @JvmStatic
     fun getBlock(expr:ObjJExpr): ObjJBlock? =
-        cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr);
+        cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr)
 
     @JvmStatic
     fun getOpenBrace(ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {

@@ -186,14 +186,16 @@ fun getBlockList(iterationStatement:ObjJIterationStatement): List<ObjJBlock> {
     } else emptyList()
 }
 
+fun getBlockList(expr:ObjJExpr): List<ObjJBlock> {
+    val block = getBlock(expr)
+    return if (block != null) listOf(block) else listOf()
+}
+
 
 fun getBlockList(tryStatement:ObjJTryStatement): List<ObjJBlock> {
     val out = ArrayList<ObjJBlock>()
-    var block = tryStatement.block
-    if (block == null) {
-        return out
-    }
-    out.add(block)
+    var block: ObjJBlock? = tryStatement.block ?: return out
+    out.add(block!!)
     block = tryStatement.catchProduction?.block
     if (block != null) {
         out.add(block)

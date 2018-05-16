@@ -8,12 +8,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 
 interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : ObjJStubBasedElement<StubT>, ObjJIsOfClassType, ObjJHasProtocolList, ObjJCompositeElement, ObjJResolveableElement<StubT> {
 
-    override val classType: ObjJClassType
-        get() {
-            val classNameString = getClassNameString()
-            return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
-        }
-
     fun getClassNameString() : String
 
     fun getMethodHeaderList() : List<ObjJMethodHeader>
