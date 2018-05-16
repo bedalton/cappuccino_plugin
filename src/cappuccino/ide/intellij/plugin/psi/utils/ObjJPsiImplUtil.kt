@@ -134,10 +134,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getClassNameString(classElement:ObjJImplementationDeclaration) : String {
         if (classElement.stub != null) {
-            return classElement.stub.className;
+            return classElement.stub.className
         }
         return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
     }
+
     @JvmStatic
     fun getClassNameString(classElement:ObjJProtocolDeclaration) : String {
         if (classElement.stub != null) {
@@ -154,6 +155,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getSuperClassName(declaration: ObjJImplementationDeclaration) : String? =
             cappuccino.ide.intellij.plugin.psi.utils.getSuperClassName(declaration)
+
+    @JvmStatic
+    fun getCategoryNameString(declaration: ObjJImplementationDeclaration) : String? {
+        return declaration.stub?.categoryName ?: declaration.categoryName?.className?.text
+    }
 
     @JvmStatic
     fun getContainingSuperClass(hasContainingClass: ObjJHasContainingClass, returnDefault:Boolean = false) : ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(hasContainingClass, returnDefault)
@@ -336,6 +342,10 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getSelectorList(accessorProperty: ObjJAccessorProperty): List<ObjJSelector> =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorList(accessorProperty)
+
+    @JvmStatic
+    fun getSelectorIndex(selector:ObjJSelector) : Int =
+            ObjJMethodPsiUtils.getSelectorIndex(selector)
 
     @JvmStatic
     fun getSelectorUntil(targetSelectorElement: ObjJSelector, include: Boolean): String? {

@@ -31,17 +31,15 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         return ObjJFileType.INSTANCE
     }
 
-    fun <PsiT : PsiElement> getChildOfType(childClass: Class<PsiT>): PsiT? {
-        return PsiTreeUtil.getChildOfType(this, childClass)
-    }
+    override fun <PsiT : PsiElement> getChildOfType(childClass: Class<PsiT>): PsiT? =
+            PsiTreeUtil.getChildOfType(this, childClass)
 
-    fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> {
-        return PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
-    }
 
-    fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? {
-        return PsiTreeUtil.getParentOfType(this, parentClass)
-    }
+    override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> =
+            PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
+
+    override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? =
+            PsiTreeUtil.getParentOfType(this, parentClass)
 
 
 }

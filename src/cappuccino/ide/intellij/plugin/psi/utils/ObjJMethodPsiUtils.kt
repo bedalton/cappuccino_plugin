@@ -12,11 +12,8 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import org.jetbrains.annotations.Contract
 
-import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
 
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.AT_ACTION
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.VOID_CLASS_NAME
@@ -130,18 +127,39 @@ object ObjJMethodPsiUtils {
                 ?: return null
 
         val builder = StringBuilder()
-        val selectors = parent.selectorList
+        val selectorIndex = if (include)  targetSelectorElement.selectorIndex else targetSelectorElement.selectorIndex - 1
+        if (selectorIndex <=0 && !include) {
+            return null
+        }
+        val selectors = parent.selectorList.subList(0, selectorIndex)
         for (subSelector in selectors) {
-            if (subSelector === targetSelectorElement) {
-                if (include) {
-                    builder.append(subSelector.getSelectorString(true))
-                }
-                break
-            } else {
-                builder.append(ObjJMethodPsiUtils.getSelectorString(subSelector, true))
-            }
+            builder.append(ObjJMethodPsiUtils.getSelectorString(subSelector, true))
         }
         return builder.toString()
+    }
+
+    fun getSelectorIndex(selector:ObjJSelector) : Int {
+        val method : ObjJMethodHeaderDeclaration<*> = selector.getParentOfType(ObjJMethodHeaderDeclaration::class.java)
+                ?: return 0
+        return getSelectorIndex(method, selector) ?: 0
+    }
+
+    private fun getSelectorIndex(methodHeader:ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
+        if (methodHeader == null) {
+            return null
+        }
+        val selectors = methodHeader.selectorList
+        val index = selectors.indexOf(selector)
+        if (index >= 0) {
+            return index
+        }
+        val numSelectors = selectors.size
+        for (i in 0..numSelectors) {
+            if (selector equals selectors[i]) {
+                return i
+            }
+        }
+        return null
     }
 
 
@@ -226,7 +244,7 @@ object ObjJMethodPsiUtils {
                 return ObjJClassType.ID
         var returnType: String?
         try {
-            returnType = getReturnTypeFromReturnStatements(declaration, follow)
+            returnType = ObjJClassType.ID//getReturnTypeFromReturnStatements(declaration, follow)
         } catch (e: MixedReturnTypeException) {
             returnType = e.returnTypesList[0]
         }
@@ -368,8 +386,9 @@ object ObjJMethodPsiUtils {
     }
 
     fun getMethodScope(methodHeader: ObjJMethodHeader): MethodScope {
-        return if (methodHeader.stub != null) {
-            if (methodHeader.stub.isStatic) MethodScope.STATIC else MethodScope.INSTANCE
+        val stub = methodHeader.stub
+        return if (stub != null) {
+            if (stub.isStatic) MethodScope.STATIC else MethodScope.INSTANCE
         } else MethodScope.getScope(methodHeader.methodScopeMarker.text)
     }
 
@@ -385,7 +404,7 @@ object ObjJMethodPsiUtils {
 
     fun isStatic(hasMethodSelector: ObjJHasMethodSelector): Boolean {
         return if (hasMethodSelector is ObjJMethodHeader) {
-            if (hasMethodSelector.stub != null) hasMethodSelector.stub.isStatic else getMethodScope(hasMethodSelector) == MethodScope.STATIC
+            hasMethodSelector.stub?.isStatic ?: getMethodScope(hasMethodSelector) == MethodScope.STATIC
         } else false
     }
 
@@ -426,7 +445,7 @@ object ObjJMethodPsiUtils {
      * Method scope enum.
      * Flags method as either static or instance
      */
-    enum class MethodScope private constructor(private val scopeMarker: String?) {
+    enum class MethodScope(private val scopeMarker: String?) {
         STATIC("+"),
         INSTANCE("-"),
         INVALID(null);

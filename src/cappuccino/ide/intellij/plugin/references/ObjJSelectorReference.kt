@@ -1,25 +1,25 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
-import cappuccino.ide.intellij.plugin.lang.ObjJFileTypeFactory
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import java.util.ArrayList
-import java.util.Objects
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
 
-    //private static final Logger LOGGER = Logger.getLogger(ObjJSelectorReference.class.getName());
+    private val logger:Logger = Logger.getLogger(ObjJSelectorReference::class.java.canonicalName)
 
     private val methodHeaderParent: ObjJMethodHeaderDeclaration<*>?
     private var classConstraints: List<String>? = null
@@ -32,7 +32,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         val methodCallParent = element.getParentOfType(ObjJMethodCall::class.java)
         fullSelector = methodHeaderParent?.selectorString ?: methodCallParent?.selectorString
         classConstraints = getClassConstraints()
-        //LOGGER.log(Level.INFO, "Creating selector resolver for selector <"+fullSelector+">;");
+        //logger.log(Level.INFO, "Creating selector resolver for selector <"+fullSelector+">;");
     }
 
     private fun getClassConstraints(): List<String>? {
@@ -40,7 +40,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             return classConstraints
         }
         val methodCall = myElement.getParentOfType(ObjJMethodCall::class.java)
-                ?: //   LOGGER.log(Level.INFO, "Selector is not in method call.");
+                ?: //   logger.log(Level.INFO, "Selector is not in method call.");
                 return null
         if (DumbService.isDumb(myElement.project)) {
             return null
@@ -51,6 +51,28 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 
     override fun getVariants(): Array<Any?> {
         return arrayOfNulls(0)
+        /*
+        val selector = myElement
+        val index = myElement.selectorIndex
+        val querySelector = ObjJMethodPsiUtils.getSelectorUntil(selector, false)
+        val methodHeaders = if (querySelector != null)
+            ObjJMethodFragmentIndex.instance[querySelector, myElement.project]
+        else
+            ObjJUnifiedMethodIndex.instance.getAll(myElement.project)
+        val out:MutableList<String> = ArrayList()
+        var i = 0
+        methodHeaders.forEach({
+            val variantSelector = it.selectorList.getOrNull(index)?.getSelectorString(false) ?: return@forEach
+            if (out.contains(variantSelector)) {
+                return@forEach
+            }
+            i++
+            out.add(variantSelector)
+        })
+
+        logger.log(Level.INFO, "Added $i selector variants")
+        return out.toTypedArray()
+        */
     }
 
     /*
@@ -60,7 +82,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (DumbService.isDumb(myElement.getProject())) {
             return new Object[0];
         }
-        LOGGER.log(Level.INFO, "GetVariants");
+        logger.log(Level.INFO, "GetVariants");
         String selectorUpToSelf = ObjJPsiImplUtil.getSelectorUntil(myElement, false);
         if (selectorUpToSelf == null) {
             return new Object[0];
@@ -104,7 +126,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 */
     override fun isReferenceTo(
             elementToCheck: PsiElement): Boolean {
-        //LOGGER.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
+        //logger.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
         if (elementToCheck !is ObjJSelector) {
             return false
         }
@@ -116,7 +138,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (methodHeaderParent != null) {
             return methodCallString == fullSelector
         } else if (accessorMethods != null) {
-            //LOGGER.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
+            //logger.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
             return accessorMethods.getFirst() == methodCallString || accessorMethods.getSecond() == methodCallString
         }
         if (methodCall != null) {
@@ -138,7 +160,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         if (!out.isEmpty()) {
-            if (classConstraints != null && classConstraints!!.size > 0 && !classConstraints!!.contains(ObjJClassType.UNDETERMINED) && classConstraints!!.contains(ObjJClassType.ID)) {
+            if (classConstraints != null && classConstraints!!.isNotEmpty() && !classConstraints!!.contains(ObjJClassType.UNDETERMINED) && classConstraints!!.contains(ObjJClassType.ID)) {
                 val tempOut = out.filter { element -> element is ObjJCompositeElement && classConstraints!!.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
                     out = tempOut as MutableList<PsiElement>
@@ -158,18 +180,18 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         return if (!result.isEmpty) {
             PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         } else PsiElementResolveResult.EMPTY_ARRAY
-        //LOGGER.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
+        //logger.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
     }
 
     private fun getAccessorMethods(): Pair<String, String>? {
         val accessorProperty = myElement.getParentOfType(ObjJAccessorProperty::class.java)
         if (accessorProperty != null) {
-            return Pair<String, String>(accessorProperty.getGetter(), accessorProperty.getSetter())
+            return Pair<String, String>(accessorProperty.getter, accessorProperty.setter)
         }
         val instanceVariableDeclaration = myElement.getParentOfType(ObjJInstanceVariableDeclaration::class.java)
         if (instanceVariableDeclaration != null) {
-            val getter = instanceVariableDeclaration.getGetter()
-            val setter = instanceVariableDeclaration.getSetter()
+            val getter = instanceVariableDeclaration.getter
+            val setter = instanceVariableDeclaration.setter
             return Pair<String, String>(
                     getter?.selectorString,
                     setter?.selectorString)
