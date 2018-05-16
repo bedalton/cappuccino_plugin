@@ -23,6 +23,7 @@ object ObjJStubTypes {
     val PREPROCESSOR_FUNCTION = ObjJPreprocessorDefineFunctionStubType("ObjJ_PREPROCESSOR_DEFINE_FUNCTION")
     val PROTOCOL = ObjJProtocolStubType("ObjJ_PROTOCOL")
     val SELECTOR_LITERAL = ObjJSelectorLiteralStubType("ObjJ_SELETOR_LITERAL")
+    val TYPE_DEF = ObjJTypeDefStubType("ObjJ_TYPE_DEF")
     val VAR_TYPE_ID = ObjJVarTypeIdStubType("ObjJ_VAR_TYPE_ID")
     val VARIABLE_NAME = ObjJVariableNameStubType("ObjJ_VARIABLE_NAME")
 }

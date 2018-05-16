@@ -589,6 +589,9 @@ iterationStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
+		methods = [
+			getBlockList
+		]
     }
     ;
 
@@ -825,6 +828,7 @@ methodDeclaration
 		//recoverWhile=recover_methodDeclaration
 		methods = [
 			block="/methodBlock"
+			getBlockList
 		]
 	}
 	;
@@ -847,7 +851,7 @@ methodHeader
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
-		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve]
+		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve  getContainingSuperClass]
 
 		//recoverWhile=recover_methodHeaderSelectorList
 	}
@@ -919,6 +923,7 @@ implementationDeclaration
 			className = "/className[0]"
 			superClass="/className[1]"
 			isCategory
+			getClassType
 			getClassNameString
 			getSuperClassName
 			hasMethod
@@ -1160,7 +1165,15 @@ protocolDeclaration
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub"
-		methods=[getMethodHeaderList hasMethod getPresentation shouldResolve getInheritedProtocols]
+		methods=[
+			getMethodHeaderList
+			hasMethod
+			getPresentation
+			shouldResolve
+			getInheritedProtocols
+			getClassNameString
+			getClassType
+		]
 	}
 	;
 
@@ -1233,7 +1246,13 @@ private implementationElement
 	;
 
 typeDef
-	::=	'@typedef' ID
+	::=	'@typedef' className
+	{
+
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJTypeDefStub"
+		methods = [getClassNameString]
+	}
 	;
 
 global
@@ -1339,7 +1358,7 @@ methodCall
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve]
+		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve]
 	}
 	;
 
@@ -1384,7 +1403,7 @@ selector
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"com.intellij.navigation.NavigationItem"
 		]
-		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve]
+		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve getContainingSuperClass]
 		//recoverWhile=recover_selector
 	}
 	;
@@ -1431,7 +1450,7 @@ expr
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getBlock shouldResolve]
+		methods = [getBlock shouldResolve getBlockList]
 		//recoverWhile=recover_statement
 	}
 	;
@@ -1642,7 +1661,7 @@ selectorLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub"
-		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType shouldResolve]
+		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType shouldResolve getContainingSuperClass]
 	}
 	;
 
@@ -1761,7 +1780,7 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedNamePart"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
-		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve]
+		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve getContainingSuperClass]
 	}
 	;
 
