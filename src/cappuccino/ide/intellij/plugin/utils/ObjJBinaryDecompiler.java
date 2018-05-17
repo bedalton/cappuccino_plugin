@@ -10,11 +10,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import cappuccino.decompiler.parser.ObjJSjLexer;
-import cappuccino.decompiler.parser.ObjJSjListener;
-import cappuccino.decompiler.parser.ObjJSjParser;
-import cappuccino.decompiler.parser.ObjJSjParserListener;
-import cappuccino.decompiler.templates.manual.FileTemplate;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
