@@ -1,16 +1,16 @@
 {
-	parserClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.parser.ObjJPlistParser"
-	//parserUtilClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.parser.ObjJPlistParserUtil"
-	//implements="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.interfaces.ObjJPlistCompositeElement"
-	//extends="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.mixin.ObjJPlistCompositeElementImpl"
-	elementTypeHolderClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes"
+	parserClass="cappuccino.ide.intellij.plugin.extensions.plist.parser.ObjJPlistParser"
+	//parserUtilClass="cappuccino.ide.intellij.plugin.extensions.plist.parser.ObjJPlistParserUtil"
+	//implements="cappuccino.ide.intellij.plugin.extensions.plist.psi.interfaces.ObjJPlistCompositeElement"
+	//extends="cappuccino.ide.intellij.plugin.extensions.plist.psi.mixin.ObjJPlistCompositeElementImpl"
+	elementTypeHolderClass="cappuccino.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes"
 	elementTypePrefix="ObjJPlist_"
-	//elementTypeClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJCompositeElementType"
-	tokenTypeClass="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTokenType"
+	//elementTypeClass="cappuccino.ide.intellij.plugin.extensions.plist.psi.types.ObjJCompositeElementType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTokenType"
 	psiClassPrefix="ObjJPlist"
 	psiImplClassSuffix="Impl"
-	psiPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi"
-	psiImplPackage="org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.impl"
+	psiPackage="cappuccino.ide.intellij.plugin.extensions.plist.psi"
+	psiImplPackage="cappuccino.ide.intellij.plugin.extensions.plist.psi.impl"
 	generateTokenAccessors=true
 
 	//Tokens
