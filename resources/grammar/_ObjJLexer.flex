@@ -1,11 +1,11 @@
-package org.cappuccino_project.ide.intellij.plugin.lexer;
+package cappuccino.ide.intellij.plugin.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static org.cappuccino_project.ide.intellij.plugin.psi.types.ObjJTypes.*;
+import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 	private static final Logger LOGGER = Logger.getLogger("_ObjJLexer.flex");
 	private boolean inPreProc = false;
 
-  	public _ObjLexer() {
+  	public _ObjJLexer() {
     	this((java.io.Reader)null);
   	}
 

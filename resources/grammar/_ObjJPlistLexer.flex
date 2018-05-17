@@ -1,4 +1,4 @@
-package org.cappuccino_project.ide.intellij.plugin.extensions.plist.lexer;
+package cappuccino.ide.intellij.plugin.extensions.plist.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static org.cappuccino_project.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes.*;
+import static cappuccino.ide.intellij.plugin.extensions.plist.psi.types.ObjJPlistTypes.*;
 
 %%
 
