@@ -18,7 +18,7 @@ public class ObjJSjFileViewProvider extends SingleRootFileViewProvider {
     public ObjJSjFileViewProvider(@NotNull PsiManager manager,
                                   @NotNull VirtualFile virtualFile,
                                   boolean eventSystemEnabled) {
-        super(manager, virtualFile, eventSystemEnabled, ObjJLanguage.Companion.getINSTANCE());
+        super(manager, virtualFile, eventSystemEnabled, ObjJLanguage.INSTANCE);
     }
 
     @Nullable

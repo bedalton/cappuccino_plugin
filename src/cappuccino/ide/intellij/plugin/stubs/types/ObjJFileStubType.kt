@@ -30,21 +30,23 @@ class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage
     @Throws(IOException::class)
     override fun serialize(stub: ObjJFileStub, stream: StubOutputStream) {
         stream.writeName(stub.fileName)
+        /*
         stream.writeInt(stub.imports.size)
         for (importStatement in stub.imports) {
             stream.writeName(importStatement)
-        }
+        }*/
     }
 
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): ObjJFileStub {
         val fileName = StringRef.toString(stream.readName())
+        /*
         val numImports = stream.readInt()
         val imports = ArrayList<String>()
         for (i in 0 until numImports) {
             imports.add(StringRef.toString(stream.readName()))
-        }
-        return ObjJFileStubImpl(null, fileName, imports)
+        }*/
+        return ObjJFileStubImpl(null, fileName/*, imports*/)
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {

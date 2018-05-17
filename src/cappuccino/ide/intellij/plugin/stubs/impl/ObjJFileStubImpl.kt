@@ -10,8 +10,10 @@ import java.util.logging.Logger
 import java.util.regex.MatchResult
 import java.util.regex.Pattern
 
-class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, override val imports: List<String>) : PsiFileStubImpl<ObjJFile>(objJFile), ObjJFileStub {
+class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String) : PsiFileStubImpl<ObjJFile>(objJFile), ObjJFileStub {
 
+
+/*
     override fun getImportsForFramework(framework: String): List<String> {
         val out = ArrayList<String>()
         var matchResult: MatchResult
@@ -29,10 +31,9 @@ class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, overr
         }
         return out
     }
-
+*/
     companion object {
 
         private val LOGGER = Logger.getLogger("ObjJFileStubImpl")
-        private val IMPORT_FILENAME_REGEX = Pattern.compile("(.*)?::(.*)")
     }
 }

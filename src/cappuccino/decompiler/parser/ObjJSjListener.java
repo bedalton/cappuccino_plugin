@@ -13,8 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static cappuccino.decompiler.parser.ObjJSjParser.*;
-import static cappuccino.decompiler.parser.Utils.stripContainingQuotes;
-import static cappuccino.decompiler.templates.manual.ClassTemplate.ClassType.PROTOCOL;
 
 public class ObjJSjListener extends ObjJSjParserBaseListener {
 

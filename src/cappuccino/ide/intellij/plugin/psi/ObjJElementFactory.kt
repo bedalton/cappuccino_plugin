@@ -68,6 +68,10 @@ object ObjJElementFactory {
         return file.getChildOfType(ObjJComment::class.java)!!
     }
 
+    fun createFileFromText(project: Project, fileName:String, text: String): ObjJFile {
+        return PsiFileFactory.getInstance(project).createFileFromText(fileName, ObjJLanguage.INSTANCE, text) as ObjJFile
+    }
+
     private fun createFileFromText(project: Project, text: String): ObjJFile {
         return PsiFileFactory.getInstance(project).createFileFromText("dummy.j", ObjJLanguage.INSTANCE, text) as ObjJFile
     }

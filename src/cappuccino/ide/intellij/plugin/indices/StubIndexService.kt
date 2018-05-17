@@ -88,7 +88,7 @@ open class StubIndexService internal constructor() {
     fun createFileStub(file: ObjJFile): ObjJFileStub {
         val fileName = ObjJFileUtil.getContainingFileName(file)
         val fileImportStrings = file.importStrings
-        return ObjJFileStubImpl(file, fileName ?: "{?}", fileImportStrings)
+        return ObjJFileStubImpl(file, fileName ?: "{?}"/*, fileImportStrings*/)
     }
 
     companion object {

@@ -13,6 +13,10 @@ public class FileTemplate implements TemplateElement {
     public FileTemplate() {
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }

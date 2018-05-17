@@ -35,7 +35,6 @@
     <!-- ObjJLang -->
     <fileTypeFactory implementation="cappuccino.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
     <lang.parserDefinition language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition"/>
-    <filetype.decompiler filetype="ObjJSj" implementationClass="cappuccino.ide.intellij.plugin.utils.ObjJBinaryDecompiler"/>
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
                                    implementationClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
@@ -88,5 +87,13 @@
     <lang.syntaxHighlighterFactory key="ObjJPlist"
                                    implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
                                    -->
+    <!-- =============================== -->
+    <!-- ========= Decompiler ========== -->
+    <!-- =============================== -->
+    <psi.classFileDecompiler implementation="cappuccino.ide.intellij.plugin.decompiler.lang.ObjJSjClassFileDecompiler"/>
+    <filetype.decompiler filetype="ObjJSj" implementationClass="cappuccino.ide.intellij.plugin.decompiler.decompiler.ObjJBinaryDecompiler"/>
+    <syntaxHighlighter key="ObjJSj" factoryClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter"/>
+    <fileEditorProvider implementation="cappuccino.ide.intellij.plugin.decompiler.lang.ObjJSjFileEditorProvider"/>
+    <fileType.fileViewProviderFactory filetype="ObjJSJ" implementationClass="cappuccino.ide.intellij.plugin.decompiler.lang.ObjJSjFileViewProviderFactory"/>
   </extensions>
 </idea-plugin>

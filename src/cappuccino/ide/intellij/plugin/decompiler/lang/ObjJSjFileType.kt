@@ -1,30 +1,31 @@
-package cappuccino.decompiler.lang;
+package cappuccino.ide.intellij.plugin.decompiler.lang;
 
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import com.intellij.openapi.fileTypes.LanguageFileType
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
-public class ObjJSjFileType private constructor() : LanguageFileType(ObjJLanguage.INSTANCE) {
+class ObjJSjFileType private constructor() : FileType {
+        override fun isBinary(): Boolean = true
 
-        override fun getName(): String {
-                return "Objective-J Compiled Script"
-        }
+        override fun isReadOnly(): Boolean = true
 
-        override fun getDescription(): String {
-                return "An Objective-J compiled script file for the Cappuccino Web Framework"
-        }
+        override fun getCharset(p0: VirtualFile, p1: ByteArray): String? = null
 
-        override fun getDefaultExtension(): String {
-                return FILE_EXTENSION
-        }
+        override fun getName(): String =
+                "Objective-J Compiled Script"
 
-        override fun getIcon(): Icon? {
-                return ObjJIcons.DOCUMENT_ICON
-        }
+        override fun getDescription(): String =
+                "An Objective-J compiled script file for the Cappuccino Web Framework"
+
+        override fun getDefaultExtension(): String =
+                FILE_EXTENSION
+
+        override fun getIcon(): Icon? =
+                ObjJIcons.DOCUMENT_ICON
 
         companion object {
-                val FILE_EXTENSION = "j"
+                const val FILE_EXTENSION = "sj"
                 val INSTANCE = ObjJSjFileType()
         }
 }

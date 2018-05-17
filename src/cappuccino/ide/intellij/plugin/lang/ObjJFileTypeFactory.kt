@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.lang
 
-import cappuccino.decompiler.lang.ObjJSjFileType
+import cappuccino.ide.intellij.plugin.decompiler.lang.ObjJSjFileType
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory
 
