@@ -66,7 +66,7 @@ abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodH
             val keyPart = matches.group(1).toLowerCase()
             var isMatch = true
             for (part in parts) {
-                if (!keyPart.contains(part)) {
+                if (false && !keyPart.contains(part)) {
                     nonMatchingKeys.add(key)
                     isMatch = false
                     break

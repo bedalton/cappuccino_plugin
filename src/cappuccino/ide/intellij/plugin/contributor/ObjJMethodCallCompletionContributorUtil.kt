@@ -59,7 +59,7 @@ object ObjJMethodCallCompletionContributorUtil {
         var selectorIndex = selectors.size - 1
         val thisSelectorTrimmedText = psiElement.text.replace("\\s+".toRegex(), "")
         for (i in selectors.indices) {
-            if (selectors[i].text == thisSelectorTrimmedText) {
+            if (selectors[i] equals psiElement) {
                 selectorIndex = i
                 break
             }
