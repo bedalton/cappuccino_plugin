@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.decompiler.decompiler.ObjJBinaryDecompiler
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.utils.text
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -15,6 +16,7 @@ import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.fileEditor.impl.text.TextEditorImpl
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
@@ -39,9 +41,11 @@ class ObjJSjFileEditor (
     private val project: Project
 ) : UserDataHolderBase(), FileEditor {
 
-    private val document  = DocumentImpl(virtualFile.text())
+    private val document  = DocumentImpl("/* Decompiling... */")
     private val editor = EditorFactory.getInstance().createEditor(document, project, ObjJFileType.INSTANCE, true)
     private var isActive:Boolean = false
+    private var decompiling:Boolean = false
+    private var didSet:Boolean = false;
     // GUI
     private var component : JComponent = editor.component
 
@@ -50,9 +54,20 @@ class ObjJSjFileEditor (
 
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
     override fun getComponent(): JComponent {
-        Logger.getAnonymousLogger().log(Level.INFO, "ObjJSjFileEditor get component");
-        val content = ObjJBinaryDecompiler.decompileStatic(virtualFile)
-        document.setText(content)
+        if (didSet || decompiling) {
+            return component;
+        } else if (!didSet) {
+            didSet = true
+            Logger.getAnonymousLogger().log(Level.INFO, "ObjJSjFileEditor get component")
+
+            ObjJBinaryDecompiler.decompileStatic(project, virtualFile, { content ->
+                ApplicationManager.getApplication().invokeLater({
+                    ApplicationManager.getApplication().runWriteAction({
+                        document.setText(content)
+                    })
+                })
+            })
+        }
         return component
     }
 

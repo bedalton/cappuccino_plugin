@@ -1,6 +1,9 @@
 package cappuccino.decompiler.parser;
 
+import cappuccino.decompiler.parser.ObjJSjListener.ProgressCallback;
 import org.antlr.v4.runtime.*;
+
+import javax.annotation.Nullable;
 
 /**
  * All parser methods that used in grammar (p, prev, notLineTerminator, etc.)
@@ -9,8 +12,28 @@ import org.antlr.v4.runtime.*;
  */
 public abstract class ObjJSjBaseParser extends Parser
 {
+    private int size;
+    private ProgressCallback progressCallback;
+    private double lastProgress = 0;
     public ObjJSjBaseParser(TokenStream input) {
         super(input);
+        size = input.size();
+        this.progressCallback = progressCallback;
+    }
+
+    public void setProgressCallback(ProgressCallback progressCallback) {
+        this.progressCallback = progressCallback;
+    }
+
+    public Token match(int ttype) throws RecognitionException {
+        if (progressCallback != null) {
+            double progress = (double)getCurrentToken().getStopIndex() / (double)size;
+            if (progress - lastProgress > 0.0004) {
+                progressCallback.onProgress(progress);
+                lastProgress = progress;
+            }
+        }
+        return super.match(ttype);
     }
 
     /**

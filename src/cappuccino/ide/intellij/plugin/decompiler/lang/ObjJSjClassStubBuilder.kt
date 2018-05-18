@@ -27,7 +27,7 @@ class ObjJSjClassStubBuilder : ClsStubBuilder() {
             fileContent: FileContent): PsiFileStub<*>? {
         Logger.getLogger(ObjJSjClassStubBuilder::class.java.canonicalName).log(Level.INFO, "Parsing SJ from ObjJSjClassStubBuilder")
         try {
-            val fileContents = ObjJBinaryDecompiler.decompileStatic(fileContent.file)
+            val fileContents = ObjJBinaryDecompiler.parse(fileContent.file)
             val file = ObjJElementFactory.createFileFromText(fileContent.project, fileContent.fileName, fileContents.toString())
             return ObjJFileStubImpl(file, fileContent.fileName)
         } catch (e: IOException) {

@@ -2,7 +2,9 @@ package cappuccino.decompiler.parser;
 
 import cappuccino.decompiler.templates.manual.*;
 import cappuccino.decompiler.templates.manual.ClassTemplate.ClassType;
+import org.antlr.v4.runtime.ParserRuleContext;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,18 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
         return fileTemplates;
     }
 
+    @Nullable private final ProgressCallback progressCallback;
+    private final int size;
+    private double lastProgress = 0;
+    public ObjJSjListener(int size) {
+        this(size, null);
+    }
+
+    public ObjJSjListener(int size, @Nullable ProgressCallback progressCallback) {
+        this.size = size;
+        this.progressCallback = progressCallback;
+    }
+
     @Override
     public void enterFile(FileContext ctx) {
         fileTemplate = new FileTemplate();
@@ -41,6 +55,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     @Override
     public void exitFile(FileContext ctx) {
         fileTemplate = null;
+        tickProgress(ctx);
     }
 
     @Override
@@ -67,6 +82,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void exitClassDefinition(ClassDefinitionContext ctx) {
         classTemplate = null;
         skipExpressions--;
+        tickProgress(ctx);
     }
 
 
@@ -88,6 +104,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void exitCategoryDefinition(CategoryDefinitionContext ctx) {
         classTemplate = null;
         skipExpressions--;
+        tickProgress(ctx);
     }
 
 
@@ -122,6 +139,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void exitClassMethodDefinition(ClassMethodDefinitionContext ctx) {
         methodTemplate = null;
         skipExpressions--;
+        tickProgress(ctx);
     }
 
     @Override public void enterProtocolDefinition(ProtocolDefinitionContext ctx) {
@@ -138,6 +156,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     @Override public void exitProtocolDefinition(ProtocolDefinitionContext ctx) {
         classTemplate = null;
         skipExpressions--;
+        tickProgress(ctx);
     }
 
     @Override
@@ -186,6 +205,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
      */
     @Override public void exitProtocolMethodDefinition(ProtocolMethodDefinitionContext ctx) {
         methodTemplate = null;
+        tickProgress(ctx);
     }
 
 
@@ -205,6 +225,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void exitVariableStatement(VariableStatementContext ctx) {
         if (variableStatementTemplate != null) {
             fileTemplate.append("\n");
+            tickProgress(ctx);
         }
         variableStatementTemplate = null;
     }
@@ -246,6 +267,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     @Override
     public void exitFunctionExpression(FunctionExpressionContext ctx) {
         skipExpressions--;
+        tickProgress(ctx);
     }
 
     @Override
@@ -260,6 +282,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     @Override
     public void exitFunctionDeclaration(FunctionDeclarationContext ctx) {
         skipExpressions--;
+        tickProgress(ctx);
     }
 
 
@@ -285,6 +308,7 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void exitImports(ImportsContext ctx) {
         assert fileTemplate != null;
         fileTemplate.addBodyElement(new StatementTemplate("\n"));
+        tickProgress(ctx);
     }
 
     @Override
@@ -331,6 +355,22 @@ public class ObjJSjListener extends ObjJSjParserBaseListener {
     public void enterInheritsProtoStatement(InheritsProtoStatementContext ctx) {
         assert classTemplate != null;
         classTemplate.addProtocol(Utils.stripContainingQuotes(ctx.protocolName));
+    }
+
+    private void tickProgress(ParserRuleContext ctx) {
+        if (progressCallback == null) {
+            return;
+        }
+        double currentProgress = (double)ctx.stop.getStopIndex() / (double)size;
+        Logger.getAnonymousLogger().log(Level.INFO, "Making Progress: "+currentProgress+": "+ctx.stop.getStopIndex() + " of "+size);
+        if (currentProgress - lastProgress > 0.0004) {
+            progressCallback.onProgress(currentProgress);
+            lastProgress = currentProgress;
+        }
+    }
+
+    public static interface ProgressCallback {
+        void onProgress(double progress);
     }
 
 }

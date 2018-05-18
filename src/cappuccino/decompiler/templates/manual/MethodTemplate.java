@@ -66,11 +66,10 @@ public class MethodTemplate implements TemplateElement {
     @NotNull
     @Override
     public StringBuilder appendTo(@NotNull final StringBuilder stringBuilder) {
-        assert (variableNames.size() == selectors.size()) && selectors.size() > 1 : "Invalid method parsed. VarNames: "+ArrayUtils.INSTANCE.join(variableNames) + "; Selectors: "+ArrayUtils.INSTANCE.join(selectors) + "; in Selector: "+selector;
         assert isStatic != null : "Method must be marked as either static or non-static";
         assert returnType != null : "Return type must be set";
         assert isAbstract != null : "IsAbstract Must Be Set";
-
+        //assert (isAbstract || variableNames.size() == selectors.size() || selectors.size() <= 1) : "Invalid method parsed. VarNames: "+ArrayUtils.INSTANCE.join(variableNames) + "; Selectors: "+ArrayUtils.INSTANCE.join(selectors) + "; in Selector: "+selector;
         stringBuilder.append(isStatic ? "+ " : "- ");
         stringBuilder.append("(").append(returnType).append(")");
         int numSelectors = selectors.size();

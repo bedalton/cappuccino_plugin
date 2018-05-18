@@ -1,5 +1,6 @@
 package cappuccino.decompiler.parser;
 
+import cappuccino.decompiler.parser.ObjJSjListener.ProgressCallback;
 import org.antlr.v4.runtime.*;
 
 import java.util.Stack;
@@ -12,6 +13,8 @@ import java.util.Stack;
  */
 public abstract class ObjJSjBaseLexer extends Lexer
 {
+    private final int size;
+    private ProgressCallback progressCallback;
     /**
      * Stores values of nested modes. By default mode is strict or
      * defined externally (useStrictDefault)
@@ -32,6 +35,11 @@ public abstract class ObjJSjBaseLexer extends Lexer
 
     public ObjJSjBaseLexer(CharStream input) {
         super(input);
+        size = input.size();
+    }
+
+    public void setProgressCallback(ProgressCallback progressCallback) {
+        this.progressCallback = progressCallback;
     }
 
     public boolean getStrictDefault() {
@@ -64,7 +72,9 @@ public abstract class ObjJSjBaseLexer extends Lexer
             // Keep track of the last token on the default channel.
             this.lastToken = next;
         }
-
+        if (progressCallback != null) {
+            progressCallback.onProgress(next.getStopIndex() / size);
+        }
         return next;
     }
 
