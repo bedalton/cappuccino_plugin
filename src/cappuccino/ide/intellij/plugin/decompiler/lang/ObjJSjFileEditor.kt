@@ -4,12 +4,14 @@ import cappuccino.ide.intellij.plugin.decompiler.decompiler.ObjJBinaryDecompiler
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.utils.text
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.editor.impl.DocumentImpl
+import com.intellij.openapi.editor.impl.EditorFactoryImpl
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -47,7 +49,6 @@ class ObjJSjFileEditor (
     private var decompiling:Boolean = false
     private var didSet:Boolean = false;
     // GUI
-    private var component : JComponent = editor.component
 
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
@@ -55,7 +56,7 @@ class ObjJSjFileEditor (
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
     override fun getComponent(): JComponent {
         if (didSet || decompiling) {
-            return component;
+            return editor.component
         } else if (!didSet) {
             didSet = true
             Logger.getAnonymousLogger().log(Level.INFO, "ObjJSjFileEditor get component")
@@ -68,12 +69,12 @@ class ObjJSjFileEditor (
                 })
             })
         }
-        return component
+        return editor.component
     }
 
     override fun getCurrentLocation(): FileEditorLocation? = null
     override fun getName(): String = "Objective-J Decompiled Files"
-    override fun getPreferredFocusedComponent(): JComponent? = component
+    override fun getPreferredFocusedComponent(): JComponent? = editor.component
     override fun isModified(): Boolean = false
     override fun isValid() = true
 
@@ -90,6 +91,7 @@ class ObjJSjFileEditor (
     }
 
     override fun dispose() {
+        EditorFactoryImpl.getInstance().releaseEditor(editor)
         Disposer.dispose(this)
     }
 

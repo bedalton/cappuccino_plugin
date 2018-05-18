@@ -1,11 +1,9 @@
 package cappuccino.ide.intellij.plugin.decompiler.lang
 
 import cappuccino.ide.intellij.plugin.decompiler.decompiler.ObjJBinaryDecompiler
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.compiled.ClsStubBuilder
 import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.util.cls.ClsFormatException

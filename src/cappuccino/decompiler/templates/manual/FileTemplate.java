@@ -36,7 +36,7 @@ public class FileTemplate implements TemplateElement {
         for (TemplateElement bodyElement : bodyElements) {
             bodyElement.appendTo(stringBuilder);
         }
-        stringBuilder.append("/* EndFile: ").append(fileName);
+        stringBuilder.append("/* EndFile: ").append(fileName).append(" */");
         return stringBuilder;
     }
 }

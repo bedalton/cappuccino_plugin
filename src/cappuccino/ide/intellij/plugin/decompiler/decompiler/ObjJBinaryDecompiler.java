@@ -103,7 +103,7 @@ public class ObjJBinaryDecompiler implements BinaryFileDecompiler {
             fileTemplate.appendTo(out);
             out.append("\n");
         }
-        Logger.getLogger(ObjJBinaryDecompiler.class.getCanonicalName()).log(Level.INFO, "Time to parse: " + ((new Date().getTime() - startTime)));
+        Logger.getLogger(ObjJBinaryDecompiler.class.getCanonicalName()).log(Level.INFO, "Time to parse: " + ((new Date().getTime() - startTime) / 1000)+"s");
         return out;
     }
     @NotNull

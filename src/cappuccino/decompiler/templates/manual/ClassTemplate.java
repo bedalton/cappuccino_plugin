@@ -85,7 +85,7 @@ public class ClassTemplate implements TemplateElement {
                 }
                 stringBuilder
                     .append(varName)
-                    .append("\n");
+                    .append(";\n");
             }
             stringBuilder.append("}\n");
         }

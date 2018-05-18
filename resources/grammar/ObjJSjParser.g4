@@ -167,8 +167,10 @@ typedefDefinition
 
 
 statement
+@version{1}
+@leftfactor{singleExpression}
     : block
-    | methodCallTempVarList
+    //| methodCallTempVarList
     | variableStatement
     | emptyStatement
     | expressionStatement
@@ -194,9 +196,10 @@ block
 statementList
     : statement+
     ;
+    /*
 methodCallTempVarList
     : varModifier MethodCallTempVar (',' MethodCallTempVar)* eos
-    ;
+    ;*/
 
 variableStatement
     : varModifier variableDeclarationList eos
@@ -397,9 +400,9 @@ expressionSequence
     ;
 
 singleExpression
-    : compoundMethodCall													 # CompoundMethodCallExpression
-    | methodCall			   												 # MethodCallExpression
-    | Function functionName=Identifier? '(' formalParameterList? ')' '{' functionBody '}' # FunctionExpression
+    //: compoundMethodCall													 # CompoundMethodCallExpression
+    //| methodCall			   												 # MethodCallExpression
+    : Function functionName=Identifier? '(' formalParameterList? ')' '{' functionBody '}' # FunctionExpression
     | Class Identifier? jsClassTail                                            # ClassExpression
     | singleExpression '[' expressionSequence ']'                            # MemberIndexExpression
     | singleExpression '.' identifierName                                    # MemberDotExpression
@@ -433,7 +436,7 @@ singleExpression
     | singleExpression assignmentOperator singleExpression                   # AssignmentOperatorExpression
     | singleExpression TemplateStringLiteral                                 # TemplateStringExpression  // ECMAScript 6
     | This                                                                   # ThisExpression
-    | MethodCallTempVar														 # TempVarExpression
+    //| MethodCallTempVar														 # TempVarExpression
     | Identifier                                                             # IdentifierExpression
     | objjFunctionName														 # ObjJFunctionNameExpression
     | Super                                                                  # SuperExpression
@@ -445,6 +448,7 @@ singleExpression
     | EEnd																	 # EEndExpression
     ;
 
+/*
 compoundMethodCall
 	: '(' '(' MethodCallTempVar '=' (prelimMethodCall=methodCall|prelimCompoundMethodCall=compoundMethodCall) ')'',' MethodCallTempVar '==' 'null' '?' 'null' ':' actualCall=methodCall ')'
 	;
@@ -460,7 +464,7 @@ methodCallTarget
 staticMethodCall
 	: ('objj_getClass'|'objj_getMetaClass') '('StringLiteral')' '.' Identifier '.' 'method_dtable'
 	;
-
+*/
 
 arrowFunctionParameters
     : Identifier
@@ -482,11 +486,11 @@ objjFunctionName
     | FuncMethod
     | FunAllocTypeDef
     | FuncRegTypeDef
-    | ObjJForward
-    | FunMethodSend
+    //| ObjJForward
+    //| FunMethodSend
     | FuncSelUid
-    | MethodCallTempVar
-    | FunMethodDTable
+    //| MethodCallTempVar
+    //| FunMethodDTable
     | FuncAddProto
     | FuncClassAddMethod
     | FuncClassAddIvars
@@ -568,7 +572,6 @@ keyword
     | Delete
     | In
     | Try
-
     | Class
     | Enum
     | Extends
