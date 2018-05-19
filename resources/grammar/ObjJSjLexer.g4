@@ -34,6 +34,7 @@ channels { ERROR }
 
 options { superClass=ObjJSjBaseLexer; }
 
+
 MultiLineComment:               '/*' .*? '*/'             -> channel(HIDDEN);
 SingleLineComment:              '//' ~[\r\n\u2028\u2029]* -> channel(HIDDEN);
 RegularExpressionLiteral:       '/' RegularExpressionChar+ {IsRegexPossible()}? '/' IdentifierPart*;
@@ -73,7 +74,6 @@ Modulus:                        '%';
 RightShiftArithmetic:           '>>';
 LeftShiftArithmetic:            '<<';
 RightShiftLogical:              '>>>';
-LeftShiftLogical:            	'<<<';
 LessThan:                       '<';
 MoreThan:                       '>';
 LessThanEquals:                 '<=';
@@ -145,12 +145,12 @@ FuncIVar:						'objj_ivar';
 FuncMethod:						'objj_method';
 FunAllocTypeDef:				'objj_allocateTypeDef';
 FuncRegTypeDef:					'objj_registerTypeDef';
-//ObjJForward:					'_objj_forward';
+ObjJForward:					'_objj_forward';
 FunExecuteFile: 				'objj_executeFile';
-//FunMethodSend:					'method_msgSend';
+FunMethodSend:					'method_msgSend';
 FuncSelUid:						'sel_getUid';
-//MethodCallTempVar:				'___r'DecimalIntegerLiteral;
-//FunMethodDTable:				'method_dtable';
+MethodCallTempVar:				'___r'DecimalIntegerLiteral;
+FunMethodDTable:				'method_dtable';
 
 //Class Methods
 FuncAddProto:				    'class_addProtocol';
