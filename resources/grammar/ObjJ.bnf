@@ -7,7 +7,6 @@
 	elementTypePrefix="ObjJ_"
 	elementTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJCompositeElementType"
 	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType"
-	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType"
 	psiClassPrefix="ObjJ"
 	psiImplClassSuffix="Impl"
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
@@ -82,7 +81,7 @@
 
 
 		// At Statements
-		//AT_FRAGMENT =						'regexp=[@][a-zA-Z]*'
+		AT_FRAGMENT =						'@fragment'
 		AT_IMPORT  = 						'@import'
 		AT_ACCESSORS  = 					'@accessors'
 		AT_END  = 							'@end'
@@ -107,7 +106,7 @@
 		UNDEFINED=							'undefined'
 
 		//Preprocessor
-		//PP_FRAGMENT =						'regexp=[#][a-zA-Z]*'
+		PP_FRAGMENT	=						'#fragment'
 		PP_DEFINE = 						'#define'
 		PP_UNDEF = 							'#undef'
 		PP_IF_DEF = 						'#ifdef'
@@ -233,6 +232,7 @@ private sourceElement
 	|	includeFile
 	|	includeFramework
 	| 	emptyStatement
+	|	fragment eos?
 	;
 
 errorSequence
@@ -262,7 +262,6 @@ importFile
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>"
 		methods=[getFrameworkName getFileName getImportAsUnifiedString]
-		recoverWhile=recover_fileStatement
 	}
 	;
 
@@ -273,7 +272,6 @@ importFramework
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
 		methods=[getFrameworkName getFileName getImportAsUnifiedString]
-		recoverWhile=recover_fileStatement
 	}
 	;
 
@@ -284,7 +282,6 @@ includeFile
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>"
 		methods=[getFrameworkName getFileName getImportAsUnifiedString]
-		recoverWhile=recover_fileStatement
 	}
 	;
 
@@ -295,7 +292,6 @@ includeFramework
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>"
 		methods=[getFrameworkName getFileName getImportAsUnifiedString]
-		recoverWhile=recover_fileStatement
 	}
 	;
 
@@ -1142,12 +1138,7 @@ preprocessorIfStatement
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "cappuccino.ide.intellij.plugin.psi.ObjJBlock"]
 		methods=[getOpenBrace];
-		recoverWhile=recover_preprocessorIf
 	}
-	;
-
-private recover_preprocessorIf
-	::= !(atKeywords|'#if'|'#define'|'#warning'|'#ifndef'|'#ifdef'|'#include')
 	;
 
 private preprocessorBodyStatements
@@ -1265,8 +1256,6 @@ typeDef
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJTypeDefStub"
 		methods = [getClassNameString]
-		pin=1
-		recoverWhile=recover_fileStatement
 	}
 	;
 
@@ -1429,40 +1418,6 @@ private recover_selector
 
 classDependencyStatement
 	::= '@class' className
-	{
-		pin=1
-		recoverWhile=recover_fileStatement
-	}
-	;
-
-private recover_fileStatement
-	::= !(atKeywords|preprocessorKeywords)
-	;
-
-private atKeywords
-	::= '@implementation'|'@protocol'|'@class'|'@typedef'|'@import'|atFragment
-	;
-
-private preprocessorKeywords
-	::='#if'|'#pragma'|'#define'|'#undef'|'#ifdef'|'#ifndef'|'#include'|'#error'|'#warning'|preprocessorFragment
-	;
-
-private preprocessorFragment
-	::= PP_FRAGMENT
-	{
-		name="keyword"
-		pin=1
-		recoverWhile=recover_fileStatement
-	}
-	;
-
-private atFragment
-	::= AT_FRAGMENT
-	{
-		name="keyword"
-		pin=1
-		recoverWhile=recover_fileStatement
-	}
 	;
 
 private expressionSequence
@@ -1867,4 +1822,8 @@ private eos
 	|	<<notLineTerminator>> ';'
 	|	'}'
     ;
+
+fragment
+	::= PP_FRAGMENT | AT_FRAGMENT
+	;
 

@@ -76,10 +76,10 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 %%
 
 <AT_FRAGMENT> {
-	'[^ #@]+'								{ yybegin(YYINITIAL); return ObjJ_AT_FRAGMENT; }
+	[^ #@]+								{ yybegin(YYINITIAL); return ObjJ_AT_FRAGMENT; }
 }
 <PREPROC_FRAGMENT> {
-	'[^ @#]+'								{ yybegin(YYINITIAL); return ObjJ_PP_FRAGMENT; }
+	[^ @#]+								{ yybegin(YYINITIAL); return ObjJ_PP_FRAGMENT; }
 }
 
 <PRAGMA> {
