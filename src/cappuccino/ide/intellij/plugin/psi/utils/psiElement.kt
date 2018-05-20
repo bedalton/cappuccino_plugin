@@ -19,5 +19,5 @@ fun PsiElement.tokenType() : IElementType = this.node.elementType
 var el1:PsiElement? = null;
 var el2:PsiElement? = null;
 
-infix fun <T : PsiElement> PsiElement.hasParentOfType (parentClass:Class<T>) : Boolean =
-        this.getParentOfType(parentClass) != null
+infix fun <T : PsiElement> PsiElement?.hasParentOfType (parentClass:Class<T>) : Boolean =
+        this != null && this.getParentOfType(parentClass) != null

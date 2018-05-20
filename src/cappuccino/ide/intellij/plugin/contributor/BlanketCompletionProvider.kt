@@ -15,17 +15,17 @@ import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
-import cappuccino.ide.intellij.plugin.psi.utils.isNewVarDec
 
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
+import cappuccino.ide.intellij.plugin.utils.EditorUtil
+import java.util.logging.Level
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
@@ -67,9 +67,56 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             return
         } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList::class.java) != null) {
             results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
+        } else if (element.getContainingScope() == ReferencedInScope.FILE) {
+            val prefix:String
+            when {
+                element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
+                    results = mutableListOf(
+                            "import",
+                            "typedef",
+                            "class",
+                            "implementation",
+                            "protocol"
+                    )
+                    prefix = "@"
+                }
+                element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) -> {
+                    results = mutableListOf(
+                            "if",
+                            "include",
+                            "pragma",
+                            "define",
+                            "undef",
+                            "ifdef",
+                            "ifndef",
+                            "include",
+                            "error",
+                            "warning"
+                    )
+                    prefix = "#"
+                }
+                else -> {
+                    LOGGER.log(Level.INFO, "File level completion for token type ${element.getElementType().toString()} failed.")
+                    results = mutableListOf()
+                    prefix = ""
+                }
+            }
+            results.forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix+it).withInsertHandler({
+                    context, _ -> if (!EditorUtil.isTextAtOffset(context, " ")) {
+                        EditorUtil.insertText(context.editor, " ", true)
+                    }
+                }))
+            }
+            if (results.isNotEmpty()) {
+                resultSet.stopHere()
+                return
+            }
         } else {
-            results = ArrayList()
+            LOGGER.log(Level.INFO, "Completion provider for element in scope: "+element.getContainingScope())
+            results = mutableListOf()
         }
+
         results.addAll(getClassNameCompletions(element))
 
         if (results.isEmpty()) {

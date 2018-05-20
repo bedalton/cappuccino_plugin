@@ -2,13 +2,30 @@
 <list>
   <option name="ObjJ_VARIABLE_TYPE">
     <value>
-      <option name="FOREGROUND" value="C1B130"/>
+      <option name="FOREGROUND" value="EB9448"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="ObjJ_PARAMETER_VARIABLE">
+    <value>
+      <option name="FOREGROUND" value="697FB7"/>
+    </value>
+  </option>
+  <option name="ObjJ_FUNCTION_NAME">
+    <value>
+      <option name="FOREGROUND" value="399444"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
   <option name="ObjJ_INSTANCE_VARS">
     <value>
-      <option name="FOREGROUND" value="6650A1"/>
+      <option name="FOREGROUND" value="A17797"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="ObjJ_FILE_LEVEL_VARIABLE">
+    <value>
+      <option name="FOREGROUND" value="998302"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>

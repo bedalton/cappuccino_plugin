@@ -1,14 +1,12 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.indices.*
 import com.google.common.collect.ImmutableList
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
@@ -319,7 +317,7 @@ object ObjJVariableNameUtil {
         }
         for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, element.project)) {
             ProgressIndicatorProvider.checkCanceled()
-            for (declaration in ObjJInstanceVariablesByClassIndex.instance.get(variableHoldingClassName, element.project)) {
+            for (declaration in ObjJInstanceVariablesByClassIndex.instance[variableHoldingClassName, element.project]) {
                 ProgressIndicatorProvider.checkCanceled()
                 if (declaration.variableName != null) {
                     result.add(declaration.variableName!!)
@@ -586,6 +584,27 @@ object ObjJVariableNameUtil {
     }
 
     fun isInstanceVarDeclaredInClassOrInheritance(variableName: ObjJVariableName): Boolean {
-        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableName), { `var` -> `var`.getText() == variableName.text }) != null
+        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableName), { `var` -> `var`.text == variableName.text }) != null
     }
+
+    fun variablesShareInstanceVariableScope(variableName: ObjJVariableName, variableName2: ObjJVariableName) : Boolean {
+        return instanceVariablesSharedClasses(variableName, variableName2).isNotEmpty()
+    }
+
+    fun instanceVariablesSharedClasses(variableName1:ObjJVariableName, variableName2:ObjJVariableName) : Set<String> {
+        return getVariableWithNameContainingClasses(variableName1) intersect getVariableWithNameContainingClasses(variableName2)
+    }
+
+    fun getVariableWithNameContainingClasses(variableNameElement:ObjJVariableName) : Set<String> {
+        val project = variableNameElement.project
+        val variableName = variableNameElement.text
+        val className = variableNameElement.containingClassName
+        val containingClassInheritedClasses:List<String> = ObjJInheritanceUtil.getAllInheritedClassesStrict(className, project)
+        val classesContainingInstanceVariableWithName:List<String> = ObjJInstanceVariablesByNameIndex.instance[variableName, project].map {
+            it.containingClassName
+        }
+        return containingClassInheritedClasses intersect classesContainingInstanceVariableWithName
+    }
+
+
 }

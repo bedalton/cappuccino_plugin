@@ -63,9 +63,12 @@ class ObjJColorSettingsPage : ColorSettingsPage {
                 AttributesDescriptor("Block comment", ObjJSyntaxHighlighter.BLOCK_COMMENT),
                 AttributesDescriptor("Secondary Literal", ObjJSyntaxHighlighter.SECONDARY_LITERAL),
                 AttributesDescriptor("Variable Types", ObjJSyntaxHighlighter.VARIABLE_TYPE),
-                AttributesDescriptor("Instance variables", ObjJSyntaxHighlighter.INSTANCE_VAR),
+                AttributesDescriptor("Instance variables", ObjJSyntaxHighlighter.INSTANCE_VARIABLE),
                 AttributesDescriptor("Preprocessor Keywords", ObjJSyntaxHighlighter.PRE_PROCESSOR),
-                AttributesDescriptor("Objective-J Keywords", ObjJSyntaxHighlighter.AT_STATEMENT))
+                AttributesDescriptor("Objective-J Keywords", ObjJSyntaxHighlighter.AT_STATEMENT),
+                AttributesDescriptor("Parameter Variables", ObjJSyntaxHighlighter.PARAMETER_VARIABLE),
+                AttributesDescriptor("Function Calls", ObjJSyntaxHighlighter.FUNCTION_NAME),
+                AttributesDescriptor("Function Calls", ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE))
 
     }
 }
