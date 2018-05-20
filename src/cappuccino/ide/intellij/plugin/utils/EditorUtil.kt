@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.util.io.directoryContent
 
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -27,8 +28,15 @@ object EditorUtil {
 
     fun isTextAtOffset(context: InsertionContext, text: String): Boolean {
         val range = TextRange.create(context.selectionEndOffset, context.selectionEndOffset + text.length)
-        val textAtRange = context.document.getText(range)
-        //LOGGER.log(Level.INFO, "Text at range: <"+textAtRange+">");
+        return isTextAtOffset(context.document, range, text)
+    }
+
+    fun isTextAtOffset(document:Document, startOffset:Int, text: String): Boolean {
+        return isTextAtOffset(document, TextRange(startOffset, startOffset + text.length), text)
+    }
+
+    fun isTextAtOffset(document:Document, range:TextRange, text: String): Boolean {
+        val textAtRange = document.getText(range)
         return textAtRange == text
     }
 

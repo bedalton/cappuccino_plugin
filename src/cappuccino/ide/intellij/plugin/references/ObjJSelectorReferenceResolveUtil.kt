@@ -78,8 +78,8 @@ object ObjJSelectorReferenceResolveUtil {
         }
     }
 
-    private fun resolveSelectorReferenceRaw(selectors: List<ObjJSelector>, selectorIndex: Int): RawResult? {
-        var selectorIndex = selectorIndex
+    private fun resolveSelectorReferenceRaw(selectors: List<ObjJSelector>, selectorIndexIn: Int): RawResult? {
+        var selectorIndex = selectorIndexIn
         //Have to loop over elements as some selectors in list may have been virtually created
         var parent: ObjJMethodCall? = null
         if (selectors.size < 1) {
@@ -101,7 +101,7 @@ object ObjJSelectorReferenceResolveUtil {
         for (i in selectors.size - 1 downTo 1) {
             val tempSelector = selectors[i]
             if (project == null) {
-                project = if (parent != null) parent.project else tempSelector?.project
+                project = if (parent != null) parent.project else tempSelector.project
             }
             if (baseSelector == null || tempSelector.text.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
                 baseSelector = tempSelector
@@ -297,18 +297,18 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
 
-    private fun getClassConstraints(element: ObjJHasMethodSelector?): List<String> {
-        if (element !is ObjJMethodCall) {
+    private fun getClassConstraints(methodCall: ObjJHasMethodSelector?): List<String> {
+        if (methodCall !is ObjJMethodCall) {
             //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return emptyList()
         }
         var classConstraints: List<String>
-        val methodCall = element as ObjJMethodCall?
         //ObjJCallTarget callTarget = methodCall.getCallTarget();
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
         //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
-        classConstraints = methodCall!!.getPossibleCallTargetTypesFromMethodCall()
-        if (!ObjJPluginSettings.validateCallTarget() || !classConstraints.isEmpty()) {
+        classConstraints = methodCall.getPossibleCallTargetTypesFromMethodCall()
+        if (!classConstraints.isEmpty()) {
+            LOGGER.log(Level.INFO, "Found: " + classConstraints.size +" target types. List["+classConstraints.joinToString(", ")+"];")
             return classConstraints
         }
         classConstraints = methodCall.callTarget.getPossibleCallTargetTypes()

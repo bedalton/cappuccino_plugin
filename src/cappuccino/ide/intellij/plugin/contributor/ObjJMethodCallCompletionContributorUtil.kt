@@ -17,6 +17,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil.addSelectorLookupElement
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 
 object ObjJMethodCallCompletionContributorUtil {
@@ -83,7 +84,7 @@ object ObjJMethodCallCompletionContributorUtil {
         //Check to ensure this element is part of a method
         if (selectorParentMethodCall == null) {
             //LOGGER.log(Level.INFO, "PsiElement is not a selector in a method call element");
-            return emptyList()
+            return listOf()
         }
 
         // If element is selector or direct parent is a selector,
@@ -158,9 +159,12 @@ object ObjJMethodCallCompletionContributorUtil {
             }
             return
         }
-        LOGGER.log(Level.INFO, "Searching for selector completions. Found <" + resolveResult.naturalResult.size + "> natural results and <" + resolveResult.otherResult.size + "> general results, for selector: <" + selectorString + ">")
-        addSelectorLookupElementsFromSelectorList(result, ObjJResolveableElementUtil.onlyResolveableElements(resolveResult.naturalResult, file), selectorIndex, ObjJCompletionContributor.TARGETTED_METHOD_SUGGESTION_PRIORITY)
-        addSelectorLookupElementsFromSelectorList(result, ObjJResolveableElementUtil.onlyResolveableElements(resolveResult.otherResult, file), selectorIndex, ObjJCompletionContributor.GENERIC_METHOD_SUGGESTION_PRIORITY)
+        LOGGER.log(Level.INFO, "Searching for selector completions. Found <" + resolveResult.naturalResult.size + "> natural results and <" + resolveResult.otherResult.size + "> general results, for selector: <" + selectorString + ">; Possible call target types: [" + resolveResult.possibleContainingClassNames.joinToString(", ")+"]")
+        val naturalResult = ObjJResolveableElementUtil.onlyResolveableElements(resolveResult.naturalResult, file)
+        addSelectorLookupElementsFromSelectorList(result, naturalResult, selectorIndex, ObjJCompletionContributor.TARGETTED_METHOD_SUGGESTION_PRIORITY)
+        if (resolveResult.possibleContainingClassNames.isEmpty() || resolveResult.possibleContainingClassNames.contains(ObjJClassType.UNDETERMINED)) {
+            addSelectorLookupElementsFromSelectorList(result, ObjJResolveableElementUtil.onlyResolveableElements(resolveResult.otherResult, file), selectorIndex, ObjJCompletionContributor.GENERIC_METHOD_SUGGESTION_PRIORITY)
+        }
     }
 
     /**

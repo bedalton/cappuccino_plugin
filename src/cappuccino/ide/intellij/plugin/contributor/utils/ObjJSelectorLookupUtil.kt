@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -17,6 +20,7 @@ import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import com.intellij.codeInsight.lookup.LookupElementRenderer
 
 object ObjJSelectorLookupUtil {
 
@@ -94,7 +98,11 @@ object ObjJSelectorLookupUtil {
 
     @JvmOverloads
     fun addSelectorLookupElement(result: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, icon: Icon? = null) {
-        result.addElement(PrioritizedLookupElement.withPriority(createSelectorLookupElement(suggestedText, className, tailText, addSuffix, icon), priority))
+        val selectorLookupElement = when (priority) {
+            TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY, TARGETTED_METHOD_SUGGESTION_PRIORITY -> createSelectorLookupElement(suggestedText, className, tailText, addSuffix, icon).bold()
+            else -> createSelectorLookupElement(suggestedText, className, tailText, addSuffix, icon)
+        }
+        result.addElement(PrioritizedLookupElement.withPriority(selectorLookupElement, priority))
     }
 
     fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, icon: Icon?): LookupElementBuilder {

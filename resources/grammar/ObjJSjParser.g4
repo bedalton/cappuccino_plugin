@@ -108,14 +108,14 @@ classMethodDecs
 	;
 
 classMethodDefinition
-	: 'new' 'objj_method''(''sel_getUid''('selector=StringLiteral')' ',' 'function' Identifier'('self=Identifier',' cmd=Identifier (',' varName)*')'
+	: 'new' 'objj_method''(''sel_getUid''('selector=StringLiteral')' ',' 'function' Identifier'('self=Identifier',' cmd=Identifier (',' variableName)*')'
       '{'
        	functionBody
       '}'
 
       ',' '[' returnType=StringLiteral (',' paramType)* ']' ')'
 	;
-varName
+variableName
 	: Identifier
 	;
 iVars

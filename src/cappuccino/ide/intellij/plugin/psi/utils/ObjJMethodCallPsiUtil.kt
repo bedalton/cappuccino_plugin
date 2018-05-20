@@ -36,7 +36,7 @@ fun getSelectorStrings(methodCall:ObjJMethodCall): List<String> {
 fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector> {
     val singleSelector = methodCall.selector
     if (singleSelector != null) {
-        return listOf(singleSelector)
+        return mutableListOf(singleSelector)
     }
     val out = ArrayList<ObjJSelector>()
     for (qualifiedSelector in methodCall.qualifiedMethodCallSelectorList) {
