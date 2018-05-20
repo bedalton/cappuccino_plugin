@@ -41,7 +41,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_AT_OPTIONAL ||
                 tokenType == ObjJTypes.ObjJ_AT_REQUIRED ||
                 tokenType == ObjJTypes.ObjJ_AT_INTERFACE ||
-                tokenType == ObjJTypes.ObjJ_AT_TYPE_DEF) {
+                tokenType == ObjJTypes.ObjJ_AT_TYPE_DEF ||
+                tokenType == ObjJTypes.ObjJ_AT_FRAGMENT
+        ) {
             attrKey = AT_STATEMENT
         } else if (tokenType == ObjJTypes.ObjJ_BREAK ||
                 tokenType == ObjJTypes.ObjJ_CASE ||
@@ -105,7 +107,8 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_PP_DEFINED ||
                 tokenType == ObjJTypes.ObjJ_PP_ERROR ||
                 tokenType == ObjJTypes.ObjJ_PP_WARNING ||
-                tokenType == ObjJTypes.ObjJ_PP_INCLUDE) {
+                tokenType == ObjJTypes.ObjJ_PP_INCLUDE ||
+                tokenType == ObjJTypes.ObjJ_PP_FRAGMENT) {
             attrKey = PRE_PROCESSOR
         } else if (tokenType == ObjJTypes.ObjJ_IMPORT_FRAMEWORK_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL ||
