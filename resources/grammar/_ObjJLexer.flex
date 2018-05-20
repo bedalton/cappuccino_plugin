@@ -72,8 +72,15 @@ BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 REGULAR_EXPRESSION_LITERAL = \/ [^\r\n\u2028\u2029\*\/] (([^\r\n\u2028\u2029/\[]| "\\" [^\r\n\u2028\u2029]{1})+ | \[ (\\? [^\r\n\u2028\u2029\]/])* \] )* \/ [a-zA-Z]*
 ID=[_a-zA-Z][_a-zA-Z0-9]*
-%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT
+%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT AT_FRAGMENT PREPROC_FRAGMENT
 %%
+
+<AT_FRAGMENT> {
+	'[^ #@]+'								{ yybegin(YYINITIAL); return ObjJ_AT_FRAGMENT; }
+}
+<PREPROC_FRAGMENT> {
+	'[^ @#]+'								{ yybegin(YYINITIAL); return ObjJ_PP_FRAGMENT; }
+}
 
 <PRAGMA> {
 	'mark'								{ if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
@@ -291,4 +298,6 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 
 }
 
+"#"						 { canRegex(false); yybegin(PREPROC_FRAGMENT); }
+"@"						 { canRegex(false); yybegin(AT_FRAGMENT); }
 [^] { return BAD_CHARACTER; }

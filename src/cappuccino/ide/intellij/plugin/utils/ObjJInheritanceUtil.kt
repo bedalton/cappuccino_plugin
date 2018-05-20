@@ -49,7 +49,11 @@ object ObjJInheritanceUtil {
         return superClasses
     }
 
-    fun getAllInheritedClasses(className: String, project: Project): MutableList<String> {
+    fun getAllInheritedClassesStrict(className: String, project: Project): MutableList<String> {
+        return getAllInheritedClasses(className, project, false)
+    }
+
+    fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableList<String> {
         val inheritedClasses = ArrayList<String>()
         getAllInheritedClasses(inheritedClasses, className, project)
         return inheritedClasses
@@ -69,7 +73,7 @@ object ObjJInheritanceUtil {
 
     fun isInstanceVariableInClass(variableName:String, className:String, project:Project) : Boolean {
         for (variable in ObjJInstanceVariablesByClassIndex.instance[className, project]) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Does Variable ${variable.text} == $variableName?")
+            //Logger.getAnonymousLogger().log(Level.INFO, "Does Variable ${variable.text} == $variableName?")
             if (variable.text == variableName) {
                 return true
             }
@@ -134,7 +138,11 @@ object ObjJInheritanceUtil {
         return false
     }
 
-    fun getAllInheritedClasses(classNames: MutableList<String>, className: String, project: Project) {
+    fun getAllInheritedClassesStrict(classNames: MutableList<String>, className: String, project: Project) {
+        return getAllInheritedClasses(classNames, className, project, false)
+    }
+
+    fun getAllInheritedClasses(classNames: MutableList<String>, className: String, project: Project, withProtocols:Boolean = true) {
         if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
@@ -144,7 +152,7 @@ object ObjJInheritanceUtil {
             classNames.add(UNDETERMINED)
             return
         }
-        val classesDeclarations = ObjJClassDeclarationsIndex.instance.get(className, project)
+        val classesDeclarations = ObjJClassDeclarationsIndex.instance[className, project]
         if (classesDeclarations.isEmpty()) {
             return
         }
@@ -152,7 +160,9 @@ object ObjJInheritanceUtil {
             classNames.add(className)
         }
         for (classDeclaration in classesDeclarations) {
-            addProtocols(classDeclaration, classNames)
+            if (withProtocols) {
+                addProtocols(classDeclaration, classNames)
+            }
             if (classDeclaration is ObjJImplementationDeclaration) {
                 val superClassName = classDeclaration.superClassName
                 if (superClassName == null || classNames.contains(superClassName)) {

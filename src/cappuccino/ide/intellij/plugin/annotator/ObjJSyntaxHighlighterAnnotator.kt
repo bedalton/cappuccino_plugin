@@ -4,9 +4,8 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
@@ -22,6 +21,8 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             is ObjJFormalVariableType -> annotateFormalVariableType(psiElement, annotationHolder)
             is ObjJClassName -> highlightClassName(psiElement, annotationHolder)
             is ObjJVariableName -> highlightVariableName(psiElement, annotationHolder)
+            is ObjJFunctionCall -> highlightFunctionName(psiElement, annotationHolder)
+            is ObjJFunctionName -> if (psiElement.hasParentOfType(ObjJFunctionCall::class.java)) colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
             else -> when (psiElement.tokenType()) {
                 ObjJTypes.ObjJ_VAR_TYPE_BOOL,
                 ObjJTypes.ObjJ_VAR_TYPE_INT,
@@ -68,9 +69,22 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             }
             val firstIn = parent.variableNameList[0].text
             if (index == 0 || (index == 1 && (firstIn == "self" || firstIn == "super"))) {
-                if (ObjJInheritanceUtil.isInstanceVariableInClasses(variableName, variableNameElement.containingClassName, variableNameElement.project)) {
-                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VAR)
+                /*if (ObjJInheritanceUtil.isInstanceVariableInClasses(variableName, variableNameElement.containingClassName, variableNameElement.project)) {
+                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE)
                     return
+                }*/
+                val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve()
+                if (referencedVariable equals variableNameElement) {
+                    return
+                }
+                if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE)
+                    return
+                } else if (referencedVariable.hasParentOfType(ObjJMethodDeclarationSelector::class.java) || referencedVariable.hasParentOfType(ObjJFormalParameterArg::class.java)) {
+                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
+                    return
+                } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
+                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE)
                 }
             }
 
@@ -101,6 +115,11 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         colorize(type, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
     }
 
+    private fun highlightFunctionName(functionCall: ObjJFunctionCall, annotationHolder: AnnotationHolder) {
+        val functionName = functionCall.qualifiedReference?.getLastVar() ?: return
+        colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
+    }
+
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
         annotationHolder.createInfoAnnotation(psiElement, "").enforcedTextAttributes = TextAttributes.ERASE_MARKER
     }
@@ -108,4 +127,5 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolder, attribute:TextAttributesKey) {
         annotationHolder.createInfoAnnotation(psiElement, "").textAttributes = attribute
     }
+
 }
