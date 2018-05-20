@@ -14,6 +14,8 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.addProtocols
 
 import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
 
 object ObjJInheritanceUtil {
 
@@ -54,11 +56,22 @@ object ObjJInheritanceUtil {
     }
 
     fun isInstanceVariableInClasses(variableName:String, className:String, project:Project) : Boolean {
+        if (isInstanceVariableInClass(variableName, className, project)) {
+            return true
+        }
         for (classNameInLoop in getAllInheritedClasses(className, project)) {
-            for (variable in ObjJInstanceVariablesByClassIndex.instance[classNameInLoop, project]) {
-                if (variable.text == variableName) {
-                    return true
-                }
+            if (isInstanceVariableInClass(variableName, classNameInLoop, project)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun isInstanceVariableInClass(variableName:String, className:String, project:Project) : Boolean {
+        for (variable in ObjJInstanceVariablesByClassIndex.instance[className, project]) {
+            Logger.getAnonymousLogger().log(Level.INFO, "Does Variable ${variable.text} == $variableName?")
+            if (variable.text == variableName) {
+                return true
             }
         }
         return false
