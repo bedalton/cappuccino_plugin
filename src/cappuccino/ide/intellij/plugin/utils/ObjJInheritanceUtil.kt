@@ -5,9 +5,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -53,6 +51,17 @@ object ObjJInheritanceUtil {
         val inheritedClasses = ArrayList<String>()
         getAllInheritedClasses(inheritedClasses, className, project)
         return inheritedClasses
+    }
+
+    fun isInstanceVariableInClasses(variableName:String, className:String, project:Project) : Boolean {
+        for (classNameInLoop in getAllInheritedClasses(className, project)) {
+            for (variable in ObjJInstanceVariablesByClassIndex.instance[classNameInLoop, project]) {
+                if (variable.text == variableName) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
 

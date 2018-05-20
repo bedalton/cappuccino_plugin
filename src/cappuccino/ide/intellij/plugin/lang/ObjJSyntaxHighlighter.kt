@@ -9,6 +9,9 @@ import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
+import com.intellij.openapi.editor.markup.EffectType
+import java.awt.Color
+import java.awt.Font
 
 class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
 
@@ -75,7 +78,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_VOID ||
                 tokenType == ObjJTypes.ObjJ_UNDEFINED) {
             attrKey = KEYWORD
-        } else if (tokenType == ObjJTypes.ObjJ_VAR_TYPE_BOOL ||
+        } /*else if (tokenType == ObjJTypes.ObjJ_VAR_TYPE_BOOL ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_DOUBLE ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_FLOAT ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_IBACTION ||
@@ -90,7 +93,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_INT) {
             attrKey = KEYWORD
-        } else if (tokenType == ObjJTypes.ObjJ_PP_DEFINE ||
+        } */ else if (tokenType == ObjJTypes.ObjJ_PP_DEFINE ||
                 tokenType == ObjJTypes.ObjJ_PP_UNDEF ||
                 tokenType == ObjJTypes.ObjJ_PP_IF_DEF ||
                 tokenType == ObjJTypes.ObjJ_PP_IF_NDEF ||
@@ -125,14 +128,107 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 
     companion object {
-        private val EMPTY_KEYS = arrayOf<TextAttributesKey>()
-        val ID = createTextAttributesKey("ObjectiveJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
-        val AT_STATEMENT = createTextAttributesKey("ObjectiveJ_AT_STATEMENT", DefaultLanguageHighlighterColors.KEYWORD)
-        val PRE_PROCESSOR = createTextAttributesKey("ObjectiveJ_PRE_PROC", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE)
-        val KEYWORD = createTextAttributesKey("ObjectiveJ_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-        val STRING = createTextAttributesKey("ObjectiveJ_STRING", DefaultLanguageHighlighterColors.STRING)
-        val LINE_COMMENT = createTextAttributesKey("ObjectiveJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val BLOCK_COMMENT = createTextAttributesKey("ObjectiveJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
-        val SECONDARY_LITERAL = createTextAttributesKey("ObjectiveJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
+        private val EMPTY_KEYS:Array<TextAttributesKey> = arrayOf()
+        val ID:TextAttributesKey = createTextAttributesKey("ObjectiveJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
+        val AT_STATEMENT:TextAttributesKey = createTextAttributesKey("ObjectiveJ_AT_STATEMENT", DefaultLanguageHighlighterColors.KEYWORD)
+        val PRE_PROCESSOR:TextAttributesKey = createTextAttributesKey("ObjectiveJ_PRE_PROC", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE)
+        val KEYWORD:TextAttributesKey = createTextAttributesKey("ObjectiveJ_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
+        val STRING:TextAttributesKey = createTextAttributesKey("ObjectiveJ_STRING", DefaultLanguageHighlighterColors.STRING)
+        val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("ObjectiveJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+        val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjectiveJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
+        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjectiveJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
+        val VARIABLE_TYPE:TextAttributesKey = TextAttributesKeyBuilder("ObjectiveJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.CLASS_NAME)
+                .setForegroundColor(Color(44, 124, 224))
+                .setFontType(Font.BOLD)
+                .build()
+        val INSTANCE_VAR:TextAttributesKey = TextAttributesKeyBuilder("ObjectiveJ_INSTANCE_VARS")
+                .setForegroundColor(Color(113, 41, 221))
+                .build()
+
     }
+}
+
+class TextAttributesKeyBuilder (private val key:String, private val base:TextAttributesKey? = null){
+
+    private var _foregroundColor:Color? = base?.defaultAttributes?.foregroundColor
+    private var _backgroundColor:Color? = base?.defaultAttributes?.backgroundColor
+    private var _errorStripeColor:Color? = base?.defaultAttributes?.errorStripeColor
+    private var _effectColor:Color? = base?.defaultAttributes?.effectColor
+    private var _effectType : EffectType? = base?.defaultAttributes?.effectType
+    private var _fontType : Int? = base?.defaultAttributes?.fontType
+
+
+    fun setForegroundColor(color:Color?) : TextAttributesKeyBuilder {
+        _foregroundColor = color
+        return this
+    }
+
+    fun setBackgroundColor(color:Color?) : TextAttributesKeyBuilder {
+        _backgroundColor = color
+        return this
+    }
+    fun setEffectColor(color:Color?) : TextAttributesKeyBuilder {
+        _effectColor = color
+        return this
+    }
+
+    fun setErrorStripeColor(color:Color?) : TextAttributesKeyBuilder {
+        _errorStripeColor = color
+        return this;
+    }
+
+    fun setEffectType(type:EffectType?) : TextAttributesKeyBuilder {
+        _effectType = type
+        return this
+    }
+
+    fun setFontType(type:Int?) : TextAttributesKeyBuilder {
+        _fontType = type
+        return this
+    }
+
+    fun build() : TextAttributesKey {
+        val out = if (base != null) {
+            createTextAttributesKey(key, base)
+        } else {
+            createTextAttributesKey(key)
+        }
+        val defaultAttributes = out.defaultAttributes
+        if (_foregroundColor != null) {
+            defaultAttributes.foregroundColor = _foregroundColor
+        }
+        if (_backgroundColor != null) {
+            defaultAttributes.backgroundColor = _backgroundColor
+        }
+        if (_errorStripeColor != null) {
+            defaultAttributes.errorStripeColor = _errorStripeColor
+        }
+        if (_effectColor != null) {
+            defaultAttributes.effectColor = _effectColor
+        }
+        if (_effectType != null) {
+            defaultAttributes.effectType = _effectType
+        }
+        val fontType:Int? = _fontType
+        if (fontType != null) {
+            defaultAttributes.fontType = fontType.toInt()
+        }
+        return out
+    }
+
+    companion object {
+        fun toBuilder(key:String, baseBuilder:TextAttributesKeyBuilder) : TextAttributesKeyBuilder {
+            val newBuilder = TextAttributesKeyBuilder(key, baseBuilder.base)
+            newBuilder.setForegroundColor(baseBuilder._foregroundColor)
+            newBuilder.setBackgroundColor(baseBuilder._backgroundColor)
+            newBuilder.setErrorStripeColor(baseBuilder._errorStripeColor)
+            newBuilder.setEffectColor(baseBuilder._effectColor)
+            newBuilder.setEffectType(baseBuilder._effectType)
+            newBuilder.setFontType(baseBuilder._fontType)
+            return newBuilder
+        }
+    }
+
+
+
 }

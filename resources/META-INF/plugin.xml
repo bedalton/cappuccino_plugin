@@ -52,6 +52,7 @@
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
+    <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJSyntaxHighlighterAnnotator" />
 
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
