@@ -78,8 +78,8 @@ object ObjJSelectorReferenceResolveUtil {
         }
     }
 
-    private fun resolveSelectorReferenceRaw(selectors: List<ObjJSelector>, selectorIndex: Int): RawResult? {
-        var selectorIndex = selectorIndex
+    private fun resolveSelectorReferenceRaw(selectors: List<ObjJSelector>, selectorIndexIn: Int): RawResult? {
+        var selectorIndex = selectorIndexIn
         //Have to loop over elements as some selectors in list may have been virtually created
         var parent: ObjJMethodCall? = null
         if (selectors.size < 1) {
@@ -122,12 +122,12 @@ object ObjJSelectorReferenceResolveUtil {
         }
         val classConstraints = if (parent != null) getClassConstraints(parent) else emptyList()
         val methodHeaders: Map<String, List<ObjJMethodHeaderDeclaration<*>>>
-        if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
+        methodHeaders = if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
             val pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)") + "(.*)"
-            methodHeaders = ObjJUnifiedMethodIndex.instance.getByPatternFuzzy(pattern, baseSelector!!.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project)
+            ObjJUnifiedMethodIndex.instance.getByPatternFuzzy(pattern, baseSelector!!.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project)
             //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         } else {
-            methodHeaders = ObjJUnifiedMethodIndex.instance.getByPattern(selector, null, project)
+            ObjJUnifiedMethodIndex.instance.getByPattern(selector, null, project)
             //LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         }
         //List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodFragmentIndex.getInstance().get(selectorFragment, element.getProject());
