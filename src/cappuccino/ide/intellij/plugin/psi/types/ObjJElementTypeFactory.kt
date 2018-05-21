@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.types
 
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERTY
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_DECLARATION
@@ -16,6 +17,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_HEADER
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PREPROCESSOR_FUNCTION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROTOCOL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.SELECTOR_LITERAL
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.TYPE_DEF
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VAR_TYPE_ID
 
@@ -39,6 +41,7 @@ class ObjJElementTypeFactory {
                 "ObjJ_PREPROCESSOR_DEFINE_FUNCTION" -> return PREPROCESSOR_FUNCTION
                 "ObjJ_PROTOCOL_DECLARATION" -> return PROTOCOL
                 "ObjJ_SELECTOR_LITERAL" -> return SELECTOR_LITERAL
+                "ObjJ_TYPE_DEF" -> return TYPE_DEF
                 "ObjJ_VAR_TYPE_ID" -> return VAR_TYPE_ID
                 "ObjJ_VARIABLE_NAME" -> return VARIABLE_NAME
                 else -> throw RuntimeException("Failed to find element type in factory for type <$name>")

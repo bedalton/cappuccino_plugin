@@ -49,6 +49,9 @@ class ObjJAnnotator : Annotator {
             if (psiElement is ObjJNeedsSemiColon) {
                 ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons(psiElement, annotationHolder)
             }
+            if (psiElement is ObjJFragment) {
+                annotationHolder.createErrorAnnotation(psiElement, "invalid directive")
+            }
         } catch (ignored: IndexNotReadyRuntimeException) {
         }
 

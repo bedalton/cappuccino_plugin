@@ -27,10 +27,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.ObjJElementUtils
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubElementType
 import com.intellij.psi.util.PsiTreeUtil
-
-import java.util.Arrays
 
 open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBasedPsiElementBase<T>, ObjJCompositeElement, ObjJStubBasedElement<T> {
 
@@ -49,7 +46,7 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
     constructor(node: ASTNode) : super(node) {}
 
     override fun getLanguage(): Language {
-        return ObjJLanguage.INSTANCE
+        return ObjJLanguage.instance
     }
 
     override fun toString(): String {

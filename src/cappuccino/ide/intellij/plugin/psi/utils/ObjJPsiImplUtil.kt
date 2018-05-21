@@ -149,7 +149,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getClassNameString(typedef:ObjJTypeDef) : String {
-        return typedef.className.text
+        return typedef.className?.text ?: ""
     }
 
     @JvmStatic

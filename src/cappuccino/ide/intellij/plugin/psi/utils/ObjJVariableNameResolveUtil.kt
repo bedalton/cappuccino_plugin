@@ -4,6 +4,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 object ObjJVariableNameResolveUtil {
 
@@ -11,12 +12,6 @@ object ObjJVariableNameResolveUtil {
 
     fun getVariableDeclarationElement(variableNameElement: ObjJVariableName, mustBeLast: Boolean): PsiElement? {
         val variableNameString = variableNameElement.text
-        if (variableNameElement.parent is ObjJPropertyAssignment) {
-            return null
-        }
-        if (variableNameElement.getParentOfType( ObjJMethodHeader::class.java) != null) {
-            return null
-        }
 
         if (variableNameString == "class") {
             return null
@@ -26,9 +21,33 @@ object ObjJVariableNameResolveUtil {
             return null
         }
 
+        if (variableNameString == "self") {
+            return variableNameElement.containingClass?.getClassName()
+        }
+        if (variableNameString == "super") {
+            return variableNameElement.getContainingSuperClass()
+        }
         val className = getClassNameIfVariableNameIsStaticReference(variableNameElement)
-        return className
-                ?: ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) }
+        if (className != null) {
+            return className;
+        }
+
+        if (variableNameElement.parent is ObjJPropertyAssignment) {
+            return variableNameElement
+        }
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType( ObjJMethodHeaderDeclaration::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJFormalParameterArg::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+            return variableNameElement
+        }
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) }
 
     }
 

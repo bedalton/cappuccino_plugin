@@ -4,6 +4,7 @@ import com.intellij.lang.Language
 
 class ObjJLanguage private constructor() : Language("ObjectiveJ") {
     companion object {
-        val INSTANCE = ObjJLanguage()
+        @JvmStatic
+        val instance = ObjJLanguage()
     }
 }

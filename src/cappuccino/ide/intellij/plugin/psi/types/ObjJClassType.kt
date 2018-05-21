@@ -93,7 +93,7 @@ private constructor(//Class name as string
         val SELECTOR = "selector"
         val FUNCTION = "function"
         val REGEX = "regex"
-        val UNDETERMINED = "{UNDETERMINED}"
+        val UNDETERMINED = "id"
         val CPOBJECT = "CPObject"
         val JSOBJECT = "JSObject"
         val CLASS = "Class"

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NonNls
 import java.lang.reflect.Constructor
 
 
-abstract class ObjJStubElementType<StubT : StubElement<*>, PsiT : ObjJStubBasedElement<*>>(@NonNls debugName: String, psiClass: Class<PsiT>) : IStubElementType<StubT, PsiT>(debugName, ObjJLanguage.INSTANCE) {
+abstract class ObjJStubElementType<StubT : StubElement<*>, PsiT : ObjJStubBasedElement<*>>(@NonNls debugName: String, psiClass: Class<PsiT>) : IStubElementType<StubT, PsiT>(debugName, ObjJLanguage.instance) {
 
     private val byNodeConstructor: Constructor<PsiT>
 
