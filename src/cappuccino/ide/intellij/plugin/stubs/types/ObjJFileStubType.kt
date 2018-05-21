@@ -13,7 +13,7 @@ import com.intellij.psi.stubs.*
 import java.io.IOException
 import java.util.ArrayList
 
-class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.INSTANCE) {
+class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.instance) {
 
     override fun getBuilder(): StubBuilder {
         return ObjJFileStubBuilder()

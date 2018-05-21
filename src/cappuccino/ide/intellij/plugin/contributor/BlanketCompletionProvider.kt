@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
@@ -11,6 +12,7 @@ import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInser
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
@@ -116,42 +118,34 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             LOGGER.log(Level.INFO, "Completion provider for element in scope: "+element.getContainingScope())
             results = mutableListOf()
         }
-
-        results.addAll(getClassNameCompletions(element))
-
+        getClassNameCompletions(resultSet, element)
         if (results.isEmpty()) {
             resultSet.stopHere()
         }
         addCompletionElementsSimple(resultSet, results)
     }
 
-    private fun getClassNameCompletions(element: PsiElement?): List<String> {
+    private fun getClassNameCompletions(resultSet: CompletionResultSet, element: PsiElement?) {
         if (element == null) {
-            return EMPTY_STRING_ARRAY
+            return
         }
-        var doSearch = false
-        val arrayLiteral = element.getParentOfType( ObjJArrayLiteral::class.java)
-        if (arrayLiteral != null && arrayLiteral.atOpenbracket == null && arrayLiteral.exprList.size == 1) {
-            doSearch = true
-        }
-        var prev = element.getPreviousNonEmptyNode(true)
-        if (prev != null && prev.text == "<") {
-            prev = prev.psi.getPreviousNonEmptyNode(true)
-            if (prev != null && prev.text == "id") {
-                doSearch = true
+        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+            ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
         }
-        val callTarget = element.getParentOfType( ObjJCallTarget::class.java)
-        if (callTarget != null) {
-            doSearch = true
+        if (element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+            PRIMITIVE_VAR_NAMES.forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
+            }
         }
-        if (!doSearch) {
-            return EMPTY_STRING_ARRAY
+        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+            ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).forEach{
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
+            }
+            resultSet.addElement(LookupElementBuilder.create("self").withInsertHandler(ObjJClassNameInsertHandler.instance))
+            resultSet.addElement(LookupElementBuilder.create("super").withInsertHandler(ObjJClassNameInsertHandler.instance))
         }
-        val results = ObjJClassDeclarationsIndex.instance.getKeysByPattern(element.text.replace(CARET_INDICATOR, "(.*)"), element.project) as MutableList
-        results.addAll(ArrayUtils.search(PRIMITIVE_VAR_NAMES, element.text.substring(0, element.text.indexOf(CARET_INDICATOR))))
-        results.addAll(ArrayUtils.search(Arrays.asList("self", "super"), element.text.substring(0, element.text.indexOf(CARET_INDICATOR))))
-        return results
     }
 
     private fun getInClassKeywords(element: PsiElement?): List<String> {

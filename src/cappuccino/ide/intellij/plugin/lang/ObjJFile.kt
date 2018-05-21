@@ -11,7 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
 
 import javax.swing.*
 
-class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJLanguage.INSTANCE), ObjJCompositeElement {
+class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJLanguage.instance), ObjJCompositeElement {
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>
         get() = PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJClassDeclarationElement::class.java)

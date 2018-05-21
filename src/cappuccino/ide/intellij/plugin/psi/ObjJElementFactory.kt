@@ -4,12 +4,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.annotator.IgnoreUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.getChildOfType
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
@@ -69,7 +67,7 @@ object ObjJElementFactory {
     }
 
     private fun createFileFromText(project: Project, text: String): ObjJFile {
-        return PsiFileFactory.getInstance(project).createFileFromText("dummy.j", ObjJLanguage.INSTANCE, text) as ObjJFile
+        return PsiFileFactory.getInstance(project).createFileFromText("dummy.j", ObjJLanguage.instance, text) as ObjJFile
     }
 
     private fun createMethodDeclaration(project: Project, methodHeader: ObjJMethodHeader): ObjJMethodDeclaration {
