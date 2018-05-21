@@ -4,7 +4,7 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 
 import javax.swing.*
 
-class ObjJFileType private constructor() : LanguageFileType(ObjJLanguage.INSTANCE) {
+class ObjJFileType private constructor() : LanguageFileType(ObjJLanguage.instance) {
 
     override fun getName(): String {
         return "Objective-J Script"
