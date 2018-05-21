@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs
 
 object ObjJStubVersions {
-    private val MINOR_VERSION = 13
-    val SOURCE_STUB_VERSION = 1 + MINOR_VERSION
+    private const val MINOR_VERSION = 16
+    const val SOURCE_STUB_VERSION = 1 + MINOR_VERSION
 }

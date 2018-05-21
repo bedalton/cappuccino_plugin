@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.contributor
+package cappuccino.ide.intellij.plugin.formatting
 
 import com.intellij.codeInsight.editorActions.QuoteHandler
 import com.intellij.openapi.editor.Document
@@ -53,10 +53,8 @@ class ObjJQuoteHandler @JvmOverloads constructor(protected val myLiteralTokenSet
         return false
     }
 
-    protected fun isNonClosedLiteral(iterator: HighlighterIterator, chars: CharSequence): Boolean {
-        return if (iterator.start >= iterator.end - 1 || chars[iterator.end - 1] != '\"' && chars[iterator.end - 1] != '\'') {
-            true
-        } else false
+    private fun isNonClosedLiteral(iterator: HighlighterIterator, chars: CharSequence): Boolean {
+        return iterator.start >= iterator.end - 1 || (chars[iterator.end - 1] != '\"' && chars[iterator.end - 1] != '\'')
     }
 
     override fun isInsideLiteral(iterator: HighlighterIterator): Boolean {

@@ -16,7 +16,7 @@ class ObjJCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC,
                 PlatformPatterns
                         .psiElement()
-                        .withLanguage(ObjJLanguage.INSTANCE),
+                        .withLanguage(ObjJLanguage.instance),
                 BlanketCompletionProvider())
         //LOGGER.log(Level.INFO, "Creating completion contributor");
     }

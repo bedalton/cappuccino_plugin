@@ -9,6 +9,9 @@ import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
+import com.intellij.openapi.editor.markup.EffectType
+import java.awt.Color
+import java.awt.Font
 
 class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
 
@@ -38,7 +41,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_AT_OPTIONAL ||
                 tokenType == ObjJTypes.ObjJ_AT_REQUIRED ||
                 tokenType == ObjJTypes.ObjJ_AT_INTERFACE ||
-                tokenType == ObjJTypes.ObjJ_AT_TYPE_DEF) {
+                tokenType == ObjJTypes.ObjJ_AT_TYPE_DEF ||
+                tokenType == ObjJTypes.ObjJ_AT_FRAGMENT
+        ) {
             attrKey = AT_STATEMENT
         } else if (tokenType == ObjJTypes.ObjJ_BREAK ||
                 tokenType == ObjJTypes.ObjJ_CASE ||
@@ -72,7 +77,6 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_MARK ||
                 tokenType == ObjJTypes.ObjJ_NIL ||
                 tokenType == ObjJTypes.ObjJ_NULL_LITERAL ||
-                tokenType == ObjJTypes.ObjJ_VOID ||
                 tokenType == ObjJTypes.ObjJ_UNDEFINED) {
             attrKey = KEYWORD
         } else if (tokenType == ObjJTypes.ObjJ_VAR_TYPE_BOOL ||
@@ -88,8 +92,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_SEL ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG ||
                 tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_INT) {
-            attrKey = KEYWORD
+                tokenType == ObjJTypes.ObjJ_VAR_TYPE_INT ||
+                tokenType == ObjJTypes.ObjJ_VOID) {
+            attrKey = VARIABLE_TYPE
         } else if (tokenType == ObjJTypes.ObjJ_PP_DEFINE ||
                 tokenType == ObjJTypes.ObjJ_PP_UNDEF ||
                 tokenType == ObjJTypes.ObjJ_PP_IF_DEF ||
@@ -102,13 +107,15 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_PP_DEFINED ||
                 tokenType == ObjJTypes.ObjJ_PP_ERROR ||
                 tokenType == ObjJTypes.ObjJ_PP_WARNING ||
-                tokenType == ObjJTypes.ObjJ_PP_INCLUDE) {
+                tokenType == ObjJTypes.ObjJ_PP_INCLUDE ||
+                tokenType == ObjJTypes.ObjJ_PP_FRAGMENT) {
             attrKey = PRE_PROCESSOR
         } else if (tokenType == ObjJTypes.ObjJ_IMPORT_FRAMEWORK_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUO ||
                 tokenType == ObjJTypes.ObjJ_DOUBLE_QUO ||
+                tokenType == ObjJTypes.ObjJ_SELECTOR_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_QUO_TEXT) {
             attrKey = STRING
         } else if (tokenType == ObjJTypes.ObjJ_SINGLE_LINE_COMMENT) {
@@ -125,14 +132,20 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 
     companion object {
-        private val EMPTY_KEYS = arrayOf<TextAttributesKey>()
-        val ID = createTextAttributesKey("ObjectiveJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
-        val AT_STATEMENT = createTextAttributesKey("ObjectiveJ_AT_STATEMENT", DefaultLanguageHighlighterColors.KEYWORD)
-        val PRE_PROCESSOR = createTextAttributesKey("ObjectiveJ_PRE_PROC", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE)
-        val KEYWORD = createTextAttributesKey("ObjectiveJ_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-        val STRING = createTextAttributesKey("ObjectiveJ_STRING", DefaultLanguageHighlighterColors.STRING)
-        val LINE_COMMENT = createTextAttributesKey("ObjectiveJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val BLOCK_COMMENT = createTextAttributesKey("ObjectiveJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
-        val SECONDARY_LITERAL = createTextAttributesKey("ObjectiveJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
+        private val EMPTY_KEYS:Array<TextAttributesKey> = arrayOf()
+        val ID:TextAttributesKey = createTextAttributesKey("ObjJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
+        val AT_STATEMENT:TextAttributesKey = createTextAttributesKey("ObjJ_AT_STATEMENT", DefaultLanguageHighlighterColors.KEYWORD)
+        val PRE_PROCESSOR:TextAttributesKey = createTextAttributesKey("ObjJ_PRE_PROC", DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE)
+        val KEYWORD:TextAttributesKey = createTextAttributesKey("ObjJ_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
+        val STRING:TextAttributesKey = createTextAttributesKey("ObjJ_STRING", DefaultLanguageHighlighterColors.STRING)
+        val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+        val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
+        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
+        val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
+        val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
+        val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+
     }
 }

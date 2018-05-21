@@ -12,7 +12,7 @@
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -81,6 +81,7 @@
 
 
 		// At Statements
+		AT_FRAGMENT =						'@fragment'
 		AT_IMPORT  = 						'@import'
 		AT_ACCESSORS  = 					'@accessors'
 		AT_END  = 							'@end'
@@ -105,6 +106,7 @@
 		UNDEFINED=							'undefined'
 
 		//Preprocessor
+		PP_FRAGMENT	=						'#fragment'
 		PP_DEFINE = 						'#define'
 		PP_UNDEF = 							'#undef'
 		PP_IF_DEF = 						'#ifdef'
@@ -230,6 +232,7 @@ private sourceElement
 	|	includeFile
 	|	includeFramework
 	| 	emptyStatement
+	|	fragment eos?
 	;
 
 errorSequence
@@ -973,7 +976,7 @@ categoryName
 inheritedProtocolList
 	::= '<' protocolClassNamesList '>'
 	{
-		pin=2
+		pin=1
 		//recoverWhile = recoverInheritedAt
 	}
 	;
@@ -981,12 +984,12 @@ inheritedProtocolList
 private protocolClassNamesList
 	::= className (',' className)*
 	{
-		//recoverWhile=recover_protocolClassNamesList
+		recoverWhile=recover_protocolClassNamesList
 	}
 	;
 
 private recover_protocolClassNamesList
-	::= !('>'|'{')
+	::= !('>'|'{'|'@end'|atKeywords|ppKeywords)
 	;
 
 private recover_implementationHeader
@@ -1181,7 +1184,7 @@ protocolDeclaration
 private protocolBody
 	::= <<enterMode "inProtocol" >> (preprocessorIfStatement|protocolSection)* <<exitMode "inProtocol" >>
 	{
-		//recoverWhile=recover_classDec
+		recoverWhile=recover_classDec
 	}
 	;
 
@@ -1190,7 +1193,7 @@ private recover_classDec
 	;
 
 private possibleSourceElementStart
-	::= '@end'|'@implementation'|'@protocol'|'@import'|'@class'| '@global'|'#define'|'#include'|'#pragma'|'#error'|'#warning'
+	::= atKeywords|ppKeywords
 	;
 
 private protocolHeader
@@ -1764,6 +1767,7 @@ className
 	::= ID
 	{
 		methods = [getReference getReferences]
+		name="class name"
 	}
 	;
 
@@ -1819,4 +1823,16 @@ private eos
 	|	<<notLineTerminator>> ';'
 	|	'}'
     ;
+
+fragment
+	::= PP_FRAGMENT | AT_FRAGMENT
+	;
+
+private atKeywords
+	::= '@typedef'|'@implementation'|'@class'|'@import'|'@protocol'|'@global'|'@end'
+	;
+
+private ppKeywords
+	::= '#if'|'#else'|'#elif'|'#define'|'#endif'|'#warning'|'#error'|'#pragma'
+	;
 

@@ -113,7 +113,20 @@ fun ObjJMethodCall.getPossibleCallTargetTypesFromMethodCall(): List<String> {
                 classConstraints.remove(containingClass)
             }
         }
-        else -> classConstraints = ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project) as MutableList<String>
+        else ->  {
+            val referencedVariableSelectorParent:ObjJMethodDeclarationSelector? = callTarget.qualifiedReference?.getLastVar()?.reference?.resolve()?.getParentOfType(ObjJMethodDeclarationSelector::class.java)
+            classConstraints = if (referencedVariableSelectorParent != null) {
+                val varType =referencedVariableSelectorParent.varType
+                val varTypeId = varType?.varTypeId
+                if (varTypeId != null) {
+                    ObjJInheritanceUtil.getAllInheritedClasses(varTypeId.idType ?: varTypeId.text, project)
+                } else {
+                    ObjJInheritanceUtil.getAllInheritedClasses(varType?.className?.text ?: ObjJClassType.UNDETERMINED, project);
+                }
+            } else {
+                ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project) as MutableList<String>
+            }
+        }
     }
     return classConstraints
 }
