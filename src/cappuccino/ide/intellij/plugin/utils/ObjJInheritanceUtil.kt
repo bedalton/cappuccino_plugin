@@ -49,16 +49,6 @@ object ObjJInheritanceUtil {
         return superClasses
     }
 
-    fun getAllInheritedClassesStrict(className: String, project: Project): MutableList<String> {
-        return getAllInheritedClasses(className, project, false)
-    }
-
-    fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableList<String> {
-        val inheritedClasses = ArrayList<String>()
-        getAllInheritedClasses(inheritedClasses, className, project)
-        return inheritedClasses
-    }
-
     fun isInstanceVariableInClasses(variableName:String, className:String, project:Project) : Boolean {
         if (isInstanceVariableInClass(variableName, className, project)) {
             return true
@@ -79,6 +69,16 @@ object ObjJInheritanceUtil {
             }
         }
         return false
+    }
+
+    fun getAllInheritedClassesStrict(className: String, project: Project): MutableList<String> {
+        return getAllInheritedClasses(className, project, false)
+    }
+
+    fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableList<String> {
+        val inheritedClasses = ArrayList<String>()
+        getAllInheritedClasses(inheritedClasses, className, project, withProtocols)
+        return inheritedClasses
     }
 
 

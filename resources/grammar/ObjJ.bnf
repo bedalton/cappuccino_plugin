@@ -474,12 +474,13 @@ instanceVariableDeclaration
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub"
 		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName]
+		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
 	}
@@ -806,6 +807,7 @@ functionDeclaration
 		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionDeclarationImpl>>"
@@ -814,7 +816,7 @@ functionDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve getBlockList]
+		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve getBlockList createFoldingDescriptor]
 
 	}
 	;
@@ -827,11 +829,13 @@ methodDeclaration
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
 		//recoverWhile=recover_methodDeclaration
 		methods = [
 			block="/methodBlock"
 			getBlockList
+			createTreeStructureElement
 		]
 	}
 	;
@@ -849,12 +853,13 @@ methodHeader
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub"
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"com.intellij.psi.PsiNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
-		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve  getContainingSuperClass]
+		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve  getContainingSuperClass isRequired createTreeStructureElement]
 
 		//recoverWhile=recover_methodHeaderSelectorList
 	}
@@ -916,6 +921,8 @@ implementationDeclaration
 	{
 		pin=1
 		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
@@ -935,8 +942,11 @@ implementationDeclaration
 			shouldResolve
 			getUnimplementedProtocolMethods
 			getAllUnimplementedProtocolMethods
-			getMethodHeaderList
+			getMethodHeaders
 			getInheritedProtocols
+			createFoldingDescriptor
+			createTreeStructureElement
+			getTreeStructureChildElements
 		]
 	}
 	;
@@ -1018,9 +1028,11 @@ instanceVariableList
 	{
 		recoverWhile=recover_instanceVariableList
 		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
+		methods=[createFoldingDescriptor]
 	}
 	;
 private recover_instanceVariableList
@@ -1164,19 +1176,23 @@ protocolDeclaration
 
 		pin=1
 		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub>"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub"
 		methods=[
-			getMethodHeaderList
+			getMethodHeaders
 			hasMethod
 			getPresentation
 			shouldResolve
 			getInheritedProtocols
 			getClassNameString
 			getClassType
+			createFoldingDescriptor
+			createTreeStructureElement
 		]
 	}
 	;
@@ -1216,6 +1232,10 @@ private protocolSection
 protocolScopedBlock
 	::= ('@optional'|'@required') protocolStatementList?
 	{
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
+		]
+		methods=[createTreeStructureElement]
 		//recoverWhile=recover_classDec
 	}
 	;
@@ -1255,7 +1275,7 @@ typeDef
 
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJTypeDefStub"
-		methods = [getClassNameString]
+		methods = [getClassNameString getMethodHeaders]
 	}
 	;
 
@@ -1646,11 +1666,12 @@ functionLiteral
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>"
 		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>>"
 		]
-		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList]
+		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList createFoldingDescriptor]
 	}
 	;
 

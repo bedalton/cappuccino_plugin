@@ -65,7 +65,7 @@ object ArrayUtils {
     fun search(keywords: List<String>, queryString: String): List<String> {
         val out = ArrayList<String>()
         if (queryString.isEmpty()) {
-            return emptyList()
+            return mutableListOf()
         }
         val queryStringLength = queryString.length
         for (keyword in keywords) {

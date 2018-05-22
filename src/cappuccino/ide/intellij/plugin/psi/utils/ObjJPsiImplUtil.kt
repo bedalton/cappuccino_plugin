@@ -8,6 +8,8 @@ import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import com.intellij.psi.tree.IElementType
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
+import cappuccino.ide.intellij.plugin.formatting.ObjJCodeFoldingBuilder
+import cappuccino.ide.intellij.plugin.formatting.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
@@ -19,7 +21,10 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.ide.projectView.PresentationData
+import com.intellij.openapi.editor.FoldingGroup
 
 import javax.swing.*
 import java.util.*
@@ -204,12 +209,16 @@ object ObjJPsiImplUtil {
     // ====== MethodHeaders ========= //
     // ============================== //
     @JvmStatic
-    fun getMethodHeaderList(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> =
+    fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> =
+            cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
+
+    @JvmStatic
+    fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> =
             cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun getMethodHeaderList(_typedef:ObjJTypeDef): List<ObjJMethodHeader> =
+    fun getMethodHeaders(_typedef:ObjJTypeDef): List<ObjJMethodHeader> =
             listOf()
 
     @JvmStatic
@@ -412,8 +421,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun hasMethod(classElement:ObjJClassDeclarationElement<*>, selector:String) : Boolean {
-        return !classElement.getMethodHeaderList().filter{ it.selectorString == selector; }.isEmpty()
+        return !classElement.getMethodHeaders().none { it.selectorString == selector; }
     }
+
+    @JvmStatic
+    fun isRequired(methodHeader: ObjJMethodHeader) : Boolean =
+            ObjJMethodPsiUtils.isRequired(methodHeader)
 
     // ============================== //
     // ====== Virtual Methods ======= //
@@ -946,6 +959,98 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun shouldResolve(hasContainingClass: ObjJHasContainingClass?): Boolean {
         return ObjJResolveableElementUtil.shouldResolve(hasContainingClass as PsiElement?) && shouldResolve(hasContainingClass!!.containingClass)
+    }
+
+    // ============================== //
+    // ========== Folding =========== //
+    // ============================== //
+
+    @JvmStatic
+    fun createFoldingDescriptor(implementation:ObjJImplementationDeclaration, foldingGroup: FoldingGroup) =
+        ObjJCodeFoldingBuilder.execute(implementation, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(protocol:ObjJProtocolDeclaration, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(protocol, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(methodDeclaration:ObjJMethodDeclaration, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(methodDeclaration, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(comment:ObjJComment, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(comment, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(variablesList:ObjJInstanceVariableList, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(variablesList, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(variableAssignment:ObjJBodyVariableAssignment, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(variableAssignment, foldingGroup)
+
+    @JvmStatic
+    fun createFoldingDescriptor(variableAssignment:ObjJFunctionDeclarationElement<*>, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(variableAssignment, foldingGroup)
+
+    // ============================== //
+    // ======= Structure View ======= //
+    // ============================== //
+
+    @JvmStatic
+    fun createTreeStructureElement(declaration:ObjJImplementationDeclaration) : ObjJStructureViewElement {
+        val fileName = ObjJFileUtil.getContainingFileName(declaration)
+        val presentation:ItemPresentation = when {
+            declaration.isCategory -> PresentationData("@category ${declaration.getClassName()} (${declaration.categoryNameString})", fileName, ObjJIcons.CATEGORY_ICON, null)
+            declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("@implementation ${declaration.getClassNameString()} : ${declaration.superClassName}", fileName, ObjJIcons.CLASS_ICON, null)
+            else -> PresentationData("@implementation ${declaration.getClassNameString()}", fileName, ObjJIcons.CLASS_ICON, null)
+        }
+        return ObjJStructureViewElement(declaration, presentation, declaration.getClassNameString())
+    }
+
+    @JvmStatic
+    fun getTreeStructureChildElements(declaration:ObjJImplementationDeclaration) : Array<ObjJStructureViewElement> {
+        val out:MutableList<ObjJStructureViewElement> = mutableListOf()
+        declaration.instanceVariableList?.instanceVariableDeclarationList?.forEach {
+            out.add(it.createTreeStructureElement())
+        }
+        declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach{
+            out.add(it.createTreeStructureElement())
+        }
+        return out.toTypedArray()
+    }
+
+    @JvmStatic
+    fun createTreeStructureElement(instanceVariable:ObjJInstanceVariableDeclaration) : ObjJStructureViewElement {
+        val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
+        val presentation = PresentationData(label,ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
+        return ObjJStructureViewElement(instanceVariable, presentation, "_"+(instanceVariable.variableName?.text ?: "UNDEF"))
+    }
+
+    @JvmStatic
+    fun createTreeStructureElement(declaration:ObjJProtocolDeclaration) : ObjJStructureViewElement {
+        val fileName = ObjJFileUtil.getContainingFileName(declaration)
+        val presentation:ItemPresentation = PresentationData("@protocol ${declaration.getClassNameString()}", fileName, ObjJIcons.PROTOCOL_ICON, null)
+        return ObjJStructureViewElement(declaration, presentation, declaration.getClassNameString())
+    }
+
+
+    @JvmStatic
+    fun createTreeStructureElement(header:ObjJProtocolScopedBlock) : ObjJStructureViewElement {
+        val fileName = ObjJFileUtil.getContainingFileName(header)
+        val text = if (header.atOptional != null) "@optional" else "@required"
+        return ObjJStructureViewElement(header, PresentationData(text, fileName, null, null), "")
+    }
+
+    @JvmStatic
+    fun createTreeStructureElement(header:ObjJMethodDeclaration) : ObjJStructureViewElement {
+        return createTreeStructureElement(header.methodHeader)
+    }
+    @JvmStatic
+    fun createTreeStructureElement(header:ObjJMethodHeader) : ObjJStructureViewElement {
+        val fileName = ObjJFileUtil.getContainingFileName(header)
+        val presentation:ItemPresentation = PresentationData(header.text.replace("[\n\r]*", ""), fileName, ObjJIcons.METHOD_ICON, null)
+        return ObjJStructureViewElement(header, presentation, header.containingClassName)
     }
 
     // ============================== //

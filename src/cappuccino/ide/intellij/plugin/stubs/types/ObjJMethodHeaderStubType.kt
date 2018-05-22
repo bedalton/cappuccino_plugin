@@ -14,7 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.utils.Strings
 
 import java.io.IOException
@@ -29,14 +28,14 @@ class ObjJMethodHeaderStubType internal constructor(
     }
 
     override fun createStub(
-            objJMethodHeader: ObjJMethodHeaderImpl, parentStub: StubElement<*>): ObjJMethodHeaderStub {
-        val containingClassName = objJMethodHeader.containingClassName
-        val selectors = objJMethodHeader.selectorStrings
-        val params = objJMethodHeader.paramTypesAsStrings
-        val returnType: String? = null//objJMethodHeader.getReturnType();
-        val required = ObjJMethodPsiUtils.methodRequired(objJMethodHeader)
-        val shouldResolve = ObjJPsiImplUtil.shouldResolve(objJMethodHeader)
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, objJMethodHeader.isStatic, selectors, params, returnType, required, shouldResolve)
+            methodHeader: ObjJMethodHeaderImpl, parentStub: StubElement<*>): ObjJMethodHeaderStub {
+        val containingClassName = methodHeader.containingClassName
+        val selectors = methodHeader.selectorStrings
+        val params = methodHeader.paramTypesAsStrings
+        val returnType: String? = null//methodHeader.getReturnType();
+        val required = methodHeader.isRequired
+        val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
+        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve)
     }
 
     @Throws(IOException::class)
