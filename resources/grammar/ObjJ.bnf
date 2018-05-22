@@ -830,12 +830,14 @@ methodDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 		]
 		//recoverWhile=recover_methodDeclaration
 		methods = [
 			block="/methodBlock"
 			getBlockList
 			createTreeStructureElement
+			createFoldingDescriptor
 		]
 	}
 	;
