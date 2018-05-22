@@ -124,6 +124,7 @@ fun ObjJMethodCall.getPossibleCallTargetTypesFromMethodCall(): List<String> {
                     ObjJInheritanceUtil.getAllInheritedClasses(varType?.className?.text ?: ObjJClassType.UNDETERMINED, project);
                 }
             } else {
+
                 ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project) as MutableList<String>
             }
         }

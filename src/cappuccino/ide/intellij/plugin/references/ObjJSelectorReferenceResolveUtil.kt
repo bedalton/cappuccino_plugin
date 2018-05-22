@@ -307,11 +307,8 @@ object ObjJSelectorReferenceResolveUtil {
         //ObjJCallTarget callTarget = methodCall.getCallTarget();
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
         //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
-        classConstraints = methodCall!!.getPossibleCallTargetTypesFromMethodCall()
-        if (!ObjJPluginSettings.validateCallTarget() || !classConstraints.isEmpty()) {
-            return classConstraints
-        }
-        classConstraints = methodCall.callTarget.getPossibleCallTargetTypes()
+
+        classConstraints = methodCall?.callTarget.getPossibleCallTargetTypes() ?: mutableListOf()
         /*if (!classConstraints.isEmpty()) {
             LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
         } else {
