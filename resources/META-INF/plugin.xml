@@ -5,7 +5,13 @@
   <vendor url="http://www.cappuccino-project.org">Cappuccino Project</vendor>
 
   <description><![CDATA[
-     Cappuccino project Objective-J language support plugin.
+     Cappuccino Framework Objective-J language support plugin.
+
+     This plugin provides some basic support for Objective-J.
+     It provides basic, but error abundant, code completion
+     Mostly proof of concept very little functionality
+
+     Actual cappuccino framework raw source (*.j) files are required for all frameworks used.
     ]]></description>
 
   <change-notes><![CDATA[
@@ -43,7 +49,7 @@
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
 
     <!-- ObjJ Libraries -->
-    <sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" />
+    <!--sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" /-->
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
