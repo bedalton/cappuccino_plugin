@@ -24,3 +24,5 @@ Infer variable types
 Scope suggestions by import
 Method completion for protocol implementation
 Error on incomplete protocol implementation
+
+If you're feeling brave, you can download the jar [here](http://files.badahori.com.s3.amazonaws.com/Cappuccino%20Objective-J%20Plugin.jar), to install into IDEA though preferences->plugins->install_plugin_from_disk
