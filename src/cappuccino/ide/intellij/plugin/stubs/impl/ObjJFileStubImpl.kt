@@ -3,6 +3,9 @@ package cappuccino.ide.intellij.plugin.stubs.impl
 import com.intellij.psi.stubs.PsiFileStubImpl
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.psi.stubs.PsiFileStub
+import com.intellij.psi.tree.IStubFileElementType
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -28,6 +31,10 @@ class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, overr
             }
         }
         return out
+    }
+
+    override fun getType(): IStubFileElementType<out ObjJFileStub> {
+        return ObjJStubTypes.FILE
     }
 
     companion object {

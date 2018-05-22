@@ -139,7 +139,7 @@ object ObjJMethodCallCompletionContributorUtil {
         if (resolveResult == null) {
             //LOGGER.log(Level.INFO, "Resolve result is null");
             if (selectors.size <= selectorIndex) {
-                //LOGGER.log(Level.INFO, "Cannot add method selector elements to result set. Selector index out of bounds.");
+                //LOGGER.log(Level.INFO, "Cannot add method selector elements to result set. Selector index foldingDescriptors of bounds.");
                 return
             }
             val selectorResolveResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(selectors[selectorIndex])

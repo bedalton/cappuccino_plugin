@@ -35,7 +35,6 @@
     <!-- ObjJLang -->
     <fileTypeFactory implementation="cappuccino.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
     <lang.parserDefinition language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition"/>
-    <filetype.decompiler filetype="ObjJSj" implementationClass="cappuccino.ide.intellij.plugin.utils.ObjJBinaryDecompiler"/>
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
                                    implementationClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
@@ -47,7 +46,9 @@
     <sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" />
 
     <!-- FORMATTING -->
-    <!--lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder" /-->
+    <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
+    <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
+
 
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"

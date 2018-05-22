@@ -41,7 +41,7 @@ object ObjJSelectorReferenceResolveUtil {
             return EMPTY_SELECTORS_RESULT
         }
         //LOGGER.log(Level.INFO, "Searching for methods matching selector: <"+fullSelector+">, in file: "+element.getContainingFile().getVirtualFile().getName());
-        val methodHeaders = ObjJUnifiedMethodIndex.instance.get(fullSelector, element.project)
+        val methodHeaders = ObjJUnifiedMethodIndex.instance[fullSelector, element.project]
         return prune(classConstraints, methodHeaders, element.text, selectorIndex)
     }
 

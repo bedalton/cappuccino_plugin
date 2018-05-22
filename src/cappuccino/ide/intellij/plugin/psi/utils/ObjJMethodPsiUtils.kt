@@ -422,11 +422,8 @@ object ObjJMethodPsiUtils {
         return false
     }
 
-
-    fun methodRequired(methodHeader: ObjJMethodHeader): Boolean {
-        val scopedBlock = methodHeader.getParentOfType( ObjJProtocolScopedBlock::class.java)
-        return scopedBlock == null || scopedBlock.atOptional == null
-    }
+    fun isRequired(methodHeader: ObjJMethodHeader) =
+            methodHeader.getParentOfType(ObjJProtocolScopedBlock::class.java)?.atOptional == null
 
     fun getHeaderVariableNameMatching(methodHeader: ObjJMethodHeader?, variableName: String): ObjJVariableName? {
         if (methodHeader == null) {
