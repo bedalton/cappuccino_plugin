@@ -172,6 +172,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (!result.isEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
+        /*
         result = ObjJSelectorReferenceResolveUtil.getVariableReferences(myElement, result.possibleContainingClassNames)
         if (!result.isEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
@@ -181,6 +182,8 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         } else PsiElementResolveResult.EMPTY_ARRAY
         //logger.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
+        */
+        return PsiElementResolveResult.EMPTY_ARRAY
     }
 
     private fun getAccessorMethods(): Pair<String, String>? {

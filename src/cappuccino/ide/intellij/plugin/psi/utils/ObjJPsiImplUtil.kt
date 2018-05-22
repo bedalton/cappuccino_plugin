@@ -8,7 +8,7 @@ import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import com.intellij.psi.tree.IElementType
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
-import cappuccino.ide.intellij.plugin.formatting.ObjJCodeFoldingBuilder
+import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.interfaces.*

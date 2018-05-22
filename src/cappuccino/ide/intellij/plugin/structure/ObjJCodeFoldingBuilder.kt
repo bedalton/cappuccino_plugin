@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.formatting
+package cappuccino.ide.intellij.plugin.structure
 
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable
@@ -19,12 +19,12 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
         val group:FoldingGroup = FoldingGroup.newGroup("objj")
         val foldingDescriptors = ArrayList<FoldingDescriptor>()
-        PsiTreeUtil.getChildrenOfTypeAsList(root, ObjJFoldable::class.java).forEach {
-            addDescriptor(foldingDescriptors, it.createFoldingDescriptor(group))
-            for (child in it.foldableChildren) {
-                addDescriptor(foldingDescriptors, it.createFoldingDescriptor(group))
+        PsiTreeUtil.processElements(root, { element ->
+            if (element is ObjJFoldable) {
+                addDescriptor(foldingDescriptors, element.createFoldingDescriptor(group))
             }
-        }
+            return@processElements true
+        })
         return foldingDescriptors.toTypedArray()
     }
 
@@ -102,7 +102,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
 
         fun execute(methodDeclaration:ObjJMethodDeclaration, group:FoldingGroup) : FoldingDescriptor? {
             val startRange = methodDeclaration.methodHeader.textRange.endOffset
-            val endRange = (methodDeclaration.block?.textRange?.endOffset ?: return null)
+            val endRange = (methodDeclaration.block?.textRange?.endOffset ?: methodDeclaration.textRange.endOffset)
             return ObjJFoldingDescriptor(methodDeclaration, startRange, endRange, group)
         }
 
