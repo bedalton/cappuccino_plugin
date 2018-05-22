@@ -6,12 +6,10 @@
 
   <description><![CDATA[
      Cappuccino Framework Objective-J language support plugin.
-
-     This plugin provides some basic support for Objective-J.
-     It provides basic, but error abundant, code completion
-     Mostly proof of concept very little functionality
-
-     Actual cappuccino framework raw source (*.j) files are required for all frameworks used.
+     Proof of concept alpha release of plugin. Provides basic, yet buggy support for autocompletion.
+     Variable type is not accurately implemented which causes suggestion of any selector for even if not valid for variable.
+     WARNING: Rename refactoring is brute force:anything with same name is renamed and DANGEROUS: occasionally breaks undo support.
+     USE AT OWN RISK
     ]]></description>
 
   <change-notes><![CDATA[
