@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.formatting;
+package cappuccino.ide.intellij.plugin.structure;
 
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureChildElements;
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement;
