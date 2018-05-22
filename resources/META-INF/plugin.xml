@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J Plugin</name>
-  <version>0.01</version>
+  <version>0.02</version>
   <vendor url="http://www.cappuccino-project.org">Cappuccino Project</vendor>
 
   <description><![CDATA[
@@ -10,6 +10,7 @@
      Variable type is not accurately implemented which causes suggestion of any selector for even if not valid for variable.
      WARNING: Rename refactoring is brute force:anything with same name is renamed and DANGEROUS: occasionally breaks undo support.
      USE AT OWN RISK
+     Requires raw source code for frameworks
     ]]></description>
 
   <change-notes><![CDATA[
