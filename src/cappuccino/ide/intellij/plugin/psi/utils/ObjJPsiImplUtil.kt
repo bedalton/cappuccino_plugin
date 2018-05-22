@@ -9,7 +9,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.formatting.ObjJCodeFoldingBuilder
-import cappuccino.ide.intellij.plugin.formatting.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
@@ -1024,7 +1024,8 @@ object ObjJPsiImplUtil {
     fun createTreeStructureElement(instanceVariable:ObjJInstanceVariableDeclaration) : ObjJStructureViewElement {
         val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
         val presentation = PresentationData(label,ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
-        return ObjJStructureViewElement(instanceVariable, presentation, "_"+(instanceVariable.variableName?.text ?: "UNDEF"))
+        return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
+                ?: "UNDEF"))
     }
 
     @JvmStatic

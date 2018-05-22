@@ -44,7 +44,7 @@
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJCodeFoldingBuilder" />
-    <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJStructureViewFactory" />
+    <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
 
 
     <!-- Completion -->

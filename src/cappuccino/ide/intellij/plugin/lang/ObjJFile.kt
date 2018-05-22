@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.lang
 
-import cappuccino.ide.intellij.plugin.formatting.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider

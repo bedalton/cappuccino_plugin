@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces;
 
-import cappuccino.ide.intellij.plugin.formatting.ObjJStructureViewElement;
+import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.psi.NavigatablePsiElement;
 

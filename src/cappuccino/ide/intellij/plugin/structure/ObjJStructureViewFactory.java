@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.formatting;
+package cappuccino.ide.intellij.plugin.structure;
 
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.ide.structureView.StructureViewModel;

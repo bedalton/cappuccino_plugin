@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.formatting;
+package cappuccino.ide.intellij.plugin.structure;
 import cappuccino.ide.intellij.plugin.lang.ObjJFile;
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons;
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil;
