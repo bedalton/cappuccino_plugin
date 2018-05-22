@@ -127,6 +127,10 @@ class ObjJFileUtil {
 
             return defaultValue
         }
+
+        fun isFrameworkElement(psiElement: PsiElement) : Boolean {
+            return getFileNameSafe(psiElement.containingFile)?.endsWith("d.j") == true
+        }
     }
 
 }

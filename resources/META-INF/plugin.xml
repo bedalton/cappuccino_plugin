@@ -43,10 +43,13 @@
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
 
+    <!-- ObjJ Libraries -->
+    <sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" />
+
     <!-- FORMATTING -->
     <!--lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder" /-->
 
-    <!-- Completion -->
+    <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
     <psi.referenceContributor implementation="cappuccino.ide.intellij.plugin.contributor.ObjJReferenceContributor"/>
@@ -55,11 +58,14 @@
     <quoteHandler fileType="ObjectiveJ" className="cappuccino.ide.intellij.plugin.formatting.ObjJQuoteHandler"/>
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
+    <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJSyntaxHighlighterAnnotator" />
     <!--codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.handlers.ObjJParameterInfo" / -->
+
+
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
                         serviceImplementation="cappuccino.ide.intellij.plugin.indices.ObjJIndexService" />
