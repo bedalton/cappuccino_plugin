@@ -147,7 +147,7 @@ fun hasMethod(declaration:ObjJProtocolDeclaration,selector: String): Boolean {
 }
 
 fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: String): Boolean {
-    for (methodHeader in implementationDeclaration.getMethodHeaderList()) {
+    for (methodHeader in implementationDeclaration.getMethodHeaders()) {
         if (methodHeader.selectorString == selector) {
             return true
         }
