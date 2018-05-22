@@ -23,7 +23,7 @@ class ObjJFileType private constructor() : LanguageFileType(ObjJLanguage.instanc
     }
 
     companion object {
-        val FILE_EXTENSION = "j"
+        const val FILE_EXTENSION = "j"
         val INSTANCE = ObjJFileType()
     }
 }

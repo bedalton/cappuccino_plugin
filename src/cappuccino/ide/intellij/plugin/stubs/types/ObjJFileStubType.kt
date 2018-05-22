@@ -13,7 +13,7 @@ import com.intellij.psi.stubs.*
 import java.io.IOException
 import java.util.ArrayList
 
-class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.instance) {
+class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.instance) {
 
     override fun getBuilder(): StubBuilder {
         return ObjJFileStubBuilder()
@@ -29,6 +29,7 @@ class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage
 
     @Throws(IOException::class)
     override fun serialize(stub: ObjJFileStub, stream: StubOutputStream) {
+        super.serialize(stub, stream)
         stream.writeName(stub.fileName)
         stream.writeInt(stub.imports.size)
         for (importStatement in stub.imports) {
@@ -38,6 +39,7 @@ class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage
 
     @Throws(IOException::class)
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): ObjJFileStub {
+        super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
         val numImports = stream.readInt()
         val imports = ArrayList<String>()
@@ -53,6 +55,6 @@ class ObjJFileStubType() : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage
 
     companion object {
 
-        private val NAME = "objj.FILE"
+        private const val NAME = "objj.FILE"
     }
 }

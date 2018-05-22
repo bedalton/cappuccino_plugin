@@ -54,6 +54,17 @@ fun PsiElement?.getNextSiblingOfType(siblingElementType: IElementType): PsiEleme
     return null
 }
 
+fun <PsiT:PsiElement> PsiElement?.getNextSiblingOfType(siblingClass: Class<PsiT>): PsiElement? {
+    var element:PsiElement? = this ?: return null
+    while (element?.nextSibling != null) {
+        element = element.nextSibling
+        if (siblingClass.isInstance(element)) {
+            return element
+        }
+    }
+    return null
+}
+
 private fun PsiElement?.hasElementType(elementType: IElementType): Boolean {
     return this?.node?.elementType === elementType
 }
@@ -92,7 +103,7 @@ fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode?
         if (out == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }
@@ -108,7 +119,7 @@ fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
         if (out == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+out.getText()+" ElementType is <"+out.getElementType().toString()+">");
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }

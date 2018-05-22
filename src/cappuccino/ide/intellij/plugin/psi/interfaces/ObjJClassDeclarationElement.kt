@@ -10,7 +10,7 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
 
     fun getClassNameString() : String
 
-    fun getMethodHeaderList() : List<ObjJMethodHeader>
+    fun getMethodHeaders() : List<ObjJMethodHeader>
 
     fun getClassName() : ObjJClassName?
 

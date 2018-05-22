@@ -204,7 +204,7 @@ object ObjJFunctionDeclarationPsiUtil {
             for (ObjJReturnStatement returnStatement : returnStatements) {
                 java.util.logging.LOGGER.log(Level.INFO, "Looping return statement: <"+returnStatement.getText()+">");
                 if (returnStatement.getExpr() != null) {
-                    //todo Figure out how to get the expression return types, when index is not ready.
+                    //todo Figure foldingDescriptors how to get the expression return types, when index is not ready.
                     List<String> types = Collections.emptyList();// ObjJVarTypeResolveUtil.getExpressionReturnTypes(returnStatement.getExpr(), true);
                     return !types.isEmpty() ? types.get(0) : ObjJClassType.UNDETERMINED;
                 }
