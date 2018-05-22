@@ -48,6 +48,10 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         if (element is ObjJAccessorPropertyType || element.getParentOfType( ObjJAccessorPropertyType::class.java) != null) {
             results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString) as MutableList<String>
         } else if (element is ObjJVariableName || parent is ObjJVariableName) {
+            if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+                resultSet.stopHere()
+                return
+            }
             if (queryString.trim { it <= ' ' }.isEmpty()) {
                 //LOGGER.log(Level.INFO, "Query string is empty");
                 resultSet.stopHere()

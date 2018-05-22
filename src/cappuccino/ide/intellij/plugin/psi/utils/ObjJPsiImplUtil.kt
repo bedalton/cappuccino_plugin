@@ -383,7 +383,7 @@ object ObjJPsiImplUtil {
                 return currentSelector
             }
         }
-        //LOGGER.log(Level.WARNING, "Failed to find selector matching <"+subSelector+"> or any selector before out of <"+selectorList.size()+"> selectors");
+        //LOGGER.log(Level.WARNING, "Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
         return null
     }
 

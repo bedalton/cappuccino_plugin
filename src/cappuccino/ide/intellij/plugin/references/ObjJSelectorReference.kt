@@ -59,19 +59,19 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             ObjJMethodFragmentIndex.instance[querySelector, myElement.project]
         else
             ObjJUnifiedMethodIndex.instance.getAll(myElement.project)
-        val out:MutableList<String> = ArrayList()
+        val foldingDescriptors:MutableList<String> = ArrayList()
         var i = 0
         methodHeaders.forEach({
             val variantSelector = it.selectorList.getOrNull(index)?.getSelectorString(false) ?: return@forEach
-            if (out.contains(variantSelector)) {
+            if (foldingDescriptors.contains(variantSelector)) {
                 return@forEach
             }
             i++
-            out.add(variantSelector)
+            foldingDescriptors.add(variantSelector)
         })
 
         logger.log(Level.INFO, "Added $i selector variants")
-        return out.toTypedArray()
+        return foldingDescriptors.toTypedArray()
         */
     }
 

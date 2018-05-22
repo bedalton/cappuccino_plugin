@@ -114,13 +114,13 @@ object ObjJVariableNameUtil {
 
     fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex)
-//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
+//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
         return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
     fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex)
-//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
+//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
         return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
@@ -475,7 +475,7 @@ object ObjJVariableNameUtil {
                 val suggestion = qualifiedReference.variableNameList[qualifiedNameIndex]
                 result.add(suggestion)
             } else {
-                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is out of bounds.");
+                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is foldingDescriptors of bounds.");
             }
         }
         return result
@@ -505,7 +505,7 @@ object ObjJVariableNameUtil {
                     return suggestion
                 }
             } else {
-                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is out of bounds.");
+                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is foldingDescriptors of bounds.");
             }
         }
         return null

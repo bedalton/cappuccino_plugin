@@ -645,7 +645,7 @@ fun ObjJExpr.getVariableNameType(): List<String> {
 
 /*
 public static List<String> getVariableNameType(@NotNull ObjJExpr expr) {
-    List<String> out = new ArrayList<>();
+    List<String> foldingDescriptors = new ArrayList<>();
     for (ObjJExpr currentExpr : getAllSubExpressions(expr)) {
         if (currentExpr == null || currentExpr.getLeftExpr() == null) {
             continue;
@@ -673,18 +673,18 @@ public static List<String> getVariableNameType(@NotNull ObjJExpr expr) {
             }
             if (isAssigned) {
                 try {
-                    out.add(getReturnType(declaration.getExpr(), null));
+                    foldingDescriptors.add(getReturnType(declaration.getExpr(), null));
                 } catch (MixedReturnTypeException e) {
                     for (String varType : e.getReturnTypesList()) {
-                        if (!out.contains(varType)) {
-                            out.add(varType);
+                        if (!foldingDescriptors.contains(varType)) {
+                            foldingDescriptors.add(varType);
                         }
                     }
                 }
             }
         }
     }
-    return out;
+    return foldingDescriptors;
 }
 */
 
