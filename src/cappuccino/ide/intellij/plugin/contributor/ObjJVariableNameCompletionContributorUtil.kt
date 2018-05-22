@@ -33,7 +33,7 @@ object ObjJVariableNameCompletionContributorUtil {
             //LOGGER.log(Level.INFO, "Adding Value to completion results.");
             out.add(currentVariableName.name)
         }
-        //LOGGER.log(Level.INFO, String.format("NameFilter:<%s>; Raw Completion Elements: <%d>; Num after filter by name: <%d>", variableName, rawCompletionElements.size(), out.size()));
+        //LOGGER.log(Level.INFO, String.format("NameFilter:<%s>; Raw Completion Elements: <%d>; Num after filter by name: <%d>", variableName, rawCompletionElements.size(), foldingDescriptors.size()));
         return out
     }
 
@@ -44,7 +44,7 @@ object ObjJVariableNameCompletionContributorUtil {
             return Collections.emptyList();
         }
         final int qualifiedNameIndex = getIndexInQualifiedNameParent(variableName);
-        final List<String> out = new ArrayList<>();
+        final List<String> foldingDescriptors = new ArrayList<>();
         final String variableNamePattern = getQualifiedNameAsString(variableName).replace(CARET_INDICATOR, "(.*)");
         final Pattern pattern = Pattern.compile(variableNamePattern);
         List<ObjJVariableName> rawCompletionElements = getPrecedingVariableNameElements(variableName, qualifiedNameIndex);
@@ -53,10 +53,10 @@ object ObjJVariableNameCompletionContributorUtil {
             return pattern.matcher(getQualifiedNameAsString(var)).matches();
         })) {
             LOGGER.log(Level.INFO, "Adding Value to completion results.");
-            out.add(currentVariableName.getName());
+            foldingDescriptors.add(currentVariableName.getName());
         }
-        LOGGER.log(Level.INFO, String.format("NameFilter:<%s>; Raw Completion Elements: <%d>; Num after filter by name: <%d>", variableName, rawCompletionElements.size(), out.size()));
-        return out;
+        LOGGER.log(Level.INFO, String.format("NameFilter:<%s>; Raw Completion Elements: <%d>; Num after filter by name: <%d>", variableName, rawCompletionElements.size(), foldingDescriptors.size()));
+        return foldingDescriptors;
     }
 
     @NotNull
@@ -105,9 +105,9 @@ object ObjJVariableNameCompletionContributorUtil {
     @NotNull
     public static List<ObjJVariableName> getAndFilterSiblingVariableNameElements(PsiElement element, int qualifiedNameIndex, Filter<ObjJVariableName> filter) {
         List<ObjJVariableName> rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex);
-        List<ObjJVariableName> out = ArrayUtils.filter(rawVariableNameElements, filter);
-        LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), out.size()));
-        return out;
+        List<ObjJVariableName> foldingDescriptors = ArrayUtils.filter(rawVariableNameElements, filter);
+        LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
+        return foldingDescriptors;
     }
 
     @NotNull
@@ -240,7 +240,7 @@ object ObjJVariableNameCompletionContributorUtil {
                 ObjJVariableName suggestion = qualifiedReference.getVariableNameList().get(qualifiedNameIndex);
                 result.add(suggestion);
             } else {
-                LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is out of bounds.");
+                LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is foldingDescriptors of bounds.");
             }
         }
     }

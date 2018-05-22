@@ -45,6 +45,8 @@
 
     <!-- FORMATTING -->
     <!--lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder" /-->
+    <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJCodeFoldingBuilder" />
+
 
     <!-- Completion -->
     <lang.findUsagesProvider language="ObjectiveJ"

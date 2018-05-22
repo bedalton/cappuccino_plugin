@@ -121,7 +121,7 @@ object ObjJInheritanceUtil {
                     continue;
                 }
                 for (ObjJClassName currentLoopClassName : inheritedProtocolList.getClassNameList()) {
-                    getAllInheritedProtocols(out, currentLoopClassName.getText(), project);
+                    getAllInheritedProtocols(foldingDescriptors, currentLoopClassName.getText(), project);
                 }
             }
             */

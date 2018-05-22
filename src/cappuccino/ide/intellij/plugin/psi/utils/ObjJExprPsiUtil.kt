@@ -70,7 +70,7 @@ private fun allInternalExpressions(out: MutableList<ObjJExpr>, exprRight: ObjJRi
     if (exprRight == null) {
         return
     }
-    //allInternalExpressions(out, exprRight.getExpr());
+    //allInternalExpressions(foldingDescriptors, exprRight.getExpr());
 }
 
 fun getAllInternalMethodCallExpressions(expr: ObjJExpr): List<ObjJMethodCall> {
