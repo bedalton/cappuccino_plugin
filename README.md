@@ -1,29 +1,39 @@
-# Cappuccino Objective-J Intellij Idea Plugin
+# Cappuccino Objective-J Intellij Idea Plugin (on Hiatus)
 This repository holds the proof of concept code for a cappuccino objective-j language plugin.
 
 This plugin is mostly proof of concept, and not guaranteed to work properly, or at all.
 
-As of right now, there is mostly working selector, variable name and function name suggestions.
-Selector suggestions do not reference type, as type inference is outside the scope of this plugin. 
-In cases where type is not specifically declared, selectors for any class will appear.
+###Working
+- Non-Intelligent method call completion
+- Variable name autocompletion
+- Variable, Function and Method declaration resolution (CMD+click)
+- Syntax Highlighting
+- Invalid method call selector warnings
 
-Selector rename is brute force meaning any method throughout the project with the same selector will be renamed
-despite whether or not this is desired.
+###Warnings and Problems
+- Plugin rename is brute force. It renames every method with similar selectors, despite being different classes
+- Rename can break undo, leaving you with no way to undo the changes
+- Variable type resolution is not fully/or correctly implemented, 
+so intellisense may suggest methods that do not exist for the given variable
+- Suggestions do not account for import, suggesting things not imported or in scope
+- Right click on invalid selectors causes temporary pause/freeze in intellij
+- <b>Use at your own risk</b>
 
-Use at your own risk
 
-This project is public because I won't have a chance to work on it for a while. Maybe someone else will
+###Possible Future
+- Improve code comments and quality
+- Add tests
+- Infer variable types
+- Scope suggestions by import
+- Warn when using classes or methods not imported, with appropriate import action
+- Method completion for protocol implementation
+- Error on incomplete protocol implementation
 
-This project was meant to be a test at writing a language plugin. 
+###Note on Quality
+This project was meant to be a test at writing a language plugin, and as a way to learn
+more about programming in general, as I don't have much experience. 
 It has since spiraled out of control, so despite their necessity, 
 there are almost no comments, and the code is poorly written and disorganized.
-
-Possible Future
-Improve code comments and quality
-Infer variable types
-Scope suggestions by import
-Method completion for protocol implementation
-Error on incomplete protocol implementation
 
 ###Install Instructions
 If you're feeling brave, download the "Cappuccino Objective-J Plugin.jar" file in the plugin folder in this repository, and install it into intellij by going to Preferences(or Settings)->plugins->"install plugin from disk", Select the jar, and enjoy
