@@ -25,4 +25,4 @@ Scope suggestions by import
 Method completion for protocol implementation
 Error on incomplete protocol implementation
 
-If you're feeling brave, you can download the jar [here](http://files.badahori.com.s3.amazonaws.com/Cappuccino%20Objective-J%20Plugin.jar), to install into IDEA though preferences->plugins->install_plugin_from_disk
+If you're feeling brave, download the "Cappuccino Objective-J Plugin.jar" file in the plugin folder in this repository, and install it into intellij by going to Preferences(or Settings)->plugins->"install plugin from disk", Select the jar, and enjoy
