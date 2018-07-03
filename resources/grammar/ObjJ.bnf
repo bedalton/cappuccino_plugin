@@ -919,7 +919,7 @@ private methodDeclarationSelectorVariable
 	;
 
 implementationDeclaration
-	::= implementationHeader <<enterMode "inImplementation" >> implementationInstanceVariables? implementationElements? <<exitMode "inImplementation" >>'@end'
+	::= implementationHeader <<enterMode "inImplementation" >> instanceVariableList? implementationElements? <<exitMode "inImplementation" >>'@end'
 	{
 		pin=1
 		implements=[
@@ -1014,10 +1014,17 @@ private recover_implementationHeader
 	)
 	;
 
-private implementationInstanceVariables
-	::= '{' <<enterMode "implementationInstanceVariables">> instanceVariableList? <<exitMode "implementationInstanceVariables">> '}'
+instanceVariableList
+	::= '{' <<enterMode "implementationInstanceVariables">> instanceVariableListList? <<exitMode "implementationInstanceVariables">> '}'
 	{
 		pin=1;
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+		]
+		methods=[createFoldingDescriptor]
+		//recoverWhile=recover_implementationInstanceVariables
 	}
 	;
 
@@ -1025,20 +1032,14 @@ private recover_implementationInstanceVariables
 	::= !(('-'|'+') '('|possibleSourceElementStart)
 	;
 
-instanceVariableList
+private instanceVariableListList
 	::= ( comment | preprocessorInstanceVariableListIfStatement | instanceVariableDeclaration eos? )+
 	{
 		recoverWhile=recover_instanceVariableList
-		implements=[
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-		]
-		methods=[createFoldingDescriptor]
 	}
 	;
 private recover_instanceVariableList
-	::= !'}'
+	::= !('}'|'+'|'-')
 	;
 
 private preprocessorStatement
