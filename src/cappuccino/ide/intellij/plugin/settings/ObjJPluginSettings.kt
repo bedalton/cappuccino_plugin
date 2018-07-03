@@ -16,7 +16,7 @@ object ObjJPluginSettings {
 
     //CallTarget
     private val COLLAPSE_BY_DEFAULT_KEY = "resolve.calltarget.RESOLVE_CALL_TARGET"
-    private val COLLAPSE_BY_DEFAULT_DEFAULT = true
+    private val COLLAPSE_BY_DEFAULT_DEFAULT = false
     private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
 
     fun inferEOS(): Boolean {
