@@ -29,16 +29,18 @@ object ObjJVariableNameResolveUtil {
         }
         val className = getClassNameIfVariableNameIsStaticReference(variableNameElement)
         if (className != null) {
-            return className;
+            return className
         }
 
         if (variableNameElement.parent is ObjJPropertyAssignment) {
             return variableNameElement
         }
-        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null) {
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
+            variableNameElement.getParentOfType(ObjJExpr::class.java) == null
+        ) {
             return variableNameElement
         }
-        if (variableNameElement.hasParentOfType( ObjJMethodHeaderDeclaration::class.java)) {
+        if (variableNameElement.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
             return variableNameElement
         }
         if (variableNameElement.hasParentOfType(ObjJFormalParameterArg::class.java)) {
@@ -102,8 +104,9 @@ object ObjJVariableNameResolveUtil {
 
 
     private fun isPrecedingVar(baseVar: ObjJVariableName, possibleFirstDeclaration: ObjJVariableName): Boolean {
-        //LOGGER.log(Level.INFO, "BaseVar: "+baseVar.getText() + "@"+baseVar.getTextRange() +" VS. OtherVar: "+possibleFirstDeclaration.getText() + "@"+possibleFirstDeclaration.getTextRange().getStartOffset());
-        return baseVar.text == possibleFirstDeclaration.text && (baseVar.containingFile !== possibleFirstDeclaration.containingFile || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset)
+        // Variable is a proceeding variable if it is not in same file(globals),
+        // Or if it is declared before other in same file.
+        return baseVar.text == possibleFirstDeclaration.text && (!baseVar.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset)
     }
 
 
