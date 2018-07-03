@@ -13,8 +13,11 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.utils.*
+import org.jetbrains.uast.getContainingClass
 
 import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.regex.Pattern
 
 /**
@@ -87,29 +90,28 @@ internal object ObjJMethodCallAnnotatorUtil {
                 possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED)) {
             return
         }
-        val isStaticReference = possibleCallTargetClassTypes?.contains(callTarget)
-                ?: !ObjJClassDeclarationsIndex.instance.get(callTarget, methodCall.project).isEmpty()
         if (DumbService.isDumb(methodCall.project)) {
             return
         }
-        val methodHeaderDeclarations = ObjJUnifiedMethodIndex.instance.get(methodCall.selectorString, methodCall.project)
-        var annotate = false
+        val isStaticReference = ObjJImplementationDeclarationsIndex.instance[callTarget, methodCall.project].isNotEmpty()
+        Logger.getLogger("ObjJMethodCallAnnotator").log(Level.INFO, "ImplementationDecIndex has: "+ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project).size + " keys in index")
+
+        val methodHeaderDeclarations = ObjJUnifiedMethodIndex.instance[methodCall.selectorString, methodCall.project]
         for (declaration in methodHeaderDeclarations) {
             ProgressIndicatorProvider.checkCanceled()
-            if (possibleCallTargetClassTypes != null && !possibleCallTargetClassTypes.contains(declaration.containingClassName)) {
+            if (possibleCallTargetClassTypes?.contains(declaration.containingClassName) == false) {
                 continue
             }
-            if (declaration.isStatic == isStaticReference || declaration.isStatic && (possibleCallTargetClassTypes == null || possibleCallTargetClassTypes.contains(ObjJClassType.CLASS))) {
+            if (declaration.isStatic == isStaticReference) {
                 return
-            } else {
-                annotate = true
             }
         }
-        if (!annotate) {
-            return
+        val warning = when {
+            isStaticReference -> "Instance method called from static reference"
+            else -> "Static method called from class instance"
         }
+        Logger.getLogger("ObjJMethCallAnnot").log(Level.INFO, "Method call is static? $isStaticReference; For call target: $callTarget")
         for (selector in methodCall.selectorList) {
-            val warning = if (!isStaticReference && possibleCallTargetClassTypes != null) "Static method called from class instance with inferred type of [" + ArrayUtils.join(possibleCallTargetClassTypes, ", ", false) + "]" else "Instance method called from static reference"
             holder.createWeakWarningAnnotation(selector, warning)
         }
     }
