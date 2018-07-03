@@ -14,8 +14,13 @@ object ObjJPluginSettings {
     private val VALIDATE_CALL_TARGET_DEFAULT = false
     private val validateCallTarget = BooleanSetting(VALIDATE_CALL_TARGET, VALIDATE_CALL_TARGET_DEFAULT)
 
+    //CallTarget
+    private val COLLAPSE_BY_DEFAULT_KEY = "resolve.calltarget.RESOLVE_CALL_TARGET"
+    private val COLLAPSE_BY_DEFAULT_DEFAULT = true
+    private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
+
     fun inferEOS(): Boolean {
-        return inferEOS.value ?: false
+        return inferEOS.value ?: INFER_EOS_DEFAULT
     }
 
     fun inferEos(infer: Boolean) {
@@ -23,12 +28,19 @@ object ObjJPluginSettings {
     }
 
     fun validateCallTarget(): Boolean {
-        return validateCallTarget.value ?: false
+        return validateCallTarget.value ?: VALIDATE_CALL_TARGET_DEFAULT
     }
 
     fun validateCallTarget(newValidateCallTargetValue: Boolean) {
         validateCallTarget.value = newValidateCallTargetValue
     }
+
+    fun collapseByDefault() : Boolean = collapseByDefault.value ?: COLLAPSE_BY_DEFAULT_DEFAULT
+    fun collapseByDefault(collapse:Boolean) {
+        this.collapseByDefault.value = collapse
+    }
+
+
 
 
 }
