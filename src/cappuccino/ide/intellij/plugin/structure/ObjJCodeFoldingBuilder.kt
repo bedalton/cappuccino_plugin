@@ -4,6 +4,8 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -17,14 +19,15 @@ import java.util.ArrayList
 
 class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
-        val group:FoldingGroup = FoldingGroup.newGroup("objj")
+
         val foldingDescriptors = ArrayList<FoldingDescriptor>()
-        PsiTreeUtil.processElements(root, { element ->
+        PsiTreeUtil.processElements(root) process@{ element ->
             if (element is ObjJFoldable) {
+                val group:FoldingGroup = FoldingGroup.newGroup("objj")
                 addDescriptor(foldingDescriptors, element.createFoldingDescriptor(group))
             }
-            return@processElements true
-        })
+            return@process true
+        }
         return foldingDescriptors.toTypedArray()
     }
 
@@ -40,7 +43,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return false
+        return ObjJPluginSettings.collapseByDefault()
     }
 
     companion object {
@@ -61,7 +64,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (numInstanceVariables > 0 || numMethods > 0) {
                 placeholderText += " hidden"
             }
-            return ObjJFoldingDescriptor(declaration, startOffset, endOffset, group, placeholderText)
+            return ObjJFoldingDescriptor(declaration, startOffset, endOffset, group, false, placeholderText)
         }
 
         fun execute(protocol:ObjJProtocolDeclaration, group:FoldingGroup) : FoldingDescriptor? {
@@ -73,7 +76,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             }
             val numMethods = protocol.getMethodHeaders().size
             val placeholderString = if (numMethods > 0) "...$numMethods hidden" else null
-            return ObjJFoldingDescriptor(protocol, startOffset, endOffset, group, placeholderString)
+            return ObjJFoldingDescriptor(protocol, startOffset, endOffset, group, false, placeholderString)
         }
 
         fun execute(pragma:ObjJPreprocessorPragma, group:FoldingGroup) : FoldingDescriptor? {
@@ -82,7 +85,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (startOffset >= endOffset) {
                 return null
             }
-            return ObjJFoldingDescriptor(pragma, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor(pragma, startOffset, endOffset, group, false)
         }
 
         fun execute(variableAssignment: ObjJBodyVariableAssignment, group:FoldingGroup) : FoldingDescriptor? {
@@ -91,39 +94,46 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (startOffset >= endOffset) {
                 return null
             }
-            return ObjJFoldingDescriptor(variableAssignment, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor(variableAssignment, startOffset, endOffset, group, false)
         }
 
         fun execute(function: ObjJFunctionDeclarationElement<*>, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset = function.functionNameNode?.textRange?.endOffset ?: return null
             val endOffset = (function.block?.textRange?.endOffset ?: return null)
-            return ObjJFoldingDescriptor(function, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor(function, startOffset, endOffset, group, false)
         }
 
         fun execute(methodDeclaration:ObjJMethodDeclaration, group:FoldingGroup) : FoldingDescriptor? {
             val startRange = methodDeclaration.methodHeader.textRange.endOffset
             val endRange = (methodDeclaration.block?.textRange?.endOffset ?: methodDeclaration.textRange.endOffset)
-            return ObjJFoldingDescriptor(methodDeclaration, startRange, endRange, group)
+            return ObjJFoldingDescriptor(methodDeclaration, startRange, endRange, group, true)
         }
 
         fun execute(instanceVariablesList:ObjJInstanceVariableList, group:FoldingGroup) : FoldingDescriptor? {
             val endOffset: Int = instanceVariablesList.textRange.endOffset - 1
             val startOffset = if (instanceVariablesList.textRange.startOffset + 1 < endOffset)
-                instanceVariablesList.textRange.startOffset// + 1
+                instanceVariablesList.textRange.startOffset + 1
             else
                 instanceVariablesList.textRange.startOffset
-            return ObjJFoldingDescriptor(instanceVariablesList, startOffset, endOffset, group)
+            val numInstanceVariables:Int = instanceVariablesList.instanceVariableDeclarationList.size
+            val placeholder:String =
+                    when {
+                        numInstanceVariables == 1 -> "...1 variable hidden"
+                        numInstanceVariables > 1 -> "...$numInstanceVariables variables hidden"
+                        else -> ""
+                    }
+            return ObjJFoldingDescriptor(instanceVariablesList, startOffset, endOffset, group,  true, placeholder)
         }
 
         fun execute(comment:ObjJComment, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset = comment.textRange.startOffset + 2
             val endOffset:Int = comment.textRange.endOffset - 2
-            return ObjJFoldingDescriptor(comment, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor(comment, startOffset, endOffset, group, true)
         }
     }
 }
 
-private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOffset: Int, group:FoldingGroup, placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
+private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOffset: Int, group:FoldingGroup, val collapseByDefault:Boolean = ObjJPluginSettings.collapseByDefault(), placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
     private val placeholderString:String
 
     override fun getPlaceholderText(): String {
@@ -132,6 +142,7 @@ private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOf
     companion object {
         const val defaultPlaceholderText:String = "..."
     }
+
 
     init {
         this.placeholderString = when {
