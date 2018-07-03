@@ -4,6 +4,8 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -17,14 +19,15 @@ import java.util.ArrayList
 
 class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
-        val group:FoldingGroup = FoldingGroup.newGroup("objj")
+
         val foldingDescriptors = ArrayList<FoldingDescriptor>()
-        PsiTreeUtil.processElements(root, { element ->
+        PsiTreeUtil.processElements(root) process@{ element ->
             if (element is ObjJFoldable) {
+                val group:FoldingGroup = FoldingGroup.newGroup("objj")
                 addDescriptor(foldingDescriptors, element.createFoldingDescriptor(group))
             }
-            return@processElements true
-        })
+            return@process true
+        }
         return foldingDescriptors.toTypedArray()
     }
 
@@ -40,7 +43,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return false
+        return ObjJPluginSettings.collapseByDefault()
     }
 
     companion object {
