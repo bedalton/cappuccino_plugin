@@ -51,7 +51,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
 
         //Annotate static vs instance method calls.
-        annotateStaticMethodCall(methodCall, holder)
+        //annotateStaticMethodCall(methodCall, holder)
         if (isCPStringWithFormat(methodCall)) {
             annotateStringWithFormat(methodCall, holder)
         }
