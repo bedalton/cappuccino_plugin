@@ -26,22 +26,23 @@ fun isUniversalMethodCaller(className: String): Boolean {
 }
 
 fun getSelectorStrings(methodCall:ObjJMethodCall): List<String> {
-    val selectors = methodCall.stub?.selectorStrings
-    return if (selectors != null && selectors.isNotEmpty())
-        selectors
-    else
-        ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(methodCall.selectorList)
+    var selectors: List<String>? = methodCall.stub?.selectorStrings
+    if (selectors != null && selectors.isNotEmpty())
+        return selectors
+    return ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(getSelectorList(methodCall));
 }
 
-fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector> {
+fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
     val singleSelector = methodCall.selector
     if (singleSelector != null) {
         return mutableListOf(singleSelector)
     }
-    val out = ArrayList<ObjJSelector>()
+    val out = ArrayList<ObjJSelector?>()
     for (qualifiedSelector in methodCall.qualifiedMethodCallSelectorList) {
         if (qualifiedSelector.selector != null) {
             out.add(qualifiedSelector.selector!!)
+        } else {
+            out.add(null)
         }
     }
     return out

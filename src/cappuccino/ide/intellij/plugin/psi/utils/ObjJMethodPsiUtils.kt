@@ -37,8 +37,16 @@ object ObjJMethodPsiUtils {
         return ArrayUtils.join(selectors, SELECTOR_SYMBOL, true)
     }
 
-    fun getSelectorStringFromSelectorList(selectors: List<ObjJSelector>): String {
+    fun getSelectorStringFromSelectorList(selectors: List<ObjJSelector?>): String {
         return getSelectorStringFromSelectorStrings(getSelectorStringsFromSelectorList(selectors))
+    }
+
+    fun getSelectorStringsFromSelectorList(selectors:List<ObjJSelector?>) : List<String> {
+        val out:MutableList<String> = ArrayList()
+        selectors.forEach {
+            out.add(if (it != null) it.getSelectorString(false) else "")
+        }
+        return out
     }
 
     fun getSelectorElementsFromMethodDeclarationSelectorList(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJSelector> {
@@ -77,18 +85,7 @@ object ObjJMethodPsiUtils {
         return out
     }
 
-    fun getSelectorStringsFromSelectorList(selectorElements: List<ObjJSelector>): List<String> {
-        if (selectorElements.isEmpty()) {
-            return EMPTY_STRING_ARRAY
-        }
-        val selectorStrings = ArrayList<String>()
-        for (selector in selectorElements) {
-            selectorStrings.add(getSelectorString(selector, false))
-        }
-        return selectorStrings
-    }
-
-    private fun getSelectorStringsFromMethodDeclarationSelectorList(
+    fun getSelectorStringsFromMethodDeclarationSelectorList(
             selectorElements: List<ObjJMethodDeclarationSelector>): List<String> {
         if (selectorElements.isEmpty()) {
             return EMPTY_STRING_ARRAY
