@@ -26,7 +26,7 @@ fun isUniversalMethodCaller(className: String): Boolean {
 }
 
 fun getSelectorStrings(methodCall:ObjJMethodCall): List<String> {
-    var selectors: List<String>? = methodCall.stub?.selectorStrings
+    val selectors: List<String>? = methodCall.stub?.selectorStrings
     if (selectors != null && selectors.isNotEmpty())
         return selectors
     return ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(getSelectorList(methodCall));
