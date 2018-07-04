@@ -107,9 +107,23 @@ class ObjJAnnotator : Annotator {
         if (returnStatementsList.isEmpty()) {
             return
         }
+        val isFunction:Boolean = block.getParentOfType(ObjJFunctionDeclarationElement::class.java) != null
+        val isMethod = block is ObjJMethodBlock
+        if (!isFunction && !isMethod) {
+            return
+        }
         val returnsWithExpression = ArrayList<ObjJReturnStatement>()
         val returnsWithoutExpression = ArrayList<ObjJReturnStatement>()
         for (returnStatement in returnStatementsList) {
+            if (isFunction) {
+                if(returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
+                    continue
+                }
+            } else if (isMethod) {
+                if (returnStatement.getParentOfType(ObjJMethodBlock::class.java) == null) {
+                    continue
+                }
+            }
             if (returnStatement.expr != null) {
                 returnsWithExpression.add(returnStatement)
             } else {
@@ -117,10 +131,10 @@ class ObjJAnnotator : Annotator {
             }
         }
         val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
-        if (methodDeclaration != null) {
-            annotateBlockReturnStatements(methodDeclaration, returnsWithExpression, returnsWithoutExpression, annotationHolder)
-        } else if (block.parent is ObjJFunctionDeclarationElement<*>) {
+        if (isFunction) {
             annotateBlockReturnStatements(block.parent as ObjJFunctionDeclarationElement<*>, returnsWithExpression, returnsWithoutExpression, annotationHolder)
+        } else if (methodDeclaration != null) {
+            annotateBlockReturnStatements(methodDeclaration, returnsWithExpression, returnsWithoutExpression, annotationHolder)
         }
     }
 
@@ -143,11 +157,8 @@ class ObjJAnnotator : Annotator {
                                               annotationHolder: AnnotationHolder) {
         if (returnsWithExpression.size > 0) {
             for (returnStatement in returnsWithoutExpression) {
-                var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                if (annotationElement == null) {
-                    annotationElement = returnStatement
-                }
-                annotationHolder.createWarningAnnotation(annotationElement, "Not all return statements return a value")
+                //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
+                annotationHolder.createWeakWarningAnnotation(returnStatement, "Not all return statements return a value")
             }
         }
     }
