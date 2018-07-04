@@ -341,7 +341,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector> =
+    fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorList(methodCall)
 
     @JvmStatic
