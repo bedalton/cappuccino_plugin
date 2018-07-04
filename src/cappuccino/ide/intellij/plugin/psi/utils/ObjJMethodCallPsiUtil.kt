@@ -9,6 +9,8 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.isPrimitive
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import com.intellij.psi.PsiElement
 
 private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil")
 private val GET_CLASS_METHOD_SELECTOR = ObjJMethodPsiUtils.getSelectorString("class")
@@ -50,3 +52,55 @@ fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
 
 fun getCallTargetText(methodCall:ObjJMethodCall): String =
         methodCall.stub?.callTarget ?: methodCall.callTarget.text
+
+
+/**
+ * Gets selectors from incomplete method call
+ * Used while building completion results
+ * @param psiElement currently editing psi element
+ * @return array of selectors in this editing psi element
+ */
+fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentMethodCall: ObjJMethodCall?): List<ObjJSelector> {
+    val project = psiElement.project
+
+    //Check to ensure this element is part of a method
+    if (selectorParentMethodCall == null) {
+        //LOGGER.log(Level.INFO, "PsiElement is not a selector in a method call element");
+        return listOf()
+    }
+
+    // If element is selector or direct parent is a selector,
+    // then element is well formed, and can return the basic selector list
+    // which will hold selectors up to self, which is what is needed for completion
+    var selectorIndex: Int
+    val selectors = selectorParentMethodCall.selectorList as MutableList
+    if (psiElement is ObjJSelector || psiElement.parent is ObjJSelector) {
+        return selectors
+    }
+
+    // If psi parent is a qualified method call,
+    // find it's index in selector array for autocompletion
+    if (psiElement.parent is ObjJQualifiedMethodCallSelector) {
+        val qualifiedMethodCallSelector = psiElement.parent as ObjJQualifiedMethodCallSelector
+        if (qualifiedMethodCallSelector.selector != null) {
+            selectorIndex = selectors.indexOf(qualifiedMethodCallSelector.selector!!)
+        } else {
+            selectorIndex = selectors.size - 1
+        }
+    } else {
+        selectorIndex = selectors.size - 1
+    }
+
+    // Find orphaned elements in method call
+    // and create selector elements for later use.
+    val orphanedSelectors = psiElement.parent.getChildrenOfType(ObjJTypes.ObjJ_ID)
+    for (subSelector in orphanedSelectors) {
+        if (subSelector.text.isEmpty()) {
+            continue
+        }
+        selectors.add(++selectorIndex, ObjJElementFactory.createSelector(project, subSelector.text.replace("\\s+".toRegex(), "")))
+    }
+    //Finally add the current psi element as a selector
+    selectors.add(ObjJElementFactory.createSelector(project, psiElement.text.replace("\\s+".toRegex(), "")))
+    return selectors
+}

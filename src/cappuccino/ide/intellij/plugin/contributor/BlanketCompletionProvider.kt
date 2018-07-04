@@ -69,7 +69,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
         } else if (PsiTreeUtil.getParentOfType(element, ObjJMethodCall::class.java) != null) {
             //LOGGER.log(Level.INFO, "Searching for selector completions.");
-            ObjJMethodCallCompletionContributorUtil.addSelectorLookupElementsFromSelectorList(resultSet, element)
+            ObjJMethodCallCompletionContributor2.addSelectorLookupElementsFromSelectorList(resultSet, element)
             return
         } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList::class.java) != null) {
             results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
