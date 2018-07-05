@@ -147,7 +147,7 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getClassNameString(classElement:ObjJImplementationDeclaration) : String {
         if (classElement.stub != null) {
-            return classElement.stub.className
+            return classElement?.stub?.className ?: ""
         }
         return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
     }
