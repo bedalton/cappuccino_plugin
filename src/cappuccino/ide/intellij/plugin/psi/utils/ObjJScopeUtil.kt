@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import sun.tools.tree.IfStatement
 
 
 fun PsiElement.getContainingScope() : ReferencedInScope =
@@ -33,6 +33,8 @@ fun getScope(commonContext: PsiElement?): ReferencedInScope {
     if (commonContext == null) {
         return ReferencedInScope.UNDETERMINED
     }
+
+    /*
     val bodyVariableAssignment:ObjJBodyVariableAssignment? =
             commonContext as? ObjJBodyVariableAssignment ?: commonContext.getParentOfType(ObjJBodyVariableAssignment::class.java)
     if (bodyVariableAssignment != null) {
@@ -46,41 +48,48 @@ fun getScope(commonContext: PsiElement?): ReferencedInScope {
             }
         }
     }
+     */
+    var element:PsiElement? = commonContext
+    var scope:ReferencedInScope? = null
+    while (scope == null && element != null) {
+        scope = getScopeStrict(element)
+        element = element.parent
+    }
 
-    if (hasSharedContextOfType(commonContext, ObjJIfStatement::class.java)) {
+    // If a common context exists, it should be the file level at least
+    return scope ?: ReferencedInScope.FILE
+}
+
+private fun getScopeStrict(commonContext:PsiElement) : ReferencedInScope? {
+
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJIfStatement::class.java)) {
         return ReferencedInScope.IF
     }
 
-    if (hasSharedContextOfType(commonContext, ObjJIterationStatement::class.java)) {
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJIterationStatement::class.java)) {
         return ReferencedInScope.ITERATION_HEADER
     }
 
-    if (hasSharedContextOfType(commonContext, ObjJTryStatement::class.java)) {
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJTryStatement::class.java)) {
         return ReferencedInScope.TRY_CATCH
     }
 
-    if (hasSharedContextOfType(commonContext, ObjJPreprocessorDefineFunction::class.java)) {
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJPreprocessorDefineFunction::class.java)) {
         return ReferencedInScope.PREPROCESSOR_FUNCTION
     }
 
-    if (hasSharedContextOfType(commonContext, ObjJMethodDeclaration::class.java)) {
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJFunctionDeclarationElement::class.java))  {
+        return ReferencedInScope.FUNCTION
+    }
+
+    if (hasSharedContextOfTypeStrict(commonContext, ObjJMethodDeclaration::class.java)) {
         return ReferencedInScope.METHOD
     }
 
     if (commonContext is ObjJVariableName && ObjJVariableNameUtil.isInstanceVarDeclaredInClassOrInheritance(commonContext)) {
         return ReferencedInScope.CLASS
     }
-
-    if (hasSharedContextOfType(commonContext, ObjJFunctionDeclarationElement::class.java))  {
-        return ReferencedInScope.FUNCTION
-    }
-
-    if (hasSharedContextOfType(commonContext, PsiFile::class.java)) {
-        ReferencedInScope.FILE
-    }
-
-    // If a common context exists, it should be the file level at least
-    return ReferencedInScope.FILE//ReferencedInScope.UNDETERMINED
+    return null;
 }
 
 private fun <PsiT : PsiElement> PsiElement.hasSharedContextOfType(other: PsiElement?, sharedContextClass: Class<PsiT>): Boolean {
@@ -88,18 +97,24 @@ private fun <PsiT : PsiElement> PsiElement.hasSharedContextOfType(other: PsiElem
     return sharedContextClass.isInstance(commonContext) || commonContext.getParentOfType( sharedContextClass) != null
 }
 
-private fun <PsiT : PsiElement> hasSharedContextOfType(commonContext: PsiElement?, sharedContextClass: Class<PsiT>): Boolean {
-    return sharedContextClass.isInstance(commonContext) || commonContext.getParentOfType( sharedContextClass) != null
+private fun <PsiT : PsiElement> hasSharedContextOfTypeStrict(commonContext: PsiElement?, sharedContextClass: Class<PsiT>): Boolean {
+    return sharedContextClass.isInstance(commonContext)
 }
 
-enum class ReferencedInScope {
-    UNDETERMINED,
-    CLASS,
-    FILE,
-    FUNCTION,
-    IF,
-    ITERATION_HEADER,
-    METHOD,
-    PREPROCESSOR_FUNCTION,
-    TRY_CATCH
+private fun <PsiT : PsiElement> hasSharedContextOfType(commonContext: PsiElement?, sharedContextClass: Class<PsiT>): Boolean {
+    return sharedContextClass.isInstance(commonContext) || commonContext.getParentOfType(sharedContextClass) != null
+}
+
+enum class ReferencedInScope  (val scopeClass : Class<*>?) {
+    UNDETERMINED (null),
+    CLASS(ObjJClassDeclarationElement::class.java),
+    FILE(PsiFile::class.java),
+    FUNCTION(ObjJFunctionDeclarationElement::class.java),
+    IF(ObjJIfStatement::class.java),
+    ITERATION_HEADER(ObjJIterationStatement::class.java),
+    METHOD(ObjJMethodHeaderDeclaration::class.java),
+    PREPROCESSOR_FUNCTION(ObjJPreprocessorDefineFunction::class.java),
+    TRY_CATCH(ObjJTryStatement::class.java)
+
+
 }
