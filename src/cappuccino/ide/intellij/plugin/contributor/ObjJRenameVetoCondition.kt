@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement
 class ObjJRenameVetoCondition : Condition<PsiElement> {
     override fun value(element: PsiElement): Boolean {
         return ObjJFileUtil.isFrameworkElement(element) ||
-                element is ObjJSelector ||
-                (element is ObjJVariableName && element.indexInQualifiedReference > 0)
+                element is ObjJSelector
     }
 }
