@@ -101,6 +101,14 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun setName(className: ObjJClassName, newClassName:String?): PsiElement{
+        if (newClassName == null || newClassName.isEmpty()) {
+            return className
+        }
+        return ObjJNamedPsiUtil.setName(className, newClassName)
+    }
+
+    @JvmStatic
     fun setName(variableName: ObjJVariableName, newName: String): PsiElement {
         return ObjJNamedPsiUtil.setName(variableName, newName)
     }
@@ -634,6 +642,11 @@ object ObjJPsiImplUtil {
     // ============================== //
     // ========== Function ========== //
     // ============================== //
+
+    @JvmStatic
+    fun getName(className: ObjJClassName): String {
+        return className.text
+    }
 
     @JvmStatic
     fun getName(functionDeclaration: ObjJFunctionDeclaration): String {
