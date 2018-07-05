@@ -16,6 +16,7 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.openapi.project.Project
 import org.fest.util.Lists
 
 import java.util.ArrayList
@@ -307,18 +308,21 @@ object ObjJVariableNameUtil {
     }
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
+        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else Lists.emptyList()
+    }
+
+    private fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        if (DumbService.getInstance(element.project).isDumb) {
+        if (DumbService.getInstance(project).isDumb) {
             //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val containingClassName = (element as? ObjJHasContainingClass)?.containingClassName
         if (containingClassName == null || isUniversalMethodCaller(containingClassName)) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, element.project)) {
+        for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, project)) {
             ProgressIndicatorProvider.checkCanceled()
-            for (declaration in ObjJInstanceVariablesByClassIndex.instance[variableHoldingClassName, element.project]) {
+            for (declaration in ObjJInstanceVariablesByClassIndex.instance[variableHoldingClassName, project]) {
                 ProgressIndicatorProvider.checkCanceled()
                 if (declaration.variableName != null) {
                     result.add(declaration.variableName!!)
@@ -611,6 +615,19 @@ object ObjJVariableNameUtil {
             it.containingClassName
         }
         return containingClassInheritedClasses intersect classesContainingInstanceVariableWithName
+    }
+
+
+    fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
+        val index = variableName.indexInQualifiedReference
+        if (index < 1) {
+            return null
+        }
+        val baseVariableName:ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index-1) ?: return null
+        val resolvedSibling = baseVariableName.reference.resolve() ?: return null
+        val variableType = resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
+            resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text ?: return null
+        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableType, variableName.project), { `var` -> `var`.text == variableName.text })
     }
 
 
