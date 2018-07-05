@@ -1809,7 +1809,7 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedNamePart"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
-		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve getContainingSuperClass]
+		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve getContainingSuperClass getIndexInQualifiedReference]
 	}
 	;
 

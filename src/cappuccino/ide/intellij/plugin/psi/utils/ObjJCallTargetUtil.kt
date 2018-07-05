@@ -73,7 +73,7 @@ fun getPossibleCallTargetTypesFromFormalVariableTypes(callTarget: ObjJCallTarget
         return null
     }
     val callTargetVariableName = callTarget.qualifiedReference!!.variableNameList[0]
-    val resolvedVariableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(callTargetVariableName, true)
+    val resolvedVariableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(callTargetVariableName)
             ?: //Logger.getAnonymousLogger().log(Level.INFO, "Failed to find formal variable type for target with value: <"+callTargetVariableName.getText()+">");
             return null
     var formalVariableType: ObjJFormalVariableType? = null
