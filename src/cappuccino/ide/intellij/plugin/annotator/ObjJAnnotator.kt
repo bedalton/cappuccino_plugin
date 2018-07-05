@@ -132,7 +132,7 @@ class ObjJAnnotator : Annotator {
         }
         val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
         if (isFunction) {
-            annotateBlockReturnStatements(block.parent as ObjJFunctionDeclarationElement<*>, returnsWithExpression, returnsWithoutExpression, annotationHolder)
+            annotateBlockReturnStatements(block.getParentOfType(ObjJFunctionDeclarationElement::class.java)!!, returnsWithExpression, returnsWithoutExpression, annotationHolder)
         } else if (methodDeclaration != null) {
             annotateBlockReturnStatements(methodDeclaration, returnsWithExpression, returnsWithoutExpression, annotationHolder)
         }
