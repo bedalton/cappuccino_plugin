@@ -683,6 +683,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getIndexInQualifiedReference(variableName:ObjJVariableName): Int {
+        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName) ?: 0
+    }
+
+    @JvmStatic
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
     }
