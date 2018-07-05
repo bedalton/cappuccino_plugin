@@ -16,6 +16,7 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import org.fest.util.Lists
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -223,7 +224,7 @@ object ObjJVariableNameUtil {
         if (DumbService.isDumb(element.project)) {
             return null
         }
-        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance.get(element.text, element.project) as MutableList
+        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
             return globalVariableDeclarations.get(0).variableName
         }
@@ -241,7 +242,7 @@ object ObjJVariableNameUtil {
             if (variableName.getText() != varName) {
                 return@getFirstMatchOrNull false
             }
-            var parent : PsiElement = variableName.getParent() as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
+            var parent : PsiElement = variableName.parent as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
             parent = parent.parent
             parent is ObjJBodyVariableAssignment || parent is ObjJVariableDeclaration
         })
@@ -466,6 +467,9 @@ object ObjJVariableNameUtil {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
+        if (qualifiedNameIndex != 0) {
+            return Lists.emptyList()
+        }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
             //LOGGER.log(Level.INFO, "Checking variable dec for qualified reference: <"+qualifiedReference.getText()+">");
@@ -489,6 +493,9 @@ object ObjJVariableNameUtil {
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
+        }
+        if (qualifiedNameIndex != 0) {
+            return null
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()

@@ -91,12 +91,18 @@ class ObjJVariableReference(
         if (psiElement is ObjJClassName) {
             return true
         }
+        if (psiElement is ObjJVariableName) {
+            if (psiElement.indexInQualifiedReference > 0) {
+                return false
+            }
+        }
 
         //Finds resolved element scope if possible
         if (referencedInScope == null) {
             val referencedElement = resolve(true)
             referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
         }
+
         //Finds this elements, and the new elements scope
         val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
         val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: ReferencedInScope.UNDETERMINED;
@@ -116,7 +122,7 @@ class ObjJVariableReference(
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
-        var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement, false)
+        var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (variableName == null) {
             variableName = globalVariableNameElement
         }
