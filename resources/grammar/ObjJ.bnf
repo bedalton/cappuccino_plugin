@@ -477,7 +477,6 @@ instanceVariableDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
 		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement]
