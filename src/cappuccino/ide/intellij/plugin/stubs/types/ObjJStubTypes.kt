@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportFrameworkStub
 
 object ObjJStubTypes {
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
+    val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
     val FILE = ObjJFileStubType()
     val FUNCTION_DECLARATION = ObjJFunctionDeclarationStubType("ObjJ_FUNCTION_DECLARATION")
     val FUNCTION_LITERAL = ObjJFunctionLiteralStubType("ObjJ_FUNCTION_LITERAL")

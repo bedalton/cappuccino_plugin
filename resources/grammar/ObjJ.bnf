@@ -12,7 +12,7 @@
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef|className")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -1789,8 +1789,15 @@ private keyword
 className
 	::= ID
 	{
-		methods = [getReference getReferences]
+
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassNameStub"
 		name="class name"
+		implements= [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+		]
+		methods = [getReference getReferences getName setName]
 	}
 	;
 

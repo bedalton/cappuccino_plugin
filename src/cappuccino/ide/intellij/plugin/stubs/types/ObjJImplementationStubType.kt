@@ -59,7 +59,7 @@ class ObjJImplementationStubType internal constructor(
     @Throws(IOException::class)
     override fun deserialize(
             stream: StubInputStream, parentStub: StubElement<*>): ObjJImplementationStub {
-        val className = StringRef.toString(stream.readName())
+        val className = StringRef.toString(stream.readName()) ?: ""
         val superClassName = StringRef.toString(stream.readName())
         val categoryName = if (stream.readBoolean()) StringRef.toString(stream.readName()) else null
         val numProtocols = stream.readInt()
