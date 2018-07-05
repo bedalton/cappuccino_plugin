@@ -93,7 +93,8 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                             "typedef",
                             "class",
                             "implementation",
-                            "protocol"
+                            "protocol",
+                            "end"
                     )
                     prefix = "@"
                 }
