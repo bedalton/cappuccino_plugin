@@ -126,7 +126,7 @@ fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
 
 
 
-fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfType(psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
+fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfTypeStrict(psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
     return this?.getSharedContextOfType(psiElement2, sharedClass) != null
 }
 
