@@ -915,6 +915,14 @@ private methodDeclarationSelector_recover
 
 private methodDeclarationSelectorVariable
 	::= ('(' (formalVariableType|'void') ')')? variableName
+	{
+		pin(".*")=1
+		recoverWhile=methodDeclarationSelectorVariable_recover
+	}
+	;
+
+private methodDeclarationSelectorVariable_recover
+	::= !('{'|'@end'|'+'|'-')
 	;
 
 implementationDeclaration
