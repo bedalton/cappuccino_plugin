@@ -49,9 +49,8 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        val resolvedElement = ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement)
-        if (resolvedElement != null) {
-            return resolvedElement
+        if (variableNameElement.indexInQualifiedReference > 0) {
+            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement)
         }
         return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) }
 

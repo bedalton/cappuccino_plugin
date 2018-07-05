@@ -626,11 +626,8 @@ object ObjJVariableNameUtil {
         val baseVariableName:ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index-1) ?: return null
         val resolvedSibling = baseVariableName.reference.resolve() ?: return null
         val variableType = resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
-            resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
-        if (variableType != null) {
-            return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableType, variableName.project), { `var` -> `var`.text == variableName.text })
-        }
-        return null
+            resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text ?: return null
+        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableType, variableName.project), { `var` -> `var`.text == variableName.text })
     }
 
 

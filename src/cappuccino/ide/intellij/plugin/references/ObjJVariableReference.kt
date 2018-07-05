@@ -97,6 +97,12 @@ class ObjJVariableReference(
             return true
         }
 
+        if (psiElement is ObjJVariableName) {
+            if (psiElement.indexInQualifiedReference > 0) {
+                return false
+            }
+        }
+
         //Finds resolved element scope if possible
         if (referencedInScope == null) {
             referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
