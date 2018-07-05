@@ -202,6 +202,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         return null
     }
 
+    // Rename is prevented by adding all ObjJSelector element to the Veto extension point
     override fun handleElementRename(selectorString: String): PsiElement {
         return ObjJPsiImplUtil.setName(myElement, selectorString)
     }
