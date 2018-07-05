@@ -16,6 +16,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsInde
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -52,6 +53,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.stopHere()
                 return
             }
+            if (element.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
+                addMethodHeaderVariableNameCompletions(resultSet, element)
+                resultSet.stopHere()
+                return
+            }
             if (queryString.trim { it <= ' ' }.isEmpty()) {
                 //LOGGER.log(Level.INFO, "Query string is empty");
                 resultSet.stopHere()
@@ -63,10 +69,15 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             }
             val variableName = (element as? ObjJVariableName ?: parent) as ObjJVariableName
             results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
-            appendFunctionCompletions(resultSet, element)
-            results.addAll(getKeywordCompletions(variableName))
-            results.addAll(getInClassKeywords(variableName))
-            results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
+            if (results.isEmpty()) {
+                LOGGER.log(Level.INFO, "No Results found for variable")
+            }
+            if (variableName.indexInQualifiedReference < 1) {
+                appendFunctionCompletions(resultSet, element)
+                results.addAll(getKeywordCompletions(variableName))
+                results.addAll(getInClassKeywords(variableName))
+                results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
+            }
         } else if (PsiTreeUtil.getParentOfType(element, ObjJMethodCall::class.java) != null) {
             //LOGGER.log(Level.INFO, "Searching for selector completions.");
             ObjJMethodCallCompletionContributor2.addSelectorLookupElementsFromSelectorList(resultSet, element)
@@ -198,6 +209,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
             }
         }
+    }
+
+    private fun addMethodHeaderVariableNameCompletions(resultSet: CompletionResultSet, variableName:PsiElement) {
+        val methodHeaderDeclaration:ObjJMethodDeclarationSelector = variableName.getParentOfType(ObjJMethodDeclarationSelector::class.java) ?: return
+        val formalVariableType = methodHeaderDeclaration.formalVariableType?.text ?: return
     }
 
     companion object {

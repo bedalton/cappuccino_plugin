@@ -619,15 +619,22 @@ object ObjJVariableNameUtil {
 
 
     fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
+        val formalVariableTypeInstanceVariableList = getFormalVariableInstanceVariables(variableName) ?: return null
+        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList, { `var` -> `var`.text == variableName.text })
+    }
+
+    fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {
         val index = variableName.indexInQualifiedReference
         if (index < 1) {
+            LOGGER.log(Level.INFO, "ObjJVariableNameUtil.getFormalVariableInstanceVariables(${variableName.text}) Index is less than 1")
             return null
         }
         val baseVariableName:ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index-1) ?: return null
         val resolvedSibling = baseVariableName.reference.resolve() ?: return null
         val variableType = resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
             resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text ?: return null
-        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableType, variableName.project), { `var` -> `var`.text == variableName.text })
+        //LOGGER.log(Level.INFO, "Resolved variable is of type: "+variableType)
+        return getAllContainingClassInstanceVariables(variableType, variableName.project)
     }
 
 
