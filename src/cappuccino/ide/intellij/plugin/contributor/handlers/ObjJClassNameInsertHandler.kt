@@ -21,11 +21,22 @@ class ObjJClassNameInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
         val thisElement:PsiElement = lookupElement.psiElement ?: return
         when {
-            thisElement.hasParentOfType(ObjJMethodDeclarationSelector::class.java) && !EditorUtil.isTextAtOffset(insertionContext, ")") -> {
-                EditorUtil.insertText(insertionContext, ")", true)
-                if (EditorUtil.isTextAtOffset(insertionContext.document, insertionContext.selectionEndOffset+1, " ")) {
-                    EditorUtil.insertText(insertionContext, " ", true)
+            thisElement.hasParentOfType(ObjJMethodDeclarationSelector::class.java) -> {
+                val nextElement:PsiElement = thisElement.getNextNonEmptySibling(true)?: return
+                when  {
+                    !nextElement.text.equals(")") -> {
+                        EditorUtil.insertText(insertionContext, ")", true)
+                        if (EditorUtil.isTextAtOffset(insertionContext.document, insertionContext.selectionEndOffset+1, " ")) {
+                            EditorUtil.insertText(insertionContext, " ", true)
+                        }
+                    }
+                    else -> {
+                        if (nextElement.text.equals(")")) {
+                            insertionContext.editor.caretModel.moveToOffset(nextElement.textRange.endOffset)
+                        }
+                    }
                 }
+                return
             }
 
             thisElement.hasParentOfType(ObjJInheritedProtocolList::class.java) -> {
