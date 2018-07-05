@@ -51,7 +51,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
         fun execute(declaration: ObjJImplementationDeclaration, group:FoldingGroup): FoldingDescriptor? {
             val startElement = (declaration.inheritedProtocolList ?: declaration.categoryName?: declaration.superClass ?: declaration.getClassName() ?: return null)
             val startOffset:Int = startElement.textRange.endOffset
-            val endOffset:Int = declaration.atEnd?.textRange?.endOffset ?: declaration.textRange.endOffset
+            val endOffset:Int = declaration.atEnd?.textRange?.endOffset ?: return null
             val numMethods = declaration.methodDeclarationList.size
             var placeholderText = "..."
             if (numMethods > 0) {
