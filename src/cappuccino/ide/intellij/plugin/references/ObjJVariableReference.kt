@@ -91,15 +91,14 @@ class ObjJVariableReference(
         if (psiElement is ObjJClassName) {
             return true
         }
-        if (psiElement is ObjJVariableName) {
-            if (psiElement.indexInQualifiedReference > 0) {
-                return false
-            }
+
+        val referencedElement = resolve(true)
+        if (referencedElement?.isEquivalentTo(psiElement) == true) {
+            return true
         }
 
         //Finds resolved element scope if possible
         if (referencedInScope == null) {
-            val referencedElement = resolve(true)
             referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
         }
 
