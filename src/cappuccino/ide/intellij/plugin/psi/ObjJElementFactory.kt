@@ -18,6 +18,11 @@ object ObjJElementFactory {
     private val LOGGER = Logger.getLogger(ObjJElementFactory::class.java.name)
     val PLACEHOLDER_CLASS_NAME = "_XXX__"
 
+    fun createClassName(project:Project, className:String) : ObjJClassName? {
+        val scriptText = "@implementation ${className} \n @end"
+        return createFileFromText(project, scriptText).classDeclarations[0].getClassName()
+    }
+
     fun createSelector(project: Project, selector: String): ObjJSelector {
         val scriptText = "@implementation $PLACEHOLDER_CLASS_NAME \n - (void) $selector{} @end"
         val implementationDeclaration = createFileFromText(project, scriptText).classDeclarations[0] as ObjJImplementationDeclaration
