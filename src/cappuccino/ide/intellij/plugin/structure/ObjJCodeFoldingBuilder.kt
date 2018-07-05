@@ -81,7 +81,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
 
         fun execute(pragma:ObjJPreprocessorPragma, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset:Int = pragma.textRange.endOffset
-            val endOffset:Int = pragma.getNextSiblingOfType(ObjJPreprocessorPragma::class.java)?.textRange?.endOffset ?: pragma.containingFile.textRange.endOffset
+            val endOffset:Int = pragma.getNextSiblingOfType(ObjJPreprocessorPragma::class.java)?.textRange?.endOffset ?: pragma.containingFile.textRange.endOffset ?: return null
             if (startOffset >= endOffset) {
                 return null
             }
@@ -105,7 +105,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
 
         fun execute(methodDeclaration:ObjJMethodDeclaration, group:FoldingGroup) : FoldingDescriptor? {
             val startRange = methodDeclaration.methodHeader.textRange.endOffset
-            val endRange = (methodDeclaration.block?.textRange?.endOffset ?: methodDeclaration.textRange.endOffset)
+            val endRange = methodDeclaration.block?.textRange?.endOffset ?: return null
             return ObjJFoldingDescriptor(methodDeclaration, startRange, endRange, group, true)
         }
 
