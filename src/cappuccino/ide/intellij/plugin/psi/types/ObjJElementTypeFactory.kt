@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.psi.types
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERTY
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.CLASS_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_DECLARATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.GLOBAL_VARIABLE
@@ -27,6 +28,7 @@ class ObjJElementTypeFactory {
         fun factory(name: String): IElementType {
             when (name) {
                 "ObjJ_ACCESSOR_PROPERTY" -> return ACCESSOR_PROPERTY
+                "ObjJ_CLASS_NAME" -> return CLASS_NAME
                 "ObjJ_FUNCTION_DECLARATION" -> return FUNCTION_DECLARATION
                 "ObjJ_FUNCTION_LITERAL" -> return FUNCTION_LITERAL
                 "ObjJ_GLOBAL_VARIABLE_DECLARATION" -> return GLOBAL_VARIABLE
