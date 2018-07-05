@@ -37,21 +37,6 @@ object ObjJVariableNameCompletionContributorUtil {
             LOGGER.log(Level.INFO, "getInstanceVariablesCompletion failed with null variable names")
             return null
         }
-        /*
-        val qualifiedReference:ObjJQualifiedReference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return null
-        val variableNames:List<ObjJVariableName> = qualifiedReference.variableNameList
-        val index:Int = variableNames.indexOf(variableName)
-        if (index < 1) {
-            LOGGER.log(Level.INFO, "Qualified reference has index less than 1");
-            return null
-        }
-        val completions = ObjJVariableNameUtil.getFormalVariableInstanceVariables(variableNames.get(index - 1)) ?: return null
-        if (completions.isEmpty()) {
-            LOGGER.log(Level.INFO,"Instance var completion is empty")
-            return null
-        }
-        *
-        */
         val completions = ObjJVariableNameUtil.getFormalVariableInstanceVariables(variableName) ?: return null
         val out:ArrayList<String> = ArrayList()
         for (variableNameInLoop in completions) {
