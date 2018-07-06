@@ -70,7 +70,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             val variableName = (element as? ObjJVariableName ?: parent) as ObjJVariableName
             results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
             if (results.isEmpty()) {
-                LOGGER.log(Level.INFO, "No Results found for variable")
+                //LOGGER.log(Level.INFO, "No Results found for variable")
             }
             if (variableName.indexInQualifiedReference < 1) {
                 appendFunctionCompletions(resultSet, element)
@@ -114,7 +114,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                     prefix = "#"
                 }
                 else -> {
-                    LOGGER.log(Level.INFO, "File level completion for token type ${element.getElementType().toString()} failed.")
+                    //LOGGER.log(Level.INFO, "File level completion for token type ${element.getElementType().toString()} failed.")
                     results = mutableListOf()
                     prefix = ""
                 }
@@ -131,7 +131,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
         } else {
-            LOGGER.log(Level.INFO, "Completion provider for element in scope: "+element.getContainingScope())
+            //LOGGER.log(Level.INFO, "Completion provider for element in scope: "+element.getContainingScope())
             results = mutableListOf()
         }
         getClassNameCompletions(resultSet, element)

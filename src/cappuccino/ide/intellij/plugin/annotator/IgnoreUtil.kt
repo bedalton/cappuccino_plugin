@@ -48,7 +48,7 @@ object IgnoreUtil {
         if (prev !is ObjJComment) {
             return null
         }
-        LOGGER.log(Level.INFO, "Prev sibling is of comment type.")
+        //LOGGER.log(Level.INFO, "Prev sibling is of comment type.")
         return prev
     }
 

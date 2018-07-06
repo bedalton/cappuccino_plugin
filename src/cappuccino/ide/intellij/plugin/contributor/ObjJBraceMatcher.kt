@@ -18,7 +18,7 @@ class ObjJBraceMatcher : PairedBraceMatcher {
     }
 
     override fun isPairedBracesAllowedBeforeType(lbraceType: IElementType, nextTokenType: IElementType?): Boolean {
-        Logger.getAnonymousLogger().log(Level.INFO, "Matching Brace: "+lbraceType.toString() + " in context: "+nextTokenType.toString())
+        //Logger.getLogger("ObjJBraceMatcher").log(Level.INFO, "Matching Brace: "+lbraceType.toString() + " in context: "+nextTokenType.toString())
         return if (lbraceType === ObjJTypes.ObjJ_OPEN_BRACKET) {
             isPairedBracketAllowedBeforeType(nextTokenType)
         } else if (lbraceType == ObjJ_LESS_THAN) {

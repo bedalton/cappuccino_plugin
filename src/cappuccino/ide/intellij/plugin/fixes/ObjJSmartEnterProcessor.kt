@@ -52,26 +52,26 @@ private interface ObjJSmartEnterFixer {
 private class ClassImplementationEnterHandler:ObjJSmartEnterFixer {
     override fun process(editor: Editor, psiElement: PsiElement): Boolean {
         val classDeclaration:ObjJClassDeclarationElement<*>? = psiElement as? ObjJClassDeclarationElement<*> ?: psiElement.getParentOfType(ObjJClassDeclarationElement::class.java) ?: return false
-        Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "In class declaration")
+        //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "In class declaration")
         val hasEnd:Boolean;
         if (classDeclaration is ObjJImplementationDeclaration) {
             hasEnd = classDeclaration.atEnd != null
         } else if (classDeclaration is ObjJProtocolDeclaration) {
             hasEnd = classDeclaration.atEnd != null
         } else {
-            Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration not of expected type")
+            //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration not of expected type")
             return false
         }
 
         if (!hasEnd) {
-            Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration does not have end")
+            //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration does not have end")
             EditorUtil.insertText(editor, "@end", false)
             EditorUtil.insertText(editor, "\n\n", true)
             EditorUtil.insertText(editor, "\n\n", false)
 
             return true;
         }
-        Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration has @end statement")
+        //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration has @end statement")
         return false
     }
 

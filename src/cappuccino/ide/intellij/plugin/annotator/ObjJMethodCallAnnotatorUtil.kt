@@ -94,7 +94,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return
         }
         val isStaticReference = ObjJImplementationDeclarationsIndex.instance[callTarget, methodCall.project].isNotEmpty()
-        Logger.getLogger("ObjJMethodCallAnnotator").log(Level.INFO, "ImplementationDecIndex has: "+ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project).size + " keys in index")
+        //Logger.getLogger("ObjJMethodCallAnnotator").log(Level.INFO, "ImplementationDecIndex has: "+ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project).size + " keys in index")
 
         val methodHeaderDeclarations = ObjJUnifiedMethodIndex.instance[methodCall.selectorString, methodCall.project]
         for (declaration in methodHeaderDeclarations) {
@@ -110,7 +110,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             isStaticReference -> "Instance method called from static reference"
             else -> "Static method called from class instance"
         }
-        Logger.getLogger("ObjJMethCallAnnot").log(Level.INFO, "Method call is static? $isStaticReference; For call target: $callTarget")
+        //Logger.getLogger("ObjJMethCallAnnot").log(Level.INFO, "Method call is static? $isStaticReference; For call target: $callTarget")
         for (selector in methodCall.selectorList) {
             holder.createWeakWarningAnnotation(selector, warning)
         }

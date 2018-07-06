@@ -159,7 +159,7 @@ object ObjJMethodCallCompletionContributorUtil {
             }
             return
         }
-        LOGGER.log(Level.INFO, "Searching for selector completions. Found <" + resolveResult.naturalResult.size + "> natural results and <" + resolveResult.otherResult.size + "> general results, for selector: <" + selectorString + ">; Possible call target types: [" + resolveResult.possibleContainingClassNames.joinToString(", ")+"]")
+        //LOGGER.log(Level.INFO, "Searching for selector completions. Found <" + resolveResult.naturalResult.size + "> natural results and <" + resolveResult.otherResult.size + "> general results, for selector: <" + selectorString + ">; Possible call target types: [" + resolveResult.possibleContainingClassNames.joinToString(", ")+"]")
         val naturalResult = ObjJResolveableElementUtil.onlyResolveableElements(resolveResult.naturalResult, file)
         addSelectorLookupElementsFromSelectorList(result, naturalResult, selectorIndex, ObjJCompletionContributor.TARGETTED_METHOD_SUGGESTION_PRIORITY)
         if (resolveResult.possibleContainingClassNames.isEmpty() || resolveResult.possibleContainingClassNames.contains(ObjJClassType.UNDETERMINED)) {
