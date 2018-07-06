@@ -132,7 +132,7 @@ class ObjJAnnotator : Annotator {
         }
         val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
         if (isFunction) {
-            annotateBlockReturnStatements(block.getParentOfType(ObjJFunctionDeclarationElement::class.java)!!, returnsWithExpression, returnsWithoutExpression, annotationHolder)
+            annotateBlockReturnStatements(returnsWithExpression, returnsWithoutExpression, annotationHolder)
         } else if (methodDeclaration != null) {
             annotateBlockReturnStatements(methodDeclaration, returnsWithExpression, returnsWithoutExpression, annotationHolder)
         }
@@ -147,18 +147,20 @@ class ObjJAnnotator : Annotator {
         val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
         val errorAnnotation = if (shouldHaveReturnExpression) "Return statement is missing return element. Element should be of type: <$returnType>" else "Method with return type void should not return a value."
         for (returnStatement in statementsToMark) {
-            annotationHolder.createErrorAnnotation(returnStatement, errorAnnotation)
+            if (returnStatement.expr?.leftExpr?.functionCall != null) {
+                continue
+            }
+            annotationHolder.createWarningAnnotation(returnStatement.expr ?: returnStatement.`return`, errorAnnotation)
         }
     }
 
-    private fun annotateBlockReturnStatements(functionDeclarationElement: ObjJFunctionDeclarationElement<*>,
-                                              returnsWithExpression: List<ObjJReturnStatement>,
+    private fun annotateBlockReturnStatements(returnsWithExpression: List<ObjJReturnStatement>,
                                               returnsWithoutExpression: List<ObjJReturnStatement>,
                                               annotationHolder: AnnotationHolder) {
-        if (returnsWithExpression.size > 0) {
+        if (returnsWithExpression.isNotEmpty()) {
             for (returnStatement in returnsWithoutExpression) {
                 //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                annotationHolder.createWeakWarningAnnotation(returnStatement, "Not all return statements return a value")
+                annotationHolder.createWarningAnnotation(returnStatement.expr ?: returnStatement.`return`, "Not all return statements return a value")
             }
         }
     }
