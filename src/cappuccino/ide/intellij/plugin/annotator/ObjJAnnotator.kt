@@ -5,16 +5,20 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
+import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
-
-import java.util.ArrayList
+import java.util.*
 
 class ObjJAnnotator : Annotator {
 
@@ -124,10 +128,10 @@ class ObjJAnnotator : Annotator {
                     continue
                 }
             }
-            if (returnStatement.expr != null) {
-                returnsWithExpression.add(returnStatement)
-            } else {
-                returnsWithoutExpression.add(returnStatement)
+            when {
+                returnMethodCallDoesNotReturnVoid(returnStatement.expr?.leftExpr?.methodCall) -> returnsWithoutExpression.add(returnStatement)
+                returnStatement.expr != null -> returnsWithExpression.add(returnStatement)
+                else -> returnsWithoutExpression.add(returnStatement)
             }
         }
         val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
@@ -173,6 +177,29 @@ class ObjJAnnotator : Annotator {
                 element.getParentOfType(ObjJMethodDeclaration::class.java) == null) {
             annotationHolder.createWarningAnnotation(element, "Return value not captured")
         }
+    }
+
+    private fun returnMethodCallDoesNotReturnVoid(methodCall:ObjJMethodCall?):Boolean {
+        if (methodCall == null) {
+            return false
+        }
+        for (call in getAllMethodsForCall(methodCall)) {
+            if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun getAllMethodsForCall(methodCall: ObjJMethodCall?) : List<ObjJMethodHeaderDeclaration<*>> {
+        if (methodCall == null) {
+            return Collections.emptyList()
+        }
+        val fullSelector = methodCall.selectorString
+        val project = methodCall.project
+        val out:ArrayList<ObjJMethodHeaderDeclaration<*>> = ArrayList()
+        out.addAll(ObjJUnifiedMethodIndex.instance.get(fullSelector, project))
+        return out
     }
 
 }

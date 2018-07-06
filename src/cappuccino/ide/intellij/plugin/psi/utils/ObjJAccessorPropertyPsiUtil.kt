@@ -15,7 +15,7 @@ import java.util.*
  * @return accessor property var type
  */
 fun getVarType(accessorProperty:ObjJAccessorProperty): String? =
-    accessorProperty.stub.varType ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
+    accessorProperty.stub?.varType ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
 
 /**
  * Tests whether an accessor property is a getter or not
