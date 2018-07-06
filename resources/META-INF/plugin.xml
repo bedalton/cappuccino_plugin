@@ -1,16 +1,27 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
-  <name>Objective-J Plugin</name>
-  <version>0.02</version>
+  <name>Objective-J Langauge Plugin</name>
+  <version>0.1</version>
   <vendor url="http://www.cappuccino-project.org">Cappuccino Project</vendor>
 
   <description><![CDATA[
-     Cappuccino Framework Objective-J language support plugin.
-     Proof of concept alpha release of plugin. Provides basic, yet buggy support for autocompletion.
-     Variable type is not accurately implemented which causes suggestion of any selector for even if not valid for variable.
-     WARNING: Rename refactoring is brute force:anything with same name is renamed and DANGEROUS: occasionally breaks undo support.
-     USE AT OWN RISK
-     Requires raw source code for frameworks
+      # Objective-J Language plugin
+      Provides basic autocomplete functionality for selector methods and variable names
+
+      #### Working
+      - Non-Intelligent method call selector completion
+      - Variable name completion
+      - Variable, Function and Method declaration resolution
+      - Syntax Highlighting
+      - Invalid method call selector warnings
+
+      #### Note
+      * Variable type resolution is not accurately implemented which causes suggestion of any selector even if not applicable to variable
+
+      #### Future
+      - Add rename support for method selectors (removed original implementation due to problems with rename scope)
+      - Scope suggestions to imported files
+      - Implement variable type resolution to provide better autocompletion suggestions
     ]]></description>
 
   <change-notes><![CDATA[
