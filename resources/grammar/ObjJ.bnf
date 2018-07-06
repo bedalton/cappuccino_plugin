@@ -1497,6 +1497,7 @@ leftExpr
     |	methodCall
     | 	'new' expr ('(' expressionSequence? ')')?
 	|	variableAssignmentLogical
+	|	'@deref' '(' variableName ')'
     |	qualifiedReference
     |	objectLiterals
     |	primary
