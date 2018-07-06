@@ -14,7 +14,8 @@ This plugin is mostly proof of concept, and not guaranteed to work properly, or 
 - Variable type resolution is not fully/or correctly implemented, 
 so intellisense may suggest methods that do not exist for the given variable
 - Suggestions do not account for import, suggesting things not imported or in scope
-
+- This plugin requires the original source files for the cappuccino framework to work which can be downloaded
+  from the Cappuccino github page([link](https://github.com/cappuccino/cappuccino "Cappuccino's GitHub Page"))
 
 ### Possible Future
 - Improve code comments and quality
