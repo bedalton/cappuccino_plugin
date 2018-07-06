@@ -10,14 +10,10 @@ This plugin is mostly proof of concept, and not guaranteed to work properly, or 
 - Syntax Highlighting
 - Invalid method call selector warnings
 
-### Warnings and Problems
-- Plugin rename is brute force. It renames every method with similar selectors, despite being different classes
-- Rename can break undo, leaving you with no way to undo the changes
+### Notes
 - Variable type resolution is not fully/or correctly implemented, 
 so intellisense may suggest methods that do not exist for the given variable
 - Suggestions do not account for import, suggesting things not imported or in scope
-- Right click on invalid selectors causes temporary pause/freeze in intellij
-- <b>Use at your own risk</b>
 
 
 ### Possible Future
@@ -36,4 +32,4 @@ It has since spiraled out of control, so despite their necessity,
 there are almost no comments, and the code is poorly written and disorganized.
 
 ### Install Instructions
-If you're feeling brave, download the "Cappuccino Objective-J Plugin.jar" file in the plugin folder in this repository, and install it into intellij by going to Preferences(or Settings)->plugins->"install plugin from disk", Select the jar, and enjoy
+Download the "Cappuccino Objective-J Plugin.jar" file in the plugin folder in this repository, and install it into intellij by going to Preferences(or Settings)->plugins->"install plugin from disk", Select the jar, and enjoy
