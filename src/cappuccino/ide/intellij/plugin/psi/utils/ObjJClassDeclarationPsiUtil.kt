@@ -219,7 +219,7 @@ private fun isProtocolMethodImplemented(project: Project, classNameIn: String?, 
         ProgressIndicatorProvider.checkCanceled()
         for (methodHeaderDeclaration in ObjJClassMethodIndex.instance[className, project]) {
             if (methodHeaderDeclaration.selectorString == selector) {
-                LOGGER.log(Level.INFO, "Class <$className> has required protocol method: <selector> in class: ${methodHeaderDeclaration.containingClassName} in file ${ObjJFileUtil.getContainingFileName(methodHeaderDeclaration)}")
+                //LOGGER.log(Level.INFO, "Class <$className> has required protocol method: <selector> in class: ${methodHeaderDeclaration.containingClassName} in file ${ObjJFileUtil.getContainingFileName(methodHeaderDeclaration)}")
                 return true
             }
         }

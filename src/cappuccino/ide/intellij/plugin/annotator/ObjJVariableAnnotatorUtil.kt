@@ -139,7 +139,7 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
         //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
-        annotationHolder.createWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
+        annotationHolder.createWeakWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
 
     }
 

@@ -31,14 +31,14 @@ object ObjJFilePsiUtil {
             }
         }
         if (basePath == null) {
-            LOGGER.log(Level.INFO, "Failed to find base file path for file: <$filePath>")
+            //LOGGER.log(Level.INFO, "Failed to find base file path for file: <$filePath>")
             return null
         }
         val pathComponents = Arrays.asList(*filePath.substring(basePath.length).split(SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
         var plistFile: VirtualFile? = null
         while (pathComponents.size > 0) {
             val path = basePath + "/" + ArrayUtils.join(pathComponents, SEPARATOR, true) + "info.plist"
-            LOGGER.log(Level.INFO, "Checking for info.plist at location: <$path>")
+            //LOGGER.log(Level.INFO, "Checking for info.plist at location: <$path>")
             plistFile = LocalFileSystem.getInstance().findFileByPath(path)
             if (plistFile != null) {
                 break

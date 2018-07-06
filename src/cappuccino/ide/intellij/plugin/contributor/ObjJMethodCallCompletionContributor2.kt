@@ -63,7 +63,7 @@ object ObjJMethodCallCompletionContributor2 {
 
         //Determine target scope
         val scope:TargetScope = getTargetScope(elementsParentMethodCall)
-        LOGGER.log(Level.INFO, String.format("Call target: <%s> has scope of <%s> with selector: <%s>", elementsParentMethodCall.callTargetText, scope.toString(), selectorString))
+        //LOGGER.log(Level.INFO, String.format("Call target: <%s> has scope of <%s> with selector: <%s>", elementsParentMethodCall.callTargetText, scope.toString(), selectorString))
         //Determine possible containing class names
         val possibleContainingClassNames:List<String> = when {
             scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project)
@@ -86,10 +86,10 @@ object ObjJMethodCallCompletionContributor2 {
         if (methodHeaders.isEmpty()) {
             return
         }
-        LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
+        //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
         for (methodHeader:ObjJMethodHeaderDeclaration<*> in methodHeaders) {
             ProgressIndicatorProvider.checkCanceled()
-            LOGGER.log(Level.INFO, String.format("Scope for target is <%s>; Method scope is <%s>;",targetScope.toString(),if(methodHeader.isStatic)"static" else "instance"))
+            //LOGGER.log(Level.INFO, String.format("Scope for target is <%s>; Method scope is <%s>;",targetScope.toString(),if(methodHeader.isStatic)"static" else "instance"))
             //Determine if method call matches scope, continue loop if it does not
             if (!inScope(targetScope, methodHeader)){ continue }
             //Get the selector at index, or continue loop

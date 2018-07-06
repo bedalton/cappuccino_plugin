@@ -20,13 +20,13 @@ object ObjJVariableNameCompletionContributorUtil {
 
     fun getVariableNameCompletions(variableName: ObjJVariableName?): List<String> {
         if (variableName == null || variableName.text.isEmpty()) {
-            LOGGER.log(Level.INFO, "Variable Name is null")
+            //LOGGER.log(Level.INFO, "Variable Name is null")
             return emptyList()
         }
 
         //Initialize variable name array
         val out = getInstanceVariableCompletion(variableName) ?: ArrayList()
-        LOGGER.log(Level.INFO, "Found: ${out.size} instance variables");
+        //LOGGER.log(Level.INFO, "Found: ${out.size} instance variables");
         addAllVariableNameElementsByName(out, variableName)
         //LOGGER.log(Level.INFO, String.format("NameFilter:<%s>; Raw Completion Elements: <%d>; Num after filter by name: <%d>", variableName, rawCompletionElements.size(), foldingDescriptors.size()));
         return out
@@ -34,16 +34,16 @@ object ObjJVariableNameCompletionContributorUtil {
 
     fun getInstanceVariableCompletion(variableName: ObjJVariableName?) : ArrayList<String>? {
         if (variableName == null) {
-            LOGGER.log(Level.INFO, "getInstanceVariablesCompletion failed with null variable names")
+            //LOGGER.log(Level.INFO, "getInstanceVariablesCompletion failed with null variable names")
             return null
         }
         val completions = ObjJVariableNameUtil.getFormalVariableInstanceVariables(variableName) ?: return null
         val out:ArrayList<String> = ArrayList()
         for (variableNameInLoop in completions) {
-            LOGGER.log(Level.INFO, "Has Instance variable completion: "+variableNameInLoop.text)
+            //LOGGER.log(Level.INFO, "Has Instance variable completion: "+variableNameInLoop.text)
             out.add(variableNameInLoop.text)
         }
-        LOGGER.log(Level.INFO, "VariableName has <${out.size}> instance variable completions")
+        //LOGGER.log(Level.INFO, "VariableName has <${out.size}> instance variable completions")
         return out
     }
 

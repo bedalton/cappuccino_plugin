@@ -1102,7 +1102,7 @@ object ObjJPsiImplUtil {
     fun eosToken(ahead: IElementType?, hadLineTerminator: Boolean): Boolean {
 
         if (ahead == null) {
-            LOGGER.log(Level.INFO, "EOS assumed as ahead == null")
+            //LOGGER.log(Level.INFO, "EOS assumed as ahead == null")
             return true
         }
 

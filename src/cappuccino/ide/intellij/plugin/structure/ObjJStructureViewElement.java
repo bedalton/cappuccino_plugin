@@ -62,7 +62,7 @@ public class ObjJStructureViewElement  implements StructureViewTreeElement, Sort
     @Override
     public TreeElement[] getChildren() {
         final TreeElement[] out = element.getTreeStructureChildElements();
-        Logger.getAnonymousLogger().log(Level.INFO, "Element <"+itemPresentation.getPresentableText()+"> has "+out.length + " child structure view elements");
+        //Logger.getLogger("StructureViewElement").log(Level.INFO, "Element <"+itemPresentation.getPresentableText()+"> has "+out.length + " child structure view elements");
         return out;
     }
 }
