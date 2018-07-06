@@ -17,7 +17,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (declaration.isCategory()) {
             annotateIfUndefinedImplementationForCategory(declaration.getClassName(), annotationHolder)
         } else {
-            annotateIfDuplicateImplementation(declaration, annotationHolder)
+            //annotateIfDuplicateImplementation(declaration, annotationHolder)
         }
         annotateUnimplementedProtocols(declaration, annotationHolder)
     }
