@@ -20,6 +20,6 @@ interface ObjJHasContainingClass : ObjJCompositeElement {
             return implementationDeclaration ?: PsiTreeUtil.getParentOfType(this, ObjJProtocolDeclaration::class.java)
         }
 
-    fun getContainingSuperClass(returnDefault:Boolean = false) : ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(this, returnDefault)
+    fun getContainingSuperClass(returnDefault: Boolean = false): ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(this, returnDefault)
 
 }

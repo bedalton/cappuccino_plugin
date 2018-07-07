@@ -193,7 +193,7 @@
 		REGULAR_EXPRESSION_LITERAL_TOKEN =	'regexp:\/ (([^\r\n\u2028\u2029\\\/\[]|\\\\[^\r\n\u2028\u2029]) | \[ ([^\r\n\u2028\u2029\]\\] | \\\\[^\r\n\u2028\u2029])* \] )* \/ [a-zA-Z]*'
 	]
 	name (".*expr|.+Expr(Prime)?") ='expression'
-	extends(".+Block")=block
+	extends(".+Block")=blockElement
 	consumeTokenMethod("block|.+Block")="consumeTokenFast"
 	name("block|.+Block")="statement block"
 	name(".+_COMMENT|comment")="comment"
@@ -319,7 +319,7 @@ private bodyStatement
 	|	includeFramework
 	|	expr eos?
     |	bodyVariableAssignment eos?
-	|	block
+	|	blockElement
 	| 	comment
 	| 	emptyStatement
 	{
@@ -327,6 +327,7 @@ private bodyStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
+		methods=[block="blockElement"]
 	}
     ;
 
@@ -350,8 +351,11 @@ private loopBodyStatement
 
 
 private statementOrBlock
-	::= block
+	::= blockElement
 	| 	singleBodyStatement
+	{
+		methods=[block="blockElement"]
+	}
 	;
 
 singleBodyStatement
@@ -361,7 +365,7 @@ singleBodyStatement
 	}
 	;
 
-block
+blockElement
 	::= '{' blockStatements? '}'
 	{
 		pin=2;
@@ -369,6 +373,7 @@ block
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
 	}
 	;
@@ -377,10 +382,10 @@ methodBlock
 	::= '{' methodBlockStatements? '}'
 	{
 		pin=1;
-		extends=block
 		recoverWhile=recover_methodBlockStatements
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
 
 	}
@@ -743,8 +748,10 @@ caseClause
 bracketLessBlock
 	::= bodyStatement+
 	{
-		implements="cappuccino.ide.intellij.plugin.psi.ObjJBlock"
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+		]
 	}
 	;
 
@@ -770,25 +777,27 @@ throwStatement
 	;
 
 tryStatement
-	::= 'try' block (catchProduction finallyProduction? | finallyProduction)
+	::= 'try' blockElement (catchProduction finallyProduction? | finallyProduction)
 	{
 		implements = ["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"]
-		methods = [getBlockList]
+		methods = [getBlockList block="blockElement"]
 		pin=1
 	}
 	;
 
 catchProduction
-	::= 'catch' '(' variableName ')' block
+	::= 'catch' '(' variableName ')' blockElement
 	{
 		pin=1
+		methods=[block="blockElement"]
 	}
 	;
 
 finallyProduction
-	::= 'finally' block
+	::= 'finally' blockElement
 	{
 		pin=1
+		methods=[block="blockElement"]
 	}
 	;
 
@@ -801,7 +810,7 @@ deleteStatement
 	;
 
 functionDeclaration
-	::= 'function' (<<notInMode "varDec">> functionName) '(' formalParameterList? ')' block
+	::= 'function' (<<notInMode "varDec">> functionName) '(' formalParameterList? ')' blockElement
 	{
 		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -815,7 +824,18 @@ functionDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve getBlockList createFoldingDescriptor]
+		methods=[
+			getName
+			setName
+			functionNameNode="/functionName"
+			getFunctionNameAsString
+			getParamNames
+			getReturnType
+			shouldResolve
+			getBlockList
+			createFoldingDescriptor
+			block="blockElement"
+		]
 
 	}
 	;
@@ -1069,6 +1089,7 @@ preprocessorDefineFunction
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
@@ -1077,13 +1098,16 @@ preprocessorDefineFunction
 	;
 
 preprocessorDefineBody
-	::= preprocessorBodyStatementList|block|expr ';'?
+	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
 		//recoverWhile=recover_preprocessorDefineBody
+		methods=[block="blockElement"]
 	}
 	;
-preprocessorBodyStatementList
+private preprocessorBodyStatementList
 	::= bodyStatement+
+	{
+	}
 	;
 
 private recover_preprocessorDefineBody
@@ -1158,7 +1182,7 @@ preprocessorIfStatement
 	::=	'#if' preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements? ('#elif' preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements?)* ('#else' LINE_TERMINATOR preprocessorBodyStatements?)? '#endif' LINE_TERMINATOR
 	{
 		pin=1
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "cappuccino.ide.intellij.plugin.psi.ObjJBlock"]
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
 		methods=[getOpenBrace];
 	}
 	;
@@ -1671,7 +1695,7 @@ private objectLiterals
 	;
 
 functionLiteral
-	::= 'function' '(' formalParameterList? ')' block
+	::= 'function' '(' formalParameterList? ')' blockElement
 	{
 		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -1682,7 +1706,7 @@ functionLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>>"
 		]
-		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList createFoldingDescriptor]
+		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList createFoldingDescriptor body="blockElement"]
 	}
 	;
 
