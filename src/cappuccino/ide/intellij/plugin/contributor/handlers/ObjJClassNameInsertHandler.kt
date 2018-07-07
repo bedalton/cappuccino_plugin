@@ -19,14 +19,14 @@ import com.intellij.psi.PsiElement
 class ObjJClassNameInsertHandler : InsertHandler<LookupElement> {
 
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
-        val thisElement:PsiElement = lookupElement.psiElement ?: return
+        val thisElement: PsiElement = lookupElement.psiElement ?: return
         when {
             thisElement.hasParentOfType(ObjJMethodDeclarationSelector::class.java) -> {
-                val nextElement:PsiElement = thisElement.getNextNonEmptySibling(true)?: return
-                when  {
+                val nextElement: PsiElement = thisElement.getNextNonEmptySibling(true) ?: return
+                when {
                     !nextElement.text.equals(")") -> {
                         EditorUtil.insertText(insertionContext, ")", true)
-                        if (EditorUtil.isTextAtOffset(insertionContext.document, insertionContext.selectionEndOffset+1, " ")) {
+                        if (EditorUtil.isTextAtOffset(insertionContext.document, insertionContext.selectionEndOffset + 1, " ")) {
                             EditorUtil.insertText(insertionContext, " ", true)
                         }
                     }

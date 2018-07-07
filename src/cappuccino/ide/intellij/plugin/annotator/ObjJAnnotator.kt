@@ -5,11 +5,9 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
-import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon

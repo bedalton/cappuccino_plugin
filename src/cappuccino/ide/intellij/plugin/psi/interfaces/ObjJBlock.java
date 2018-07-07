@@ -10,9 +10,6 @@ import java.util.List;
 public interface ObjJBlock extends ObjJCompositeElement {
 
     @NotNull
-    List<cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock> getBlockList();
-
-    @NotNull
     List<ObjJBodyVariableAssignment> getBodyVariableAssignmentList();
 
     @NotNull
@@ -60,6 +57,4 @@ public interface ObjJBlock extends ObjJCompositeElement {
     @NotNull
     List<ObjJTryStatement> getTryStatementList();
 
-    @Nullable
-    PsiElement getOpenBrace();
 }
