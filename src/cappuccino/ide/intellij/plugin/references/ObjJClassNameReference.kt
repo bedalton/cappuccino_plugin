@@ -35,7 +35,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         }
 
         if (isClassDeclarationName) {
-            return element.parent !is ObjJClassDeclarationElement<*>
+            //return element.parent !is ObjJClassDeclarationElement<*>
         }
         return element.parent is ObjJClassDeclarationElement<*>
     }
