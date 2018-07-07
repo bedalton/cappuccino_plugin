@@ -2,10 +2,12 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.Filter
+import com.google.common.collect.Lists
 import java.util.*
 import java.util.logging.Logger
 
@@ -205,6 +207,10 @@ fun getBlockList(tryStatement:ObjJTryStatement): List<ObjJBlock> {
         out.add(block)
     }
     return out
+}
+
+fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjjBlock> {
+    return defineFunction.preprocessorDefineBody.getBlockList()
 }
 
 fun getBlock(expr:ObjJExpr): ObjJBlock? {
