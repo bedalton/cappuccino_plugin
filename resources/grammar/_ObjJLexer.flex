@@ -232,7 +232,6 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	"try"                                { canRegex(false);  return ObjJ_TRY; }
 	"let"                                { canRegex(false);  return ObjJ_LET; }
 	"const"                              { canRegex(false);  return ObjJ_CONST; }
-	"mark"								 { canRegex(false);  return ObjJ_MARK; }
 	";"                                  { canRegex(true); return ObjJ_SEMI_COLON; }
 
 	{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
