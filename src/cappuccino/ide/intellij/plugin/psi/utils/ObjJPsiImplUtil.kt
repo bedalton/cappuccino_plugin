@@ -624,10 +624,14 @@ object ObjJPsiImplUtil {
         val block = methodDeclaration.block;
         return if (block != null) listOf(block) else listOf();
     }
+    @JvmStatic
+    fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjJBlock> {
+        return getBlockList(defineFunction)
+    }
 
     @JvmStatic
     fun getBlock(function: ObjJPreprocessorDefineFunction): ObjJBlock? {
-        return if (function.preprocessorDefineBody != null) function.preprocessorDefineBody!!.block else null
+        return function.block
     }
 
     @JvmStatic
@@ -744,6 +748,9 @@ object ObjJPsiImplUtil {
     fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? =
             ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition)
 
+
+    @JvmStatic
+    fun getOpenBrace(element:PsiElement) = null
 
     // ============================== //
     // ===== QualifiedReference ===== //

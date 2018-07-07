@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
@@ -239,14 +240,14 @@ object ObjJVariableNameUtil {
         val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
         val varName = element.text
         val variableNames = ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
-        return getFirstMatchOrNull(variableNames, { variableName ->
+        return getFirstMatchOrNull(variableNames) { variableName ->
             if (variableName.getText() != varName) {
                 return@getFirstMatchOrNull false
             }
             var parent : PsiElement = variableName.parent as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
             parent = parent.parent
             parent is ObjJBodyVariableAssignment || parent is ObjJVariableDeclaration
-        })
+        }
     }
 
     private fun getVariableNameDeclarationInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {

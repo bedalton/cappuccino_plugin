@@ -209,8 +209,8 @@ fun getBlockList(tryStatement:ObjJTryStatement): List<ObjJBlock> {
     return out
 }
 
-fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjjBlock> {
-    return defineFunction.preprocessorDefineBody.getBlockList()
+fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjJBlock> {
+    return Arrays.asList<ObjJBlock>(defineFunction.block)
 }
 
 fun getBlock(expr:ObjJExpr): ObjJBlock? {
