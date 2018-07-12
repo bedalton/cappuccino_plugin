@@ -24,7 +24,7 @@ object ObjJPluginSettings {
     private val IGNORE_PROPERTIES_DEFAULT = "";
     private val ignoredKeywordsSetting = StringSetting(IGNORE_PROPERTIES_KEY, IGNORE_PROPERTIES_DEFAULT)
     private val IGNORE_KEYWORDS_DELIM = ","
-    private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM) as MutableList
+    private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
 
     private val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
     private val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
@@ -57,11 +57,19 @@ object ObjJPluginSettings {
         if (ignoredKeywords.contains(keyword)) {
             return;
         }
-        ignoredKeywords.add(keyword);
+        ignoredKeywords += keyword;
         ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
-    fun ignoreKeywords(keywords:String) {
+    fun removeIgnoredKeyword(keyword:String) {
+        if (!ignoredKeywords.contains(keyword)) {
+            return;
+        }
+        ignoredKeywords -= keyword;
+        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
+    }
+
+    private fun ignoreKeywords(keywords:String) {
         ignoredKeywordsSetting.value = keywords
         ignoredKeywords = loadIgnoredKeywords();
     }
