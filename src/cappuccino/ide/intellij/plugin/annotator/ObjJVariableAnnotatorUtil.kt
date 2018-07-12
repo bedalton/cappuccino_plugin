@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreKeywordIntention
 import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
+import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredKeywordIntention
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -118,6 +119,8 @@ internal object ObjJVariableAnnotatorUtil {
         }
 
         if (ObjJPluginSettings.isIgnoredKeyword(variableName.text)) {
+            annotationHolder.createInfoAnnotation(variableName, "${variableName.text} is in the ignored properties list")
+                    .registerFix(ObjJRemoveIgnoredKeywordIntention(variableName.text))
             return
         }
 
@@ -413,8 +416,8 @@ internal object ObjJVariableAnnotatorUtil {
      */
     private fun annotateVariableIfOvershadowsFileVars(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
         val file = variableName.containingFile
-        val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { `var` -> variableName.text == `var`.text }
-        if (reference !== variableName) {
+        val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { variableToCheck -> variableName.text == variableToCheck.text }
+        if (reference != null && reference != variableName) {
             annotationHolder.createWarningAnnotation(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"))
                     .registerFix(ObjJIgnoreOvershadowedVariablesInProject())
             return
