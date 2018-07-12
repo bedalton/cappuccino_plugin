@@ -468,8 +468,8 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = ArrayList<ObjJVariableName>()
-        val references = bodyVariableAssignment.qualifiedReferenceList
+        val result = bodyVariableAssignment.variableNameList
+        val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
@@ -496,13 +496,18 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return null
         }
-        val references = bodyVariableAssignment.qualifiedReferenceList
+        val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
             return null
+        }
+        for (variableName in bodyVariableAssignment.variableNameList) {
+            if (filter(variableName)) {
+                return variableName
+            }
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
@@ -570,8 +575,8 @@ object ObjJVariableNameUtil {
                     result.add(qualifiedReference.primaryVar!!)
                 }
             }
-            for (reference in iterationStatement.qualifiedReferenceList) {
-                result.add(reference.primaryVar!!)
+            for (reference in iterationStatement.variableNameList) {
+                result.add(reference)
             }
             iterationStatement = iterationStatement.getParentOfType( ObjJIterationStatement::class.java)
         }

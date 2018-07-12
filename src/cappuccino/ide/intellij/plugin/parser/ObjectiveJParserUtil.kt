@@ -9,7 +9,9 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import gnu.trove.TObjectLongHashMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import com.intellij.psi.tree.TokenSet.WHITE_SPACE
 
 import java.util.Objects
 
@@ -112,8 +114,8 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             var i = 0
             var ahead = builder_.lookAhead(i)
             var hadLineTerminator = false
-            while (ahead === com.intellij.psi.TokenType.WHITE_SPACE || ahead === ObjJTypes.ObjJ_LINE_TERMINATOR) {
-                if (ahead === ObjJTypes.ObjJ_LINE_TERMINATOR) {
+            while (ahead === com.intellij.psi.TokenType.WHITE_SPACE || ahead === ObjJ_LINE_TERMINATOR) {
+                if (ahead === ObjJ_LINE_TERMINATOR) {
                     hadLineTerminator = true
                 }
                 ahead = builder_.lookAhead(++i)
@@ -133,5 +135,29 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             val nextTokenType = builder_.lookAhead(1)
             return nextTokenType != ObjJTypes.ObjJ_OPEN_BRACE && nextTokenType != ObjJTypes.ObjJ_FUNCTION
         }
+
+        @JvmStatic
+        fun isNext(builder: PsiBuilder, level: Int, elementType:IElementType) : Boolean {
+            val tokenType = nextNonEmptyNonCommentToken(builder)
+            return tokenType != null && tokenType == elementType
+        }
+
+        @JvmStatic
+        fun nextNonEmptyNonCommentToken(builder: PsiBuilder): IElementType? {
+            var lookaheadIndex = 1
+            var elementType:IElementType?
+            do {
+                elementType = builder.lookAhead(lookaheadIndex++)
+            } while (elementType != null && isTokenWhitespaceOrComment(elementType))
+            return elementType
+        }
+
+        fun isTokenWhitespaceOrComment(token:IElementType): Boolean {
+            return token == WHITE_SPACE ||
+                    token == ObjJ_SINGLE_LINE_COMMENT ||
+                    token == ObjJ_BLOCK_COMMENT_START ||
+                    token == ObjJ_LINE_TERMINATOR
+        }
+
     }
 }
