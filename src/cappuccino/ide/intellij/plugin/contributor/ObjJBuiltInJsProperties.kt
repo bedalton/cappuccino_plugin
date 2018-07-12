@@ -180,6 +180,11 @@ object ObjJBuiltInJsProperties {
                 return true
             }
         }
+        for (prop in window.prototypeMethods) {
+            if (prop.name == property) {
+                return true
+            }
+        }
         return false
     }
 
