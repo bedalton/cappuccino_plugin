@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.StringSetting
 
 object ObjJPluginSettings {
 
@@ -21,10 +20,10 @@ object ObjJPluginSettings {
     private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
 
     private val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties";
-    private val IGNORE_PROPERTIES_DEFAULT = "";
-    private val ignoredKeywordsSetting = StringSetting(IGNORE_PROPERTIES_KEY, IGNORE_PROPERTIES_DEFAULT)
-    private val IGNORE_KEYWORDS_DELIM = ","
-    private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
+    private val ignoredKeywordsSetting = ObjJIgnoredStringsListSetting(IGNORE_PROPERTIES_KEY)
+
+    private val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
+    private val ignoreMissingSelectorsSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_SELECTORS_KEY)
 
     private val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
     private val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
@@ -53,47 +52,23 @@ object ObjJPluginSettings {
     }
 
 
-    fun addIgnoreKeyword(keyword:String) {
-        if (ignoredKeywords.contains(keyword)) {
-            return;
-        }
-        ignoredKeywords += keyword;
-        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
-    }
+    fun ignoreVariableName(keyword:String) = ignoredKeywordsSetting.ignoreKeyword(keyword)
 
-    fun removeIgnoredKeyword(keyword:String) {
-        if (!ignoredKeywords.contains(keyword)) {
-            return;
-        }
-        ignoredKeywords -= keyword;
-        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
-    }
+    fun removeIgnoredVariableName(keyword:String) = ignoredKeywordsSetting.removeIgnoredKeyword(keyword)
 
-    private fun ignoreKeywords(keywords:String) {
-        ignoredKeywordsSetting.value = keywords
-        ignoredKeywords = loadIgnoredKeywords();
-    }
+    fun ignoredVariableNames() : List<String> = ignoredKeywordsSetting.ignoredKeywords()
 
-    fun ignoredKeywords() : List<String> {
-        return ignoredKeywords
-    }
+    fun isIgnoredVariableName(keyword:String) : Boolean  = ignoredKeywordsSetting.isIgnoredKeyword(keyword)
 
-    fun isIgnoredKeyword(keyword:String) : Boolean {
-        return ignoredKeywords.contains(keyword);
-    }
 
-    private fun loadIgnoredKeywords() : MutableList<String> {
-        val ignoredKeywords:MutableList<String> = ArrayList()
-        val keywordsString:String = ignoredKeywordsSetting.value ?: "";
-        for (keyword in keywordsString.split(IGNORE_KEYWORDS_DELIM)) {
-            val trimmedKeyword = keyword.trim();
-            if (trimmedKeyword.isEmpty()) {
-                continue;
-            }
-            ignoredKeywords.add(trimmedKeyword)
-        }
-        return ignoredKeywords;
-    }
+    fun ignoreSelector(keyword:String) = ignoreMissingSelectorsSetting.ignoreKeyword(keyword)
+
+    fun doNotIgnoreSelector(keyword:String) = ignoreMissingSelectorsSetting.removeIgnoredKeyword(keyword)
+
+    fun ignoredSelectors() : List<String> = ignoreMissingSelectorsSetting.ignoredKeywords()
+
+    fun isIgnoredSelector(keyword:String) : Boolean  = ignoreMissingSelectorsSetting.isIgnoredKeyword(keyword)
+
 
     fun ignoreOvershadowedVariables() : Boolean {
         return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT
