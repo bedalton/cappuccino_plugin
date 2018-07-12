@@ -126,10 +126,24 @@ class ObjJAnnotator : Annotator {
                     continue
                 }
             }
-            when {
-                returnMethodCallDoesNotReturnVoid(returnStatement.expr?.leftExpr?.methodCall) -> returnsWithoutExpression.add(returnStatement)
-                returnStatement.expr != null -> returnsWithExpression.add(returnStatement)
-                else -> returnsWithoutExpression.add(returnStatement)
+            if (returnStatement.expr?.leftExpr?.methodCall != null && returnStatement.expr?.rightExprList?.isEmpty() == true) {
+                val methodCall:ObjJMethodCall? = returnStatement.expr?.leftExpr?.methodCall
+                if (returnMethodCallReturnsValue(methodCall)) {
+                    returnsWithExpression.add(returnStatement)
+                }
+                if (returnMethodCallReturnsVoid(methodCall)) {
+                    returnsWithoutExpression.add(returnStatement)
+                }
+            } else if ( returnStatement.expr != null) {
+                when (returnStatement.expr!!.text.toLowerCase()) {
+                        "nil","null","undefined" -> {
+                            returnsWithExpression.add(returnStatement)
+                            returnsWithoutExpression.add(returnStatement)
+                        }
+                    else -> returnsWithExpression.add(returnStatement)
+                }
+            } else {
+                returnsWithoutExpression.add(returnStatement)
             }
         }
         val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
@@ -147,10 +161,14 @@ class ObjJAnnotator : Annotator {
         val returnType = methodDeclaration.methodHeader.returnType
         val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
         val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
+        val statementsNotToMark = if (!shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
         val errorAnnotation = if (shouldHaveReturnExpression) "Return statement is missing return element. Element should be of type: <$returnType>" else "Method with return type void should not return a value."
         for (returnStatement in statementsToMark) {
             if (returnStatement.expr?.leftExpr?.functionCall != null) {
                 continue
+            }
+            if (statementsNotToMark.contains(returnStatement)) {
+                continue;
             }
             annotationHolder.createWarningAnnotation(returnStatement.expr ?: returnStatement.`return`, errorAnnotation)
         }
@@ -177,7 +195,19 @@ class ObjJAnnotator : Annotator {
         }
     }
 
-    private fun returnMethodCallDoesNotReturnVoid(methodCall:ObjJMethodCall?):Boolean {
+    private fun returnMethodCallReturnsValue(methodCall:ObjJMethodCall?):Boolean {
+        if (methodCall == null) {
+            return false
+        }
+        for (call in getAllMethodsForCall(methodCall)) {
+            if (call.returnType != ObjJClassType.VOID_CLASS_NAME) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun returnMethodCallReturnsVoid(methodCall:ObjJMethodCall?):Boolean {
         if (methodCall == null) {
             return false
         }
