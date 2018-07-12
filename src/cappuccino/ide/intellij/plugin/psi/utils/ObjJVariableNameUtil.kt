@@ -315,7 +315,7 @@ object ObjJVariableNameUtil {
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
+        //LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
         if (DumbService.getInstance(project).isDumb) {
             //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST
@@ -641,15 +641,15 @@ object ObjJVariableNameUtil {
                 ?: return null
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for self")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for self")
                 variableName.containingClassName
             }
             "super" -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for super")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for super")
                 variableName.getContainingSuperClass()?.text
             }
             else -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
                 val resolvedSibling = baseVariableName.reference.resolve() ?: return null
                 resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
                 resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
