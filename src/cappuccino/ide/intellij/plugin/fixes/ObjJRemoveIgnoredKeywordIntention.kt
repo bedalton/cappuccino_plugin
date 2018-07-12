@@ -19,10 +19,10 @@ import com.intellij.util.IncorrectOperationException
 
 
 
-class ObjJAddIgnoreKeywordIntention(private val keyword:String) : BaseIntentionAction() {
+class ObjJRemoveIgnoredKeywordIntention(private val keyword:String) : BaseIntentionAction() {
 
     override fun getText(): String {
-        return "Add '${keyword}' to ignored properties list"
+        return "Remove '${keyword}' from ignored properties list"
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
@@ -32,7 +32,7 @@ class ObjJAddIgnoreKeywordIntention(private val keyword:String) : BaseIntentionA
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
-            ObjJPluginSettings.addIgnoreKeyword(keyword);
+            ObjJPluginSettings.removeIgnoredKeyword(keyword)
             DaemonCodeAnalyzer.getInstance(project).updateVisibleHighlighters(editor)
         }
     }

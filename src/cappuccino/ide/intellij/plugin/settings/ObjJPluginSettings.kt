@@ -61,7 +61,15 @@ object ObjJPluginSettings {
         ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
-    fun ignoreKeywords(keywords:String) {
+    fun removeIgnoredKeyword(keyword:String) {
+        if (!ignoredKeywords.contains(keyword)) {
+            return;
+        }
+        ignoredKeywords -= keyword;
+        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
+    }
+
+    private fun ignoreKeywords(keywords:String) {
         ignoredKeywordsSetting.value = keywords
         ignoredKeywords = loadIgnoredKeywords();
     }
