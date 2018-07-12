@@ -246,11 +246,18 @@ internal object ObjJVariableAnnotatorUtil {
             return true
         }
 
+
+        val parent = variableName.parent
+        if (parent is ObjJBodyVariableAssignment && parent.varModifier != null) {
+            return true
+        }
+
         val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
         if (reference.parent is ObjJBodyVariableAssignment) {
             return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
         }
+
 
         if (reference.parent is ObjJIterationStatement) {
             return true
@@ -398,8 +405,9 @@ internal object ObjJVariableAnnotatorUtil {
         if (variableAssignment.varModifier == null) {
             return false
         }
-        val qualifiedReferences = variableAssignment.qualifiedReferenceList
-        val varNames = ArrayList<ObjJVariableName>()
+
+        val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
+        val varNames = variableAssignment.variableNameList
         for (declaration in variableAssignment.variableDeclarationList) {
             qualifiedReferences.addAll(declaration.qualifiedReferenceList)
         }
