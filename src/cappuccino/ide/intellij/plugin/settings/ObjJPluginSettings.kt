@@ -26,6 +26,11 @@ object ObjJPluginSettings {
     private val IGNORE_KEYWORDS_DELIM = ","
     private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM) as MutableList
 
+    private val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
+    private val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
+    private val ignoreOvershadowedVariablesSetting = BooleanSetting(IGNORE_OVERSHADOWED_VARIABLES_KEY, IGNORE_OVERSHADOWED_VARIABLES_DEFAULT)
+
+
     fun inferEOS(): Boolean {
         return inferEOS.value ?: INFER_EOS_DEFAULT
     }
@@ -65,7 +70,7 @@ object ObjJPluginSettings {
         return ignoredKeywords
     }
 
-    fun isIgnored(keyword:String) : Boolean {
+    fun isIgnoredKeyword(keyword:String) : Boolean {
         return ignoredKeywords.contains(keyword);
     }
 
@@ -82,9 +87,14 @@ object ObjJPluginSettings {
         return ignoredKeywords;
     }
 
-    fun isIgnoredKeyword() {
-
+    fun ignoreOvershadowedVariables() : Boolean {
+        return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT
     }
+
+    fun ignoreOvershadowedVariables(shouldIgnore:Boolean) {
+        ignoreOvershadowedVariablesSetting.value = shouldIgnore
+    }
+
 
 
 }
