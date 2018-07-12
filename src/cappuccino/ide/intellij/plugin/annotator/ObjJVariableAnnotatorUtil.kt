@@ -22,7 +22,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.AnnotationLevel
 import cappuccino.ide.intellij.plugin.settings.ObjJVariableAnnotatorSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -38,9 +37,9 @@ import java.util.logging.Logger
 internal object ObjJVariableAnnotatorUtil {
 
     private val LOGGER = Logger.getLogger(ObjJVariableAnnotatorUtil::class.java.name)
-    private val OVERSHADOWS_VARIABLE_STRING_FORMAT = "Variable overshadows existing variable in %s"
-    private val OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT = "Variable overshadows function with name %s"
-    private val OVERSHADOWS_METHOD_HEADER_VARIABLE = "Variable overshadows method variable"
+    private const val OVERSHADOWS_VARIABLE_STRING_FORMAT = "Variable overshadows existing variable in %s"
+    private const val OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT = "Variable overshadows function with name %s"
+    private const val OVERSHADOWS_METHOD_HEADER_VARIABLE = "Variable overshadows method variable"
     private val STATIC_VAR_NAMES = Arrays.asList("this", "Array", "ObjectiveJ", "arguments", "document", "window")
     //private static final HashMap<PsiFile, List<Integer>> checked = new HashMap<>();
 
@@ -72,9 +71,9 @@ internal object ObjJVariableAnnotatorUtil {
     }
 
     private fun annotateIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, annotationHolder: AnnotationHolder) {
-        var variableName : ObjJVariableName? = variableNameIn
+        var variableName: ObjJVariableName? = variableNameIn
 
-        if (variableName?.getParentOfType( ObjJInstanceVariableList::class.java) != null) {
+        if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
             when (variableName.text) {
                 "super", "this", "self" -> annotationHolder.createErrorAnnotation(variableName, "Using reserved variable name")
             }
@@ -101,7 +100,7 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
 
-        if (!ObjJClassDeclarationsIndex.instance.get(variableName.text, variableName.project).isEmpty()) {
+        if (!ObjJClassDeclarationsIndex.instance[variableName.text, variableName.project].isEmpty()) {
             return
         }
 
@@ -114,6 +113,14 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
 
+        if (isJsStandardVariable(variableName)) {
+            return
+        }
+
+        if (ObjJPluginSettings.isIgnoredKeyword(variableName.text)) {
+            return
+        }
+
 
         var tempElement = variableName.getNextNonEmptySibling(true)
         if (tempElement != null && tempElement.text == ".") {
@@ -121,16 +128,16 @@ internal object ObjJVariableAnnotatorUtil {
             if (tempElement is ObjJFunctionCall) {
                 val functionCall = tempElement as ObjJFunctionCall?
                 if (functionCall!!.functionName != null && functionCall.functionName!!.text == "call") {
-                    if (ObjJFunctionsIndex.instance.get(variableName.name, variableName.project).isEmpty()) {
+                    if (ObjJFunctionsIndex.instance[variableName.name, variableName.project].isEmpty()) {
                         annotationHolder.createWarningAnnotation(variableName, "Failed to find function with name <" + variableName.name + ">")
                     }
                     return
                 }
             }
         }
-        val declarations : MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance.get(variableName.text, variableName.project)
+        val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
         if (!declarations.isEmpty()) {
-            annotationHolder.createInfoAnnotation(variableName, "References global variable in file <" + (if (declarations.get(0).fileName != null) declarations.get(0).fileName else "UNDEFINED" + ">") + ">")
+            annotationHolder.createInfoAnnotation(variableName, "References global variable in file <" + (if (declarations[0].fileName != null) declarations[0].fileName else "UNDEFINED" + ">") + ">")
             return
         }
         if (variableName.text.substring(0, 1) == variableName.text.substring(0, 1).toUpperCase()) {
@@ -145,26 +152,31 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
         //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
-        annotationHolder.createWeakWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
+        annotationHolder.createWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
                 .registerFix(ObjJAddIgnoreKeywordIntention(variableName.text))
 
     }
 
     private fun isVariableDeclaredBeforeUse(variableName: ObjJVariableName): Boolean {
-        if (ObjJKeywordsList.keywords.contains(variableName.text) || ObjJPluginSettings.isIgnoredKeyword(variableName.text) || ObjJBuiltInJsProperties.propertyExists(variableName.text) || ObjJBuiltInJsProperties.funcExists(variableName.text)) {
+        if (ObjJKeywordsList.keywords.contains(variableName.text)) {
             return true
         }
         val precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
-        return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance.get(variableName.text, variableName.project).isEmpty() || ObjJVariableReference(variableName).resolve() != null
+        return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty() || ObjJVariableReference(variableName).resolve() != null
     }
 
     private fun annotateStaticVariableNameReference(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
         val variableNameString = variableName.text
         when (variableNameString) {
-            "this" -> if (variableName.getParentOfType( ObjJBlock::class.java) == null) {
+            "this" -> if (variableName.getParentOfType(ObjJBlock::class.java) == null) {
                 annotationHolder.createWarningAnnotation(variableName, "Possible misuse of 'this' outside of block")
             }
         }
+    }
+
+    private fun isJsStandardVariable(variableName: ObjJVariableName): Boolean {
+        val variableNameText = variableName.text
+        return ObjJBuiltInJsProperties.propertyExists(variableNameText) || ObjJBuiltInJsProperties.funcExists(variableNameText)
     }
 
     private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
@@ -175,12 +187,12 @@ internal object ObjJVariableAnnotatorUtil {
     }
 
     private fun isDeclaredInContainingMethodHeader(variableName: ObjJVariableName): Boolean {
-        val methodDeclaration = variableName.getParentOfType( ObjJMethodDeclaration::class.java)
+        val methodDeclaration = variableName.getParentOfType(ObjJMethodDeclaration::class.java)
         return methodDeclaration != null && ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration.methodHeader, variableName.text) != null
     }
 
     private fun isDeclaredInFunctionScope(variableName: ObjJVariableName): Boolean {
-        val functionDeclarationElement = variableName.getParentOfType( ObjJFunctionDeclarationElement::class.java)
+        val functionDeclarationElement = variableName.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         if (functionDeclarationElement != null) {
             for (ob in functionDeclarationElement.formalParameterArgList) {
                 if (ob.variableName.text == variableName.text) {
@@ -197,7 +209,7 @@ internal object ObjJVariableAnnotatorUtil {
             return true
         }
         //If variable name element is itself a method header declaration variable
-        if (variableName.getParentOfType( ObjJMethodHeaderDeclaration::class.java) != null) {
+        if (variableName.getParentOfType(ObjJMethodHeaderDeclaration::class.java) != null) {
             return true
         }
 
@@ -231,7 +243,7 @@ internal object ObjJVariableAnnotatorUtil {
             return true
         }
 
-        val reference = variableName.getParentOfType( ObjJQualifiedReference::class.java) ?: return false
+        val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
         if (reference.parent is ObjJBodyVariableAssignment) {
             return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
@@ -265,7 +277,7 @@ internal object ObjJVariableAnnotatorUtil {
         if (variableName.text.isEmpty() || !isItselfAVariableDeclaration(variableName)) {
             return
         }
-        val variableList = variableName.getParentOfType( ObjJInstanceVariableList::class.java)
+        val variableList = variableName.getParentOfType(ObjJInstanceVariableList::class.java)
         if (variableList != null) {
             val thisInstanceVariable = variableName.getParentOfType(ObjJInstanceVariableDeclaration::class.java)
             val startOffset = thisInstanceVariable?.textRange?.startOffset ?: 0
@@ -281,7 +293,7 @@ internal object ObjJVariableAnnotatorUtil {
             }
         }
         if (isBodyVariableAssignment(variableName)) {
-            annotateOvershadow(variableName, annotationHolder);
+            annotateOvershadow(variableName, annotationHolder)
         } else if (isInstanceVariable(variableName)) {
             annotateVariableIfOvershadowsFileVars(variableName, annotationHolder)
         }
@@ -293,7 +305,7 @@ internal object ObjJVariableAnnotatorUtil {
      * @return `true` if variable name element is part of a variable declaration
      */
     private fun isBodyVariableAssignment(variableName: ObjJVariableName): Boolean {
-        val bodyVariableAssignment = variableName.getParentOfType( ObjJBodyVariableAssignment::class.java)
+        val bodyVariableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
         return bodyVariableAssignment != null && bodyVariableAssignment.varModifier != null
     }
 
@@ -303,7 +315,7 @@ internal object ObjJVariableAnnotatorUtil {
      * @return `true` if variable name is part of instance variable declaration
      */
     private fun isInstanceVariable(variableName: ObjJVariableName): Boolean {
-        return variableName.getParentOfType( ObjJInstanceVariableDeclaration::class.java) != null
+        return variableName.getParentOfType(ObjJInstanceVariableDeclaration::class.java) != null
     }
 
     private fun annotateOvershadow(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
@@ -338,13 +350,13 @@ internal object ObjJVariableAnnotatorUtil {
      */
     private fun annotateVariableIfOvershadowInstanceVariable(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
         val project = variableName.project
-        val classDeclarationElement = variableName.getParentOfType( ObjJClassDeclarationElement::class.java)
+        val classDeclarationElement = variableName.getParentOfType(ObjJClassDeclarationElement::class.java)
                 ?: return
         val variableContainingClass = classDeclarationElement.getClassNameString()
         var scope: String? = null
         val inheritedClassNames = ObjJInheritanceUtil.getAllInheritedClasses(classDeclarationElement.getClassNameString(), classDeclarationElement.project)
         val annotationLevel = ObjJVariableAnnotatorSettings.OVERSHADOWS_INSTANCE_VARIABLE_SETTING.value
-        for (instanceVariableDeclaration in ObjJInstanceVariablesByNameIndex.instance.get(classDeclarationElement.getClassNameString(), project)) {
+        for (instanceVariableDeclaration in ObjJInstanceVariablesByNameIndex.instance[classDeclarationElement.getClassNameString(), project]) {
             ProgressIndicatorProvider.checkCanceled()
             val instanceVarContainingClass = instanceVariableDeclaration.containingClassName
             if (instanceVarContainingClass == variableContainingClass) {
@@ -402,15 +414,15 @@ internal object ObjJVariableAnnotatorUtil {
     private fun annotateVariableIfOvershadowsFileVars(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
         val file = variableName.containingFile
         val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { `var` -> variableName.text == `var`.text }
-        if (reference != null && reference !== variableName) {
+        if (reference !== variableName) {
             annotationHolder.createWarningAnnotation(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"))
                     .registerFix(ObjJIgnoreOvershadowedVariablesInProject())
             return
         }
         val annotationLevel = ObjJVariableAnnotatorSettings.OVERSHADOWS_FILE_VARIABLE_SETTING.value
-        for (declarationElement in ObjJFunctionsIndex.instance.get(variableName.text, variableName.project)) {
+        for (declarationElement in ObjJFunctionsIndex.instance[variableName.text, variableName.project]) {
             ProgressIndicatorProvider.checkCanceled()
-            if (declarationElement.getContainingFile().isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.getTextRange().getStartOffset()) {
+            if (declarationElement.containingFile.isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.textRange.startOffset) {
                 createAnnotation(annotationLevel!!, variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, variableName.text), annotationHolder)
                         ?.registerFix(ObjJIgnoreOvershadowedVariablesInProject())
             }
@@ -418,7 +430,7 @@ internal object ObjJVariableAnnotatorUtil {
         }
     }
 
-    private fun createAnnotation(level: AnnotationLevel, target: PsiElement, message: String, annotationHolder: AnnotationHolder) : Annotation? {
+    private fun createAnnotation(level: AnnotationLevel, target: PsiElement, message: String, annotationHolder: AnnotationHolder): Annotation? {
         return when (level) {
             AnnotationLevel.ERROR -> {
                 annotationHolder.createErrorAnnotation(target, message)
@@ -428,23 +440,22 @@ internal object ObjJVariableAnnotatorUtil {
             }
             AnnotationLevel.WEAK_WARNING -> annotationHolder.createWeakWarningAnnotation(target, message)
             AnnotationLevel.IGNORE -> null
-            else -> {
-                null
-            }
         }
     }
 
-    private fun createAnnotation(level: AnnotationLevel, target: TextRange, message: String, annotationHolder: AnnotationHolder) {
-        when (level) {
+    @Suppress("unused")
+    private fun createAnnotation(level: AnnotationLevel, target: TextRange, message: String, annotationHolder: AnnotationHolder): Annotation?  {
+        return when (level) {
             AnnotationLevel.ERROR -> {
                 annotationHolder.createErrorAnnotation(target, message)
-                return
             }
             AnnotationLevel.WARNING -> {
                 annotationHolder.createWarningAnnotation(target, message)
-                return
             }
             AnnotationLevel.WEAK_WARNING -> annotationHolder.createWeakWarningAnnotation(target, message)
+            else -> {
+                null
+            }
         }
     }
 }
