@@ -8,6 +8,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreKeywordIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -25,6 +26,7 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.AnnotationLevel
 import cappuccino.ide.intellij.plugin.settings.ObjJVariableAnnotatorSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.lang.annotation.Annotation
 
 import java.util.*
 import java.util.logging.Level
@@ -279,10 +281,7 @@ internal object ObjJVariableAnnotatorUtil {
             }
         }
         if (isBodyVariableAssignment(variableName)) {
-            annotateIfOvershadowsBlocks(variableName, annotationHolder)
-            annotateIfOvershadowsMethodVariable(variableName, annotationHolder)
-            annotateVariableIfOvershadowInstanceVariable(variableName, annotationHolder)
-            annotateVariableIfOvershadowsFileVars(variableName, annotationHolder)
+            annotateOvershadow(variableName, annotationHolder);
         } else if (isInstanceVariable(variableName)) {
             annotateVariableIfOvershadowsFileVars(variableName, annotationHolder)
         }
@@ -307,6 +306,16 @@ internal object ObjJVariableAnnotatorUtil {
         return variableName.getParentOfType( ObjJInstanceVariableDeclaration::class.java) != null
     }
 
+    private fun annotateOvershadow(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
+        if (ObjJPluginSettings.ignoreOvershadowedVariables()) {
+            return
+        }
+        annotateIfOvershadowsBlocks(variableName, annotationHolder)
+        annotateIfOvershadowsMethodVariable(variableName, annotationHolder)
+        annotateVariableIfOvershadowInstanceVariable(variableName, annotationHolder)
+        annotateVariableIfOvershadowsFileVars(variableName, annotationHolder)
+    }
+
     private fun annotateIfOvershadowsMethodVariable(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
         //Variable is defined in header itself
         if (variableName.getParentOfType(ObjJMethodHeader::class.java) != null) {
@@ -318,6 +327,7 @@ internal object ObjJVariableAnnotatorUtil {
         //Check if variable overshadows variable defined in method header
         if (ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration.methodHeader, variableName.text) != null) {
             createAnnotation(ObjJVariableAnnotatorSettings.OVERSHADOWS_METHOD_VARIABLE_SETTING.value!!, variableName, OVERSHADOWS_METHOD_HEADER_VARIABLE, annotationHolder)
+                    ?.registerFix(ObjJIgnoreOvershadowedVariablesInProject())
         }
     }
 
@@ -348,6 +358,7 @@ internal object ObjJVariableAnnotatorUtil {
         }
         if (scope != null) {
             createAnnotation(annotationLevel!!, variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, scope), annotationHolder)
+                    ?.registerFix(ObjJIgnoreOvershadowedVariablesInProject())
         }
     }
 
@@ -362,6 +373,7 @@ internal object ObjJVariableAnnotatorUtil {
         for (bodyVariableAssignment in bodyVariableAssignments) {
             if (isDeclaredInBodyVariableAssignment(bodyVariableAssignment, variableNameString, offset)) {
                 createAnnotation(annotationLevel!!, variableName, "Variable overshadows variable in enclosing block", annotationHolder)
+                        ?.registerFix(ObjJIgnoreOvershadowedVariablesInProject())
                 return
             }
         }
@@ -392,6 +404,7 @@ internal object ObjJVariableAnnotatorUtil {
         val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { `var` -> variableName.text == `var`.text }
         if (reference != null && reference !== variableName) {
             annotationHolder.createWarningAnnotation(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"))
+                    .registerFix(ObjJIgnoreOvershadowedVariablesInProject())
             return
         }
         val annotationLevel = ObjJVariableAnnotatorSettings.OVERSHADOWS_FILE_VARIABLE_SETTING.value
@@ -399,22 +412,25 @@ internal object ObjJVariableAnnotatorUtil {
             ProgressIndicatorProvider.checkCanceled()
             if (declarationElement.getContainingFile().isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.getTextRange().getStartOffset()) {
                 createAnnotation(annotationLevel!!, variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, variableName.text), annotationHolder)
+                        ?.registerFix(ObjJIgnoreOvershadowedVariablesInProject())
             }
 
         }
     }
 
-    private fun createAnnotation(level: AnnotationLevel, target: PsiElement, message: String, annotationHolder: AnnotationHolder) {
-        when (level) {
+    private fun createAnnotation(level: AnnotationLevel, target: PsiElement, message: String, annotationHolder: AnnotationHolder) : Annotation? {
+        return when (level) {
             AnnotationLevel.ERROR -> {
                 annotationHolder.createErrorAnnotation(target, message)
-                return
             }
             AnnotationLevel.WARNING -> {
                 annotationHolder.createWarningAnnotation(target, message)
-                return
             }
             AnnotationLevel.WEAK_WARNING -> annotationHolder.createWeakWarningAnnotation(target, message)
+            AnnotationLevel.IGNORE -> null
+            else -> {
+                null
+            }
         }
     }
 
