@@ -437,18 +437,23 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= varModifier? variableDeclarationList
+	::= varModifier variableDeclarationList
 	{
 		//pin=2
 	}
 	;
 
 private variableDeclarationList
-	::= (variableDeclaration|qualifiedReference !('('|rightExpr|'--'|'++')) (',' (variableDeclaration|qualifiedReference!('('|rightExpr|'--'|'++')))*
+	::=  variableDeclarationListVariableName (',' variableDeclarationListVariableName)*
 	{
 		//pin=1
 		//recoverWhile=recover_variableDeclarationsList
 	}
+	;
+
+private variableDeclarationListVariableName
+	::= variableDeclaration
+	|	variableName !('('|rightExpr|'--'|'++')
 	;
 
 globalVariableDeclaration
@@ -1553,7 +1558,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= ((qualifiedReference '.')? functionName|methodCall) (arrayIndexSelector)? '(' expressionSequence? ')'
+	::= functionCallPrimary arrayIndexSelector* '(' expressionSequence? ')'
 	{
 		pin=3
 		implements=[
@@ -1565,6 +1570,12 @@ functionCall
 		methods=[getQualifiedNameText]
 
 	}
+	;
+
+private functionCallPrimary
+	::= qualifiedReference '.' functionName
+	|	functionName
+	|	methodCall
 	;
 
 rightExpr
@@ -1781,7 +1792,7 @@ qualifiedReference
 	;
 
 private qualifiedReferencePrimary
-	::= '.' (functionCall|variableName)
+	::= '.' (<<isNext 'ObjJ_DOT'>> functionCall|!<<isNext 'ObjJ_OPEN_PAREN'>>variableName)
 	|	arrayIndexSelector
 	;
 
