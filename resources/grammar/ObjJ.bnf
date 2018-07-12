@@ -376,7 +376,7 @@ blockElement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
 		methods=[
-			getBlockList="getBlockElementList"
+			getBlockList
 			block="blockElement"
 		]
 	}
@@ -784,7 +784,7 @@ tryStatement
 	::= 'try' blockElement (catchProduction finallyProduction? | finallyProduction)
 	{
 		implements = ["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"]
-		methods = [getBlockList block="blockElement" getBlockList="getBlockElementList"]
+		methods = [getBlockList block="blockElement"]
 		pin=1
 	}
 	;

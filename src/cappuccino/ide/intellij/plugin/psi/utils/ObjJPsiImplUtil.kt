@@ -101,7 +101,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun setName(className: ObjJClassName, newClassName:String?): PsiElement{
+    fun setName(className: ObjJClassName, newClassName: String?): PsiElement {
         if (newClassName == null || newClassName.isEmpty()) {
             return className
         }
@@ -139,13 +139,13 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getClassType(classDeclaration:ObjJClassDeclarationElement<*>) : ObjJClassType {
+    fun getClassType(classDeclaration: ObjJClassDeclarationElement<*>): ObjJClassType {
         val classNameString = classDeclaration.getClassNameString()
         return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
     }
 
     @JvmStatic
-    fun getClassNameString(classElement:ObjJImplementationDeclaration) : String {
+    fun getClassNameString(classElement: ObjJImplementationDeclaration): String {
         if (classElement.stub != null) {
             return classElement?.stub?.className ?: ""
         }
@@ -153,7 +153,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getClassNameString(classElement:ObjJProtocolDeclaration) : String {
+    fun getClassNameString(classElement: ObjJProtocolDeclaration): String {
         if (classElement.stub != null) {
             return classElement.stub.className;
         }
@@ -161,24 +161,24 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getClassNameString(typedef:ObjJTypeDef) : String {
+    fun getClassNameString(typedef: ObjJTypeDef): String {
         return typedef.className?.text ?: ""
     }
 
     @JvmStatic
-    fun getSuperClassName(declaration: ObjJImplementationDeclaration) : String? =
+    fun getSuperClassName(declaration: ObjJImplementationDeclaration): String? =
             cappuccino.ide.intellij.plugin.psi.utils.getSuperClassName(declaration)
 
     @JvmStatic
-    fun getCategoryNameString(declaration: ObjJImplementationDeclaration) : String? {
+    fun getCategoryNameString(declaration: ObjJImplementationDeclaration): String? {
         return declaration.stub?.categoryName ?: declaration.categoryName?.className?.text
     }
 
     @JvmStatic
-    fun getContainingSuperClass(hasContainingClass: ObjJHasContainingClass, returnDefault:Boolean = false) : ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(hasContainingClass, returnDefault)
+    fun getContainingSuperClass(hasContainingClass: ObjJHasContainingClass, returnDefault: Boolean = false): ObjJClassName? = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(hasContainingClass, returnDefault)
 
     @JvmStatic
-    fun isCategory(declaration:ObjJImplementationDeclaration): Boolean =
+    fun isCategory(declaration: ObjJImplementationDeclaration): Boolean =
             cappuccino.ide.intellij.plugin.psi.utils.isCategory(declaration)
 
     // ============================== //
@@ -189,12 +189,12 @@ object ObjJPsiImplUtil {
     fun getPresentation(selector: ObjJSelector): ItemPresentation? = ObjJSelectorItemPresentation(selector)
 
     @JvmStatic
-    fun getPresentation(classDec:ObjJProtocolDeclaration) : ItemPresentation? =
+    fun getPresentation(classDec: ObjJProtocolDeclaration): ItemPresentation? =
             cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
 
     @JvmStatic
-    fun getPresentation(classDec:ObjJImplementationDeclaration) : ItemPresentation? =
-        cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
+    fun getPresentation(classDec: ObjJImplementationDeclaration): ItemPresentation? =
+            cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
 
     // ============================== //
     // =========== String =========== //
@@ -217,29 +217,29 @@ object ObjJPsiImplUtil {
     // ====== MethodHeaders ========= //
     // ============================== //
     @JvmStatic
-    fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> =
+    fun getMethodHeaders(declaration: ObjJImplementationDeclaration): List<ObjJMethodHeader> =
             cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
 
     @JvmStatic
-    fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> =
+    fun getMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHeader> =
             cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun getMethodHeaders(_typedef:ObjJTypeDef): List<ObjJMethodHeader> =
+    fun getMethodHeaders(_typedef: ObjJTypeDef): List<ObjJMethodHeader> =
             listOf()
 
     @JvmStatic
-    fun hasMethod(declaration:ObjJImplementationDeclaration, selector:String): Boolean =
+    fun hasMethod(declaration: ObjJImplementationDeclaration, selector: String): Boolean =
             cappuccino.ide.intellij.plugin.psi.utils.hasMethod(declaration, selector)
 
     @JvmStatic
-    fun hasMethod(declaration:ObjJProtocolDeclaration, selector:String): Boolean =
+    fun hasMethod(declaration: ObjJProtocolDeclaration, selector: String): Boolean =
             cappuccino.ide.intellij.plugin.psi.utils.hasMethod(declaration, selector)
 
 
     @JvmStatic
-    fun getAllUnimplementedProtocolMethods(declaration:ObjJImplementationDeclaration): Map<ObjJClassName, ObjJProtocolDeclarationPsiUtil.ProtocolMethods> =
+    fun getAllUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration): Map<ObjJClassName, ObjJProtocolDeclarationPsiUtil.ProtocolMethods> =
             cappuccino.ide.intellij.plugin.psi.utils.getAllUnimplementedProtocolMethods(declaration)
 
     @JvmStatic
@@ -292,7 +292,7 @@ object ObjJPsiImplUtil {
     // ======== Method Call ========= //
     // ============================== //
     @JvmStatic
-    fun getCallTargetText(methodCall:ObjJMethodCall): String =
+    fun getCallTargetText(methodCall: ObjJMethodCall): String =
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
 
     // ============================== //
@@ -320,11 +320,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getSelectorString(property:ObjJAccessorProperty): String =
+    fun getSelectorString(property: ObjJAccessorProperty): String =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(property)
 
     @JvmStatic
-    fun getSelectorString(methodCall : ObjJMethodCall): String =
+    fun getSelectorString(methodCall: ObjJMethodCall): String =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(methodCall)
 
     @JvmStatic
@@ -344,16 +344,16 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getSelectorStrings(accessorProperty:ObjJAccessorProperty): List<String> =
+    fun getSelectorStrings(accessorProperty: ObjJAccessorProperty): List<String> =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorStrings(accessorProperty)
 
 
     @JvmStatic
-    fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> =
+    fun getSelectorList(methodCall: ObjJMethodCall): List<ObjJSelector?> =
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorList(methodCall)
 
     @JvmStatic
-    fun getSelectorList(methodHeader:ObjJMethodHeader) : List<ObjJSelector?> =
+    fun getSelectorList(methodHeader: ObjJMethodHeader): List<ObjJSelector?> =
             ObjJMethodPsiUtils.getSelectorList(methodHeader)
 
     @JvmStatic
@@ -361,7 +361,7 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getSelectorList(accessorProperty)
 
     @JvmStatic
-    fun getSelectorIndex(selector:ObjJSelector) : Int =
+    fun getSelectorIndex(selector: ObjJSelector): Int =
             ObjJMethodPsiUtils.getSelectorIndex(selector)
 
     @JvmStatic
@@ -425,15 +425,15 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVarType(property:ObjJAccessorProperty): String? = cappuccino.ide.intellij.plugin.psi.utils.getVarType(property)
+    fun getVarType(property: ObjJAccessorProperty): String? = cappuccino.ide.intellij.plugin.psi.utils.getVarType(property)
 
     @JvmStatic
-    fun hasMethod(classElement:ObjJClassDeclarationElement<*>, selector:String) : Boolean {
+    fun hasMethod(classElement: ObjJClassDeclarationElement<*>, selector: String): Boolean {
         return !classElement.getMethodHeaders().none { it.selectorString == selector; }
     }
 
     @JvmStatic
-    fun isRequired(methodHeader: ObjJMethodHeader) : Boolean =
+    fun isRequired(methodHeader: ObjJMethodHeader): Boolean =
             ObjJMethodPsiUtils.isRequired(methodHeader)
 
     // ============================== //
@@ -441,7 +441,7 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getGetter(property: ObjJAccessorProperty) : String? =
+    fun getGetter(property: ObjJAccessorProperty): String? =
             cappuccino.ide.intellij.plugin.psi.utils.getGetter(property)
 
     @JvmStatic
@@ -449,11 +449,11 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getGetter(variableDeclaration)
 
     @JvmStatic
-    fun isGetter(property: ObjJAccessorProperty) : Boolean =
+    fun isGetter(property: ObjJAccessorProperty): Boolean =
             cappuccino.ide.intellij.plugin.psi.utils.isGetter(property)
 
     @JvmStatic
-    fun getSetter(property: ObjJAccessorProperty) : String? =
+    fun getSetter(property: ObjJAccessorProperty): String? =
             cappuccino.ide.intellij.plugin.psi.utils.getSetter(property)
 
     @JvmStatic
@@ -520,8 +520,8 @@ object ObjJPsiImplUtil {
     // ======== Class Decs ========== //
     // ============================== //
     @JvmStatic
-    fun getContainingSuperClass(psiElement:ObjJCompositeElement,returnDefault: Boolean): ObjJClassName? =
-        cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(psiElement, returnDefault);
+    fun getContainingSuperClass(psiElement: ObjJCompositeElement, returnDefault: Boolean): ObjJClassName? =
+            cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(psiElement, returnDefault);
 
     @JvmStatic
     fun getContainingClass(element: PsiElement): ObjJClassDeclarationElement<*>? {
@@ -564,16 +564,16 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getInheritedProtocols(classDeclaration:ObjJImplementationDeclaration): List<String> =
+    fun getInheritedProtocols(classDeclaration: ObjJImplementationDeclaration): List<String> =
             cappuccino.ide.intellij.plugin.psi.utils.getInheritedProtocols(classDeclaration)
 
     @JvmStatic
-    fun getInheritedProtocols(classDeclaration:ObjJProtocolDeclaration): List<String> =
+    fun getInheritedProtocols(classDeclaration: ObjJProtocolDeclaration): List<String> =
             cappuccino.ide.intellij.plugin.psi.utils.getInheritedProtocols(classDeclaration)
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun getInheritedProtocols(typedef:ObjJTypeDef): List<String> = listOf()
+    fun getInheritedProtocols(typedef: ObjJTypeDef): List<String> = listOf()
 
 
     // ============================== //
@@ -596,36 +596,42 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getBlockList(element: ObjJCompositeElement): List<ObjJBlock> {
-        return element.getChildrenOfType( ObjJBlock::class.java)
+        return element.getChildrenOfType(ObjJBlock::class.java)
+    }
+
+    @JvmStatic
+    fun getBlockList(element: ObjJBlockElement): List<ObjJBlock> {
+        return Arrays.asList(element);
     }
 
     @JvmStatic
     fun getBlockList(element: ObjJCaseClause): List<ObjJBlock> {
         return if (element.block != null)
-                    listOf(element.block!!)
-                else
-                    listOf()
+            listOf(element.block!!)
+        else
+            listOf()
     }
 
     @JvmStatic
-    fun getBlockList(tryStatement:ObjJTryStatement) =
+    fun getBlockList(tryStatement: ObjJTryStatement) =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(tryStatement)
 
     @JvmStatic
-    fun getBlockList(iterationStatement:ObjJIterationStatement) =
+    fun getBlockList(iterationStatement: ObjJIterationStatement) =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(iterationStatement)
 
     @JvmStatic
-    fun getBlockList(expr:ObjJExpr): List<ObjJBlock> =
+    fun getBlockList(expr: ObjJExpr): List<ObjJBlock> =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(expr)
 
     @JvmStatic
-    fun getBlockList(methodDeclaration:ObjJMethodDeclaration): List<ObjJBlock> {
+    fun getBlockList(methodDeclaration: ObjJMethodDeclaration): List<ObjJBlock> {
         val block = methodDeclaration.block;
         return if (block != null) listOf(block) else listOf();
     }
+
     @JvmStatic
-    fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjJBlock> {
+    fun getBlockList(defineFunction: ObjJPreprocessorDefineFunction): List<ObjJBlock> {
         return getBlockList(defineFunction)
     }
 
@@ -635,8 +641,8 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getBlock(expr:ObjJExpr): ObjJBlock? =
-        cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr)
+    fun getBlock(expr: ObjJExpr): ObjJBlock? =
+            cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr)
 
     @JvmStatic
     fun getOpenBrace(ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {
@@ -700,8 +706,9 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getIndexInQualifiedReference(variableName:ObjJVariableName): Int {
-        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName) ?: 0
+    fun getIndexInQualifiedReference(variableName: ObjJVariableName): Int {
+        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName)
+                ?: 0
     }
 
     @JvmStatic
@@ -750,7 +757,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getOpenBrace(element:PsiElement) = null
+    fun getOpenBrace(element: PsiElement) = null
 
     // ============================== //
     // ===== QualifiedReference ===== //
@@ -758,12 +765,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPartsAsString(qualifiedReference: ObjJQualifiedReference): String {
-        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType( ObjJQualifiedNamePart::class.java))
+        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType(ObjJQualifiedNamePart::class.java))
     }
 
     @JvmStatic
     fun getPartsAsStringArray(qualifiedReference: ObjJQualifiedReference): List<String> {
-        return getPartsAsStringArray(qualifiedReference.getChildrenOfType( ObjJQualifiedNamePart::class.java))
+        return getPartsAsStringArray(qualifiedReference.getChildrenOfType(ObjJQualifiedNamePart::class.java))
     }
 
     @JvmStatic
@@ -818,24 +825,24 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorDescriptiveName(selector: ObjJSelector): String {
-        val selectorLiteral = selector.getParentOfType( ObjJSelectorLiteral::class.java)
+        val selectorLiteral = selector.getParentOfType(ObjJSelectorLiteral::class.java)
         if (selectorLiteral != null) {
             return "@selector(" + selectorLiteral.selectorString + ")"
         }
-        val variableDeclaration = selector.getParentOfType( ObjJInstanceVariableDeclaration::class.java)
+        val variableDeclaration = selector.getParentOfType(ObjJInstanceVariableDeclaration::class.java)
         if (variableDeclaration != null) {
-            val property = selector.getParentOfType( ObjJAccessorProperty::class.java)
+            val property = selector.getParentOfType(ObjJAccessorProperty::class.java)
             val propertyString = if (property != null) property.accessorPropertyType.text + "=" else ""
             val returnType = if (variableDeclaration.stub != null) variableDeclaration.stub.varType else variableDeclaration.formalVariableType.text
             return "- (" + returnType + ") @accessors(" + propertyString + selector.getSelectorString(false) + ")"
         }
-        val methodCall = selector.getParentOfType( ObjJMethodCall::class.java)
+        val methodCall = selector.getParentOfType(ObjJMethodCall::class.java)
         var selectorString: String? = null
         if (methodCall != null) {
             selectorString = methodCall.selectorString
         }
         if (selectorString == null) {
-            val methodHeader = selector.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
+            val methodHeader = selector.getParentOfType(ObjJMethodHeaderDeclaration::class.java)
             if (methodHeader != null) {
                 selectorString = if (methodHeader is ObjJMethodHeader) getFormattedSelector((methodHeader as ObjJMethodHeader?)!!) else methodHeader.selectorString
                 val methodScopeString = if (methodHeader.isStatic) "+" else "-"
@@ -921,7 +928,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getImportAsUnifiedString(importStatement: ObjJImportStatement<*>) =
-        (importStatement.frameworkName ?: "") + ObjJImportStatement.DELIMITER + importStatement.fileName
+            (importStatement.frameworkName ?: "") + ObjJImportStatement.DELIMITER + importStatement.fileName
 
     // ============================== //
     // ===== VariableAssignments ==== //
@@ -991,31 +998,31 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun createFoldingDescriptor(implementation:ObjJImplementationDeclaration, foldingGroup: FoldingGroup) =
-        ObjJCodeFoldingBuilder.execute(implementation, foldingGroup)
+    fun createFoldingDescriptor(implementation: ObjJImplementationDeclaration, foldingGroup: FoldingGroup) =
+            ObjJCodeFoldingBuilder.execute(implementation, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(protocol:ObjJProtocolDeclaration, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(protocol: ObjJProtocolDeclaration, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(protocol, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(methodDeclaration:ObjJMethodDeclaration, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(methodDeclaration: ObjJMethodDeclaration, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(methodDeclaration, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(comment:ObjJComment, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(comment: ObjJComment, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(comment, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(variablesList:ObjJInstanceVariableList, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(variablesList: ObjJInstanceVariableList, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(variablesList, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(variableAssignment:ObjJBodyVariableAssignment, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(variableAssignment: ObjJBodyVariableAssignment, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(variableAssignment, foldingGroup)
 
     @JvmStatic
-    fun createFoldingDescriptor(variableAssignment:ObjJFunctionDeclarationElement<*>, foldingGroup: FoldingGroup) =
+    fun createFoldingDescriptor(variableAssignment: ObjJFunctionDeclarationElement<*>, foldingGroup: FoldingGroup) =
             ObjJCodeFoldingBuilder.execute(variableAssignment, foldingGroup)
 
     // ============================== //
@@ -1023,9 +1030,9 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun createTreeStructureElement(declaration:ObjJImplementationDeclaration) : ObjJStructureViewElement {
+    fun createTreeStructureElement(declaration: ObjJImplementationDeclaration): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(declaration)
-        val presentation:ItemPresentation = when {
+        val presentation: ItemPresentation = when {
             declaration.isCategory -> PresentationData("@category ${declaration.getClassName()} (${declaration.categoryNameString})", fileName, ObjJIcons.CATEGORY_ICON, null)
             declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("@implementation ${declaration.getClassNameString()} : ${declaration.superClassName}", fileName, ObjJIcons.CLASS_ICON, null)
             else -> PresentationData("@implementation ${declaration.getClassNameString()}", fileName, ObjJIcons.CLASS_ICON, null)
@@ -1034,48 +1041,50 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTreeStructureChildElements(declaration:ObjJImplementationDeclaration) : Array<ObjJStructureViewElement> {
-        val out:MutableList<ObjJStructureViewElement> = mutableListOf()
+    fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> {
+        val out: MutableList<ObjJStructureViewElement> = mutableListOf()
         declaration.instanceVariableList?.instanceVariableDeclarationList?.forEach {
             out.add(it.createTreeStructureElement())
         }
-        declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach{
+        declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach {
             out.add(it.createTreeStructureElement())
         }
         return out.toTypedArray()
     }
 
     @JvmStatic
-    fun createTreeStructureElement(instanceVariable:ObjJInstanceVariableDeclaration) : ObjJStructureViewElement {
-        val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
-        val presentation = PresentationData(label,ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
+    fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement {
+        val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text
+                ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
+        val presentation = PresentationData(label, ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
         return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
                 ?: "UNDEF"))
     }
 
     @JvmStatic
-    fun createTreeStructureElement(declaration:ObjJProtocolDeclaration) : ObjJStructureViewElement {
+    fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(declaration)
-        val presentation:ItemPresentation = PresentationData("@protocol ${declaration.getClassNameString()}", fileName, ObjJIcons.PROTOCOL_ICON, null)
+        val presentation: ItemPresentation = PresentationData("@protocol ${declaration.getClassNameString()}", fileName, ObjJIcons.PROTOCOL_ICON, null)
         return ObjJStructureViewElement(declaration, presentation, declaration.getClassNameString())
     }
 
 
     @JvmStatic
-    fun createTreeStructureElement(header:ObjJProtocolScopedBlock) : ObjJStructureViewElement {
+    fun createTreeStructureElement(header: ObjJProtocolScopedBlock): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(header)
         val text = if (header.atOptional != null) "@optional" else "@required"
         return ObjJStructureViewElement(header, PresentationData(text, fileName, null, null), "")
     }
 
     @JvmStatic
-    fun createTreeStructureElement(header:ObjJMethodDeclaration) : ObjJStructureViewElement {
+    fun createTreeStructureElement(header: ObjJMethodDeclaration): ObjJStructureViewElement {
         return createTreeStructureElement(header.methodHeader)
     }
+
     @JvmStatic
-    fun createTreeStructureElement(header:ObjJMethodHeader) : ObjJStructureViewElement {
+    fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(header)
-        val presentation:ItemPresentation = PresentationData(header.text.replace("[\n\r]*", ""), fileName, ObjJIcons.METHOD_ICON, null)
+        val presentation: ItemPresentation = PresentationData(header.text.replace("[\n\r]*", ""), fileName, ObjJIcons.METHOD_ICON, null)
         return ObjJStructureViewElement(header, presentation, header.containingClassName)
     }
 
@@ -1205,7 +1214,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun <PsiT : PsiElement> PsiElement.isIn(parentClass: Class<PsiT>): Boolean {
-        return getParentOfType( parentClass) != null
+        return getParentOfType(parentClass) != null
     }
 
 }
