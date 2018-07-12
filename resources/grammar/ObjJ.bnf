@@ -672,7 +672,7 @@ private forLoopHeader
 	;
 
 private compoundForLoopHeader
-	::= variableAssignmentSimple? ';' expressionSequence ';' expressionSequence?
+	::= (variableDeclarationList|variableAssignmentSimple)? ';' expressionSequence ';' expressionSequence?
 	{
 		//pin=2
 		//recoverWhile=recover_forLoopHeader
@@ -1309,6 +1309,7 @@ private implementationElement
 	::= preprocessorIfStatement
     | 	preprocessorStatement
     |	variableAssignmentSimple eos
+    |	variableDeclaration eos
 	| 	methodDeclaration
     | 	functionDeclaration
     |	comment
@@ -1558,7 +1559,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= ((qualifiedReference '.')? functionName|methodCall) (arrayIndexSelector)? '(' expressionSequence? ')'
+	::= (functionName|methodCall) arrayIndexSelector* '(' expressionSequence? ')'
 	{
 		pin=3
 		implements=[
@@ -1579,7 +1580,7 @@ rightExpr
 	| 	joinExprPrime
 	|	mathExprPrime
 	|	booleanExprPrime
-	|	assignmentExprPrime
+	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
 	;
 

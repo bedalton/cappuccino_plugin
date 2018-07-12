@@ -91,9 +91,7 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String? {
-        return if (functionCall.qualifiedReference == null) {
-            null
-        } else ObjJPsiImplUtil.getPartsAsString(functionCall.qualifiedReference!!)
+        return functionCall.functionName?.text
     }
 
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
