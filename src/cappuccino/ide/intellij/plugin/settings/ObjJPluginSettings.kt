@@ -24,7 +24,7 @@ object ObjJPluginSettings {
     private val IGNORE_PROPERTIES_DEFAULT = "";
     private val ignoredKeywordsSetting = StringSetting(IGNORE_PROPERTIES_KEY, IGNORE_PROPERTIES_DEFAULT)
     private val IGNORE_KEYWORDS_DELIM = ","
-    private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM) as MutableList
+    private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
 
     fun inferEOS(): Boolean {
         return inferEOS.value ?: INFER_EOS_DEFAULT
@@ -52,7 +52,7 @@ object ObjJPluginSettings {
         if (ignoredKeywords.contains(keyword)) {
             return;
         }
-        ignoredKeywords.add(keyword);
+        ignoredKeywords += keyword;
         ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
@@ -82,8 +82,8 @@ object ObjJPluginSettings {
         return ignoredKeywords;
     }
 
-    fun isIgnoredKeyword() {
-
+    fun isIgnoredKeyword(keyword:String) : Boolean {
+        return ignoredKeywords.contains(keyword)
     }
 
 
