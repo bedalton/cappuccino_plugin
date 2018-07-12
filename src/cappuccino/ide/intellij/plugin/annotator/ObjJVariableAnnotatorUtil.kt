@@ -1,11 +1,13 @@
 package cappuccino.ide.intellij.plugin.annotator
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreKeywordIntention
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -18,6 +20,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.AnnotationLevel
 import cappuccino.ide.intellij.plugin.settings.ObjJVariableAnnotatorSettings
@@ -141,11 +144,12 @@ internal object ObjJVariableAnnotatorUtil {
         }
         //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
         annotationHolder.createWeakWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
+                .registerFix(ObjJAddIgnoreKeywordIntention(variableName.text))
 
     }
 
     private fun isVariableDeclaredBeforeUse(variableName: ObjJVariableName): Boolean {
-        if (ObjJKeywordsList.keywords.contains(variableName.text)) {
+        if (ObjJKeywordsList.keywords.contains(variableName.text) || ObjJPluginSettings.isIgnoredKeyword(variableName.text) || ObjJBuiltInJsProperties.propertyExists(variableName.text) || ObjJBuiltInJsProperties.funcExists(variableName.text)) {
             return true
         }
         val precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
