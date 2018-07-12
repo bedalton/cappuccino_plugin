@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJVariableNameCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.indices.*
 import com.google.common.collect.ImmutableList
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -312,8 +313,9 @@ object ObjJVariableNameUtil {
         return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else Lists.emptyList()
     }
 
-    private fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
+    fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
+        LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
         if (DumbService.getInstance(project).isDumb) {
             //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST
@@ -630,10 +632,24 @@ object ObjJVariableNameUtil {
             //LOGGER.log(Level.INFO, "ObjJVariableNameUtil.getFormalVariableInstanceVariables(${variableName.text}) Index is less than 1")
             return null
         }
-        val baseVariableName:ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index-1) ?: return null
-        val resolvedSibling = baseVariableName.reference.resolve() ?: return null
-        val variableType = resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
-            resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text ?: return null
+        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index - 1)
+                ?: return null
+        val variableType:String = when (baseVariableName.text) {
+            "self" -> {
+                LOGGER.log(Level.INFO, "Getting instance variable completions for self")
+                variableName.containingClassName
+            }
+            "super" -> {
+                LOGGER.log(Level.INFO, "Getting instance variable completions for super")
+                variableName.getContainingSuperClass()?.text
+            }
+            else -> {
+                LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
+                val resolvedSibling = baseVariableName.reference.resolve() ?: return null
+                resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
+                resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
+            }
+        } ?: return null
         //LOGGER.log(Level.INFO, "Resolved variable is of type: "+variableType)
         return getAllContainingClassInstanceVariables(variableType, variableName.project)
     }
