@@ -7,9 +7,9 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreKeywordIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreVariableNameIntention
 import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
-import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredKeywordIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredVariableNameIntention
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -118,9 +118,9 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
 
-        if (ObjJPluginSettings.isIgnoredKeyword(variableName.text)) {
+        if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
             annotationHolder.createInfoAnnotation(variableName, "${variableName.text} is in the ignored properties list")
-                    .registerFix(ObjJRemoveIgnoredKeywordIntention(variableName.text))
+                    .registerFix(ObjJRemoveIgnoredVariableNameIntention(variableName.text))
             return
         }
 
@@ -156,7 +156,7 @@ internal object ObjJVariableAnnotatorUtil {
         }
         //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
         annotationHolder.createWarningAnnotation(variableName.textRange, "Variable may not have been declared before use")
-                .registerFix(ObjJAddIgnoreKeywordIntention(variableName.text))
+                .registerFix(ObjJAddIgnoreVariableNameIntention(variableName.text))
 
     }
 
@@ -246,11 +246,18 @@ internal object ObjJVariableAnnotatorUtil {
             return true
         }
 
+
+        val parent = variableName.parent
+        if (parent is ObjJBodyVariableAssignment && parent.varModifier != null) {
+            return true
+        }
+
         val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
         if (reference.parent is ObjJBodyVariableAssignment) {
             return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
         }
+
 
         if (reference.parent is ObjJIterationStatement) {
             return true
@@ -398,8 +405,9 @@ internal object ObjJVariableAnnotatorUtil {
         if (variableAssignment.varModifier == null) {
             return false
         }
-        val qualifiedReferences = variableAssignment.qualifiedReferenceList
-        val varNames = ArrayList<ObjJVariableName>()
+
+        val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
+        val varNames = variableAssignment.variableNameList
         for (declaration in variableAssignment.variableDeclarationList) {
             qualifiedReferences.addAll(declaration.qualifiedReferenceList)
         }

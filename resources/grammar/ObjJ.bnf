@@ -437,18 +437,23 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= varModifier? variableDeclarationList
+	::= varModifier variableDeclarationList
 	{
 		//pin=2
 	}
 	;
 
 private variableDeclarationList
-	::= (variableDeclaration|qualifiedReference !('('|rightExpr|'--'|'++')) (',' (variableDeclaration|qualifiedReference!('('|rightExpr|'--'|'++')))*
+	::=  variableDeclarationListVariableName (',' variableDeclarationListVariableName)*
 	{
 		//pin=1
 		//recoverWhile=recover_variableDeclarationsList
 	}
+	;
+
+private variableDeclarationListVariableName
+	::= variableDeclaration
+	|	variableName !('('|rightExpr|'--'|'++')
 	;
 
 globalVariableDeclaration
@@ -667,7 +672,7 @@ private forLoopHeader
 	;
 
 private compoundForLoopHeader
-	::= variableAssignmentSimple? ';' expressionSequence ';' expressionSequence?
+	::= (variableDeclarationList|variableAssignmentSimple)? ';' expressionSequence ';' expressionSequence?
 	{
 		//pin=2
 		//recoverWhile=recover_forLoopHeader
@@ -1304,6 +1309,7 @@ private implementationElement
 	::= preprocessorIfStatement
     | 	preprocessorStatement
     |	variableAssignmentSimple eos
+    |	variableDeclaration eos
 	| 	methodDeclaration
     | 	functionDeclaration
     |	comment
@@ -1553,7 +1559,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= ((qualifiedReference '.')? functionName|methodCall) (arrayIndexSelector)? '(' expressionSequence? ')'
+	::= (functionName|methodCall) arrayIndexSelector* '(' expressionSequence? ')'
 	{
 		pin=3
 		implements=[
@@ -1574,7 +1580,7 @@ rightExpr
 	| 	joinExprPrime
 	|	mathExprPrime
 	|	booleanExprPrime
-	|	assignmentExprPrime
+	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
 	;
 
