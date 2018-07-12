@@ -315,7 +315,7 @@ object ObjJVariableNameUtil {
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
+        //LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
         if (DumbService.getInstance(project).isDumb) {
             //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST
@@ -468,8 +468,8 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = ArrayList<ObjJVariableName>()
-        val references = bodyVariableAssignment.qualifiedReferenceList
+        val result = bodyVariableAssignment.variableNameList
+        val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
@@ -496,13 +496,18 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return null
         }
-        val references = bodyVariableAssignment.qualifiedReferenceList
+        val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
             return null
+        }
+        for (variableName in bodyVariableAssignment.variableNameList) {
+            if (filter(variableName)) {
+                return variableName
+            }
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
@@ -570,8 +575,8 @@ object ObjJVariableNameUtil {
                     result.add(qualifiedReference.primaryVar!!)
                 }
             }
-            for (reference in iterationStatement.qualifiedReferenceList) {
-                result.add(reference.primaryVar!!)
+            for (reference in iterationStatement.variableNameList) {
+                result.add(reference)
             }
             iterationStatement = iterationStatement.getParentOfType( ObjJIterationStatement::class.java)
         }
@@ -636,15 +641,15 @@ object ObjJVariableNameUtil {
                 ?: return null
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for self")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for self")
                 variableName.containingClassName
             }
             "super" -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for super")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for super")
                 variableName.getContainingSuperClass()?.text
             }
             else -> {
-                LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
+                //LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
                 val resolvedSibling = baseVariableName.reference.resolve() ?: return null
                 resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
                 resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text

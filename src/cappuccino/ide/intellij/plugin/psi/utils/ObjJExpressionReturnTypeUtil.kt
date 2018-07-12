@@ -240,9 +240,9 @@ private fun isRightSideEvaluateToInteger(rightExpr: ObjJRightExpr): Boolean {
     if (!rightExpr.arrayIndexSelectorList.isEmpty()) {
         throw CannotDetermineException()
     }
-    if (rightExpr.assignmentExprPrime != null) {
-        return isReturnTypeInteger(rightExpr.assignmentExprPrime!!.expr)
-    }
+    //if (rightExpr.assignmentExprPrime != null) {
+      //  return isReturnTypeInteger(rightExpr.assignmentExprPrime!!.expr)
+    //}
     if (rightExpr.mathExprPrime != null) {
         if (rightExpr.mathExprPrime != null) {
             val mathExprPrime = rightExpr.mathExprPrime
@@ -328,9 +328,9 @@ private fun isRightExpressionBool(rightExpr: ObjJRightExpr?): Boolean {
     if (rightExpr.booleanExprPrime != null) {
         return true
     }
-    return if (rightExpr.assignmentExprPrime != null) {
+    return /*if (rightExpr.assignmentExprPrime != null) {
         isReturnTypeBOOL(rightExpr.assignmentExprPrime!!.expr)
-    } else false
+    } else */false
 }
 
 private fun getAllSubExpressions(expr: ObjJExpr?, addSelf: Boolean = true): List<ObjJExpr> {
@@ -362,9 +362,9 @@ private fun getAllSubExpressions(expr: ObjJExpr?, addSelf: Boolean = true): List
 
 private fun addRightExpressionExpressions(expressions: MutableList<ObjJExpr>, rightExpressions: List<ObjJRightExpr>) {
     for (rightExpr in rightExpressions) {
-        if (rightExpr.assignmentExprPrime != null) {
+        /*if (rightExpr.assignmentExprPrime != null) {
             expressions.add(rightExpr.assignmentExprPrime!!.expr)
-        }
+        }*/
         val boolAssignExprPrime = rightExpr.boolAssignExprPrime ?: continue
         expressions.add(boolAssignExprPrime.ifTrue)
         expressions.add(boolAssignExprPrime.ifFalse!!)
@@ -439,9 +439,9 @@ private fun testRightExpressionsExpressions(rightExpr: ObjJRightExpr?, test: Sub
     if (rightExpr == null) {
         return false
     }
-    if (rightExpr.assignmentExprPrime != null) {
+    /*if (rightExpr.assignmentExprPrime != null) {
         return test(rightExpr.assignmentExprPrime!!.expr)
-    }
+    }*/
     return if (rightExpr.boolAssignExprPrime != null) {
         test(rightExpr.boolAssignExprPrime!!.ifTrue) || test(rightExpr.boolAssignExprPrime!!.ifFalse)
     } else false

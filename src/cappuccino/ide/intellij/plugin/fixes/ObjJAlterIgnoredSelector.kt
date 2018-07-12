@@ -1,28 +1,20 @@
 package cappuccino.ide.intellij.plugin.fixes
 
-import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.sun.deploy.util.Property.createProperty
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.FileTypeIndex
-import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.util.IncorrectOperationException
 
 
 
-class ObjJAddIgnoreKeywordIntention(private val keyword:String) : BaseIntentionAction() {
+class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction() {
 
     override fun getText(): String {
-        return "Add '${keyword}' to ignored properties list"
+        return if (addToIgnored) "Add selector <$keyword> to ignored selectors list" else "Remove selector <${keyword}> from ignored selectors list"
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
@@ -32,7 +24,11 @@ class ObjJAddIgnoreKeywordIntention(private val keyword:String) : BaseIntentionA
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
-            ObjJPluginSettings.addIgnoreKeyword(keyword);
+            if (addToIgnored) {
+                ObjJPluginSettings.ignoreSelector(keyword)
+            } else {
+                ObjJPluginSettings.doNotIgnoreSelector(keyword)
+            }
             DaemonCodeAnalyzer.getInstance(project).updateVisibleHighlighters(editor)
         }
     }

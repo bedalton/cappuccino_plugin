@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.annotator
 
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredSelector
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -151,15 +152,25 @@ internal object ObjJMethodCallAnnotatorUtil {
         val project = methodCall.project
         //Get full selector signature
         val fullSelector = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
+
         //Check that method selector signature is valid, and return if it is
         if (isValidMethodCall(fullSelector, project)) {
             return true
-        }// else {
-        //LOGGER.log(Level.INFO, "Failed to find indexed selector matching : <" + fullSelector + ">;");
-        //}
+        }
+
+
+        if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
+            for (selector in selectors) {
+                holder.createInfoAnnotation(selector, "missing selector: <"+fullSelector+"> is ignored")
+                        .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
+            }
+            return true;
+        }
+
         if (selectors.size == 1) {
             val selector = selectors[0]
             holder.createErrorAnnotation(selector, "Failed to find selector matching <" + selector.getSelectorString(true) + ">")
+                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
             return false
         }
         //Selector is invalid, so find first non-matching selector
@@ -169,6 +180,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         if (failIndex < 0) {
             //LOGGER.log(Level.INFO, "Selector fail index returned a negative index.");
             holder.createErrorAnnotation(methodCall, "Failed to find selector matching <$fullSelector>")
+                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
             return false
         }
 
@@ -184,6 +196,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
             selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
             holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
+                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
         }
 
         return false
