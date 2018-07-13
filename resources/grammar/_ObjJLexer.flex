@@ -182,6 +182,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	"@{"                                 { canRegex(true); return ObjJ_AT_OPEN_BRACE; }
 	"null"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"                                { canRegex(false); return ObjJ_NIL; }
+	"Nil"                                { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
 	"#define"                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
 	"#undef"                             { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
