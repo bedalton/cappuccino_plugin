@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.StringSetting
 
-class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault:String = "") {
+class ObjJIgnoredStringsListSetting (val key:String, ignorePropertiesDefault:String = "") {
     private val ignoredKeywordsSetting = StringSetting(key, ignorePropertiesDefault)
     private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
 
@@ -11,7 +11,7 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
             return;
         }
         ignoredKeywords += keyword;
-        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
+        ignoredKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
     fun removeIgnoredKeyword(keyword:String) {
@@ -19,7 +19,7 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
             return;
         }
         ignoredKeywords -= keyword;
-        ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
+        ignoredKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
     fun ignoredKeywords() : List<String> {
@@ -30,7 +30,7 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
         return ignoredKeywords.contains(keyword);
     }
 
-    private fun ignoreKeywords(keywords:String) {
+    fun ignoredKeywords(keywords:String) {
         ignoredKeywordsSetting.value = keywords
         ignoredKeywords = loadIgnoredKeywords();
     }
@@ -47,7 +47,12 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
         }
         return ignoredKeywords;
     }
+
+    fun asString() : String {
+        return ignoredKeywordsSetting.value!!
+    }
+
     companion object {
-        private val IGNORE_KEYWORDS_DELIM = ","
+        private const val IGNORE_KEYWORDS_DELIM = ","
     }
 }

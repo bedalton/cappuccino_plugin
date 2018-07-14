@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -24,7 +24,7 @@ class ObjJRemoveIgnoredVariableNameIntention(private val keyword:String) : BaseI
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
-            ObjJPluginSettings.removeIgnoredVariableName(keyword)
+            ObjJPluginSettingsHolder.removeIgnoredVariableNameFromList(keyword)
             DaemonCodeAnalyzer.getInstance(project).updateVisibleHighlighters(editor)
         }
     }

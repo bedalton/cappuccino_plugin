@@ -8,17 +8,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.utils.*
-import org.jetbrains.uast.getContainingClass
 
 import java.util.ArrayList
-import java.util.logging.Level
-import java.util.logging.Logger
 import java.util.regex.Pattern
 
 /**
@@ -47,7 +44,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
         //Check that call target for method call is valid
         //Only used is setting for validate call target is set.
-        if (ObjJPluginSettings.validateCallTarget()) {// && !IgnoreUtil.shouldIgnore(methodCall, ElementType.CALL_TARGET)) {
+        if (ObjJPluginSettingsHolder.validateCallTarget()) {// && !IgnoreUtil.shouldIgnore(methodCall, ElementType.CALL_TARGET)) {
             validateCallTarget(methodCall, holder)
         }
 
@@ -86,7 +83,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return;
         }*/
         val callTarget = methodCall.callTarget.text
-        val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) methodCall.callTarget.getPossibleCallTargetTypes() else null
+        val possibleCallTargetClassTypes = if (ObjJPluginSettingsHolder.validateCallTarget()) methodCall.callTarget.getPossibleCallTargetTypes() else null
         if (callTarget == "self" || callTarget == "super" ||
                 possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED)) {
             return
@@ -159,7 +156,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
 
 
-        if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
+        if (ObjJPluginSettingsHolder.isSelectorIgnored(fullSelector)) {
             for (selector in selectors) {
                 holder.createInfoAnnotation(selector, "missing selector: <"+fullSelector+"> is ignored")
                         .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))

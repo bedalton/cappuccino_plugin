@@ -17,7 +17,7 @@ import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -1137,7 +1137,7 @@ object ObjJPsiImplUtil {
                 ahead === ObjJTypes.ObjJ_PP_ELSE_IF ||
                 ahead === ObjJTypes.ObjJ_PP_END_IF ||
                 ahead === ObjJTypes.ObjJ_SEMI_COLON
-        if (isLineTerminator || !ObjJPluginSettings.inferEOS()) {
+        if (isLineTerminator || !ObjJPluginSettingsHolder.inferEOS()) {
             if (!isLineTerminator) {
                 //LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
             }

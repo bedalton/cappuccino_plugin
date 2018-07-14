@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -25,9 +25,9 @@ class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Bool
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             if (addToIgnored) {
-                ObjJPluginSettings.ignoreSelector(keyword)
+                ObjJPluginSettingsHolder.addIgnoredSelectorToList(keyword)
             } else {
-                ObjJPluginSettings.doNotIgnoreSelector(keyword)
+                ObjJPluginSettingsHolder.removeIgnoredSelectorFromList(keyword)
             }
             DaemonCodeAnalyzer.getInstance(project).updateVisibleHighlighters(editor)
         }

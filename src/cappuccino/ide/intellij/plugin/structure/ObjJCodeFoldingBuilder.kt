@@ -4,8 +4,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -43,7 +42,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return ObjJPluginSettings.collapseByDefault()
+        return ObjJPluginSettingsHolder.collapseByDefault()
     }
 
     companion object {
@@ -133,7 +132,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     }
 }
 
-private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOffset: Int, group:FoldingGroup, val collapseByDefault:Boolean = ObjJPluginSettings.collapseByDefault(), placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
+private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOffset: Int, group:FoldingGroup, val collapseByDefault:Boolean = ObjJPluginSettingsHolder.collapseByDefault(), placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
     private val placeholderString:String
 
     override fun getPlaceholderText(): String {

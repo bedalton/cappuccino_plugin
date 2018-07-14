@@ -22,7 +22,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.AnnotationLevel
 import cappuccino.ide.intellij.plugin.settings.ObjJVariableAnnotatorSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -118,7 +118,7 @@ internal object ObjJVariableAnnotatorUtil {
             return
         }
 
-        if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
+        if (ObjJPluginSettingsHolder.isVariableNameIgnored(variableName.text)) {
             annotationHolder.createInfoAnnotation(variableName, "${variableName.text} is in the ignored properties list")
                     .registerFix(ObjJRemoveIgnoredVariableNameIntention(variableName.text))
             return
@@ -329,7 +329,7 @@ internal object ObjJVariableAnnotatorUtil {
     }
 
     private fun annotateOvershadow(variableName: ObjJVariableName, annotationHolder: AnnotationHolder) {
-        if (ObjJPluginSettings.ignoreOvershadowedVariables()) {
+        if (ObjJPluginSettingsHolder.ignoreOvershadowedVariables()) {
             return
         }
         annotateIfOvershadowsBlocks(variableName, annotationHolder)
