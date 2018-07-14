@@ -99,6 +99,7 @@
                                 </constraints>
                                 <properties>
                                   <editable value="false"/>
+                                  <font swing-font="Label.font"/>
                                   <lineWrap value="true"/>
                                   <opaque value="false"/>
                                   <text resource-bundle="ObjJPluginText" key="objj.plugin.settings.general.warnings.variables.ignore.description"/>
@@ -155,6 +156,7 @@
                                 </constraints>
                                 <properties>
                                   <editable value="false"/>
+                                  <font swing-font="Label.font"/>
                                   <lineWrap value="true"/>
                                   <opaque value="false"/>
                                   <text resource-bundle="ObjJPluginText" key="objj.plugin.settings.general.warnings.selectors.ignore.description"/>
@@ -213,6 +215,7 @@
                     </constraints>
                     <properties>
                       <autoscrolls value="false"/>
+                      <font swing-font="Label.font"/>
                       <lineWrap value="true"/>
                       <opaque value="false"/>
                       <text resource-bundle="ObjJPluginText" key="objj.plugin.settings.experimental.selectors.rename.warning"/>
