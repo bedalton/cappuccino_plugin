@@ -98,6 +98,10 @@ public class ObjJSettingsPanel extends JPanel {
         panel5.setBorder(BorderFactory.createTitledBorder(ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.selectors.ignore.fieldname")));
         final JTextArea textArea1 = new JTextArea();
         textArea1.setEditable(false);
+        Font textArea1Font = UIManager.getFont("Label.font");
+        if (textArea1Font != null) {
+            textArea1.setFont(textArea1Font);
+        }
         textArea1.setLineWrap(true);
         textArea1.setOpaque(false);
         textArea1.setText(ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.variables.ignore.description"));
@@ -113,7 +117,7 @@ public class ObjJSettingsPanel extends JPanel {
         panel6.setLayout(new GridLayoutManager(1, 1, new Insets(5, 5, 5, 5), -1, 10));
         panel6.setOpaque(false);
         panel2.add(panel6, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        panel6.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.selectors.fieldlabel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 16, panel6.getFont()), new Color(-16777216)));
+        panel6.setBorder(BorderFactory.createTitledBorder(null, ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.selectors.fieldlabel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 16, panel6.getFont()), new Color(-16777216)));
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
         panel7.setOpaque(false);
@@ -121,6 +125,10 @@ public class ObjJSettingsPanel extends JPanel {
         panel7.setBorder(BorderFactory.createTitledBorder(null, ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.selectors.ignore.fieldname"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, -1, panel7.getFont())));
         final JTextArea textArea2 = new JTextArea();
         textArea2.setEditable(false);
+        Font textArea2Font = UIManager.getFont("Label.font");
+        if (textArea2Font != null) {
+            textArea2.setFont(textArea2Font);
+        }
         textArea2.setLineWrap(true);
         textArea2.setOpaque(false);
         textArea2.setText(ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.selectors.ignore.description"));
@@ -142,6 +150,10 @@ public class ObjJSettingsPanel extends JPanel {
         panel9.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.experimental.selectors.rename.fieldname")));
         final JTextArea textArea3 = new JTextArea();
         textArea3.setAutoscrolls(false);
+        Font textArea3Font = UIManager.getFont("Label.font");
+        if (textArea3Font != null) {
+            textArea3.setFont(textArea3Font);
+        }
         textArea3.setLineWrap(true);
         textArea3.setOpaque(false);
         textArea3.setText(ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.experimental.selectors.rename.warning"));
