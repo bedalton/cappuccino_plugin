@@ -136,7 +136,9 @@ public class ObjJSettingsPanel extends JPanel {
         panel7.add(textArea2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, 50), null, 0, false));
         ignoredSelectors = new JTextArea();
         ignoredSelectors.setEditable(true);
+        ignoredSelectors.setEnabled(true);
         ignoredSelectors.setLineWrap(true);
+        ignoredSelectors.setVerifyInputWhenFocusTarget(false);
         ignoredSelectors.setWrapStyleWord(true);
         panel7.add(ignoredSelectors, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         final JPanel panel8 = new JPanel();
