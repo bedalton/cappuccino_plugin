@@ -77,7 +77,7 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/ObjJColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
-    <applicationConfigurable id="some.plugin.configurable" displayName="Plugin Configurable" instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfiguration"/>
+    <applicationConfigurable id="cappuccino.ide.intellij.plugin.settings.configurable" displayName="Objective-J" instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
 
 
     <!-- ObjJ Libraries -->

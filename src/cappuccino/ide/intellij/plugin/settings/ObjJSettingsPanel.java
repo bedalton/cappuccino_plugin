@@ -62,6 +62,7 @@ public class ObjJSettingsPanel extends JPanel {
     private void $$$setupUI$$$() {
         main = new JPanel();
         main.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        main.setOpaque(false);
         tabbedPane1 = new JTabbedPane();
         main.add(tabbedPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         tabbedPane1.setBorder(BorderFactory.createTitledBorder(null, "Objective-J Settings", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 20, tabbedPane1.getFont())));
@@ -70,16 +71,18 @@ public class ObjJSettingsPanel extends JPanel {
         panel1.setOpaque(false);
         tabbedPane1.addTab(ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.fieldname"), panel1);
         final JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setOpaque(false);
         panel1.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
+        panel2.setOpaque(false);
         scrollPane1.setViewportView(panel2);
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(2, 1, new Insets(5, 5, 5, 5), -1, 10));
         panel3.setFocusable(true);
         panel3.setOpaque(false);
         panel2.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        panel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.variables.fieldlabel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 16, panel3.getFont())));
+        panel3.setBorder(BorderFactory.createTitledBorder(null, ResourceBundle.getBundle("ObjJPluginText").getString("objj.plugin.settings.general.warnings.variables.fieldlabel"), TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 16, panel3.getFont())));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel4.setOpaque(false);
@@ -103,6 +106,7 @@ public class ObjJSettingsPanel extends JPanel {
         ignoredVariables = new JTextArea();
         ignoredVariables.setEditable(true);
         ignoredVariables.setLineWrap(true);
+        ignoredVariables.setOpaque(true);
         ignoredVariables.setWrapStyleWord(true);
         panel5.add(ignoredVariables, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         final JPanel panel6 = new JPanel();
@@ -123,6 +127,7 @@ public class ObjJSettingsPanel extends JPanel {
         textArea2.setWrapStyleWord(true);
         panel7.add(textArea2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, 50), null, 0, false));
         ignoredSelectors = new JTextArea();
+        ignoredSelectors.setEditable(true);
         ignoredSelectors.setLineWrap(true);
         ignoredSelectors.setWrapStyleWord(true);
         panel7.add(ignoredSelectors, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));

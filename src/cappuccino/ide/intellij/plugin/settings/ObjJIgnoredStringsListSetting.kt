@@ -2,8 +2,8 @@ package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.StringSetting
 
-class ObjJIgnoredStringsListSetting (val key:String, ignorePropertiesDefault:String = "") {
-    private val ignoredKeywordsSetting = StringSetting(key, ignorePropertiesDefault)
+class ObjJIgnoredStringsListSetting (val key:String, private val requiredEnd:String? = null) {
+    private val ignoredKeywordsSetting = StringSetting(key, "")
     private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
 
     fun ignoreKeyword(keyword:String) {
@@ -38,12 +38,21 @@ class ObjJIgnoredStringsListSetting (val key:String, ignorePropertiesDefault:Str
     private fun loadIgnoredKeywords() : MutableList<String> {
         val ignoredKeywords:MutableList<String> = ArrayList()
         val keywordsString:String = ignoredKeywordsSetting.value ?: "";
+        var fixed:Boolean = false
         for (keyword in keywordsString.split(IGNORE_KEYWORDS_DELIM)) {
-            val trimmedKeyword = keyword.trim();
+            var trimmedKeyword = keyword.trim();
             if (trimmedKeyword.isEmpty()) {
+                fixed = true
                 continue;
             }
+            if (requiredEnd != null && !trimmedKeyword.endsWith(requiredEnd)) {
+                fixed = true
+                trimmedKeyword += requiredEnd
+            }
             ignoredKeywords.add(trimmedKeyword)
+        }
+        if (fixed) {
+            ignoredKeywordsSetting.value = ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM)
         }
         return ignoredKeywords;
     }

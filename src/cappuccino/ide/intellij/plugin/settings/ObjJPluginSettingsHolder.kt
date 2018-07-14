@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.settings
 
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
 
 object ObjJPluginSettingsHolder {
@@ -31,7 +32,7 @@ object ObjJPluginSettingsHolder {
     // ==== SELECTORS === //
     // Selectors.unresolved.ignore
     private const val SELECTOR_IGNORED = "objj.annotator.selectors.unresolved.ignored"
-    private val IGNORED_MISSING_SELECTORS = ObjJIgnoredStringsListSetting(SELECTOR_IGNORED)
+    private val IGNORED_MISSING_SELECTORS = ObjJIgnoredStringsListSetting(SELECTOR_IGNORED, ObjJMethodPsiUtils.SELECTOR_SYMBOL)
     // Selectors.rename
     private const val SELECTOR_RENAME_ENABLED_KEY = "objj.experimental.selectors.rename.enabled"
     private const val SELECTOR_RENAME_ENABLED_DEFAULT = false
@@ -64,6 +65,14 @@ object ObjJPluginSettingsHolder {
     // =========== Variables =========== //
     // ================================= //
 
+    fun ignoreOvershadowedVariables(): Boolean {
+        return SUPPRESS_VARIABLES_OVERSHADOWED_WARNING.value ?: SUPPRESS_OVERSHADOWED_VARIABLES_DEFAULT
+    }
+
+    fun ignoreOvershadowedVariables(shouldIgnore: Boolean) {
+        SUPPRESS_VARIABLES_OVERSHADOWED_WARNING.value = shouldIgnore
+    }
+
     fun addIgnoredVariableNameToList(keyword: String) = IGNORED_VARIABLE_NAMES.ignoreKeyword(keyword)
 
     fun removeIgnoredVariableNameFromList(keyword: String) = IGNORED_VARIABLE_NAMES.removeIgnoredKeyword(keyword)
@@ -78,22 +87,13 @@ object ObjJPluginSettingsHolder {
 
     fun isVariableNameIgnored(keyword: String): Boolean = IGNORED_VARIABLE_NAMES.isIgnoredKeyword(keyword)
 
+    // ================================= //
+    // =========== Selectors =========== //
+    // ================================= //
 
     fun addIgnoredSelectorToList(keyword: String) = IGNORED_MISSING_SELECTORS.ignoreKeyword(keyword)
 
     fun removeIgnoredSelectorFromList(keyword: String) = IGNORED_MISSING_SELECTORS.removeIgnoredKeyword(keyword)
-
-    fun ignoreOvershadowedVariables(): Boolean {
-        return SUPPRESS_VARIABLES_OVERSHADOWED_WARNING.value ?: SUPPRESS_OVERSHADOWED_VARIABLES_DEFAULT
-    }
-
-    fun ignoreOvershadowedVariables(shouldIgnore: Boolean) {
-        SUPPRESS_VARIABLES_OVERSHADOWED_WARNING.value = shouldIgnore
-    }
-
-    // ================================= //
-    // =========== Selectors =========== //
-    // ================================= //
 
     fun ignoredSelectorsList(): List<String> = IGNORED_MISSING_SELECTORS.ignoredKeywords()
     fun ignoredSelectorString(): String = IGNORED_MISSING_SELECTORS.asString()

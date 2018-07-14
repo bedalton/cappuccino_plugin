@@ -9,7 +9,7 @@ import javax.swing.*;
 
 import static cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsHolder.INSTANCE;
 
-public class ObjJPluginSettingsConfiguration implements Configurable {
+public class ObjJPluginSettingsConfigurable implements Configurable {
 
     private ObjJSettingsPanel panel;
 
@@ -29,7 +29,11 @@ public class ObjJPluginSettingsConfiguration implements Configurable {
 
     @Override
     public boolean isModified() {
-        return false;
+        return
+                !INSTANCE.ignoredSelectorString().equals(panel.ignoredSelectors()) ||
+                !INSTANCE.ignoredVariableNameString().equals(panel.ignoredVariables()) ||
+                INSTANCE.ignoreOvershadowedVariables() != panel.isSuppressOvershadowedVariableWarningsEnabled() ||
+                INSTANCE.selectorRenameEnabled() != panel.isSelectorRenameEnabled();
     }
 
     @Override
