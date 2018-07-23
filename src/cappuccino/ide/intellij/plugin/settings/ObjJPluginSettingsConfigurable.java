@@ -33,15 +33,17 @@ public class ObjJPluginSettingsConfigurable implements Configurable {
                 !INSTANCE.ignoredSelectorString().equals(panel.ignoredSelectors()) ||
                 !INSTANCE.ignoredVariableNameString().equals(panel.ignoredVariables()) ||
                 INSTANCE.ignoreOvershadowedVariables() != panel.isSuppressOvershadowedVariableWarningsEnabled() ||
-                INSTANCE.selectorRenameEnabled() != panel.isSelectorRenameEnabled();
+                INSTANCE.selectorRenameEnabled() != panel.isSelectorRenameEnabled() ||
+                INSTANCE.useIncludedSdkDefinitions() != panel.useIncludedSdkDefinitions();
     }
 
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         INSTANCE.ignoredSelectorString(panel.ignoredSelectors());
         INSTANCE.ignoredVariableNameString(panel.ignoredVariables());
         INSTANCE.ignoreOvershadowedVariables(panel.isSuppressOvershadowedVariableWarningsEnabled());
         INSTANCE.selectorRenameEnabled(panel.isSelectorRenameEnabled());
+        INSTANCE.useIncludedSdkDefinitions(panel.useIncludedSdkDefinitions());
     }
 
 }
