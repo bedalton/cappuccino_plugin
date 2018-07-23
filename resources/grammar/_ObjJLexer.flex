@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 	StringBuffer pragmaString;
 	private static final Logger LOGGER = Logger.getLogger("_ObjJLexer.flex");
 	private boolean inPreProc = false;
+	private boolean canWhitespace = true;
 
   	public _ObjJLexer() {
     	this((java.io.Reader)null);
@@ -27,6 +28,14 @@ import java.util.logging.Logger;
 
 	protected boolean canRegex() {
 		return canRegex;
+	}
+
+	protected boolean canWhiteSpace() {
+  	    return canWhitespace;
+	}
+
+	protected void canWhiteSpace(boolean canWhitespace) {
+  	    this.canWhitespace = canWhitespace;
 	}
 
 	private static void log(String message) {
@@ -44,7 +53,6 @@ import java.util.logging.Logger;
 
 PREPROCESSOR_CONTINUE_ON_NEXT_LINE=\\[ ]*\r?\n
 LINE_TERMINATOR=[\r\n\u2028\u2029]
-WHITE_SPACE=\p{Blank}+
 VAR_TYPE_BYTE=((unsigned|signed)[ ]+)?byte
 VAR_TYPE_CHAR=((unsigned|signed)[ ]+)?char
 VAR_TYPE_SHORT=((unsigned|signed)[ ]+)?short
@@ -72,6 +80,21 @@ BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 REGULAR_EXPRESSION_LITERAL = \/ [^\r\n\u2028\u2029\*\/] (([^\r\n\u2028\u2029/\[]| "\\" [^\r\n\u2028\u2029]{1})+ | \[ (\\? [^\r\n\u2028\u2029\]/])* \] )* \/ [a-zA-Z]*
 ID=[_a-zA-Z][_a-zA-Z0-9]*
+PP_UNDEF = #\s*undef
+PP_IF_DEF = #\s*ifdef
+PP_IFNDEF = #\s*ifndef
+PP_IF = #\s*if
+PP_ELSE = #\s*else
+PP_ENDIF = #\s*endif
+PP_ELIF = #\s*elif
+PP_PRAGMA = #\s*pragma
+PP_DEFINE = #\s*define
+PP_DEFINED = #\s*defined
+PP_ERROR = #\s*error
+PP_WARNING = #\s*warning
+PP_INCLUDE = #\s*include
+PP_FRAGMENT = #\s+{ID}
+WHITE_SPACE=\p{Blank}+
 %state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT
 %%
 
@@ -183,19 +206,19 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	"null"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"                                { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
-	"#define"                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
-	"#undef"                             { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
-	"#ifdef"                             { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
-	"#ifndef"                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
-	"#if"                                { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF; }
-	"#else"                              { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_ELSE; }
-	"#endif"                             { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_END_IF; }
-	"#elif"                              { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ELSE_IF; }
-	"#pragma"                            { canRegex(false); yybegin(PRAGMA); return ObjJ_PP_PRAGMA; }
-	"#defined"                           { canRegex(false); return ObjJ_PP_DEFINED; }
-	"#error"                             { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
-	"#warning"                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
-	"#include"                           { canRegex(false);	yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_INCLUDE; }
+	{PP_DEFINE}                         { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
+	{PP_UNDEF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
+	{PP_IF_DEF}                          { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
+	{PP_IFNDEF}                          { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
+	{PP_IF}                              { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF; }
+	{PP_ELSE}                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_ELSE; }
+	{PP_ENDIF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_END_IF; }
+	{PP_ELIF}                            { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ELSE_IF; }
+	{PP_PRAGMA}                          { canRegex(false); yybegin(PRAGMA); return ObjJ_PP_PRAGMA; }
+	{PP_DEFINED}                         { canRegex(false); return ObjJ_PP_DEFINED; }
+	{PP_ERROR}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
+	{PP_WARNING}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
+	{PP_INCLUDE}                         { canRegex(false);	yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_INCLUDE; }
 	"signed"                             { canRegex(false);  return ObjJ_VAR_TYPE_SIGNED; }
 	"unsigned"                           { canRegex(false);  return ObjJ_VAR_TYPE_UNSIGNED; }
 	"IBAction"                           { canRegex(true); return ObjJ_VAR_TYPE_IBACTION; }
@@ -256,7 +279,6 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	{DECIMAL_LITERAL2}                   { canRegex(false);  return ObjJ_DECIMAL_LITERAL; }
 	{INTEGER_LITERAL}                    { canRegex(false);  return ObjJ_INTEGER_LITERAL; }
 	{ID}                                 { canRegex(false); return ObjJ_ID; }
-	{WHITE_SPACE}+                       { return WHITE_SPACE; }
 	{REGULAR_EXPRESSION_LITERAL}		 {
 											/*final String text = yytext().toString();
     											final int backtrack = text.length() -1;
@@ -290,7 +312,9 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }
 
 }
-
-"#"{ID}						 			 { canRegex(false); return ObjJ_PP_FRAGMENT; }
+{PP_FRAGMENT}				             { canRegex(false); return ObjJ_PP_FRAGMENT; }
 "@"{ID}						 			 { canRegex(false); return ObjJ_AT_FRAGMENT; }
+<YYINITIAL> {
+	{WHITE_SPACE}+                       { return WHITE_SPACE; }
+}
 [^] { return BAD_CHARACTER; }

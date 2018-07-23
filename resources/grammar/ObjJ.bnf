@@ -276,7 +276,7 @@ importFramework
 	;
 
 includeFile
-	::= '#include' stringLiteral LINE_TERMINATOR
+	::= PP_INCLUDE stringLiteral LINE_TERMINATOR
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
@@ -286,7 +286,7 @@ includeFile
 	;
 
 includeFramework
-	::= '#include' frameworkReference LINE_TERMINATOR
+	::= PP_INCLUDE frameworkReference LINE_TERMINATOR
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
@@ -400,7 +400,7 @@ private methodBlockStatements
 	;
 
 private recover_methodBlockStatements
-	::= !(('-'|'+') '('|possibleSourceElementStart|'}'|'#if'|'#endif'|'@end'|'var'|ID)
+	::= !(('-'|'+') '('|possibleSourceElementStart|'}'|PP_IF|PP_END_IF|AT_END|VAR|ID)
 
 	;
 
@@ -1083,13 +1083,13 @@ private preprocessorStatement
 	|	preprocessorDefineFunction
 	|	preprocessorUndef
 	|	preprocessorPragma
-	| 	'#warning' stringLiteral LINE_TERMINATOR
-	| 	'#error' stringLiteral LINE_TERMINATOR
+	| 	PP_WARNING stringLiteral LINE_TERMINATOR
+	| 	PP_ERROR stringLiteral LINE_TERMINATOR
 	|	PREPROCESSOR_DIRECTIVE
 	;
 
 preprocessorDefineFunction
-	::= '#define' (functionName '(' formalParameterList? ')' | variableName) <<enterMode "preprocessor">> preprocessorDefineBody <<exitMode "preprocessor">>LINE_TERMINATOR
+	::= PP_DEFINE (functionName '(' formalParameterList? ')' | variableName) <<enterMode "preprocessor">> preprocessorDefineBody <<exitMode "preprocessor">>LINE_TERMINATOR
 	{
 		pin=1;
 		implements=[
@@ -1126,7 +1126,7 @@ private recover_preprocessorDefineBody
 	;
 
 preprocessorUndef
-	::= '#undef' variableName LINE_TERMINATOR
+	::= PP_UNDEF variableName LINE_TERMINATOR
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"]
@@ -1135,22 +1135,22 @@ preprocessorUndef
 
 preprocessorPragma
 	::= preprocessorPragmaMark
-	|	'#pragma' (ID|doubleQuoteStringLiteral)* LINE_TERMINATOR {
-		pin(".*")=1
+	|	PP_PRAGMA (ID|doubleQuoteStringLiteral)* LINE_TERMINATOR {
+		pin(".*")=2
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"]
 	}
 	;
 
 preprocessorPragmaMark
-	::= '#pragma' 'mark'? PRAGMA_MARKER
+	::= PP_PRAGMA 'mark'? PRAGMA_MARKER
 	{
-		pin=1;
+		pin=2;
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"]
 	}
 	;
 
 preprocessorDefined
-	::= '#defined' ID
+	::= PP_DEFINED ID
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"]
@@ -1158,7 +1158,7 @@ preprocessorDefined
 	;
 
 private preprocessorInstanceVariableListIfStatement
-	::= <<inMode "implementationInstanceVariables">> '#if'  preprocessorIfCondition LINE_TERMINATOR  preprocessorInstanceVariableList ('#elif' (preprocessorIfExpr ('||'|'&&' preprocessorIfExpr)*) LINE_TERMINATOR preprocessorInstanceVariableList )* ('#else' LINE_TERMINATOR preprocessorInstanceVariableList)? '#endif' LINE_TERMINATOR
+	::= <<inMode "implementationInstanceVariables">> PP_IF  preprocessorIfCondition LINE_TERMINATOR  preprocessorInstanceVariableList (PP_ELSE_IF (preprocessorIfExpr ('||'|'&&' preprocessorIfExpr)*) LINE_TERMINATOR preprocessorInstanceVariableList )* (PP_ELSE LINE_TERMINATOR preprocessorInstanceVariableList)? PP_END_IF LINE_TERMINATOR
 	{
 		pin=2
 		extends=preprocessorIfStatement
@@ -1174,7 +1174,7 @@ preprocessorIfCondition
 	;
 
 private recover_preprocessorIfCondition
-	::= !('#if'|'#elif'|'#else'|LINE_TERMINATOR|"#endif")
+	::= !(PP_IF|PP_ELSE_IF|PP_ELSE|PP_END_IF|LINE_TERMINATOR|)
 	;
 
 private preprocessorInstanceVariableList
@@ -1190,7 +1190,7 @@ private preprocessorIfExpr
 	;
 
 preprocessorIfStatement
-	::=	'#if' preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements? ('#elif' preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements?)* ('#else' LINE_TERMINATOR preprocessorBodyStatements?)? '#endif' LINE_TERMINATOR
+	::=	PP_IF preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements? (PP_ELSE_IF preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements?)* (PP_ELSE LINE_TERMINATOR preprocessorBodyStatements?)? PP_END_IF LINE_TERMINATOR
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
@@ -1210,7 +1210,7 @@ private preprocessorBodyStatements
 	;
 
 private recover_preprocessorBodyStatements
-	::= !('#else' | '#elif'|'#endif')
+	::= !(PP_ELSE| PP_ELSE_IF|PP_END_IF)
 	;
 
 
@@ -1911,6 +1911,6 @@ private atKeywords
 	;
 
 private ppKeywords
-	::= '#if'|'#else'|'#elif'|'#define'|'#endif'|'#warning'|'#error'|'#pragma'
+	::= PP_IF|PP_ELSE|PP_ELSE_IF|PP_DEFINE|PP_END_IF|PP_WARNING|PP_ERROR|PP_PRAGMA
 	;
 
