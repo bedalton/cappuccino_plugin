@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
+import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
@@ -34,7 +35,7 @@ class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Bool
     }
 
     override fun getFamilyName(): String {
-       return "Objective-J"
+        return ObjJInspectionProvider.GROUP_DISPLAY_NAME;
     }
 
 }

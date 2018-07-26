@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface ObjJBlock extends ObjJCompositeElement {
+public interface ObjJBlock extends ObjJCompositeElement, ObjJHasBlockStatement {
 
     @NotNull
     List<ObjJBodyVariableAssignment> getBodyVariableAssignmentList();
@@ -56,5 +56,14 @@ public interface ObjJBlock extends ObjJCompositeElement {
 
     @NotNull
     List<ObjJTryStatement> getTryStatementList();
+
+    @Nullable
+    default PsiElement getCloseBrace() {
+        return null;
+    }
+
+    default ObjJBlock getBlock() {
+        return this;
+    }
 
 }

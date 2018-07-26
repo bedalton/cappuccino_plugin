@@ -61,13 +61,13 @@ object ObjJMethodPsiUtils {
     }
 
     @Contract("null -> !null")
-    fun getParamTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType> {
+    fun getParamTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
         if (declarationSelectors == null || declarationSelectors.isEmpty()) {
             return emptyList()
         }
-        val out = ArrayList<ObjJFormalVariableType>()
+        val out = ArrayList<ObjJFormalVariableType?>()
         for (selector in declarationSelectors) {
-            out.add(selector.varType!!)
+            out.add(selector.varType)
         }
         return out
     }

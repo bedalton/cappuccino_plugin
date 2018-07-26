@@ -103,6 +103,68 @@
     <!--codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.handlers.ObjJParameterInfo" / -->
     <problemFileHighlightFilter implementation="cappuccino.ide.intellij.plugin.lang.ObjJProblemFileHighlighterFilter" />
 
+
+    <!-- Inspections -->
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableOvershadowInspection"
+                     level="WEAK WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Overshadowing Variable Declarations"
+                     />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableOvershadowsClassOrMethodVariable"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Overshadows class or method variable"
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJUndeclaredVariableInspectionTool"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Possibly undeclared variables"
+                     />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableKeyWordScopeInspection"
+                     level="WEAK WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Keyword used outside of expected context"
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReturnStatementInspection"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Return statement disagreement"
+
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodReturnsAValueInspection"
+                     level="ERROR"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Method returns a value"
+
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodHeaderDoesNotMatchSuperClass"
+                     level="ERROR"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Incompatible inherited method override"
+
+    />
+
+
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
                         serviceImplementation="cappuccino.ide.intellij.plugin.indices.ObjJIndexService" />
