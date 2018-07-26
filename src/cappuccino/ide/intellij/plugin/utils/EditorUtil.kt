@@ -17,6 +17,14 @@ import java.util.logging.Logger
 object EditorUtil {
     private val LOGGER = Logger.getLogger(EditorUtil::class.java.name)
 
+    fun runWriteAction(writeAction: Runnable, project: Project?) {
+        val application = ApplicationManager.getApplication()
+        if (application.isDispatchThread) {
+            application.runWriteAction { CommandProcessor.getInstance().executeCommand(project, writeAction, null, null, UndoConfirmationPolicy.DEFAULT) }
+        } else {
+            application.invokeLater { application.runWriteAction { CommandProcessor.getInstance().executeCommand(project, writeAction, null, null, UndoConfirmationPolicy.DEFAULT) } }
+        }
+    }
     fun runWriteAction(writeAction: Runnable, project: Project?, document: Document) {
         val application = ApplicationManager.getApplication()
         if (application.isDispatchThread) {
@@ -59,6 +67,18 @@ object EditorUtil {
             }
         }, editor.project, editor.document)
 
+    }
+
+    fun insertText(project:Project, document: Document, text: String, offset: Int) {
+        runWriteAction(Runnable {
+            document.insertString(offset, text)
+        }, project, document)
+    }
+
+    fun insertText(document: Document, text: String, offset: Int) {
+        runWriteAction(Runnable {
+            document.insertString(offset, text)
+        }, null, document)
     }
 
     fun offsetCaret(insertionContext: InsertionContext, offset: Int) {

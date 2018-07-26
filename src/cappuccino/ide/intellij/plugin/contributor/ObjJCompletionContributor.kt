@@ -18,7 +18,6 @@ class ObjJCompletionContributor : CompletionContributor() {
                         .psiElement()
                         .withLanguage(ObjJLanguage.instance),
                 BlanketCompletionProvider())
-        //LOGGER.log(Level.INFO, "Creating completion contributor");
     }
 
     /**

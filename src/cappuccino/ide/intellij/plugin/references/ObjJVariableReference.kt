@@ -85,6 +85,9 @@ class ObjJVariableReference(
     }
 
     override fun isReferenceTo(psiElement: PsiElement): Boolean {
+        if (element.containingFile.text.startsWith("@STATIC;")) {
+            return false
+        }
         if (psiElement.text != myElement.text || psiElement.isEquivalentTo(myElement)) {
             return false
         }
@@ -127,6 +130,9 @@ class ObjJVariableReference(
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
+        if (myElement.containingFile.text.startsWith("@STATIC;")) {
+            return null
+        }
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (variableName == null) {
             variableName = globalVariableNameElement

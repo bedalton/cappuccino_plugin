@@ -7,7 +7,7 @@ import javax.swing.*
 object ObjJIcons {
     val DOCUMENT_ICON = IconLoader.getIcon("/icons/document-icon.png")
     val CLASS_ICON = IconLoader.getIcon("/icons/class-icon.png")
-    val CATEGORY_ICON = IconLoader.getIcon("/icons/class-icon.png")
+    val CATEGORY_ICON = IconLoader.getIcon("/icons/category-icon.png")
     val PROTOCOL_ICON = IconLoader.getIcon("/icons/protocol-icon.png")
     val FUNCTION_ICON = IconLoader.getIcon("/icons/function-icon.png")
     val METHOD_ICON = IconLoader.getIcon("/icons/method-icon.png")

@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
+import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -16,9 +17,8 @@ class ObjJMissingProtocolMethodFix(private val methodHeaders: ProtocolMethods) :
         return "Implement missing protocol methodHeaders"
     }
 
-    @Nls
     override fun getFamilyName(): String {
-        return "Protocol methodHeaders"
+        return ObjJInspectionProvider.GROUP_DISPLAY_NAME;
     }
 
     override fun isAvailable(
