@@ -115,4 +115,24 @@ object ObjJElementFactory {
         return file.firstChild
     }
 
+    fun createFormalVariableType(project:Project, returnType: String) : ObjJFormalVariableType {
+        val formalVariableType = createMethodReturnTypeElement(project, returnType).formalVariableType;
+        com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(formalVariableType != null)
+        return formalVariableType!!
+    }
+
+    fun createMethodReturnTypeElement(project: Project, returnType:String) : ObjJMethodHeaderReturnTypeElement {
+        val script = """
+            @implementation XX
+            +($returnType) sel1 {
+                return;
+            }
+            @end
+        """.trimIndent()
+        val file = createFileFromText(project, script)
+        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.classDeclarations.getOrNull(0)?.getMethodHeaders()?.getOrNull(0)?.methodHeaderReturnTypeElement
+        com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
+        return returnTypeElement!!
+    }
+
 }

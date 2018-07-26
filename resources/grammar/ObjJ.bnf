@@ -350,15 +350,16 @@ private loopBodyStatement
 	;
 
 
-private statementOrBlock
+statementOrBlock
 	::= blockElement
 	| 	singleBodyStatement
 	{
+		extends=blockElement
 		methods=[block="blockElement"]
 	}
 	;
 
-singleBodyStatement
+private singleBodyStatement
 	::= bodyStatement eos?
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"]
@@ -377,7 +378,6 @@ blockElement
 		]
 		methods=[
 			getBlockList
-			block="blockElement"
 		]
 	}
 	;
@@ -419,8 +419,6 @@ private recover_blockStatements
 bodyVariableAssignment
 	::= variableAssignmentLogical | variableAssignmentSimple
     {
-    	//pin=1
-    	//recoverWhile=recoverExprSequence
     	implements=[
     		"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
     	]
@@ -430,7 +428,6 @@ bodyVariableAssignment
 variableAssignmentLogical
 	::= (qualifiedReference|'@deref' '(' variableName ')') assignmentExprPrime
 	{
-		//pin=2
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[getAssignedValue getQualifiedReferenceList]
 	}
@@ -438,20 +435,13 @@ variableAssignmentLogical
 
 private variableAssignmentSimple
 	::= varModifier variableDeclarationList
-	{
-		//pin=2
-	}
 	;
 
 private variableDeclarationList
-	::=  variableDeclarationListVariableName (',' variableDeclarationListVariableName)*
-	{
-		//pin=1
-		//recoverWhile=recover_variableDeclarationsList
-	}
+	::=  variableDeclarationListVariableDeclaration (',' variableDeclarationListVariableDeclaration)*
 	;
 
-private variableDeclarationListVariableName
+private variableDeclarationListVariableDeclaration
 	::= variableDeclaration
 	|	variableName !('('|rightExpr|'--'|'++')
 	;
@@ -471,15 +461,9 @@ globalVariableDeclaration
 variableDeclaration
 	::= (qualifiedReference|'@deref' '(' qualifiedReference ')') '=' ((qualifiedReference|'@deref' '(' qualifiedReference ')') '=')* expr
 	{
-		//pin(".*")='='
-		//recoverWhile=recover_variableDeclaration
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[assignedValue="/expr"]
 	}
-	;
-
-private recover_variableDeclaration
-	::= !(eos|','|'}')
 	;
 
 instanceVariableDeclaration
@@ -498,22 +482,17 @@ instanceVariableDeclaration
 		recoverWhile=recover_instanceVariableDeclaration
 	}
 	;
+
 private recover_instanceVariableDeclaration
 	::=  !(eos|recover_instanceVariableList)
 	;
+
 private accessor
 	::= '@accessors' ('(' accessorPropertyList? ')')?
 	;
 
 private accessorPropertyList
 	::= accessorProperty (',' accessorProperty)*
-	{
-		//recoverWhile=recover_accessorPropertyList
-	}
-	;
-
-private recover_accessorPropertyList
-	::= !')'
 	;
 
 accessorProperty
@@ -564,8 +543,7 @@ ifStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList
-		]
+		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList]
 	}
 	;
 
@@ -573,7 +551,6 @@ private ifStatementStart
 	::= 'if' conditionExpression statementOrBlock
 	{
 		pin=1
-		//recoverWhile=recover_if
 	}
 	;
 
@@ -581,18 +558,21 @@ elseIfStatement
 	::= 'else' 'if' conditionExpression statementOrBlock
 	{
 		pin=2
-		extends=ifStatement
-		methods = [
-			conditionalExpression = "/conditionExpression/expr"
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		//recoverWhile=recover_if
+		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList block="blockElement"]
 	}
 	;
 
 private elseStatement
 	::= 'else' statementOrBlock
 	{
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
 		pin=1
+		methods=[block="statementOrBlock"]
 	}
 	;
 
@@ -634,11 +614,11 @@ whileStatement
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+
 		]
-		methods =[
-			conditionalExpression = "/conditionExpression/expr"
-		]
-		//recoverWhile=inLoopRecoverWhile
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
+		methods=[getBlockList block="statementOrBlock" conditionalExpression="/conditionExpression/expr"]
 	}
 	;
 
@@ -657,33 +637,16 @@ conditionExpression
 
 private forStatement
 	::= 'for' '(' forLoopHeader ')' /*<<enterMode "inLoop">>*/ statementOrBlock /*<<exitMode "inLoop">>*/
-	{
-		//pin=1
-	}
 	;
 
 private forLoopHeader
 	::= compoundForLoopHeader
 	| 	inExpr
-	{
-		//pin=2
-		//recoverWhile=recover_forLoopHeader
-	}
 	;
 
 private compoundForLoopHeader
 	::= (variableDeclarationList|variableAssignmentSimple)? ';' expressionSequence ';' expressionSequence?
-	{
-		//pin=2
-		//recoverWhile=recover_forLoopHeader
-	}
 	;
-
-private recover_forLoopHeader
-	::= !(')'|'{')
-	;
-
-
 
 
 varModifier
@@ -694,14 +657,6 @@ varModifier
 
 private continueStatement
 	::= 'continue' eos
-	{
-		//pin=1
-		//recoverWhile=inLoopRecoverWhile
-	}
-	;
-
-private recover_if
-	::= !('else')
 	;
 
 breakStatement
@@ -729,19 +684,13 @@ switchStatement
 	::= 'switch' '(' expr ')' '{' switchBody '}'
 	{
 		pin=1
-		//recoverWhile= recoverBlockWhile
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
+		methods=[getBlockList]
 	}
 	;
 
 private switchBody
 	::= caseClause* (defaultClause caseClause*)?
-	{
-		//recoverWhile=recover_switchBody
-	}
-	;
-
-private recover_switchBody
-	::= !'}'
 	;
 
 caseClause
@@ -749,8 +698,7 @@ caseClause
 	{
 		pin=1
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
-		methods=[getBlockList block="blockElement"]
-		//recoverWhile=case_recover
+		methods=[getBlock getBlockList]
 	}
 	;
 
@@ -759,27 +707,25 @@ bracketLessBlock
 	{
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
+		extends=blockElement
 		methods= [block="blockElement" getBlockList]
 	}
 	;
-
-private case_recover
-	::=	!('}'
-	|	'case'
-	|	'default'
-	);
 
 defaultClause
 	::= 'default' ':' bracketLessBlock?
 	{
 		extends=caseClause
+		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		pin=1
+		methods=[getBlock getBlockList]
 	}
 	;
 
 throwStatement
-	::= 'throw' /*<<notLineTerminator>>*/ expr eos
+	::= 'throw' expr eos
 	{
 		pin=1
 	}
@@ -788,7 +734,10 @@ throwStatement
 tryStatement
 	::= 'try' blockElement (catchProduction finallyProduction? | finallyProduction)
 	{
-		implements = ["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"]
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+		]
 		methods = [getBlockList block="blockElement"]
 		pin=1
 	}
@@ -798,7 +747,8 @@ catchProduction
 	::= 'catch' '(' variableName ')' blockElement
 	{
 		pin=1
-		methods=[block="blockElement"]
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
+		methods=[block="blockElement" getBlockList]
 	}
 	;
 
@@ -806,7 +756,8 @@ finallyProduction
 	::= 'finally' blockElement
 	{
 		pin=1
-		methods=[block="blockElement"]
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
+		methods=[block="blockElement" getBlockList]
 	}
 	;
 
@@ -853,14 +804,12 @@ methodDeclaration
 	::=  methodHeader methodBlock
 	{
 		pin=1
-		//recoverWhile=methodDeclaration_recover
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 		]
-		//recoverWhile=recover_methodDeclaration
 		methods = [
 			block="/methodBlock"
 			getBlockList
@@ -869,11 +818,6 @@ methodDeclaration
 		]
 	}
 	;
-
-private recover_methodDeclaration
-	::= recover_classDec
-	;
-
 
 methodHeader
 	::= methodScopeMarker '(' (methodHeaderReturnTypeElement) ')' methodHeaderSelectorList
@@ -890,20 +834,11 @@ methodHeader
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
 		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve  getContainingSuperClass isRequired createTreeStructureElement]
-
-		//recoverWhile=recover_methodHeaderSelectorList
 	}
 	;
 
 private methodHeaderSelectorList
 	::= firstMethodDeclarationSelector methodDeclarationSelector* methodHeaderMultipleVariableTail?
-	{
-		//recoverWhile=recover_methodHeaderSelectorList
-	}
-	;
-
-private recover_methodHeaderSelectorList
-	::= !('}'|'{'|'@end'|'@required'|'@optional'|('-'|'+') '(')
 	;
 
 methodHeaderReturnTypeElement
@@ -915,6 +850,7 @@ methodHeaderReturnTypeElement
 private methodHeaderMultipleVariableTail
 	::= "," "..."
 	;
+
 methodScopeMarker
 	::= '+'|'-'
 	;
@@ -923,7 +859,6 @@ firstMethodDeclarationSelector
 	::= selector (':' methodDeclarationSelectorVariable)?
 	{
 		pin=1
-		//recoverWhile=methodDeclarationSelector_recover
 		extends=methodDeclarationSelector
 		methods=[getVarType]
 	}
@@ -933,25 +868,15 @@ methodDeclarationSelector
 	::= selector? ':' methodDeclarationSelectorVariable
 	{
 		pin=2;
-		//recoverWhile=methodDeclarationSelector_recover
 		methods = [getVarType getContainingClassName getContainingClass getVarType getFileName]
 	}
-	;
-
-private methodDeclarationSelector_recover
-	::= !(methodDeclarationSelector|'{'|';'|',')
 	;
 
 private methodDeclarationSelectorVariable
 	::= ('(' (formalVariableType|'void') ')')? variableName
 	{
 		pin(".*")=1
-		//recoverWhile=methodDeclarationSelectorVariable_recover
 	}
-	;
-
-private methodDeclarationSelectorVariable_recover
-	::= !('{'|'@end'|'+'|'-')
 	;
 
 implementationDeclaration
@@ -1004,7 +929,6 @@ private implementationHeader
 	::= '@implementation' className (implementationInheritanceDeclaration)?
 	{
 		pin=1
-		//recoverWhile=recover_implementationHeader
 	}
 	;
 
@@ -1040,16 +964,6 @@ private recover_protocolClassNamesList
 	::= !('>'|'{'|'@end'|atKeywords|ppKeywords)
 	;
 
-private recover_implementationHeader
-	::=	!('{'
-	|	'-'
-	|	'+'
-	|	'function'
-	|	'var'
-	|	preprocessorStatement
-	)
-	;
-
 instanceVariableList
 	::= '{' <<enterMode "implementationInstanceVariables">> instanceVariableListList? <<exitMode "implementationInstanceVariables">> '}'
 	{
@@ -1060,12 +974,7 @@ instanceVariableList
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
 		methods=[createFoldingDescriptor]
-		//recoverWhile=recover_implementationInstanceVariables
 	}
-	;
-
-private recover_implementationInstanceVariables
-	::= !(('-'|'+') '('|possibleSourceElementStart)
 	;
 
 private instanceVariableListList
@@ -1109,20 +1018,15 @@ preprocessorDefineFunction
 preprocessorDefineBody
 	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
-		//recoverWhile=recover_preprocessorDefineBody
-
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"]
-		methods=[block="blockElement" getBlockList]
+		methods=[getBlockList]
 	}
 	;
+
 private preprocessorBodyStatementList
 	::= bodyStatement+
 	{
 	}
-	;
-
-private recover_preprocessorDefineBody
-	::= !(LINE_TERMINATOR)
 	;
 
 preprocessorUndef
@@ -1162,15 +1066,11 @@ private preprocessorInstanceVariableListIfStatement
 	{
 		pin=2
 		extends=preprocessorIfStatement
-		//recoverWhile = recoverPragmaWhile
 	}
 	;
 
 preprocessorIfCondition
 	::= preprocessorIfExpr ('||'|'&&' preprocessorIfExpr)*
-	{
-		//recoverWhile=recover_preprocessorIfCondition
-	}
 	;
 
 private recover_preprocessorIfCondition
@@ -1193,7 +1093,10 @@ preprocessorIfStatement
 	::=	PP_IF preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements? (PP_ELSE_IF preprocessorIfCondition LINE_TERMINATOR preprocessorBodyStatements?)* (PP_ELSE LINE_TERMINATOR preprocessorBodyStatements?)? PP_END_IF LINE_TERMINATOR
 	{
 		pin=1
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement" "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+		]
 		methods=[
 			getOpenBrace
 			getBlockList
@@ -1206,15 +1109,13 @@ private preprocessorBodyStatements
 	{
 		recoverWhile=recover_preprocessorBodyStatements
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons" ]
+		extends=blockElement
 	}
 	;
 
 private recover_preprocessorBodyStatements
 	::= !(PP_ELSE| PP_ELSE_IF|PP_END_IF)
 	;
-
-
-
 
 protocolDeclaration
 	::= protocolHeader protocolBody '@end'
@@ -1264,12 +1165,7 @@ private protocolHeader
 	::= '@protocol' className  inheritedProtocolList?
 	{
 		pin=1
-		//recoverWhile=recover_protocolHeader
 	}
-	;
-
-private recover_protocolHeader
-	::= !('@optional' | '@required' | '-' | '+')
 	;
 
 private protocolSection
@@ -1284,7 +1180,6 @@ protocolScopedBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
 		methods=[createTreeStructureElement]
-		//recoverWhile=recover_classDec
 	}
 	;
 
@@ -1294,11 +1189,6 @@ private protocolStatementList
 		//recoverWhile=recover_protocolSection
 	}
 	;
-
-private recover_protocolSection
-	::= !('@optional'|'@required'|'@end')
-	;
-
 
 private protocolStatement
 	::= methodHeader
@@ -1313,9 +1203,6 @@ private implementationElement
 	| 	methodDeclaration
     | 	functionDeclaration
     |	comment
-    {
-    	//recoverWhile=implementationElement_recover
-    }
 	;
 
 typeDef
@@ -1341,7 +1228,7 @@ private formalParameterList
 	;
 
 private recover_formalParameterList
-	::= !')'
+	::= !(')')
 	;
 
 formalParameterArg
@@ -1358,16 +1245,12 @@ private recover_formalParameterArg
 
 lastFormalParameterArg
 	::= '...' variableName
-	{
-		//recoverWhile=recover_formalParameterList
-	}
 	;
 
 arrayLiteral
-	 ::= ('@['|'[') arrayLiteralExpressionList? ']' {
-	 	pin=3
-	 	//recoverWhile=recoverExprSequence
-	 }
+	::= ('@['|'[') arrayLiteralExpressionList? ']' {
+		pin=3
+	}
 	;
 
 private arrayLiteralExpressionList
@@ -1409,10 +1292,6 @@ propertyAssignment
 	}
 	;
 
-private recover_propertyAssignment
-	::= !('}'|',')
-	;
-
 private propertyName
 	::= ID
 	|	stringLiteral
@@ -1435,10 +1314,6 @@ methodCall
 	}
 	;
 
-private recover_methodCall
-	::= !(eos|keyword)
-	;
-
 private methodCallSelectorList
 	::= qualifiedMethodCallSelector+
 	|	selector ':'?
@@ -1455,11 +1330,7 @@ qualifiedMethodCallSelector
 	::= selector? ':' expr (',' expr)*
 	{
 		pin=2
-		//recoverWhile=recover_qualifiedMethodCallSelector
 	}
-	;
-private recover_qualifiedMethodCallSelector
-	::= recover_methodCallSelectorList | !selector
 	;
 
 selector
@@ -1477,12 +1348,7 @@ selector
 			"com.intellij.navigation.NavigationItem"
 		]
 		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve getContainingSuperClass getSelectorIndex]
-		//recoverWhile=recover_selector
 	}
-	;
-
-private recover_selector
-	::= !(':'|']')
 	;
 
 classDependencyStatement
@@ -1495,20 +1361,6 @@ private expressionSequence
 		pin(".*")=2
 		//recoverWhile=recover_expressionSequence
 	}
-	;
-
-private expressionSequenceElement
-	::= expr
-	{
-		//recoverWhile=recover_expressionSequenceElement
-	}
-	;
-private recover_expressionSequenceElement
-	::= !(']'|'}'|')'|',')
-	;
-
-private recover_expressionSequence
-	::= !(']'|'}'|')')
 	;
 
 
@@ -1618,10 +1470,7 @@ private booleanOp
 
 assignmentExprPrime
 	::= assignmentOperator expr
-	{
-		//pin=1
-		//recoverWhile=recover_statement
-	};
+	;
 
 mathExprPrime
 	::= mathOp expr
@@ -1742,13 +1591,6 @@ selectorLiteral
 
 private selectorLiteralSelectorList
 	::= (selector ':')* selector?
-	{
-		//recoverWhile=recover_selectorLiteralSelectorList
-	}
-	;
-
-private recover_selectorLiteralSelectorList
-	::= !(')'|eos|keyword)
 	;
 
 private numericLiteral
@@ -1890,10 +1732,6 @@ singleQuoteStringLiteral
 	{
 		pin=2
 	}
-	;
-
-private recover_blockComment
-	::= '*/'
 	;
 
 private eos

@@ -6,7 +6,4 @@ import java.util.Collections
 
 interface ObjJHasBlockStatement : ObjJHasBlockStatements {
     val block: ObjJBlock?
-
-    override val blockList: List<ObjJBlock>
-        get() = if (block != null) listOf(block!!) else emptyList()
 }

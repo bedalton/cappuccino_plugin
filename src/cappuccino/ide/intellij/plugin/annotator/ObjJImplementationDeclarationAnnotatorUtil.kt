@@ -6,8 +6,6 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.getUnimplementedProtocolMethods
-import cappuccino.ide.intellij.plugin.psi.utils.isCategory
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 
 internal object ObjJImplementationDeclarationAnnotatorUtil {
