@@ -44,7 +44,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
-
+      <h4>Version: 0.2</h4>
+      <ul>
+      <li>removed buggy method selector rename</li>
+      <li>Improved variable name autocompletion</li>
+      <li>Added method declaration inspections</li>
+      </ul>
     ]]>
   </change-notes>
 
