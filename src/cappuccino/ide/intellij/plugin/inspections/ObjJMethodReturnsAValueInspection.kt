@@ -17,6 +17,10 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Method returns a value"
 
+    override fun getShortName(): String {
+        return "MethodReturnsAValue"
+    }
+
     override fun runForWholeFile(): Boolean = true
 
     override fun buildVisitor(problemsHolder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {

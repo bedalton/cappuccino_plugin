@@ -111,14 +111,16 @@
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Overshadowing Variable Declarations"
+                     shortName="VariableOvershadowsParentVariable"
                      />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableOvershadowsClassOrMethodVariable"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableOvershadowsClassVariable"
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
-                     displayName="Overshadows class or method variable"
+                     displayName="Overshadows class instance variable"
+                     shortName="VariableOvershadowsClassVariable"
     />
 
     <localInspection language="ObjectiveJ"
@@ -127,6 +129,7 @@
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Possibly undeclared variables"
+                     shortName="UndeclaredVariables"
                      />
 
     <localInspection language="ObjectiveJ"
@@ -135,14 +138,16 @@
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Keyword used outside of expected context"
+                     shortName="VariableKeywordScope"
     />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReturnStatementInspection"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReturnStatementDisagreementInspection"
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Return statement disagreement"
+                     shortName="ReturnStatementDisagreement"
 
     />
 
@@ -152,15 +157,17 @@
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Method returns a value"
+                     shortName="MethodReturnsAValue"
 
     />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodHeaderDoesNotMatchSuperClass"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodHeaderDoesNotMatchSuperClassInspection"
                      level="ERROR"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Incompatible inherited method override"
+                     shortName="MethodHeaderDoesNotMatchSuperClass"
 
     />
 

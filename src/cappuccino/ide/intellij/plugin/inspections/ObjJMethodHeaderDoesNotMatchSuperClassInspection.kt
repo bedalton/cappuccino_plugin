@@ -9,7 +9,11 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import java.util.*
 
-class ObjJMethodHeaderDoesNotMatchSuperClass : LocalInspectionTool() {
+class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
+
+    override fun getShortName(): String {
+        return "MethodHeaderDoesNotMatchSuperClass"
+    }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : ObjJVisitor() {
