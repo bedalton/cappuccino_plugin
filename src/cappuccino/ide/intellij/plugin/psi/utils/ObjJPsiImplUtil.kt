@@ -196,6 +196,11 @@ object ObjJPsiImplUtil {
     fun getPresentation(classDec: ObjJImplementationDeclaration): ItemPresentation? =
             cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
 
+    @JvmStatic
+    fun getPresentation(className:ObjJClassName) : ItemPresentation {
+        return cappuccino.ide.intellij.plugin.psi.utils.getPresentation(className)
+    }
+
     // ============================== //
     // =========== String =========== //
     // ============================== //

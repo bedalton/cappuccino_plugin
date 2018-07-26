@@ -1687,7 +1687,7 @@ className
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods = [getReference getReferences getName setName]
+		methods = [getReference getReferences getName setName getPresentation]
 	}
 	;
 
