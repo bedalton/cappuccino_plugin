@@ -3,24 +3,20 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreVariableNameIntention
-import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredVariableNameIntention
-import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveVarKeywordQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElementVisitor
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
@@ -43,6 +39,11 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return
             }
+
+            if (variableName?.getPreviousNonEmptySibling(true).getElementType() == ObjJTypes.ObjJ_DOT) {
+                return
+            }
+
             if (variableName?.parent is ObjJQualifiedReference) {
                 variableName = (variableName.parent!! as ObjJQualifiedReference).primaryVar
             }

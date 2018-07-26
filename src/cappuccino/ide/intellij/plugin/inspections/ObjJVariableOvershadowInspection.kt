@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInPro
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveVarKeywordQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
@@ -14,8 +13,6 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElementVisitor
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class ObjJVariableOvershadowInspection : LocalInspectionTool() {
 

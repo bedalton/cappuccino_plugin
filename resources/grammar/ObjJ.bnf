@@ -1086,6 +1086,7 @@ private preprocessorInstanceVariableList
 
 private preprocessorIfExpr
 	::= expr
+	|	ID
 	|	preprocessorDefined
 	;
 
