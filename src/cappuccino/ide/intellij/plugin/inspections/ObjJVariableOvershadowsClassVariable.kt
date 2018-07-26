@@ -11,9 +11,13 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
-class ObjJVariableOvershadowsClassOrMethodVariable : LocalInspectionTool() {
+class ObjJVariableOvershadowsClassVariable : LocalInspectionTool() {
     override fun runForWholeFile(): Boolean = true;
     override fun getDisplayName(): String = "Overshadows class or method variable";
+
+    override fun getShortName(): String {
+        return "VariableOvershadowsClassVariable"
+    }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : ObjJVisitor() {
@@ -22,26 +26,12 @@ class ObjJVariableOvershadowsClassOrMethodVariable : LocalInspectionTool() {
                     return;
                 }
                 annotateVariableIfOvershadowInstanceVariable(variableName, holder)
-                registerProblemIfOvershadowsMethodVariable(variableName, holder)
+                //registerProblemIfOvershadowsMethodVariable(variableName, holder)
             }
         }
     }
 
     companion object {
-
-        private fun registerProblemIfOvershadowsMethodVariable(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
-            //Variable is defined in header itself
-            if (variableName.getParentOfType(ObjJMethodHeader::class.java) != null) {
-                return
-            }
-            //Check if method is actually in a method declaration
-            val methodDeclaration = variableName.getParentOfType(ObjJMethodDeclaration::class.java) ?: return
-
-            //Check if variable overshadows variable defined in method header
-            if (ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration.methodHeader, variableName.text) != null) {
-                problemsHolder.registerProblem(variableName, "Variable overshadows method parameter variable")
-            }
-        }
         /**
          * Annotates a body variable assignment if it overshadows an instance variable
          * @param variableName variable name element

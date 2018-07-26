@@ -21,6 +21,10 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
 
     override fun getDisplayName(): String = "Overshadowing Variables"
 
+    override fun getShortName(): String {
+        return "VariableOvershadowsParentVariable"
+    }
+
     override fun getGroupDisplayName(): String = ObjJInspectionProvider.GROUP_DISPLAY_NAME
 
     override fun runForWholeFile(): Boolean = true
@@ -45,7 +49,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
          * @param variableName variable name element
          * @return `true` if variable name element is part of a variable declaration
          */
-        public fun isBodyVariableAssignment(variableName: ObjJVariableName): Boolean {
+        fun isBodyVariableAssignment(variableName: ObjJVariableName): Boolean {
             if (variableName.hasParentOfType(ObjJExpr::class.java)) {
                 return false;
             }
@@ -62,8 +66,22 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             }
             annotateIfOvershadowsBlocks(variableName, problemsHolder)
             annotateVariableIfOvershadowsFileVars(variableName, problemsHolder)
+            annotateIfOvershadowsMethodVariable(variableName, problemsHolder)
         }
 
+        private fun annotateIfOvershadowsMethodVariable(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
+            //Variable is defined in header itself
+            if (variableName.getParentOfType(ObjJMethodHeader::class.java) != null) {
+                return
+            }
+            //Check if method is actually in a method declaration
+            val methodDeclaration = variableName.getParentOfType(ObjJMethodDeclaration::class.java) ?: return
+
+            //Check if variable overshadows variable defined in method header
+            if (ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration.methodHeader, variableName.text) != null) {
+                problemsHolder.registerProblem(variableName, "Variable overshadows method parameter variable")
+            }
+        }
 
         private fun annotateIfOvershadowsBlocks(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
             val bodyVariableAssignments = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)

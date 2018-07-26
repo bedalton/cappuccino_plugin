@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreVariableNameIntention
 import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
+import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredVariableNameIntention
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveVarKeywordQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -14,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElementVisitor
@@ -21,10 +23,6 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
-
-    override fun getDisplayName(): String {
-        return "Possibly Undeclared Variable"
-    }
 
     override fun runForWholeFile() = true
 
@@ -82,6 +80,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
+                problemsHolder.registerProblem(variableName, "Ignoring possibly undefined variable", ProblemHighlightType.INFORMATION, ObjJRemoveIgnoredVariableNameIntention(variableName.text))
                 return
             }
 

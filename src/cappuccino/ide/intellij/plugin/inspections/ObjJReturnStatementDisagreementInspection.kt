@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -15,15 +16,20 @@ import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class ObjJReturnStatementInspection : LocalInspectionTool() {
+class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
 
     override fun runForWholeFile(): Boolean = true
 
+    override fun getShortName(): String {
+        return "ReturnStatementDisagreement"
+    }
+
     override fun buildVisitor(problemsHolder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : ObjJVisitor() {
-            override fun visitBlock(block: ObjJBlock) {
-                super.visitBlock(block)
-                Logger.getLogger(ObjJReturnStatementInspection::class.java.canonicalName).log(Level.INFO, "Parsing block returns");
+            override fun visitCompositeElement(element: ObjJCompositeElement) {
+                super.visitCompositeElement(element)
+                val block:ObjJBlock = element as? ObjJBlock ?: return;
+                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).log(Level.INFO, "Parsing block returns");
                 validateBlockReturnStatements(block, problemsHolder)
             }
         }
@@ -44,7 +50,7 @@ class ObjJReturnStatementInspection : LocalInspectionTool() {
             val returnsWithExpression = ArrayList<ObjJReturnStatement>()
             val returnsWithoutExpression = ArrayList<ObjJReturnStatement>()
             for (returnStatement in returnStatementsList) {
-                Logger.getLogger(ObjJReturnStatementInspection::class.java.canonicalName).info("Parsing Return: ${returnStatement.text}");
+                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Parsing Return: ${returnStatement.text}");
                 if (isFunction) {
                     if(returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
                         continue
