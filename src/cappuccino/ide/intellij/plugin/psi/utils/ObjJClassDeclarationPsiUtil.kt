@@ -10,12 +10,14 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.ide.presentation.Presentation
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -232,7 +234,7 @@ private fun isProtocolMethodImplemented(project: Project, classNameIn: String?, 
 
 fun getPresentation(declaration:ObjJImplementationDeclaration): ItemPresentation {
     //LOGGER.log(Level.INFO, "Get Presentation <Implementation:"+implementationDeclaration.getClassNameString()+">");
-    val text = declaration.getClassNameString() + if (declaration.isCategory()) " (${declaration.categoryName})" else ""
+    val text = declaration.getClassNameString() + if (declaration.isCategory()) " (${declaration.categoryName?.className?.text})" else ""
     val icon = if (declaration.isCategory()) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
@@ -298,4 +300,31 @@ private fun getProtocolListAsStrings(protocolListElement:ObjJInheritedProtocolLi
         inheritedProtocols.add(classNameElement.text)
     }
     return inheritedProtocols
+}
+
+fun getPresentation(className:ObjJClassName) : ItemPresentation {
+    val parent = className.parent as? ObjJClassDeclarationElement<*> ?: return getDummyPresenter(className)
+    if (parent is ObjJImplementationDeclaration) {
+        return getPresentation(parent)
+    } else if (parent is ObjJProtocolDeclaration) {
+        return getPresentation(parent)
+    }
+    return getDummyPresenter(className);
+}
+
+fun getDummyPresenter(psiElement: ObjJCompositeElement) : ItemPresentation {
+    val fileName = ObjJFileUtil.getContainingFileName(psiElement)
+    return object : ItemPresentation {
+        override fun getIcon(p0: Boolean): Icon? {
+            return null
+        }
+
+        override fun getLocationString(): String? {
+            return fileName ?: ""
+        }
+
+        override fun getPresentableText(): String? {
+            return psiElement.text
+        }
+    }
 }

@@ -196,6 +196,11 @@ object ObjJPsiImplUtil {
     fun getPresentation(classDec: ObjJImplementationDeclaration): ItemPresentation? =
             cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
 
+    @JvmStatic
+    fun getPresentation(className:ObjJClassName) : ItemPresentation {
+        return cappuccino.ide.intellij.plugin.psi.utils.getPresentation(className)
+    }
+
     // ============================== //
     // =========== String =========== //
     // ============================== //
@@ -410,7 +415,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType> {
+    fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType?> {
         return ObjJMethodPsiUtils.getParamTypes(methodHeader.methodDeclarationSelectorList)
     }
 
@@ -600,14 +605,44 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getBlockList(element: ObjJBlockElement): List<ObjJBlock> {
-        return Arrays.asList(element);
+    fun getBlockList(hasBlock: ObjJHasBlockStatement): List<ObjJBlock> {
+        val block:ObjJBlock = hasBlock.block ?: return listOf()
+        return listOf(block)
     }
 
     @JvmStatic
-    fun getBlockList(element: ObjJCaseClause): List<ObjJBlock> {
-        return if (element.block != null)
-            listOf(element.block!!)
+    fun getBlockList(switchStatement: ObjJSwitchStatement) : List<ObjJBlock> {
+        val out = ArrayList<ObjJBlock>()
+        for (clause in switchStatement.caseClauseList) {
+            val block = clause.block ?: continue;
+            out.add(block)
+        }
+        return out
+    }
+
+    @JvmStatic
+    fun getBlockList(ifStatement: ObjJIfStatement): List<ObjJBlock> {
+        val out = ArrayList<ObjJBlock>()
+        out.addAll(ifStatement.blockElementList)
+        for(elseIfBlock in ifStatement.elseIfStatementList) {
+            val block = elseIfBlock.block
+            if (block != null) {
+                out.add(block)
+            }
+        }
+        out.addAll(ifStatement.getChildrenOfType(ObjJBlock::class.java))
+        return out;
+    }
+
+    @JvmStatic
+    fun getBlockList(block: ObjJBlockElement): List<ObjJBlock> {
+        return Arrays.asList(block);
+    }
+
+    @JvmStatic
+    fun getBlockList(caseClause: ObjJCaseClause): List<ObjJBlock> {
+        return if (caseClause.block != null)
+            listOf(caseClause.block!!)
         else
             listOf()
     }
@@ -643,6 +678,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getBlock(expr: ObjJExpr): ObjJBlock? =
             cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr)
+
+    @JvmStatic
+    fun getBlock(case:ObjJCaseClause) : ObjJBlock? {
+        return case.getChildOfType(ObjJBracketLessBlock::class.java);
+    }
 
     @JvmStatic
     fun getOpenBrace(ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {
@@ -967,6 +1007,11 @@ object ObjJPsiImplUtil {
         return if (element.containingFile == null || element.containingFile.virtualFile == null) {
             null
         } else element.containingFile.virtualFile.name
+    }
+
+    @JvmStatic
+    fun getConditionalExpression(composite:ObjJConditionalStatement) : ObjJExpr? {
+        return composite.getChildOfType(ObjJConditionExpression::class.java)?.expr
     }
 
     // ============================== //

@@ -4,12 +4,15 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.Filter
 import com.google.common.collect.Lists
 import java.util.*
+import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.collections.ArrayList
 
 private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJBlockPsiUtil")
 
@@ -114,24 +117,32 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
  * @return list of items matching class type and filter if applicable.
 </T> */
 private fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
-        aClass: Class<T>, recursive: Boolean,
+        aClass: Class<T>,
+        recursive: Boolean,
         filter: Filter<T>?,
         returnFirst: Boolean,
         offset: Int): List<T> {
     if (this == null) {
         return emptyList()
     }
+    val out = ArrayList<T>()
+
     var currentBlocks: MutableList<ObjJBlock> = ArrayList()
     currentBlocks.add(this)
-    val out = ArrayList<T>()
+    currentBlocks.addAll(getBlocksBlocks(this))
+
     var tempElements: List<T>
     do {
         val nextBlocks = ArrayList<ObjJBlock>()
+        //Loop through current level of blocks
         for (block in currentBlocks) {
             if (offset >= 0 && block.textRange.startOffset >= offset) {
                 continue
             }
-            tempElements = block.getChildrenOfType(aClass)
+            //Get this blocks children of type
+            tempElements = this.getChildrenOfType(aClass)
+
+            //Filter/return/add children
             if (filter != null) {
                 for (element in tempElements) {
                     if (filter(element)) {
@@ -145,26 +156,33 @@ private fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
                 }
             } else if (returnFirst && tempElements.size > 0) {
                 for (element in tempElements) {
-                    if (offset < 0 || element.textRange.startOffset < offset) {
+                    if (offset < 0 || element.textRange.startOffset > offset) {
                         return listOf(element)
                     }
                 }
+            } else if (offset < 0) {
+                out.addAll(tempElements)
             } else {
                 for (element in tempElements) {
-                    if (offset < 0 || element.textRange.startOffset < offset) {
+                    if (element.textRange.startOffset > offset) {
                         out.add(element)
                     }
                 }
             }
-            if (recursive) {
-                for (hasBlockStatements in block.getChildrenOfType(ObjJHasBlockStatements::class.java)) {
-                    //LOGGER.log(Level.INFO, "Looping block recursive with text: <" + hasBlockStatements.getText() + ">");
-                    nextBlocks.addAll(hasBlockStatements.blockList)
-                }
+            if (!this.isEquivalentTo(block) && recursive) {
+                out.addAll(block.getBlockChildrenOfType(aClass, recursive,filter,returnFirst,offset))
             }
         }
         currentBlocks = nextBlocks
     } while (!currentBlocks.isEmpty())
+    return out
+}
+
+private fun getBlocksBlocks(block:ObjJBlock) : List<ObjJBlock> {
+    val out = ArrayList<ObjJBlock>()
+    for (hasBlockStatements in block.getChildrenOfType(ObjJHasBlockStatements::class.java)) {
+        out.addAll(hasBlockStatements.blockList)
+    }
     return out
 }
 
@@ -213,8 +231,21 @@ fun getBlockList(defineFunction:ObjJPreprocessorDefineFunction) : List<ObjJBlock
     return Arrays.asList<ObjJBlock>(defineFunction.block)
 }
 
+fun getBlockList(switchStatement:ObjJSwitchStatement) : List<ObjJBlock> {
+    val out = ArrayList<ObjJBlock>()
+    for (case in switchStatement.caseClauseList) {
+        out.addAll(case.blockList)
+    }
+    return out
+}
+
 fun getBlock(expr:ObjJExpr): ObjJBlock? {
     return expr.leftExpr?.functionLiteral?.block
+}
+
+fun getBlockList(hasBlockStatements:ObjJHasBlockStatement) : List<ObjJBlock> {
+    val out = hasBlockStatements.getChildrenOfType(ObjJBlock::class.java) as MutableList
+    return out;
 }
 
 /**

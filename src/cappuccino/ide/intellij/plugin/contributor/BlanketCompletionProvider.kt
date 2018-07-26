@@ -36,49 +36,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
             parameters: CompletionParameters, context: ProcessingContext,
             resultSet: CompletionResultSet) {
-        //LOGGER.log(Level.INFO, "Trying to get completion parameters.");
         val element = parameters.position
         val parent = element.parent
-        /*LOGGER.log(Level.INFO,
-                "Parent is of type: <"+parent.getNode().getElementType().toString()+"> with value: <"+parent.getText()+">\n"
-                        +   "Child is of type <"+element.getNode().getElementType()+"> with text <"+element.getText()+">"
-        );*/
         val results: MutableList<String>
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
         if (element is ObjJAccessorPropertyType || element.getParentOfType( ObjJAccessorPropertyType::class.java) != null) {
             results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString) as MutableList<String>
-        } else if (element is ObjJVariableName || parent is ObjJVariableName) {
-            if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
-                resultSet.stopHere()
-                return
-            }
-            if (element.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
-                addMethodHeaderVariableNameCompletions(resultSet, element)
-                resultSet.stopHere()
-                return
-            }
-            if (queryString.trim { it <= ' ' }.isEmpty()) {
-                //LOGGER.log(Level.INFO, "Query string is empty");
-                resultSet.stopHere()
-                return
-            }
-            if (isNewVarDec(element)) {
-                resultSet.stopHere()
-                return
-            }
-            val variableName = (element as? ObjJVariableName ?: parent) as ObjJVariableName
-            results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
-            if (results.isEmpty()) {
-                //LOGGER.log(Level.INFO, "No Results found for variable")
-            }
-            if (variableName.indexInQualifiedReference < 1) {
-                appendFunctionCompletions(resultSet, element)
-                results.addAll(getKeywordCompletions(variableName))
-                results.addAll(getInClassKeywords(variableName))
-                results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
-            }
-        } else if (PsiTreeUtil.getParentOfType(element, ObjJMethodCall::class.java) != null) {
-            //LOGGER.log(Level.INFO, "Searching for selector completions.");
+        } else if (isMethodCallSelector(element)) {
             ObjJMethodCallCompletionContributor2.addSelectorLookupElementsFromSelectorList(resultSet, element)
             return
         } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList::class.java) != null) {
@@ -130,13 +94,36 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
         } else {
-            //LOGGER.log(Level.INFO, "Completion provider for element in scope: "+element.getContainingScope())
-            results = mutableListOf()
+            if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+                resultSet.stopHere()
+                return
+            }
+            if (element.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
+                addMethodHeaderVariableNameCompletions(resultSet, element)
+                resultSet.stopHere()
+                return
+            }
+
+            if (isNewVarDec(element)) {
+                resultSet.stopHere()
+                return
+            }
+            val variableName = element as? ObjJVariableName ?: parent as? ObjJVariableName
+            if (variableName != null) {
+                results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
+            } else {
+                results = mutableListOf()
+            }
+            if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
+                appendFunctionCompletions(resultSet, element)
+                results.addAll(getKeywordCompletions(variableName))
+                results.addAll(getInClassKeywords(variableName))
+                results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
+            } else {
+                LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
+            }
         }
         getClassNameCompletions(resultSet, element)
-        if (results.isEmpty()) {
-            resultSet.stopHere()
-        }
         addCompletionElementsSimple(resultSet, results)
     }
 
@@ -214,6 +201,22 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     private fun addMethodHeaderVariableNameCompletions(resultSet: CompletionResultSet, variableName:PsiElement) {
         val methodHeaderDeclaration:ObjJMethodDeclarationSelector = variableName.getParentOfType(ObjJMethodDeclarationSelector::class.java) ?: return
         val formalVariableType = methodHeaderDeclaration.formalVariableType?.text ?: return
+    }
+
+    private fun isMethodCallSelector(element: PsiElement?) : Boolean {
+        if (element == null) {
+            return false
+        }
+        if (PsiTreeUtil.getParentOfType(element, ObjJMethodCall::class.java) == null) {
+            return false
+        }
+        if (element is ObjJSelector || element.parent is ObjJSelector) {
+            return true
+        }
+        if (element.parent is ObjJMethodCall) {
+            return true
+        }
+        return false
     }
 
     companion object {

@@ -79,7 +79,7 @@ BLOCK_COMMENT_TEXT = ([^*]|\*[^/]|'\n'|'\r'|";"|\s)+
 BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 REGULAR_EXPRESSION_LITERAL = \/ [^\r\n\u2028\u2029\*\/] (([^\r\n\u2028\u2029/\[]| "\\" [^\r\n\u2028\u2029]{1})+ | \[ (\\? [^\r\n\u2028\u2029\]/])* \] )* \/ [a-zA-Z]*
-ID=[_a-zA-Z][_a-zA-Z0-9]*
+ID=[$_a-zA-Z][_a-zA-Z0-9]*
 PP_UNDEF = #\s*undef
 PP_IF_DEF = #\s*ifdef
 PP_IFNDEF = #\s*ifndef
@@ -108,6 +108,7 @@ WHITE_SPACE=\p{Blank}+
 <PREPROCESSOR> {
 	{LINE_TERMINATOR} 				   	 { yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return ObjJ_LINE_TERMINATOR; }
 	'#'									 { return WHITE_SPACE; }
+ 	{WHITE_SPACE}  						 { return WHITE_SPACE; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return WHITE_SPACE; }
 }
 

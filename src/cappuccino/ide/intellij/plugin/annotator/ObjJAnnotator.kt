@@ -5,54 +5,51 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
-import java.util.*
+import com.intellij.openapi.util.TextRange
 
 class ObjJAnnotator : Annotator {
 
     //private static final Logger LOGGER = Logger.getLogger(ObjJAnnotator.class.getName());
 
     override fun annotate(
-            psiElement: PsiElement,
+            element: PsiElement,
             annotationHolder: AnnotationHolder) {
-        if (DumbService.getInstance(psiElement.project).isDumb) {
+        if (DumbService.getInstance(element.project).isDumb) {
             return
         }
-        //LOGGER.log(Level.INFO, "Annotating element of type: "+psiElement.getNode().getElementType().toString());
+        //LOGGER.log(Level.INFO, "Annotating element of type: "+element.getNode().getElementType().toString());
         try {
             //Annotate Method calls
-            if (psiElement is ObjJMethodCall) {
-                ObjJMethodCallAnnotatorUtil.annotateMethodCall(psiElement, annotationHolder)
-            } else if (psiElement is ObjJSelectorLiteral) {
-                ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(psiElement, annotationHolder)
-            } else if (psiElement is ObjJVariableName) {
-                ObjJVariableAnnotatorUtil.annotateVariable(psiElement, annotationHolder)
-            } else if (psiElement is ObjJImplementationDeclaration) {
-                ObjJImplementationDeclarationAnnotatorUtil.annotateImplementationDeclaration(psiElement, annotationHolder)
-            } else if (psiElement is ObjJProtocolDeclaration) {
-                ObjJProtocolDeclarationAnnotatorUtil.annotateProtocolDeclaration(psiElement, annotationHolder)
-            } else if (psiElement is ObjJBlock) {
-                validateBlock(psiElement, annotationHolder)
-            } else if (psiElement is ObjJReturnStatement) {
-                validateReturnStatement(psiElement, annotationHolder)
+            if (element is ObjJMethodCall) {
+                ObjJMethodCallAnnotatorUtil.annotateMethodCall(element, annotationHolder)
+            } else if (element is ObjJSelectorLiteral) {
+                ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(element, annotationHolder)
+            } else if (element is ObjJVariableName) {
+               // ObjJVariableAnnotatorUtil.annotateVariable(element, annotationHolder)
+            } else if (element is ObjJImplementationDeclaration) {
+                ObjJImplementationDeclarationAnnotatorUtil.annotateImplementationDeclaration(element, annotationHolder)
+            } else if (element is ObjJProtocolDeclaration) {
+                ObjJProtocolDeclarationAnnotatorUtil.annotateProtocolDeclaration(element, annotationHolder)
+            } else if (element is ObjJBlock) {
+                validateBlock(element, annotationHolder)
+            } else if (element is ObjJReturnStatement) {
+                //validateReturnStatement(element, annotationHolder)
+            } else if (element is ObjJMethodHeader) {
+                ObjJMethodDeclaratonAnnotator.annotateMethodHeaderDeclarations(element, annotationHolder)
             } else {
-                validateMiscElement(psiElement, annotationHolder)
+                validateMiscElement(element, annotationHolder)
             }
-            if (psiElement is ObjJNeedsSemiColon) {
-                ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons(psiElement, annotationHolder)
+            if (element is ObjJNeedsSemiColon) {
+                ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons(element, annotationHolder)
             }
-            if (psiElement is ObjJFragment) {
-                annotationHolder.createErrorAnnotation(psiElement, "invalid directive")
+            if (element is ObjJFragment) {
+                annotationHolder.createErrorAnnotation(element, "invalid directive")
             }
         } catch (ignored: IndexNotReadyRuntimeException) {
         }
@@ -101,9 +98,9 @@ class ObjJAnnotator : Annotator {
 
 
     private fun validateBlock(block: ObjJBlock, annotationHolder: AnnotationHolder) {
-        validateBlockReturnStatements(block, annotationHolder)
+        //validateBlockReturnStatements(block, annotationHolder)
     }
-
+/*
     private fun validateBlockReturnStatements(block: ObjJBlock, annotationHolder: AnnotationHolder) {
         val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
         if (returnStatementsList.isEmpty()) {
@@ -229,5 +226,5 @@ class ObjJAnnotator : Annotator {
         out.addAll(ObjJUnifiedMethodIndex.instance.get(fullSelector, project))
         return out
     }
-
+*/
 }

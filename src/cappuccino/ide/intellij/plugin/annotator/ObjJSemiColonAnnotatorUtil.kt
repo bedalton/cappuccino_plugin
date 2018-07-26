@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.annotator
 
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonQuickFix
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -74,6 +76,7 @@ internal object ObjJSemiColonAnnotatorUtil {
     private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolder) {
         val errorRange = TextRange.create(element.textRange.endOffset - 1, element.textRange.endOffset)
         annotationHolder.createErrorAnnotation(errorRange, "Missing terminating semi-colon")
+                .registerFix(ObjJAddSemiColonIntention(element))
     }
 
     /**
