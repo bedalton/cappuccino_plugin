@@ -1,27 +1,5 @@
 <html>
 <body>
-Child class overrides parent method with different variable return or parameter types
-<code>
-<pre>
-
-/*
- * Protocol declared method aMethod with return type bool
- */
-@protocol ExampleProtocol
-- (BOOL) aMethodSelector;
-@end
-
-
-/*
- * Implementation declared a method with the same selector 'aMethodSelector:' but with return type VOID
- */
-@implementation Example &lt;ExampleProtocol&gt;
-- (VOID) aMethodSelector;
-@end
-
-</pre>
-</code>
-
-Method in implementation is highlighted as it overwrites method 'aMethod:' with a different return type
+Child class overrides parent method with different return or parameter types
 </body>
 </html>
