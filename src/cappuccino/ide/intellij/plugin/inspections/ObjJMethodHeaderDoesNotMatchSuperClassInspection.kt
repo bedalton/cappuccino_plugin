@@ -37,6 +37,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 }
                 if (!matches(header, aHeader, problemsHolder)) {
                     problemsHolder.registerProblem(header, "Incompatible inherited method override")
+                    return
                 }
             }
         }
@@ -47,14 +48,13 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 }
                 return false
             }
-            val thoseParams = thatHeader.paramTypes
+            val thoseSelectors = thatHeader.methodDeclarationSelectorList
             var matches = true;
-            for ((i, param) in thisHeader.paramTypes.withIndex()) {
-                val otherParam = thoseParams[i] ?: continue;
-                if (!Objects.equals(param?.text,otherParam.text)) {
-                    if (param != null ) {
-                        problemsHolder.registerProblem((param.className ?: param), "Parameter should have type <" + otherParam.text + ">")
-                    }
+            for ((i, selector) in thisHeader.methodDeclarationSelectorList.withIndex()) {
+                val otherParam = thoseSelectors[i].varType ?: continue
+                val thisVarType = selector.varType
+                if (!Objects.equals(thisVarType?.text,otherParam.text)) {
+                    problemsHolder.registerProblem((thisVarType ?: selector), "Parameter should have type <" + otherParam.text + ">")
                     matches = false
                 }
             }

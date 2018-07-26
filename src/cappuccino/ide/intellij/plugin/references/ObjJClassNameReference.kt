@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySibling
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -15,6 +16,8 @@ import com.intellij.psi.*
 import javafx.scene.control.ProgressIndicator
 
 import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBase<ObjJClassName>(element, TextRange.create(0, element.textLength)) {
     private val className: String? = element.text
@@ -26,6 +29,9 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
     }
 
     override fun isReferenceTo(element: PsiElement?): Boolean {
+        if (element == null) {
+            return false;
+        }
         if (className == null) {
             return false
         }
@@ -46,16 +52,16 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         if (className == null) {
-            return arrayOf()
+            return ResolveResult.EMPTY_ARRAY
         }
+        val project = myElement.project;
         ProgressIndicatorProvider.checkCanceled()
-        if (DumbService.isDumb(myElement.project)) {
+        if (DumbService.isDumb(project)) {
             return ResolveResult.EMPTY_ARRAY
         }
         if (isClassDeclarationName) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val project = myElement.project;
         val classNames = ArrayList<ObjJClassName>()
         val classDeclarations = if (inProtocol) ObjJProtocolDeclarationsIndex.instance[className, project] else ObjJClassDeclarationsIndex.instance[className, myElement.project]
         if (classDeclarations.isEmpty()) {

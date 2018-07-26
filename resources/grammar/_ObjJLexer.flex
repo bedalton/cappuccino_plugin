@@ -108,6 +108,7 @@ WHITE_SPACE=\p{Blank}+
 <PREPROCESSOR> {
 	{LINE_TERMINATOR} 				   	 { yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return ObjJ_LINE_TERMINATOR; }
 	'#'									 { return WHITE_SPACE; }
+ 	{WHITE_SPACE}  						 { return WHITE_SPACE; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return WHITE_SPACE; }
 }
 

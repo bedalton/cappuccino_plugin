@@ -29,7 +29,6 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             override fun visitCompositeElement(element: ObjJCompositeElement) {
                 super.visitCompositeElement(element)
                 val block:ObjJBlock = element as? ObjJBlock ?: return;
-                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).log(Level.INFO, "Parsing block returns");
                 validateBlockReturnStatements(block, problemsHolder)
             }
         }
@@ -50,7 +49,6 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             val returnsWithExpression = ArrayList<ObjJReturnStatement>()
             val returnsWithoutExpression = ArrayList<ObjJReturnStatement>()
             for (returnStatement in returnStatementsList) {
-                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Parsing Return: ${returnStatement.text}");
                 if (isFunction) {
                     if(returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
                         continue

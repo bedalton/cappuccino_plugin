@@ -6,12 +6,9 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import org.jetbrains.annotations.NotNull
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class ObjJVariableKeyWordScopeInspection : LocalInspectionTool() {
 
@@ -31,7 +28,7 @@ class ObjJVariableKeyWordScopeInspection : LocalInspectionTool() {
                 val usedOutsideOfBlock = variableName.getParentOfType(ObjJBlock::class.java) == null
                 when (variableName.text) {
                     "super", "this", "self" -> when {
-                        isUsedOutsideOfClass -> problemsHolder.registerProblem(variableName, variableName.text + " used outside of class")
+                        isUsedOutsideOfClass && usedOutsideOfBlock -> problemsHolder.registerProblem(variableName, variableName.text + " used outside of class")
                         inInstanceVariablesList -> problemsHolder.registerProblem(variableName, "Using reserved variable name")
                         usedOutsideOfBlock -> problemsHolder.registerProblem(variableName, "Possible misuse of 'this' outside of block")
                     }
