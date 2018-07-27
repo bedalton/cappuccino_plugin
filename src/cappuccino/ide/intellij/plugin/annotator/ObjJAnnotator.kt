@@ -29,7 +29,7 @@ class ObjJAnnotator : Annotator {
             if (element is ObjJMethodCall) {
                 ObjJMethodCallAnnotatorUtil.annotateMethodCall(element, annotationHolder)
             } else if (element is ObjJSelectorLiteral) {
-                ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(element, annotationHolder)
+                //ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(element, annotationHolder)
             } else if (element is ObjJVariableName) {
                // ObjJVariableAnnotatorUtil.annotateVariable(element, annotationHolder)
             } else if (element is ObjJImplementationDeclaration) {
