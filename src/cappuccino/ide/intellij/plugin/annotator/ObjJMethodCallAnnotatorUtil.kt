@@ -5,28 +5,20 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.utils.*
-import org.jetbrains.uast.getContainingClass
 
 import java.util.ArrayList
-import java.util.logging.Level
-import java.util.logging.Logger
-import java.util.regex.Pattern
 
 /**
  * Annotator for method calls
  */
 internal object ObjJMethodCallAnnotatorUtil {
-    private val CPSTRING_INIT_WITH_FORMAT = "initWithFormat"
-    private val CPSTRING_STRING_WITH_FORMAT = "stringWithFormat"
 
     //private static final Logger LOGGER = Logger.getLogger(ObjJMethodCallAnnotatorUtil.class.getName());
 
@@ -50,13 +42,6 @@ internal object ObjJMethodCallAnnotatorUtil {
         if (ObjJPluginSettings.validateCallTarget()) {// && !IgnoreUtil.shouldIgnore(methodCall, ElementType.CALL_TARGET)) {
             validateCallTarget(methodCall, holder)
         }
-
-        //Annotate static vs instance method calls.
-        //annotateStaticMethodCall(methodCall, holder)
-        if (isCPStringWithFormat(methodCall)) {
-            annotateStringWithFormat(methodCall, holder)
-        }
-
     }
 
     /**
@@ -76,52 +61,11 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
     }
 
-    /**
-     * Validates and annotates static vs instance method calls.
-     * @param methodCall method call to annotate
-     * @param holder annotation holder
-     */
-    private fun annotateStaticMethodCall(methodCall: ObjJMethodCall, holder: AnnotationHolder) {
-        /*if(IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD_SCOPE)) {
-            return;
-        }*/
-        val callTarget = methodCall.callTarget.text
-        val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) methodCall.callTarget.getPossibleCallTargetTypes() else null
-        if (callTarget == "self" || callTarget == "super" ||
-                possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED)) {
-            return
-        }
-        if (DumbService.isDumb(methodCall.project)) {
-            return
-        }
-        val isStaticReference = ObjJImplementationDeclarationsIndex.instance[callTarget, methodCall.project].isNotEmpty()
-        //Logger.getLogger("ObjJMethodCallAnnotator").log(Level.INFO, "ImplementationDecIndex has: "+ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project).size + " keys in index")
-
-        val methodHeaderDeclarations = ObjJUnifiedMethodIndex.instance[methodCall.selectorString, methodCall.project]
-        for (declaration in methodHeaderDeclarations) {
-            ProgressIndicatorProvider.checkCanceled()
-            if (possibleCallTargetClassTypes?.contains(declaration.containingClassName) == false) {
-                continue
-            }
-            if (declaration.isStatic == isStaticReference) {
-                return
-            }
-        }
-        val warning = when {
-            isStaticReference -> "Instance method called from static reference"
-            else -> "Static method called from class instance"
-        }
-        //Logger.getLogger("ObjJMethCallAnnot").log(Level.INFO, "Method call is static? $isStaticReference; For call target: $callTarget")
-        for (selector in methodCall.selectorList) {
-            holder.createWeakWarningAnnotation(selector, warning)
-        }
-    }
-
-    /**
+    /*
      * Validates and annotates a selector literal
      * @param selectorLiteral selector literal
      * @param holder annotation holder
-     */
+     * /
     fun annotateSelectorLiteral(
             selectorLiteral: ObjJSelectorLiteral,
             holder: AnnotationHolder) {
@@ -131,7 +75,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         final List<ObjJSelector> selectors = selectorLiteral.getSelectorList();
         annotateSelectorReference(project, selectors, holder);
         */
-    }
+    }*/
 
     /**
      * Validates and annotates method selector signature
@@ -161,15 +105,15 @@ internal object ObjJMethodCallAnnotatorUtil {
 
         if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
             for (selector in selectors) {
-                holder.createInfoAnnotation(selector, "missing selector: <"+fullSelector+"> is ignored")
+                holder.createInfoAnnotation(selector, "missing selector: <$fullSelector> is ignored")
                         .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
             }
-            return true;
+            return true
         }
 
         if (selectors.size == 1) {
             val selector = selectors.getOrNull(0) ?: return true
-            holder.createErrorAnnotation(selector, "Failed to find selector matching <" + selector.getSelectorString(true) + ">")
+            holder.createErrorAnnotation(selector, "Failed to find selector matching <${selector.getSelectorString(true)}>")
                     .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
             return false
         }
@@ -209,11 +153,11 @@ internal object ObjJMethodCallAnnotatorUtil {
      * @return true if method selector is valid in any place, false otherwise
      */
     private fun isValidMethodCall(fullSelector: String, project: Project): Boolean {
-        return !ObjJUnifiedMethodIndex.instance.get(fullSelector, project).isEmpty() ||
-                !ObjJSelectorInferredMethodIndex.instance.get(fullSelector, project).isEmpty() ||
-                !ObjJInstanceVariablesByNameIndex.instance.get(fullSelector.substring(0, fullSelector.length - 1), project).isEmpty() ||
-                !ObjJClassInstanceVariableAccessorMethodIndex.instance.get(fullSelector, project).isEmpty() ||
-                !ObjJClassInstanceVariableAccessorMethodIndex.instance.get(fullSelector, project).isEmpty()
+        return !ObjJUnifiedMethodIndex.instance[fullSelector, project].isEmpty() ||
+                !ObjJSelectorInferredMethodIndex.instance[fullSelector, project].isEmpty() ||
+                !ObjJInstanceVariablesByNameIndex.instance[fullSelector.substring(0, fullSelector.length - 1), project].isEmpty() ||
+                !ObjJClassInstanceVariableAccessorMethodIndex.instance[fullSelector, project].isEmpty() ||
+                !ObjJClassInstanceVariableAccessorMethodIndex.instance[fullSelector, project].isEmpty()
     }
 
     /**
@@ -279,10 +223,10 @@ internal object ObjJMethodCallAnnotatorUtil {
                     childContainingClasses.add(className)
                 }
             }
-            if (!childContainingClasses.isEmpty()) {
-                weakWarning = "Method found in possible child classes [" + ArrayUtils.join(childContainingClasses) + "] of [" + ArrayUtils.join(expectedContainingClasses) + "]"
+            weakWarning = if (!childContainingClasses.isEmpty()) {
+                "Method found in possible child classes [" + ArrayUtils.join(childContainingClasses) + "] of [" + ArrayUtils.join(expectedContainingClasses) + "]"
             } else {
-                weakWarning = "Method found in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in inferred classes [" + ArrayUtils.join(expectedContainingClasses) + "]"
+                "Method found in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in inferred classes [" + ArrayUtils.join(expectedContainingClasses) + "]"
             }
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(lastSelector)
@@ -319,97 +263,6 @@ internal object ObjJMethodCallAnnotatorUtil {
                 holder.createWeakWarningAnnotation(selector, weakWarning)
             }
         }
-    }
-
-    /**
-     * Validates and annotates CPString formatter
-     * Simply checks that there are enough arguments in the list for all wildcards in string format
-     * @param methodCall method call
-     * @param annotationHolder annotation holder
-     */
-    private fun annotateStringWithFormat(methodCall: ObjJMethodCall, annotationHolder: AnnotationHolder) {
-        if (!isCPStringWithFormat(methodCall)) {
-            return
-        }
-        if (methodCall.qualifiedMethodCallSelectorList.isEmpty()) {
-            return
-        }
-        val expressions = methodCall.qualifiedMethodCallSelectorList[0].exprList
-        if (expressions.size < 1) {
-            annotationHolder.createWarningAnnotation(methodCall, "String with format requires first parameter to be a non-nil string")
-        }
-        val format = expressions.removeAt(0)
-        var formatVarType: String?
-        try {
-            formatVarType = getReturnType(format, true)
-        } catch (e: MixedReturnTypeException) {
-            formatVarType = e.returnTypesList[0]
-        }
-
-        if (formatVarType == null) {
-            return
-        }
-        if (!isUniversalMethodCaller(formatVarType) && formatVarType != ObjJClassType.STRING) {
-            annotationHolder.createWarningAnnotation(format, "First parameter should be of type CPString")
-            return
-        }
-        if (format.leftExpr == null || format.leftExpr!!.primary == null || format.leftExpr!!.primary!!.stringLiteral == null) {
-            //   LOGGER.log(Level.INFO, "[CPString initWithFormat] should have string expression first, but does not. Actual text: <"+format.getText()+">");
-            return
-        }
-
-        val formatString = format.leftExpr!!.primary!!.stringLiteral!!.text
-        val pattern = Pattern.compile("%([^%])*")
-        val matchResult = pattern.matcher(formatString)
-        val matches = ArrayList<String>()
-        while (matchResult.find()) {
-            matches.add(matchResult.group())
-        }
-        val numMatches = matches.size
-        val numExpressions = expressions.size
-        if (numMatches > numExpressions) {
-            val elementOffset = format.leftExpr!!.primary!!.stringLiteral!!.textRange.startOffset
-            val parts = formatString.split("%([^%])".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            var part: String
-            val builder = StringBuilder()
-            var offset: Int
-            val lastIndex = parts.size - if (formatString.lastIndexOf("%") == formatString.length - 2 && formatString.lastIndexOf("%") != formatString.length - 1) 0 else 1
-            for (i in 0 until lastIndex) {
-                part = parts[i]
-                builder.append(part)
-                offset = elementOffset + builder.length
-                builder.append("%?")
-                if (i < numExpressions) {
-                    continue
-                }
-                //LOGGER.log(Level.INFO, "Current substring = <"+builder.toString()+">");
-                annotationHolder.createWarningAnnotation(TextRange.create(offset, offset + 2), String.format("Not enough values for format. Expected <%d>, found <%d>", numMatches, numExpressions))
-            }
-        } else if (numMatches < numExpressions) {
-            for (i in numMatches until numExpressions) {
-                annotationHolder.createWarningAnnotation(expressions[i], String.format("Too many arguments found for string format. Expected <%d>, found <%d>", numMatches, numExpressions))
-            }
-        }
-        for (i in 1..numMatches) {
-            if (expressions.size < 1) {
-                break
-            }
-            val expr = expressions.removeAt(0)
-            //TODO check var type for match
-        }
-    }
-
-    /**
-     * Checks whether method call is a CPString format method call.
-     * @param methodCall method call
-     * @return true if method call is string formatting method call, false otherwise.
-     */
-    private fun isCPStringWithFormat(methodCall: ObjJMethodCall): Boolean {
-        if (methodCall.getCallTargetText() == ObjJClassType.STRING && methodCall.selectorList.size == 1) {
-            val selectorText = methodCall.selectorList[0].text
-            return selectorText == CPSTRING_INIT_WITH_FORMAT || selectorText == CPSTRING_STRING_WITH_FORMAT
-        }
-        return false
     }
 
 }

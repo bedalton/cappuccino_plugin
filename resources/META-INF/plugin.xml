@@ -171,6 +171,14 @@
                      shortName="MethodHeaderDoesNotMatchSuperClass"
 
     />
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJStringWithFormatInspection"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Matching Arguments for String Format"
+                     shortName="StringWithFormat"
+    />
 
 
     <!-- Indices -->
