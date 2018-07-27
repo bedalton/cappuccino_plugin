@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J Language Plugin</name>
-  <version>0.1</version>
+  <version>0.2.02</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
 
   <description><![CDATA[
@@ -32,15 +32,6 @@
 	<li>Syntax Highlighting</li>
 	<li>Invalid method call selector warnings</li>
 </ul>
-<br/>
-<br/>
-<h2>Future</h2>
-<ul>
-	<li>Add rename support for method selectors (removed original implementation due to problems with rename scope)</li>
-	<li>Restrict suggestions to imported files</li>
-	<li>Implement variable type resolution to provide better autocompletion suggestions</li>
-	<li>Use framework decompiler to allow plugin to work without requiring source</li>
-</ul>
     ]]></description>
 
   <change-notes><![CDATA[
@@ -49,6 +40,11 @@
       <li>removed buggy method selector rename</li>
       <li>Improved variable name autocompletion</li>
       <li>Added method declaration inspections</li>
+      <li>0.2.02
+      <ul>
+        <li>Fixed error on null selector when annotating</li>
+      </ul>
+      </li>
       </ul>
     ]]>
   </change-notes>
