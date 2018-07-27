@@ -168,7 +168,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
 
         if (selectors.size == 1) {
-            val selector = selectors[0]
+            val selector = selectors.getOrNull(0) ?: return true
             holder.createErrorAnnotation(selector, "Failed to find selector matching <" + selector.getSelectorString(true) + ">")
                     .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
             return false
