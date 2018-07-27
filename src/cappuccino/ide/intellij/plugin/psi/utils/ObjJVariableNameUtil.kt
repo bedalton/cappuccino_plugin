@@ -14,10 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-import cappuccino.ide.intellij.plugin.utils.Filter
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.project.Project
 import org.fest.util.Lists
 
@@ -182,7 +179,7 @@ object ObjJVariableNameUtil {
     fun getSiblingVariableAssignmentNameElement(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         var variableName: ObjJVariableName?
         variableName = getVariableNameDeclarationInContainingBlocks(element, qualifiedNameIndex, filter)
-        if (variableName != null) {
+        if (variableName != null && variableName inSameFile element) {
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         if (qualifiedNameIndex <= 1) {
@@ -231,18 +228,15 @@ object ObjJVariableNameUtil {
         if (!globalVariableDeclarations.isEmpty()) {
             return globalVariableDeclarations.get(0).variableName
         }
-        val block = element.getParentOfType( ObjJBlock::class.java)
-        return if (block != null) {
-            getSiblingVariableAssignmentNameElement(block, qualifiedNameIndex, filter)
-        } else getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
+        return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
     }
 
     private fun getVariableNameDeclarationInContainingBlocksFuzzy(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
         val varName = element.text
-        val variableNames = ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
+        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
         return getFirstMatchOrNull(variableNames) { variableName ->
-            if (variableName.getText() != varName) {
+            if (variableName.text != varName) {
                 return@getFirstMatchOrNull false
             }
             var parent : PsiElement = variableName.parent as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
@@ -253,17 +247,25 @@ object ObjJVariableNameUtil {
 
     private fun getVariableNameDeclarationInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return null
+        return getVariableNameDeclarationInContainingBlocks(block, element, qualifiedNameIndex, filter)
+    }
+
+    private fun getVariableNameDeclarationInContainingBlocks(block:ObjJBlock, element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val bodyVariableAssignments = block.getBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true) as MutableList
-        bodyVariableAssignments.addAll(block.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true))
         var out: ObjJVariableName?
         for (bodyVariableAssignment in bodyVariableAssignments) {
+            if (bodyVariableAssignment notInSameFile element) {
+                LOGGER.log(Level.SEVERE, "BodyVariableAssignment is not in same parent as element")
+                continue
+            }
             ProgressIndicatorProvider.checkCanceled()
             out = getVariableFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex, filter)
-            if (out != null && !out.isEquivalentTo(element)) {
+            if (out != null && !out.isEquivalentTo(element) && out inSameFile element) {
                 return out
             }
         }
-        return null
+        val parentBlock = block.getParentOfType(ObjJBlock::class.java)
+        return if (parentBlock != null) return getVariableNameDeclarationInContainingBlocks(parentBlock, element, qualifiedNameIndex, filter) else null
     }
 
     fun getFirstMatchOrNull(variableNameElements: List<ObjJVariableName>, filter: Filter<ObjJVariableName>): ObjJVariableName? {
@@ -498,7 +500,6 @@ object ObjJVariableNameUtil {
         }
         val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
-            //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {

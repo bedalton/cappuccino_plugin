@@ -134,3 +134,20 @@ class ObjJFileUtil {
     }
 
 }
+
+infix fun PsiElement?.notInSameFile(otherElement:PsiElement?) : Boolean {
+    return !sharesSameFile(this, otherElement)
+}
+infix fun PsiElement?.inSameFile(otherElement:PsiElement?) : Boolean {
+    return sharesSameFile(this, otherElement)
+}
+
+fun PsiElement?.sharesFile(otherElement:PsiElement?) : Boolean {
+    return sharesSameFile(this, otherElement)
+}
+
+fun sharesSameFile(element1:PsiElement?, element2:PsiElement?) : Boolean {
+    val file1 = element1?.containingFile ?: return false
+    val file2 = element2?.containingFile ?: return false
+    return file1.isEquivalentTo(file2) && file1.virtualFile.path == file2.virtualFile.path
+}
