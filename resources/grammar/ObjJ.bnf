@@ -190,7 +190,7 @@
 		ID = 								'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
 		PREPROCESSOR_CONTINUE_ON_NEXT_LINE = 	'regexp:\\[ ]*\r?\n'
 		PREPROCESSOR_DIRECTIVE =					'regexp:#.+\s+(\\[ ]*\r?\n .+)*[\r\n\u2028\u2029]'
-		REGULAR_EXPRESSION_LITERAL_TOKEN =	'regexp:\/ (([^\r\n\u2028\u2029\\\/\[]|\\\\[^\r\n\u2028\u2029]) | \[ ([^\r\n\u2028\u2029\]\\] | \\\\[^\r\n\u2028\u2029])* \] )* \/ [a-zA-Z]*'
+		REGULAR_EXPRESSION_LITERAL_TOKEN =	'regexp:/(([^\r\n\u2028\u2029\\/\[]|\\\\[^\r\n\u2028\u2029]) | \[ ([^\r\n\u2028\u2029\]\\] | \\\\[^\r\n\u2028\u2029])* \] )* / [a-zA-Z]*'
 	]
 	name (".*expr|.+Expr(Prime)?") ='expression'
 	extends(".+Block")=blockElement
