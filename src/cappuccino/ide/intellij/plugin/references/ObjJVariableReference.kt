@@ -130,7 +130,12 @@ class ObjJVariableReference(
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
-        if (myElement.containingFile.text.startsWith("@STATIC;")) {
+        try {
+            if (myElement.containingFile.text.startsWith("@STATIC;")) {
+                return null
+            }
+        } catch (ignored:Exception) {
+            //Exception was thrown on failed attempts at adding code to file pragmatically
             return null
         }
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)

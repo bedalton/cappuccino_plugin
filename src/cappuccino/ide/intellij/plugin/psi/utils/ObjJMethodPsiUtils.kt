@@ -207,22 +207,20 @@ object ObjJMethodPsiUtils {
             return methodHeader.stub.returnTypeAsString
         }
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return ObjJClassType.UNDETERMINED
-        if (returnTypeElement.atAction != null) {
+        if (returnTypeElement.formalVariableType.atAction != null) {
             return AT_ACTION
         }
-        if (returnTypeElement.formalVariableType != null) {
-            val formalVariableType = returnTypeElement.formalVariableType
-            if (formalVariableType!!.varTypeId != null) {
-                if (follow) {
-//LOGGER.log(Level.INFO, "Found return type id to be: <"+returnType+">");
-                    return formalVariableType.varTypeId!!.getIdType(false)
-                }
-            }
-            return formalVariableType.text
+        if (returnTypeElement.formalVariableType.void != null) {
+            return VOID_CLASS_NAME
         }
-        return if (returnTypeElement.void != null) {
-            VOID_CLASS_NAME
-        } else ObjJClassType.UNDETERMINED
+        val formalVariableType = returnTypeElement.formalVariableType
+        if (formalVariableType.varTypeId != null) {
+            if (follow) {
+            //LOGGER.log(Level.INFO, "Found return type id to be: <"+returnType+">");
+                return formalVariableType.varTypeId!!.getIdType(false)
+            }
+        }
+        return formalVariableType.text
     }
 
     @JvmOverloads
