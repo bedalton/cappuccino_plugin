@@ -6,11 +6,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.Filter
-import com.google.common.collect.Lists
 import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.collections.ArrayList
 
@@ -170,11 +167,12 @@ private fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
                 }
             }
             if (!this.isEquivalentTo(block) && recursive) {
-                out.addAll(block.getBlockChildrenOfType(aClass, recursive,filter,returnFirst,offset))
+                out.addAll(block.getBlockChildrenOfType(aClass, recursive, filter,returnFirst,offset))
+
             }
         }
         currentBlocks = nextBlocks
-    } while (!currentBlocks.isEmpty())
+    } while (currentBlocks.isNotEmpty())
     return out
 }
 
@@ -185,7 +183,6 @@ private fun getBlocksBlocks(block:ObjJBlock) : List<ObjJBlock> {
     }
     return out
 }
-
 
 fun <T : PsiElement> PsiElement.getParentBlockChildrenOfType(aClass: Class<T>, recursive: Boolean): List<T> {
     var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return emptyList()
