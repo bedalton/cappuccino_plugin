@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.annotator.IgnoreUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
@@ -116,9 +117,7 @@ object ObjJElementFactory {
     }
 
     fun createFormalVariableType(project:Project, returnType: String) : ObjJFormalVariableType {
-        val formalVariableType = createMethodReturnTypeElement(project, returnType).formalVariableType;
-        com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(formalVariableType != null)
-        return formalVariableType!!
+        return createMethodReturnTypeElement(project, returnType).formalVariableType
     }
 
     fun createMethodReturnTypeElement(project: Project, returnType:String) : ObjJMethodHeaderReturnTypeElement {
