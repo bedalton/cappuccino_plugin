@@ -29,13 +29,11 @@ import com.intellij.openapi.editor.FoldingGroup
 import javax.swing.*
 import java.util.*
 
-import java.util.logging.Level
-import java.util.logging.Logger
 import java.util.regex.Pattern
 
 object ObjJPsiImplUtil {
 
-    private val LOGGER = Logger.getLogger(ObjJPsiImplUtil::class.java.name)
+    //private val LOGGER = Logger.getLogger(ObjJPsiImplUtil::class.java.name)
 
     // ============================== //
     // ======= Named Ident ========== //
@@ -130,10 +128,6 @@ object ObjJPsiImplUtil {
             return oldFunctionName
         }
         val functionName = ObjJElementFactory.createFunctionName(oldFunctionName.project, newFunctionName)
-        if (functionName == null) {
-            LOGGER.log(Level.SEVERE, "new function name element is null")
-            return oldFunctionName
-        }
         oldFunctionName.parent.node.replaceChild(oldFunctionName.node, functionName.node)
         return functionName
     }
@@ -147,22 +141,22 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getClassNameString(classElement: ObjJImplementationDeclaration): String {
         if (classElement.stub != null) {
-            return classElement?.stub?.className ?: ""
+            return classElement.stub?.className ?: ""
         }
-        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
+        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     @JvmStatic
     fun getClassNameString(classElement: ObjJProtocolDeclaration): String {
         if (classElement.stub != null) {
-            return classElement.stub.className;
+            return classElement.stub.className
         }
-        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME;
+        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     @JvmStatic
     fun getClassNameString(typedef: ObjJTypeDef): String {
-        return typedef.className?.text ?: ""
+        return typedef.className.text ?: ""
     }
 
     @JvmStatic
@@ -210,10 +204,10 @@ object ObjJPsiImplUtil {
         val rawText = stringLiteral.text
         val pattern = Pattern.compile("@?\"(.*)\"|@?'(.*)'")
         val result = pattern.matcher(rawText)
-        try {
-            return if (result.groupCount() > 1 && result.group(1) != null) result.group(1) else ""
+        return try {
+            if (result.groupCount() > 1 && result.group(1) != null) result.group(1) else ""
         } catch (e: Exception) {
-            return ""
+            ""
         }
 
     }
@@ -387,10 +381,10 @@ object ObjJPsiImplUtil {
             return null
         }
         var thisSelectorIndex: Int
-        if (selectorIndex < 0 || selectorIndex >= selectorList.size) {
-            thisSelectorIndex = selectorList.size - 1
+        thisSelectorIndex = if (selectorIndex < 0 || selectorIndex >= selectorList.size) {
+            selectorList.size - 1
         } else {
-            thisSelectorIndex = selectorIndex
+            selectorIndex
         }
         var selector: ObjJSelector? = selectorList[thisSelectorIndex]
         while ((selector == null || selector.getSelectorString(false).isEmpty()) && thisSelectorIndex > 0) {
@@ -401,7 +395,7 @@ object ObjJPsiImplUtil {
         }
         val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.*)")) else null
         for (currentSelector in selectorList) {
-            if (currentSelector != null && (subSelectorPattern == null || subSelectorPattern.matcher(currentSelector.getSelectorString(false)).matches())) {
+            if (subSelectorPattern == null || subSelectorPattern.matcher(currentSelector.getSelectorString(false)).matches()) {
                 return currentSelector
             }
         }
@@ -497,11 +491,6 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReferences(reference: ObjJQualifiedReference): Array<PsiReference> {
-        return PsiReference.EMPTY_ARRAY
-    }
-
-    @JvmStatic
     fun getReference(variableName: ObjJVariableName): PsiReference {
         return ObjJVariableReference(variableName)
     }
@@ -526,7 +515,7 @@ object ObjJPsiImplUtil {
     // ============================== //
     @JvmStatic
     fun getContainingSuperClass(psiElement: ObjJCompositeElement, returnDefault: Boolean): ObjJClassName? =
-            cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(psiElement, returnDefault);
+            cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(psiElement, returnDefault)
 
     @JvmStatic
     fun getContainingClass(element: PsiElement): ObjJClassDeclarationElement<*>? {
@@ -614,7 +603,7 @@ object ObjJPsiImplUtil {
     fun getBlockList(switchStatement: ObjJSwitchStatement) : List<ObjJBlock> {
         val out = ArrayList<ObjJBlock>()
         for (clause in switchStatement.caseClauseList) {
-            val block = clause.block ?: continue;
+            val block = clause.block ?: continue
             out.add(block)
         }
         return out
@@ -631,12 +620,12 @@ object ObjJPsiImplUtil {
             }
         }
         out.addAll(ifStatement.getChildrenOfType(ObjJBlock::class.java))
-        return out;
+        return out
     }
 
     @JvmStatic
     fun getBlockList(block: ObjJBlockElement): List<ObjJBlock> {
-        return Arrays.asList(block);
+        return Arrays.asList(block)
     }
 
     @JvmStatic
@@ -661,8 +650,8 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getBlockList(methodDeclaration: ObjJMethodDeclaration): List<ObjJBlock> {
-        val block = methodDeclaration.block;
-        return if (block != null) listOf(block) else listOf();
+        val block = methodDeclaration.block
+        return if (block != null) listOf(block) else listOf()
     }
 
     @JvmStatic
@@ -681,11 +670,11 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getBlock(case:ObjJCaseClause) : ObjJBlock? {
-        return case.getChildOfType(ObjJBracketLessBlock::class.java);
+        return case.getChildOfType(ObjJBracketLessBlock::class.java)
     }
 
     @JvmStatic
-    fun getOpenBrace(ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {
+    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") ifStatement: ObjJPreprocessorIfStatement): ObjJBlock? {
         return null
     }
 
@@ -797,7 +786,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getOpenBrace(element: PsiElement) = null
+    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement) = null
 
     // ============================== //
     // ===== QualifiedReference ===== //
@@ -813,8 +802,7 @@ object ObjJPsiImplUtil {
         return getPartsAsStringArray(qualifiedReference.getChildrenOfType(ObjJQualifiedNamePart::class.java))
     }
 
-    @JvmStatic
-    fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedNamePart>?): List<String> {
+    private fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedNamePart>?): List<String> {
         if (qualifiedNameParts == null) {
             return emptyList()
         }
@@ -825,8 +813,7 @@ object ObjJPsiImplUtil {
         return out
     }
 
-    @JvmStatic
-    fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedNamePart>): String {
+    private fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedNamePart>): String {
         return ArrayUtils.join(getPartsAsStringArray(qualifiedNameParts), ".")
     }
 
@@ -837,16 +824,13 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getDescriptiveText(psiElement: PsiElement): String? {
-        if (psiElement is ObjJSelector) {
-            return getSelectorDescriptiveName(psiElement)
-        } else if (psiElement is ObjJVariableName) {
-            return psiElement.text
-        } else if (psiElement is ObjJClassName) {
-            return getClassDescriptiveText(psiElement)
-        } else if (psiElement is ObjJFunctionName) {
-            return psiElement.getText()
+        return when (psiElement) {
+            is ObjJSelector -> getSelectorDescriptiveName(psiElement)
+            is ObjJVariableName -> psiElement.text
+            is ObjJClassName -> getClassDescriptiveText(psiElement)
+            is ObjJFunctionName -> psiElement.getText()
+            else -> ""
         }
-        return ""
     }
 
     private fun getClassDescriptiveText(classNameElement: ObjJClassName): String? {
@@ -863,8 +847,7 @@ object ObjJPsiImplUtil {
         return className
     }
 
-    @JvmStatic
-    fun getSelectorDescriptiveName(selector: ObjJSelector): String {
+    private fun getSelectorDescriptiveName(selector: ObjJSelector): String {
         val selectorLiteral = selector.getParentOfType(ObjJSelectorLiteral::class.java)
         if (selectorLiteral != null) {
             return "@selector(" + selectorLiteral.selectorString + ")"
@@ -889,7 +872,7 @@ object ObjJPsiImplUtil {
                 return methodScopeString + " (" + methodHeader.returnType + ")" + selectorString
             }
         }
-        selectorString = if (selectorString != null) selectorString else selector.getSelectorString(true)
+        selectorString = selectorString ?: selector.getSelectorString(true)
         return "[* $selectorString]"
     }
 
@@ -1205,9 +1188,10 @@ object ObjJPsiImplUtil {
         return isLineTerminator
     }
 
+    @Suppress("unused")
     @JvmStatic
-    fun hasNodeType(element: PsiElement?, elementType: IElementType): Boolean {
-        return element != null && element.node.elementType === elementType
+    fun PsiElement?.hasNodeType(elementType: IElementType): Boolean {
+        return this != null && this.node.elementType === elementType
     }
 
     // ============================== //
@@ -1257,6 +1241,7 @@ object ObjJPsiImplUtil {
         return null
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     @JvmStatic
     fun <PsiT : PsiElement> PsiElement.isIn(parentClass: Class<PsiT>): Boolean {
         return getParentOfType(parentClass) != null
