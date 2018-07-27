@@ -126,12 +126,12 @@ private constructor(//Class name as string
 
         //Container of existing class types
         private val classTypes = HashMap<String, ObjJClassType>()
-        val UNDEF_CLASS_NAME = "{UNDEF}"
+        const val UNDEF_CLASS_NAME = "{UNDEF}"
         val UNDEF = ObjJClassType.getClassType(UNDEF_CLASS_NAME)
-        val VOID_CLASS_NAME = "VOID"
+        const val VOID_CLASS_NAME = "void"
         val VOID = ObjJClassType.getClassType(VOID_CLASS_NAME)
 
-        val PRIMITIVE_VAR_NAMES = Arrays.asList(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT)
+        val PRIMITIVE_VAR_NAMES = Arrays.asList(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT)!!
 
         /**
          * Static class type getter, used to ensure that only one version of class type exists for class name
