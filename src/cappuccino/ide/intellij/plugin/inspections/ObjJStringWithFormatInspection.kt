@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.inspections
 
+import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveTrailingStringFormatParameter
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -47,6 +48,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
             val expressions = methodCall.qualifiedMethodCallSelectorList[0].exprList
             if (expressions.size < 1) {
                 problemsHolder.registerProblem(methodCall, "String with format requires first parameter to be a non-nil string")
+                return
             }
             val format = expressions.removeAt(0)
             val formatVarType: String = try {
@@ -73,7 +75,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
             val numMatches = matches.size
             val numExpressions = expressions.size
             if (numMatches > numExpressions) {
-                //val elementOffset = format.leftExpr!!.primary!!.stringLiteral!!.textRange.startOffset
+                val formatStringOffsetInMethodCall = format.leftExpr!!.primary!!.stringLiteral!!.textRange.startOffset - methodCall.textRange.startOffset
                 val parts = formatString.split("%([^%])".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 var part: String
                 val builder = StringBuilder()
@@ -82,7 +84,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 for (i in 0 until lastIndex) {
                     part = parts[i]
                     builder.append(part)
-                    offset = builder.length
+                    offset = formatStringOffsetInMethodCall + builder.length
                     builder.append("%?")
                     if (i < numExpressions) {
                         continue
@@ -92,7 +94,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 }
             } else if (numMatches < numExpressions) {
                 for (i in numMatches until numExpressions) {
-                    problemsHolder.registerProblem(expressions[i], String.format("Too many arguments found for string format. Expected <%d>, found <%d>", numMatches, numExpressions))
+                    problemsHolder.registerProblem(expressions[i], String.format("Too many arguments found for string format. Expected <%d>, found <%d>", numMatches, numExpressions), ObjJRemoveTrailingStringFormatParameter(expressions[i]))
                 }
             }
             /*
