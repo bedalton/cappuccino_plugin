@@ -124,14 +124,6 @@
                      shortName="VariableOvershadowsClassVariable"
     />
 
-    <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJUndeclaredVariableInspectionTool"
-                     level="WARNING"
-                     groupName="Objective-J"
-                     enabledByDefault="true"
-                     displayName="Possibly undeclared variables"
-                     shortName="UndeclaredVariables"
-                     />
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableKeyWordScopeInspection"
@@ -178,6 +170,16 @@
                      enabledByDefault="true"
                      displayName="Matching Arguments for String Format"
                      shortName="StringWithFormat"
+                     order="before UndeclaredVariables"
+    />
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJUndeclaredVariableInspectionTool"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Possibly undeclared variables"
+                     shortName="UndeclaredVariables"
+                     order="last"
     />
 
 

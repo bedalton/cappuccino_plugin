@@ -843,8 +843,6 @@ private methodHeaderSelectorList
 
 methodHeaderReturnTypeElement
 	::= formalVariableType
-	| 	'@action'
-	| 	'void'
 	;
 
 private methodHeaderMultipleVariableTail
@@ -873,7 +871,7 @@ methodDeclarationSelector
 	;
 
 private methodDeclarationSelectorVariable
-	::= ('(' (formalVariableType|'void') ')')? variableName
+	::= ('(' (formalVariableType) ')')? variableName
 	{
 		pin(".*")=1
 	}
@@ -1525,6 +1523,7 @@ formalVariableType
 	| VAR_TYPE_SEL
 	| VAR_TYPE_UNSIGNED
 	| VAR_TYPE_SIGNED
+	| <<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
 	| className
 	;
 
