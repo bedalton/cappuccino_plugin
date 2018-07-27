@@ -52,7 +52,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.indexInQualifiedReference > 0) {
             return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement)
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) }
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) } ?: variableNameElement
 
     }
 
