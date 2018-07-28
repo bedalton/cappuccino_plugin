@@ -19,6 +19,8 @@ import java.util.logging.Logger
 import com.intellij.psi.util.PsiTreeUtil.findCommonContext
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
+import cappuccino.ide.intellij.plugin.utils.inSameFile
+import cappuccino.ide.intellij.plugin.utils.notInSameFile
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Level
 
@@ -53,13 +55,19 @@ class ObjJVariableReference(
             }
             val functionDeclarationElements = ObjJFunctionsIndex.instance[myElement.text, myElement.project]
             if (namedElement == null && !functionDeclarationElements.isEmpty()) {
-                namedElement = functionDeclarationElements.get(0).functionNameNode
+                namedElement = functionDeclarationElements[0].functionNameNode
                 if (namedElement == null) {
                     for (declarationElement in functionDeclarationElements) {
-                        namedElement = declarationElement.functionNameNode
-                        if (namedElement != null) {
-                            break
+                        namedElement = declarationElement.functionNameNode ?: continue
+                        val root:PsiElement? = when (namedElement) {
+                            is ObjJVariableName -> namedElement.reference.resolve()
+                            is ObjJFunctionName -> namedElement.reference.resolve()
+                            else -> namedElement
                         }
+                        if ((root.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null ?: false) && root notInSameFile myElement) {
+                            continue
+                        }
+                        break
                     }
                 }
             }
@@ -99,7 +107,7 @@ class ObjJVariableReference(
             return true
         }
 
-        val referencedElement = resolve(true)
+        val referencedElement = resolve(false)
         if (referencedElement?.isEquivalentTo(psiElement) == true) {
             //LOGGER.log(Level.INFO, "Is reference to self in file: ${psiElement.containingFile.name} to item in file ${referencedElement.containingFile.name}")
             return true
