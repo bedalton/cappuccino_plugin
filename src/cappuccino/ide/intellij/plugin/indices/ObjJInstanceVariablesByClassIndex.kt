@@ -20,7 +20,7 @@ class ObjJInstanceVariablesByClassIndex : ObjJStringStubIndexBase<ObjJInstanceVa
     }
 
     override fun getVersion(): Int {
-        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION
+        return super.getVersion() + VERSION
     }
 
     fun getInstanceVariableNames(className: String, project: Project): List<String> {

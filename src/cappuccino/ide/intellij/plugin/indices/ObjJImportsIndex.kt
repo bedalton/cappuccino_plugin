@@ -12,9 +12,14 @@ class ObjJImportsIndex : ObjJStringStubIndexBase<ObjJImportStatement<*>>() {
         return KEY
     }
 
+    override fun getVersion(): Int {
+        return super.getVersion() + VERSION
+    }
+
     companion object {
 
         val instance = ObjJImportsIndex()
+        private const val VERSION = 1
         private val KEY = IndexKeyUtil.createIndexKey<String, ObjJImportStatement<*>>(ObjJImportsIndex::class.java)
     }
 }
