@@ -149,5 +149,5 @@ fun PsiElement?.sharesFile(otherElement:PsiElement?) : Boolean {
 fun sharesSameFile(element1:PsiElement?, element2:PsiElement?) : Boolean {
     val file1 = element1?.containingFile ?: return false
     val file2 = element2?.containingFile ?: return false
-    return file1.isEquivalentTo(file2) && file1.virtualFile.path == file2.virtualFile.path
+    return file1.isEquivalentTo(file2) && file1.virtualFile?.path == file2.virtualFile?.path
 }

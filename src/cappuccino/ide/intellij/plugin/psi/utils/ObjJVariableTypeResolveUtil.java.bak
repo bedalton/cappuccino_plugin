@@ -43,7 +43,7 @@ public class ObjJVariableTypeResolveUtil {
                 case "self":
                     ObjJClassDeclarationElement classDec = ObjJPsiImplUtil.getContainingClass(variableName);
                     type = classDec != null ? classDec.getClassNameString() : null;
-                 LOGGER.log(Level.INFO, "<self> var references class: <"+type+">");
+                 //LOGGER.log(Level.INFO, "<self> var references class: <"+type+">");
                     break;
                 case "super":
                     ObjJClassName superClassName = ObjJClassDeclarationPsiUtil.getContainingSuperClass(variableName, true);
