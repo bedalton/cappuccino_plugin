@@ -18,6 +18,7 @@ import java.util.logging.Logger
 
 import com.intellij.psi.util.PsiTreeUtil.findCommonContext
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Level
 
@@ -97,6 +98,7 @@ class ObjJVariableReference(
 
         val referencedElement = resolve(true)
         if (referencedElement?.isEquivalentTo(psiElement) == true) {
+            //LOGGER.log(Level.INFO, "Is reference to self in file: ${psiElement.containingFile.name} to item in file ${referencedElement.containingFile.name}")
             return true
         }
 
@@ -113,20 +115,24 @@ class ObjJVariableReference(
 
         //Finds this elements, and the new elements scope
         val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
-        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: ReferencedInScope.UNDETERMINED;
+        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED;
         //LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: ${sharedScope.toString()} for var: ${myElement.text}")
-        if (referencedInScope != ReferencedInScope.UNDETERMINED && referencedInScope == sharedScope) {
+        if (sharedScope == UNDETERMINED && referencedInScope != UNDETERMINED) {
+            return false
+        }
+        if (referencedInScope != UNDETERMINED && referencedInScope == sharedScope) {
             return true
         }
         //If
-        if (sharedScope != ReferencedInScope.UNDETERMINED) {
+        if (sharedScope != UNDETERMINED) {
             //LOGGER.log(Level.INFO, "Mismatched Shared scope: SharedIn: " + sharedScope.toString() + "; VariableScope: <" + referencedInScope?.toString() + ">")
         }
-        return referencedInScope == ReferencedInScope.UNDETERMINED && sharedScope != ReferencedInScope.UNDETERMINED
+
+        return false//referencedInScope == ReferencedInScope.UNDETERMINED && sharedScope != ReferencedInScope.UNDETERMINED
     }
 
     override fun resolve(): PsiElement? {
-        return resolve(true)
+        return resolve(false)
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
@@ -142,12 +148,10 @@ class ObjJVariableReference(
         if (variableName == null) {
             variableName = globalVariableNameElement
         }
-        return if (nullIfSelfReferencing) {
-            if (variableName != null && !variableName.isEquivalentTo(myElement)) variableName else null
-        } else {
-            //LOGGER.log(Level.INFO, "Variable \"${myElement.text}\" resolved? ${variableName != null}")
-            variableName
+        if (nullIfSelfReferencing) {
+            return variableName
         }
+        return variableName ?: myElement
     }
 
     override fun getVariants(): Array<Any> {

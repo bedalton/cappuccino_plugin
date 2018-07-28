@@ -8,8 +8,6 @@ import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJGlobalVariableDeclarationImpl
-import cappuccino.ide.intellij.plugin.psi.utils.getVariableNameString
-import cappuccino.ide.intellij.plugin.psi.utils.getVariableType
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJGlobalVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
