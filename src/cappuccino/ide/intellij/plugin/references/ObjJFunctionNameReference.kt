@@ -16,14 +16,8 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
-    private val functionName: String
-    private val file: PsiFile
-
-    init {
-        this.functionName = functionName.text
-        //LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+getCanonicalText()+">");
-        file = functionName.containingFile
-    }
+    private val functionName: String = functionName.text
+    private val file: PsiFile = functionName.containingFile
 
     override fun isReferenceTo(element: PsiElement): Boolean {
         var isCorrectReference = element is ObjJVariableName || element is ObjJFunctionName
