@@ -104,7 +104,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
 
-            if (isNewVarDec(element)) {
+            if (ObjJVariablePsiUtil.isNewVariableDeclaration(element)) {
                 resultSet.stopHere()
                 return
             }
@@ -120,7 +120,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 results.addAll(getInClassKeywords(variableName))
                 results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
             } else {
-                LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
+                //LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
             }
         }
         getClassNameCompletions(resultSet, element)

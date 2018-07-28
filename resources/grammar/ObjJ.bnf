@@ -618,7 +618,7 @@ whileStatement
 
 		]
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
-		methods=[getBlockList block="statementOrBlock" conditionalExpression="/conditionExpression/expr"]
+		methods=[getBlockList conditionalExpression="/conditionExpression/expr"]
 	}
 	;
 
@@ -1309,7 +1309,7 @@ methodCall
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve]
+		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve getCallTargetText]
 	}
 	;
 
@@ -1614,6 +1614,9 @@ callTarget
 	::= functionCall
 	|	qualifiedReference
     | 	expr
+    {
+    	methods=[getPossibleCallTargetTypes]
+	}
 	;
 
 qualifiedReference

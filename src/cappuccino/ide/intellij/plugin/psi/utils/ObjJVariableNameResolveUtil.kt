@@ -5,6 +5,8 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import java.util.logging.Level
+import java.util.logging.Logger
 
 object ObjJVariableNameResolveUtil {
 
@@ -50,9 +52,9 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement
         }
         if (variableNameElement.indexInQualifiedReference > 0) {
-            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement)
+            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { `var` -> isPrecedingVar(variableNameElement, `var`) } ?: variableNameElement
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) } ?: variableNameElement
 
     }
 

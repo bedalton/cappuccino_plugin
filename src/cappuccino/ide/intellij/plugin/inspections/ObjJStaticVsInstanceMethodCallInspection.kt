@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.getPossibleCallTargetTypes
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -38,7 +37,7 @@ class ObjJStaticVsInstanceMethodCallInspection : LocalInspectionTool() {
                 return;
             }*/
             val callTarget = methodCall.callTarget.text
-            val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) methodCall.callTarget.getPossibleCallTargetTypes() else null
+            val possibleCallTargetClassTypes = if (ObjJPluginSettings.validateCallTarget()) methodCall.callTarget.possibleCallTargetTypes else null
             if (callTarget == "self" || callTarget == "super" ||
                     possibleCallTargetClassTypes != null && possibleCallTargetClassTypes.contains(ObjJClassType.UNDETERMINED)) {
                 return

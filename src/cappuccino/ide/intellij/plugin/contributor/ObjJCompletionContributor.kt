@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.isNewVarDec
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.logging.Logger
@@ -24,7 +24,7 @@ class ObjJCompletionContributor : CompletionContributor() {
      * Allow autoPopup to appear after custom symbol
      */
     override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean {
-        return position.text.replace(CARET_INDICATOR, "").length > 1 && !isNewVarDec(position)
+        return position.text.replace(CARET_INDICATOR, "").length > 1 && !ObjJVariablePsiUtil.isNewVariableDeclaration(position)
     }
 
     override fun handleAutoCompletionPossibility(context: AutoCompletionContext): AutoCompletionDecision? {
@@ -36,10 +36,10 @@ class ObjJCompletionContributor : CompletionContributor() {
                 EditorUtil.offsetCaret(editor, 1)
             }
             if (ObjJVariableInsertHandler.instance.shouldAppendFunctionParamComma(element)) {
-                //EditorUtil.insertText(editor, ", ", true);
+                //EditorUtil.insertText(editor, ", ", true)
             }
             if (ObjJVariableInsertHandler.instance.shouldAppendClosingBracket(element)) {
-                //EditorUtil.insertText(editor, "]", false);
+                //EditorUtil.insertText(editor, "]", false)
             }
         }
         return null
@@ -47,14 +47,15 @@ class ObjJCompletionContributor : CompletionContributor() {
 
     companion object {
 
+        @Suppress("unused")
         private val LOGGER = Logger.getLogger(ObjJCompletionContributor::class.java.name)
-        val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
-        val TARGETTED_METHOD_SUGGESTION_PRIORITY = 50.0
-        val TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY = 10.0
-        val FUNCTIONS_IN_FILE_PRIORITY = 5.0
-        val GENERIC_METHOD_SUGGESTION_PRIORITY = -10.0
-        val GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY = -50.0
-        val FUNCTIONS_NOT_IN_FILE_PRIORITY = -70.0
+        const val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
+        const val TARGETTED_METHOD_SUGGESTION_PRIORITY = 50.0
+        const val TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY = 10.0
+        const val FUNCTIONS_IN_FILE_PRIORITY = 5.0
+        const val GENERIC_METHOD_SUGGESTION_PRIORITY = -10.0
+        const val GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY = -50.0
+        const val FUNCTIONS_NOT_IN_FILE_PRIORITY = -70.0
     }
 
 }

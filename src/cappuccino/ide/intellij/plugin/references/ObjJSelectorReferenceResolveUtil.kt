@@ -308,7 +308,7 @@ object ObjJSelectorReferenceResolveUtil {
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
         //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
 
-        classConstraints = methodCall?.callTarget.getPossibleCallTargetTypes() ?: mutableListOf()
+        classConstraints = methodCall?.callTarget?.possibleCallTargetTypes ?: mutableListOf()
         /*if (!classConstraints.isEmpty()) {
             LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
         } else {

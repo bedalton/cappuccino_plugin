@@ -45,7 +45,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (DumbService.isDumb(myElement.project)) {
             return null
         }
-        classConstraints = methodCall.callTarget.getPossibleCallTargetTypes()
+        classConstraints = methodCall.callTarget.possibleCallTargetTypes
         return classConstraints
     }
 
