@@ -30,6 +30,9 @@ class ObjJVariableReference(
 
     private val globalVariableNameElement: PsiElement?
         get() {
+            if (myElement.indexInQualifiedReference > 0) {
+                return null
+            }
             if (DumbService.isDumb(myElement.project)) {
                 return null
             }
@@ -144,10 +147,8 @@ class ObjJVariableReference(
             //Exception was thrown on failed attempts at adding code to file pragmatically
             return null
         }
-        var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
-        if (variableName == null) {
-            variableName = globalVariableNameElement
-        }
+        var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement) ?: globalVariableNameElement
+
         if (nullIfSelfReferencing) {
             return variableName
         }

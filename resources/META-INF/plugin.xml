@@ -202,8 +202,6 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
-    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJParentClassChildrenIndex"/>
-    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJParentClassesByChildIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>

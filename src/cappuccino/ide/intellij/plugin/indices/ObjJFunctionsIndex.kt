@@ -23,7 +23,7 @@ class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFun
     }
 
     override fun getVersion(): Int {
-        return ObjJIndexService.INDEX_VERSION + VERSION
+        return super.getVersion() + VERSION
     }
 
     companion object {
