@@ -119,7 +119,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun setName(instanceVariableDeclaration: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
-        return instanceVariableDeclaration.setName(newName)
+        return ObjJVariablePsiUtil.setName(instanceVariableDeclaration,newName)
     }
 
     @JvmStatic
@@ -212,6 +212,11 @@ object ObjJPsiImplUtil {
 
     }
 
+    @JvmStatic
+    fun toString(variableName:ObjJVariableName) : String {
+        return ObjJVariablePsiUtil.toString(variableName)
+    }
+
     // ============================== //
     // ====== MethodHeaders ========= //
     // ============================== //
@@ -287,12 +292,27 @@ object ObjJPsiImplUtil {
         return ObjJMethodPsiUtils.getReturnType(accessorProperty)
     }
 
+    @JvmStatic
+    fun getVariableType(globalVariableDeclaration: ObjJGlobalVariableDeclaration) : String? {
+        return ObjJVariablePsiUtil.getVariableType(globalVariableDeclaration)
+    }
+
     // ============================== //
     // ======== Method Call ========= //
     // ============================== //
     @JvmStatic
     fun getCallTargetText(methodCall: ObjJMethodCall): String =
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
+
+    @JvmStatic
+    fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
+        return ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
+    }
+
+    @JvmStatic
+    fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall) : List<String> {
+        return ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
+    }
 
     // ============================== //
     // ========= Selectors ========== //
@@ -320,7 +340,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorString(property: ObjJAccessorProperty): String =
-            cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(property)
+            ObjJAccessorPropertyPsiUtil.getSelectorString(property)
 
     @JvmStatic
     fun getSelectorString(methodCall: ObjJMethodCall): String =
@@ -344,7 +364,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorStrings(accessorProperty: ObjJAccessorProperty): List<String> =
-            cappuccino.ide.intellij.plugin.psi.utils.getSelectorStrings(accessorProperty)
+            ObjJAccessorPropertyPsiUtil.getSelectorStrings(accessorProperty)
 
 
     @JvmStatic
@@ -357,7 +377,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorList(accessorProperty: ObjJAccessorProperty): List<ObjJSelector> =
-            cappuccino.ide.intellij.plugin.psi.utils.getSelectorList(accessorProperty)
+            ObjJAccessorPropertyPsiUtil.getSelectorList(accessorProperty)
 
     @JvmStatic
     fun getSelectorIndex(selector: ObjJSelector): Int =
@@ -424,7 +444,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVarType(property: ObjJAccessorProperty): String? = cappuccino.ide.intellij.plugin.psi.utils.getVarType(property)
+    fun getVarType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVarType(property)
 
     @JvmStatic
     fun hasMethod(classElement: ObjJClassDeclarationElement<*>, selector: String): Boolean {
@@ -441,23 +461,23 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getGetter(property: ObjJAccessorProperty): String? =
-            cappuccino.ide.intellij.plugin.psi.utils.getGetter(property)
+            ObjJAccessorPropertyPsiUtil.getGetter(property)
 
     @JvmStatic
     fun getGetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? =
-            cappuccino.ide.intellij.plugin.psi.utils.getGetter(variableDeclaration)
+            ObjJAccessorPropertyPsiUtil.getGetter(variableDeclaration)
 
     @JvmStatic
     fun isGetter(property: ObjJAccessorProperty): Boolean =
-            cappuccino.ide.intellij.plugin.psi.utils.isGetter(property)
+            ObjJAccessorPropertyPsiUtil.isGetter(property)
 
     @JvmStatic
     fun getSetter(property: ObjJAccessorProperty): String? =
-            cappuccino.ide.intellij.plugin.psi.utils.getSetter(property)
+            ObjJAccessorPropertyPsiUtil.getSetter(property)
 
     @JvmStatic
     fun getSetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? =
-            cappuccino.ide.intellij.plugin.psi.utils.getSetter(variableDeclaration)
+            ObjJAccessorPropertyPsiUtil.getSetter(variableDeclaration)
 
 
     // ============================== //
@@ -571,7 +591,7 @@ object ObjJPsiImplUtil {
 
 
     // ============================== //
-    // ========= Var Types ========== //
+    // ========= Variables ========== //
     // ============================== //
 
     @JvmStatic
@@ -583,6 +603,28 @@ object ObjJPsiImplUtil {
     fun getIdType(varTypeId: ObjJVarTypeId, follow: Boolean): String {
         return ObjJMethodPsiUtils.getIdReturnType(varTypeId, follow)
     }
+
+    @JvmStatic
+    fun getVarType(variable:ObjJGlobalVariableDeclaration) : String? {
+        return ObjJClassType.UNDETERMINED
+    }
+
+    @JvmStatic
+    fun getIndexInQualifiedReference(variableName: ObjJVariableName): Int {
+        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName)
+                ?: 0
+    }
+
+    @JvmStatic
+    fun getVariableNameString(globalVariableDeclaration: ObjJGlobalVariableDeclaration) : String {
+        return globalVariableDeclaration.variableName.text
+    }
+
+    @JvmStatic
+    fun getLastVar(qualifiedReference: ObjJQualifiedReference) : ObjJVariableName? {
+        return ObjJVariablePsiUtil.getLastVariableName(qualifiedReference)
+    }
+
 
     // ============================== //
     // =========== Blocks =========== //
@@ -730,17 +772,6 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
-        return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
-    }
-
-    @JvmStatic
-    fun getIndexInQualifiedReference(variableName: ObjJVariableName): Int {
-        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName)
-                ?: 0
-    }
-
-    @JvmStatic
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
     }
@@ -783,6 +814,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? =
             ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition)
+
+    @JvmStatic
+    fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
+        return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
+    }
 
 
     @JvmStatic
