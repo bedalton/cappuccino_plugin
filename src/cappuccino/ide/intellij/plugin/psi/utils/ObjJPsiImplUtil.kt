@@ -827,7 +827,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement) = null
+    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement): PsiElement? = null
 
     // ============================== //
     // ===== QualifiedReference ===== //
