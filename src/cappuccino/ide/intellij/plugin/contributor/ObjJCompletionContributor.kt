@@ -67,16 +67,15 @@ class ObjJCompletionContributor : CompletionContributor() {
         fun shouldComplete(element: PsiElement?) : Boolean {
             if (element != null && element.text.replace(CARET_INDICATOR, "").trim().isEmpty()) {
                 val prevSibling:PsiElement? = when {
-                    element.isType(ObjJTypes.ObjJ_SEMI_COLON) -> return false
-                    element.prevSibling?.isType(TokenType.WHITE_SPACE) == true -> element.prevSibling.prevSibling
+                    element.isType(TokenType.WHITE_SPACE) -> return false
                     element.prevSibling != null -> element.prevSibling
                     else -> return true
                 }
-                if (prevSibling.isType(ObjJTypes.ObjJ_SEMI_COLON) || prevSibling?.lastChild.isType(ObjJTypes.ObjJ_SEMI_COLON)) {
-                    return false
+                if (element.text.trim().isNotEmpty()) {
+                    return true
                 }
             }
-            return true
+            return false
         }
     }
 
