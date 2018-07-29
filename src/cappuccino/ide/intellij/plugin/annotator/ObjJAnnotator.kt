@@ -8,7 +8,7 @@ import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import com.intellij.openapi.util.TextRange
@@ -26,30 +26,29 @@ class ObjJAnnotator : Annotator {
         //LOGGER.log(Level.INFO, "Annotating element of type: "+element.getNode().getElementType().toString());
         try {
             //Annotate Method calls
-            if (element is ObjJMethodCall) {
-                ObjJMethodCallAnnotatorUtil.annotateMethodCall(element, annotationHolder)
-            } else if (element is ObjJSelectorLiteral) {
-                //ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(element, annotationHolder)
-            } else if (element is ObjJVariableName) {
-               // ObjJVariableAnnotatorUtil.annotateVariable(element, annotationHolder)
-            } else if (element is ObjJImplementationDeclaration) {
-                ObjJImplementationDeclarationAnnotatorUtil.annotateImplementationDeclaration(element, annotationHolder)
-            } else if (element is ObjJProtocolDeclaration) {
-                ObjJProtocolDeclarationAnnotatorUtil.annotateProtocolDeclaration(element, annotationHolder)
-            } else if (element is ObjJBlock) {
-                validateBlock(element, annotationHolder)
-            } else if (element is ObjJReturnStatement) {
-                //validateReturnStatement(element, annotationHolder)
-            } else if (element is ObjJMethodHeader) {
-                ObjJMethodDeclaratonAnnotator.annotateMethodHeaderDeclarations(element, annotationHolder)
-            } else {
-                validateMiscElement(element, annotationHolder)
+            when (element) {
+                is ObjJMethodCall -> ObjJMethodCallAnnotatorUtil.annotateMethodCall(element, annotationHolder)
+                is ObjJSelectorLiteral -> {
+                    //ObjJMethodCallAnnotatorUtil.annotateSelectorLiteral(element, annotationHolder)
+                }
+                is ObjJVariableName -> {
+                    // ObjJVariableAnnotatorUtil.annotateVariable(element, annotationHolder)
+                }
+                is ObjJImplementationDeclaration -> ObjJImplementationDeclarationAnnotatorUtil.annotateImplementationDeclaration(element, annotationHolder)
+                is ObjJProtocolDeclaration -> ObjJProtocolDeclarationAnnotatorUtil.annotateProtocolDeclaration(element, annotationHolder)
+                //is ObjJBlock -> validateBlock(element, annotationHolder)
+                is ObjJReturnStatement -> {
+                    //validateReturnStatement(element, annotationHolder)
+                }
+                is ObjJMethodHeader -> ObjJMethodDeclaratonAnnotator.annotateMethodHeaderDeclarations(element, annotationHolder)
+                is ObjJVariableDeclaration -> validateVariableDeclaration(element, annotationHolder)
+                else -> validateMiscElement(element, annotationHolder)
             }
             if (element is ObjJNeedsSemiColon) {
                 ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons(element, annotationHolder)
             }
             if (element is ObjJFragment) {
-                annotationHolder.createErrorAnnotation(element, "invalid directive")
+                annotationHolder.createErrorAnnotation(element, "Invalid directive")
             }
         } catch (ignored: IndexNotReadyRuntimeException) {
         }
@@ -96,135 +95,42 @@ class ObjJAnnotator : Annotator {
         annotationHolder.createErrorAnnotation(element, "Break used outside of loop or switch statement")
     }
 
+    private fun validateVariableDeclaration(variableDeclaration: ObjJVariableDeclaration, annotationHolder: AnnotationHolder) {
+        val inBodyVariableAssignment:Boolean = variableDeclaration.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null
 
-    private fun validateBlock(block: ObjJBlock, annotationHolder: AnnotationHolder) {
-        //validateBlockReturnStatements(block, annotationHolder)
-    }
-/*
-    private fun validateBlockReturnStatements(block: ObjJBlock, annotationHolder: AnnotationHolder) {
-        val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
-        if (returnStatementsList.isEmpty()) {
-            return
-        }
-        val isFunction:Boolean = block.getParentOfType(ObjJFunctionDeclarationElement::class.java) != null
-        val isMethod = block is ObjJMethodBlock
-        if (!isFunction && !isMethod) {
-            return
-        }
-        val returnsWithExpression = ArrayList<ObjJReturnStatement>()
-        val returnsWithoutExpression = ArrayList<ObjJReturnStatement>()
-        for (returnStatement in returnStatementsList) {
-            if (isFunction) {
-                if(returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
-                    continue
+        for (qualifiedReference in variableDeclaration.qualifiedReferenceList) {
+            // Check that method call is not being assigned to directly
+            // Values can only be assigned to (.) or [array] expressions
+            if (qualifiedReference.methodCall != null && qualifiedReference.qualifiedNameParts.isEmpty()) {
+                annotationHolder.createErrorAnnotation(qualifiedReference.getNextSiblingOfType(ObjJTypes.ObjJ_EQUALS)?:qualifiedReference, "Cannot assign value to method call")
+                return
+            }
+            // Check that there is not a qualified reference in a 'var' declaration
+            if (inBodyVariableAssignment && qualifiedReference.qualifiedNameParts.size > 1) {
+                val textRange:TextRange
+                val firstDot = qualifiedReference.firstChild.getNextSiblingOfType(ObjJTypes.ObjJ_DOT)
+                if (firstDot != null) {
+                    textRange = firstDot.textRange
+                } else {
+                    val startOffsetTemp = qualifiedReference.firstChild.getNextSiblingOfType(ObjJTypes.ObjJ_DOT)?.textRange?.startOffset
+                            ?: qualifiedReference.qualifiedNameParts.getOrNull(1)?.textRange?.startOffset
+                    val startOffset: Int
+                    startOffset = if (startOffsetTemp != null) {
+                        startOffsetTemp - 1
+                    } else {
+                        qualifiedReference.textRange.startOffset
+                    }
+                    textRange = TextRange.create(startOffset, variableDeclaration.textRange.endOffset)
                 }
-            } else if (isMethod) {
-                if (returnStatement.getParentOfType(ObjJMethodBlock::class.java) == null) {
-                    continue
-                }
+                annotationHolder.createErrorAnnotation(textRange, "Cannot use qualified reference with 'var' assignment keyword")
+                return
             }
-            if (returnStatement.expr?.leftExpr?.methodCall != null && returnStatement.expr?.rightExprList?.isEmpty() == true) {
-                val methodCall:ObjJMethodCall? = returnStatement.expr?.leftExpr?.methodCall
-                if (returnMethodCallReturnsValue(methodCall)) {
-                    returnsWithExpression.add(returnStatement)
-                }
-                if (returnMethodCallReturnsVoid(methodCall)) {
-                    returnsWithoutExpression.add(returnStatement)
-                }
-            } else if ( returnStatement.expr != null) {
-                when (returnStatement.expr!!.text.toLowerCase()) {
-                        "nil","null","undefined" -> {
-                            returnsWithExpression.add(returnStatement)
-                            returnsWithoutExpression.add(returnStatement)
-                        }
-                    else -> returnsWithExpression.add(returnStatement)
-                }
-            } else {
-                returnsWithoutExpression.add(returnStatement)
-            }
-        }
-        val methodDeclaration = block.getParentOfType(ObjJMethodDeclaration::class.java)
-        if (isFunction) {
-            annotateBlockReturnStatements(returnsWithExpression, returnsWithoutExpression, annotationHolder)
-        } else if (methodDeclaration != null) {
-            annotateBlockReturnStatements(methodDeclaration, returnsWithExpression, returnsWithoutExpression, annotationHolder)
-        }
-    }
-
-    private fun annotateBlockReturnStatements(methodDeclaration: ObjJMethodDeclaration,
-                                              returnsWithExpression: List<ObjJReturnStatement>,
-                                              returnsWithoutExpression: List<ObjJReturnStatement>,
-                                              annotationHolder: AnnotationHolder) {
-        val returnType = methodDeclaration.methodHeader.returnType
-        val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
-        val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
-        val statementsNotToMark = if (!shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
-        val errorAnnotation = if (shouldHaveReturnExpression) "Return statement is missing return element. Element should be of type: <$returnType>" else "Method with return type void should not return a value."
-        for (returnStatement in statementsToMark) {
-            if (returnStatement.expr?.leftExpr?.functionCall != null) {
-                continue
-            }
-            if (statementsNotToMark.contains(returnStatement)) {
-                continue;
-            }
-            annotationHolder.createWarningAnnotation(returnStatement.expr ?: returnStatement.`return`, errorAnnotation)
-        }
-    }
-
-    private fun annotateBlockReturnStatements(returnsWithExpression: List<ObjJReturnStatement>,
-                                              returnsWithoutExpression: List<ObjJReturnStatement>,
-                                              annotationHolder: AnnotationHolder) {
-        if (returnsWithExpression.isNotEmpty()) {
-            for (returnStatement in returnsWithoutExpression) {
-                //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                annotationHolder.createWarningAnnotation(returnStatement.expr ?: returnStatement.`return`, "Not all return statements return a value")
+            // Check that the last part of a qualified name is not a function call
+            // as these cannot be assigned to
+            val lastChild = qualifiedReference.qualifiedNameParts.last() ?: return
+            if (lastChild is ObjJFunctionCall) {
+                annotationHolder.createErrorAnnotation(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset), "Cannot assign value to function call")
             }
         }
     }
-
-    private fun validateReturnStatement(element: ObjJReturnStatement, annotationHolder: AnnotationHolder) {
-        if (element.getParentOfType(ObjJBlock::class.java) == null) {
-            annotationHolder.createWarningAnnotation(element, "return used outside of block")
-        } else if (element.expr != null &&
-                element.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null &&
-                element.getParentOfType(ObjJMethodDeclaration::class.java) == null) {
-            annotationHolder.createWarningAnnotation(element, "Return value not captured")
-        }
-    }
-
-    private fun returnMethodCallReturnsValue(methodCall:ObjJMethodCall?):Boolean {
-        if (methodCall == null) {
-            return false
-        }
-        for (call in getAllMethodsForCall(methodCall)) {
-            if (call.returnType != ObjJClassType.VOID_CLASS_NAME) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun returnMethodCallReturnsVoid(methodCall:ObjJMethodCall?):Boolean {
-        if (methodCall == null) {
-            return false
-        }
-        for (call in getAllMethodsForCall(methodCall)) {
-            if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun getAllMethodsForCall(methodCall: ObjJMethodCall?) : List<ObjJMethodHeaderDeclaration<*>> {
-        if (methodCall == null) {
-            return Collections.emptyList()
-        }
-        val fullSelector = methodCall.selectorString
-        val project = methodCall.project
-        val out:ArrayList<ObjJMethodHeaderDeclaration<*>> = ArrayList()
-        out.addAll(ObjJUnifiedMethodIndex.instance.get(fullSelector, project))
-        return out
-    }
-*/
 }
