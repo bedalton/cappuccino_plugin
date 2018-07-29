@@ -43,6 +43,7 @@ object ObjJSelectorReferenceResolveUtil {
         return prune(classConstraints, methodHeaders, element.text, selectorIndex)
     }
 
+    @Suppress("unused")
     internal fun getMethodCallPartialReferences(
             element: ObjJSelector?, includeSelf: Boolean): SelectorResolveResult<ObjJSelector> {
         if (element == null) {
@@ -80,14 +81,14 @@ object ObjJSelectorReferenceResolveUtil {
         var selectorIndex = selectorIndexIn
         //Have to loop over elements as some selectors in list may have been virtually created
         var parent: ObjJMethodCall? = null
-        if (selectors.size < 1) {
+        if (selectors.isEmpty()) {
             return null
         }
         if (selectorIndex < 0 || selectorIndex >= selectors.size) {
             selectorIndex = selectors.size - 1
         }
         var baseSelector: ObjJSelector? = selectors[selectorIndex]
-        var project: Project? = if (baseSelector != null) baseSelector.project else null
+        var project: Project? = baseSelector?.project
         for (selector in selectors) {
             if (parent == null) {
                 parent = selector.getParentOfType( ObjJMethodCall::class.java)
@@ -99,7 +100,7 @@ object ObjJSelectorReferenceResolveUtil {
         for (i in selectors.size - 1 downTo 1) {
             val tempSelector = selectors[i]
             if (project == null) {
-                project = if (parent != null) parent.project else tempSelector?.project
+                project = parent?.project ?: tempSelector.project
             }
             if (baseSelector == null || tempSelector.text.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
                 baseSelector = tempSelector
@@ -221,11 +222,11 @@ object ObjJSelectorReferenceResolveUtil {
         if (DumbService.isDumb(selectorElement.project)) {
             return EMPTY_SELECTORS_RESULT
         }
-        val selectorLiterals = ObjJSelectorInferredMethodIndex.instance.get(fullSelector, selectorElement.project)
+        val selectorLiterals = ObjJSelectorInferredMethodIndex.instance[fullSelector, selectorElement.project]
         val subSelector = selectorElement.getSelectorString(false)
         for (selectorLiteral in selectorLiterals) {
             ProgressIndicatorProvider.checkCanceled()
-            val selector = if (selectorIndex >= 0) selectorLiteral.selectorList.get(selectorIndex) else ObjJPsiImplUtil.findSelectorMatching(selectorLiteral, subSelector)
+            val selector = if (selectorIndex >= 0) selectorLiteral.selectorList[selectorIndex] else ObjJPsiImplUtil.findSelectorMatching(selectorLiteral, subSelector)
             if (selector != null) {
                 if (containingClasses == null || containingClasses.contains(selector.containingClassName)) {
                     result.add(selector)
@@ -238,8 +239,8 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
 
-    fun getInstanceVariableSimpleAccessorMethods(selectorElement: ObjJSelector, classConstraints: List<String>): SelectorResolveResult<PsiElement> {
-        var classConstraints = classConstraints
+    fun getInstanceVariableSimpleAccessorMethods(selectorElement: ObjJSelector, classConstraintsIn: List<String>): SelectorResolveResult<PsiElement> {
+        var classConstraints = classConstraintsIn
         if (classConstraints.isEmpty()) {
             classConstraints = getClassConstraints(selectorElement)
         }
@@ -250,11 +251,11 @@ object ObjJSelectorReferenceResolveUtil {
         val fullSelector = parent?.selectorString ?: ""
         val result = ArrayList<PsiElement>()
         val otherResult = ArrayList<PsiElement>()
-        for (variableDeclaration in ObjJClassInstanceVariableAccessorMethodIndex.instance.get(fullSelector, selectorElement.project)) {
+        for (variableDeclaration in ObjJClassInstanceVariableAccessorMethodIndex.instance[fullSelector, selectorElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             val atAccessors = variableDeclaration.atAccessors
             if (sharesContainingClass(classConstraints, variableDeclaration)) {
-                result.add(if (atAccessors != null) atAccessors else variableDeclaration)
+                result.add(atAccessors ?: variableDeclaration)
             } else if (atAccessors != null){
                 otherResult.add(atAccessors)
             }
@@ -262,8 +263,8 @@ object ObjJSelectorReferenceResolveUtil {
         return packageResolveResult(result, otherResult, classConstraints)
     }
 
-    fun getVariableReferences(selectorElement: ObjJSelector, classConstraints: List<String>): SelectorResolveResult<PsiElement> {
-        var classConstraints = classConstraints
+    fun getVariableReferences(selectorElement: ObjJSelector, classConstraintsIn: List<String>): SelectorResolveResult<PsiElement> {
+        var classConstraints = classConstraintsIn
         val variableName = selectorElement.getSelectorString(false)
         if (classConstraints.isEmpty()) {
             classConstraints = getClassConstraints(selectorElement)
@@ -274,9 +275,9 @@ object ObjJSelectorReferenceResolveUtil {
         if (DumbService.isDumb(selectorElement.project)) {
             return EMPTY_RESULT
         }
-        for (declaration in ObjJInstanceVariablesByNameIndex.instance.get(variableName, selectorElement.project)) {
+        for (declaration in ObjJInstanceVariablesByNameIndex.instance[variableName, selectorElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
-            val variableNameInLoop = declaration.variableName ?: continue;
+            val variableNameInLoop = declaration.variableName ?: continue
             if (classConstraints.contains(declaration.containingClassName)) {
                 result.add(variableNameInLoop)
             } else {
@@ -300,7 +301,7 @@ object ObjJSelectorReferenceResolveUtil {
             //   LOGGER.log(Level.INFO, "Selector is not in method call.");
             return emptyList()
         }
-        var classConstraints: List<String>
+        val classConstraints: List<String>
         val methodCall = element as ObjJMethodCall?
         //ObjJCallTarget callTarget = methodCall.getCallTarget();
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
@@ -316,7 +317,7 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
     class SelectorResolveResult<T> internal constructor(val naturalResult: List<T>, val otherResult: List<T>, val possibleContainingClassNames: List<String>) {
-        val isNatural: Boolean
+        val isNatural: Boolean = !naturalResult.isEmpty()
 
         val result: List<T>
             get() = if (isNatural) naturalResult else otherResult
@@ -325,7 +326,6 @@ object ObjJSelectorReferenceResolveUtil {
             get() = result.isEmpty()
 
         init {
-            this.isNatural = !naturalResult.isEmpty()
             //LOGGER.log(Level.INFO, "Selector resolve result has <"+naturalResult.size()+"> natural results, and <"+otherResult.size()+"> other results");
         }
     }

@@ -189,7 +189,7 @@ object ObjJMethodPsiUtils {
         if (DumbService.getInstance(hasSelectorElement.project).isDumb) {
             return null
         }
-        for (selectorLiteral in ObjJSelectorInferredMethodIndex.instance.get(containingClassName, hasSelectorElement.project)) {
+        for (selectorLiteral in ObjJSelectorInferredMethodIndex.instance[containingClassName, hasSelectorElement.project]) {
             if (selectorLiteral.containingClassName == containingClassName) {
                 return selectorLiteral
             }
