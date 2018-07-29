@@ -53,9 +53,11 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                         problemsHolder.registerProblem(thisHeaderReturnType, "Overridden parent is less specific", ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.returnType))
                     } else {
                         problemsHolder.registerProblem(thisHeader.methodHeaderReturnTypeElement!!, "Overridden method should have return type <" + thatHeader.returnType + ">", ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.returnType))
+                        matches = false
                     }
+                } else {
+                    matches = false
                 }
-                matches = false
             }
             val thoseSelectors = thatHeader.methodDeclarationSelectorList
 
