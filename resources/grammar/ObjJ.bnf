@@ -355,7 +355,7 @@ statementOrBlock
 	| 	singleBodyStatement
 	{
 		extends=blockElement
-		methods=[block="blockElement"]
+		methods=[block="blockElement" getOpenBrace]
 	}
 	;
 
@@ -1415,7 +1415,7 @@ functionCall
 		pin=3
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedNamePart"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionCallElement"
 			//"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
@@ -1706,7 +1706,7 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedNamePart"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
 		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve getContainingSuperClass getIndexInQualifiedReference]
