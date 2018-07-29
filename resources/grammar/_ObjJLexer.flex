@@ -102,7 +102,7 @@ WHITE_SPACE=\p{Blank}+
 <PRAGMA> {
 	'mark'								{ if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
 	[^\r\n\u2028\u2029]+				{ if (pragmaString != null) pragmaString.append(yytext());}
-	{LINE_TERMINATOR}					{ yybegin(YYINITIAL); return ObjJ_PRAGMA_MARKER; }
+	{LINE_TERMINATOR}					{ yybegin(YYINITIAL); inPreProc = false; return ObjJ_PRAGMA_MARKER; }
 }
 
 <PREPROCESSOR> {
