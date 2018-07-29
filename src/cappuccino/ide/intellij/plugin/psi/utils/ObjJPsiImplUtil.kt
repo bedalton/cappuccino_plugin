@@ -79,6 +79,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getQualifiedNameParts(qualifiedReference:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
+        return ObjJVariableNameUtil.getQualifiedNameParts(qualifiedReference)
+    }
+
+    @JvmStatic
     fun getRangeInElement(selector: ObjJSelector): TextRange {
         return ObjJMethodPsiUtils.getRangeInElement(selector)
     }
@@ -202,13 +207,9 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getStringValue(stringLiteral: ObjJStringLiteral): String {
         val rawText = stringLiteral.text
-        val pattern = Pattern.compile("@?\"(.*)\"|@?'(.*)'")
-        val result = pattern.matcher(rawText)
-        return try {
-            if (result.groupCount() > 1 && result.group(1) != null) result.group(1) else ""
-        } catch (e: Exception) {
-            ""
-        }
+        val quotationMark:String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
+        val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
+        return if (outText.endsWith(quotationMark))outText.substring(0, outText.length - 1) else outText
 
     }
 
@@ -610,9 +611,13 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getIndexInQualifiedReference(variableName: ObjJVariableName): Int {
-        return variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.indexOf(variableName)
-                ?: 0
+    fun getIndexInQualifiedReference(namedElement: PsiElement?): Int {
+        return ObjJVariableNameUtil.getIndexInQualifiedNameParent(namedElement)
+    }
+
+    @JvmStatic
+    fun getIndexInQualifiedReference(namedElement: ObjJQualifiedReferenceComponent): Int {
+        return ObjJVariableNameUtil.getIndexInQualifiedNameParent(namedElement)
     }
 
     @JvmStatic
@@ -830,15 +835,15 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPartsAsString(qualifiedReference: ObjJQualifiedReference): String {
-        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType(ObjJQualifiedNamePart::class.java))
+        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
     }
 
     @JvmStatic
     fun getPartsAsStringArray(qualifiedReference: ObjJQualifiedReference): List<String> {
-        return getPartsAsStringArray(qualifiedReference.getChildrenOfType(ObjJQualifiedNamePart::class.java))
+        return getPartsAsStringArray(qualifiedReference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
     }
 
-    private fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedNamePart>?): List<String> {
+    private fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedReferenceComponent>?): List<String> {
         if (qualifiedNameParts == null) {
             return emptyList()
         }
@@ -849,7 +854,7 @@ object ObjJPsiImplUtil {
         return out
     }
 
-    private fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedNamePart>): String {
+    private fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedReferenceComponent>): String {
         return ArrayUtils.join(getPartsAsStringArray(qualifiedNameParts), ".")
     }
 
