@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
@@ -8,11 +9,17 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
+import cappuccino.ide.intellij.plugin.utils.Filter
+import cappuccino.ide.intellij.plugin.utils.inSameFile
+import com.intellij.openapi.project.DumbServiceImpl
+import com.intellij.psi.util.PsiTreeUtil
 
 import java.util.ArrayList
-import java.util.Collections
+import java.util.logging.Level
 
 object ObjJFunctionDeclarationPsiUtil {
+
+    val LOGGER:java.util.logging.Logger = java.util.logging.Logger.getLogger(ObjJFunctionDeclarationPsiUtil::class.java.canonicalName)
 
     fun getName(functionDeclaration: ObjJFunctionDeclaration): String {
         return if (functionDeclaration.functionName != null) functionDeclaration.functionName!!.text else ""
@@ -32,7 +39,6 @@ object ObjJFunctionDeclarationPsiUtil {
             name: String): ObjJFunctionName {
         val oldFunctionName = functionDeclaration.functionName
         val newFunctionName = ObjJElementFactory.createFunctionName(functionDeclaration.project, name)
-        Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
         if (oldFunctionName == null) {
             if (functionDeclaration.openParen != null) {
                 functionDeclaration.addBefore(functionDeclaration.openParen!!, newFunctionName)
@@ -40,7 +46,7 @@ object ObjJFunctionDeclarationPsiUtil {
                 functionDeclaration.addBefore(functionDeclaration.firstChild, newFunctionName)
             }
         } else {
-            functionDeclaration.node.replaceChild(oldFunctionName.node, newFunctionName!!.node)
+            functionDeclaration.node.replaceChild(oldFunctionName.node, newFunctionName.node)
         }
         return newFunctionName
     }
@@ -61,31 +67,30 @@ object ObjJFunctionDeclarationPsiUtil {
         val oldFunctionName = functionLiteral.functionNameNode
         //Create new name node
         val newFunctionName = ObjJElementFactory.createVariableName(functionLiteral.project, name)
-        Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
 
         //Name node is not part of function literal, so name node may not be present.
         //If name node is not present, must exit early.
         Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(oldFunctionName != null)
         //Replace node
-        oldFunctionName!!.parent.node.replaceChild(oldFunctionName.node, newFunctionName!!.node)
+        oldFunctionName!!.parent.node.replaceChild(oldFunctionName.node, newFunctionName.node)
         return functionLiteral
     }
 
 
     fun setName(defineFunction: ObjJPreprocessorDefineFunction, name: String): PsiElement {
-        if (defineFunction.functionName != null) {
-            val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
-            if (functionName != null) {
+        when {
+            defineFunction.functionName != null -> {
+                val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
                 defineFunction.node.replaceChild(defineFunction.functionName!!.node, functionName.node)
             }
-        } else if (defineFunction.openParen != null) {
-            val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
-            if (functionName != null) {
+            defineFunction.openParen != null -> {
+                val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
                 defineFunction.addBefore(defineFunction.openParen!!, functionName)
             }
-        } else if (defineFunction.variableName != null) {
-            val newVariableName = ObjJElementFactory.createVariableName(defineFunction.project, name)
-            defineFunction.node.replaceChild(defineFunction.variableName!!.node, newVariableName.node)
+            defineFunction.variableName != null -> {
+                val newVariableName = ObjJElementFactory.createVariableName(defineFunction.project, name)
+                defineFunction.node.replaceChild(defineFunction.variableName!!.node, newVariableName.node)
+            }
         }
         return defineFunction
     }
@@ -97,6 +102,10 @@ object ObjJFunctionDeclarationPsiUtil {
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         if (functionLiteral.stub != null) {
             return functionLiteral.stub.fqName
+        }
+        val globalVariableDeclaration = functionLiteral.getParentOfType(ObjJGlobalVariableDeclaration::class.java)
+        if (globalVariableDeclaration != null) {
+            return globalVariableDeclaration.variableNameString
         }
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
         return if (variableDeclaration == null || variableDeclaration.qualifiedReferenceList.isEmpty()) {
@@ -137,7 +146,7 @@ object ObjJFunctionDeclarationPsiUtil {
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
         val out = ArrayList<ObjJVariableName>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
-            out.add((parameterArg as ObjJFormalParameterArg).variableName)
+            out.add(parameterArg.variableName)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
             out.add(functionDeclaration.lastFormalParameterArg!!.variableName)
@@ -154,7 +163,7 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         val out = ArrayList<String>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
-            out.add((parameterArg as ObjJFormalParameterArg).variableName.text)
+            out.add(parameterArg.variableName.text)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
             out.add(functionDeclaration.lastFormalParameterArg!!.variableName.text)
@@ -215,7 +224,90 @@ object ObjJFunctionDeclarationPsiUtil {
             functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
                 ?: return null
-        return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].getLastVar() else null
+        return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].lastVar else null
+    }
+
+
+    fun resolveElementToFunctionDeclarationReference(elementToResolve:PsiElement) : PsiElement? {
+        val text = elementToResolve.text
+
+        val preprocessorFunctionNameElement = getPreprocessorFunctionDeclarationNameElement(elementToResolve)
+        if (preprocessorFunctionNameElement != null) {
+            return preprocessorFunctionNameElement
+        }
+        val project = elementToResolve.project
+        if (DumbServiceImpl.isDumb(project)) {
+            return null
+        }
+        val functionDeclarationElements: MutableList<ObjJFunctionDeclarationElement<*>> = ObjJFunctionsIndex.instance[text, project]
+        if (functionDeclarationElements.isEmpty()) {
+            return null
+        }
+        //Loop through all function declaration element in index
+        for (declarationElement in functionDeclarationElements) {
+            return getFunctionNameNodeIfMatching(declarationElement,elementToResolve) ?: continue
+        }
+
+        val globalFunctionDeclarationNameElement = getGlobalFunctionDeclarationNameElement(elementToResolve)
+        if (globalFunctionDeclarationNameElement != null) {
+            return globalFunctionDeclarationNameElement
+        }
+        return null
+    }
+
+    private fun getPreprocessorFunctionDeclarationNameElement(elementToResolve: PsiElement) : PsiElement? {
+        val text:String = elementToResolve.text
+        for (function in PsiTreeUtil.getChildrenOfTypeAsList(elementToResolve.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
+            val functionName = function.functionName?.text ?: continue
+            if (functionName == text) {
+                return function.functionName
+            }
+        }
+        return null
+    }
+
+    private fun getFunctionNameNodeIfMatching(declarationElement:ObjJFunctionDeclarationElement<*>, elementToResolve: PsiElement):PsiElement? {
+        val functionNameElement:ObjJNamedElement? = declarationElement.functionNameNode ?: return null
+        //Source this variable name to first declaration.
+        //Root needed to determine if function is local or file scoped
+        val root: PsiElement = when (functionNameElement) {
+            is ObjJVariableName -> functionNameElement.reference.resolve()
+            is ObjJFunctionName -> functionNameElement.reference.resolve()
+            else -> functionNameElement
+        } ?: return null
+
+        //Check if function name is file scoped
+        val isBodyVariableAssignment:Boolean = root.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null ?: false
+        //Check if function is in same file
+        val inSameFile:Boolean = root inSameFile elementToResolve
+        //Check that if function is a body variable assignment
+        //That it is in the same file
+        val logMessage:String = when {
+            isBodyVariableAssignment && !inSameFile -> "Resolved function name: ${root.text} to file scoped function in file: ${root.containingFile.name}"
+            isBodyVariableAssignment -> "Resolved function name: ${root.text} to a body variable assignment in same file: ${root.containingFile.name}"
+            else -> "Resolved function name: ${root.text} to global function in file: ${root.containingFile.name}"
+        }
+        LOGGER.log(Level.INFO,logMessage)
+        //Ensure that root element is not this element
+        val isRootElement = functionNameElement?.isEquivalentTo(elementToResolve) ?: false
+        if (isRootElement) {
+            // Returns function name instead of root,
+            // as the function name shows where
+            // the function is actually declared
+            return functionNameElement
+        }
+        return null
+    }
+
+    private fun getGlobalFunctionDeclarationNameElement(elementToResolve: PsiElement) : ObjJVariableName? {
+        val filter:Filter<ObjJGlobalVariableDeclaration> = {
+            it.expr.leftExpr?.functionLiteral != null
+        }
+        return when (elementToResolve) {
+            is ObjJVariableName -> ObjJVariableNameResolveUtil.getGlobalElement(elementToResolve, filter)
+            is ObjJFunctionName -> ObjJVariableNameResolveUtil.getGlobalElement(elementToResolve, filter)
+            else -> return null
+        }
     }
 
 }

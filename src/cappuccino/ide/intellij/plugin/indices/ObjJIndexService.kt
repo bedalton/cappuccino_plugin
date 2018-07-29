@@ -15,6 +15,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import com.intellij.psi.stubs.PsiFileStub
 
 class ObjJIndexService
@@ -211,6 +212,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     companion object {
-        const val INDEX_VERSION = 1
+        const val INDEX_VERSION = ObjJStubVersions.SOURCE_STUB_VERSION
     }
 }

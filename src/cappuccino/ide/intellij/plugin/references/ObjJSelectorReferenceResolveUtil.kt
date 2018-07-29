@@ -4,9 +4,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
@@ -94,7 +92,7 @@ object ObjJSelectorReferenceResolveUtil {
             if (parent == null) {
                 parent = selector.getParentOfType( ObjJMethodCall::class.java)
             }
-            if (parent != null && parent.containingClassName == ObjJElementFactory.PLACEHOLDER_CLASS_NAME) {
+            if (parent != null && parent.containingClassName == ObjJElementFactory.PlaceholderClassName) {
                 parent = null
             }
         }

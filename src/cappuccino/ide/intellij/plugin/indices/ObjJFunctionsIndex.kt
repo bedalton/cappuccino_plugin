@@ -23,12 +23,12 @@ class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFun
     }
 
     override fun getVersion(): Int {
-        return ObjJIndexService.INDEX_VERSION + VERSION
+        return super.getVersion() + VERSION
     }
 
     companion object {
         private val KEY = IndexKeyUtil.createIndexKey<String, ObjJFunctionDeclarationElement<*>>(ObjJFunctionsIndex::class.java)
         val instance = ObjJFunctionsIndex()
-        private val VERSION = 3
+        private const val VERSION = 1
     }
 }

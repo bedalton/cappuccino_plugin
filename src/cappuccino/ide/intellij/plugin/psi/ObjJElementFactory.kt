@@ -8,16 +8,13 @@ import cappuccino.ide.intellij.plugin.annotator.IgnoreUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object ObjJElementFactory {
     private val LOGGER = Logger.getLogger(ObjJElementFactory::class.java.name)
-    val PLACEHOLDER_CLASS_NAME = "_XXX__"
+    const val PlaceholderClassName = "_XXX__"
 
     fun createClassName(project:Project, className:String) : ObjJClassName? {
         val scriptText = "@implementation ${className} \n @end"
@@ -25,7 +22,7 @@ object ObjJElementFactory {
     }
 
     fun createSelector(project: Project, selector: String): ObjJSelector {
-        val scriptText = "@implementation $PLACEHOLDER_CLASS_NAME \n - (void) $selector{} @end"
+        val scriptText = "@implementation $PlaceholderClassName \n - (void) $selector{} @end"
         val implementationDeclaration = createFileFromText(project, scriptText).classDeclarations[0] as ObjJImplementationDeclaration
         return implementationDeclaration.methodDeclarationList[0].methodHeader.selectorList[0]
     }
@@ -77,7 +74,7 @@ object ObjJElementFactory {
     }
 
     private fun createMethodDeclaration(project: Project, methodHeader: ObjJMethodHeader): ObjJMethodDeclaration {
-        val script = "@implementation " + PLACEHOLDER_CLASS_NAME + " \n " +
+        val script = "@implementation " + PlaceholderClassName + " \n " +
                 methodHeader.text + "\n" +
                 "{" + "\n" +
                 "    " + getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement) + "\n" +

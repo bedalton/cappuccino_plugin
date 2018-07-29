@@ -27,6 +27,6 @@ class ObjJClassInstanceVariableAccessorMethodIndex : ObjJStringStubIndexBase<Obj
 
         val instance = ObjJClassInstanceVariableAccessorMethodIndex()
         private val KEY = IndexKeyUtil.createIndexKey(ObjJClassInstanceVariableAccessorMethodIndex::class.java)
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 }
