@@ -1,15 +1,11 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import com.intellij.psi.AbstractQualifiedReference
 
 import java.util.ArrayList
-import java.util.Collections
 
 object ObjJVariablePsiUtil {
     private val EMPTY_LIST = emptyList<ObjJVariableName>()
@@ -28,11 +24,14 @@ object ObjJVariablePsiUtil {
     }
 
     fun isNewVariableDeclaration(psiElement: PsiElement): Boolean {
-        val reference = psiElement.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
-        if (reference.parent !is ObjJVariableDeclaration && reference.parent !is ObjJBodyVariableAssignment) {
-            return false
+        val variableName:ObjJVariableName = psiElement as? ObjJVariableName ?: psiElement.getParentOfType(ObjJVariableName::class.java) ?: return false
+        val qualifiedReference = variableName.getParentOfType(ObjJQualifiedReference::class.java)
+        if (qualifiedReference != null) {
+            if (qualifiedReference.parent !is ObjJVariableDeclaration && qualifiedReference.parent !is ObjJBodyVariableAssignment) {
+                return false
+            }
         }
-        val bodyVariableAssignment = reference.getParentOfType(ObjJBodyVariableAssignment::class.java)
+        val bodyVariableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
         return bodyVariableAssignment != null && bodyVariableAssignment.varModifier != null
     }
 

@@ -63,6 +63,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                             "class",
                             "implementation",
                             "protocol",
+                            "global",
                             "end"
                     )
                     prefix = "@"
@@ -103,7 +104,23 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.stopHere()
                 return
             }
-        } else {
+        } else if (element.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
+            when {
+                element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
+                    val lookupElement = LookupElementBuilder
+                            .create("outlet")
+                            .withPresentableText("@outlet")
+                            .withInsertHandler { lookupContext, _ ->
+                                if (!EditorUtil.isTextAtOffset(lookupContext, " ")) {
+                                    EditorUtil.insertText(lookupContext.editor, " ", true)
+                                }
+                            }
+                    resultSet.addElement(lookupElement)
+                }
+                element.getParentOfType(ObjJFormalVariableType::class.java) != null -> getClassNameCompletions(resultSet, element)
+            }
+            return
+        }else {
             if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
                 resultSet.stopHere()
                 return
@@ -119,16 +136,16 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
             val variableName = element as? ObjJVariableName ?: parent as? ObjJVariableName
-            if (variableName != null) {
-                results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
+            results = if (variableName != null) {
+                ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
             } else {
-                results = mutableListOf()
+                mutableListOf()
             }
-            if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
+            if ((variableName?.indexInQualifiedReference ?: Integer.MAX_VALUE) < 1) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
                 results.addAll(getInClassKeywords(variableName))
-                results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
+                results.addAll(Arrays.asList("YES", "NO", "TRUE", "FALSE"))
             } else {
                 //LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
             }
@@ -201,7 +218,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
                 val lookupElementBuilder = LookupElementBuilder
                         .create(functionName)
-                        .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                        .withTailText("(" + ArrayUtils.join(function.paramNames as List<String>, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                         .withInsertHandler(ObjJFunctionNameInsertHandler.instance)
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
             }
