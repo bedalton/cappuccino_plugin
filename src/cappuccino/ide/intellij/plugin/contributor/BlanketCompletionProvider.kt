@@ -38,10 +38,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             parameters: CompletionParameters,
             context: ProcessingContext,
             resultSet: CompletionResultSet) {
-        if (!ObjJCompletionContributor.shouldComplete(parameters.originalPosition)) {
-            resultSet.stopHere()
-            return
-        }
+        
         val element = parameters.position
         val parent = element.parent
         val results: MutableList<String>
