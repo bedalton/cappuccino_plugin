@@ -1419,7 +1419,7 @@ functionCall
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionCallElement"
 			//"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods=[getQualifiedNameText]
+		methods=[getQualifiedNameText getIndexInQualifiedReference]
 
 	}
 	;
@@ -1627,6 +1627,7 @@ qualifiedReference
 			getLastVar
 			getPartsAsString
 			getPartsAsStringArray
+			getQualifiedNameParts
 		]
 	}
 	;
@@ -1719,7 +1720,7 @@ functionName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods = [getName setName getReference shouldResolve]
+		methods = [getName setName getReference shouldResolve getIndexInQualifiedReference]
 	}
 	;
 

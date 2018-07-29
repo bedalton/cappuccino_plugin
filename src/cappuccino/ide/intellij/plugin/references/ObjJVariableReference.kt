@@ -5,30 +5,18 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.IncorrectOperationException
-import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import sun.tools.tree.IfStatement
 import java.util.logging.Logger
 
-import com.intellij.psi.util.PsiTreeUtil.findCommonContext
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
-import cappuccino.ide.intellij.plugin.utils.inSameFile
-import cappuccino.ide.intellij.plugin.utils.notInSameFile
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Level
 
 class ObjJVariableReference(
         element: ObjJVariableName) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
-    private val fqName: String = getQualifiedNameAsString(element)
-    private var allInheritedClasses: List<String>? = null
-    private var referencedInScope: ReferencedInScope? = null
+    private val referencedElement:PsiElement = resolve(true) ?: myElement
+    private val referencedInScope: ReferencedInScope = referencedElement.getContainingScope()
 
     private val globalVariableNameElement: PsiElement?
         get() {
@@ -38,55 +26,10 @@ class ObjJVariableReference(
             if (DumbService.isDumb(myElement.project)) {
                 return null
             }
-            val file = myElement.containingObjJFile
-            val imports = file?.importStrings
-            val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
-            var namedElement:PsiElement? = null
-            if (!globalVariableDeclarations.isEmpty()) {
-                if (imports == null) {
-                    namedElement = globalVariableDeclarations[0].variableName
-                } else {
-                    for (declaration in globalVariableDeclarations) {
-                        if (imports.contains(ObjJFileUtil.getContainingFileName(declaration.containingFile))) {
-                            namedElement = declaration.variableName
-                        }
-                    }
-                }
-            }
-            val functionDeclarationElements = ObjJFunctionsIndex.instance[myElement.text, myElement.project]
-            if (namedElement == null && !functionDeclarationElements.isEmpty()) {
-                namedElement = functionDeclarationElements[0].functionNameNode
-                if (namedElement == null) {
-                    for (declarationElement in functionDeclarationElements) {
-                        namedElement = declarationElement.functionNameNode ?: continue
-                        val root:PsiElement? = when (namedElement) {
-                            is ObjJVariableName -> namedElement.reference.resolve()
-                            is ObjJFunctionName -> namedElement.reference.resolve()
-                            else -> namedElement
-                        }
-                        if ((root.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null ?: false) && root notInSameFile myElement) {
-                            continue
-                        }
-                        break
-                    }
-                }
-            }
-            return if (namedElement != null && !namedElement.isEquivalentTo(myElement)) namedElement else null
+            return ObjJVariableNameResolveUtil.getGlobalElement(myElement) ?: ObjJFunctionDeclarationPsiUtil.resolveElementToFunctionDeclarationReference(myElement)
         }
 
-    init {
-        //LOGGER.log(Level.INFO, "Creating reference resolver for var <"+element.getName()+"> in file: <"+ObjJFileUtil.getContainingFileName(element.getContainingFile())+">");
-    }
 
-    private fun getAllInheritedClasses(): List<String> {
-        var classes = allInheritedClasses
-        if (classes != null) {
-            return classes
-        }
-        classes = ObjJInheritanceUtil.getAllInheritedClasses(myElement.containingClassName, myElement.project)
-        allInheritedClasses = classes
-        return classes
-    }
 
     @Throws(IncorrectOperationException::class)
     override fun handleElementRename(newElementName: String): PsiElement {
@@ -100,15 +43,17 @@ class ObjJVariableReference(
         if (element.containingFile.text.startsWith("@STATIC;")) {
             return false
         }
-        if (psiElement.text != myElement.text || psiElement.isEquivalentTo(myElement)) {
+        if (psiElement.isEquivalentTo(myElement)) {
+            return false
+        }
+        if (psiElement.text != myElement.text) {
             return false
         }
         if (psiElement is ObjJClassName) {
             return true
         }
 
-        val referencedElement = resolve(false)
-        if (referencedElement?.isEquivalentTo(psiElement) == true) {
+        if (referencedElement.isEquivalentTo(psiElement)) {
             //LOGGER.log(Level.INFO, "Is reference to self in file: ${psiElement.containingFile.name} to item in file ${referencedElement.containingFile.name}")
             return true
         }
@@ -119,20 +64,16 @@ class ObjJVariableReference(
             }
         }
 
-        //Finds resolved element scope if possible
-        if (referencedInScope == null) {
-            referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
-        }
-
         //Finds this elements, and the new elements scope
         val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
-        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED;
-        //LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: ${sharedScope.toString()} for var: ${myElement.text}")
-        if (sharedScope == UNDETERMINED && referencedInScope != UNDETERMINED) {
-            return false
-        }
-        if (referencedInScope != UNDETERMINED && referencedInScope == sharedScope) {
-            return true
+        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED
+        LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: $sharedScope for var: ${myElement.text}")
+        if (referencedInScope != UNDETERMINED) {
+            if (sharedScope == UNDETERMINED) {
+                return false
+            } else if (referencedInScope == sharedScope) {
+                return true
+            }
         }
         //If
         if (sharedScope != UNDETERMINED) {
@@ -155,12 +96,15 @@ class ObjJVariableReference(
             //Exception was thrown on failed attempts at adding code to file pragmatically
             return null
         }
-        var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement) ?: globalVariableNameElement
-
+        val variableName:PsiElement? = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement) ?: globalVariableNameElement
         if (nullIfSelfReferencing) {
             return variableName
         }
         return variableName ?: myElement
+    }
+
+    override fun isSoft(): Boolean {
+        return false
     }
 
     override fun getVariants(): Array<Any> {
@@ -168,6 +112,7 @@ class ObjJVariableReference(
     }
 
     companion object {
+        @Suppress("unused")
         private val LOGGER = Logger.getLogger(ObjJVariableReference::class.java.name)
     }
 

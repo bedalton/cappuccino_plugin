@@ -3,8 +3,14 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.utils.Filter
+import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.utils.inSameFile
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -112,5 +118,41 @@ object ObjJVariableNameResolveUtil {
         // Variable is a proceeding variable if it is not in same file(globals),
         // Or if it is declared before other in same file.
         return baseVar.text == possibleFirstDeclaration.text && (!baseVar.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) && baseVar.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference
+    }
+
+    fun getGlobalElement(myElement: ObjJNamedElement) : ObjJVariableName? {
+        return getGlobalElement(myElement) {
+            true
+        }
+    }
+    fun getGlobalElement(myElement:ObjJNamedElement, filter:Filter<ObjJGlobalVariableDeclaration>) : ObjJVariableName? {
+        val globalVariableDeclarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
+        if (globalVariableDeclarations.isEmpty()) {
+            return null
+        }
+
+        val file = myElement.containingObjJFile
+        val imports = file?.importStrings
+        if (imports == null) {
+            for (globalVariableDeclaration in globalVariableDeclarations) {
+                if (filter(globalVariableDeclaration)) {
+                    return globalVariableDeclaration.variableName
+                }
+            }
+            return null
+        }
+        for (declaration in globalVariableDeclarations) {
+            if (declaration inSameFile myElement) {
+                return declaration.variableName
+            }
+            val containingFileName = ObjJFileUtil.getContainingFileName(declaration.containingFile) ?: continue
+            val testableImportName = ObjJImportStatement.DELIMITER + containingFileName
+            for (import in imports) {
+                if (import.endsWith(testableImportName)) {
+                    return declaration.variableName
+                }
+            }
+        }
+        return null
     }
 }
