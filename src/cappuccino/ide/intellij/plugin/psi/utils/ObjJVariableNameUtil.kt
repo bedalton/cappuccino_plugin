@@ -639,7 +639,7 @@ object ObjJVariableNameUtil {
 
     fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
         val formalVariableTypeInstanceVariableList = getFormalVariableInstanceVariables(variableName) ?: return null
-        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList, { `var` -> `var`.text == variableName.text })
+        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList) { `var` -> `var`.text == variableName.text }
     }
 
     fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {
@@ -648,7 +648,7 @@ object ObjJVariableNameUtil {
             //LOGGER.log(Level.INFO, "ObjJVariableNameUtil.getFormalVariableInstanceVariables(${variableName.text}) Index is less than 1")
             return null
         }
-        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index - 1)
+        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.getOrNull(index - 1)
                 ?: return null
         val variableType:String = when (baseVariableName.text) {
             "self" -> {

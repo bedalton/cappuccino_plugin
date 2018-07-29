@@ -53,7 +53,7 @@ class ObjJVariableInsertHandler private constructor() : InsertHandler<LookupElem
     }
 
     fun isFunctionCompletion(element: PsiElement): Boolean {
-        return !DumbService.isDumb(element.project) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance.get(element.text, element.project).isEmpty()
+        return !DumbService.isDumb(element.project) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance[element.text, element.project].isEmpty()
     }
 
     companion object {

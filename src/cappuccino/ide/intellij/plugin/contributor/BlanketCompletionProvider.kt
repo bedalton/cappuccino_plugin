@@ -195,13 +195,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val functionNamePattern = element.text.replace(CARET_INDICATOR, "(.*)")
         val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
         for (functionName in functions.keys) {
-            for (function in functions.get(functionName)!!) {
+            for (function in functions[functionName]!!) {
                 ProgressIndicatorProvider.checkCanceled()
                 val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
 
                 val lookupElementBuilder = LookupElementBuilder
                         .create(functionName)
-                        .withTailText("(" + ArrayUtils.join(function.paramNames as List<String>, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                        .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                         .withInsertHandler(ObjJFunctionNameInsertHandler.instance)
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
             }

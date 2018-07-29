@@ -67,7 +67,7 @@ class ObjJVariableReference(
         //Finds this elements, and the new elements scope
         val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
         val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED
-        LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: $sharedScope for var: ${myElement.text}")
+        //LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: $sharedScope for var: ${myElement.text}")
         if (referencedInScope != UNDETERMINED) {
             if (sharedScope == UNDETERMINED) {
                 return false
