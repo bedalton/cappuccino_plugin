@@ -27,6 +27,7 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
+import com.intellij.psi.TokenType
 import java.util.logging.Level
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -34,8 +35,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     private val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
 
     override fun addCompletions(
-            parameters: CompletionParameters, context: ProcessingContext,
+            parameters: CompletionParameters,
+            context: ProcessingContext,
             resultSet: CompletionResultSet) {
+        if (!ObjJCompletionContributor.shouldComplete(parameters.originalPosition)) {
+            resultSet.stopHere()
+            return
+        }
         val element = parameters.position
         val parent = element.parent
         val results: MutableList<String>
@@ -83,11 +89,15 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 }
             }
             results.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix+it).withInsertHandler({
-                    context, _ -> if (!EditorUtil.isTextAtOffset(context, " ")) {
-                        EditorUtil.insertText(context.editor, " ", true)
-                    }
-                }))
+                val lookupElement = LookupElementBuilder
+                        .create(it)
+                        .withPresentableText(prefix+it)
+                        .withInsertHandler {
+                            context, _ -> if (!EditorUtil.isTextAtOffset(context, " ")) {
+                                EditorUtil.insertText(context.editor, " ", true)
+                            }
+                        }
+                resultSet.addElement(lookupElement)
             }
             if (results.isNotEmpty()) {
                 resultSet.stopHere()

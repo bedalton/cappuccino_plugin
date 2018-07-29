@@ -6,8 +6,13 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.isType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 import cappuccino.ide.intellij.plugin.utils.*
+import com.intellij.psi.TokenType
+import java.util.logging.Level
 
 import java.util.logging.Logger
 
@@ -24,7 +29,7 @@ class ObjJCompletionContributor : CompletionContributor() {
      * Allow autoPopup to appear after custom symbol
      */
     override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean {
-        return position.text.replace(CARET_INDICATOR, "").length > 1 && !ObjJVariablePsiUtil.isNewVariableDeclaration(position)
+        return shouldComplete(position.originalElement) && !ObjJVariablePsiUtil.isNewVariableDeclaration(position)
     }
 
     override fun handleAutoCompletionPossibility(context: AutoCompletionContext): AutoCompletionDecision? {
@@ -56,6 +61,23 @@ class ObjJCompletionContributor : CompletionContributor() {
         const val GENERIC_METHOD_SUGGESTION_PRIORITY = -10.0
         const val GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY = -50.0
         const val FUNCTIONS_NOT_IN_FILE_PRIORITY = -70.0
+
+
+
+        fun shouldComplete(element: PsiElement?) : Boolean {
+            if (element != null && element.text.replace(CARET_INDICATOR, "").trim().isEmpty()) {
+                val prevSibling:PsiElement? = when {
+                    element.isType(ObjJTypes.ObjJ_SEMI_COLON) -> return false
+                    element.prevSibling?.isType(TokenType.WHITE_SPACE) == true -> element.prevSibling.prevSibling
+                    element.prevSibling != null -> element.prevSibling
+                    else -> return true
+                }
+                if (prevSibling.isType(ObjJTypes.ObjJ_SEMI_COLON) || prevSibling?.lastChild.isType(ObjJTypes.ObjJ_SEMI_COLON)) {
+                    return false
+                }
+            }
+            return true
+        }
     }
 
 }
