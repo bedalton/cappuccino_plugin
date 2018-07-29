@@ -650,6 +650,9 @@ object ObjJVariableNameUtil {
         }
         val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.getOrNull(index - 1)
                 ?: return null
+        if (baseVariableName == variableName) {
+            return null
+        }
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
                 //LOGGER.log(Level.INFO, "Getting instance variable completions for self")
