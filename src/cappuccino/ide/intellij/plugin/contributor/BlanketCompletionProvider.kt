@@ -38,7 +38,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             parameters: CompletionParameters,
             context: ProcessingContext,
             resultSet: CompletionResultSet) {
-        
+
         val element = parameters.position
         val parent = element.parent
         val results: MutableList<String>
