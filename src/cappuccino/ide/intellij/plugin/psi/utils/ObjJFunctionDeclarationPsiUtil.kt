@@ -268,6 +268,9 @@ object ObjJFunctionDeclarationPsiUtil {
 
     private fun getFunctionNameNodeIfMatching(declarationElement:ObjJFunctionDeclarationElement<*>, elementToResolve: PsiElement):PsiElement? {
         val functionNameElement:ObjJNamedElement? = declarationElement.functionNameNode ?: return null
+        if (functionNameElement?.isEquivalentTo(elementToResolve) != false) {
+            return functionNameElement
+        }
         //Source this variable name to first declaration.
         //Root needed to determine if function is local or file scoped
         val root: PsiElement = when (functionNameElement) {
