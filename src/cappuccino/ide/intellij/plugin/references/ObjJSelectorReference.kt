@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import com.intellij.psi.PsiElementResolveResult.EMPTY_ARRAY
 
 import java.util.ArrayList
 import java.util.logging.Logger
@@ -126,6 +127,9 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (elementToCheck !is ObjJSelector) {
             return false
         }
+        if (super.isReferenceTo(element)) {
+            return true
+        }
         if (elementToCheck.containingClassName == ObjJElementFactory.PlaceholderClassName) {
             return false
         }
@@ -146,6 +150,9 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         //Get Basic
+        if (myElement.getParentOfType(ObjJMethodHeaderDeclaration::class.java) != null) {
+            return PsiElementResolveResult.EMPTY_ARRAY
+        }
         var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement)
         var out: MutableList<PsiElement> = ArrayList()
         if (!selectorResult.isEmpty) {
