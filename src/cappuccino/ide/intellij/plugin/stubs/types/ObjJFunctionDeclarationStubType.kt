@@ -26,6 +26,6 @@ class ObjJFunctionDeclarationStubType internal constructor(
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return node?.psi.getParentOfType(ObjJBodyVariableAssignment::class.java) == null ?: false
+        return true
     }
 }

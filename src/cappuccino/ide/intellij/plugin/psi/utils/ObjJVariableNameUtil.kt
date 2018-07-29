@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJVariableNameCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.indices.*
 import com.google.common.collect.ImmutableList
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -10,10 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.project.Project
 import org.fest.util.Lists
@@ -29,16 +25,15 @@ object ObjJVariableNameUtil {
 
     fun getMatchingPrecedingVariableNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
         val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String
-        if (variableName is ObjJVariableName) {
-            variableNameQualifiedString = getQualifiedNameAsString(variableName, qualifiedIndex)
+        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
+            getQualifiedNameAsString(variableName, qualifiedIndex)
         } else {
             //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableNameQualifiedString = variableName.text
+            variableName.text
         }
 
         val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
-        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) })
+        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex) { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) }
     }
 
     fun getMatchingPrecedingVariableAssignmentNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
@@ -226,7 +221,7 @@ object ObjJVariableNameUtil {
         }
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
-            return globalVariableDeclarations.get(0).variableName
+            return globalVariableDeclarations[0].variableName
         }
         return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
     }
@@ -356,20 +351,35 @@ object ObjJVariableNameUtil {
         return result
     }
 
-    fun getIndexInQualifiedNameParent(variableName: ObjJVariableName?): Int {
-        if (variableName == null) {
-            return 0
+    fun getNamedElementList(reference:ObjJQualifiedReference) : List<ObjJNamedElement> {
+        return reference.getChildrenOfType(ObjJNamedElement::class.java)
+    }
+
+    fun getQualifiedNameParts(reference:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
+        return reference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+    }
+
+    fun getIndexInQualifiedNameParent(elementToFindIndexFor: PsiElement?): Int {
+        //Get named part, as those will be the direct child of the qualified reference
+        val qualifiedNamePart = elementToFindIndexFor as? ObjJQualifiedReferenceComponent ?: elementToFindIndexFor.getParentOfType(ObjJQualifiedReferenceComponent::class.java) ?: return 0
+        // Get the parent qualified reference, to find this elements index within it
+        val qualifiedReferenceParent = qualifiedNamePart.getParentOfType( ObjJQualifiedReference::class.java) ?: return 0
+        //Get te index in the named parts first
+        val qualifiedNameIndex = qualifiedReferenceParent.qualifiedNameParts.indexOf(qualifiedNamePart)
+        // Method call can be first, but is not included in named element list
+        // if method call is first, this named element must be at least second.
+        // so add 1 in place of the method call
+        if (qualifiedReferenceParent.methodCall != null) {
+            // can return, because if first var is method call,
+            // it cannot be 'self' or 'super' so check is unnecessary
+            return qualifiedNameIndex + 1
         }
-        val qualifiedReferenceParent = variableName.getParentOfType( ObjJQualifiedReference::class.java)
-        var qualifiedNameIndex = qualifiedReferenceParent?.variableNameList?.indexOf(variableName) ?: -1
-        if (qualifiedNameIndex < 0) {
-            qualifiedNameIndex = 0
-        }
-        if (qualifiedNameIndex > 1) {
-            val firstVariable = qualifiedReferenceParent!!.primaryVar
-            if (firstVariable != null && (firstVariable.text == "self" || firstVariable.text == "super")) {
-                qualifiedNameIndex -= 1
-            }
+        // If qualified reference is 'self' or 'super' then you
+        // can subtract 1, so that the reference will still be resolved
+        // Variable name reference will quit if index is greater than 1
+        // in most instances
+        else if ("self" == qualifiedReferenceParent.primaryVar?.text || "super" == qualifiedReferenceParent.primaryVar?.text) {
+            return qualifiedNameIndex - 1
         }
         return qualifiedNameIndex
     }
