@@ -9,9 +9,10 @@ import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJAccessorPropertyImpl
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJAccessorPropertyPsiUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJAccessorPropertyStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
+import cappuccino.ide.intellij.plugin.psi.utils.getGetterSelector
+import cappuccino.ide.intellij.plugin.psi.utils.getSetterSelector
 import cappuccino.ide.intellij.plugin.utils.Strings
 
 import java.io.IOException
@@ -38,8 +39,8 @@ class ObjJAccessorPropertyStubType internal constructor(
             variableName = null
             variableType = null
         }
-        val getter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, variableType, accessorProperty) else null
-        val setter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, variableType, accessorProperty) else null
+        val getter = if (variableName != null && variableType != null) getGetterSelector(variableName, variableType, accessorProperty) else null
+        val setter = if (variableName != null && variableType != null) getSetterSelector(variableName, variableType, accessorProperty) else null
         return ObjJAccessorPropertyStubImpl(parentStub, containingClass, variableType, variableName, getter, setter, shouldResolve(accessorProperty.node))
     }
 

@@ -111,9 +111,6 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   problemsHolder: ProblemsHolder) {
             if (returnsWithExpression.isNotEmpty()) {
                 for (returnStatement in returnsWithoutExpression) {
-                    if (returnsWithExpression.contains(returnStatement)) {
-                        continue
-                    }
                     //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
                     problemsHolder.registerProblem(returnStatement.expr ?: returnStatement.`return`, "Not all return statements return a value")
                 }

@@ -123,6 +123,13 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
                 problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"), ObjJIgnoreOvershadowedVariablesInProject(),ObjJRemoveVarKeywordQuickFix())
                 return
             }
+            for (declarationElement in ObjJFunctionsIndex.instance[variableName.text, variableName.project]) {
+                ProgressIndicatorProvider.checkCanceled()
+                if (declarationElement.containingFile.isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.textRange.startOffset) {
+                    problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, variableName.text), ObjJIgnoreOvershadowedVariablesInProject(), ObjJRemoveVarKeywordQuickFix())
+                }
+
+            }
         }
 
     }

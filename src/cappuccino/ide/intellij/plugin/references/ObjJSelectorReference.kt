@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
@@ -9,9 +11,10 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import com.intellij.psi.PsiElementResolveResult.EMPTY_ARRAY
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import java.util.ArrayList
+import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
@@ -42,7 +45,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (DumbService.isDumb(myElement.project)) {
             return null
         }
-        classConstraints = methodCall.callTarget.possibleCallTargetTypes
+        classConstraints = methodCall.callTarget.getPossibleCallTargetTypes()
         return classConstraints
     }
 
@@ -127,10 +130,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (elementToCheck !is ObjJSelector) {
             return false
         }
-        if (super.isReferenceTo(element)) {
-            return true
-        }
-        if (elementToCheck.containingClassName == ObjJElementFactory.PlaceholderClassName) {
+        if (elementToCheck.containingClassName == ObjJElementFactory.PLACEHOLDER_CLASS_NAME) {
             return false
         }
         val methodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
@@ -150,9 +150,6 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         //Get Basic
-        if (myElement.getParentOfType(ObjJMethodHeaderDeclaration::class.java) != null) {
-            return PsiElementResolveResult.EMPTY_ARRAY
-        }
         var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement)
         var out: MutableList<PsiElement> = ArrayList()
         if (!selectorResult.isEmpty) {

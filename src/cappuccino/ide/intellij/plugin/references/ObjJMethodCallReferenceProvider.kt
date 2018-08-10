@@ -28,7 +28,7 @@ class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPo
         if (DumbService.isDumb(myElement.project)) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val result = ArrayList<PsiElement>(ObjJUnifiedMethodIndex.instance[selector, myElement.project])
+        val result = ArrayList<PsiElement>(ObjJUnifiedMethodIndex.instance.get(selector, myElement.project))
         return if (result.size > 0) {
             PsiElementResolveResult.createResults(result)
         } else PsiElementResolveResult.createResults(ObjJPsiImplUtil.getSelectorLiteralReference(myElement))
