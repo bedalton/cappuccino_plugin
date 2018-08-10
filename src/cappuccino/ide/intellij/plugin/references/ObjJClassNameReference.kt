@@ -5,22 +5,24 @@ import com.intellij.openapi.util.TextRange
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
-import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySibling
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.*
-import org.jetbrains.uast.getContainingClass
+import javafx.scene.control.ProgressIndicator
 
 import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBase<ObjJClassName>(element, TextRange.create(0, element.textLength)) {
     private val className: String? = element.text
     private val inProtocol:Boolean = element.parent is ObjJInheritedProtocolList
     private val isClassDeclarationName:Boolean = myElement.parent as? ObjJClassDeclarationElement<*> != null && myElement.getPreviousNonEmptySibling(true)?.text ?: "" != ":"
-    private val isCategory:Boolean = ((myElement as? ObjJCompositeElement)?.getContainingClass() as? ObjJImplementationDeclaration)?.isCategory ?: false
 
     override fun handleElementRename(newElementName: String?): PsiElement {
         return if (myElement is ObjJClassName && newElementName != null)  myElement.setName(newElementName) else myElement
@@ -31,10 +33,6 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
             return false;
         }
         if (className == null) {
-            return false
-        }
-
-        if (element.isEquivalentTo(myElement)) {
             return false
         }
 
@@ -61,7 +59,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         if (DumbService.isDumb(project)) {
             return ResolveResult.EMPTY_ARRAY
         }
-        if (isClassDeclarationName && !isCategory) {
+        if (isClassDeclarationName) {
             return ResolveResult.EMPTY_ARRAY
         }
         val classNames = ArrayList<ObjJClassName>()
@@ -70,19 +68,13 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
             return ResolveResult.EMPTY_ARRAY
         }
 
-        val alternatives = ArrayList<ObjJClassName>()
         for (classDec in classDeclarations) {
             val classDecName = classDec.getClassName() ?: continue;
-            if (classDecName.text.isNotEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
-                val classDecIsCategory = (classDec as? ObjJImplementationDeclaration)?.isCategory?:false
-                if (isCategory && classDecIsCategory) {
-                    alternatives.add(classDecName)
-                    continue
-                }
+            if (!classDecName.text.isEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
                 classNames.add(classDecName)
             }
         }
-        return if (classNames.isNotEmpty()) PsiElementResolveResult.createResults(classNames) else PsiElementResolveResult.createResults(alternatives)
+        return PsiElementResolveResult.createResults(classNames)
     }
 
     override fun getVariants(): Array<Any> {

@@ -102,12 +102,13 @@ WHITE_SPACE=\p{Blank}+
 <PRAGMA> {
 	'mark'								{ if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
 	[^\r\n\u2028\u2029]+				{ if (pragmaString != null) pragmaString.append(yytext());}
-	{LINE_TERMINATOR}					{ yybegin(YYINITIAL); inPreProc = false; return ObjJ_PRAGMA_MARKER; }
+	{LINE_TERMINATOR}					{ yybegin(YYINITIAL); return ObjJ_PRAGMA_MARKER; }
 }
 
 <PREPROCESSOR> {
 	{LINE_TERMINATOR} 				   	 { yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return ObjJ_LINE_TERMINATOR; }
 	'#'									 { return WHITE_SPACE; }
+ 	{WHITE_SPACE}  						 { return WHITE_SPACE; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return WHITE_SPACE; }
 }
 
@@ -206,7 +207,7 @@ WHITE_SPACE=\p{Blank}+
 	"null"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"                                { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
-	{PP_DEFINE}                          { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
+	{PP_DEFINE}                         { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
 	{PP_UNDEF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
 	{PP_IF_DEF}                          { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
 	{PP_IFNDEF}                          { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
@@ -214,8 +215,8 @@ WHITE_SPACE=\p{Blank}+
 	{PP_ELSE}                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_ELSE; }
 	{PP_ENDIF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_END_IF; }
 	{PP_ELIF}                            { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ELSE_IF; }
-	{PP_PRAGMA}                          { canRegex(false); yybegin(PRAGMA); inPreProc = true; return ObjJ_PP_PRAGMA; }
-	{PP_DEFINED}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_DEFINED; }
+	{PP_PRAGMA}                          { canRegex(false); yybegin(PRAGMA); return ObjJ_PP_PRAGMA; }
+	{PP_DEFINED}                         { canRegex(false); return ObjJ_PP_DEFINED; }
 	{PP_ERROR}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
 	{PP_WARNING}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
 	{PP_INCLUDE}                         { canRegex(false);	yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_INCLUDE; }
@@ -310,9 +311,11 @@ WHITE_SPACE=\p{Blank}+
 	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); return ObjJ_BLOCK_COMMENT; }
 	//{BAD_DOUBLE_QUOTE_STRING_LITERAL}	 { canRegex(false);	return ObjJ_QUO_TEXT; }
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }
-	{WHITE_SPACE}+                       { return WHITE_SPACE; }
 
 }
 {PP_FRAGMENT}				             { canRegex(false); return ObjJ_PP_FRAGMENT; }
 "@"{ID}						 			 { canRegex(false); return ObjJ_AT_FRAGMENT; }
+<YYINITIAL> {
+	{WHITE_SPACE}+                       { return WHITE_SPACE; }
+}
 [^] { return BAD_CHARACTER; }

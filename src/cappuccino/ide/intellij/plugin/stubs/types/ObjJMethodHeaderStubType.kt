@@ -84,7 +84,7 @@ class ObjJMethodHeaderStubType internal constructor(
 
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node!!.psi as ObjJMethodHeaderDeclaration<*>).containingClassName != ObjJElementFactory.PlaceholderClassName
+        return (node!!.psi as ObjJMethodHeaderDeclaration<*>).containingClassName != ObjJElementFactory.PLACEHOLDER_CLASS_NAME
     }
 
 

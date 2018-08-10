@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.indices
 import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 
 class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJMethodHeader>() {
 
@@ -15,13 +14,13 @@ class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJM
     }
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return ObjJIndexService.INDEX_VERSION + VERSION
     }
 
     companion object {
         private val KEY = IndexKeyUtil.createIndexKey(ObjJClassMethodIndex::class.java)
         val instance = ObjJClassMethodIndex()
-        private const val VERSION = 1
+        private val VERSION = 3
     }
 
 

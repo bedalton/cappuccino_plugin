@@ -49,7 +49,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 val methodHeaderReturnTypeElement = thisHeader.methodHeaderReturnTypeElement
                 if (methodHeaderReturnTypeElement != null) {
                     val thisHeaderReturnType = methodHeaderReturnTypeElement.formalVariableType
-                    if (!(thisHeaderReturnType.text?.toLowerCase() != "void" && thatHeader.returnType.toLowerCase() == "id")) {
+                    if (thisHeaderReturnType.text?.toLowerCase() != "void" && thatHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId != null) {
                         problemsHolder.registerProblem(thisHeaderReturnType, "Overridden parent is less specific", ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.returnType))
                     } else {
                         problemsHolder.registerProblem(thisHeader.methodHeaderReturnTypeElement!!, "Overridden method should have return type <" + thatHeader.returnType + ">", ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.returnType))
@@ -65,8 +65,8 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 val otherParam = thoseSelectors[i].varType ?: continue
                 val thisVarType = selector.varType
                 if (!Objects.equals(thisVarType?.text,otherParam.text)) {
-                    if (thisVarType != null && !(thisVarType.text?.toLowerCase() != "void" && otherParam.text.toLowerCase() == "id")) {
-                        problemsHolder.registerProblem(thisVarType, "Overrides parent type has less specific variable type of id")
+                    if (thisVarType != null && (thisVarType.text?.toLowerCase() != "void" && otherParam.varTypeId != null)) {
+                        problemsHolder.registerProblem(thisVarType, "Overridden parent is less specific", ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisVarType, otherParam.text))
                     } else {
                         val errorMessage = "Parameter should have type <" + otherParam.text + ">";
                         if (thisVarType != null) {

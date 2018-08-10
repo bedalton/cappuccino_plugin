@@ -26,7 +26,6 @@ class ObjJFunctionLiteralStubType internal constructor(
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        val literal:ObjJFunctionLiteral =  node?.psi as? ObjJFunctionLiteral ?: return false
-        return literal.functionNameAsString.isNotEmpty()
+        return node!!.psi is ObjJFunctionLiteral && (node.psi as ObjJFunctionLiteral).functionNameNode != null
     }
 }
