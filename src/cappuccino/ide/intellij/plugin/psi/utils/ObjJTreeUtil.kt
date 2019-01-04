@@ -7,7 +7,6 @@ import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import org.apache.velocity.runtime.parser.node.ASTMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 

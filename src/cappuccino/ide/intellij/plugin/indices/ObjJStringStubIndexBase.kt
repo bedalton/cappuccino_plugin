@@ -13,7 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.StringUtil
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-import org.codehaus.groovy.runtime.ArrayUtil
 
 import java.util.*
 import java.util.logging.Level

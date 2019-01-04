@@ -1,8 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJVariableNameCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.indices.*
-import com.google.common.collect.ImmutableList
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -10,13 +8,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.project.Project
-import org.fest.util.Lists
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -25,7 +19,7 @@ import java.util.logging.Logger
 object ObjJVariableNameUtil {
 
     private val LOGGER = Logger.getLogger("ObjJVariableNameUtil")
-    private val EMPTY_VARIABLE_NAME_LIST = ImmutableList.copyOf<ObjJVariableName>(arrayOfNulls(0))
+    private val EMPTY_VARIABLE_NAME_LIST = emptyList<ObjJVariableName>()
 
     fun getMatchingPrecedingVariableNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
         val startOffset = variableName.textRange.startOffset
@@ -312,7 +306,7 @@ object ObjJVariableNameUtil {
     }
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
-        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else Lists.emptyList()
+        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else emptyList()
     }
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
@@ -356,7 +350,8 @@ object ObjJVariableNameUtil {
         return result
     }
 
-    fun getIndexInQualifiedNameParent(variableName: ObjJVariableName?): Int {
+
+    fun getIndexInQualifiedNameParent(variableName: PsiElement?): Int {
         if (variableName == null) {
             return 0
         }
@@ -477,7 +472,7 @@ object ObjJVariableNameUtil {
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
-            return Lists.emptyList()
+            return emptyList()
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
