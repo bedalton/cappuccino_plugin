@@ -130,7 +130,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (elementToCheck !is ObjJSelector) {
             return false
         }
-        if (elementToCheck.containingClassName == ObjJElementFactory.PLACEHOLDER_CLASS_NAME) {
+        if (elementToCheck.containingClassName == ObjJElementFactory.PlaceholderClassName) {
             return false
         }
         val methodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)

@@ -8,8 +8,7 @@ import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJInstanceVariableDeclarationImpl
-import cappuccino.ide.intellij.plugin.psi.utils.getGetterSelector
-import cappuccino.ide.intellij.plugin.psi.utils.getSetterSelector
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJAccessorPropertyPsiUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJInstanceVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.Strings
@@ -30,8 +29,8 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         var setter: String? = null
         val variableName = if (declaration.variableName != null) declaration.variableName!!.text else ""
         if (declaration.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
-            getter = getGetterSelector(variableName, declaration.formalVariableType.text)
-            setter = getSetterSelector(variableName, declaration.formalVariableType.text)
+            getter = ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, declaration.formalVariableType.text)
+            setter = ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, declaration.formalVariableType.text)
             //Logger.getAnonymousLogger().log(Level.INFO, "Variable: <"+variableName+">; getter: <"+getter+">; setter: <"+setter+">");
         }
         val shouldResolve = declaration.shouldResolve()

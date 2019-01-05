@@ -7,31 +7,22 @@ import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySibling
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.*
-import javafx.scene.control.ProgressIndicator
 
 import java.util.ArrayList
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBase<ObjJClassName>(element, TextRange.create(0, element.textLength)) {
     private val className: String? = element.text
     private val inProtocol:Boolean = element.parent is ObjJInheritedProtocolList
     private val isClassDeclarationName:Boolean = myElement.parent as? ObjJClassDeclarationElement<*> != null && myElement.getPreviousNonEmptySibling(true)?.text ?: "" != ":"
 
-    override fun handleElementRename(newElementName: String?): PsiElement {
-        return if (myElement is ObjJClassName && newElementName != null)  myElement.setName(newElementName) else myElement
+    override fun handleElementRename(newElementName: String): PsiElement? {
+        return if (myElement is ObjJClassName)  myElement.setName(newElementName) else myElement
     }
 
-    override fun isReferenceTo(element: PsiElement?): Boolean {
-        if (element == null) {
-            return false;
-        }
+    override fun isReferenceTo(element: PsiElement): Boolean {
         if (className == null) {
             return false
         }

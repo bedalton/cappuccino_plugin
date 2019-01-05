@@ -465,7 +465,7 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = bodyVariableAssignment.variableNameList
+        val result = bodyVariableAssignment.variableNameList.toMutableList()
         val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
@@ -655,5 +655,9 @@ object ObjJVariableNameUtil {
         return getAllContainingClassInstanceVariables(variableType, variableName.project)
     }
 
+
+    fun getQualifiedNameParts(qualifiedName:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
+        return qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+    }
 
 }

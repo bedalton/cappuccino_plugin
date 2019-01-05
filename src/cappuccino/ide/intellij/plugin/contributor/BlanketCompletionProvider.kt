@@ -104,7 +104,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
 
-            if (isNewVarDec(element)) {
+            if (ObjJVariablePsiUtil.isNewVarDec(element)) {
                 resultSet.stopHere()
                 return
             }
