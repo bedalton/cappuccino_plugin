@@ -4,18 +4,14 @@ import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TemplateImpl
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.SelectionModel
-import com.intellij.openapi.project.Project
 
 import java.util.ArrayList
 import java.util.HashMap
 
 class SyncEditAction : AnAction("SyncEdit") {
 
-    override fun update(e: AnActionEvent?) {
-        val dataContext = e!!.dataContext
+    override fun update(e: AnActionEvent) {
+        val dataContext = e.dataContext
         var enabled = false
         val editor = dataContext.getData(DataKeys.EDITOR)
         if (editor != null) {

@@ -101,7 +101,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             }
 
             val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
-            val varNames = variableAssignment.variableNameList
+            val varNames = variableAssignment.variableNameList.toMutableList()
             for (declaration in variableAssignment.variableDeclarationList) {
                 qualifiedReferences.addAll(declaration.qualifiedReferenceList)
             }

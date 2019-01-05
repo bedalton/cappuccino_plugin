@@ -124,7 +124,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun setName(instanceVariableDeclaration: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
-        return ObjJVariablePsiUtil.setName(instanceVariableDeclaration,newName)
+        return ObjJNamedPsiUtil.setName(instanceVariableDeclaration, newName)
     }
 
     @JvmStatic
@@ -307,12 +307,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
-        return ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
+        return Collections.singletonList(ObjJClassType.UNDETERMINED)//ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
     }
 
     @JvmStatic
     fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall) : List<String> {
-        return ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
+        return Collections.singletonList(ObjJClassType.UNDETERMINED)// ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
     }
 
     // ============================== //
