@@ -151,7 +151,7 @@ private fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
                         }
                     }
                 }
-            } else if (returnFirst && tempElements.size > 0) {
+            } else if (returnFirst && tempElements.isNotEmpty()) {
                 for (element in tempElements) {
                     if (offset < 0 || element.textRange.startOffset > offset) {
                         return listOf(element)
