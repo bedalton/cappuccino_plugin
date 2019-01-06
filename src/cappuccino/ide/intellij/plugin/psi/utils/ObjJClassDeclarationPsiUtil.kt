@@ -131,7 +131,7 @@ fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethod
 }
 
 fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> {
-    val headers = declaration.getMethodHeaderList() as MutableList
+    val headers = declaration.getMethodHeaderList().toMutableList()
     for (scopedBlock in declaration.protocolScopedBlockList) {
         headers.addAll(scopedBlock.methodHeaderList)
     }
