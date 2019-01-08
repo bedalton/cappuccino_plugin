@@ -167,7 +167,7 @@ WHITE_SPACE=\p{Blank}+
 	">="                                 { canRegex(true); return ObjJ_GREATER_THAN_EQUALS; }
 	"=="                                 { canRegex(true); return ObjJ_EQUALS; }
 	"!="                                 { canRegex(true); return ObjJ_NOT_EQUALS; }
-	"==="                                { canRegex(true); return ObjJ_IDENTITY__EQUALS; }
+	"==="                                { canRegex(true); return ObjJ_IDENTITY_EQUALS; }
 	"!=="                                { canRegex(true); return ObjJ_IDENTITY_NOT_EQUALS; }
 	"&"                                  { canRegex(true); return ObjJ_BIT_AND; }
 	"^"                                  { canRegex(true); return ObjJ_BIT_XOR; }

@@ -1,30 +1,27 @@
 package cappuccino.ide.intellij.plugin.formatting;
 
 import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition;
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets;
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeUtilKt;
 import com.intellij.formatting.FormattingMode;
 import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.TokenType;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
+import static cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.*;
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 
 public class ObjJIndentProcessor {
 
-    private static final TokenSet BLOCKS = TokenSet.create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
-            ObjJ_STATEMENT_OR_BLOCK);
 
-    private static final TokenSet COMMENTS = ObjJParserDefinition.Companion.getCOMMENTS();
 
-    private static final TokenSet CLASS_DECLARATIONS = TokenSet.create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION);
 
     private static final TokenSet HAS_NO_INDENT_PAREN = TokenSet.create(
             ObjJ_FUNCTION_DECLARATION,
@@ -87,7 +84,7 @@ public class ObjJIndentProcessor {
             }
         }
 
-        if (COMMENTS.contains(elementType) && prevSiblingType == ObjJ_OPEN_BRACE && CLASS_DECLARATIONS.contains(parentType)) {
+        if (INSTANCE.getCOMMENTS().contains(elementType) && prevSiblingType == ObjJ_OPEN_BRACE && INSTANCE.getCLASS_DECLARATIONS().contains(parentType)) {
             return Indent.getNormalIndent();
         }
 
@@ -110,7 +107,7 @@ public class ObjJIndentProcessor {
             if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_EXPR || elementType == ObjJ_COMMA) {
                 return Indent.getNormalIndent();
             }
-            if (COMMENTS.contains(elementType)) {
+            if (INSTANCE.getCOMMENTS().contains(elementType)) {
                 return Indent.getNormalIndent();
             }
             return Indent.getNoneIndent();
@@ -142,7 +139,7 @@ public class ObjJIndentProcessor {
         }
 
 
-        if (BLOCKS.contains(parentType)) {
+        if (INSTANCE.getBLOCKS().contains(parentType)) {
             final PsiElement psi = node.getPsi();
             if (psi.getParent() instanceof PsiFile) {
                 return Indent.getNoneIndent();
@@ -150,7 +147,7 @@ public class ObjJIndentProcessor {
             return Indent.getNormalIndent();
         }
 
-        if (parentType == ObjJ_ITERATION_STATEMENT && (prevSiblingType == ObjJ_CLOSE_PAREN || prevSibling == ObjJ_DO || prevSibling == ObjJ_WHILE) && !BLOCKS.contains(elementType)) {
+        if (parentType == ObjJ_ITERATION_STATEMENT && (prevSiblingType == ObjJ_CLOSE_PAREN || prevSibling == ObjJ_DO || prevSibling == ObjJ_WHILE) && !INSTANCE.getBLOCKS().contains(elementType)) {
             return Indent.getNormalIndent();
         }
 
@@ -162,21 +159,21 @@ public class ObjJIndentProcessor {
             return Indent.getNormalIndent();
         }
 
-        if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !BLOCKS.contains(elementType)) {
+        if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !INSTANCE.getBLOCKS().contains(elementType)) {
             return Indent.getNormalIndent();
         }
 
-        if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !BLOCKS.contains(elementType)) {
+        if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !INSTANCE.getBLOCKS().contains(elementType)) {
             return Indent.getNormalIndent();
         }
 
         if ((parentType == ObjJ_RETURN_STATEMENT) &&
                 prevSiblingType == ObjJ_RETURN &&
-                !BLOCKS.contains(elementType)) {
+                !INSTANCE.getBLOCKS().contains(elementType)) {
             return Indent.getNormalIndent();
         }
 
-        if (parentType == ObjJ_IF_STATEMENT && !BLOCKS.contains(elementType) &&
+        if (parentType == ObjJ_IF_STATEMENT && !INSTANCE.getBLOCKS().contains(elementType) &&
                 (prevSiblingType == ObjJ_CLOSE_PAREN || (prevSiblingType == ObjJ_ELSE && elementType != ObjJ_IF_STATEMENT))) {
             return Indent.getNormalIndent();
         }
@@ -189,19 +186,19 @@ public class ObjJIndentProcessor {
         }
 
         if (parentType == ObjJ_METHOD_CALL) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET)) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET, WHITE_SPACE)) {
                 return Indent.getContinuationIndent();
             }
         }
 
         if (parentType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_COLON)) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_COLON, WHITE_SPACE)) {
                 return Indent.getContinuationIndent();
             }
         }
 
         if (elementType == ObjJ_FUNCTION_CALL) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR)) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR, WHITE_SPACE)) {
                 return Indent.getContinuationIndent();
             }
         }
@@ -217,12 +214,12 @@ public class ObjJIndentProcessor {
             return Indent.getContinuationIndent();
         }
 
-        if (CLASS_DECLARATIONS.contains(parentType)) {
+        if (INSTANCE.getCLASS_DECLARATIONS().contains(parentType)) {
             return Indent.getNormalIndent();
         }
 
         if (parentType == ObjJ_IMPORT_FILE || parentType == ObjJ_IMPORT_FRAMEWORK) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_AT_IMPORT)) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_AT_IMPORT, WHITE_SPACE)) {
                 return Indent.getContinuationIndent();
             }
         }
@@ -235,26 +232,26 @@ public class ObjJIndentProcessor {
             return Indent.getContinuationIndent();
         }
 
-        if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR)) {
+        if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
-        if (FormatterUtil.isPrecededBy(node, ObjJ_MATH_OP)) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (FormatterUtil.isPrecededBy(node, ObjJ_COMMA)) {
+        if (FormatterUtil.isPrecededBy(node, ObjJ_MATH_OP, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
 
-        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACE)) {
+        if (FormatterUtil.isPrecededBy(node, ObjJ_COMMA, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
 
-        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACKET)) {
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACE, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
 
-        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_PAREN)) {
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACKET, WHITE_SPACE)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_PAREN, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
 
