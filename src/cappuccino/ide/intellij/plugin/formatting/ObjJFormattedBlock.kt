@@ -63,7 +63,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
         }
 
     init {
-        myIndentProcessor = DartIndentProcessor(myContext.getDartSettings())
+        myIndentProcessor = ObjJIndentProcessor(myContext.getDartSettings())
         mySpacingProcessor = DartSpacingProcessor(node, myContext.getDartSettings())
         myWrappingProcessor = DartWrappingProcessor(node, myContext.getDartSettings())
         myAlignmentProcessor = DartAlignmentProcessor(node, myContext.getDartSettings())

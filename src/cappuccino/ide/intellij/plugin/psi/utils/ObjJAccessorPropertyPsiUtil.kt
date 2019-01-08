@@ -255,4 +255,6 @@ object ObjJAccessorPropertyPsiUtil {
             else -> null
         }
     }
+
+    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList ?: emptyList();
 }

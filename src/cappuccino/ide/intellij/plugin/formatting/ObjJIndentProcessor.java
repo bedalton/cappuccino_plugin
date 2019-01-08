@@ -19,22 +19,47 @@ import static com.intellij.psi.TokenType.WHITE_SPACE;
 
 public class ObjJIndentProcessor {
 
-    public static final TokenSet EXPRESSIONS = TokenSet
-            .create(ObjJ_ARRAY_INDEX_SELECTOR, ObjJ_VARIABLE_DECLARATION, ObjJ_FUNCTION_CALL, ObjJ_LEFT_EXPR, ObjJ_RIGHT_EXPR, ObjJ_EXPR);
-
-    public static final TokenSet BLOCKS = TokenSet.create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
+    private static final TokenSet BLOCKS = TokenSet.create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK);
 
-    public static final TokenSet COMMENTS = ObjJParserDefinition.Companion.getCOMMENTS();
+    private static final TokenSet COMMENTS = ObjJParserDefinition.Companion.getCOMMENTS();
 
-    public static final TokenSet CLASS_DECLARATIONS = TokenSet.create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION);
+    private static final TokenSet CLASS_DECLARATIONS = TokenSet.create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION);
 
+    private static final TokenSet HAS_NO_INDENT_PAREN = TokenSet.create(
+            ObjJ_FUNCTION_DECLARATION,
+            ObjJ_ENCLOSED_EXPR,
+            ObjJ_PREPROCESSOR_DEFINE_FUNCTION,
+            ObjJ_FUNCTION_LITERAL,
+            ObjJ_REF_EXPRESSION,
+            ObjJ_DEREF_EXPRESSION,
+            ObjJ_NEW_EXPRESSION,
+            ObjJ_FUNCTION_CALL,
+            ObjJ_TYPE_OF,
+            ObjJ_SELECTOR_LITERAL,
+            ObjJ_ACCESSOR,
+            ObjJ_CONDITION_EXPRESSION,
+            ObjJ_FOR,
+            ObjJ_SWITCH_STATEMENT
+    );
+
+    private static final TokenSet BINARY_EXPRESSIONS = TokenSet.create(
+
+    );
+
+    private static final TokenSet HAS_NO_INDENT_BRACE  = TokenSet.create(
+            ObjJ_METHOD_BLOCK,
+            ObjJ_FUNCTION_LITERAL,
+            ObjJ_BLOCK_ELEMENT,
+            ObjJ_SWITCH_STATEMENT
+    );
     private final CommonCodeStyleSettings settings;
 
     public ObjJIndentProcessor(CommonCodeStyleSettings settings) {
         this.settings = settings;
     }
 
+    @SuppressWarnings("Duplicates")
     public Indent getChildIndent(final ASTNode node, final FormattingMode mode) {
         final IElementType elementType = node.getElementType();
         final ASTNode prevSibling = ObjJTreeUtilKt.getPreviousNonEmptySiblingIgnoringComments(node);
@@ -109,16 +134,14 @@ public class ObjJIndentProcessor {
             }
         }
 
-        if (parentType == PARENTHESIZED_EXPRESSION) {
-            if (elementType == LPAREN || elementType == RPAREN) {
+        if (parentType == ObjJ_ENCLOSED_EXPR) {
+            if (elementType == ObjJ_OPEN_PAREN|| elementType == ObjJ_CLOSE_PAREN || elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
                 return Indent.getNoneIndent();
             }
             return Indent.getContinuationIndent();
         }
 
-        if (elementType == CLASS_MEMBERS) {
-            return Indent.getNormalIndent();
-        }
+
         if (BLOCKS.contains(parentType)) {
             final PsiElement psi = node.getPsi();
             if (psi.getParent() instanceof PsiFile) {
@@ -126,141 +149,128 @@ public class ObjJIndentProcessor {
             }
             return Indent.getNormalIndent();
         }
-        if (elementType == LPAREN && (superParentType == METADATA || parentType == ARGUMENTS)) {
+
+        if (parentType == ObjJ_ITERATION_STATEMENT && (prevSiblingType == ObjJ_CLOSE_PAREN || prevSibling == ObjJ_DO || prevSibling == ObjJ_WHILE) && !BLOCKS.contains(elementType)) {
             return Indent.getNormalIndent();
         }
-        if (parentType == ARGUMENTS) {
-            if (COMMENTS.contains(elementType)) {
-                return Indent.getNormalIndent();
-            }
-            return Indent.getNoneIndent();
-        }
-        if (parentType == ARGUMENT_LIST) {
-            // see https://github.com/ObjJ-lang/ObjJ_style/issues/551
-            return parent.getLastChildNode().getElementType() == COMMA ? Indent.getNormalIndent() : Indent.getContinuationIndent();
-        }
-        if (parentType == FORMAL_PARAMETER_LIST || parentType == PARAMETER_TYPE_LIST) {
-            return Indent.getContinuationIndent();
-        }
-        if (parentType == OPTIONAL_FORMAL_PARAMETERS &&
-                elementType != LBRACE && elementType != RBRACE &&
-                elementType != LBRACKET && elementType != RBRACKET) {
+
+        if (parentType == ObjJ_SWITCH_STATEMENT && (elementType == ObjJ_CASE_CLAUSE || elementType == ObjJ_DEFAULT_CLAUSE)) {
             return Indent.getNormalIndent();
         }
-        if (parentType == FOR_STATEMENT && prevSiblingType == FOR_LOOP_PARTS_IN_BRACES && !BLOCKS.contains(elementType)) {
+
+        if ((parentType == ObjJ_CASE_CLAUSE || parentType == ObjJ_DEFAULT_CLAUSE) && elementType == ObjJ_BRACKET_LESS_BLOCK) {
             return Indent.getNormalIndent();
         }
-        if (parentType == SWITCH_STATEMENT && (elementType == SWITCH_CASE || elementType == DEFAULT_CASE)) {
+
+        if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !BLOCKS.contains(elementType)) {
             return Indent.getNormalIndent();
         }
-        if ((parentType == SWITCH_CASE || parentType == DEFAULT_CASE) && elementType == STATEMENTS) {
+
+        if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !BLOCKS.contains(elementType)) {
             return Indent.getNormalIndent();
         }
-        if (parentType == WHILE_STATEMENT && prevSiblingType == RPAREN && !BLOCKS.contains(elementType)) {
-            return Indent.getNormalIndent();
-        }
-        if (parentType == DO_WHILE_STATEMENT && prevSiblingType == DO && !BLOCKS.contains(elementType)) {
-            return Indent.getNormalIndent();
-        }
-        if ((parentType == RETURN_STATEMENT) &&
-                prevSiblingType == RETURN &&
+
+        if ((parentType == ObjJ_RETURN_STATEMENT) &&
+                prevSiblingType == ObjJ_RETURN &&
                 !BLOCKS.contains(elementType)) {
             return Indent.getNormalIndent();
         }
-        if (parentType == IF_STATEMENT && !BLOCKS.contains(elementType) &&
-                (prevSiblingType == RPAREN || (prevSiblingType == ELSE && elementType != IF_STATEMENT))) {
+
+        if (parentType == ObjJ_IF_STATEMENT && !BLOCKS.contains(elementType) &&
+                (prevSiblingType == ObjJ_CLOSE_PAREN || (prevSiblingType == ObjJ_ELSE && elementType != ObjJ_IF_STATEMENT))) {
             return Indent.getNormalIndent();
         }
-        if (elementType == CASCADE_REFERENCE_EXPRESSION) {
-            return Indent.getNormalIndent();
-        }
-        if (elementType == OPEN_QUOTE && prevSiblingType == CLOSING_QUOTE && parentType == STRING_LITERAL_EXPRESSION) {
+        /*
+        if (elementType == ObjJ_OPEN_QUOTE && prevSiblingType == CLOSING_QUOTE && parentType == STRING_LITERAL_EXPRESSION) {
             return Indent.getContinuationIndent();
-        }
+        }*/
         if (BINARY_EXPRESSIONS.contains(parentType) && prevSibling != null) {
             return Indent.getContinuationIndent();
         }
-        if (elementType == COLON || parentType == TERNARY_EXPRESSION && elementType == QUEST) {
-            return Indent.getContinuationIndent();
-        }
-        if (elementType == HIDE_COMBINATOR || elementType == SHOW_COMBINATOR) {
-            return Indent.getContinuationIndent();
-        }
-        if (parentType == FUNCTION_BODY) {
-            if (FormatterUtil.isPrecededBy(node, EXPRESSION_BODY_DEF)) {
+
+        if (parentType == ObjJ_METHOD_CALL) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET)) {
                 return Indent.getContinuationIndent();
             }
         }
-        if (elementType == CALL_EXPRESSION) {
-            if (FormatterUtil.isPrecededBy(node, EXPRESSION_BODY_DEF)) {
-                return Indent.getContinuationIndent();
-            }
-            if (FormatterUtil.isPrecededBy(node, ASSIGNMENT_OPERATOR)) {
+
+        if (parentType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_COLON)) {
                 return Indent.getContinuationIndent();
             }
         }
-        if ((elementType == REFERENCE_EXPRESSION || BINARY_EXPRESSIONS.contains(elementType)) &&
-                (FormatterUtil.isPrecededBy(node, ASSIGNMENT_OPERATOR) || FormatterUtil.isPrecededBy(node, EQ))) {
-            return Indent.getContinuationIndent();
+
+        if (elementType == ObjJ_FUNCTION_CALL) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR)) {
+                return Indent.getContinuationIndent();
+            }
         }
-        if (elementType == VAR_DECLARATION_LIST_PART) {
+
+        if (parentType == ObjJ_INHERITED_PROTOCOL_LIST) {
+            if (elementType == ObjJ_LESS_THAN || elementType == ObjJ_GREATER_THAN) {
+                return Indent.getNoneIndent();
+            }
             return Indent.getContinuationIndent();
         }
 
-        if (elementType == SUPER_CALL_OR_FIELD_INITIALIZER) {
+        if (parentType == ObjJ_ASSIGNMENT_EXPR_PRIME) {
             return Indent.getContinuationIndent();
         }
-        if (parentType == SUPER_CALL_OR_FIELD_INITIALIZER && elementType != COLON) {
+
+        if (CLASS_DECLARATIONS.contains(parentType)) {
             return Indent.getNormalIndent();
         }
 
-        if (parentType == CLASS_DEFINITION) {
-            if (elementType == SUPERCLASS || elementType == INTERFACES || elementType == MIXINS) {
-                return Indent.getContinuationIndent();
-            }
-        }
-        if (parentType == MIXIN_APPLICATION && elementType == MIXINS) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (parentType == LIBRARY_NAME_ELEMENT) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (elementType == SEMICOLON && FormatterUtil.isPrecededBy(node, SINGLE_LINE_COMMENT, WHITE_SPACE)) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (elementType == DOT || elementType == QUEST_DOT) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (parentType == TYPE_LIST && elementType == TYPE) {
-            return Indent.getContinuationIndent();
-        }
-
-        if (elementType == OPEN_QUOTE && parentType == STRING_LITERAL_EXPRESSION && superParentType == VAR_INIT) {
-            if (node.getText().length() < 3) {
+        if (parentType == ObjJ_IMPORT_FILE || parentType == ObjJ_IMPORT_FRAMEWORK) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_AT_IMPORT)) {
                 return Indent.getContinuationIndent();
             }
         }
 
-        if (elementType == RAW_SINGLE_QUOTED_STRING && parentType == STRING_LITERAL_EXPRESSION && superParentType == VAR_INIT) {
+        if (elementType == ObjJ_SEMI_COLON && FormatterUtil.isPrecededBy(node, ObjJ_SINGLE_LINE_COMMENT, WHITE_SPACE)) {
             return Indent.getContinuationIndent();
         }
 
-        if (parentType == LONG_TEMPLATE_ENTRY && EXPRESSIONS.contains(elementType)) {
+        if (elementType == ObjJ_DOT) {
             return Indent.getContinuationIndent();
         }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR)) {
+            return Indent.getContinuationIndent();
+        }
+        if (FormatterUtil.isPrecededBy(node, ObjJ_MATH_OP)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_COMMA)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACE)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACKET)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_PAREN)) {
+            return Indent.getContinuationIndent();
+        }
+
+        if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
+            return Indent.getNoneIndent();
+        }
+
         return Indent.getNoneIndent();
     }
 
     private static boolean isBetweenBraces(@NotNull final ASTNode node) {
         final IElementType elementType = node.getElementType();
-        if (elementType == LBRACE || elementType == RBRACE) return false;
+        if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) return false;
 
         for (ASTNode sibling = node.getTreePrev(); sibling != null; sibling = sibling.getTreePrev()) {
-            if (sibling.getElementType() == LBRACE) return true;
+            if (sibling.getElementType() == ObjJ_OPEN_BRACE) return true;
         }
 
         return false;

@@ -480,6 +480,10 @@ object ObjJPsiImplUtil {
     fun getSetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? =
             ObjJAccessorPropertyPsiUtil.getSetter(variableDeclaration)
 
+    @JvmStatic
+    fun getAccessorPropertyList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty>  {
+        return ObjJAccessorPropertyPsiUtil.getAccessorPropertiesList(declaration)
+    }
 
     // ============================== //
     // ======== References ========== //
@@ -1124,7 +1128,7 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement {
         val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text
-                ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
+                ?: "{UNDEF}"}${if (instanceVariable.accessor != null) " @accessors" else ""}"
         val presentation = PresentationData(label, ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
         return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
                 ?: "UNDEF"))
