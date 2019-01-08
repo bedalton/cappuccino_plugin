@@ -78,7 +78,7 @@
 		SINGLE_QUO = 						"'"
 		BLOCK_COMMENT_START =				"/*"
 		BLOCK_COMMENT_END =				 	"*/"
-		BLOCK_COMMENT_LEADING_ASTERIX =     "*"
+		BLOCK_COMMENT_LEADING_ASTERISK =     "*"
 		BLOCK_COMMENT_LINE =				'regexp:\*[^\n]*?'
 
 		// At Statements
@@ -256,8 +256,8 @@ blockComment
 	;
 
 blockCommentBody
-	::= BLOCK_COMMENT_LEADING_ASTERIX BLOCK_COMMENT_LINE
-	| BLOCK_COMMENT_LEADING_ASTERIX
+	::= BLOCK_COMMENT_LEADING_ASTERISK BLOCK_COMMENT_LINE
+	| BLOCK_COMMENT_LEADING_ASTERISK
 	| BLOCK_COMMENT_LINE
 	;
 
@@ -432,7 +432,7 @@ bodyVariableAssignment
 	;
 
 variableAssignmentLogical
-	::= (qualifiedReference|'@deref' '(' variableName ')') assignmentExprPrime
+	::= (qualifiedReference|derefExpression) assignmentExprPrime
 	{
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[getAssignedValue getQualifiedReferenceList]
@@ -465,7 +465,7 @@ globalVariableDeclaration
 	;
 
 variableDeclaration
-	::= (qualifiedReference|'@deref' '(' qualifiedReference ')') '=' ((qualifiedReference|'@deref' '(' qualifiedReference ')') '=')* expr
+	::= (qualifiedReference|derefExpression) '=' ((qualifiedReference|derefExpression) '=')* expr
 	{
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[assignedValue="/expr"]
@@ -483,7 +483,7 @@ instanceVariableDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement]
+		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement getAccessorPropertyList]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
 	}
@@ -493,7 +493,7 @@ private recover_instanceVariableDeclaration
 	::=  !(eos|recover_instanceVariableList)
 	;
 
-private accessor
+accessor
 	::= '@accessors' ('(' accessorPropertyList? ')')?
 	;
 
@@ -560,6 +560,7 @@ private ifStatementStart
 	}
 	;
 
+//@todo Replace with 'else' ifStatement instead of redeclaring whole block
 elseIfStatement
 	::= 'else' 'if' conditionExpression statementOrBlock
 	{
@@ -1485,11 +1486,11 @@ mathExprPrime
 	::= mathOp expr
 	;
 
-private mathOp
+mathOp
 	::= '+'|'-'|'*'|'/'|'%'|'<<'|'>>'|'<<<'|'>>>'|'^'|'~'|'&'|'|'
 	;
 
-private assignmentOperator
+assignmentOperator
 	::= '*='
     | 	'/='
     | 	'%='

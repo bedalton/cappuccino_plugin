@@ -156,7 +156,7 @@ fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: 
     }
     val instanceVariableDeclarationList = implementationDeclaration.instanceVariableList?.instanceVariableDeclarationList ?: return false;
     for (instanceVariableDeclaration in instanceVariableDeclarationList) {
-        if (instanceVariableDeclaration.atAccessors == null) {
+        if (instanceVariableDeclaration.accessor == null) {
             continue
         }
         if (instanceVariableDeclaration.variableName != null && selector == instanceVariableDeclaration.variableName!!.text) {
