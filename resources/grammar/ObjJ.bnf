@@ -78,7 +78,8 @@
 		SINGLE_QUO = 						"'"
 		BLOCK_COMMENT_START =				"/*"
 		BLOCK_COMMENT_END =				 	"*/"
-
+		BLOCK_COMMENT_LEADING_ASTERIX =     "*"
+		BLOCK_COMMENT_LINE =				'regexp:\*[^\n]*?'
 
 		// At Statements
 		AT_FRAGMENT =						'@fragment'
@@ -248,12 +249,17 @@ comment
     ;
 
 blockComment
-	::= BLOCK_COMMENT_START BLOCK_COMMENT_TEXT? BLOCK_COMMENT_END
+	::= BLOCK_COMMENT_START blockCommentBody BLOCK_COMMENT_END
 	{
 		pin=1
 	}
 	;
 
+blockCommentBody
+	::= BLOCK_COMMENT_LEADING_ASTERIX BLOCK_COMMENT_LINE
+	| BLOCK_COMMENT_LEADING_ASTERIX
+	| BLOCK_COMMENT_LINE
+	;
 
 importFile
 	::= '@import' stringLiteral
@@ -1381,13 +1387,13 @@ expr
 
 leftExpr
 	::= incrementExpr
-	|	'@ref' '(' variableName ')'
+	|	refExpression
 	|	variableDeclaration
 	|	functionCall
     |	methodCall
-    | 	'new' expr ('(' expressionSequence? ')')?
+    | 	newExpression
 	|	variableAssignmentLogical
-	|	'@deref' '(' variableName ')'
+	|	derefExpression
     |	qualifiedReference
     |	objectLiterals
     |	primary
@@ -1395,6 +1401,10 @@ leftExpr
 	|	typeOfExprPrime
     |	regularExpressionLiteral
 	;
+
+refExpression::='@ref' '(' variableName ')';
+derefExpression::='@deref' '(' variableName ')';
+newExpression::= 'new' expr ('(' expressionSequence? ')')?;
 
 enclosedExpr
 	::= arrayIndexSelector
