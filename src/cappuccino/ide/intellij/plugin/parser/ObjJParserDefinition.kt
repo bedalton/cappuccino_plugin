@@ -7,8 +7,10 @@ import com.intellij.psi.*
 import com.intellij.psi.tree.*
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
+import com.intellij.psi.tree.TokenSet.EMPTY
 
 class ObjJParserDefinition : ParserDefinition {
 
@@ -25,7 +27,7 @@ class ObjJParserDefinition : ParserDefinition {
     }
 
     override fun getStringLiteralElements(): TokenSet {
-        return TokenSet.EMPTY
+        return EMPTY
     }
 
     override fun createParser(project: Project): PsiParser {
@@ -33,7 +35,7 @@ class ObjJParserDefinition : ParserDefinition {
     }
 
     override fun getFileNodeType(): IFileElementType {
-        return ObjJStubTypes.FILE
+        return FILE
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
@@ -50,6 +52,5 @@ class ObjJParserDefinition : ParserDefinition {
 
     companion object {
         val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
-        val COMMENTS = TokenSet.create(ObjJTypes.ObjJ_SINGLE_LINE_COMMENT, ObjJTypes.ObjJ_BLOCK_COMMENT)
     }
 }

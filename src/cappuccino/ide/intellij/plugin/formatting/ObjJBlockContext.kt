@@ -5,7 +5,7 @@ import com.intellij.formatting.FormattingMode
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 
-internal class ObjJBlockContext(val settings: CodeStyleSettings, val mode: FormattingMode) {
-    val dartSettings: CommonCodeStyleSettings = settings.getCommonSettings(ObjJLanguage.instance)
+public class ObjJBlockContext(val settings: CodeStyleSettings, val mode: FormattingMode) {
+    val objJSettings: CommonCodeStyleSettings = settings.getCommonSettings(ObjJLanguage.instance)
 
 }

@@ -448,8 +448,13 @@ object ObjJPsiImplUtil {
     fun getVarType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVarType(property)
 
     @JvmStatic
+    fun getFormalVariableType(selector:ObjJMethodDeclarationSelector) : ObjJFormalVariableType? {
+        return selector.methodHeaderSelectorFormalVariableType?.formalVariableType
+    }
+
+    @JvmStatic
     fun hasMethod(classElement: ObjJClassDeclarationElement<*>, selector: String): Boolean {
-        return !classElement.getMethodHeaders().none { it.selectorString == selector; }
+        return !classElement.getMethodHeaders().none { it.selectorString == selector }
     }
 
     @JvmStatic

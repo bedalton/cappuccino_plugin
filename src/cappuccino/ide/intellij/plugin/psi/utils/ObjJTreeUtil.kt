@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -89,7 +90,7 @@ fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiEle
 
 fun ASTNode.getPreviousNonEmptySiblingIgnoringComments(): ASTNode? {
     var node = getPreviousNonEmptyNode(true)
-    while (node != null && node.elementType in ObjJParserDefinition.COMMENTS) {
+    while (node != null && node.elementType in ObjJTokenSets.COMMENTS) {
         node = getPreviousNonEmptyNode(true)
     }
     return node

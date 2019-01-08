@@ -2,80 +2,62 @@
 
 package cappuccino.ide.intellij.plugin.formatting
 
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
+import cappuccino.ide.intellij.plugin.lang.ObjJFileType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
-import com.intellij.application.options.CodeStyle
 import com.intellij.formatting.*
-import com.intellij.formatting.ChildAttributes.DELEGATE_TO_PREV_CHILD
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.annotations.NotNull
 import com.intellij.formatting.Wrap
 import java.util.ArrayList
-import com.intellij.formatting.SpacingBuilder
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.formatting.templateLanguages.BlockWithParent
 import com.intellij.formatting.ChildAttributes
-import com.intellij.formatting.Indent.getNoneIndent
-import com.intellij.formatting.Indent.Type.SPACES
-import com.intellij.application.options.CodeStyle.getIndentSize
-import com.intellij.psi.impl.source.tree.ChildRole.ARGUMENT_LIST
-import com.intellij.formatting.Alignment.createChildAlignment
 import com.intellij.formatting.WrapType
-import com.intellij.formatting.Wrap.createChildWrap
 import com.intellij.psi.formatter.FormatterUtil
-import com.intellij.psi.formatter.java.JavaSpacePropertyProcessor.getSpacing
 import com.intellij.formatting.Spacing
-import com.sun.webkit.Timer.getMode
 import com.intellij.psi.codeStyle.CodeStyleSettings
-import com.intellij.psi.impl.source.tree.JavaElementType.RETURN_STATEMENT
-import com.intellij.psi.impl.source.tree.JavaElementType.CONTINUE_STATEMENT
-import com.intellij.psi.impl.source.tree.JavaElementType.BREAK_STATEMENT
-import com.intellij.psi.impl.source.tree.JavaElementType.FOR_STATEMENT
-import com.intellij.psi.impl.source.tree.JavaElementType.WHILE_STATEMENT
-import com.intellij.psi.impl.source.tree.JavaElementType.IF_STATEMENT
+import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 
-class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignment: Alignment, private val mySettings: CodeStyleSettings, private val myContext: DartBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
-
-    private val myIndentProcessor: DartIndentProcessor
-    private val mySpacingProcessor: DartSpacingProcessor
+class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
+    private val myIndentProcessor: ObjJIndentProcessor
+    private val mySpacingProcessor: ObjJSpacingProcessor
     private val myWrappingProcessor: DartWrappingProcessor
     private val myAlignmentProcessor: DartAlignmentProcessor
     private var myChildWrap: Wrap? = null
     private val myIndent: Indent
     private var myParent: BlockWithParent? = null
-    private var mySubDartBlocks: MutableList<DartBlock>? = null
+    private var mySubObjJFormattedBlocks: MutableList<ObjJFormattedBlock>? = null
 
-    val subDartBlocks: List<DartBlock>?
+    val subObjJFormattedBlocks: List<ObjJFormattedBlock>?
         get() {
-            if (mySubDartBlocks == null) {
-                mySubDartBlocks = ArrayList()
+            if (mySubObjJFormattedBlocks == null) {
+                mySubObjJFormattedBlocks = ArrayList()
                 for (block in subBlocks) {
-                    mySubDartBlocks!!.add(block as DartBlock)
+                    mySubObjJFormattedBlocks!!.add(block as ObjJFormattedBlock)
                 }
-                mySubDartBlocks = if (!mySubDartBlocks!!.isEmpty()) mySubDartBlocks else DART_EMPTY
+                mySubObjJFormattedBlocks = if (!mySubObjJFormattedBlocks!!.isEmpty()) mySubObjJFormattedBlocks else OBJJ_EMPTY
             }
-            return mySubDartBlocks
+            return mySubObjJFormattedBlocks
         }
 
     init {
-        myIndentProcessor = ObjJIndentProcessor(myContext.getDartSettings())
-        mySpacingProcessor = DartSpacingProcessor(node, myContext.getDartSettings())
-        myWrappingProcessor = DartWrappingProcessor(node, myContext.getDartSettings())
-        myAlignmentProcessor = DartAlignmentProcessor(node, myContext.getDartSettings())
-        myIndent = myIndentProcessor.getChildIndent(myNode, myContext.getMode())
+        val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.getPsi().project).getCustomSettings(ObjJCodeStyleSettings::class.java)
+        myIndentProcessor = ObjJIndentProcessor(myContext.objJSettings)
+        mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjStyleSettings)
+        myWrappingProcessor = DartWrappingProcessor(node, myContext.objJSettings)
+        myAlignmentProcessor = DartAlignmentProcessor(node, myContext.objJSettings)
+        myIndent = myIndentProcessor.getChildIndent(myNode, myContext.mode)
     }
 
     override fun getIndent(): Indent? {
         return myIndent
     }
 
-    fun getSpacing(child1: Block, child2: Block): Spacing {
-        return mySpacingProcessor.getSpacing(child1, child2)
+    override fun getSpacing(child1: Block?, child2: Block): Spacing? {
+        return mySpacingProcessor.getSpacing(child1, child2) ?: Spacing.getReadOnlySpacing()
     }
 
     override fun buildChildren(): List<Block> {
@@ -89,7 +71,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
                 childNode = childNode.treeNext
                 continue
             }
-            val childBlock = DartBlock(childNode, createChildWrap(childNode), createChildAlignment(childNode), mySettings, myContext)
+            val childBlock = ObjJFormattedBlock(childNode, createChildWrap(childNode), createChildAlignment(childNode), mySettings, myContext)
             childBlock.setParent(this)
             tlChildren.add(childBlock)
             childNode = childNode.treeNext
@@ -101,54 +83,53 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
         val childType = child.elementType
         val wrap = myWrappingProcessor.createChildWrap(child, Wrap.createWrap(WrapType.NONE, false), myChildWrap)
 
-        if (childType === ASSIGNMENT_OPERATOR) {
+        if (childType in ObjJTokenSets.ASSIGNMENT_OPERATORS) {
             myChildWrap = wrap
         }
         return wrap
     }
 
-    @Nullable
     protected fun createChildAlignment(child: ASTNode): Alignment? {
         val type = child.elementType
-        return if (type !== LPAREN && !BLOCKS.contains(type)) {
+        return if (type !== ObjJ_OPEN_PAREN && !ObjJTokenSets.BLOCKS.contains(type)) {
             myAlignmentProcessor.createChildAlignment()
         } else null
     }
 
     override fun isIncomplete(): Boolean {
-        return super.isIncomplete() || myNode.elementType == ARGUMENT_LIST
+        return super.isIncomplete() || myNode.elementType == ObjJ_ARGUMENTS
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         val elementType = myNode.elementType
-        val previousBlock = if (newIndex == 0) null else subDartBlocks!![newIndex - 1]
+        val previousBlock = if (newIndex == 0) null else subObjJFormattedBlocks!![newIndex - 1]
         val previousType = previousBlock?.node?.elementType
 
-        if (previousType === LBRACE || previousType === LBRACKET) {
+        if (previousType === ObjJ_OPEN_BRACE || previousType === ObjJ_OPEN_BRACKET) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
-        if (previousType === RPAREN && STATEMENTS_WITH_OPTIONAL_BRACES.contains(elementType)) {
+        if (previousType === ObjJ_CLOSE_PAREN && STATEMENTS_WITH_OPTIONAL_BRACES.contains(elementType)) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
-        if (previousType === COLON && (elementType === SWITCH_CASE || elementType === DEFAULT_CASE)) {
+        if (previousType === ObjJ_COLON && (elementType === ObjJ_CASE_CLAUSE || elementType === ObjJ_DEFAULT_CLAUSE)) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
-        if (previousType === SWITCH_CASE || previousType === DEFAULT_CASE) {
+        if (previousType === ObjJ_CASE_CLAUSE || previousType === ObjJ_DEFAULT_CLAUSE) {
             if (previousBlock != null) {
-                val subBlocks = previousBlock.subDartBlocks
+                val subBlocks = previousBlock.subObjJFormattedBlocks
                 if (!subBlocks!!.isEmpty()) {
                     val lastChildInPrevBlock = subBlocks[subBlocks.size - 1]
-                    val subSubBlocks = lastChildInPrevBlock.subDartBlocks
+                    val subSubBlocks = lastChildInPrevBlock.subObjJFormattedBlocks
                     if (isLastTokenInSwitchCase(subSubBlocks!!)) {
                         return ChildAttributes(Indent.getNormalIndent(), null)  // e.g. Enter after BREAK_STATEMENT
                     }
                 }
             }
 
-            val indentSize = mySettings.getIndentSize(DartFileType.INSTANCE) * 2
+            val indentSize = mySettings.getIndentSize(ObjJFileType.INSTANCE) * 2
             return ChildAttributes(Indent.getIndent(Indent.Type.SPACES, indentSize, false, false), null)
         }
 
@@ -156,12 +137,12 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
             return ChildAttributes(Indent.getNoneIndent(), null)
         }
 
-        if (!previousBlock.isIncomplete && newIndex < subDartBlocks!!.size && previousType !== TokenType.ERROR_ELEMENT) {
+        if (!previousBlock.isIncomplete && newIndex < subObjJFormattedBlocks!!.size && previousType !== TokenType.ERROR_ELEMENT) {
             return ChildAttributes(previousBlock.indent, previousBlock.alignment)
         }
-        if (myParent is DartBlock && (myParent as DartBlock).isIncomplete) {
+        if (myParent is ObjJFormattedBlock && (myParent as ObjJFormattedBlock).isIncomplete) {
             val child = myNode.firstChildNode
-            if (child == null || !(child.elementType === OPEN_QUOTE && child.textLength == 3)) {
+            if (child == null || !((child.elementType === ObjJ_DOUBLE_QUO || child.elementType === ObjJ_SINGLE_QUO) && child.textLength == 3)) {
                 return ChildAttributes(Indent.getContinuationIndent(), null)
             }
         }
@@ -183,13 +164,13 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
     }
 
     companion object {
-        val DART_EMPTY = Collections.emptyList()
+        val OBJJ_EMPTY:List<ObjJFormattedBlock> = emptyList()
 
-        private val STATEMENTS_WITH_OPTIONAL_BRACES = TokenSet.create(IF_STATEMENT, WHILE_STATEMENT, FOR_STATEMENT)
+        private val STATEMENTS_WITH_OPTIONAL_BRACES = TokenSet.create(ObjJ_IF_STATEMENT, ObjJ_WHILE_STATEMENT, ObjJ_FOR_STATEMENT)
 
-        private val LAST_TOKENS_IN_SWITCH_CASE = TokenSet.create(BREAK_STATEMENT, CONTINUE_STATEMENT, RETURN_STATEMENT)
+        private val LAST_TOKENS_IN_SWITCH_CASE = TokenSet.create(ObjJ_BREAK_STATEMENT, ObjJ_CONTINUE, ObjJ_RETURN_STATEMENT)
 
-        private fun isLastTokenInSwitchCase(blocks: List<DartBlock>): Boolean {
+        private fun isLastTokenInSwitchCase(blocks: List<ObjJFormattedBlock>): Boolean {
             val size = blocks.size
             // No blocks.
             if (size == 0) {
@@ -202,29 +183,11 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignm
                 return true
             }
             // [throw expr][;]
-            if (type === SEMICOLON && size > 1) {
+            if (type === ObjJ_SEMI_COLON && size > 1) {
                 val lastBlock2 = blocks[size - 2]
-                return lastBlock2.node.elementType === THROW_EXPRESSION
+                return lastBlock2.node.elementType === ObjJ_THROW_STATEMENT
             }
             return false
         }
-    }
-
-    companion object {
-
-        private val BLOCK_TYPE_TOKEN_SET = TokenSet.create(
-                ObjJ_BLOCK_ELEMENT,
-                ObjJ_METHOD_BLOCK,
-                ObjJ_IMPLEMENTATION_DECLARATION,
-                ObjJ_PROTOCOL_DECLARATION,
-                ObjJ_STATEMENT_OR_BLOCK
-        )
-
-        private val CHILDREN_SHOULD_OFFSET = TokenSet.create(
-                ObjJ_METHOD_CALL,
-                ObjJ_METHOD_HEADER,
-                ObjJ_EXPR
-        )
-
     }
 }
