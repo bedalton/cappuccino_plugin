@@ -18,255 +18,213 @@ import com.intellij.formatting.Wrap
 import java.util.ArrayList
 import com.intellij.formatting.SpacingBuilder
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
+import com.intellij.formatting.templateLanguages.BlockWithParent
+import com.intellij.formatting.ChildAttributes
+import com.intellij.formatting.Indent.getNoneIndent
+import com.intellij.formatting.Indent.Type.SPACES
+import com.intellij.application.options.CodeStyle.getIndentSize
+import com.intellij.psi.impl.source.tree.ChildRole.ARGUMENT_LIST
+import com.intellij.formatting.Alignment.createChildAlignment
+import com.intellij.formatting.WrapType
+import com.intellij.formatting.Wrap.createChildWrap
+import com.intellij.psi.formatter.FormatterUtil
+import com.intellij.psi.formatter.java.JavaSpacePropertyProcessor.getSpacing
+import com.intellij.formatting.Spacing
+import com.sun.webkit.Timer.getMode
+import com.intellij.psi.codeStyle.CodeStyleSettings
+import com.intellij.psi.impl.source.tree.JavaElementType.RETURN_STATEMENT
+import com.intellij.psi.impl.source.tree.JavaElementType.CONTINUE_STATEMENT
+import com.intellij.psi.impl.source.tree.JavaElementType.BREAK_STATEMENT
+import com.intellij.psi.impl.source.tree.JavaElementType.FOR_STATEMENT
+import com.intellij.psi.impl.source.tree.JavaElementType.WHILE_STATEMENT
+import com.intellij.psi.impl.source.tree.JavaElementType.IF_STATEMENT
 
-open class ObjJFormattedBlock(node: ASTNode,
-                              wrap: Wrap?,
-                              alignment: Alignment?,
-                              private val spacingBuilder: SpacingBuilder,
-                              private val indent: Indent?,
-                              private val childrenWrap: Wrap?,
-                              private val childrenAlignment: Alignment?) : AbstractBlock(node, wrap, alignment) {
+class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignment: Alignment, private val mySettings: CodeStyleSettings, private val myContext: DartBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
 
-    val elementType: IElementType = node.elementType
+    private val myIndentProcessor: DartIndentProcessor
+    private val mySpacingProcessor: DartSpacingProcessor
+    private val myWrappingProcessor: DartWrappingProcessor
+    private val myAlignmentProcessor: DartAlignmentProcessor
+    private var myChildWrap: Wrap? = null
+    private val myIndent: Indent
+    private var myParent: BlockWithParent? = null
+    private var mySubDartBlocks: MutableList<DartBlock>? = null
 
-    constructor (node: ASTNode, spacingBuilder: SpacingBuilder) : this(node, null, null, spacingBuilder, null, null, null)
-
-
-    override fun buildChildren(): MutableList<com.intellij.formatting.Block> {
-        return buildChildren(myNode, myWrap, myAlignment, childrenWrap, childrenAlignment)
-    }
-
-    private fun buildChild(child: ASTNode): Block {
-        return ObjJFormattedBlock(child, spacingBuilder)
-    }
-
-    private fun buildChild(child: ASTNode, alignment: Alignment?): Block {
-        return ObjJFormattedBlock(child, null, alignment, spacingBuilder, null, null, null)
-    }
-
-    private fun buildChild(child: ASTNode, indent: Indent?): Block {
-        return ObjJFormattedBlock(child, null, null, spacingBuilder, indent, null, null)
-    }
-
-    private fun buildChild(child: ASTNode, wrap: Wrap?): Block {
-        return ObjJFormattedBlock(child, wrap, null, spacingBuilder, null, null, null)
-    }
-
-    private fun buildChild(child: ASTNode, wrap: Wrap?, alignment: Alignment?): Block {
-        return ObjJFormattedBlock(child, wrap, alignment, spacingBuilder, null, null, null)
-    }
-
-    private fun buildChild(child: ASTNode,
-                           wrap: Wrap?,
-                           alignment: Alignment?,
-                           childrenAlignment: Alignment?): Block {
-        return ObjJFormattedBlock(child, wrap, alignment, spacingBuilder, null, null, childrenAlignment)
-    }
-
-    private fun buildChild(child: ASTNode, wrap: Wrap?, indent: Indent?): Block {
-        return ObjJFormattedBlock(child, wrap, null, spacingBuilder, indent, null, null)
-    }
-
-    private fun buildChild(child: ASTNode, alignment: Alignment?, indent: Indent?): Block {
-        return ObjJFormattedBlock(child, null, alignment, spacingBuilder, indent, null, null)
-    }
-
-    private fun buildChild(child: ASTNode,
-                           wrap: Wrap?,
-                           alignment: Alignment?,
-                           indent: Indent?): Block {
-        return ObjJFormattedBlock(child, wrap, alignment, spacingBuilder, indent, null, null)
-    }
-
-    private fun buildChild(child: ASTNode,
-                           wrap: Wrap?,
-                           indent: Indent?,
-                           childrenWrap: Wrap?): Block {
-        return ObjJFormattedBlock(
-                child,
-                wrap,
-                null,
-                spacingBuilder,
-                indent,
-                childrenWrap, null
-        )
-    }
-
-    private fun buildChildren(
-            parent: ASTNode,
-            parentWrap: Wrap?,
-            parentAlignment: Alignment?,
-            childrenWrap: Wrap?,
-            childrenAlignment: Alignment?): MutableList<com.intellij.formatting.Block> {
-        val parentElementType: IElementType = parent.elementType
-        return when (parentElementType) {
-            ObjJ_METHOD_CALL -> {
-                return buildMethodCallChildren(parent)
-            }
-            in BLOCK_TYPE_TOKEN_SET -> {
-                return buildBlockChildren(parent, parentAlignment)
-            }
-            else -> {
-                val commaWrap = Wrap.createChildWrap(childrenWrap, WrapType.NONE, true)
-
-                /* all children need a shared alignment, so that the second child doesn't have an automatic continuation
-                   indent */
-                var finalChildrenAlignment: Alignment? = if (BLOCK_TYPE_TOKEN_SET.contains(parentElementType)) Alignment.createChildAlignment(alignment) else childrenAlignment
-                if (finalChildrenAlignment == null) {
-                    finalChildrenAlignment = Alignment.createChildAlignment(parentAlignment)
+    val subDartBlocks: List<DartBlock>?
+        get() {
+            if (mySubDartBlocks == null) {
+                mySubDartBlocks = ArrayList()
+                for (block in subBlocks) {
+                    mySubDartBlocks!!.add(block as DartBlock)
                 }
-                return buildChildren(parent) { child: ASTNode, childElementType: IElementType, blockList: MutableList<Block> ->
-                    if (childElementType == ObjJ_COMMA) {
-                        blockList.add(buildChild(child, commaWrap))
-                    } else {
-                        blockList.add(buildChild(child, childrenWrap, finalChildrenAlignment))
-                    }
-                    blockList
-                }
+                mySubDartBlocks = if (!mySubDartBlocks!!.isEmpty()) mySubDartBlocks else DART_EMPTY
             }
+            return mySubDartBlocks
         }
-    }
 
-    private fun buildBlockChildren(block:ASTNode, alignment:Alignment?) : MutableList<Block> {
-        val childrenWrap = Wrap.createWrap(WrapType.ALWAYS, true)
-        return buildChildren(block) { child: ASTNode, childElementType: IElementType, blockList: MutableList<Block> ->
-            if (childElementType in BLOCK_TYPE_TOKEN_SET) {
-                blockList.add(buildChild(child, childrenWrap, alignment))
-            }
-            blockList
-        }
-    }
-
-    private fun buildMethodCallChildren(methodCall: ASTNode): MutableList<Block> {
-        return buildChildren(methodCall) { child: ASTNode, childElementType: IElementType, blockList: MutableList<Block> ->
-            if (childElementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
-                blockList.addAll(buildSelectorChildren(child, Indent.getContinuationIndent(true)))
-            }
-            blockList.add(buildChild(child))
-            blockList
-        }
-    }
-
-    private fun buildSelectorChildren(selector: ASTNode, indent:Indent): MutableList<Block> {
-        val selectorWrap = Wrap.createWrap(WrapType.NORMAL, true)
-        val selectorColonWrap = Wrap.createChildWrap(selectorWrap, WrapType.NONE, true)
-        val selectorValueWrap = Wrap.createWrap(WrapType.NORMAL, true)
-
-        return buildChildren(selector) { child: ASTNode, childElementType: IElementType, blockList: MutableList<Block> ->
-            when (childElementType) {
-                ObjJ_SELECTOR -> blockList.add(buildChild(child, selectorWrap, null, indent))
-                ObjJ_COLON -> blockList.add(buildChild(child, selectorColonWrap))
-                else -> blockList.add(buildChild(child, selectorValueWrap, null, Indent.getContinuationIndent(false)))
-            }
-            blockList
-        }
+    init {
+        myIndentProcessor = DartIndentProcessor(myContext.getDartSettings())
+        mySpacingProcessor = DartSpacingProcessor(node, myContext.getDartSettings())
+        myWrappingProcessor = DartWrappingProcessor(node, myContext.getDartSettings())
+        myAlignmentProcessor = DartAlignmentProcessor(node, myContext.getDartSettings())
+        myIndent = myIndentProcessor.getChildIndent(myNode, myContext.getMode())
     }
 
     override fun getIndent(): Indent? {
-        return indent
+        return myIndent
     }
 
-    override fun getWrap(): Wrap? {
-        return myWrap
+    fun getSpacing(child1: Block, child2: Block): Spacing {
+        return mySpacingProcessor.getSpacing(child1, child2)
     }
 
-    override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
-        if (newChildIndex == 0) {
-            return DELEGATE_TO_PREV_CHILD
+    override fun buildChildren(): List<Block> {
+        if (isLeaf) {
+            return AbstractBlock.EMPTY
         }
-        val nodeElementType = myNode.elementType
-        val indent:Indent = when (nodeElementType) {
-            in BLOCK_TYPE_TOKEN_SET -> Indent.getNormalIndent(true)
-            else -> return super.getChildAttributes(newChildIndex)
+        val tlChildren = ArrayList<Block>()
+        var childNode: ASTNode? = node.firstChildNode
+        while (childNode != null) {
+            if (FormatterUtil.containsWhiteSpacesOnly(childNode)) {
+                childNode = childNode.treeNext
+                continue
+            }
+            val childBlock = DartBlock(childNode, createChildWrap(childNode), createChildAlignment(childNode), mySettings, myContext)
+            childBlock.setParent(this)
+            tlChildren.add(childBlock)
+            childNode = childNode.treeNext
         }
-        return ChildAttributes(indent, this.getFirstChildAlignment())
+        return tlChildren
     }
 
-    private fun getFirstChildAlignment(): Alignment? {
-        val subBlocks = this.subBlocks
-        val iterator = subBlocks.iterator()
+    fun createChildWrap(child: ASTNode): Wrap {
+        val childType = child.elementType
+        val wrap = myWrappingProcessor.createChildWrap(child, Wrap.createWrap(WrapType.NONE, false), myChildWrap)
 
-        var alignment: Alignment?
-        do {
-            if (!iterator.hasNext()) {
-                return null
+        if (childType === ASSIGNMENT_OPERATOR) {
+            myChildWrap = wrap
+        }
+        return wrap
+    }
+
+    @Nullable
+    protected fun createChildAlignment(child: ASTNode): Alignment? {
+        val type = child.elementType
+        return if (type !== LPAREN && !BLOCKS.contains(type)) {
+            myAlignmentProcessor.createChildAlignment()
+        } else null
+    }
+
+    override fun isIncomplete(): Boolean {
+        return super.isIncomplete() || myNode.elementType == ARGUMENT_LIST
+    }
+
+    override fun getChildAttributes(newIndex: Int): ChildAttributes {
+        val elementType = myNode.elementType
+        val previousBlock = if (newIndex == 0) null else subDartBlocks!![newIndex - 1]
+        val previousType = previousBlock?.node?.elementType
+
+        if (previousType === LBRACE || previousType === LBRACKET) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType === RPAREN && STATEMENTS_WITH_OPTIONAL_BRACES.contains(elementType)) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType === COLON && (elementType === SWITCH_CASE || elementType === DEFAULT_CASE)) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType === SWITCH_CASE || previousType === DEFAULT_CASE) {
+            if (previousBlock != null) {
+                val subBlocks = previousBlock.subDartBlocks
+                if (!subBlocks!!.isEmpty()) {
+                    val lastChildInPrevBlock = subBlocks[subBlocks.size - 1]
+                    val subSubBlocks = lastChildInPrevBlock.subDartBlocks
+                    if (isLastTokenInSwitchCase(subSubBlocks!!)) {
+                        return ChildAttributes(Indent.getNormalIndent(), null)  // e.g. Enter after BREAK_STATEMENT
+                    }
+                }
             }
 
-            val subBlock = iterator.next() as Block
-            alignment = subBlock.alignment
-        } while (alignment == null)
+            val indentSize = mySettings.getIndentSize(DartFileType.INSTANCE) * 2
+            return ChildAttributes(Indent.getIndent(Indent.Type.SPACES, indentSize, false, false), null)
+        }
 
-        return alignment
-    }
+        if (previousBlock == null) {
+            return ChildAttributes(Indent.getNoneIndent(), null)
+        }
 
-    override fun getSpacing(
-            block: Block?,
-            block1: Block): Spacing? {
-        return spacingBuilder.getSpacing(this, block, block1)
+        if (!previousBlock.isIncomplete && newIndex < subDartBlocks!!.size && previousType !== TokenType.ERROR_ELEMENT) {
+            return ChildAttributes(previousBlock.indent, previousBlock.alignment)
+        }
+        if (myParent is DartBlock && (myParent as DartBlock).isIncomplete) {
+            val child = myNode.firstChildNode
+            if (child == null || !(child.elementType === OPEN_QUOTE && child.textLength == 3)) {
+                return ChildAttributes(Indent.getContinuationIndent(), null)
+            }
+        }
+        return if (myParent == null && isIncomplete) {
+            ChildAttributes(Indent.getContinuationIndent(), null)
+        } else ChildAttributes(previousBlock.indent, previousBlock.alignment)
     }
 
     override fun isLeaf(): Boolean {
-        return myNode.firstChildNode != null
+        return false
+    }
+
+    override fun getParent(): BlockWithParent? {
+        return myParent
+    }
+
+    override fun setParent(newParent: BlockWithParent) {
+        myParent = newParent
+    }
+
+    companion object {
+        val DART_EMPTY = Collections.emptyList()
+
+        private val STATEMENTS_WITH_OPTIONAL_BRACES = TokenSet.create(IF_STATEMENT, WHILE_STATEMENT, FOR_STATEMENT)
+
+        private val LAST_TOKENS_IN_SWITCH_CASE = TokenSet.create(BREAK_STATEMENT, CONTINUE_STATEMENT, RETURN_STATEMENT)
+
+        private fun isLastTokenInSwitchCase(blocks: List<DartBlock>): Boolean {
+            val size = blocks.size
+            // No blocks.
+            if (size == 0) {
+                return false
+            }
+            // [return x;]
+            val lastBlock = blocks[size - 1]
+            val type = lastBlock.node.elementType
+            if (LAST_TOKENS_IN_SWITCH_CASE.contains(type)) {
+                return true
+            }
+            // [throw expr][;]
+            if (type === SEMICOLON && size > 1) {
+                val lastBlock2 = blocks[size - 2]
+                return lastBlock2.node.elementType === THROW_EXPRESSION
+            }
+            return false
+        }
     }
 
     companion object {
 
         private val BLOCK_TYPE_TOKEN_SET = TokenSet.create(
-            ObjJ_BLOCK_ELEMENT,
-            ObjJ_METHOD_BLOCK,
-            ObjJ_IMPLEMENTATION_DECLARATION,
-            ObjJ_PROTOCOL_DECLARATION,
-            ObjJ_STATEMENT_OR_BLOCK
+                ObjJ_BLOCK_ELEMENT,
+                ObjJ_METHOD_BLOCK,
+                ObjJ_IMPLEMENTATION_DECLARATION,
+                ObjJ_PROTOCOL_DECLARATION,
+                ObjJ_STATEMENT_OR_BLOCK
         )
 
-        private val WHITESPACE_TOKEN_SET = TokenSet.create(TokenType.WHITE_SPACE, ObjJ_LINE_TERMINATOR)
-
-        fun buildChildren(
-                node: ASTNode,
-                reduce: BlockListReducer): MutableList<com.intellij.formatting.Block> {
-            var blockList: MutableList<com.intellij.formatting.Block> = ArrayList()
-
-            var child: ASTNode? = node.firstChildNode
-
-            while (child != null) {
-                if (shouldBuildBlock(child)) {
-                    blockList = reduce(child, child.elementType, blockList)
-                }
-
-                child = child.treeNext
-            }
-
-            return blockList
-        }
-
-        private fun shouldBuildBlock(@NotNull childElementType: IElementType): Boolean {
-            return !WHITESPACE_TOKEN_SET.contains(childElementType)
-        }
-
-        private fun shouldBuildBlock(@NotNull child: ASTNode): Boolean {
-            return shouldBuildBlock(child.elementType) && child.textLength > 0
-        }
-        private fun codeStyleSettings(node: ASTNode): ObjJCodeStyleSettings {
-            return CodeStyle
-                    .getCustomSettings(node.psi.containingFile, ObjJCodeStyleSettings::class.java)
-        }
-
-        private fun commonCodeStyleSettings(node: ASTNode): CommonCodeStyleSettings {
-            return CodeStyle
-                    .getLanguageSettings(node.psi.containingFile, ObjJLanguage.instance)
-        }
+        private val CHILDREN_SHOULD_OFFSET = TokenSet.create(
+                ObjJ_METHOD_CALL,
+                ObjJ_METHOD_HEADER,
+                ObjJ_EXPR
+        )
 
     }
 }
-
-typealias BlockListReducer = (child: ASTNode,
-               childElementType: IElementType,
-               blockList: MutableList<com.intellij.formatting.Block>) -> MutableList<com.intellij.formatting.Block>
-
-typealias ContainerBlockListReducer = (
-            child: ASTNode,
-            childElementType: IElementType,
-            tailWrap: Wrap,
-            childrenIndent: Indent,
-            blockList: MutableList<com.intellij.formatting.Block>
-    ) -> MutableList<com.intellij.formatting.Block>

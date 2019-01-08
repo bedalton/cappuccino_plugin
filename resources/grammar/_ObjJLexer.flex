@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.lexer;
 
-import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
@@ -125,8 +124,9 @@ WHITE_SPACE=\p{Blank}+
 }
 
 <BLOCK_COMMENT> {
-	"*/"								 { yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT; }
-	{BLOCK_COMMENT_TEXT}				 { /*log("Comment:" + yytext());*/ /*return ObjJ_BLOCK_COMMENT_TEXT;*/ }
+	"*/"								 { yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
+  	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
+ 	'.*'/'\n'							 { return ObjJ_BLOCK_COMMENT_LINE; }
 }
 
 <YYINITIAL,PREPROCESSOR> {
@@ -134,7 +134,7 @@ WHITE_SPACE=\p{Blank}+
 	"?*__ERR_SEMICOLON__*?"			 	 { return ObjJ_ERROR_SEQUENCE_TOKEN; }
 	"'"									 { canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
 	("\""|"@\"")						 { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-	//"/*"								 { canRegex(false);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); /*return ObjJ_BLOCK_COMMENT_START;*/ }
+	"/*"								 { canRegex(false);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); return ObjJ_BLOCK_COMMENT_START; }
 	"@["                                 { canRegex(true); return ObjJ_AT_OPENBRACKET; }
 	"["                                  { canRegex(true); return ObjJ_OPEN_BRACKET; }
 	"]"                                  { canRegex(false); return ObjJ_CLOSE_BRACKET; }
@@ -257,7 +257,6 @@ WHITE_SPACE=\p{Blank}+
 	"let"                                { canRegex(false);  return ObjJ_LET; }
 	"const"                              { canRegex(false);  return ObjJ_CONST; }
 	";"                                  { canRegex(true); return ObjJ_SEMI_COLON; }
-
 	{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
 	{SINGLE_LINE_COMMENT}                { canRegex(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
