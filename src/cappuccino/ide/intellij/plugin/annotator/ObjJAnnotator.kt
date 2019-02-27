@@ -86,8 +86,9 @@ class ObjJAnnotator : Annotator {
     private fun validateAndAnnotateContinueStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating continue element");
         if (hasIterationStatementParent(element)) {
-            annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
+            return
         }
+        annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
     }
 
     private fun validateBreakStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
