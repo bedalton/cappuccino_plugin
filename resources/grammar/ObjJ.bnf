@@ -384,6 +384,7 @@ blockElement
 		]
 		methods=[
 			getBlockList
+			getIterationStatementList
 		]
 	}
 	;
@@ -397,7 +398,9 @@ methodBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
-
+		methods [
+			getIterationStatements
+		]
 	}
 	;
 
@@ -730,7 +733,7 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
 		extends=blockElement
-		methods= [block="blockElement" getBlockList]
+		methods= [block="blockElement" getBlockList getIterationStatementList]
 	}
 	;
 
@@ -814,6 +817,8 @@ functionDeclaration
 			shouldResolve
 			getBlockList
 			createFoldingDescriptor
+			getFormalParameterArgList
+			getLastFormalParameterArg
 			block="blockElement"
 		]
 
@@ -1034,7 +1039,20 @@ preprocessorDefineFunction
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve block="preprocessorDefineBody" getBlockList]
+		methods=[
+			getName
+			setName
+			functionNameNode="/functionName"
+			getFunctionNameAsString
+			getParamNames
+			getReturnType
+			shouldResolve
+			block="preprocessorDefineBody"
+			getBlockList
+			getFormalParameterArgList
+			getLastFormalParameterArg
+			getIterationStatementList
+		]
 	}
 	;
 
@@ -1042,7 +1060,7 @@ preprocessorDefineBody
 	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"]
-		methods=[getBlockList]
+		methods=[getBlockList getIterationStatementList]
 	}
 	;
 
@@ -1454,7 +1472,7 @@ functionCall
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionCallElement"
 			//"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods=[getQualifiedNameText getIndexInQualifiedReference]
+		methods=[getQualifiedNameText getIndexInQualifiedReference getExprList getCloseParen getOpenParen]
 
 	}
 	;
@@ -1615,7 +1633,20 @@ functionLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>>"
 		]
-		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList createFoldingDescriptor block="blockElement"]
+		methods = [
+			getFunctionNameNode
+			getFunctionNameAsString
+			getFunctionNamesAsString
+			getReturnType
+			getParamNameElements
+			getParamNames
+			getFunctionNameNode
+			shouldResolve
+			getBlockList
+			createFoldingDescriptor
+			getFormalParameterArgList
+			getLastFormalParameterArg
+			block="blockElement"]
 	}
 	;
 

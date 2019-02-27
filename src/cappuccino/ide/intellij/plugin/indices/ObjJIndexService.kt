@@ -211,6 +211,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     companion object {
-        const val INDEX_VERSION = 1
+        const val INDEX_VERSION = 2
     }
 }

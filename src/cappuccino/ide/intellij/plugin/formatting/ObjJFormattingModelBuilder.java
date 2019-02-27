@@ -8,6 +8,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.psi.formatter.DocumentBasedFormattingModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,8 +18,8 @@ public class ObjJFormattingModelBuilder implements FormattingModelBuilder {
     public FormattingModel createModel(PsiElement element, CodeStyleSettings settings) {
         return createModel(element, settings, FormattingMode.REFORMAT);
     }
+
     @NotNull
-    @Override
     public FormattingModel createModel(@NotNull PsiElement element, @NotNull CodeStyleSettings settings, @NotNull FormattingMode mode) {
         // element can be DartFile, DartEmbeddedContent, DartExpressionCodeFragment
         final PsiFile psiFile = element.getContainingFile();

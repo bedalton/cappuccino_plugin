@@ -98,7 +98,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
     }
 
     override fun isIncomplete(): Boolean {
-        return super.isIncomplete() || myNode.elementType == ObjJ_ARGUMENTS
+        return super.isIncomplete()// || myNode.elementType == ObjJ_ARGUMENTS
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
