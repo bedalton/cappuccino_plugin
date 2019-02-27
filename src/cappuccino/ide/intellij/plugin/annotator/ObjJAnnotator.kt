@@ -12,6 +12,9 @@ import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.util.PsiTreeUtil
+import sun.tools.tree.ForStatement
+import sun.tools.tree.WhileStatement
 
 class ObjJAnnotator : Annotator {
 
@@ -96,9 +99,13 @@ class ObjJAnnotator : Annotator {
     }
 
     private fun hasIterationStatementParent(element: PsiElement) : Boolean {
-        return element.getParentOfType( ObjJWhileStatement::class.java) == null ||
-                element.getParentOfType( ObjJDebuggerStatement::class.java) == null ||
-                element.getParentOfType( ObjJForStatement::class.java) == null
+        return PsiTreeUtil.findFirstParent(element) {
+            it is ObjJIterationStatement ||
+            it is ObjJForStatement ||
+            it is ObjJWhileStatement ||
+            it is ObjJDoWhileStatement ||
+            it is ObjJDebuggerStatement
+        } != null
     }
 
     private fun validateVariableDeclaration(variableDeclaration: ObjJVariableDeclaration, annotationHolder: AnnotationHolder) {
