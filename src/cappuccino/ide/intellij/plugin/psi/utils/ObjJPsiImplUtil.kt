@@ -25,6 +25,8 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.FoldingGroup
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import javax.swing.*
 import java.util.*
@@ -416,6 +418,8 @@ object ObjJPsiImplUtil {
         }
         val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.*)")) else null
         for (currentSelector in selectorList) {
+
+            ProgressIndicatorProvider.checkCanceled()
             if (subSelectorPattern == null || subSelectorPattern.matcher(currentSelector.getSelectorString(false)).matches()) {
                 return currentSelector
             }
@@ -659,6 +663,7 @@ object ObjJPsiImplUtil {
     fun getBlockList(switchStatement: ObjJSwitchStatement) : List<ObjJBlock> {
         val out = ArrayList<ObjJBlock>()
         for (clause in switchStatement.caseClauseList) {
+            ProgressIndicatorProvider.checkCanceled()
             val block = clause.block ?: continue
             out.add(block)
         }
@@ -670,6 +675,7 @@ object ObjJPsiImplUtil {
         val out = ArrayList<ObjJBlock>()
         out.addAll(ifStatement.blockElementList)
         for(elseIfBlock in ifStatement.elseIfStatementList) {
+            ProgressIndicatorProvider.checkCanceled()
             val block = elseIfBlock.block
             if (block != null) {
                 out.add(block)
@@ -925,6 +931,7 @@ object ObjJPsiImplUtil {
     private fun getFormattedSelector(methodHeader: ObjJMethodHeader): String {
         val builder = StringBuilder()
         for (selector in methodHeader.methodDeclarationSelectorList) {
+            ProgressIndicatorProvider.checkCanceled()
             if (selector.selector != null) {
                 builder.append(selector.selector!!.getSelectorString(false))
             }
@@ -1118,9 +1125,11 @@ object ObjJPsiImplUtil {
     fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> {
         val out: MutableList<ObjJStructureViewElement> = mutableListOf()
         declaration.instanceVariableList?.instanceVariableDeclarationList?.forEach {
+            ProgressIndicatorProvider.checkCanceled()
             out.add(it.createTreeStructureElement())
         }
         declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach {
+            ProgressIndicatorProvider.checkCanceled()
             out.add(it.createTreeStructureElement())
         }
         return out.toTypedArray()
@@ -1288,24 +1297,60 @@ object ObjJPsiImplUtil {
     }
 
 
+    @JvmStatic
     fun getFormalParameterArgList(functionDeclaration: ObjJFunctionDeclaration): List<ObjJFormalParameterArg> {
         return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
     }
 
+    @JvmStatic
     fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionDeclaration): ObjJLastFormalParameterArg? {
         return functionDeclaration.formalParameterList?.lastFormalParameterArg
     }
 
+    @JvmStatic
     fun getFormalParameterArgList(functionDeclaration: ObjJFunctionLiteral): List<ObjJFormalParameterArg> {
         return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
     }
 
+    @JvmStatic
     fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionLiteral): ObjJLastFormalParameterArg? {
         return functionDeclaration.formalParameterList?.lastFormalParameterArg
     }
 
+    @JvmStatic
+    fun getFormalParameterArgList(functionDeclaration: ObjJPreprocessorDefineFunction): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
 
+    @JvmStatic
+    fun getLastFormalParameterArg(functionDeclaration: ObjJPreprocessorDefineFunction): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+
+    @JvmStatic
+    fun getExprList(functionCall: ObjJFunctionCall): List<ObjJExpr> {
+        return functionCall.arguments.exprList
+    }
+
+
+    @JvmStatic
+    fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement {
+        return functionCall.arguments.closeParen
+    }
+
+    @JvmStatic
+    fun getOpenParen(functionCall: ObjJFunctionCall): PsiElement {
+        return functionCall.arguments.openParen
+    }
+
+    @JvmStatic
     fun getIterationStatementList(block:ObjJBlockElement): List<ObjJIterationStatement> {
+        return block.getChildrenOfType(ObjJIterationStatement::class.java)
+    }
+
+    @JvmStatic
+    fun getIterationStatementList(block:ObjJHasBlockStatement): List<ObjJIterationStatement> {
         return block.getChildrenOfType(ObjJIterationStatement::class.java)
     }
 

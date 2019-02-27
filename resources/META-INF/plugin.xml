@@ -87,7 +87,7 @@
     <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
     <lang.smartEnterProcessor implementationClass="cappuccino.ide.intellij.plugin.fixes.ObjJSmartEnterProcessor" language="ObjectiveJ"/>
     <codeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettingsProvider"/>
-    <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
+    <!--lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/-->
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
