@@ -42,8 +42,8 @@ object ObjJVariablePsiUtil {
                 addAfter(formalVariableType, after)
             }
             //If there is an @accessor statement, add space before
-            if (atAccessors != null) {
-                addBefore(atAccessors!!, ObjJElementFactory.createSpace(project))
+            if (accessor?.atAccessors != null) {
+                addBefore(accessor?.atAccessors!!, ObjJElementFactory.createSpace(project))
             }
             //Actaully add the variable name element
             addAfter(newVariableName, after)
@@ -65,7 +65,7 @@ object ObjJVariablePsiUtil {
     fun PsiFile.getFileVariableNames(): List<String> {
         val out = ArrayList<String>()
         for (bodyVariableAssignment in getChildrenOfType(ObjJBodyVariableAssignment::class.java)) {
-            for (declaration in bodyVariableAssignment.variableDeclarationList) {
+            for (declaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
                 for (qualifiedReference in declaration.qualifiedReferenceList) {
                     out.add(qualifiedReference.partsAsString)
                 }

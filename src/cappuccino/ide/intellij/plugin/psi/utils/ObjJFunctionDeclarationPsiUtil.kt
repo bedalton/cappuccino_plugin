@@ -34,8 +34,8 @@ object ObjJFunctionDeclarationPsiUtil {
         val newFunctionName = ObjJElementFactory.createFunctionName(functionDeclaration.project, name)
         Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
         if (oldFunctionName == null) {
-            if (functionDeclaration.openParen != null) {
-                functionDeclaration.addBefore(functionDeclaration.openParen!!, newFunctionName)
+            if (functionDeclaration.formalParameterList?.openParen != null) {
+                functionDeclaration.addBefore(functionDeclaration.formalParameterList?.openParen!!, newFunctionName)
             } else {
                 functionDeclaration.addBefore(functionDeclaration.firstChild, newFunctionName)
             }
@@ -78,10 +78,10 @@ object ObjJFunctionDeclarationPsiUtil {
             if (functionName != null) {
                 defineFunction.node.replaceChild(defineFunction.functionName!!.node, functionName.node)
             }
-        } else if (defineFunction.openParen != null) {
+        } else if (defineFunction.formalParameterList?.openParen != null) {
             val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
             if (functionName != null) {
-                defineFunction.addBefore(defineFunction.openParen!!, functionName)
+                defineFunction.addBefore(defineFunction.formalParameterList?.openParen!!, functionName)
             }
         } else if (defineFunction.variableName != null) {
             val newVariableName = ObjJElementFactory.createVariableName(defineFunction.project, name)

@@ -26,9 +26,7 @@ class ObjJRemoveVarKeywordQuickFix() : LocalQuickFix {
     private fun remove(variableName:ObjJVariableName) {
         val bodyVariableAssignment:ObjJBodyVariableAssignment =
                 variableName.getParentOfType(ObjJBodyVariableAssignment::class.java) ?: return
-        if (bodyVariableAssignment.variableNameList.contains(variableName)) {
-
-        }
+        // @todo implement var removal while separating out the lone variable
         val variableDeclaration:ObjJVariableDeclaration = variableName.getParentOfType(ObjJVariableDeclaration::class.java) ?: return
         bodyVariableAssignment.varModifier
     }

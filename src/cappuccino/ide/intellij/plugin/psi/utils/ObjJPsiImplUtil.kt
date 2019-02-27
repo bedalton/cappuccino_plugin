@@ -697,10 +697,6 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(tryStatement)
 
     @JvmStatic
-    fun getBlockList(iterationStatement: ObjJIterationStatement) =
-            cappuccino.ide.intellij.plugin.psi.utils.getBlockList(iterationStatement)
-
-    @JvmStatic
     fun getBlockList(expr: ObjJExpr): List<ObjJBlock> =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(expr)
 
@@ -1289,6 +1285,28 @@ object ObjJPsiImplUtil {
             }
         }
         return null
+    }
+
+
+    fun getFormalParameterArgList(functionDeclaration: ObjJFunctionDeclaration): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
+
+    fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionDeclaration): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+    fun getFormalParameterArgList(functionDeclaration: ObjJFunctionLiteral): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
+
+    fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionLiteral): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+
+    fun getIterationStatementList(block:ObjJBlockElement): List<ObjJIterationStatement> {
+        return block.getChildrenOfType(ObjJIterationStatement::class.java)
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
