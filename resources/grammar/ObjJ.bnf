@@ -443,7 +443,7 @@ private variableAssignmentSimple
 	::= varModifier variableDeclarationList
 	;
 
-private variableDeclarationList
+variableDeclarationList
 	::=  variableDeclarationListVariableDeclaration (',' variableDeclarationListVariableDeclaration)*
 	;
 
@@ -601,6 +601,7 @@ doWhileStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
 		]
 		methods =[
 		 	getConditionalExpression
@@ -618,9 +619,10 @@ whileStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
 
 		]
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements",]
+		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
 		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="blockElement"]
 	}
 	;
@@ -644,6 +646,7 @@ forStatement
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
 		]
 		methods = [
 			getBlockList
@@ -658,7 +661,8 @@ forLoopHeader
 
 forLoopPartsInBraces
 	::= compoundForLoopHeader
-	|	inExpr;
+	|	inExpr
+	;
 
 private compoundForLoopHeader
 	::= (variableDeclarationList|variableAssignmentSimple)? ';' expressionSequence ';' expressionSequence?
@@ -910,8 +914,6 @@ implementationDeclaration
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub"
 		methods = [
-			className = "/className[0]"
-			superClass="/className[1]"
 			isCategory
 			getClassType
 			getClassNameString
@@ -950,7 +952,11 @@ private implementationHeader
 	;
 
 private implementationInheritanceDeclaration
-	::= (categoryName |':' className)? (inheritedProtocolList)?
+	::= (categoryName |':' superClass)? (inheritedProtocolList)?
+	;
+
+superClass
+	::= className
 	;
 
 categoryName

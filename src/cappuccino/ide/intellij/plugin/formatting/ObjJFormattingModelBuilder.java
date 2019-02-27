@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.formatting;
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile;
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage;
 import com.intellij.formatting.*;
 import com.intellij.lang.ASTNode;
@@ -14,8 +15,17 @@ public class ObjJFormattingModelBuilder implements FormattingModelBuilder {
     @NotNull
     @Override
     public FormattingModel createModel(PsiElement element, CodeStyleSettings settings) {
-        final ObjJFormattedBlock fileBlock = new ObjJFormattedBlock(element.getNode(), new ObjJSpacingBuilder(settings));
-        return FormattingModelProvider.createFormattingModelForPsiFile(element.getContainingFile(), fileBlock, settings);
+        return createModel(element, settings, FormattingMode.REFORMAT);
+    }
+    @NotNull
+    @Override
+    public FormattingModel createModel(@NotNull PsiElement element, @NotNull CodeStyleSettings settings, @NotNull FormattingMode mode) {
+        // element can be DartFile, DartEmbeddedContent, DartExpressionCodeFragment
+        final PsiFile psiFile = element.getContainingFile();
+        final ASTNode rootNode = psiFile instanceof ObjJFile ? psiFile.getNode() : element.getNode();
+        final ObjJBlockContext context = new ObjJBlockContext(settings, mode);
+        final ObjJFormattedBlock rootBlock = new ObjJFormattedBlock(rootNode, null, null, settings, context);
+        return new DocumentBasedFormattingModel(rootBlock, element.getProject(), settings, psiFile.getFileType(), psiFile);
     }
 
     @Nullable

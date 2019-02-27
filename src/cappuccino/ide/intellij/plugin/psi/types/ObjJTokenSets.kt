@@ -5,9 +5,9 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.tree.TokenSet.create
 
-object ObjJTokenSets {
+public object ObjJTokenSets {
 
-    val BLOCKS = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
+    public val BLOCKS = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK)
     val BLOCKS_EXT = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK, ObjJStubTypes.FILE)

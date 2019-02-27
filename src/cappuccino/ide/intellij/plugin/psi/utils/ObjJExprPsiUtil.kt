@@ -26,7 +26,7 @@ private fun isLeftExpressionAssignmentToVariable(leftExpr: ObjJLeftExpr?, variab
             val qualifiedName = ObjJVariableNameUtil.getQualifiedNameAsString(assignment.qualifiedReference, null)
             return qualifiedName == variableNameString
         }
-        return assignment?.variableName?.text == variableNameString
+        return assignment?.qualifiedReference?.text == variableNameString
     }
     if (leftExpr.variableDeclaration != null) {
         val variableDeclaration = leftExpr.variableDeclaration
@@ -57,13 +57,16 @@ private fun allInternalExpressions(out: MutableList<ObjJExpr>, expr: ObjJExpr?) 
     }
 }
 
+
 private fun allInternalExpressions(out: MutableList<ObjJExpr>, leftExpr: ObjJLeftExpr?) {
     if (leftExpr == null) {
         return
     }
-    for (expr in leftExpr.exprList) {
+    // @todo figure out how to reimplement this
+    /*
+    for (expr in leftExpr.) {
         allInternalExpressions(out, expr)
-    }
+    }*/
 }
 
 private fun allInternalExpressions(out: MutableList<ObjJExpr>, exprRight: ObjJRightExpr?) {

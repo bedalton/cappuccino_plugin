@@ -123,7 +123,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         } else if (tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_START ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_END ||
-                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_TEXT) {
+                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY) {
             attrKey = BLOCK_COMMENT
         } else if (tokenType == ObjJTypes.ObjJ_PRAGMA_MARKER || tokenType == ObjJTypes.ObjJ_REGULAR_EXPRESSION_LITERAL) {
             attrKey = SECONDARY_LITERAL

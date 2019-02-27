@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.formatter;
+package cappuccino.ide.intellij.plugin.formatting;
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets;
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes;
@@ -9,12 +9,9 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.Nullable;
 
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.ObjJ_TERNARY_EXPR_PRIME;
-import static com.jetbrains.lang.dart.DartTokenTypes.*;
-import static com.jetbrains.lang.dart.DartTokenTypesSets.BINARY_EXPRESSIONS;
 
 
 /**
- * @author: Fedor.Korotkov
  */
 public class ObjJAlignmentProcessor {
     private final ASTNode myNode;
@@ -31,20 +28,16 @@ public class ObjJAlignmentProcessor {
     public Alignment createChildAlignment() {
         IElementType elementType = myNode.getElementType();
 
-        if (elementType == ObjJ_TERNARY_EXPR_PRIME && mySettings.ALIGN_MULTILINE_TERNARY_OPERATION) {
-            return myBaseAlignment;
-        }
-
-        if (elementType == ObjJ_) {
+        if (elementType == ObjJ_TERNARY_EXPR_PRIME) {
             if (mySettings.ALIGN_MULTILINE_PARAMETERS) {
                 return myBaseAlignment;
             }
         }
-        if (elementType == ARGUMENTS) {
+        /*if (elementType == ObjJ_ARGUMENTS) {
             if (mySettings.ALIGN_MULTILINE_PARAMETERS_IN_CALLS) {
                 return myBaseAlignment;
             }
-        }
+        }*/
 
         return null;
     }

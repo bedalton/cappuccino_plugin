@@ -82,17 +82,23 @@ class ObjJAnnotator : Annotator {
 
     private fun validateAndAnnotateContinueStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating continue element");
-        if (element.getParentOfType( ObjJIterationStatement::class.java) == null) {
+        if (hasIterationStatementParent(element)) {
             annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
         }
     }
 
     private fun validateBreakStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating break element");
-        if (element.getParentOfType( ObjJIterationStatement::class.java) != null || element.getParentOfType( ObjJCaseClause::class.java) != null) {
+        if (hasIterationStatementParent(element) || element.getParentOfType( ObjJCaseClause::class.java) != null) {
             return
         }
         annotationHolder.createErrorAnnotation(element, "Break used outside of loop or switch statement")
+    }
+
+    private fun hasIterationStatementParent(element: PsiElement) : Boolean {
+        return element.getParentOfType( ObjJWhileStatement::class.java) == null ||
+                element.getParentOfType( ObjJDebuggerStatement::class.java) == null ||
+                element.getParentOfType( ObjJForStatement::class.java) == null
     }
 
     private fun validateVariableDeclaration(variableDeclaration: ObjJVariableDeclaration, annotationHolder: AnnotationHolder) {

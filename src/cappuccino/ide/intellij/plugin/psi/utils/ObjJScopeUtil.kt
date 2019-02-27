@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile

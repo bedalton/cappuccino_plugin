@@ -28,7 +28,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         var getter: String? = null
         var setter: String? = null
         val variableName = if (declaration.variableName != null) declaration.variableName!!.text else ""
-        if (declaration.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
+        if (declaration.accessor?.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
             getter = ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, declaration.formalVariableType.text)
             setter = ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, declaration.formalVariableType.text)
             //Logger.getAnonymousLogger().log(Level.INFO, "Variable: <"+variableName+">; getter: <"+getter+">; setter: <"+setter+">");
@@ -49,8 +49,8 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         stream.writeBoolean(stub.shouldResolve())
     }
 
-    override fun indexStub(stub: ObjJInstanceVariableDeclarationStub, indexSink: IndexSink) {
-        ServiceManager.getService(StubIndexService::class.java).indexInstanceVariable(stub, indexSink)
+    override fun indexStub(stub: ObjJInstanceVariableDeclarationStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexInstanceVariable(stub, sink)
     }
 
     @Throws(IOException::class)

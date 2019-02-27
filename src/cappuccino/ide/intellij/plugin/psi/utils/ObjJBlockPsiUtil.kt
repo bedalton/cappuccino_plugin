@@ -2,10 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.Filter
 import java.util.*
 import java.util.logging.Logger

@@ -71,7 +71,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                         val errorMessage = "Parameter should have type <" + otherParam.text + ">";
                         if (thisVarType != null) {
                             problemsHolder.registerProblem((thisVarType), errorMessage, ObjJChangeVarTypeToMatchQuickFix(thisVarType, otherParam.text))
-                        } else if (selector.openParen != null && selector.closeParen != null) {
+                        } else if (selector.methodHeaderSelectorFormalVariableType?.openParen != null && selector.methodHeaderSelectorFormalVariableType?.closeParen != null) {
                             problemsHolder.registerProblem(selector, errorMessage, ObjJChangeVarTypeToMatchQuickFix(selector, otherParam.text))
                         } else {
                             problemsHolder.registerProblem(selector, errorMessage)

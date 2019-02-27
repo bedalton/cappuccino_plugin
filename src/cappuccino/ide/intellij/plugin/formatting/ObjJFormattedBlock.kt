@@ -21,34 +21,35 @@ import com.intellij.formatting.Spacing
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 
-class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
+class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
     private val myIndentProcessor: ObjJIndentProcessor
     private val mySpacingProcessor: ObjJSpacingProcessor
-    private val myWrappingProcessor: DartWrappingProcessor
-    private val myAlignmentProcessor: DartAlignmentProcessor
+    private val myWrappingProcessor: ObjJWrappingProcessor
+    private val myAlignmentProcessor: ObjJAlignmentProcessor
     private var myChildWrap: Wrap? = null
     private val myIndent: Indent
     private var myParent: BlockWithParent? = null
     private var mySubObjJFormattedBlocks: MutableList<ObjJFormattedBlock>? = null
+    private val EMPTY = mutableListOf<ObjJFormattedBlock>()
 
-    val subObjJFormattedBlocks: List<ObjJFormattedBlock>?
+    private val subObjJFormattedBlocks: List<ObjJFormattedBlock>?
         get() {
             if (mySubObjJFormattedBlocks == null) {
                 mySubObjJFormattedBlocks = ArrayList()
                 for (block in subBlocks) {
                     mySubObjJFormattedBlocks!!.add(block as ObjJFormattedBlock)
                 }
-                mySubObjJFormattedBlocks = if (!mySubObjJFormattedBlocks!!.isEmpty()) mySubObjJFormattedBlocks else OBJJ_EMPTY
+                mySubObjJFormattedBlocks = if (!mySubObjJFormattedBlocks!!.isEmpty()) mySubObjJFormattedBlocks else EMPTY
             }
             return mySubObjJFormattedBlocks
         }
 
     init {
-        val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.getPsi().project).getCustomSettings(ObjJCodeStyleSettings::class.java)
+        val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(ObjJCodeStyleSettings::class.java)
         myIndentProcessor = ObjJIndentProcessor(myContext.objJSettings)
         mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjStyleSettings)
-        myWrappingProcessor = DartWrappingProcessor(node, myContext.objJSettings)
-        myAlignmentProcessor = DartAlignmentProcessor(node, myContext.objJSettings)
+        myWrappingProcessor = ObjJWrappingProcessor(node, myContext.objJSettings)
+        myAlignmentProcessor = ObjJAlignmentProcessor(node, myContext.objJSettings)
         myIndent = myIndentProcessor.getChildIndent(myNode, myContext.mode)
     }
 

@@ -465,9 +465,9 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = bodyVariableAssignment.variableNameList.toMutableList()
+        val result = bodyVariableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
         val references = mutableListOf<ObjJQualifiedReference>()
-        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
+        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
@@ -494,13 +494,13 @@ object ObjJVariableNameUtil {
             return null
         }
         val references = mutableListOf<ObjJQualifiedReference>()
-        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
+        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?: listOf()) {
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
             return null
         }
-        for (variableName in bodyVariableAssignment.variableNameList) {
+        for (variableName in bodyVariableAssignment.variableDeclarationList?.variableNameList ?: listOf()) {
             if (filter(variableName)) {
                 return variableName
             }
@@ -556,23 +556,27 @@ object ObjJVariableNameUtil {
         var iterationStatement = iterationStatement
         val result = ArrayList<ObjJVariableName>()
         while (iterationStatement != null) {
-            ProgressIndicatorProvider.checkCanceled()
-            //Get variable if in an `in` statement
-            //i.e.  `for (var v in ob)`
-            if (iterationStatement.inExpr != null) {
-                result.add(iterationStatement.inExpr!!.variableName)
+
+            var variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
+            if (iterationStatement is ObjJForStatement) {
+                variableDeclarationList.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableDeclarationList ?: listOf())
+
+                result.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableNameList ?: listOf())
+                if (iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr != null) {
+                    result.add(iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr!!.variableName)
+                }
             }
 
+
+            ProgressIndicatorProvider.checkCanceled()
+
             // get regular variable declarations in iteration statement
-            for (declaration in iterationStatement.variableDeclarationList) {
+            for (declaration in variableDeclarationList) {
                 ProgressIndicatorProvider.checkCanceled()
                 //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
                 for (qualifiedReference in declaration.qualifiedReferenceList) {
                     result.add(qualifiedReference.primaryVar!!)
                 }
-            }
-            for (reference in iterationStatement.variableNameList) {
-                result.add(reference)
             }
             iterationStatement = iterationStatement.getParentOfType( ObjJIterationStatement::class.java)
         }
