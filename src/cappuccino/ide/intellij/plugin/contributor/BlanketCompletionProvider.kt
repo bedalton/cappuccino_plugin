@@ -83,11 +83,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 }
             }
             results.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix+it).withInsertHandler({
-                    context, _ -> if (!EditorUtil.isTextAtOffset(context, " ")) {
+                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix + it).withInsertHandler { context, _ ->
+                    if (!EditorUtil.isTextAtOffset(context, " ")) {
                         EditorUtil.insertText(context.editor, " ", true)
                     }
-                }))
+                })
             }
             if (results.isNotEmpty()) {
                 resultSet.stopHere()
@@ -108,11 +108,18 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.stopHere()
                 return
             }
+
+            if (element.text.startsWith("@") && PsiTreeUtil.findFirstParent(element) {
+                it is ObjJClassDeclarationElement<*>
+            } != null) {
+                resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
+            }
+
             val variableName = element as? ObjJVariableName ?: parent as? ObjJVariableName
-            if (variableName != null) {
-                results = ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
+            results = if (variableName != null) {
+                ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
             } else {
-                results = mutableListOf()
+                mutableListOf()
             }
             if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
                 appendFunctionCompletions(resultSet, element)
