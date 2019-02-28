@@ -109,7 +109,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   problemsHolder: ProblemsHolder) {
             if (returnsWithExpression.isNotEmpty()) {
                 forloop@ for (returnStatement in returnsWithoutExpression) {
-                    when (returnStatement.expr!!.text.toLowerCase()) {
+                    when (returnStatement.expr?.text?.toLowerCase()) {
                         "nil", "null", "undefined" ->
                             continue@forloop
                         else ->
