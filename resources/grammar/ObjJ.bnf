@@ -398,7 +398,7 @@ methodBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
-		methods [
+		methods=[
 			getIterationStatements
 		]
 	}
@@ -1146,7 +1146,7 @@ preprocessorIfStatement
 	}
 	;
 
-private preprocessorBodyStatements
+preprocessorBodyStatements
 	::= preprocessorBodyStatement+
 	{
 		recoverWhile=recover_preprocessorBodyStatements
