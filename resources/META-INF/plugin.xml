@@ -157,7 +157,7 @@
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodHeaderDoesNotMatchSuperClassInspection"
-                     level="ERROR"
+                     level="WEAK WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Incompatible inherited method override"
