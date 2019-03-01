@@ -207,7 +207,6 @@ object ObjJVariableNameUtil {
                 LOGGER.info("Sibling assignment is global scoped variable")
                 return variableName
             }
-            return null
         }
 
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
@@ -364,25 +363,26 @@ object ObjJVariableNameUtil {
 
     fun getIndexInQualifiedNameParent(variableName: PsiElement?): Int {
         if (variableName == null) {
-            return 0
+            return -1
         }
-        val qualifiedReferenceParent = variableName.getParentOfType( ObjJQualifiedReference::class.java)
+        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else return 0
         var qualifiedNameIndex:Int = -1
-        val parts = qualifiedReferenceParent?.variableNameList ?: listOf()
+        val parts = qualifiedReferenceParent.variableNameList
         val numParts = parts.size
         for (i in 0..(numParts-1)) {
             val part = parts[i]
-            if (part.isEquivalentTo(part)) {
+            if (variableName.isEquivalentTo(part)) {
                 qualifiedNameIndex = i;
+                //LOGGER.info("Qualified variable ${variableName} in file ${variableName.containingFile?.name?:"UNDEF"} at index $qualifiedNameIndex")
                 break
             }
         }
         if (qualifiedNameIndex < 0) {
-            qualifiedNameIndex = 0
+            LOGGER.info("Failed to qualified variable ${variableName} in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
         }
         if (qualifiedNameIndex > 1) {
-            val firstVariable = qualifiedReferenceParent!!.primaryVar
-            if (firstVariable != null && (firstVariable.text == "self" || firstVariable.text == "super")) {
+            val firstVariable = qualifiedReferenceParent.primaryVar ?: return qualifiedNameIndex
+            if (firstVariable.text == "self" || firstVariable.text == "super") {
                 qualifiedNameIndex -= 1
             }
         }

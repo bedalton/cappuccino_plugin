@@ -30,7 +30,7 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement.getContainingSuperClass()
         }
 
-        if (variableNameElement.indexInQualifiedReference > 0) {
+        if (variableNameElement.indexInQualifiedReference != 0) {
             return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
         }
 

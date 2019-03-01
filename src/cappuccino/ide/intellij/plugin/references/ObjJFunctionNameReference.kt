@@ -42,10 +42,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (isFunctionCall && elementIsFunctionCall) {
             return false
         }
-        if (isFunctionCall) {
-            return if (element is ObjJVariableName) ObjJVariableReference(element).resolve()?.isEquivalentTo(myElement) == true else ObjJFunctionNameReference(myElement).resolve()?.isEquivalentTo(myElement) == true
-        }
-        return true
+        var maybe = if (element is ObjJVariableName) ObjJVariableReference(element).resolve()?.isEquivalentTo(myElement) == true else resolve()?.isEquivalentTo(element) == true
+        return maybe || ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)?.isEquivalentTo(element) == true
     }
 
     override fun resolve(): PsiElement? {
