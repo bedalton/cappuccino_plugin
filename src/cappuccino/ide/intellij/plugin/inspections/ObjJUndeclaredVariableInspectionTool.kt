@@ -201,8 +201,18 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
             val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
-            if ((reference.parent as? ObjJVariableDeclaration)?.parent is ObjJBodyVariableAssignment) {
-                return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
+            if (reference.parent is ObjJVariableDeclaration) {
+                val variableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
+                if (variableAssignment != null) {
+                    return variableAssignment.varModifier != null
+                }
+            }
+
+            if (reference.parent is ObjJVariableDeclaration) {
+                if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.varModifier != null ||
+                        variableName.getParentOfType(ObjJInExpr::class.java)?.varModifier != null) {
+                    return true
+                }
             }
 
 

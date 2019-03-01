@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -42,8 +43,12 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (isFunctionCall && elementIsFunctionCall) {
             return false
         }
-        var maybe = if (element is ObjJVariableName) ObjJVariableReference(element).resolve()?.isEquivalentTo(myElement) == true else resolve()?.isEquivalentTo(element) == true
-        return maybe || ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)?.isEquivalentTo(element) == true
+        if (resolve()?.isEquivalentTo(element) == true) {
+            return true
+        }
+        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
+        LOGGER.info("Resolved element for ${resolved.text} is ${resolved.tokenType()} in file ${resolved.containingFile?.name?:"UNDEF"}")
+        return resolved == element
     }
 
     override fun resolve(): PsiElement? {
@@ -52,7 +57,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         }
         val allOut = ArrayList<PsiElement>()
         //LOGGER.log(Level.INFO, "There are <"+ObjJFunctionsIndex.getInstance().getAllKeys(myElement.getProject()).size()+"> function in index");
-        for (functionDeclaration in ObjJFunctionsIndex.instance.get(functionName, myElement.project)) {
+        for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
             if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {

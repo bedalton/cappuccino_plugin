@@ -179,49 +179,49 @@ object ObjJVariableNameUtil {
         if (qualifiedNameIndex <= 1) {
             variableName = getFirstMatchOrNull(getAllMethodDeclarationSelectorVars(element), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling assignment is method declaration variable")
+                //LOGGER.info("Sibling assignment is method declaration variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling assignment is class instance variable")
+                //LOGGER.info("Sibling assignment is class instance variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling assignment is iteration scope variable")
+                //LOGGER.info("Sibling assignment is iteration scope variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling variable name in assignment is function scope")
+                //LOGGER.info("Sibling variable name in assignment is function scope")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling assignment is file scoped variable")
+                //LOGGER.info("Sibling assignment is file scoped variable")
                 return variableName
             }
             variableName = getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
             if (variableName != null) {
-                LOGGER.info("Sibling assignment is global scoped variable")
+                //LOGGER.info("Sibling assignment is global scoped variable")
                 return variableName
             }
         }
 
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
         if (variableName != null) {
-            LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
+            //LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
         if (variableName != null) {
-            LOGGER.info("Sibling assignment is catch production variable")
+            //LOGGER.info("Sibling assignment is catch production variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
         if (variableName != null) {
-            LOGGER.info("Sibling assignment is preproc scope variable")
+            //LOGGER.info("Sibling assignment is preproc scope variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         if (DumbService.isDumb(element.project)) {
@@ -229,7 +229,7 @@ object ObjJVariableNameUtil {
         }
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
-            LOGGER.info("Sibling assignment is in global variable index")
+            //LOGGER.info("Sibling assignment is in global variable index")
             return globalVariableDeclarations[0].variableName
         }
         return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
@@ -238,7 +238,7 @@ object ObjJVariableNameUtil {
     private fun getVariableNameDeclarationInContainingBlocksFuzzy(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
         val varName = element.text
-        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
+        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true).filter(filter)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
         return getFirstMatchOrNull(variableNames) { variableName ->
             if (variableName.text != varName) {
                 return@getFirstMatchOrNull false
@@ -378,7 +378,7 @@ object ObjJVariableNameUtil {
             }
         }
         if (qualifiedNameIndex < 0) {
-            LOGGER.info("Failed to qualified variable ${variableName} in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
+            LOGGER.info("Failed to qualified variable $variableName in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
         }
         if (qualifiedNameIndex > 1) {
             val firstVariable = qualifiedReferenceParent.primaryVar ?: return qualifiedNameIndex
