@@ -23,12 +23,11 @@ object ObjJVariableNameUtil {
 
     fun getMatchingPrecedingVariableNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
         val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String
-        if (variableName is ObjJVariableName) {
-            variableNameQualifiedString = getQualifiedNameAsString(variableName, qualifiedIndex)
+        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
+            getQualifiedNameAsString(variableName, qualifiedIndex)
         } else {
             //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableNameQualifiedString = variableName.text
+            variableName.text
         }
 
         val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
@@ -286,7 +285,7 @@ object ObjJVariableNameUtil {
         val result = ArrayList<ObjJVariableName>()
         val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return result
         val bodyVariableAssignments = block.getBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true) as MutableList
-        bodyVariableAssignments.addAll(block!!.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true))
+        bodyVariableAssignments.addAll(block.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true))
         for (bodyVariableAssignment in bodyVariableAssignments) {
             ProgressIndicatorProvider.checkCanceled()
             result.addAll(getAllVariablesFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex))
@@ -446,9 +445,7 @@ object ObjJVariableNameUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         for (variableDeclaration in file.getChildrenOfType( ObjJGlobalVariableDeclaration::class.java)) {
-            if (variableDeclaration.variableName != null) {
-                result.add(variableDeclaration.variableName)
-            }
+            result.add(variableDeclaration.variableName)
         }
         return result
     }
@@ -552,7 +549,7 @@ object ObjJVariableNameUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         for (parameterArg in functionDeclarationElement.formalParameterArgList) {
-            result.add((parameterArg as ObjJFormalParameterArg).variableName)
+            result.add(parameterArg.variableName)
         }
         return result
     }
