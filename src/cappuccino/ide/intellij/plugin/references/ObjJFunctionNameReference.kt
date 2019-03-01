@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
 import java.util.ArrayList
@@ -16,21 +17,35 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
-    private val functionName: String
-    private val file: PsiFile
+    private val functionName: String = functionName.text
+    private val file: PsiFile = functionName.containingFile;
+    private val isFunctionCall:Boolean get () {
+        return myElement.parent is ObjJFunctionCall
+    }
+    private val isFunctionDeclaration:Boolean get() {
+        return myElement.parent is ObjJFunctionDeclaration
+    }
 
     init {
-        this.functionName = functionName.text
         //LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+getCanonicalText()+">");
-        file = functionName.containingFile
     }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
-        var isCorrectReference = element is ObjJVariableName || element is ObjJFunctionName
-        if (element.getParentOfType( ObjJFunctionCall::class.java) != null) {
-            isCorrectReference = isCorrectReference && element.getParentOfType( ObjJFunctionDeclarationElement::class.java) != null
+        if (element.text != functionName) {
+            return false
         }
-        return isCorrectReference && element.text == functionName
+        val elementIsFunctionCall = element.parent is ObjJFunctionCall
+        val elementIsFunctionDeclaration = !elementIsFunctionCall && element.parent is ObjJFunctionDeclaration
+        if (isFunctionDeclaration && elementIsFunctionDeclaration) {
+            return false
+        }
+        if (isFunctionCall && elementIsFunctionCall) {
+            return false
+        }
+        if (isFunctionCall) {
+            return if (element is ObjJVariableName) ObjJVariableReference(element).resolve()?.isEquivalentTo(myElement) == true else ObjJFunctionNameReference(myElement).resolve()?.isEquivalentTo(myElement) == true
+        }
+        return true
     }
 
     override fun resolve(): PsiElement? {
@@ -51,7 +66,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
                 return function.functionName
             }
         }
-        return if (!allOut.isEmpty()) allOut[0] else null
+        return if (!allOut.isEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {

@@ -179,40 +179,50 @@ object ObjJVariableNameUtil {
         if (qualifiedNameIndex <= 1) {
             variableName = getFirstMatchOrNull(getAllMethodDeclarationSelectorVars(element), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling assignment is method declaration variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling assignment is class instance variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling assignment is iteration scope variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
-            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType( ObjJFunctionDeclarationElement::class.java)), filter)
+            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling variable name in assignment is function scope")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling assignment is file scoped variable")
                 return variableName
             }
             variableName = getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
             if (variableName != null) {
+                LOGGER.info("Sibling assignment is global scoped variable")
                 return variableName
             }
+            return null
         }
 
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
         if (variableName != null) {
+            LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
         if (variableName != null) {
+            LOGGER.info("Sibling assignment is catch production variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
         if (variableName != null) {
+            LOGGER.info("Sibling assignment is preproc scope variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         if (DumbService.isDumb(element.project)) {
@@ -220,7 +230,8 @@ object ObjJVariableNameUtil {
         }
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
-            return globalVariableDeclarations.get(0).variableName
+            LOGGER.info("Sibling assignment is in global variable index")
+            return globalVariableDeclarations[0].variableName
         }
         return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
     }
@@ -356,7 +367,16 @@ object ObjJVariableNameUtil {
             return 0
         }
         val qualifiedReferenceParent = variableName.getParentOfType( ObjJQualifiedReference::class.java)
-        var qualifiedNameIndex = qualifiedReferenceParent?.variableNameList?.indexOf(variableName) ?: -1
+        var qualifiedNameIndex:Int = -1
+        val parts = qualifiedReferenceParent?.variableNameList ?: listOf()
+        val numParts = parts.size
+        for (i in 0..(numParts-1)) {
+            val part = parts[i]
+            if (part.isEquivalentTo(part)) {
+                qualifiedNameIndex = i;
+                break
+            }
+        }
         if (qualifiedNameIndex < 0) {
             qualifiedNameIndex = 0
         }
@@ -375,7 +395,9 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java)
+        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java).filter {
+            it.varModifier != null
+        }
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
         result.addAll(getAllFileScopeGlobalVariables(file))
         result.addAll(getAllPreProcDefinedVariables(file))
@@ -407,11 +429,8 @@ object ObjJVariableNameUtil {
         val expressions = file.getChildrenOfType( ObjJExpr::class.java)
         for (expr in expressions) {
             ProgressIndicatorProvider.checkCanceled()
-            if (expr == null || expr.leftExpr == null || expr.leftExpr!!.variableDeclaration == null) {
-                continue
-            }
-            val declaration = expr.leftExpr!!.variableDeclaration
-            for (qualifiedReference in declaration!!.qualifiedReferenceList) {
+            val declaration = expr.leftExpr?.variableDeclaration ?: continue
+            for (qualifiedReference in declaration.qualifiedReferenceList) {
                 if (qualifiedReference.primaryVar != null) {
                     result.add(qualifiedReference.primaryVar!!)
                 }
@@ -628,7 +647,9 @@ object ObjJVariableNameUtil {
 
     fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
         val formalVariableTypeInstanceVariableList = getFormalVariableInstanceVariables(variableName) ?: return null
-        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList, { `var` -> `var`.text == variableName.text })
+        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList) {
+            variable -> variable.text == variableName.text
+        }
     }
 
     fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {

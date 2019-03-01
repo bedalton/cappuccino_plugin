@@ -29,6 +29,11 @@ object ObjJVariableNameResolveUtil {
         if (variableNameString == "super") {
             return variableNameElement.getContainingSuperClass()
         }
+
+        if (variableNameElement.indexInQualifiedReference > 0) {
+            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
+        }
+
         val className = getClassNameIfVariableNameIsStaticReference(variableNameElement)
         if (className != null) {
             return className
@@ -38,7 +43,7 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement
         }
         if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
-            variableNameElement.getParentOfType(ObjJExpr::class.java) == null
+                variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement
         }
@@ -51,10 +56,48 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        if (variableNameElement.indexInQualifiedReference > 0) {
-            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
+
+    }
+
+    fun getVariableDeclarationElementForFunctionName(variableNameElement: ObjJFunctionName): PsiElement? {
+        val variableNameString = variableNameElement.text
+
+        if (variableNameString == "class") {
+            return null
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) } ?: variableNameElement
+
+        if (variableNameString == "this") {
+            return null
+        }
+
+        if (variableNameElement.indexInQualifiedReference > 0) {
+            return null
+        }
+
+        if (variableNameElement.parent is ObjJPropertyAssignment) {
+            return variableNameElement
+        }
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
+                variableNameElement.getParentOfType(ObjJExpr::class.java) == null
+        ) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJFormalParameterArg::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+            return variableNameElement
+        }
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {possibleFirstDeclaration ->
+            variableNameElement.text == possibleFirstDeclaration.text &&
+                    (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
+                    variableNameElement.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference &&
+                    possibleFirstDeclaration.getParentOfType(ObjJVariableDeclaration::class.java)?.expr?.leftExpr?.functionLiteral != null
+        }// ?: variableNameElement
 
     }
 
