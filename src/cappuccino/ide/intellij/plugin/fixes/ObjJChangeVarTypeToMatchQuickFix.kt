@@ -72,12 +72,12 @@ class ObjJChangeVarTypeToMatchQuickFix(element: PsiElement, private val newType:
             replaceWith(selector.varType!!, varType)
             return
         }
-        val closeParen = selector.closeParen
+        val closeParen = selector.methodHeaderSelectorFormalVariableType?.closeParen
         if (closeParen != null) {
             addBefore(closeParen, varType)
             return
         }
-        val openParen = selector.openParen
+        val openParen = selector.methodHeaderSelectorFormalVariableType?.openParen
         if (openParen != null) {
             addAfter(openParen, varType)
         }

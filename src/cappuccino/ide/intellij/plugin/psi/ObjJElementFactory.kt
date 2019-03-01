@@ -31,7 +31,7 @@ object ObjJElementFactory {
         val scriptText = "var $variableName;"
         val file = createFileFromText(project, scriptText)
         val variableAssignment = file.getChildOfType( ObjJBodyVariableAssignment::class.java)!!
-        return variableAssignment.variableNameList[0]
+        return variableAssignment.variableDeclarationList!!.variableNameList[0]
     }
 
     fun createFunctionName(project: Project, functionName: String): ObjJFunctionName {

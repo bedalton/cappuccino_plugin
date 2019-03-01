@@ -10,6 +10,7 @@ import cappuccino.ide.intellij.plugin.utils.upperCaseFirstLetter
 import java.util.*
 
 object ObjJAccessorPropertyPsiUtil {
+
     /**
      * Gets the accessor property variable type
      * @param accessorProperty accessor property psi element
@@ -254,4 +255,6 @@ object ObjJAccessorPropertyPsiUtil {
             else -> null
         }
     }
+
+    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList ?: emptyList();
 }

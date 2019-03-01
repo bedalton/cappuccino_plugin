@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.indices.*
-import com.google.common.collect.ImmutableList
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -12,7 +11,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.project.Project
-import org.fest.util.Lists
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -21,19 +19,20 @@ import java.util.logging.Logger
 object ObjJVariableNameUtil {
 
     private val LOGGER = Logger.getLogger("ObjJVariableNameUtil")
-    private val EMPTY_VARIABLE_NAME_LIST = ImmutableList.copyOf<ObjJVariableName>(arrayOfNulls(0))
+    private val EMPTY_VARIABLE_NAME_LIST = emptyList<ObjJVariableName>()
 
     fun getMatchingPrecedingVariableNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
         val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
-            getQualifiedNameAsString(variableName, qualifiedIndex)
+        val variableNameQualifiedString: String
+        if (variableName is ObjJVariableName) {
+            variableNameQualifiedString = getQualifiedNameAsString(variableName, qualifiedIndex)
         } else {
             //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableName.text
+            variableNameQualifiedString = variableName.text
         }
 
         val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
-        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex) { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) }
+        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) })
     }
 
     fun getMatchingPrecedingVariableAssignmentNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
@@ -180,40 +179,49 @@ object ObjJVariableNameUtil {
         if (qualifiedNameIndex <= 1) {
             variableName = getFirstMatchOrNull(getAllMethodDeclarationSelectorVars(element), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling assignment is method declaration variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling assignment is class instance variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling assignment is iteration scope variable")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
-            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType( ObjJFunctionDeclarationElement::class.java)), filter)
+            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling variable name in assignment is function scope")
                 return if (!variableName.isEquivalentTo(element)) variableName else null
             }
             variableName = getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling assignment is file scoped variable")
                 return variableName
             }
             variableName = getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
             if (variableName != null) {
+                //LOGGER.info("Sibling assignment is global scoped variable")
                 return variableName
             }
         }
 
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
         if (variableName != null) {
+            //LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
         if (variableName != null) {
+            //LOGGER.info("Sibling assignment is catch production variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
         if (variableName != null) {
+            //LOGGER.info("Sibling assignment is preproc scope variable")
             return if (!variableName.isEquivalentTo(element)) variableName else null
         }
         if (DumbService.isDumb(element.project)) {
@@ -221,6 +229,7 @@ object ObjJVariableNameUtil {
         }
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
         if (!globalVariableDeclarations.isEmpty()) {
+            //LOGGER.info("Sibling assignment is in global variable index")
             return globalVariableDeclarations[0].variableName
         }
         return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
@@ -229,7 +238,7 @@ object ObjJVariableNameUtil {
     private fun getVariableNameDeclarationInContainingBlocksFuzzy(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
         val varName = element.text
-        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
+        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true).filter(filter)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
         return getFirstMatchOrNull(variableNames) { variableName ->
             if (variableName.text != varName) {
                 return@getFirstMatchOrNull false
@@ -307,7 +316,7 @@ object ObjJVariableNameUtil {
     }
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
-        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else Lists.emptyList()
+        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else emptyList()
     }
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
@@ -351,35 +360,31 @@ object ObjJVariableNameUtil {
         return result
     }
 
-    fun getNamedElementList(reference:ObjJQualifiedReference) : List<ObjJNamedElement> {
-        return reference.getChildrenOfType(ObjJNamedElement::class.java)
-    }
 
-    fun getQualifiedNameParts(reference:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
-        return reference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
-    }
-
-    fun getIndexInQualifiedNameParent(elementToFindIndexFor: PsiElement?): Int {
-        //Get named part, as those will be the direct child of the qualified reference
-        val qualifiedNamePart = elementToFindIndexFor as? ObjJQualifiedReferenceComponent ?: elementToFindIndexFor.getParentOfType(ObjJQualifiedReferenceComponent::class.java) ?: return 0
-        // Get the parent qualified reference, to find this elements index within it
-        val qualifiedReferenceParent = qualifiedNamePart.getParentOfType( ObjJQualifiedReference::class.java) ?: return 0
-        //Get te index in the named parts first
-        val qualifiedNameIndex = qualifiedReferenceParent.qualifiedNameParts.indexOf(qualifiedNamePart)
-        // Method call can be first, but is not included in named element list
-        // if method call is first, this named element must be at least second.
-        // so add 1 in place of the method call
-        if (qualifiedReferenceParent.methodCall != null) {
-            // can return, because if first var is method call,
-            // it cannot be 'self' or 'super' so check is unnecessary
-            return qualifiedNameIndex + 1
+    fun getIndexInQualifiedNameParent(variableName: PsiElement?): Int {
+        if (variableName == null) {
+            return -1
         }
-        // If qualified reference is 'self' or 'super' then you
-        // can subtract 1, so that the reference will still be resolved
-        // Variable name reference will quit if index is greater than 1
-        // in most instances
-        else if ("self" == qualifiedReferenceParent.primaryVar?.text || "super" == qualifiedReferenceParent.primaryVar?.text) {
-            return qualifiedNameIndex - 1
+        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else return 0
+        var qualifiedNameIndex:Int = -1
+        val parts = qualifiedReferenceParent.variableNameList
+        val numParts = parts.size
+        for (i in 0..(numParts-1)) {
+            val part = parts[i]
+            if (variableName.isEquivalentTo(part)) {
+                qualifiedNameIndex = i;
+                //LOGGER.info("Qualified variable ${variableName} in file ${variableName.containingFile?.name?:"UNDEF"} at index $qualifiedNameIndex")
+                break
+            }
+        }
+        if (qualifiedNameIndex < 0) {
+            LOGGER.info("Failed to qualified variable $variableName in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
+        }
+        if (qualifiedNameIndex > 1) {
+            val firstVariable = qualifiedReferenceParent.primaryVar ?: return qualifiedNameIndex
+            if (firstVariable.text == "self" || firstVariable.text == "super") {
+                qualifiedNameIndex -= 1
+            }
         }
         return qualifiedNameIndex
     }
@@ -390,7 +395,9 @@ object ObjJVariableNameUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java)
+        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java).filter {
+            it.varModifier != null
+        }
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
         result.addAll(getAllFileScopeGlobalVariables(file))
         result.addAll(getAllPreProcDefinedVariables(file))
@@ -422,11 +429,8 @@ object ObjJVariableNameUtil {
         val expressions = file.getChildrenOfType( ObjJExpr::class.java)
         for (expr in expressions) {
             ProgressIndicatorProvider.checkCanceled()
-            if (expr == null || expr.leftExpr == null || expr.leftExpr!!.variableDeclaration == null) {
-                continue
-            }
-            val declaration = expr.leftExpr!!.variableDeclaration
-            for (qualifiedReference in declaration!!.qualifiedReferenceList) {
+            val declaration = expr.leftExpr?.variableDeclaration ?: continue
+            for (qualifiedReference in declaration.qualifiedReferenceList) {
                 if (qualifiedReference.primaryVar != null) {
                     result.add(qualifiedReference.primaryVar!!)
                 }
@@ -480,14 +484,14 @@ object ObjJVariableNameUtil {
         if (bodyVariableAssignment == null) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = bodyVariableAssignment.variableNameList
+        val result = bodyVariableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
         val references = mutableListOf<ObjJQualifiedReference>()
-        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
+        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
             //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
-            return Lists.emptyList()
+            return emptyList()
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
@@ -509,13 +513,13 @@ object ObjJVariableNameUtil {
             return null
         }
         val references = mutableListOf<ObjJQualifiedReference>()
-        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList) {
+        for (variableDeclaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?: listOf()) {
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
             return null
         }
-        for (variableName in bodyVariableAssignment.variableNameList) {
+        for (variableName in bodyVariableAssignment.variableDeclarationList?.variableNameList ?: listOf()) {
             if (filter(variableName)) {
                 return variableName
             }
@@ -571,23 +575,27 @@ object ObjJVariableNameUtil {
         var iterationStatement = iterationStatement
         val result = ArrayList<ObjJVariableName>()
         while (iterationStatement != null) {
-            ProgressIndicatorProvider.checkCanceled()
-            //Get variable if in an `in` statement
-            //i.e.  `for (var v in ob)`
-            if (iterationStatement.inExpr != null) {
-                result.add(iterationStatement.inExpr!!.variableName)
+
+            var variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
+            if (iterationStatement is ObjJForStatement) {
+                variableDeclarationList.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableDeclarationList ?: listOf())
+
+                result.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableNameList ?: listOf())
+                if (iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr != null) {
+                    result.add(iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr!!.variableName)
+                }
             }
 
+
+            ProgressIndicatorProvider.checkCanceled()
+
             // get regular variable declarations in iteration statement
-            for (declaration in iterationStatement.variableDeclarationList) {
+            for (declaration in variableDeclarationList) {
                 ProgressIndicatorProvider.checkCanceled()
                 //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
                 for (qualifiedReference in declaration.qualifiedReferenceList) {
                     result.add(qualifiedReference.primaryVar!!)
                 }
-            }
-            for (reference in iterationStatement.variableNameList) {
-                result.add(reference)
             }
             iterationStatement = iterationStatement.getParentOfType( ObjJIterationStatement::class.java)
         }
@@ -639,7 +647,9 @@ object ObjJVariableNameUtil {
 
     fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
         val formalVariableTypeInstanceVariableList = getFormalVariableInstanceVariables(variableName) ?: return null
-        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList) { `var` -> `var`.text == variableName.text }
+        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList) {
+            variable -> variable.text == variableName.text
+        }
     }
 
     fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {
@@ -648,11 +658,8 @@ object ObjJVariableNameUtil {
             //LOGGER.log(Level.INFO, "ObjJVariableNameUtil.getFormalVariableInstanceVariables(${variableName.text}) Index is less than 1")
             return null
         }
-        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.getOrNull(index - 1)
+        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index - 1)
                 ?: return null
-        if (baseVariableName == variableName) {
-            return null
-        }
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
                 //LOGGER.log(Level.INFO, "Getting instance variable completions for self")
@@ -673,5 +680,9 @@ object ObjJVariableNameUtil {
         return getAllContainingClassInstanceVariables(variableType, variableName.project)
     }
 
+
+    fun getQualifiedNameParts(qualifiedName:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
+        return qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+    }
 
 }

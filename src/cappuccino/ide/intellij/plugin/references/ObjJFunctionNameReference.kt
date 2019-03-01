@@ -1,33 +1,75 @@
 package cappuccino.ide.intellij.plugin.references
 
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import com.intellij.psi.util.PsiTreeUtil
+import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 
+import java.util.ArrayList
+import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
+    private val file: PsiFile = functionName.containingFile;
+    private val isFunctionCall:Boolean get () {
+        return myElement.parent is ObjJFunctionCall
+    }
+    private val isFunctionDeclaration:Boolean get() {
+        return myElement.parent is ObjJFunctionDeclaration
+    }
+
+    init {
+        //LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+getCanonicalText()+">");
+    }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element.text != functionName) {
             return false
         }
-        if(!(element is ObjJVariableName || element is ObjJFunctionName)) {
+        val elementIsFunctionCall = element.parent is ObjJFunctionCall
+        val elementIsFunctionDeclaration = !elementIsFunctionCall && element.parent is ObjJFunctionDeclaration
+        if (isFunctionDeclaration && elementIsFunctionDeclaration) {
             return false
         }
-        if (ObjJPsiImplUtil.getIndexInQualifiedReference(element) != 0) {
+        if (isFunctionCall && elementIsFunctionCall) {
             return false
         }
-        val resolvedElement = ObjJFunctionDeclarationPsiUtil.resolveElementToFunctionDeclarationReference(myElement)
-                ?: return false
-        return resolvedElement.isEquivalentTo(element)
+        if (resolve()?.isEquivalentTo(element) == true) {
+            return true
+        }
+        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
+        LOGGER.info("Resolved element for ${resolved.text} is ${resolved.tokenType()} in file ${resolved.containingFile?.name?:"UNDEF"}")
+        return resolved == element
     }
 
     override fun resolve(): PsiElement? {
-        return ObjJFunctionDeclarationPsiUtil.resolveElementToFunctionDeclarationReference(myElement)
+        if (DumbServiceImpl.isDumb(myElement.project)) {
+            return null
+        }
+        val allOut = ArrayList<PsiElement>()
+        //LOGGER.log(Level.INFO, "There are <"+ObjJFunctionsIndex.getInstance().getAllKeys(myElement.getProject()).size()+"> function in index");
+        for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
+            ProgressIndicatorProvider.checkCanceled()
+            allOut.add(functionDeclaration.functionNameNode!!)
+            if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {
+                return functionDeclaration.functionNameNode
+            }
+        }
+        for (function in PsiTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
+            if (function.functionName != null && function.functionName!!.text == myElement.text) {
+                return function.functionName
+            }
+        }
+        return if (!allOut.isEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {
@@ -39,7 +81,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
     }
 
     companion object {
-        @Suppress("unused")
+
         private val LOGGER = Logger.getLogger(ObjJFunctionNameReference::class.java.name)
     }
 

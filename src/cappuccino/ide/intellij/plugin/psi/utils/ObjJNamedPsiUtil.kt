@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 
 object ObjJNamedPsiUtil {
@@ -21,6 +22,12 @@ object ObjJNamedPsiUtil {
         val newElement = ObjJElementFactory.createVariableName(variableName.project, newName)
         variableName.replace(newElement)
         return newElement
+    }
+
+    fun setName(variableName: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
+        val newElement = ObjJElementFactory.createVariableName(variableName.project, newName)
+        variableName.variableName?.replace(newElement);
+        return variableName
     }
 
     fun getName(className: ObjJClassName): String {

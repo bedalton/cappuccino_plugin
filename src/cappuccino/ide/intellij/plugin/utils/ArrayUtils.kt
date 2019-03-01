@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import com.google.common.collect.ImmutableList
 
 import java.util.ArrayList
 import java.util.Collections
@@ -8,7 +7,7 @@ import java.util.Collections
 typealias Filter<T> = (T) -> Boolean
 object ArrayUtils {
 
-    val EMPTY_STRING_ARRAY: List<String> = ImmutableList.copyOf(arrayOfNulls(0))
+    val EMPTY_STRING_ARRAY: List<String> = emptyList()
 
     /**
      * Joins

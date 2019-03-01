@@ -253,7 +253,7 @@ object ObjJSelectorReferenceResolveUtil {
         val otherResult = ArrayList<PsiElement>()
         for (variableDeclaration in ObjJClassInstanceVariableAccessorMethodIndex.instance[fullSelector, selectorElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
-            val atAccessors = variableDeclaration.atAccessors
+            val atAccessors = variableDeclaration.accessor?.atAccessors
             if (sharesContainingClass(classConstraints, variableDeclaration)) {
                 result.add(atAccessors ?: variableDeclaration)
             } else if (atAccessors != null){

@@ -13,8 +13,6 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import java.util.*
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
 
@@ -28,7 +26,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             override fun visitCompositeElement(element: ObjJCompositeElement) {
                 super.visitCompositeElement(element)
-                val block:ObjJBlock = element as? ObjJBlock ?: return;
+                val block:ObjJBlock = element as? ObjJBlock ?: return
                 validateBlockReturnStatements(block, problemsHolder)
             }
         }
@@ -110,15 +108,18 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
             if (returnsWithExpression.isNotEmpty()) {
-                for (returnStatement in returnsWithoutExpression) {
-                    if (returnsWithExpression.contains(returnStatement)) {
-                        continue
+                forloop@ for (returnStatement in returnsWithoutExpression) {
+                    when (returnStatement.expr?.text?.toLowerCase()) {
+                        "nil", "null", "undefined" ->
+                            continue@forloop
+                        else ->
+                            //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
+                            problemsHolder.registerProblem(returnStatement.expr
+                                    ?: returnStatement.`return`, "Not all return statements return a value")
                     }
-                    //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                    problemsHolder.registerProblem(returnStatement.expr ?: returnStatement.`return`, "Not all return statements return a value")
                 }
-            }
 
+            }
         }
 /*
         private fun validateReturnStatement(element: ObjJReturnStatement, problemsHolder: ProblemsHolder) {

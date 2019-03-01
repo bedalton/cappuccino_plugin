@@ -50,7 +50,7 @@ object ObjJVariableNameCompletionContributorUtil {
     /*
     fun getInstanceVariableCompletion(variableName: ObjJVariableName?) : ArrayList<String>? {
         val qualifiedReference:ObjJQualifiedReference = variableName?.getParentOfType(ObjJQualifiedReference::class.java) ?: return null
-        val variableNames:List<ObjJVariableName> = qualifiedReference.variableNameList
+        val variableNames:List<ObjJVariableName> = qualifiedReference.variableNameList.toMutableList()
         val index:Int = variableNames.indexOf(variableName)
         if (index < 1) {
             return null

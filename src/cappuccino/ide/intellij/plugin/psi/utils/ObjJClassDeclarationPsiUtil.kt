@@ -131,7 +131,7 @@ fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethod
 }
 
 fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> {
-    val headers = declaration.getMethodHeaderList() as MutableList
+    val headers = declaration.getMethodHeaderList().toMutableList()
     for (scopedBlock in declaration.protocolScopedBlockList) {
         headers.addAll(scopedBlock.methodHeaderList)
     }
@@ -156,7 +156,7 @@ fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: 
     }
     val instanceVariableDeclarationList = implementationDeclaration.instanceVariableList?.instanceVariableDeclarationList ?: return false;
     for (instanceVariableDeclaration in instanceVariableDeclarationList) {
-        if (instanceVariableDeclaration.atAccessors == null) {
+        if (instanceVariableDeclaration.accessor == null) {
             continue
         }
         if (instanceVariableDeclaration.variableName != null && selector == instanceVariableDeclaration.variableName!!.text) {

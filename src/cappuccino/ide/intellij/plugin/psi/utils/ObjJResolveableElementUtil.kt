@@ -49,7 +49,7 @@ object ObjJResolveableElementUtil {
             return out
         }
         for (element in elements) {
-            val stub = element.stub as ObjJResolveableStub<*>
+            val stub:ObjJResolveableStub<*>? = element.stub
             if (stub != null && stub.shouldResolve() || element.shouldResolve()) {
                 out.add(element)
             }

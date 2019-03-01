@@ -3,14 +3,8 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.utils.Filter
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import cappuccino.ide.intellij.plugin.utils.inSameFile
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -35,6 +29,11 @@ object ObjJVariableNameResolveUtil {
         if (variableNameString == "super") {
             return variableNameElement.getContainingSuperClass()
         }
+
+        if (variableNameElement.indexInQualifiedReference != 0) {
+            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
+        }
+
         val className = getClassNameIfVariableNameIsStaticReference(variableNameElement)
         if (className != null) {
             return className
@@ -44,7 +43,7 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement
         }
         if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
-            variableNameElement.getParentOfType(ObjJExpr::class.java) == null
+                variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement
         }
@@ -57,10 +56,48 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        if (variableNameElement.indexInQualifiedReference > 0) {
-            return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
+
+    }
+
+    fun getVariableDeclarationElementForFunctionName(variableNameElement: ObjJFunctionName): PsiElement? {
+        val variableNameString = variableNameElement.text
+
+        if (variableNameString == "class") {
+            return null
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) } ?: variableNameElement
+
+        if (variableNameString == "this") {
+            return null
+        }
+
+        if (variableNameElement.indexInQualifiedReference > 0) {
+            return null
+        }
+
+        if (variableNameElement.parent is ObjJPropertyAssignment) {
+            return variableNameElement
+        }
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
+                variableNameElement.getParentOfType(ObjJExpr::class.java) == null
+        ) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJFormalParameterArg::class.java)) {
+            return variableNameElement
+        }
+        if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+            return variableNameElement
+        }
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {possibleFirstDeclaration ->
+            variableNameElement.text == possibleFirstDeclaration.text &&
+                    (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
+                    variableNameElement.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference &&
+                    possibleFirstDeclaration.getParentOfType(ObjJVariableDeclaration::class.java)?.expr?.leftExpr?.functionLiteral != null
+        }// ?: variableNameElement
 
     }
 
@@ -118,41 +155,5 @@ object ObjJVariableNameResolveUtil {
         // Variable is a proceeding variable if it is not in same file(globals),
         // Or if it is declared before other in same file.
         return baseVar.text == possibleFirstDeclaration.text && (!baseVar.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) && baseVar.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference
-    }
-
-    fun getGlobalElement(myElement: ObjJNamedElement) : ObjJVariableName? {
-        return getGlobalElement(myElement) {
-            true
-        }
-    }
-    fun getGlobalElement(myElement:ObjJNamedElement, filter:Filter<ObjJGlobalVariableDeclaration>) : ObjJVariableName? {
-        val globalVariableDeclarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
-        if (globalVariableDeclarations.isEmpty()) {
-            return null
-        }
-
-        val file = myElement.containingObjJFile
-        val imports = file?.importStrings
-        if (imports == null) {
-            for (globalVariableDeclaration in globalVariableDeclarations) {
-                if (filter(globalVariableDeclaration)) {
-                    return globalVariableDeclaration.variableName
-                }
-            }
-            return null
-        }
-        for (declaration in globalVariableDeclarations) {
-            if (declaration inSameFile myElement) {
-                return declaration.variableName
-            }
-            val containingFileName = ObjJFileUtil.getContainingFileName(declaration.containingFile) ?: continue
-            val testableImportName = ObjJImportStatement.DELIMITER + containingFileName
-            for (import in imports) {
-                if (import.endsWith(testableImportName)) {
-                    return declaration.variableName
-                }
-            }
-        }
-        return null
     }
 }

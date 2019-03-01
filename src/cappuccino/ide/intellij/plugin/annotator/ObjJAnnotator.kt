@@ -12,6 +12,9 @@ import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.util.PsiTreeUtil
+import sun.tools.tree.ForStatement
+import sun.tools.tree.WhileStatement
 
 class ObjJAnnotator : Annotator {
 
@@ -82,17 +85,28 @@ class ObjJAnnotator : Annotator {
 
     private fun validateAndAnnotateContinueStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating continue element");
-        if (element.getParentOfType( ObjJIterationStatement::class.java) == null) {
-            annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
+        if (hasIterationStatementParent(element)) {
+            return
         }
+        annotationHolder.createErrorAnnotation(element, "Continue is used outside of loop.")
     }
 
     private fun validateBreakStatement(element: PsiElement, annotationHolder: AnnotationHolder) {
         //LOGGER.log(Level.INFO, "Validating break element");
-        if (element.getParentOfType( ObjJIterationStatement::class.java) != null || element.getParentOfType( ObjJCaseClause::class.java) != null) {
+        if (hasIterationStatementParent(element) || element.getParentOfType( ObjJCaseClause::class.java) != null) {
             return
         }
         annotationHolder.createErrorAnnotation(element, "Break used outside of loop or switch statement")
+    }
+
+    private fun hasIterationStatementParent(element: PsiElement) : Boolean {
+        return PsiTreeUtil.findFirstParent(element) {
+            it is ObjJIterationStatement ||
+            it is ObjJForStatement ||
+            it is ObjJWhileStatement ||
+            it is ObjJDoWhileStatement ||
+            it is ObjJDebuggerStatement
+        } != null
     }
 
     private fun validateVariableDeclaration(variableDeclaration: ObjJVariableDeclaration, annotationHolder: AnnotationHolder) {
