@@ -4,15 +4,16 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInPro
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveVarKeywordQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.util.PsiTreeUtil
+import java.util.logging.Logger
 
 class ObjJVariableOvershadowInspection : LocalInspectionTool() {
 
@@ -37,7 +38,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
 
     companion object {
         private const val OVERSHADOWS_VARIABLE_STRING_FORMAT = "Variable overshadows existing variable in %s"
-        private const val OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT = "Variable overshadows function with name %s"
+        private const val OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT = "Variable overshadows function in shared scope %s"
         private const val OVERSHADOWS_CLASS_VARIABLE = "Variable overshadows class variable"
         private const val OVERSHADOWS_METHOD_HEADER_VARIABLE = "Variable overshadows method variable"
 
@@ -81,7 +82,9 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
         }
 
         private fun annotateIfOvershadowsBlocks(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
+            val thisBodyVariableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
             val bodyVariableAssignments = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
+                    .filterNot { thisBodyVariableAssignment != null && it.isEquivalentTo(thisBodyVariableAssignment) }
             if (bodyVariableAssignments.isEmpty()) {
                 return
             }
@@ -89,6 +92,10 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             val variableNameString = variableName.text
             for (bodyVariableAssignment in bodyVariableAssignments) {
                 if (isDeclaredInBodyVariableAssignment(bodyVariableAssignment, variableNameString, offset)) {
+                    val superVariable = ObjJVariableReference(variableName).resolve()
+                    if (superVariable == null || superVariable.isEquivalentTo(variableName)) {
+                        return
+                    }
                     problemsHolder.registerProblem(variableName, "Variable overshadows variable in enclosing block",ObjJIgnoreOvershadowedVariablesInProject(), ObjJRemoveVarKeywordQuickFix())
                     return
                 }
@@ -101,8 +108,8 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             }
 
             val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
-            val varNames = variableAssignment.variableNameList
-            for (declaration in variableAssignment.variableDeclarationList) {
+            val varNames = variableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
+            for (declaration in variableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
                 qualifiedReferences.addAll(declaration.qualifiedReferenceList)
             }
             for (qualifiedReference in qualifiedReferences) {
@@ -122,6 +129,30 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             if (reference != null && reference != variableName) {
                 problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"), ObjJIgnoreOvershadowedVariablesInProject(),ObjJRemoveVarKeywordQuickFix())
                 return
+            }
+            for (declarationElement in ObjJFunctionsIndex.instance[variableName.text, variableName.project]) {
+                ProgressIndicatorProvider.checkCanceled()
+
+                //Finds resolved element scope if possible
+                    val referencedInScope = variableName.getContainingScope()
+
+                //Finds this elements, and the new elements scope
+                val sharedContext: PsiElement? = PsiTreeUtil.findCommonContext(variableName, declarationElement)
+                val sharedScope: ReferencedInScope = sharedContext?.getContainingScope() ?: ReferencedInScope.UNDETERMINED;
+                if (sharedScope == ReferencedInScope.UNDETERMINED) {
+                    return
+                }
+                if (sharedScope == ReferencedInScope.FILE && !(referencedInScope == ReferencedInScope.FILE || declarationElement.getContainingScope() == ReferencedInScope.FILE)) {
+                    return
+                }
+                if (sharedScope == ReferencedInScope.CLASS) {
+                    return
+                }
+                Logger.getLogger("VariableOvershadowInspection: Shared context for function name overshadow: $sharedScope");
+                if (declarationElement.containingFile.isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.textRange.startOffset) {
+                    problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, sharedScope), ObjJIgnoreOvershadowedVariablesInProject(), ObjJRemoveVarKeywordQuickFix())
+                }
+
             }
         }
 

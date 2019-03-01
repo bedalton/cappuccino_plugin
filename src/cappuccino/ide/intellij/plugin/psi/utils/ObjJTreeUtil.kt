@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -7,7 +9,6 @@ import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
-import org.apache.velocity.runtime.parser.node.ASTMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
@@ -85,6 +86,29 @@ fun PsiElement.getNextNonEmptyNodeType(ignoreLineTerminator: Boolean): IElementT
 fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
     val node = getPreviousNonEmptyNode(ignoreLineTerminator)
     return node?.psi
+}
+
+fun ASTNode.getPreviousNonEmptySiblingIgnoringComments(): ASTNode? {
+    var node = getPreviousNonEmptyNode(true)
+    while (node != null && node.elementType in ObjJTokenSets.COMMENTS) {
+        node = getPreviousNonEmptyNode(true)
+    }
+    return node
+}
+fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
+    var out: ASTNode? = this?.treePrev ?: return null
+    while (shouldSkipNode(out, ignoreLineTerminator)) {
+        out = if (out!!.treePrev == null) {
+            TreeUtil.prevLeaf(out)
+        } else {
+            out.treePrev
+        }
+        if (out == null) {
+            return null
+        }
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
+    }
+    return out
 }
 
 fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {

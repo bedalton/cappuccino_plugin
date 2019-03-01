@@ -2,10 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.Filter
 import java.util.*
 import java.util.logging.Logger
@@ -151,7 +148,7 @@ private fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
                         }
                     }
                 }
-            } else if (returnFirst && tempElements.size > 0) {
+            } else if (returnFirst && tempElements.isNotEmpty()) {
                 for (element in tempElements) {
                     if (offset < 0 || element.textRange.startOffset > offset) {
                         return listOf(element)

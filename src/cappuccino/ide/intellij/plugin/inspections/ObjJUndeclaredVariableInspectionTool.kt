@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -200,8 +201,18 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
             val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
-            if (reference.parent is ObjJBodyVariableAssignment) {
-                return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
+            if (reference.parent is ObjJVariableDeclaration) {
+                val variableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
+                if (variableAssignment != null) {
+                    return variableAssignment.varModifier != null
+                }
+            }
+
+            if (reference.parent is ObjJVariableDeclaration) {
+                if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.varModifier != null ||
+                        variableName.getParentOfType(ObjJInExpr::class.java)?.varModifier != null) {
+                    return true
+                }
             }
 
 

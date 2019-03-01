@@ -15,7 +15,7 @@ class ObjJProtocolInheritanceIndex private constructor() : ObjJStringStubIndexBa
         get() = ObjJClassDeclarationElement::class.java
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION
     }
 
     override fun getKey(): StubIndexKey<String, ObjJClassDeclarationElement<*>> {

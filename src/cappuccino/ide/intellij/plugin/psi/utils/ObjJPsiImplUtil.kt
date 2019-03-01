@@ -25,6 +25,8 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.FoldingGroup
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import javax.swing.*
 import java.util.*
@@ -124,7 +126,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun setName(instanceVariableDeclaration: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
-        return ObjJVariablePsiUtil.setName(instanceVariableDeclaration,newName)
+        return ObjJNamedPsiUtil.setName(instanceVariableDeclaration, newName)
     }
 
     @JvmStatic
@@ -307,12 +309,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
-        return ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
+        return Collections.singletonList(ObjJClassType.UNDETERMINED)//ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
     }
 
     @JvmStatic
     fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall) : List<String> {
-        return ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
+        return Collections.singletonList(ObjJClassType.UNDETERMINED)// ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
     }
 
     // ============================== //
@@ -416,6 +418,8 @@ object ObjJPsiImplUtil {
         }
         val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.*)")) else null
         for (currentSelector in selectorList) {
+
+            ProgressIndicatorProvider.checkCanceled()
             if (subSelectorPattern == null || subSelectorPattern.matcher(currentSelector.getSelectorString(false)).matches()) {
                 return currentSelector
             }
@@ -448,8 +452,13 @@ object ObjJPsiImplUtil {
     fun getVarType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVarType(property)
 
     @JvmStatic
+    fun getFormalVariableType(selector:ObjJMethodDeclarationSelector) : ObjJFormalVariableType? {
+        return selector.methodHeaderSelectorFormalVariableType?.formalVariableType
+    }
+
+    @JvmStatic
     fun hasMethod(classElement: ObjJClassDeclarationElement<*>, selector: String): Boolean {
-        return !classElement.getMethodHeaders().none { it.selectorString == selector; }
+        return !classElement.getMethodHeaders().none { it.selectorString == selector }
     }
 
     @JvmStatic
@@ -480,6 +489,10 @@ object ObjJPsiImplUtil {
     fun getSetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? =
             ObjJAccessorPropertyPsiUtil.getSetter(variableDeclaration)
 
+    @JvmStatic
+    fun getAccessorPropertyList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty>  {
+        return ObjJAccessorPropertyPsiUtil.getAccessorPropertiesList(declaration)
+    }
 
     // ============================== //
     // ======== References ========== //
@@ -650,6 +663,7 @@ object ObjJPsiImplUtil {
     fun getBlockList(switchStatement: ObjJSwitchStatement) : List<ObjJBlock> {
         val out = ArrayList<ObjJBlock>()
         for (clause in switchStatement.caseClauseList) {
+            ProgressIndicatorProvider.checkCanceled()
             val block = clause.block ?: continue
             out.add(block)
         }
@@ -661,6 +675,7 @@ object ObjJPsiImplUtil {
         val out = ArrayList<ObjJBlock>()
         out.addAll(ifStatement.blockElementList)
         for(elseIfBlock in ifStatement.elseIfStatementList) {
+            ProgressIndicatorProvider.checkCanceled()
             val block = elseIfBlock.block
             if (block != null) {
                 out.add(block)
@@ -686,10 +701,6 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getBlockList(tryStatement: ObjJTryStatement) =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(tryStatement)
-
-    @JvmStatic
-    fun getBlockList(iterationStatement: ObjJIterationStatement) =
-            cappuccino.ide.intellij.plugin.psi.utils.getBlockList(iterationStatement)
 
     @JvmStatic
     fun getBlockList(expr: ObjJExpr): List<ObjJBlock> =
@@ -920,6 +931,7 @@ object ObjJPsiImplUtil {
     private fun getFormattedSelector(methodHeader: ObjJMethodHeader): String {
         val builder = StringBuilder()
         for (selector in methodHeader.methodDeclarationSelectorList) {
+            ProgressIndicatorProvider.checkCanceled()
             if (selector.selector != null) {
                 builder.append(selector.selector!!.getSelectorString(false))
             }
@@ -1113,9 +1125,11 @@ object ObjJPsiImplUtil {
     fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> {
         val out: MutableList<ObjJStructureViewElement> = mutableListOf()
         declaration.instanceVariableList?.instanceVariableDeclarationList?.forEach {
+            ProgressIndicatorProvider.checkCanceled()
             out.add(it.createTreeStructureElement())
         }
         declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach {
+            ProgressIndicatorProvider.checkCanceled()
             out.add(it.createTreeStructureElement())
         }
         return out.toTypedArray()
@@ -1124,7 +1138,7 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement {
         val label = "ivar: ${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text
-                ?: "{UNDEF}"}${if (instanceVariable.atAccessors != null) " @accessors" else ""}"
+                ?: "{UNDEF}"}${if (instanceVariable.accessor != null) " @accessors" else ""}"
         val presentation = PresentationData(label, ObjJFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
         return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
                 ?: "UNDEF"))
@@ -1280,6 +1294,64 @@ object ObjJPsiImplUtil {
             }
         }
         return null
+    }
+
+
+    @JvmStatic
+    fun getFormalParameterArgList(functionDeclaration: ObjJFunctionDeclaration): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
+
+    @JvmStatic
+    fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionDeclaration): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+    @JvmStatic
+    fun getFormalParameterArgList(functionDeclaration: ObjJFunctionLiteral): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
+
+    @JvmStatic
+    fun getLastFormalParameterArg(functionDeclaration: ObjJFunctionLiteral): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+    @JvmStatic
+    fun getFormalParameterArgList(functionDeclaration: ObjJPreprocessorDefineFunction): List<ObjJFormalParameterArg> {
+        return functionDeclaration.formalParameterList?.formalParameterArgList ?: listOf()
+    }
+
+    @JvmStatic
+    fun getLastFormalParameterArg(functionDeclaration: ObjJPreprocessorDefineFunction): ObjJLastFormalParameterArg? {
+        return functionDeclaration.formalParameterList?.lastFormalParameterArg
+    }
+
+
+    @JvmStatic
+    fun getExprList(functionCall: ObjJFunctionCall): List<ObjJExpr> {
+        return functionCall.arguments.exprList
+    }
+
+
+    @JvmStatic
+    fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement {
+        return functionCall.arguments.closeParen
+    }
+
+    @JvmStatic
+    fun getOpenParen(functionCall: ObjJFunctionCall): PsiElement {
+        return functionCall.arguments.openParen
+    }
+
+    @JvmStatic
+    fun getIterationStatementList(block:ObjJBlockElement): List<ObjJIterationStatement> {
+        return block.getChildrenOfType(ObjJIterationStatement::class.java)
+    }
+
+    @JvmStatic
+    fun getIterationStatementList(block:ObjJHasBlockStatement): List<ObjJIterationStatement> {
+        return block.getChildrenOfType(ObjJIterationStatement::class.java)
     }
 
     @Suppress("MemberVisibilityCanBePrivate")

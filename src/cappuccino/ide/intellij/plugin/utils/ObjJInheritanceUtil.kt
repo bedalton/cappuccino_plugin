@@ -14,6 +14,8 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.addProtocols
 
 import java.util.ArrayList
+import java.util.logging.Level
+import java.util.logging.Logger
 
 object ObjJInheritanceUtil {
 
@@ -47,7 +49,6 @@ object ObjJInheritanceUtil {
         return superClasses
     }
 
-    @Suppress("unused")
     fun isInstanceVariableInClasses(variableName:String, className:String, project:Project) : Boolean {
         if (isInstanceVariableInClass(variableName, className, project)) {
             return true
@@ -60,7 +61,7 @@ object ObjJInheritanceUtil {
         return false
     }
 
-    private fun isInstanceVariableInClass(variableName:String, className:String, project:Project) : Boolean {
+    fun isInstanceVariableInClass(variableName:String, className:String, project:Project) : Boolean {
         for (variable in ObjJInstanceVariablesByClassIndex.instance[className, project]) {
             //Logger.getAnonymousLogger().log(Level.INFO, "Does Variable ${variable.text} == $variableName?")
             if (variable.text == variableName) {
@@ -102,16 +103,16 @@ object ObjJInheritanceUtil {
             return
         }
 
-        val temp = ObjJProtocolDeclarationsIndex.instance[className, project]
+        val temp = ObjJProtocolDeclarationsIndex.instance.get(className, project)
         if (temp.isEmpty()) {
             return
         }
-        val thisProtocol = temp.getOrNull(0) ?: return
+        val thisProtocol = temp.get(0)
         out.add(thisProtocol)
         val protocolList = thisProtocol.inheritedProtocolList ?: return
         for (parentProtocolNameElement in protocolList.classNameList) {
             ProgressIndicatorProvider.checkCanceled()
-            getAllInheritedProtocols(out, parentProtocolNameElement.text, project)
+            getAllInheritedProtocols(out, parentProtocolNameElement.getText(), project)
             /*
             for (ObjJProtocolDeclaration currentProtocolInLoop: ObjJProtocolDeclarationsIndex.getInstance().get(parentProtocolNameElement.getText(), project)) {
                 ProgressIndicatorProvider.checkCanceled();
@@ -135,6 +136,10 @@ object ObjJInheritanceUtil {
             }
         }
         return false
+    }
+
+    fun getAllInheritedClassesStrict(classNames: MutableList<String>, className: String, project: Project) {
+        return getAllInheritedClasses(classNames, className, project, false)
     }
 
     fun getAllInheritedClasses(classNames: MutableList<String>, className: String, project: Project, withProtocols:Boolean = true) {
@@ -185,7 +190,6 @@ object ObjJInheritanceUtil {
     }
 
 
-    @Suppress("unused")
     fun getAllInheritedClassesForAllClassTypesInArray(
             result: MutableList<String>,
             baseClassNames: List<String>,
@@ -195,7 +199,7 @@ object ObjJInheritanceUtil {
         }
     }
 
-    private fun getInheritedClasses(
+    fun getInheritedClasses(
             result: MutableList<String>,
             baseClassName: String,
             project: Project) {

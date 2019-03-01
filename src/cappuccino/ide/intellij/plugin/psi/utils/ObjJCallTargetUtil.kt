@@ -8,10 +8,10 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import java.util.*
 
+private val UNDETERMINED = listOf(ObjJClassType.UNDETERMINED)
 object ObjJCallTargetUtil {
-
-    fun getPossibleCallTargetTypes(callTargetIn: ObjJCallTarget?): List<String> {
-        val callTarget = callTargetIn ?: return ArrayUtils.EMPTY_STRING_ARRAY
+    fun ObjJCallTarget?.getPossibleCallTargetTypes(): List<String> {
+        val callTarget = this ?: return ArrayUtils.EMPTY_STRING_ARRAY
         if (DumbService.isDumb(callTarget.project)) {
             return ArrayUtils.EMPTY_STRING_ARRAY
         }
@@ -37,16 +37,16 @@ object ObjJCallTargetUtil {
             return ObjJInheritanceUtil.getAllInheritedClasses(callTarget.text, project)
         }
         val out = ArrayList<String>()
-        val varNameResults = getCallTargetTypeFromVarName(callTarget)
+        val varNameResults = callTarget.getCallTargetTypeFromVarName()
         if (varNameResults != null) {
             out.addAll(varNameResults)
         }
         return out
     }
 
-    private fun getCallTargetTypeFromVarName(callTarget: ObjJCallTarget): List<String>? {
-        val results = ExpressionReturnTypeResults(callTarget.project)
-        val qualifiedReference: ObjJQualifiedReference = callTarget.qualifiedReference ?: return null
+    fun ObjJCallTarget.getCallTargetTypeFromVarName(): List<String>? {
+        val results = ExpressionReturnTypeResults(project)
+        val qualifiedReference: ObjJQualifiedReference = qualifiedReference ?: return null
         val variableNameList = qualifiedReference.variableNameList
         if (variableNameList.size == 1) {
             for (variableName in ObjJVariableNameUtil.getMatchingPrecedingVariableAssignmentNameElements(variableNameList[0], variableNameList.size - 1)) {
@@ -68,7 +68,7 @@ object ObjJCallTargetUtil {
 
     }
 
-    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTarget: ObjJCallTarget): List<String>? {
+    fun getPossibleCallTargetTypesFromFormalVariableTypes(callTarget: ObjJCallTarget): List<String>? {
         if (callTarget.qualifiedReference == null || callTarget.qualifiedReference!!.variableNameList.isEmpty()) {
             return null
         }
@@ -99,47 +99,49 @@ object ObjJCallTargetUtil {
         }
     }
 
-    fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall): List<String> {
+    fun ObjJMethodCall.getPossibleCallTargetTypes() = getPossibleCallTargetTypesFromMethodCall(this)
+
+    fun getPossibleCallTargetTypesFromMethodCall(methodCall: ObjJMethodCall): List<String> {
 
         val classConstraints: MutableList<String>
         val callTarget = methodCall.callTarget
-        val callTargetText = getCallTargetTypeIfAllocStatement(callTarget)
-        val containingClassName = methodCall.containingClassName
+        val callTargetText = callTarget.getCallTargetTypeIfAllocStatement()
         val project = methodCall.project
         when (callTargetText) {
-            "self" -> classConstraints = ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, project)
+            "self" -> classConstraints = ObjJInheritanceUtil.getAllInheritedClasses(methodCall.containingClassName, project) as MutableList<String>
             "super" -> {
-                classConstraints = ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, project)
+                val containingClass = methodCall.containingClassName
+                classConstraints = ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project) as MutableList<String>
                 if (classConstraints.size > 1) {
-                    classConstraints.remove(containingClassName)
+                    classConstraints.remove(containingClass)
                 }
             }
             else -> {
-                val referencedVariableSelectorParent: ObjJMethodDeclarationSelector? = callTarget.qualifiedReference?.lastVar?.reference?.resolve()?.getParentOfType(ObjJMethodDeclarationSelector::class.java)
+                val referencedVariableSelectorParent: ObjJMethodDeclarationSelector? = callTarget.qualifiedReference?.getLastVar()?.reference?.resolve()?.getParentOfType(ObjJMethodDeclarationSelector::class.java)
                 classConstraints = if (referencedVariableSelectorParent != null) {
                     val varType = referencedVariableSelectorParent.varType
                     val varTypeId = varType?.varTypeId
                     if (varTypeId != null) {
-                        ObjJInheritanceUtil.getAllInheritedClasses(varTypeId.idType, project)
+                        ObjJInheritanceUtil.getAllInheritedClasses(varTypeId.idType ?: varTypeId.text, project)
                     } else {
                         ObjJInheritanceUtil.getAllInheritedClasses(varType?.className?.text
-                                ?: ObjJClassType.UNDETERMINED, project)
+                                ?: ObjJClassType.UNDETERMINED, project);
                     }
                 } else {
 
-                    ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project)
+                    ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project) as MutableList<String>
                 }
             }
         }
         return classConstraints
     }
 
-    private fun getCallTargetTypeIfAllocStatement(callTarget: ObjJCallTarget): String {
-        val subMethodCall = callTarget.qualifiedReference?.methodCall ?: return callTarget.text
+    fun ObjJCallTarget.getCallTargetTypeIfAllocStatement(): String {
+        val subMethodCall = qualifiedReference?.methodCall ?: return text;
         val subMethodCallSelectorString = subMethodCall.selectorString
         if (subMethodCallSelectorString == "alloc:" || subMethodCallSelectorString == "new:") {
-            return subMethodCall.callTargetText
+            return subMethodCall.getCallTargetText()
         }
-        return callTarget.text
+        return text
     }
 }

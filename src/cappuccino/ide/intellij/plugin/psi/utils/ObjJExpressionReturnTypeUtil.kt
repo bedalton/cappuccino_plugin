@@ -208,9 +208,6 @@ private fun isReturnTypeInteger(expr: ObjJExpr?): Boolean {
     if (expr == null) {
         return false
     }
-    if (expr.bitNot != null) {
-        return true
-    }
     if (expr.leftExpr == null) {
         return false
     }
@@ -234,8 +231,8 @@ private fun isReturnTypeInteger(expr: ObjJExpr?): Boolean {
 
 @Throws(CannotDetermineException::class)
 private fun isRightSideEvaluateToInteger(rightExpr: ObjJRightExpr): Boolean {
-    if (rightExpr.boolAssignExprPrime != null) {
-        return isReturnTypeInteger(rightExpr.boolAssignExprPrime!!.ifTrue) || isReturnTypeInteger(rightExpr.boolAssignExprPrime!!.ifFalse)
+    if (rightExpr.ternaryExprPrime != null) {
+        return isReturnTypeInteger(rightExpr.ternaryExprPrime!!.ifTrue) || isReturnTypeInteger(rightExpr.ternaryExprPrime!!.ifFalse)
     }
     if (!rightExpr.arrayIndexSelectorList.isEmpty()) {
         throw CannotDetermineException()
@@ -246,20 +243,11 @@ private fun isRightSideEvaluateToInteger(rightExpr: ObjJRightExpr): Boolean {
     if (rightExpr.mathExprPrime != null) {
         if (rightExpr.mathExprPrime != null) {
             val mathExprPrime = rightExpr.mathExprPrime
-            return mathExprPrime!!.bitAnd != null ||
-                    mathExprPrime.bitNot != null ||
-                    mathExprPrime.bitOr != null ||
-                    mathExprPrime.bitXor != null ||
-                    mathExprPrime.leftShiftArithmatic != null ||
-                    mathExprPrime.rightShiftArithmatic != null ||
-                    mathExprPrime.leftShiftLogical != null ||
-                    mathExprPrime.rightShiftLogical != null ||
-                    mathExprPrime.modulus != null ||
-                    isReturnTypeInteger(mathExprPrime.expr)
+            return isReturnTypeInteger(mathExprPrime?.expr)
         }
     }
-    return if (rightExpr.boolAssignExprPrime != null) {
-        isReturnTypeInteger(rightExpr.boolAssignExprPrime!!.ifFalse) || isReturnTypeInteger(rightExpr.boolAssignExprPrime!!.ifFalse)
+    return if (rightExpr.ternaryExprPrime != null) {
+        isReturnTypeInteger(rightExpr.ternaryExprPrime!!.ifFalse) || isReturnTypeInteger(rightExpr.ternaryExprPrime!!.ifFalse)
     } else false
 }
 
@@ -318,14 +306,14 @@ private fun isRightExpressionBool(rightExpr: ObjJRightExpr?): Boolean {
         return false
     }
 
-    if (rightExpr.joinExprPrime != null || rightExpr.instanceOfExprPrime != null) {
+    if (rightExpr.instanceOfExprPrime != null) {
         return true
     }
-    if (rightExpr.boolAssignExprPrime != null) {
-        val assignExprPrime = rightExpr.boolAssignExprPrime
+    if (rightExpr.ternaryExprPrime != null) {
+        val assignExprPrime = rightExpr.ternaryExprPrime
         return isReturnTypeBOOL(assignExprPrime!!.ifTrue) || assignExprPrime.ifFalse != null && isReturnTypeBOOL(assignExprPrime.ifFalse)
     }
-    if (rightExpr.booleanExprPrime != null) {
+    if (rightExpr.ternaryExprPrime != null) {
         return true
     }
     return /*if (rightExpr.assignmentExprPrime != null) {
@@ -365,7 +353,7 @@ private fun addRightExpressionExpressions(expressions: MutableList<ObjJExpr>, ri
         /*if (rightExpr.assignmentExprPrime != null) {
             expressions.add(rightExpr.assignmentExprPrime!!.expr)
         }*/
-        val boolAssignExprPrime = rightExpr.boolAssignExprPrime ?: continue
+        val boolAssignExprPrime = rightExpr.ternaryExprPrime ?: continue
         expressions.add(boolAssignExprPrime.ifTrue)
         expressions.add(boolAssignExprPrime.ifFalse!!)
     }
@@ -442,8 +430,8 @@ private fun testRightExpressionsExpressions(rightExpr: ObjJRightExpr?, test: Sub
     /*if (rightExpr.assignmentExprPrime != null) {
         return test(rightExpr.assignmentExprPrime!!.expr)
     }*/
-    return if (rightExpr.boolAssignExprPrime != null) {
-        test(rightExpr.boolAssignExprPrime!!.ifTrue) || test(rightExpr.boolAssignExprPrime!!.ifFalse)
+    return if (rightExpr.ternaryExprPrime != null) {
+        test(rightExpr.ternaryExprPrime!!.ifTrue) || test(rightExpr.ternaryExprPrime!!.ifFalse)
     } else false
 }
 

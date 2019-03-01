@@ -28,7 +28,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         var getter: String? = null
         var setter: String? = null
         val variableName = if (declaration.variableName != null) declaration.variableName!!.text else ""
-        if (declaration.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
+        if (declaration.accessor?.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
             getter = ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, declaration.formalVariableType.text)
             setter = ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, declaration.formalVariableType.text)
             //Logger.getAnonymousLogger().log(Level.INFO, "Variable: <"+variableName+">; getter: <"+getter+">; setter: <"+setter+">");

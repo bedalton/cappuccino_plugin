@@ -27,7 +27,6 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import com.intellij.psi.TokenType
 import java.util.logging.Level
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -35,10 +34,8 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     private val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
 
     override fun addCompletions(
-            parameters: CompletionParameters,
-            context: ProcessingContext,
+            parameters: CompletionParameters, context: ProcessingContext,
             resultSet: CompletionResultSet) {
-
         val element = parameters.position
         val parent = element.parent
         val results: MutableList<String>
@@ -60,7 +57,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                             "class",
                             "implementation",
                             "protocol",
-                            "global",
                             "end"
                     )
                     prefix = "@"
@@ -87,37 +83,17 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 }
             }
             results.forEach {
-                val lookupElement = LookupElementBuilder
-                        .create(it)
-                        .withPresentableText(prefix+it)
-                        .withInsertHandler {
-                            context, _ -> if (!EditorUtil.isTextAtOffset(context, " ")) {
-                                EditorUtil.insertText(context.editor, " ", true)
-                            }
-                        }
-                resultSet.addElement(lookupElement)
+                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix + it).withInsertHandler { context, _ ->
+                    if (!EditorUtil.isTextAtOffset(context, " ")) {
+                        EditorUtil.insertText(context.editor, " ", true)
+                    }
+                })
             }
             if (results.isNotEmpty()) {
                 resultSet.stopHere()
                 return
             }
-        } else if (element.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
-            when {
-                element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
-                    val lookupElement = LookupElementBuilder
-                            .create("outlet")
-                            .withPresentableText("@outlet")
-                            .withInsertHandler { lookupContext, _ ->
-                                if (!EditorUtil.isTextAtOffset(lookupContext, " ")) {
-                                    EditorUtil.insertText(lookupContext.editor, " ", true)
-                                }
-                            }
-                    resultSet.addElement(lookupElement)
-                }
-                element.getParentOfType(ObjJFormalVariableType::class.java) != null -> getClassNameCompletions(resultSet, element)
-            }
-            return
-        }else {
+        } else {
             if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
                 resultSet.stopHere()
                 return
@@ -128,21 +104,28 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 return
             }
 
-            if (ObjJVariablePsiUtil.isNewVariableDeclaration(element)) {
+            if (ObjJVariablePsiUtil.isNewVarDec(element)) {
                 resultSet.stopHere()
                 return
             }
+
+            if (element.text.startsWith("@") && PsiTreeUtil.findFirstParent(element) {
+                it is ObjJClassDeclarationElement<*>
+            } != null) {
+                resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
+            }
+
             val variableName = element as? ObjJVariableName ?: parent as? ObjJVariableName
             results = if (variableName != null) {
                 ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
             } else {
                 mutableListOf()
             }
-            if ((variableName?.indexInQualifiedReference ?: Integer.MAX_VALUE) < 1) {
+            if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
                 results.addAll(getInClassKeywords(variableName))
-                results.addAll(Arrays.asList("YES", "NO", "TRUE", "FALSE"))
+                results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
             } else {
                 //LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
             }
@@ -209,7 +192,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val functionNamePattern = element.text.replace(CARET_INDICATOR, "(.*)")
         val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
         for (functionName in functions.keys) {
-            for (function in functions[functionName]!!) {
+            for (function in functions.get(functionName)!!) {
                 ProgressIndicatorProvider.checkCanceled()
                 val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
 

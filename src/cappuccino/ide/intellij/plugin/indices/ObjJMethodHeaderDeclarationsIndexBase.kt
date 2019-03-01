@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodHeaderDeclaration<*>> : ObjJStringStubIndexBase<MethodHeaderT>() {
 
     override fun getVersion(): Int {
-        return super.getVersion() + VERSION
+        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION
     }
 
 

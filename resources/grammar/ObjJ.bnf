@@ -53,7 +53,7 @@
 		GREATER_THAN_EQUALS =              	'>='
 		EQUALS =                        	'=='
 		NOT_EQUALS =                      	'!='
-		IDENTITY__EQUALS =                 	'==='
+		IDENTITY_EQUALS =                 	'==='
 		IDENTITY_NOT_EQUALS =              	'!=='
 		BIT_AND =                         	'&'
 		BIT_XOR =                         	'^'
@@ -78,7 +78,8 @@
 		SINGLE_QUO = 						"'"
 		BLOCK_COMMENT_START =				"/*"
 		BLOCK_COMMENT_END =				 	"*/"
-
+		BLOCK_COMMENT_LEADING_ASTERISK =     "*"
+		BLOCK_COMMENT_LINE =				'regexp:\*[^\n]*?'
 
 		// At Statements
 		AT_FRAGMENT =						'@fragment'
@@ -169,7 +170,7 @@
 		LET = 								'let'
 		CONST = 							'const'
 		MARK = 								'mark'
-		ERROR_SEQUENCE_TOKEN				'?*__ERR_SEMICOLON__*?'
+		ERROR_SEQUENCE_TOKEN				'?*_ERR_SEMICOLON_*?'
 
 		//Literals
 		//SINGLE_QUOTE_STRING_LITERAL = 		"regexp:'([^'\\\r\n]|\\['\\bfnrtv])*'"
@@ -248,12 +249,17 @@ comment
     ;
 
 blockComment
-	::= BLOCK_COMMENT_START BLOCK_COMMENT_TEXT? BLOCK_COMMENT_END
+	::= BLOCK_COMMENT_START blockCommentBody BLOCK_COMMENT_END
 	{
 		pin=1
 	}
 	;
 
+blockCommentBody
+	::= BLOCK_COMMENT_LEADING_ASTERISK BLOCK_COMMENT_LINE
+	| BLOCK_COMMENT_LEADING_ASTERISK
+	| BLOCK_COMMENT_LINE
+	;
 
 importFile
 	::= '@import' stringLiteral
@@ -378,6 +384,7 @@ blockElement
 		]
 		methods=[
 			getBlockList
+			getIterationStatementList
 		]
 	}
 	;
@@ -391,7 +398,9 @@ methodBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 		]
-
+		methods=[
+			getIterationStatements
+		]
 	}
 	;
 
@@ -426,7 +435,7 @@ bodyVariableAssignment
 	;
 
 variableAssignmentLogical
-	::= (qualifiedReference|'@deref' '(' variableName ')') assignmentExprPrime
+	::= (qualifiedReference|derefExpression) assignmentExprPrime
 	{
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[getAssignedValue getQualifiedReferenceList]
@@ -437,7 +446,7 @@ private variableAssignmentSimple
 	::= varModifier variableDeclarationList
 	;
 
-private variableDeclarationList
+variableDeclarationList
 	::=  variableDeclarationListVariableDeclaration (',' variableDeclarationListVariableDeclaration)*
 	;
 
@@ -459,7 +468,7 @@ globalVariableDeclaration
 	;
 
 variableDeclaration
-	::= (qualifiedReference|'@deref' '(' qualifiedReference ')') '=' ((qualifiedReference|'@deref' '(' qualifiedReference ')') '=')* expr
+	::= (qualifiedReference|derefExpression) '=' ((qualifiedReference|derefExpression) '=')* expr
 	{
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[assignedValue="/expr"]
@@ -477,7 +486,7 @@ instanceVariableDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement]
+		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement getAccessorPropertyList]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
 	}
@@ -487,7 +496,7 @@ private recover_instanceVariableDeclaration
 	::=  !(eos|recover_instanceVariableList)
 	;
 
-private accessor
+accessor
 	::= '@accessors' ('(' accessorPropertyList? ')')?
 	;
 
@@ -554,6 +563,7 @@ private ifStatementStart
 	}
 	;
 
+//@todo Replace with 'else' ifStatement instead of redeclaring whole block
 elseIfStatement
 	::= 'else' 'if' conditionExpression statementOrBlock
 	{
@@ -576,20 +586,10 @@ private elseStatement
 	}
 	;
 
-iterationStatement
+private iterationStatement
 	::= doWhileStatement
     | 	whileStatement
     |	forStatement
-    {
-		implements = [
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-		]
-		methods = [
-			getBlockList
-			block="blockElement"
-		]
-    }
     ;
 
 
@@ -600,10 +600,17 @@ doWhileStatement
 		//recoverWhile=inLoopRecoverWhile
 		extends=whileStatement
 		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
 		]
-		methods =[ getConditionalExpression]
+		methods =[
+		 	getConditionalExpression
+			getBlockList
+			block="blockElement"
+		]
 	}
 	;
 
@@ -615,10 +622,11 @@ whileStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
 
 		]
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
-		methods=[getBlockList conditionalExpression="/conditionExpression/expr"]
+		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="blockElement"]
 	}
 	;
 
@@ -635,13 +643,28 @@ conditionExpression
 	::= '(' expr ')'
 	;
 
-private forStatement
-	::= 'for' '(' forLoopHeader ')' /*<<enterMode "inLoop">>*/ statementOrBlock /*<<exitMode "inLoop">>*/
+forStatement
+	::= 'for' forLoopHeader  /*<<enterMode "inLoop">>*/ statementOrBlock /*<<exitMode "inLoop">>*/
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement"
+		]
+		methods = [
+			getBlockList
+			block="blockElement"
+		]
+	}
 	;
 
-private forLoopHeader
+forLoopHeader
+	::= '(' forLoopPartsInBraces ')'
+	;
+
+forLoopPartsInBraces
 	::= compoundForLoopHeader
-	| 	inExpr
+	|	inExpr
 	;
 
 private compoundForLoopHeader
@@ -710,7 +733,7 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
 		extends=blockElement
-		methods= [block="blockElement" getBlockList]
+		methods= [block="blockElement" getBlockList getIterationStatementList]
 	}
 	;
 
@@ -770,7 +793,7 @@ deleteStatement
 	;
 
 functionDeclaration
-	::= 'function' (<<notInMode "varDec">> functionName) '(' formalParameterList? ')' blockElement
+	::= 'function' (<<notInMode "varDec">> functionName) formalParameterList blockElement
 	{
 		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -794,6 +817,8 @@ functionDeclaration
 			shouldResolve
 			getBlockList
 			createFoldingDescriptor
+			getFormalParameterArgList
+			getLastFormalParameterArg
 			block="blockElement"
 		]
 
@@ -866,16 +891,19 @@ methodDeclarationSelector
 	::= selector? ':' methodDeclarationSelectorVariable
 	{
 		pin=2;
-		methods = [getVarType getContainingClassName getContainingClass getVarType getFileName]
+		methods = [getVarType getContainingClassName getContainingClass getVarType getFileName getFormalVariableType]
 	}
 	;
 
 private methodDeclarationSelectorVariable
-	::= ('(' (formalVariableType) ')')? variableName
+	::= methodHeaderSelectorFormalVariableType variableName
 	{
 		pin(".*")=1
 	}
 	;
+
+methodHeaderSelectorFormalVariableType
+	::= ('(' (formalVariableType) ')')?;
 
 implementationDeclaration
 	::= implementationHeader <<enterMode "inImplementation" >> instanceVariableList? implementationElements? <<exitMode "inImplementation" >>'@end'
@@ -891,8 +919,6 @@ implementationDeclaration
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub"
 		methods = [
-			className = "/className[0]"
-			superClass="/className[1]"
 			isCategory
 			getClassType
 			getClassNameString
@@ -931,7 +957,11 @@ private implementationHeader
 	;
 
 private implementationInheritanceDeclaration
-	::= (categoryName |':' className)? (inheritedProtocolList)?
+	::= (categoryName |':' superClass)? (inheritedProtocolList)?
+	;
+
+superClass
+	::= className
 	;
 
 categoryName
@@ -996,7 +1026,7 @@ private preprocessorStatement
 	;
 
 preprocessorDefineFunction
-	::= PP_DEFINE (functionName '(' formalParameterList? ')' | variableName) <<enterMode "preprocessor">> preprocessorDefineBody <<exitMode "preprocessor">>LINE_TERMINATOR
+	::= PP_DEFINE (functionName formalParameterList | variableName) <<enterMode "preprocessor">> preprocessorDefineBody <<exitMode "preprocessor">>LINE_TERMINATOR
 	{
 		pin=1;
 		implements=[
@@ -1009,7 +1039,20 @@ preprocessorDefineFunction
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
-		methods=[getName setName functionNameNode="/functionName" getFunctionNameAsString getParamNames getReturnType shouldResolve block="preprocessorDefineBody" getBlockList]
+		methods=[
+			getName
+			setName
+			functionNameNode="/functionName"
+			getFunctionNameAsString
+			getParamNames
+			getReturnType
+			shouldResolve
+			block="preprocessorDefineBody"
+			getBlockList
+			getFormalParameterArgList
+			getLastFormalParameterArg
+			getIterationStatementList
+		]
 	}
 	;
 
@@ -1017,7 +1060,7 @@ preprocessorDefineBody
 	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"]
-		methods=[getBlockList]
+		methods=[getBlockList getIterationStatementList]
 	}
 	;
 
@@ -1103,7 +1146,7 @@ preprocessorIfStatement
 	}
 	;
 
-private preprocessorBodyStatements
+preprocessorBodyStatements
 	::= preprocessorBodyStatement+
 	{
 		recoverWhile=recover_preprocessorBodyStatements
@@ -1218,15 +1261,18 @@ global
 	::= '@global' variableName expr?
 	;
 
-private formalParameterList
+formalParameterList
+	::= '(' formalParameterList_inner? ')';
+
+private formalParameterList_inner
 	::= formalParameterArg (',' formalParameterArg)* (',' lastFormalParameterArg)?
     | lastFormalParameterArg
     {
-    	recoverWhile=recover_formalParameterList
+    	recoverWhile=recover_formalParameterList_inner
     }
 	;
 
-private recover_formalParameterList
+private recover_formalParameterList_inner
 	::= !(')')
 	;
 
@@ -1365,7 +1411,7 @@ private expressionSequence
 
 expr
 	::= comment+ expr comment*
-	|	('!'|'~'|'-'|'+') expr
+	|	prefixedExpr
  	|	leftExpr rightExpr*
  	|	leftExpr
     {
@@ -1379,15 +1425,18 @@ expr
 	}
 	;
 
+prefixedExpr
+	::= ('!'|'~'|'-'|'+') expr;
+
 leftExpr
 	::= incrementExpr
-	|	'@ref' '(' variableName ')'
+	|	refExpression
 	|	variableDeclaration
 	|	functionCall
     |	methodCall
-    | 	'new' expr ('(' expressionSequence? ')')?
+    | 	newExpression
 	|	variableAssignmentLogical
-	|	'@deref' '(' variableName ')'
+	|	derefExpression
     |	qualifiedReference
     |	objectLiterals
     |	primary
@@ -1395,6 +1444,10 @@ leftExpr
 	|	typeOfExprPrime
     |	regularExpressionLiteral
 	;
+
+refExpression::='@ref' '(' variableName ')';
+derefExpression::='@deref' '(' variableName ')';
+newExpression::= 'new' expr arguments?;
 
 enclosedExpr
 	::= arrayIndexSelector
@@ -1410,7 +1463,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= (functionName|methodCall) arrayIndexSelector* '(' expressionSequence? ')'
+	::= (functionName|methodCall) arrayIndexSelector* arguments
 	{
 		pin=3
 		implements=[
@@ -1419,18 +1472,22 @@ functionCall
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionCallElement"
 			//"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods=[getQualifiedNameText getIndexInQualifiedReference]
+		methods=[getQualifiedNameText getIndexInQualifiedReference getExprList getCloseParen getOpenParen]
 
 	}
 	;
 
+arguments
+	::= '(' expressionSequence? ')'
+	;
+
 rightExpr
 	::= qualifiedReferencePrimary+
-	| 	boolAssignExprPrime
+	| 	ternaryExprPrime
 	| 	instanceOfExprPrime
-	| 	joinExprPrime
+	| 	logicExprPrime
 	|	mathExprPrime
-	|	booleanExprPrime
+	|	comparisonExprPrime
 	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
 	;
@@ -1448,22 +1505,28 @@ inExpr
 	::= varModifier? variableName 'in' expr
 	;
 
-joinExprPrime
-	::= ('||'|'&&') expr
+logicExprPrime
+	::= logicOperators expr
 	;
 
-booleanExprPrime
-	::= booleanOp expr
+private logicOperators
+	::= '||'
+	|	'&&'
 	;
 
-boolAssignExprPrime
+comparisonExprPrime
+	::= comparisonOperators expr
+	;
+
+ternaryExprPrime
 	::= '?' expr ':' expr
 	{
 		methods = [ifTrue="/expr[0]" ifFalse="/expr[1]"]
 	}
 	;
 
-private booleanOp
+
+private comparisonOperators
 	::= '<'|'>'|'<='|'>='|'=='|'==='|'!='|'!=='
 	;
 
@@ -1475,11 +1538,11 @@ mathExprPrime
 	::= mathOp expr
 	;
 
-private mathOp
-	::= '+'|'-'|'*'|'/'|'%'|'<<'|'>>'|'<<<'|'>>>'|'^'|'~'|'&'|'|'
+mathOp
+	::= '+'|'-'|MULTIPLY|'/'|'%'|'<<'|'>>'|'<<<'|'>>>'|'^'|'~'|'&'|'|'
 	;
 
-private assignmentOperator
+assignmentOperator
 	::= '*='
     | 	'/='
     | 	'%='
@@ -1559,7 +1622,7 @@ private objectLiterals
 	;
 
 functionLiteral
-	::= 'function' '(' formalParameterList? ')' blockElement
+	::= 'function' formalParameterList blockElement
 	{
 		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -1570,7 +1633,20 @@ functionLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>>"
 		]
-		methods = [getFunctionNameNode getFunctionNameAsString getFunctionNamesAsString getReturnType getParamNameElements getParamNames getFunctionNameNode shouldResolve getBlockList createFoldingDescriptor block="blockElement"]
+		methods = [
+			getFunctionNameNode
+			getFunctionNameAsString
+			getFunctionNamesAsString
+			getReturnType
+			getParamNameElements
+			getParamNames
+			getFunctionNameNode
+			shouldResolve
+			getBlockList
+			createFoldingDescriptor
+			getFormalParameterArgList
+			getLastFormalParameterArg
+			block="blockElement"]
 	}
 	;
 
