@@ -102,12 +102,14 @@ class ObjJVariableReference(
 
         LOGGER.info("Checking if reference to...")
 
-        val psiElementInZeroIndexInQualifiedReference = psiElement is ObjJVariableName && psiElement.indexInQualifiedReference < 1
-        val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference < 1
+        val psiElementInZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
+        val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference == 0
         if (!psiElementInZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
+            LOGGER.info("This or Psi element is qualified")
             return false
         }
         if (thisElementIsZeroIndexedInQualifiedReference && psiElement is ObjJClassName) {
+            LOGGER.info("Reference is classname")
             return true
         }
 
@@ -115,9 +117,6 @@ class ObjJVariableReference(
         if (referencedElement?.isEquivalentTo(psiElement) == true) {
             LOGGER.log(Level.INFO, "Resolved element is self")
             return true
-        }
-        if (myElement.indexInQualifiedReference > 0) {
-            return false
         }
 
         LOGGER.info("Checking if indirect reference to. Index in qualified == ${myElement.indexInQualifiedReference}")
@@ -143,7 +142,7 @@ class ObjJVariableReference(
     }
 
     override fun resolve(): PsiElement? {
-        return resolve(false)
+        return resolve(true)
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
@@ -170,6 +169,13 @@ class ObjJVariableReference(
         if (variableName == null) {
             LOGGER.info("Variable name may be global variable name element")
             variableName = globalVariableNameElement
+        }
+        if (variableName is ObjJVariableName && variableName.indexInQualifiedReference > 0) {
+            return if (nullIfSelfReferencing) {
+                null
+            } else {
+                myElement
+            }
         }
         if (nullIfSelfReferencing) {
             return variableName

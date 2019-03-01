@@ -201,7 +201,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
             val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
 
-            if (reference.parent is ObjJBodyVariableAssignment) {
+            if ((reference.parent as? ObjJVariableDeclaration)?.parent is ObjJBodyVariableAssignment) {
                 return (reference.parent as ObjJBodyVariableAssignment).varModifier != null
             }
 
