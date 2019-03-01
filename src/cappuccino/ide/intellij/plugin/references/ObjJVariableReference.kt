@@ -8,15 +8,11 @@ import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import sun.tools.tree.IfStatement
 import java.util.logging.Logger
 
-import com.intellij.psi.util.PsiTreeUtil.findCommonContext
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import com.intellij.psi.util.PsiTreeUtil
@@ -86,37 +82,53 @@ class ObjJVariableReference(
     }
 
     override fun isReferenceTo(psiElement: PsiElement): Boolean {
-        if (element.containingFile.text.startsWith("@STATIC;")) {
+
+        // Element is in compiled objective-j document
+        try {
+            if (psiElement.containingFile.text.startsWith("@STATIC;") || myElement.containingFile.text.startsWith("@STATIC;")) {
+                return false
+            }
+        // Element is virtual and not in file
+        } catch (e:Exception) { return false }
+
+        // Text is not equivalent, ignore
+        if (psiElement.text != myElement.text) {
             return false
         }
-        if (psiElement.text != myElement.text || psiElement.isEquivalentTo(myElement)) {
+        //Is Same element, Do not reference self
+        if (psiElement.isEquivalentTo(myElement)) {
             return false
         }
-        if (psiElement is ObjJClassName) {
+
+        LOGGER.info("Checking if reference to...")
+
+        val psiElementInZeroIndexInQualifiedReference = psiElement is ObjJVariableName && psiElement.indexInQualifiedReference < 1
+        val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference < 1
+        if (!psiElementInZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
+            return false
+        }
+        if (thisElementIsZeroIndexedInQualifiedReference && psiElement is ObjJClassName) {
             return true
         }
 
         val referencedElement = resolve(true)
         if (referencedElement?.isEquivalentTo(psiElement) == true) {
-            //LOGGER.log(Level.INFO, "Is reference to self in file: ${psiElement.containingFile.name} to item in file ${referencedElement.containingFile.name}")
+            LOGGER.log(Level.INFO, "Resolved element is self")
             return true
         }
-
-        if (psiElement is ObjJVariableName) {
-            if (psiElement.indexInQualifiedReference > 0) {
-                return false
-            }
+        if (myElement.indexInQualifiedReference > 0) {
+            return false
         }
 
-        //Finds resolved element scope if possible
+        LOGGER.info("Checking if indirect reference to. Index in qualified == ${myElement.indexInQualifiedReference}")
         if (referencedInScope == null) {
             referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
         }
 
         //Finds this elements, and the new elements scope
         val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
-        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED;
-        //LOGGER.log(Level.INFO, "Shared context is ${sharedContext.getElementType().toString()}; scope is: ${sharedScope.toString()} for var: ${myElement.text}")
+        val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED
+        LOGGER.log(Level.INFO, "Shared context is ${sharedContext?.getElementType()}; scope is: $sharedScope for var: ${myElement.text}")
         if (sharedScope == UNDETERMINED && referencedInScope != UNDETERMINED) {
             return false
         }
@@ -125,9 +137,8 @@ class ObjJVariableReference(
         }
         //If
         if (sharedScope != UNDETERMINED) {
-            //LOGGER.log(Level.INFO, "Mismatched Shared scope: SharedIn: " + sharedScope.toString() + "; VariableScope: <" + referencedInScope?.toString() + ">")
+            LOGGER.log(Level.INFO, "Mismatched Shared scope: SharedIn: " + sharedScope.toString() + "; VariableScope: <" + referencedInScope?.toString() + ">")
         }
-
         return false//referencedInScope == ReferencedInScope.UNDETERMINED && sharedScope != ReferencedInScope.UNDETERMINED
     }
 
@@ -136,16 +147,28 @@ class ObjJVariableReference(
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
+        LOGGER.info("Resolving...")
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
+                LOGGER.info("Element is part of compiled objective-j file")
                 return null
             }
         } catch (ignored:Exception) {
             //Exception was thrown on failed attempts at adding code to file pragmatically
+            LOGGER.info("Element not in a file")
             return null
         }
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
+        if (myElement.indexInQualifiedReference > 0) {
+            LOGGER.info("Qualified reference index is greater than 0")
+            return if (nullIfSelfReferencing) {
+                variableName
+            } else {
+                variableName ?: myElement
+            }
+        }
         if (variableName == null) {
+            LOGGER.info("Variable name may be global variable name element")
             variableName = globalVariableNameElement
         }
         if (nullIfSelfReferencing) {
