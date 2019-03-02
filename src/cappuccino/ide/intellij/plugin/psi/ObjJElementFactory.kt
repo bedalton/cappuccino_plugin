@@ -21,10 +21,11 @@ object ObjJElementFactory {
         return createFileFromText(project, scriptText).classDeclarations[0].getClassName()
     }
 
-    fun createSelector(project: Project, selector: String): ObjJSelector {
+    fun createSelector(project: Project, selector: String): ObjJSelector?
+    {   val selector = selector.replace("[^a-zA-Z_]".toRegex(), "").trim()
         val scriptText = "@implementation $PlaceholderClassName \n - (void) $selector{} @end"
         val implementationDeclaration = createFileFromText(project, scriptText).classDeclarations[0] as ObjJImplementationDeclaration
-        return implementationDeclaration.methodDeclarationList[0].methodHeader.selectorList[0]
+        return implementationDeclaration.methodDeclarationList.get(0)?.methodHeader?.selectorList?.get(0)
     }
 
     fun createVariableName(project: Project, variableName: String): ObjJVariableName {

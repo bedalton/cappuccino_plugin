@@ -19,6 +19,6 @@ class ObjJUnifiedMethodIndex private constructor() : ObjJMethodHeaderDeclaration
     companion object {
         val KEY: StubIndexKey<String, ObjJMethodHeaderDeclaration<*>> = IndexKeyUtil.createIndexKey<String, ObjJMethodHeaderDeclaration<*>>(ObjJUnifiedMethodIndex::class.java)
         val instance = ObjJUnifiedMethodIndex()
-        private val VERSION = 1
+        private val VERSION = 2
     }
 }

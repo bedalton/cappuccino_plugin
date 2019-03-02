@@ -95,12 +95,11 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
     // and create selector elements for later use.
     val orphanedSelectors = psiElement.parent.getChildrenOfType(ObjJTypes.ObjJ_ID)
     for (subSelector in orphanedSelectors) {
-        if (subSelector.text.isEmpty()) {
-            continue
-        }
-        selectors.add(++selectorIndex, ObjJElementFactory.createSelector(project, subSelector.text.replace("\\s+".toRegex(), "")))
+        val selector = ObjJElementFactory.createSelector(project, subSelector.text) ?: return selectors
+        selectors.add(++selectorIndex, selector)
     }
     //Finally add the current psi element as a selector
-    selectors.add(ObjJElementFactory.createSelector(project, psiElement.text.replace("\\s+".toRegex(), "")))
+    val selector = ObjJElementFactory.createSelector(project, psiElement.text) ?: return selectors
+    selectors.add(selector)
     return selectors
 }

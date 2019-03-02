@@ -12,5 +12,5 @@ interface ObjJMethodHeaderDeclaration<StubT : ObjJMethodHeaderDeclarationStub<*>
     val isStatic: Boolean
         get() = methodScope == MethodScope.STATIC
 
-    override fun getStub(): StubT
+    override fun getStub(): StubT?
 }

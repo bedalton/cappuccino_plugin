@@ -12,6 +12,9 @@ import java.util.Collections
 class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containingClassName: String, override val selectorStrings: List<String>, private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJSelectorLiteralImpl>(parent, ObjJStubTypes.SELECTOR_LITERAL), ObjJSelectorLiteralStub {
     override val selectorString: String
 
+
+    override val ignored:Boolean = false
+
     override val paramTypes: List<String>
         get() = emptyList()
 

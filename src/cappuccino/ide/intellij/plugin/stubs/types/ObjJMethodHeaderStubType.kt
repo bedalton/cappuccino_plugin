@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderImpl
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.utils.CommentParserUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
@@ -35,7 +36,8 @@ class ObjJMethodHeaderStubType internal constructor(
         val returnType: String? = null//methodHeader.getReturnType();
         val required = methodHeader.isRequired
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve)
+        val ignored = CommentParserUtil.isIgnored(methodHeader) || CommentParserUtil.isIgnored(methodHeader.parent)
+        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve, ignored)
     }
 
     @Throws(IOException::class)
@@ -58,6 +60,7 @@ class ObjJMethodHeaderStubType internal constructor(
         stubOutputStream.writeName(stub.returnType.className)
         stubOutputStream.writeBoolean(stub.isRequired)
         stubOutputStream.writeBoolean(stub.shouldResolve())
+        stubOutputStream.writeBoolean(stub.ignored)
 
     }
 
@@ -79,7 +82,8 @@ class ObjJMethodHeaderStubType internal constructor(
         val returnType = StringRef.toString(stream.readName())
         val required = stream.readBoolean()
         val shouldResolve = stream.readBoolean()
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, returnType, required, shouldResolve)
+        val ignored = stream.readBoolean()
+        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, returnType, required, shouldResolve, ignored)
     }
 
 

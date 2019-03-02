@@ -303,7 +303,14 @@ object ObjJSelectorReferenceResolveUtil {
         }
         val classConstraints: List<String>
         val methodCall = element as ObjJMethodCall?
-        //ObjJCallTarget callTarget = methodCall.getCallTarget();
+        val callTarget:ObjJCallTarget? = methodCall?.callTarget
+        if (callTarget != null) {
+            val possibleClasses = getPossibleClassTypesForCallTarget(callTarget)
+            if (possibleClasses.isNotEmpty()) {
+                LOGGER.info("Found call target type")
+                return possibleClasses
+            }
+        }
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
         //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
 
@@ -314,6 +321,23 @@ object ObjJSelectorReferenceResolveUtil {
             LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCall.getCallTarget().getText()+">.");
         }*/
         return classConstraints
+    }
+
+    private fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
+        val qualifiedReference = callTarget.qualifiedReference ?: return listOf()
+        val methodCall = qualifiedReference.methodCall
+        if (methodCall != null) {
+            if (methodCall.selector?.text == "alloc") {
+                return ObjJInheritanceUtil.getAllInheritedClasses(methodCall.callTargetText, methodCall.project, true)
+            }
+        }
+        val variables = qualifiedReference.variableNameList
+
+        if (variables.size != 1) {
+            return listOf();
+        }
+        val classFromComment = CommentParserUtil.getVariableTypesInParent(variables[0]) ?: return listOf()
+        return listOf(classFromComment)
     }
 
     class SelectorResolveResult<T> internal constructor(val naturalResult: List<T>, val otherResult: List<T>, val possibleContainingClassNames: List<String>) {

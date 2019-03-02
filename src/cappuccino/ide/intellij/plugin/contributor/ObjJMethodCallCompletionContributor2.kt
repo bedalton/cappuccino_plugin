@@ -10,6 +10,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -18,6 +19,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -71,7 +73,7 @@ object ObjJMethodCallCompletionContributor2 {
             else -> emptyList()
         }
         //Add actual method call completions
-        addMethodDeclarationLookupElements(psiElement.project, result, possibleContainingClassNames, scope, selectorString, selectorIndex)
+        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex)
 
         val hasLocalScope:Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
@@ -81,8 +83,10 @@ object ObjJMethodCallCompletionContributor2 {
         }
     }
 
-    private fun addMethodDeclarationLookupElements(project:Project, result:CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex:Int) {
-        val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance.getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
+    private fun addMethodDeclarationLookupElements(project:Project, fileName:String?, result:CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex:Int) {
+        val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
+                .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
+                .filter { !(it.stub?.ignored ?: CommentParserUtil.isIgnored(it) || CommentParserUtil.isIgnored(it.parent)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
         if (methodHeaders.isEmpty()) {
             return
         }
@@ -94,6 +98,11 @@ object ObjJMethodCallCompletionContributor2 {
             if (!inScope(targetScope, methodHeader)){ continue }
             //Get the selector at index, or continue loop
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
+            if (possibleContainingClassNames.size == 1 && possibleContainingClassNames[0] != ObjJClassType.UNDETERMINED) {
+                if (methodHeader.containingClassName != possibleContainingClassNames[0]) {
+                    continue
+                }
+            }
             //Determine the priority
             val priority:Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
             //Add the lookup element
