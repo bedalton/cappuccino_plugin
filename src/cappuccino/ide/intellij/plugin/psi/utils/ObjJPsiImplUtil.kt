@@ -360,9 +360,11 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorStrings(selectorLiteral: ObjJSelectorLiteral): List<String> {
-        return if (selectorLiteral.stub != null && !selectorLiteral.stub.selectorStrings.isEmpty()) {
-            selectorLiteral.stub.selectorStrings
-        } else ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
+        val selectors = selectorLiteral.stub?.selectorStrings ?: listOf()
+        return if (selectors.isNotEmpty()) {
+            selectors
+        } else
+            ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
     }
 
     @JvmStatic

@@ -23,4 +23,5 @@ interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT>
 
     val isStatic: Boolean
 
+    val ignored: Boolean
 }

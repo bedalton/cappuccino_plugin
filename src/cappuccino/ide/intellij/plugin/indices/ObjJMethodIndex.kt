@@ -27,6 +27,6 @@ class ObjJMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJMethod
     companion object {
         val KEY = IndexKeyUtil.createIndexKey(ObjJMethodIndex::class.java)
         val instance = ObjJMethodIndex()
-        private val VERSION = 1
+        private val VERSION = 2
     }
 }

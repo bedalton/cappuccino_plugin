@@ -113,13 +113,23 @@ object ObjJMethodCallCompletionContributorUtil {
         // and create selector elements for later use.
         val orphanedSelectors = psiElement.parent.getChildrenOfType(ObjJTypes.ObjJ_ID)
         for (subSelector in orphanedSelectors) {
-            if (subSelector.text.isEmpty()) {
+            val selectorText = subSelector.text.replace("[^a-zA-Z_]".toRegex(), "").trim()
+            if (selectorText.isEmpty()) {
                 continue
             }
-            selectors.add(++selectorIndex, ObjJElementFactory.createSelector(project, subSelector.text.replace("\\s+".toRegex(), "")))
+
+            selectors.add(++selectorIndex, ObjJElementFactory.createSelector(project, selectorText)!!)
         }
         //Finally add the current psi element as a selector
-        selectors.add(ObjJElementFactory.createSelector(project, psiElement.text.replace("\\s+".toRegex(), "")))
+        try {
+            val selectorString = psiElement.text.replace("[^a-zA-Z_]".toRegex(), "").trim()
+            if (selectorString.isNotEmpty()) {
+                val selector = ObjJElementFactory.createSelector(project, selectorString)
+                if (selector != null) {
+                    selectors.add(selector)
+                }
+            }
+        } catch (e:Exception) {}
         return selectors
     }
 

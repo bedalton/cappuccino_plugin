@@ -113,9 +113,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun getSelectorString(selectorLiteral: ObjJSelectorLiteral): String {
-        return if (selectorLiteral.stub != null) {
-            selectorLiteral.stub.selectorString
-        } else getSelectorStringFromSelectorStrings(selectorLiteral.selectorStrings)
+        return selectorLiteral.stub?.selectorString ?: getSelectorStringFromSelectorStrings(selectorLiteral.selectorStrings)
     }
 
 
@@ -204,7 +202,7 @@ object ObjJMethodPsiUtils {
 
     fun getReturnType(methodHeader: ObjJMethodHeader, follow: Boolean): String {
         if (methodHeader.stub != null) {
-            return methodHeader.stub.returnTypeAsString
+            return methodHeader.stub!!.returnTypeAsString
         }
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return ObjJClassType.UNDETERMINED
         if (returnTypeElement.formalVariableType.atAction != null) {
@@ -294,7 +292,7 @@ object ObjJMethodPsiUtils {
 
     fun getReturnType(accessorProperty: ObjJAccessorProperty): String {
         if (accessorProperty.stub != null) {
-            return accessorProperty.stub.returnTypeAsString
+            return accessorProperty.stub!!.returnTypeAsString
         }
         val variableType = accessorProperty.getVarType()
         return variableType ?: UNDETERMINED
@@ -309,9 +307,7 @@ object ObjJMethodPsiUtils {
     // ===== Selector Functions ===== //
     // ============================== //
     fun getSelectorStrings(methodHeader: ObjJMethodHeader): List<String> {
-        return if (methodHeader.stub != null) {
-            methodHeader.stub.selectorStrings
-        } else ObjJMethodPsiUtils.getSelectorStringsFromMethodDeclarationSelectorList(methodHeader.methodDeclarationSelectorList)
+        return methodHeader.stub?.selectorStrings ?: ObjJMethodPsiUtils.getSelectorStringsFromMethodDeclarationSelectorList(methodHeader.methodDeclarationSelectorList)
     }
 
 
@@ -328,9 +324,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun getSelectorString(methodHeader: ObjJMethodHeader): String {
-        return if (methodHeader.stub != null) {
-            methodHeader.stub.selectorString
-        } else ObjJMethodPsiUtils.getSelectorStringFromSelectorStrings(getSelectorStrings(methodHeader))
+        return methodHeader.stub?.selectorString ?: ObjJMethodPsiUtils.getSelectorStringFromSelectorStrings(getSelectorStrings(methodHeader))
     }
 
     fun setName(selectorElement: ObjJSelector, newSelectorValue: String): PsiElement {

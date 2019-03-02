@@ -17,6 +17,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -40,6 +42,38 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val parent = element.parent
         val results: MutableList<String>
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
+
+        if (element.getElementType() in ObjJTokenSets.COMMENTS) {
+            LOGGER.info("Item is in comment")
+            val text = element.text
+            if (!text.contains("@var")) {
+                resultSet.stopHere()
+                return
+            }
+            val preText = text.substringBefore(CARET_INDICATOR, "").split("\\s+")
+            var afterVar = false
+            var indexAfter = -1
+            for(part in preText) {
+                if (part == "@var") {
+                    afterVar = true;
+                    continue
+                }
+                if (!afterVar) continue
+               indexAfter++
+                if (indexAfter == 0) {
+                    getClassNameCompletions(resultSet, element)
+                } else if (indexAfter == 1) {
+                    val variableNames = element.getParentBlockChildrenOfType(ObjJVariableName::class.java, true).map {
+                        it.text
+                    }
+                    addCompletionElementsSimple(resultSet, variableNames)
+                } else {
+                    return;
+                }
+            }
+            return
+        }
+
         if (element is ObjJAccessorPropertyType || element.getParentOfType( ObjJAccessorPropertyType::class.java) != null) {
             results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString) as MutableList<String>
         } else if (isMethodCallSelector(element)) {
@@ -121,6 +155,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             } else {
                 mutableListOf()
             }
+
             if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
