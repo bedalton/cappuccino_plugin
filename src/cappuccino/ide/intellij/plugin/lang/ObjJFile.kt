@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.lang
 
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
@@ -10,6 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import com.intellij.ide.projectView.PresentationData
 
@@ -41,6 +43,18 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
 
     override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> =
             PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
+
+    fun <PsiT:PsiElement> getFileChildrenOfType(aClass: Class<PsiT>, recursive: Boolean): List<PsiT> {
+        val children = getChildrenOfType(aClass).toMutableList()
+        if (!recursive) {
+            return children
+        }
+        val blockChildren = getChildrenOfType(ObjJBlock::class.java).flatMap {
+            it.getBlockChildrenOfType(aClass, true)
+        }
+        children.addAll(blockChildren)
+        return children
+    }
 
     override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? =
             PsiTreeUtil.getParentOfType(this, parentClass)
