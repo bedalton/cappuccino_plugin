@@ -98,7 +98,7 @@ object ObjJMethodCallCompletionContributor2 {
             if (!inScope(targetScope, methodHeader)){ continue }
             //Get the selector at index, or continue loop
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
-            if (possibleContainingClassNames.size == 1 && possibleContainingClassNames[0] != ObjJClassType.UNDETERMINED) {
+            if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames) {
                 if (methodHeader.containingClassName != possibleContainingClassNames[0]) {
                     continue
                 }
@@ -196,16 +196,19 @@ object ObjJMethodCallCompletionContributor2 {
         if (instanceVariableDeclaration.variableName == null) {
             return
         }
+        val containingClass = instanceVariableDeclaration.containingClassName
+        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && containingClass !in possibleContainingClassNames) {
+            return
+        }
         //ProgressIndicatorProvider.checkCanceled();
-        val priority = if (possibleContainingClassNames.contains(instanceVariableDeclaration.containingClassName))
+        val priority = if (possibleContainingClassNames.contains(containingClass))
             ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY
         else
             ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY
 
-        val className = instanceVariableDeclaration.containingClassName
         val variableName = instanceVariableDeclaration.variableName!!.name
         val variableType = instanceVariableDeclaration.formalVariableType.text
-        ObjJSelectorLookupUtil.addSelectorLookupElement(result, variableName, className, "<$variableType>", priority, false, ObjJIcons.VARIABLE_ICON)
+        ObjJSelectorLookupUtil.addSelectorLookupElement(result, variableName, containingClass, "<$variableType>", priority, false, ObjJIcons.VARIABLE_ICON)
     }
 
 
@@ -216,6 +219,10 @@ object ObjJMethodCallCompletionContributor2 {
     private fun addInstanceVariableAccessorMethods(result: CompletionResultSet, possibleContainingClassNames:List<String>, instanceVariable: ObjJInstanceVariableDeclaration) {
         //Get className
         val className = instanceVariable.containingClassName
+
+        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames) {
+            return
+        }
 
         //Find completion contribution list priority
         val priority:Double = getPriority(possibleContainingClassNames, className, TARGETTED_METHOD_SUGGESTION_PRIORITY,GENERIC_METHOD_SUGGESTION_PRIORITY)

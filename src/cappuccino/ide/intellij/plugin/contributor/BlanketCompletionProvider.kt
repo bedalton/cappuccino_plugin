@@ -18,7 +18,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -29,7 +28,6 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import java.util.logging.Level
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
@@ -44,22 +42,24 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
         if (element.getElementType() in ObjJTokenSets.COMMENTS) {
-            LOGGER.info("Item is in comment")
             val text = element.text
             if (!text.contains("@var")) {
                 resultSet.stopHere()
                 return
             }
-            val preText = text.substringBefore(CARET_INDICATOR, "").split("\\s+")
+            val commentText = text.substringBefore(CARET_INDICATOR, "")
+            val commentTokenParts:List<String> = commentText.split("\\s+".toRegex())
             var afterVar = false
             var indexAfter = -1
-            for(part in preText) {
+            for (part in commentTokenParts) {
                 if (part == "@var") {
                     afterVar = true;
                     continue
                 }
-                if (!afterVar) continue
-               indexAfter++
+                if (!afterVar) {
+                    continue
+                }
+                indexAfter++
                 if (indexAfter == 0) {
                     getClassNameCompletions(resultSet, element)
                 } else if (indexAfter == 1) {
@@ -173,7 +173,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         if (element == null) {
             return
         }
-        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
@@ -183,7 +183,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
         }
-        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
             ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).forEach{
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }

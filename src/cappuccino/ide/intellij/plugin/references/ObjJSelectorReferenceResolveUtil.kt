@@ -337,7 +337,7 @@ object ObjJSelectorReferenceResolveUtil {
             return listOf();
         }
         val classFromComment = CommentParserUtil.getVariableTypesInParent(variables[0]) ?: return listOf()
-        return listOf(classFromComment)
+        return ObjJInheritanceUtil.getAllInheritedClasses(classFromComment, callTarget.project, true)
     }
 
     class SelectorResolveResult<T> internal constructor(val naturalResult: List<T>, val otherResult: List<T>, val possibleContainingClassNames: List<String>) {

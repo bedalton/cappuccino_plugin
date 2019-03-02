@@ -20,7 +20,7 @@ object CommentParserUtil {
 
     private val LOGGER: Logger = Logger.getLogger(CommentParserUtil::class.java.canonicalName)
     private val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*";
-    private val VARIABLE_TYPE_REGEX = Pattern.compile("[^@]*@var\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
+    private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?@var\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
     private val IGNORER_REGEX = Pattern.compile("[^@]*@ignore\\s*([^\n]+)*")
 
     fun getVariableTypesInParent(element: ObjJNamedElement): String? {
@@ -34,6 +34,7 @@ object CommentParserUtil {
                         if (!matcher.group(2).equals(varName))
                             return@forEach
                         val type = matcher.group(1)
+                        LOGGER.info("Found type in comment $element.text is $type")
                         return type;
                     }
 
