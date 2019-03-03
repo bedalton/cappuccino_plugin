@@ -7,6 +7,8 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.CommentParserUtil
+import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -35,6 +37,9 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateMethodReturn(methodDeclaration: ObjJMethodDeclaration, problemsHolder: ProblemsHolder) {
+            if (CommentParserUtil.isIgnored(methodDeclaration, IgnoreFlags.IGNORE_RETURN, true)) {
+                return
+            }
             val returnType = methodDeclaration.methodHeader.returnType
             if (returnType == ObjJClassType.VOID_CLASS_NAME) {
                 return
