@@ -20,6 +20,8 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val varType: String? = if (varType != null && !varType.isEmpty()) varType else null
     override val containingClassName: String = containingClass
 
+    override val ignored:Boolean = false
+
     override val paramTypes: List<String>
         get() = if (getter != null || varType == null) emptyList() else listOf(varType)
 

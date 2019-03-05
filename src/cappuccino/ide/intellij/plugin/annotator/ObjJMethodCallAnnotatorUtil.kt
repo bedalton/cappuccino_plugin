@@ -40,7 +40,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         //Check that call target for method call is valid
         //Only used is setting for validate call target is set.
         if (ObjJPluginSettings.validateCallTarget()) {// && !IgnoreUtil.shouldIgnore(methodCall, ElementType.CALL_TARGET)) {
-            validateCallTarget(methodCall, holder)
+            //validateCallTarget(methodCall, holder)
         }
     }
 
