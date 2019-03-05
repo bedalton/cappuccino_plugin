@@ -3,7 +3,10 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
+import cappuccino.ide.intellij.plugin.psi.ObjJArguments
+import cappuccino.ide.intellij.plugin.psi.ObjJIfStatement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
 import com.intellij.formatting.*
@@ -20,6 +23,7 @@ import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.formatting.Spacing
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
+import java.util.logging.Logger
 
 class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
     private val myIndentProcessor: ObjJIndentProcessor
@@ -65,7 +69,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
         if (isLeaf) {
             return AbstractBlock.EMPTY
         }
-        val tlChildren = ArrayList<Block>()
+        val children = ArrayList<Block>()
         var childNode: ASTNode? = node.firstChildNode
         while (childNode != null) {
             if (FormatterUtil.containsWhiteSpacesOnly(childNode)) {
@@ -74,10 +78,10 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
             }
             val childBlock = ObjJFormattedBlock(childNode, createChildWrap(childNode), createChildAlignment(childNode), mySettings, myContext)
             childBlock.setParent(this)
-            tlChildren.add(childBlock)
+            children.add(childBlock)
             childNode = childNode.treeNext
         }
-        return tlChildren
+        return children
     }
 
     fun createChildWrap(child: ASTNode): Wrap {
@@ -98,7 +102,11 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
     }
 
     override fun isIncomplete(): Boolean {
-        return super.isIncomplete()// || myNode.elementType == ObjJ_ARGUMENTS
+        return when (node.elementType) {
+            ObjJ_IF_STATEMENT -> (node.psi as? ObjJIfStatement)?.blockList?.isEmpty() ?: return false
+            ObjJ_ARGUMENTS -> (node.psi as? ObjJArguments)?.closeParen == null
+            else -> super.isIncomplete()
+        }
     }
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
@@ -111,6 +119,10 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
         }
 
         if (previousType === ObjJ_CLOSE_PAREN && STATEMENTS_WITH_OPTIONAL_BRACES.contains(elementType)) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (elementType == ObjJ_IF_STATEMENT) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
@@ -190,5 +202,6 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
             }
             return false
         }
+        val LOGGER:Logger = Logger.getLogger(ObjJFormattedBlock::class.java.canonicalName)
     }
 }
