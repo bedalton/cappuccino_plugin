@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods
+import cappuccino.ide.intellij.plugin.utils.ElementPosition
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.ui.Messages
@@ -49,7 +50,7 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
         if (methodHeaders.required.isEmpty()) {
             return
         }
-        val requiredHeaders = methodHeaders.required;
+        val requiredHeaders = methodHeaders.required
         val sibling:PsiElement? = when {
             declaration.atEnd != null -> {
                 declaration.atEnd!!
@@ -67,7 +68,7 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
             }
             return
         }
-        val numberOfRequiredNewLinesBeforeMethods = numberOfReturnsNeeded(sibling, true, 2)
+        val numberOfRequiredNewLinesBeforeMethods = numberOfReturnsNeeded(sibling, ElementPosition.BEFORE, 2)
         var newLinesBefore = ""
         for (i in 0 until numberOfRequiredNewLinesBeforeMethods) {
             newLinesBefore += "\n"
@@ -80,14 +81,14 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
         const val TITLE = "Protocol Implementation Failure"
         const val MESSAGE:String = "Failed to create placeholder methods for protocol %s. %s"
 
-        private fun numberOfReturnsNeeded(element:PsiElement, before:Boolean, required:Int) : Int {
-            var remaining = required;
-            var prevSibling:PsiElement = element.prevSibling ?: return required
+        private fun numberOfReturnsNeeded(element:PsiElement, position:ElementPosition, required:Int) : Int {
+            var remaining = required
+            var prevSibling:PsiElement = if (position == ElementPosition.BEFORE) element.prevSibling else element.nextSibling ?: return required
             for (i in 0 until required) {
-                if (prevSibling.text?.endsWith("\n") == true) {
-                    remaining -= 1;
+                if (prevSibling.text == "\n") {
+                    remaining -= 1
                 }
-                prevSibling = prevSibling.prevSibling ?: return remaining
+                prevSibling = if (position == ElementPosition.BEFORE) element.prevSibling else element.nextSibling ?: return remaining
             }
             return remaining
         }
