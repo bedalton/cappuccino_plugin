@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import com.intellij.formatting.FormattingMode
@@ -33,6 +34,15 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         if (parent == null || parent.treeParent == null/* || parentType == EMBEDDED_CONTENT*/) {
             return Indent.getNoneIndent()
         }
+
+        if ((parentType == ObjJ_PROTOCOL_DECLARATION || parentType == ObjJ_PROTOCOL_SCOPED_BLOCK) && elementType == ObjJ_METHOD_HEADER) {
+            return Indent.getNoneIndent()
+        }
+
+        if (elementType == ObjJ_METHOD_DECLARATION) {
+            return Indent.getNoneIndent()
+        }
+
         if (elementType === ObjJ_BLOCK_COMMENT_BODY) {
             return Indent.getContinuationIndent()
         }
@@ -168,7 +178,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (ObjJTokenSets.CLASS_DECLARATIONS.contains(parentType)) {
-            return Indent.getNormalIndent()
+            return Indent.getNoneIndent()
         }
 
         if (parentType === ObjJ_IMPORT_FILE || parentType === ObjJ_IMPORT_FRAMEWORK) {
