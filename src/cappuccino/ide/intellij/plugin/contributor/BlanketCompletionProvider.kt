@@ -156,7 +156,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 mutableListOf()
             }
 
-            if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
+            if ((variableName?.indexInQualifiedReference ?: 0) < 1 && (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length?:0) > 0) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
                 results.addAll(getInClassKeywords(variableName))
