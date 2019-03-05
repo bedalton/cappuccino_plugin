@@ -206,6 +206,7 @@ WHITE_SPACE=\p{Blank}+
 	"@{"                                 { canRegex(true); return ObjJ_AT_OPEN_BRACE; }
 	"null"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"                                { canRegex(false); return ObjJ_NIL; }
+	"Nil"                                { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
 	{PP_DEFINE}                         { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
 	{PP_UNDEF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
