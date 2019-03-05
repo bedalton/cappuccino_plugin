@@ -17,6 +17,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -27,7 +28,6 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import java.util.logging.Level
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
@@ -40,6 +40,40 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val parent = element.parent
         val results: MutableList<String>
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
+
+        if (element.getElementType() in ObjJTokenSets.COMMENTS) {
+            val text = element.text
+            if (!text.contains("@var")) {
+                resultSet.stopHere()
+                return
+            }
+            val commentText = text.substringBefore(CARET_INDICATOR, "")
+            val commentTokenParts:List<String> = commentText.split("\\s+".toRegex())
+            var afterVar = false
+            var indexAfter = -1
+            for (part in commentTokenParts) {
+                if (part == "@var") {
+                    afterVar = true;
+                    continue
+                }
+                if (!afterVar) {
+                    continue
+                }
+                indexAfter++
+                if (indexAfter == 0) {
+                    getClassNameCompletions(resultSet, element)
+                } else if (indexAfter == 1) {
+                    val variableNames = element.getParentBlockChildrenOfType(ObjJVariableName::class.java, true).map {
+                        it.text
+                    }
+                    addCompletionElementsSimple(resultSet, variableNames)
+                } else {
+                    return;
+                }
+            }
+            return
+        }
+
         if (element is ObjJAccessorPropertyType || element.getParentOfType( ObjJAccessorPropertyType::class.java) != null) {
             results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString) as MutableList<String>
         } else if (isMethodCallSelector(element)) {
@@ -121,6 +155,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             } else {
                 mutableListOf()
             }
+
             if ((variableName?.indexInQualifiedReference ?: 0) < 1) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
@@ -138,7 +173,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         if (element == null) {
             return
         }
-        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
@@ -148,7 +183,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
         }
-        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java)) {
+        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
             ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).forEach{
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }

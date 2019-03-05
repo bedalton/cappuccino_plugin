@@ -19,6 +19,6 @@ class ObjJMethodFragmentIndex private constructor() : ObjJStringStubIndexBase<Ob
     companion object {
         val instance = ObjJMethodFragmentIndex()
         val KEY: StubIndexKey<String, ObjJMethodHeaderDeclaration<*>> = IndexKeyUtil.createIndexKey<String, ObjJMethodHeaderDeclaration<*>>(ObjJMethodFragmentIndex::class.java)
-        private val VERSION = 0
+        private val VERSION = 1
     }
 }

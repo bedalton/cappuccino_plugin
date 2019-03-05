@@ -27,6 +27,6 @@ class ObjJSelectorInferredMethodIndex : ObjJMethodHeaderDeclarationsIndexBase<Ob
     companion object {
         val instance = ObjJSelectorInferredMethodIndex()
         private val KEY = IndexKeyUtil.createIndexKey(ObjJSelectorInferredMethodIndex::class.java)
-        private val VERSION = 1
+        private val VERSION = 2
     }
 }

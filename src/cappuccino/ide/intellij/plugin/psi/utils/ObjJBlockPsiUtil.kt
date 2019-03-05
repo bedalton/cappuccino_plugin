@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -182,7 +183,7 @@ private fun getBlocksBlocks(block:ObjJBlock) : List<ObjJBlock> {
 }
 
 fun <T : PsiElement> PsiElement.getParentBlockChildrenOfType(aClass: Class<T>, recursive: Boolean): List<T> {
-    var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return emptyList()
+    var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return (this.containingFile as? ObjJFile)?.getFileChildrenOfType(aClass, recursive) ?: return listOf()
     val out = ArrayList<T>()
     do {
         if (block != null) {

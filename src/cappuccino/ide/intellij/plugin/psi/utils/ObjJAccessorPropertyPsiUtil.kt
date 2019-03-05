@@ -103,7 +103,7 @@ object ObjJAccessorPropertyPsiUtil {
         if (setter != null) {
             val selectorStrings = listOf(setter)
             val paramTypes = listOf(varType)
-            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, null, true, variableDeclaration.shouldResolve())
+            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, null, true, variableDeclaration.shouldResolve(), false)
         }
         return null
     }
@@ -126,7 +126,7 @@ object ObjJAccessorPropertyPsiUtil {
                 ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: return null
         val selectorStrings: List<String> = listOf(getter!!)
         val paramTypes = listOf(varType)
-        return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, varType, true, variableDeclaration.shouldResolve())
+        return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, varType, true, variableDeclaration.shouldResolve(), false)
     }
 
     private fun getGetterFromAccessorPropertyList(accessorProperties: List<ObjJAccessorProperty>): String? {
