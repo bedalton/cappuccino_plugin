@@ -184,7 +184,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             }
         }
         if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
-            ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).forEach{
+            ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach {
+                if (it.getClassNameString().startsWith("_") && !element.containingFile.isEquivalentTo(it.containingFile)) {
+                    return@forEach
+                }
+                if (CommentParserUtil.isIgnored(it)) {
+                    return@forEach
+                }
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
             resultSet.addElement(LookupElementBuilder.create("self").withInsertHandler(ObjJClassNameInsertHandler.instance))
