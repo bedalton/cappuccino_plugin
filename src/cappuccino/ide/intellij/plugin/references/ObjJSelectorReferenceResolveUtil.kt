@@ -323,7 +323,7 @@ object ObjJSelectorReferenceResolveUtil {
         return classConstraints
     }
 
-    public fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
+    private fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
         val qualifiedReference = callTarget.qualifiedReference ?: return listOf()
         val methodCall = qualifiedReference.methodCall
         if (methodCall != null) {
@@ -336,7 +336,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (variables.size != 1) {
             return listOf();
         }
-        val classFromComment = CommentParserUtil.getVariableTypesInParent(variables[0]) ?: return listOf(ObjJClassType.UNDETERMINED)
+        val classFromComment = CommentParserUtil.getVariableTypesInParent(variables[0]) ?: return listOf()
         return ObjJInheritanceUtil.getAllInheritedClasses(classFromComment, callTarget.project, true)
     }
 
