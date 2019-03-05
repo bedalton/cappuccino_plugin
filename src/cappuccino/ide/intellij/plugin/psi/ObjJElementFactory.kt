@@ -49,6 +49,12 @@ object ObjJElementFactory {
         return file.firstChild
     }
 
+    fun createNewLine(project: Project): PsiElement {
+        val scriptText = "\n"
+        val file = createFileFromText(project, scriptText)
+        return file.firstChild
+    }
+
     fun createSemiColonErrorElement(project: Project): PsiErrorElement? {
         val scriptText = "?*__ERR_SEMICOLON__*?"
         val file = createFileFromText(project, scriptText)
@@ -65,7 +71,7 @@ object ObjJElementFactory {
     }
 
     fun createIgnoreComment(project: Project, elementType: IgnoreUtil.ElementType): ObjJComment {
-        val scriptText = "//ignore " + elementType.type
+        val scriptText = "// @ignore " + elementType.type
         val file = createFileFromText(project, scriptText)
         return file.getChildOfType(ObjJComment::class.java)!!
     }
@@ -74,25 +80,54 @@ object ObjJElementFactory {
         return PsiFileFactory.getInstance(project).createFileFromText("dummy.j", ObjJLanguage.instance, text) as ObjJFile
     }
 
-    private fun createMethodDeclaration(project: Project, methodHeader: ObjJMethodHeader): ObjJMethodDeclaration {
-        val script = "@implementation " + PlaceholderClassName + " \n " +
-                methodHeader.text + "\n" +
-                "{" + "\n" +
-                "    " + getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement) + "\n" +
-                "}" + "\n" +
-                "@end"
+    fun createMethodDeclaration(project: Project, methodHeader: ObjJMethodHeader): ObjJMethodDeclaration {
+        val script ="""
+                @implementation ${PlaceholderClassName}
+                ${methodHeader.text}
+                {
+                    //@todo provide implementation
+                    ${getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement)};
+                }
+                @end""".trimIndent()
         val file = createFileFromText(project, script)
         val implementationDeclaration = file.getChildOfType(ObjJImplementationDeclaration::class.java)!!
         return implementationDeclaration.methodDeclarationList[0]!!
     }
 
+
+    fun createMethodDeclarations(project: Project, methodHeaders: List<ObjJMethodHeader>): List<ObjJMethodDeclaration> {
+        val script ="@implementation $PlaceholderClassName\n"+
+                createMethodDeclarationsText(methodHeaders) +
+                "@end"
+        val file = createFileFromText(project, script)
+        val implementationDeclaration = file.getChildOfType(ObjJImplementationDeclaration::class.java)!!
+        return implementationDeclaration.methodDeclarationList
+    }
+
+    fun createMethodDeclarationsText(methodHeaders:List<ObjJMethodHeader>) : String {
+        var out:String = "";
+        methodHeaders.forEach {
+            out += "\n\n"+
+            createMethodDeclarationText(it)
+        }
+        return out.trim()
+    }
+
+    fun createMethodDeclarationText(methodHeader: ObjJMethodHeader) : String {
+        return  "${methodHeader.text}\n" +
+                "{\n" +
+                "   //@todo provide implementation\n" +
+                "   ${getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement)}\n" +
+                "}"
+    }
+
     private fun getDefaultReturnValueString(returnTypeElement: ObjJMethodHeaderReturnTypeElement?): String {
-        if (returnTypeElement == null || returnTypeElement.formalVariableType == null) {
+        if (returnTypeElement == null || returnTypeElement.formalVariableType.text == "" || returnTypeElement.formalVariableType.text.toLowerCase() == "void") {
             return ""
         }
         var defaultValue = "nil"
         val formalVariableType = returnTypeElement.formalVariableType
-        if (formalVariableType!!.varTypeBool != null) {
+        if (formalVariableType.varTypeBool != null) {
             defaultValue = "NO"
         } else if (formalVariableType.varTypeId != null || formalVariableType.className != null) {
             defaultValue = "Nil"
