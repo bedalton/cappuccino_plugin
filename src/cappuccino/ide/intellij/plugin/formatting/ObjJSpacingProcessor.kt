@@ -94,13 +94,6 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (ObjJTokenSets.FUNCTION_DECLARATIONS.contains(type2)) {
             var needsBlank = needsBlankLineBeforeFunction(elementType)
-            if (needsBlank && !mySettings.KEEP_LINE_BREAKS) {
-                if (parentType == ObjJ_METHOD_BLOCK || elementType == FILE) {
-                    if (type1 == ObjJ_SEMI_COLON || hasEmptyBlock(node1)) {
-                        needsBlank = false
-                    }
-                }
-            }
             val lineFeeds = if (ObjJTokenSets.COMMENTS.contains(type1) || !needsBlank) 1 else 2
             return Spacing.createSpacing(0, 0, lineFeeds, needsBlank, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
@@ -912,38 +905,6 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 break
             }
             return false
-        }
-
-        // dart_style recognizes three forms of "empty block":
-        //   e() {}
-        //   f() => expr;
-        //   M() : super();
-        private fun hasEmptyBlock(node: ASTNode): Boolean {
-            if (node.elementType in ObjJTokenSets.CLASS_DECLARATIONS) return false
-            var child: ASTNode? = node
-            while (true) {
-                child = child!!.lastChildNode
-                if (child == null) return false
-                if (child.elementType == WHITE_SPACE) child = FormatterUtil.getPreviousNonWhitespaceSibling(child)
-                if (child == null) return false
-                if (child.elementType in ObjJTokenSets.BLOCKS) {
-                    var next: ASTNode? = child.lastChildNode
-                    if (next!!.elementType == WHITE_SPACE) next = FormatterUtil.getPreviousNonWhitespaceSibling(next)
-                    if (next != null && next.elementType == ObjJ_SEMI_COLON) {
-                        return false
-                    }
-                    // Look inside the function body.
-                    continue
-                }
-                if (!ObjJTokenSets.BLOCKS.contains(child.elementType)) continue
-                child = child.lastChildNode
-                if (child == null) return false
-                if (child.elementType == WHITE_SPACE) child = FormatterUtil.getPreviousNonWhitespaceSibling(child)
-                if (child == null) return false
-                if (child.elementType !== ObjJ_CLOSE_BRACE) return false
-                child = FormatterUtil.getPreviousNonWhitespaceSibling(child)
-                return child != null && child.elementType == ObjJ_OPEN_BRACE
-            }
         }
 
         private fun isBlankLineAfterComment(node: ASTNode): Boolean {
