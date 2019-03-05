@@ -118,6 +118,10 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
+        if (elementType == ObjJ_METHOD_CALL) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
         if (previousType === ObjJ_CLOSE_PAREN && STATEMENTS_WITH_OPTIONAL_BRACES.contains(elementType)) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
