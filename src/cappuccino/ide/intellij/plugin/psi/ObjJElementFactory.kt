@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package cappuccino.ide.intellij.plugin.psi
 
 import com.intellij.openapi.project.Project
@@ -17,15 +19,15 @@ object ObjJElementFactory {
     const val PlaceholderClassName = "_XXX__"
 
     fun createClassName(project:Project, className:String) : ObjJClassName? {
-        val scriptText = "@implementation ${className} \n @end"
+        val scriptText = "@implementation $className \n @end"
         return createFileFromText(project, scriptText).classDeclarations[0].getClassName()
     }
 
-    fun createSelector(project: Project, selector: String): ObjJSelector?
-    {   val selector = selector.replace("[^a-zA-Z_]".toRegex(), "").trim()
+    fun createSelector(project: Project, selectorIn: String): ObjJSelector?
+    {   val selector = selectorIn.replace("[^a-zA-Z_]".toRegex(), "").trim()
         val scriptText = "@implementation $PlaceholderClassName \n - (void) $selector{} @end"
         val implementationDeclaration = createFileFromText(project, scriptText).classDeclarations[0] as ObjJImplementationDeclaration
-        return implementationDeclaration.methodDeclarationList.get(0)?.methodHeader?.selectorList?.get(0)
+        return implementationDeclaration.methodDeclarationList[0]?.methodHeader?.selectorList?.get(0)
     }
 
     fun createVariableName(project: Project, variableName: String): ObjJVariableName {
@@ -82,7 +84,7 @@ object ObjJElementFactory {
 
     fun createMethodDeclaration(project: Project, methodHeader: ObjJMethodHeader): ObjJMethodDeclaration {
         val script ="""
-                @implementation ${PlaceholderClassName}
+                @implementation $PlaceholderClassName
                 ${methodHeader.text}
                 {
                     //@todo provide implementation
@@ -105,7 +107,7 @@ object ObjJElementFactory {
     }
 
     fun createMethodDeclarationsText(methodHeaders:List<ObjJMethodHeader>) : String {
-        var out:String = "";
+        var out = ""
         methodHeaders.forEach {
             out += "\n\n"+
             createMethodDeclarationText(it)
