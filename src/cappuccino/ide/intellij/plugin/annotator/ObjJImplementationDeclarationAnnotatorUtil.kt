@@ -58,7 +58,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
             if (!unimplementedMethods.required.isEmpty()) {
                 annotationHolder.createErrorAnnotation(className, "Missing required protocol methods")
-                        .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+                        .registerFix(ObjJMissingProtocolMethodFix(unimplementedMethods))
             }
         }
     }

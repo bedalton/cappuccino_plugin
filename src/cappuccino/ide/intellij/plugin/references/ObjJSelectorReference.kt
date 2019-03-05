@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
@@ -9,41 +11,42 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 import java.util.ArrayList
+import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
 
     private val logger:Logger = Logger.getLogger(ObjJSelectorReference::class.java.canonicalName)
 
-    private val thisMethodHeaderParent: ObjJMethodHeaderDeclaration<*>?
-    private var _classConstraints: List<String>? = null
+    private val methodHeaderParent: ObjJMethodHeaderDeclaration<*>?
+    private var classConstraints: List<String>? = null
     private val fullSelector: String?
     private val accessorMethods: Pair<String, String>?
 
     init {
         accessorMethods = getAccessorMethods()
-        thisMethodHeaderParent = if (accessorMethods == null) element.getParentOfType(ObjJMethodHeaderDeclaration::class.java) else null
+        methodHeaderParent = if (accessorMethods == null) element.getParentOfType(ObjJMethodHeaderDeclaration::class.java) else null
         val methodCallParent = element.getParentOfType(ObjJMethodCall::class.java)
-        fullSelector = thisMethodHeaderParent?.selectorString ?: methodCallParent?.selectorString
+        fullSelector = methodHeaderParent?.selectorString ?: methodCallParent?.selectorString
+        classConstraints = getClassConstraints()
         //logger.log(Level.INFO, "Creating selector resolver for selector <"+fullSelector+">;");
     }
 
-    private val callTargetClassTypesIfMethodCall: List<String> get() {
-        var constraints = _classConstraints
-        if (constraints != null) {
-            return constraints
+    private fun getClassConstraints(): List<String>? {
+        if (classConstraints != null) {
+            return classConstraints
         }
         val methodCall = myElement.getParentOfType(ObjJMethodCall::class.java)
                 ?: //   logger.log(Level.INFO, "Selector is not in method call.");
-                return emptyList()
+                return null
         if (DumbService.isDumb(myElement.project)) {
-            return emptyList()
+            return null
         }
-        constraints = methodCall.callTarget.possibleCallTargetTypes
-        _classConstraints = constraints
-        return constraints
+        classConstraints = methodCall.callTarget.getPossibleCallTargetTypes()
+        return classConstraints
     }
 
     override fun getVariants(): Array<Any?> {
@@ -130,21 +133,19 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (elementToCheck.containingClassName == ObjJElementFactory.PlaceholderClassName) {
             return false
         }
-        val elementToCheckAsMethodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
-        val elementToCheckMethodCallTargetClasses = elementToCheckAsMethodCall?.callTarget?.possibleCallTargetTypes ?: listOf()
-        val elementToCheckMethodCallSelector = elementToCheckAsMethodCall?.selectorString
-        if (thisMethodHeaderParent != null) {
-            return elementToCheckMethodCallSelector == fullSelector && (elementToCheckMethodCallTargetClasses.isEmpty() || ObjJClassType.UNDETERMINED in elementToCheckMethodCallTargetClasses || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
+        val methodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
+        val methodCallString = methodCall?.selectorString
+        if (methodHeaderParent != null) {
+            return methodCallString == fullSelector
         } else if (accessorMethods != null) {
             //logger.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
-            return (accessorMethods.getFirst() == elementToCheckMethodCallSelector || accessorMethods.getSecond() == elementToCheckMethodCallSelector) && (elementToCheckMethodCallTargetClasses.isEmpty() || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
+            return accessorMethods.getFirst() == methodCallString || accessorMethods.getSecond() == methodCallString
         }
-        if (elementToCheckAsMethodCall != null) {
-            return elementToCheckMethodCallSelector == fullSelector
+        if (methodCall != null) {
+            return methodCallString == fullSelector
         }
-        val callTargetTypes = callTargetClassTypesIfMethodCall
-        val elementToCheckAsMethodDeclaration = elementToCheck.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
-        return elementToCheckAsMethodDeclaration != null && elementToCheckAsMethodDeclaration.selectorString == fullSelector && (callTargetTypes.isEmpty() || ObjJClassType.UNDETERMINED in callTargetTypes || elementToCheckAsMethodDeclaration.containingClassName in callTargetTypes)
+        val declaration = elementToCheck.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
+        return declaration != null && declaration.selectorString == fullSelector
     }
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
@@ -158,10 +159,9 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (!selectorResult.isEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
-        val constraints = callTargetClassTypesIfMethodCall
         if (!out.isEmpty()) {
-            if (constraints.isNotEmpty() && !constraints.contains(ObjJClassType.UNDETERMINED) && constraints.contains(ObjJClassType.ID)) {
-                val tempOut = out.filter { element -> element is ObjJCompositeElement && constraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
+            if (classConstraints != null && classConstraints!!.isNotEmpty() && !classConstraints!!.contains(ObjJClassType.UNDETERMINED) && classConstraints!!.contains(ObjJClassType.ID)) {
+                val tempOut = out.filter { element -> element is ObjJCompositeElement && classConstraints!!.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
                     out = tempOut as MutableList<PsiElement>
                 }
