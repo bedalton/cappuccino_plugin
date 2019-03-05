@@ -89,17 +89,17 @@ fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiEle
 }
 
 fun ASTNode.getPreviousNonEmptySiblingIgnoringComments(): ASTNode? {
-    var node = getPreviousNonEmptyNode(true)
-    while (node != null && node.elementType in ObjJTokenSets.COMMENTS) {
-        node = getPreviousNonEmptyNode(true)
+    var node = this.getPreviousNonEmptyNode(true)
+    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
+        node = node.getPreviousNonEmptyNode(true)
     }
     return node
 }
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treePrev ?: return null
-    while (shouldSkipNode(out, ignoreLineTerminator)) {
-        out = if (out!!.treePrev == null) {
-            TreeUtil.prevLeaf(out)
+    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+        out = if (out.treePrev == null) {
+            return null
         } else {
             out.treePrev
         }
