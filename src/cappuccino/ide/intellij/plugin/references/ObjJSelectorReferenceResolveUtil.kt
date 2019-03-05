@@ -323,7 +323,7 @@ object ObjJSelectorReferenceResolveUtil {
         return classConstraints
     }
 
-    public fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
+    fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
         val qualifiedReference = callTarget.qualifiedReference ?: return listOf()
         val methodCall = qualifiedReference.methodCall
         if (methodCall != null) {
@@ -334,11 +334,33 @@ object ObjJSelectorReferenceResolveUtil {
         val variables = qualifiedReference.variableNameList
 
         if (variables.size != 1) {
-            return listOf();
+            return listOf()
         }
-        val classFromComment = CommentParserUtil.getVariableTypesInParent(variables[0]) ?: return listOf(ObjJClassType.UNDETERMINED)
-        return ObjJInheritanceUtil.getAllInheritedClasses(classFromComment, callTarget.project, true)
+        val variableName = variables[0]
+        val variableNameText = variableName.text
+        val className = when (variableNameText) {
+            "self" -> variableName.containingClassName
+            "super" -> variableName.getContainingSuperClass(true)?.text
+            else -> {
+                CommentParserUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
+            }
+        } ?: return listOf(ObjJClassType.UNDETERMINED)
+        return ObjJInheritanceUtil.getAllInheritedClasses(className, callTarget.project, true)
     }
+
+    /**
+     * Attempts to find a variables type, if the variable is declared as an instance variable
+     * @return variable type if it is known form an instance variable declaration
+     */
+    private fun getTypeFromInstanceVariables(variableName:ObjJVariableName) : String? {
+        val referencedVariable = variableName.reference.resolve() ?: return null
+        val instanceVariable = referencedVariable.getParentOfType(ObjJInstanceVariableDeclaration::class.java) ?: return null
+        val type = instanceVariable.formalVariableType
+        if (type.varTypeId != null) {
+            return type.varTypeId?.className?.text ?: ObjJClassType.UNDETERMINED
+        }
+        return type.text
+     }
 
     class SelectorResolveResult<T> internal constructor(val naturalResult: List<T>, val otherResult: List<T>, val possibleContainingClassNames: List<String>) {
         val isNatural: Boolean = !naturalResult.isEmpty()
