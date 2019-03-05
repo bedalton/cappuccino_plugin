@@ -309,7 +309,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
-        return Collections.singletonList(ObjJClassType.UNDETERMINED)//ObjJCallTargetUtil.getPossibleCallTargetTypes(callTarget)
+        return ObjJSelectorReferenceResolveUtil.getPossibleClassTypesForCallTarget(callTarget)
     }
 
     @JvmStatic

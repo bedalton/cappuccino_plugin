@@ -46,7 +46,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
     }
 
     @NotNull
-    private List<String> getClassConstraints() {
+    private List<String> getCallTargetClassTypesIfMethodCall() {
         if (classConstraints != null) {
             return classConstraints;
         }
@@ -104,7 +104,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
         if (element instanceof ObjJMethodHeader) {
             final ObjJMethodHeader methodHeader = (ObjJMethodHeader) element;
             if (methodHeader.getSelectorString().equals(fullSelector)) {
-                return sharesContainingClass(getClassConstraints(), methodHeader);
+                return sharesContainingClass(getCallTargetClassTypesIfMethodCall(), methodHeader);
             }
             //return methodHeader.getSelectorString().equals(selectorUpToAndSelf);
         }
@@ -130,7 +130,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
             result = new ArrayList<>(getSelectorLiteralReferences());
         }
         for (ObjJInstanceVariableDeclaration variableDeclaration : ObjJClassInstanceVariableAccessorMethodIndex.getInstance().get(fullSelector, getProject())) {
-            if (sharesContainingClass(getClassConstraints(), variableDeclaration)) {
+            if (sharesContainingClass(getCallTargetClassTypesIfMethodCall(), variableDeclaration)) {
                 result.add(variableDeclaration.getAtAccessors() != null ? variableDeclaration.getAtAccessors() : variableDeclaration);
             }
         }
@@ -144,7 +144,7 @@ public class ObjJSelectorReferenceBack extends PsiPolyVariantReferenceBase<ObjJS
     }
 
     private List<ObjJSelector> prune(List<ObjJMethodHeaderDeclaration> methodHeaders) {
-        final List<String> classConstraints = getClassConstraints();
+        final List<String> classConstraints = getCallTargetClassTypesIfMethodCall();
         final List<ObjJSelector> result = new ArrayList<>();
         final List<ObjJSelector> others = new ArrayList<>();
         for (ObjJMethodHeaderDeclaration methodHeader : methodHeaders) {
