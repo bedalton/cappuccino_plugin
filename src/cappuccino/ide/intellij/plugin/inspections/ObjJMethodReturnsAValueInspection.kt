@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreInspectionForScope
-import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveMethodReturnTypeFix
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
@@ -9,7 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJCommentParserUtil
-import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -37,7 +37,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateMethodReturn(methodDeclaration: ObjJMethodDeclaration, problemsHolder: ProblemsHolder) {
-            if (ObjJCommentParserUtil.isIgnored(methodDeclaration, IgnoreFlags.IGNORE_RETURN_STATEMENT, true)) {
+            if (ObjJCommentParserUtil.isIgnored(methodDeclaration, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnType = methodDeclaration.methodHeader.returnType
@@ -52,17 +52,17 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
                 val expr = returnStatement.expr
                 if (expr == null || expr.text.isEmpty()) {
                     problemsHolder.registerProblem(returnStatement.`return`, "Method must return a value of type: '$returnType'",
-                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
-                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
-                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
+                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
+                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
+                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
                 }
             }
             if (!returnsValue) {
                 val element = methodDeclaration.methodBlock?.closeBrace ?: methodDeclaration.methodHeader.methodHeaderReturnTypeElement ?: methodDeclaration.methodBlock?.lastChild ?: methodDeclaration.lastChild
                 problemsHolder.registerProblem(element, "Method expects return statement", ObjJRemoveMethodReturnTypeFix(element),
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
             }
         }
     }

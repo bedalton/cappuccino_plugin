@@ -85,7 +85,7 @@ object ObjJMethodCallCompletionContributor2 {
     private fun addMethodDeclarationLookupElements(project:Project, fileName:String?, result:CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex:Int) {
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
-                .filter { !(it.stub?.ignored ?: ObjJCommentParserUtil.isIgnored(it, IgnoreFlags.IGNORE_METHOD) || ObjJCommentParserUtil.isIgnored(it.parent, IgnoreFlags.IGNORE_METHOD)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
+                .filter { !(it.stub?.ignored ?: ObjJCommentParserUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) || ObjJCommentParserUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
         if (methodHeaders.isEmpty()) {
             return
         }

@@ -2,8 +2,8 @@ package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.fixes.ObjJDisableUndeclaredVariableInspectionOnVariable
-import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredVariableNameIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressUndeclaredVariableInspectionOnVariable
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -82,11 +82,11 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
-                problemsHolder.registerProblem(variableName, "Ignoring possibly undefined variable", ProblemHighlightType.INFORMATION, ObjJRemoveIgnoredVariableNameIntention(variableName.text))
+                problemsHolder.registerProblem(variableName, "Ignoring possibly undefined variable", ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
                 return
             }
 
-            if (ObjJCommentParserUtil.isIgnored(variableName, IgnoreFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
+            if (ObjJCommentParserUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
                 return
             }
 
@@ -115,7 +115,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
             //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
-            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use", ObjJDisableUndeclaredVariableInspectionOnVariable(variableName))
+            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use", ObjJAlterIgnoredUndeclaredVariable(variableName.text, addToIgnored = true), ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName))
 
         }
 

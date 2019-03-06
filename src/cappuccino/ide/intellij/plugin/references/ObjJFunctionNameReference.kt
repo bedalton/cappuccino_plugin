@@ -27,35 +27,22 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         return myElement.parent is ObjJFunctionDeclaration
     }
 
-    init {
-        LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+ this.canonicalText +">");
-    }
-
     override fun isReferenceTo(element: PsiElement): Boolean {
-        LOGGER.info("Is Reference to <${element.text}>")
         if (element.text != functionName) {
-            LOGGER.info("Function name and element text do not match")
             return false
         }
         val elementIsFunctionCall = element.parent is ObjJFunctionCall
         val elementIsFunctionDeclaration = !elementIsFunctionCall && element.parent is ObjJFunctionDeclaration
         if (isFunctionDeclaration && elementIsFunctionDeclaration) {
-            LOGGER.info("Function name and element are both function declarations")
             return false
         }
         if (isFunctionCall && elementIsFunctionCall) {
-            LOGGER.info("Function name and element are both function calls")
             return false
         }
         if (resolve()?.isEquivalentTo(element) == true) {
-            LOGGER.info("This element.resolve() == element")
             return true
         }
-        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return {
-            LOGGER.info("Failed to resolve function name to element")
-            false
-        }()
-        LOGGER.info("Resolved element for ${resolved.text} is ${resolved.tokenType()} in file ${resolved.containingFile?.name?:"UNDEF"}")
+        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
         return resolved == element
     }
 
@@ -64,7 +51,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
             return null
         }
         val allOut = ArrayList<PsiElement>()
-        //LOGGER.log(Level.INFO, "There are <"+ObjJFunctionsIndex.getInstance().getAllKeys(myElement.getProject()).size()+"> function in index");
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
@@ -89,8 +75,9 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
     }
 
     companion object {
-
-        private val LOGGER = Logger.getLogger(ObjJFunctionNameReference::class.java.name)
+        private val LOGGER by lazy {
+            Logger.getLogger(ObjJFunctionNameReference::class.java.name)
+        }
     }
 
 }
