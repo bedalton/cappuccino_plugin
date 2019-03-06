@@ -10,13 +10,13 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import org.jetbrains.annotations.Nls
 
-class ObjJIgnoreOvershadowedVariablesInProject() : BaseIntentionAction(), LocalQuickFix {
+class ObjJSuppressOvershadowedVariablesInspectionInProject() : BaseIntentionAction(), LocalQuickFix {
     override fun applyFix(p0: Project, p1: ProblemDescriptor) {
         apply()
     }
 
     override fun getText(): String {
-        return "Disable overshadowed variable inspection in project"
+        return "Suppress overshadowed variable inspection in project"
     }
 
     @Nls

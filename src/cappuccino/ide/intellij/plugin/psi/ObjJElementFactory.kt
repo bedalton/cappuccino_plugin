@@ -6,11 +6,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
-import cappuccino.ide.intellij.plugin.annotator.IgnoreUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
 
 import java.util.ArrayList
 import java.util.logging.Logger
@@ -73,7 +72,7 @@ object ObjJElementFactory {
         return errorElement
     }
 
-    fun createIgnoreComment(project: Project, ignoreFlags: IgnoreFlags, paramIn:String? = null): PsiElement {
+    fun createIgnoreComment(project: Project, ignoreFlags: ObjJSuppressInspectionFlags, paramIn:String? = null): PsiElement {
         val param = if (paramIn == null || paramIn.trim().isEmpty()) {
             ""
         } else {

@@ -55,7 +55,7 @@ object ObjJCommentParserUtil {
      * Find if given element has an @ignore comment preceding it.
      * Recursive in cases where multiple comments are used in sequence
      */
-    fun isIgnored(elementIn: PsiElement?, flag: IgnoreFlags? = null, recursive: Boolean = true): Boolean {
+    fun isIgnored(elementIn: PsiElement?, flag: ObjJSuppressInspectionFlags? = null, recursive: Boolean = true): Boolean {
         return ObjJCommentParserUtil.isIgnored(elementIn, flag, null, recursive)
     }
 
@@ -64,13 +64,13 @@ object ObjJCommentParserUtil {
      * Recursive in cases where multiple comments are used in sequence
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun isIgnored(elementIn: PsiElement?, flag: IgnoreFlags? = null, requiredMatchingParam: String? = null, recursive: Boolean = true): Boolean {
+    fun isIgnored(elementIn: PsiElement?, flag: ObjJSuppressInspectionFlags? = null, requiredMatchingParam: String? = null, recursive: Boolean = true): Boolean {
         return checkInInheritedComments(elementIn, recursive) {
             return@checkInInheritedComments ObjJCommentParserUtil.isIgnored(it.text, flag, requiredMatchingParam)
         }
     }
 
-    private fun isIgnored(text: String, flag: IgnoreFlags? = null, requiredMatchingParam: String? = null): Boolean {
+    private fun isIgnored(text: String, flag: ObjJSuppressInspectionFlags? = null, requiredMatchingParam: String? = null): Boolean {
         return searchCommentForFlags(text, IGNORE_FLAG, flag?.flag, requiredMatchingParam)
     }
 
@@ -145,7 +145,7 @@ object ObjJCommentParserUtil {
 
 }
 
-enum class IgnoreFlags(val title:String, val flag:String) {
+enum class ObjJSuppressInspectionFlags(val title:String, val flag:String) {
     IGNORE_METHOD("method declaration", "methodDeclaration"),
     IGNORE_INCOMPATIBLE_METHOD_OVERRIDE("incompatible method override", "incompatibleOverride"),
     IGNORE_RETURN_STATEMENT("return statement", "incompatibleMethodReturn"),

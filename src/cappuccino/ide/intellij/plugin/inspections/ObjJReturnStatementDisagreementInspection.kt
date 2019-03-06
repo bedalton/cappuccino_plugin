@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreInspectionForScope
-import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -10,7 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJCommentParserUtil
-import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
@@ -39,7 +39,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateBlockReturnStatements(block: ObjJBlock, problemsHolder: ProblemsHolder) {
-            if (ObjJCommentParserUtil.isIgnored(block, IgnoreFlags.IGNORE_RETURN_STATEMENT, true)) {
+            if (ObjJCommentParserUtil.isIgnored(block, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
@@ -109,9 +109,9 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 }
                 val element = returnStatement.expr ?: returnStatement.`return`
                 problemsHolder.registerProblem(element, errorAnnotation, ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
-                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
+                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
             }
         }
 
@@ -127,9 +127,9 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                             val element = returnStatement.expr ?: returnStatement.`return`
                             //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
                             problemsHolder.registerProblem(element, "Not all return statements return a value",
-                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
-                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
-                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
+                                    ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
+                                    ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
+                                    ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
                         }
                     }
                 }
