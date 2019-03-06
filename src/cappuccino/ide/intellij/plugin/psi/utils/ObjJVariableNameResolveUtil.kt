@@ -92,11 +92,11 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {possibleFirstDeclaration ->
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {
+            possibleFirstDeclaration ->
             variableNameElement.text == possibleFirstDeclaration.text &&
                     (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
-                    variableNameElement.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference &&
-                    possibleFirstDeclaration.getParentOfType(ObjJVariableDeclaration::class.java)?.expr?.leftExpr?.functionLiteral != null
+                    variableNameElement.indexInQualifiedReference == 0
         }// ?: variableNameElement
 
     }

@@ -7,14 +7,14 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.lang.annotation.AnnotationHolder
 import org.jetbrains.uast.getContainingClass
 
-object ObjJMethodDeclaratonAnnotator {
+object ObjJMethodDeclarationAnnotator {
 
     fun annotateMethodHeaderDeclarations(methodHeader: ObjJMethodHeader, annotationHolder: AnnotationHolder) {
         val project = methodHeader.project
         val thisSelector = methodHeader.selectorString
         val containingClass = methodHeader.containingClass ?: return
         val containingClassName = containingClass.getClassNameString()
-        Logger.getInstance(ObjJMethodDeclaratonAnnotator::class.java).assertTrue(!DumbService.isDumb(project))
+        Logger.getInstance(ObjJMethodDeclarationAnnotator::class.java).assertTrue(!DumbService.isDumb(project))
         for (classMethodHeader in ObjJClassMethodIndex.instance[containingClassName, project]) {
             if (!containingClass.isEquivalentTo(classMethodHeader.getContainingClass())) {
                 continue

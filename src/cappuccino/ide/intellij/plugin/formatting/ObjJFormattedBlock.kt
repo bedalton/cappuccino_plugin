@@ -5,6 +5,7 @@ package cappuccino.ide.intellij.plugin.formatting
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.psi.ObjJArguments
 import cappuccino.ide.intellij.plugin.psi.ObjJIfStatement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
@@ -116,6 +117,10 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
 
         if (previousType === ObjJ_OPEN_BRACE || previousType === ObjJ_OPEN_BRACKET) {
             return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (myNode.treeParent?.psi is ObjJClassDeclarationElement<*>) {
+            return ChildAttributes(Indent.getNoneIndent(), null)
         }
 
         if (elementType == ObjJ_METHOD_CALL) {

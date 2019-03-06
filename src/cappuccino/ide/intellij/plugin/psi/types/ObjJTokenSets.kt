@@ -75,7 +75,7 @@ public object ObjJTokenSets {
             ObjJ_BIT_XOR
     )
 
-    var ASSIGNMENT_OPERATORS = create(
+    val ASSIGNMENT_OPERATORS = create(
             ObjJ_MULTIPLY_ASSIGN,
             ObjJ_DIVIDE_ASSIGN,
             ObjJ_MODULUS_ASSIGN,
@@ -88,6 +88,11 @@ public object ObjJTokenSets {
             ObjJ_BIT_AND_ASSIGN,
             ObjJ_BIT_XOR_ASSIGN,
             ObjJ_BIT_OR_ASSIGN
+    )
+
+    val METHOD_HEADER_DECLARATION_SELECTOR = create(
+            ObjJ_METHOD_DECLARATION_SELECTOR,
+            ObjJ_FIRST_METHOD_DECLARATION_SELECTOR
     )
 
     val MATH_OPERATORS = create(

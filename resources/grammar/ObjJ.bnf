@@ -1060,7 +1060,7 @@ preprocessorDefineBody
 	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"]
-		methods=[getBlockList getIterationStatementList]
+		methods=[getBlockList getIterationStatementList getOpenBrace]
 	}
 	;
 

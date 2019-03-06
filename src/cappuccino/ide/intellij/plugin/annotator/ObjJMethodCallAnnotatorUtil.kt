@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.annotator
 
-import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredSelector
+import cappuccino.ide.intellij.plugin.fixes.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -111,6 +111,10 @@ internal object ObjJMethodCallAnnotatorUtil {
             return true
         }
 
+        if (ObjJCommentParserUtil.isIgnored(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR)) {
+            return true
+        }
+
         if (selectors.size == 1) {
             val selector = selectors.getOrNull(0) ?: return true
             holder.createErrorAnnotation(selector, "Failed to find selector matching <${selector.getSelectorString(true)}>")
@@ -123,8 +127,8 @@ internal object ObjJMethodCallAnnotatorUtil {
         //If fail index is less than one, mark all selectors and return;
         if (failIndex < 0) {
             //LOGGER.log(Level.INFO, "Selector fail index returned a negative index.");
-            holder.createErrorAnnotation(methodCall, "Failed to find selector matching <$fullSelector>")
-                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
+            val annotation = holder.createErrorAnnotation(methodCall, "Failed to find selector matching <$fullSelector>")
+            annotation.registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
             return false
         }
 
@@ -139,8 +143,13 @@ internal object ObjJMethodCallAnnotatorUtil {
             selector = methodCallSelectors[i]
             failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
             selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
-            holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
-                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
+            val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
+            annotation.setNeedsUpdateOnTyping(true)
+            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.STATEMENT))
+            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.METHOD))
+            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.FUNCTION))
+            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.CLASS))
+            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.FILE))
         }
 
         return false
