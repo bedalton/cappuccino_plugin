@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.lang
 
 import com.intellij.openapi.fileTypes.LanguageFileType
+import icons.ObjJIcons
 
 import javax.swing.*
 

@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import com.intellij.ide.projectView.PresentationData
+import icons.ObjJIcons
 
 import javax.swing.*
 
