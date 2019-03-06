@@ -8,7 +8,6 @@ import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
@@ -18,6 +17,7 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.ide.presentation.Presentation
+import icons.ObjJIcons
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger

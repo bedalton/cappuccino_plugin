@@ -10,7 +10,6 @@ import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
-import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.*
@@ -25,9 +24,9 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.FoldingGroup
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.tree.TokenSet
+import icons.ObjJIcons
 
 import javax.swing.*
 import java.util.*

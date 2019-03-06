@@ -8,7 +8,6 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
-import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
@@ -19,6 +18,7 @@ import java.util.logging.Logger
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil.addSelectorLookupElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import icons.ObjJIcons
 
 object ObjJMethodCallCompletionContributorUtil {
 

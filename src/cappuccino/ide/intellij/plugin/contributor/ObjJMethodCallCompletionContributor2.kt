@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorM
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.lang.ObjJIcons
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -19,6 +18,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import icons.ObjJIcons
 import java.util.logging.Level
 import java.util.logging.Logger
 
