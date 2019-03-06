@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.CommentParserUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJCommentParserUtil
 import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.codeInspection.LocalInspectionTool
@@ -30,7 +30,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
 
     companion object {
         private fun validateMethodHeader(header: ObjJMethodHeader, problemsHolder: ProblemsHolder) {
-            if (CommentParserUtil.isIgnored(header, IgnoreFlags.IGNORE_SIGNATURE)) {
+            if (ObjJCommentParserUtil.isIgnored(header, IgnoreFlags.IGNORE_SIGNATURE)) {
                 return
             }
             val inheritedClasses = ObjJInheritanceUtil.getAllInheritedClasses(header.containingClassName, header.project, true)
