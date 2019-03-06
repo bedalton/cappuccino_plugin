@@ -28,25 +28,33 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
     }
 
     init {
-        //LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+getCanonicalText()+">");
+        LOGGER.log(Level.INFO, "Created function name resolver with text: <"+this.functionName+"> and canonText: <"+ this.canonicalText +">");
     }
 
     override fun isReferenceTo(element: PsiElement): Boolean {
+        LOGGER.info("Is Reference to <${element.text}>")
         if (element.text != functionName) {
+            LOGGER.info("Function name and element text do not match")
             return false
         }
         val elementIsFunctionCall = element.parent is ObjJFunctionCall
         val elementIsFunctionDeclaration = !elementIsFunctionCall && element.parent is ObjJFunctionDeclaration
         if (isFunctionDeclaration && elementIsFunctionDeclaration) {
+            LOGGER.info("Function name and element are both function declarations")
             return false
         }
         if (isFunctionCall && elementIsFunctionCall) {
+            LOGGER.info("Function name and element are both function calls")
             return false
         }
         if (resolve()?.isEquivalentTo(element) == true) {
+            LOGGER.info("This element.resolve() == element")
             return true
         }
-        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
+        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return {
+            LOGGER.info("Failed to resolve function name to element")
+            false
+        }()
         LOGGER.info("Resolved element for ${resolved.text} is ${resolved.tokenType()} in file ${resolved.containingFile?.name?:"UNDEF"}")
         return resolved == element
     }
