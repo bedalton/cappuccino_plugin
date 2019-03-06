@@ -17,19 +17,26 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
 import com.intellij.util.IncorrectOperationException
 
 
 
-class ObjJDisableUndeclaredVariableInspectionOnVariable(private val variableName:ObjJVariableName) : BaseIntentionAction(), LocalQuickFix {
+class ObjJDisableUndeclaredVariableInspectionOnVariable(variableName:ObjJVariableName) : BaseIntentionAction(), LocalQuickFix {
+
+    private val variableNamePointer:SmartPsiElementPointer<ObjJVariableName> = SmartPointerManager.createPointer(variableName)
+    private val variableName:ObjJVariableName? get() {
+        return variableNamePointer.element
+    }
 
     override fun getText(): String {
-        return "Disable undeclared variable inspection for variable \"${variableName.text}\""
+        return "Disable undeclared variable inspection for variable \"${variableName?.text}\""
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
-        return true
+        return variableName != null
     }
 
     @Throws(IncorrectOperationException::class)
@@ -42,7 +49,8 @@ class ObjJDisableUndeclaredVariableInspectionOnVariable(private val variableName
     }
 
     private fun apply(project: Project, file: PsiFile) {
-
+        val variableName = this.variableName ?: return
+        val writeAbove = getOutermostParentInEnclosingBlock(variableName)
         val ignoreComment = ObjJElementFactory.createIgnoreComment(project, IgnoreFlags.IGNORE_UNDECLARED_VAR, variableName.text)
         writeAbove.parent.addBefore(ignoreComment, writeAbove)
         DaemonCodeAnalyzer.getInstance(project).restart(file)

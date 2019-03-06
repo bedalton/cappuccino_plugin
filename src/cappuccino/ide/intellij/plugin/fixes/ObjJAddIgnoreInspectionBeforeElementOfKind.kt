@@ -35,7 +35,7 @@ abstract class ObjJAddIgnoreInspectionBeforeElementOfKind (psiElement: PsiElemen
         apply(project, file)
     }
 
-    override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {a
+    override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
         apply(project, problemDescriptor.psiElement.containingFile)
     }
 
@@ -63,8 +63,8 @@ class ObjJAddIgnoreInspectionForScope(psiElement: PsiElement, flag: IgnoreFlags,
         writeAbove = when (scope) {
             ObjJIgnoreScope.STATEMENT -> getOutermostParentInEnclosingBlock(element)
             ObjJIgnoreScope.CLASS -> element.getParentOfType(ObjJClassDeclarationElement::class.java)
-            ObjJIgnoreScope.METHOD_OR_FUNCTION ->   element.getParentOfType(ObjJMethodDeclaration::class.java) ?:
-                                                    element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+            ObjJIgnoreScope.METHOD -> element.getParentOfType(ObjJMethodDeclaration::class.java)
+            ObjJIgnoreScope.FUNCTION -> element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
             ObjJIgnoreScope.FILE -> element.containingFile.firstChild
         } ?: return null
         _writeAbove = SmartPointerManager.createPointer(writeAbove)
@@ -72,14 +72,18 @@ class ObjJAddIgnoreInspectionForScope(psiElement: PsiElement, flag: IgnoreFlags,
     }
 
     override fun getText(): String {
-        return "Disable ${flag.title} inspection ${scope.scope}"
+        val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
+            " for parameter \"${parameter.trim()}.\""
+        } else ""
+        return "Disable ${flag.title} inspection ${scope.scope}"+forParameter
     }
 }
 
 
-public enum class ObjJIgnoreScope(val scope:String) {
+enum class ObjJIgnoreScope(val scope:String) {
     STATEMENT("for statement"),
-    METHOD_OR_FUNCTION("for method or function"),
+    METHOD("for method"),
+    FUNCTION("for function"),
     CLASS("for class"),
     FILE("in file")
 }

@@ -28,7 +28,8 @@ class ObjJCompletionContributor : CompletionContributor() {
         return position.text.replace(CARET_INDICATOR, "").trim().length > 2 &&
                 position !is ObjJBlock &&
                 !ObjJVariablePsiUtil.isNewVarDec(position) &&
-                !(position.text.contains("{") || position.text.contains("}"))
+                !(position.text.contains("{") || position.text.contains("}")) &&
+                !position.text.contains(";") && position.prevSibling?.text?.endsWith(";")  == false
     }
 
     override fun handleAutoCompletionPossibility(context: AutoCompletionContext): AutoCompletionDecision? {

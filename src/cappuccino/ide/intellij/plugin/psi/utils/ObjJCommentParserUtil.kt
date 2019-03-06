@@ -71,7 +71,7 @@ object ObjJCommentParserUtil {
     }
 
     private fun isIgnored(text:String, flag:IgnoreFlags? = null, requiredMatchingParam:String? = null) : Boolean {
-        return searchCommentForFlags(text, IGNORE_FLAG, flag.flag, requiredMatchingParam)
+        return searchCommentForFlags(text, IGNORE_FLAG, flag?.flag, requiredMatchingParam)
     }
 
     private fun searchCommentForFlags(text:String, prefix:String, flag:String?, param:String? = null) : Boolean {
@@ -103,6 +103,7 @@ object ObjJCommentParserUtil {
                 }
             }
         }
+        return false
     }
 
     private fun checkInInheritedComments(elementIn:PsiElement?, recursive: Boolean = true, check: (ASTNode) -> Boolean) : Boolean {
@@ -145,12 +146,13 @@ object ObjJCommentParserUtil {
 }
 
 enum class IgnoreFlags(val title:String, val flag:String) {
-    IGNORE_METHOD("Method declaration", "methodDeclaration"),
-    IGNORE_INCOMPATIBLE_METHOD_OVERRIDE("Incompatible method override", "incompatibleOverride"),
-    IGNORE_RETURN_STATEMENT("Ignore return statement", "incompatibleMethodReturn"),
-    IGNORE_INVALID_SELECTOR("Invalid or undefined method selector", "invalidSelector"),
-    IGNORE_UNDECLARED_VAR("Possibly undeclared variable", "undeclaredVar"),
-    IGNORE_CLASS("Ignore class in completions", "ignoreClass");
+    IGNORE_METHOD("method declaration", "methodDeclaration"),
+    IGNORE_INCOMPATIBLE_METHOD_OVERRIDE("incompatible method override", "incompatibleOverride"),
+    IGNORE_RETURN_STATEMENT("return statement", "incompatibleMethodReturn"),
+    IGNORE_INVALID_SELECTOR("invalid or undefined method selector", "invalidSelector"),
+    IGNORE_UNDECLARED_FUNCTION("possibly undeclared function", "undeclaredFunction"),
+    IGNORE_UNDECLARED_VAR("possibly undeclared variable", "undeclaredVar"),
+    IGNORE_CLASS("class in completions", "ignoreClass");
 }
 
 enum class NoIndex(val title:String, val flag:String) {
