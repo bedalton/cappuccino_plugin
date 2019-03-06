@@ -76,7 +76,6 @@ object MethodCallHandler : OnEnterHandler {
 
     override fun doIf(editor: Editor, psiElementIn: PsiElement) : Boolean {
         val methodCall:ObjJMethodCall = psiElementIn.thisOrParentAs(ObjJMethodCall::class.java) ?: return false
-        ObjJEnterHandler.LOGGER.info("Is Method Call parent")
         val selectors = methodCall.qualifiedMethodCallSelectorList
         var prevSelector:ObjJQualifiedMethodCallSelector? = null
         var didRun = false
@@ -95,7 +94,6 @@ object MethodCallHandler : OnEnterHandler {
 
     private fun onIfQualifiedMethodCallSelector(editor: Editor, thisMethodCallSelector: ObjJQualifiedMethodCallSelector, prevSelector: ObjJQualifiedMethodCallSelector) : Boolean {
         if (!thisMethodCallSelector.node.isDirectlyPrecededByNewline()) {
-            ObjJEnterHandler.LOGGER.info("Selector is not directly preceded by new line.")
             return false
         }
         val document = editor.document
@@ -144,14 +142,11 @@ object BlockEnterHandler : OnEnterHandler {
 
 object ClassEnterHandler : OnEnterHandler {
     override fun doIf(editor: Editor, psiElementIn: PsiElement): Boolean {
-        Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Checking if in class declaration")
         val classDeclaration: ObjJClassDeclarationElement<*>? = psiElementIn.thisOrParentAs(ObjJClassDeclarationElement::class.java) ?: return false
-        Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "In class declaration")
         val hasEnd: Boolean = when (classDeclaration) {
             is ObjJImplementationDeclaration -> classDeclaration.atEnd != null
             is ObjJProtocolDeclaration -> classDeclaration.atEnd != null
             else -> {
-                Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration not of expected type")
                 return false
             }
         }
