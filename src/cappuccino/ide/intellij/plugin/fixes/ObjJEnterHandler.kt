@@ -24,25 +24,21 @@ import java.util.logging.Logger
 @Suppress("unused")
 class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 
-
     override fun preprocessEnter(file: PsiFile, editor: Editor, caretOffsetRef: Ref<Int>, caretAdvance: Ref<Int>, dataContext: DataContext, originalHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
         if (file !is ObjJFile) {
             return EnterHandlerDelegate.Result.Continue
         }
         val caretOffset:Int = caretOffsetRef.get().toInt()
-        val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Stop
+        val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
         var result = EnterHandlerDelegate.Result.Continue
         for (handler in handlers) {
-            LOGGER.info("Running handler ${handler::class.java.canonicalName}")
             // Fetch element fresh from pointer each time, hoping that it stays current after modifications
             val element = pointer.element
             if (element == null) {
-                LOGGER.info("Element was invalidated, returning")
                 return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
             }
             if (handler.doIf(editor, element)) {
                 result = EnterHandlerDelegate.Result.Default
-                LOGGER.info("Did succeed on enter handler ${handler::class.java.canonicalName}")
             }
         }
         //com.intellij.psi.codeStyle.CodeStyleManager.adjustLineIndent()
@@ -55,33 +51,8 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
             LOGGER.warning("Failed to find previous non-empty sibling")
             null
         }()
-        LOGGER.info("Got non empty element")
         return SmartPointerManager.createPointer(element)
     }
-
-    /*
-    override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
-        if (file !is ObjJFile) {
-            return EnterHandlerDelegate.Result.Stop
-        }
-        val pointer = getPointer(dataContext) ?: return EnterHandlerDelegate.Result.Stop
-        var result = EnterHandlerDelegate.Result.Continue
-        for (handler in handlers) {
-            LOGGER.info("Running handler ${handler::class.java.canonicalName}")
-            // Fetch element fresh from pointer each time, hoping that it stays current after modifications
-            val element = pointer.element
-            if (element == null) {
-                LOGGER.info("Element was invalidated, returning")
-                return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
-            }
-            if (handler.doIf(editor, element)) {
-                result = EnterHandlerDelegate.Result.Default
-                LOGGER.info("Did succeed on enter handler ${handler::class.java.canonicalName}")
-            }
-        }
-        //com.intellij.psi.codeStyle.CodeStyleManager.adjustLineIndent()
-        return result
-    }*/
 
     companion object {
         internal val LOGGER:Logger by lazy {
