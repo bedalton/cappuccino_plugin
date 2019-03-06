@@ -19,7 +19,6 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -86,7 +85,7 @@ object ObjJMethodCallCompletionContributor2 {
     private fun addMethodDeclarationLookupElements(project:Project, fileName:String?, result:CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex:Int) {
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
-                .filter { !(it.stub?.ignored ?: CommentParserUtil.isIgnored(it) || CommentParserUtil.isIgnored(it.parent)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
+                .filter { !(it.stub?.ignored ?: ObjJCommentParserUtil.isIgnored(it, IgnoreFlags.IGNORE_METHOD) || ObjJCommentParserUtil.isIgnored(it.parent, IgnoreFlags.IGNORE_METHOD)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
         if (methodHeaders.isEmpty()) {
             return
         }
@@ -99,7 +98,7 @@ object ObjJMethodCallCompletionContributor2 {
             //Get the selector at index, or continue loop
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames) {
-                if (methodHeader.containingClassName != possibleContainingClassNames[0]) {
+                if (possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName != possibleContainingClassNames[0]) {
                     continue
                 }
             }

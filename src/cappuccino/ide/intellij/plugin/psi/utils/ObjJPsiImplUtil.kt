@@ -27,6 +27,7 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.psi.tree.TokenSet
 
 import javax.swing.*
 import java.util.*
@@ -840,7 +841,15 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement): PsiElement? = null
+    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement): PsiElement? {
+        val block = element as? ObjJBlock ?: return null
+        return block.node.getChildren(TokenSet.create(ObjJTypes.ObjJ_OPEN_BRACE)).getOrNull(0)?.psi
+    }
+
+    @JvmStatic
+    fun getCloseBrace(@Suppress("UNUSED_PARAMETER") block: ObjJBlock): PsiElement? {
+        return block.node.getChildren(TokenSet.create(ObjJTypes.ObjJ_CLOSE_BRACE)).getOrNull(0)?.psi
+    }
 
     // ============================== //
     // ===== QualifiedReference ===== //

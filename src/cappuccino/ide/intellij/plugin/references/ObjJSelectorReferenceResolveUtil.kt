@@ -307,7 +307,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (callTarget != null) {
             val possibleClasses = getPossibleClassTypesForCallTarget(callTarget)
             if (possibleClasses.isNotEmpty()) {
-                LOGGER.info("Found call target type")
+                //LOGGER.info("Found call target type")
                 return possibleClasses
             }
         }
@@ -342,7 +342,7 @@ object ObjJSelectorReferenceResolveUtil {
             "self" -> variableName.containingClassName
             "super" -> variableName.getContainingSuperClass(true)?.text
             else -> {
-                CommentParserUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
+                ObjJCommentParserUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
             }
         } ?: return listOf(ObjJClassType.UNDETERMINED)
         return ObjJInheritanceUtil.getAllInheritedClasses(className, callTarget.project, true)

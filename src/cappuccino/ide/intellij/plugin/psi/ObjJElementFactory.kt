@@ -10,6 +10,7 @@ import cappuccino.ide.intellij.plugin.annotator.IgnoreUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
 
 import java.util.ArrayList
 import java.util.logging.Logger
@@ -72,10 +73,15 @@ object ObjJElementFactory {
         return errorElement
     }
 
-    fun createIgnoreComment(project: Project, elementType: IgnoreUtil.ElementType): ObjJComment {
-        val scriptText = "// @ignore " + elementType.type
+    fun createIgnoreComment(project: Project, ignoreFlags: IgnoreFlags, paramIn:String? = null): PsiElement {
+        val param = if (paramIn == null || paramIn.trim().isEmpty()) {
+            ""
+        } else {
+            " " + paramIn
+        }
+        val scriptText = "// @ignore " + ignoreFlags.flag + param
         val file = createFileFromText(project, scriptText)
-        return file.getChildOfType(ObjJComment::class.java)!!
+        return file.firstChild
     }
 
     private fun createFileFromText(project: Project, text: String): ObjJFile {

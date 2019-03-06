@@ -101,6 +101,7 @@
     <lang.smartEnterProcessor implementationClass="cappuccino.ide.intellij.plugin.fixes.ObjJSmartEnterProcessor" language="ObjectiveJ"/>
     <codeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettingsProvider"/>
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
+    <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
@@ -111,6 +112,7 @@
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
     <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
+
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
@@ -170,7 +172,7 @@
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodHeaderDoesNotMatchSuperClassInspection"
-                     level="WEAK WARNING"
+                     level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Incompatible inherited method override"

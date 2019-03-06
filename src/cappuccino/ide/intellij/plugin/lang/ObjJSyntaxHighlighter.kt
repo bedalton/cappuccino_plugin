@@ -141,11 +141,11 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
         val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
-        val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE")
-        val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE")
-        val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE")
-        val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_FUNCTION_NAME")
-        val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE")
+        val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
+        val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
+        val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
 
     }
 }
