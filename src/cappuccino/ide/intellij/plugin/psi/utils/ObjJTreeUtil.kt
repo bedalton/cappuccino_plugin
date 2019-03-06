@@ -1,6 +1,7 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
@@ -13,9 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
-import java.util.Collections
-import java.util.logging.Level
-import java.util.logging.Logger
 
 
 fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> {
@@ -99,7 +97,7 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treePrev ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
         out = if (out.treePrev == null) {
-            return null
+            TreeUtil.prevLeaf(out)
         } else {
             out.treePrev
         }
@@ -118,32 +116,24 @@ fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement
 
 fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.node?.treePrev ?: return null
-    while (shouldSkipNode(out, ignoreLineTerminator)) {
-        if (out!!.treePrev == null) {
-            out = TreeUtil.prevLeaf(out)
+    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+        out = if (out.treePrev == null) {
+            TreeUtil.prevLeaf(out)
         } else {
-            out = out.treePrev
+            out.treePrev
         }
-        if (out == null) {
-            return null
-        }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.node?.treeNext
-    while (shouldSkipNode(out, ignoreLineTerminator)) {
-        if (out!!.treeNext == null) {
-            out = TreeUtil.nextLeaf(out)
+    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+        out = if (out.treeNext == null) {
+            TreeUtil.nextLeaf(out)
         } else {
-            out = out.treeNext
+            out.treeNext
         }
-        if (out == null) {
-            return null
-        }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }
@@ -165,17 +155,16 @@ fun <PsiT : PsiElement> PsiElement?.getSharedContextOfType(psiElement2: PsiEleme
 }
 
 fun <PsiT : PsiElement> PsiElement?.siblingOfTypeOccursAtLeastOnceBefore(siblingElementClass: Class<PsiT>): Boolean {
-    var psiElement: PsiElement? = this ?: return false
-    while (psiElement!!.prevSibling != null) {
-        psiElement = psiElement.prevSibling
+    var psiElement: PsiElement? = this?.prevSibling ?: return false
+    while (psiElement != null) {
         if (siblingElementClass.isInstance(psiElement)) {
             return true
         }
+        psiElement = psiElement.prevSibling
     }
     return false
 }
 
-private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeUtilFunctions")
 fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<com.intellij.psi.PsiElement>?, stubClass: Class<StubT>): List<StubT> {
     return if (parent == null) {
         emptyList()
