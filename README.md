@@ -1,4 +1,4 @@
-# Cappuccino Objective-J Intellij Idea Plugin (on Hiatus)
+# Cappuccino Objective-J Intellij Idea Plugin
 This repository holds the proof of concept code for a cappuccino objective-j language plugin.
 
 This plugin is mostly proof of concept, and not guaranteed to work properly, or at all.
