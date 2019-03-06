@@ -51,7 +51,7 @@ private class ClassImplementationEnterHandler: FixEnterProcessor() {
             EditorUtil.insertText(editor, "\n", true)
             EditorUtil.insertText(editor, "\n@end\n\n", false)
 
-            return true;
+            return true
         }
         //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration has @end statement")
         return false

@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces;
 
 import cappuccino.ide.intellij.plugin.psi.*;
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +9,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public interface ObjJBlock extends ObjJCompositeElement, ObjJHasBlockStatement {
+
+    @Nullable
+    PsiElement getOpenBrace();
 
     @NotNull
     List<ObjJBodyVariableAssignment> getBodyVariableAssignmentList();
@@ -59,7 +63,7 @@ public interface ObjJBlock extends ObjJCompositeElement, ObjJHasBlockStatement {
 
     @Nullable
     default PsiElement getCloseBrace() {
-        return null;
+        return ObjJPsiImplUtil.getCloseBrace(this);
     }
 
     default ObjJBlock getBlock() {

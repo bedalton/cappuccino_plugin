@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import java.lang.StringBuilder
+
 object Strings {
 
     @JvmOverloads
@@ -29,3 +31,11 @@ fun String.upperCaseFirstLetter() : String =
 
 fun String.substringFromEnd(start:Int, subtractFromEnd:Int) : String =
         Strings.substringFromEnd(this, start, subtractFromEnd)
+
+fun String.repeat(times:Int) : String {
+    val stringBuilder = StringBuilder()
+    for(i in 1..times) {
+        stringBuilder.append(this)
+    }
+    return stringBuilder.toString()
+}
