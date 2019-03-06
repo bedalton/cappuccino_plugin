@@ -45,7 +45,7 @@ object ObjJCommentParserUtil {
      * Gets whether or not to index a given element,
      * @todo have element stubs stash this information
      */
-    fun noIndex(elementIn:PsiElement, noIndex:NoIndex) : Boolean {
+    fun noIndex(elementIn: PsiElement, noIndex: NoIndex): Boolean {
         return checkInInheritedComments(elementIn, true) {
             searchCommentForFlags(it.text, NO_INDEX_FLAG, noIndex.flag)
         }
@@ -55,7 +55,7 @@ object ObjJCommentParserUtil {
      * Find if given element has an @ignore comment preceding it.
      * Recursive in cases where multiple comments are used in sequence
      */
-    fun isIgnored(elementIn:PsiElement?, flag:IgnoreFlags? = null, recursive:Boolean = true) : Boolean {
+    fun isIgnored(elementIn: PsiElement?, flag: IgnoreFlags? = null, recursive: Boolean = true): Boolean {
         return ObjJCommentParserUtil.isIgnored(elementIn, flag, null, recursive)
     }
 
@@ -64,18 +64,18 @@ object ObjJCommentParserUtil {
      * Recursive in cases where multiple comments are used in sequence
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun isIgnored(elementIn:PsiElement?, flag:IgnoreFlags? = null, requiredMatchingParam: String? = null, recursive:Boolean = true) : Boolean {
+    fun isIgnored(elementIn: PsiElement?, flag: IgnoreFlags? = null, requiredMatchingParam: String? = null, recursive: Boolean = true): Boolean {
         return checkInInheritedComments(elementIn, recursive) {
             return@checkInInheritedComments ObjJCommentParserUtil.isIgnored(it.text, flag, requiredMatchingParam)
         }
     }
 
-    private fun isIgnored(text:String, flag:IgnoreFlags? = null, requiredMatchingParam:String? = null) : Boolean {
+    private fun isIgnored(text: String, flag: IgnoreFlags? = null, requiredMatchingParam: String? = null): Boolean {
         return searchCommentForFlags(text, IGNORE_FLAG, flag?.flag, requiredMatchingParam)
     }
 
-    private fun searchCommentForFlags(text:String, prefix:String, flag:String?, param:String? = null) : Boolean {
-        text.split("\\n".toRegex()).forEach lineForEach@{line ->
+    private fun searchCommentForFlags(text: String, prefix: String, flag: String?, param: String? = null): Boolean {
+        text.split("\\n".toRegex()).forEach lineForEach@{ line ->
             if (text.contains(prefix)) {
                 // Take all text in line after @ignore and tokenize it
                 val flags = line.substringAfter(prefix)
@@ -90,7 +90,7 @@ object ObjJCommentParserUtil {
                 }
 
                 // For each flag set in line after @ignore, check for match between flag and param(if any)
-                flags.forEach flagForEach@{tag ->
+                flags.forEach flagForEach@{ tag ->
                     val parts = tag.split(SPACE_REGEX)
                     // Flag doesn't match, keep looking
                     if (parts[0] != flag) {
@@ -106,7 +106,7 @@ object ObjJCommentParserUtil {
         return false
     }
 
-    private fun checkInInheritedComments(elementIn:PsiElement?, recursive: Boolean = true, check: (ASTNode) -> Boolean) : Boolean {
+    private fun checkInInheritedComments(elementIn: PsiElement?, recursive: Boolean = true, check: (ASTNode) -> Boolean): Boolean {
         var element: PsiElement? = elementIn ?: return false
         var didCheckContainingClass = false
         while (element != null) {

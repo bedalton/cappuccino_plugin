@@ -307,7 +307,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (callTarget != null) {
             val possibleClasses = getPossibleClassTypesForCallTarget(callTarget)
             if (possibleClasses.isNotEmpty()) {
-                LOGGER.info("Found call target type")
+                //LOGGER.info("Found call target type")
                 return possibleClasses
             }
         }

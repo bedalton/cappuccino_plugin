@@ -12,6 +12,10 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.TokenType
 
 import java.util.ArrayList
 
@@ -139,6 +143,62 @@ fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
 }
 
 
+fun PsiElement.distanceFromStartOfLine(editor:Editor) : Int {
+    return this.distanceFromStartOfLine(editor.document)
+}
+
+fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
+    val elementStartOffset = this.textRange.startOffset
+    val elementLineNumber = document.getLineNumber(elementStartOffset)
+    val elementLineStartOffset = document.getLineStartOffset(elementLineNumber)
+    //val elementLineStartOffset = StringUtil.lastIndexOf(document.text, '\n', 0, elementStartOffset)
+    return elementStartOffset - elementLineStartOffset
+}
+
+
+fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
+    var node:ASTNode? = this.treePrev
+    while (node != null) {
+        if (node.elementType == TokenType.WHITE_SPACE) {
+            if (node.text.contains("\n")) return true
+            node = node.treePrev
+            continue
+        }
+        if (node.elementType == ObjJTypes.ObjJ_BLOCK_COMMENT) {
+            if (node.treePrev == null) {
+                return true
+            }
+            node = node.treePrev
+            continue
+        }
+        break
+    }
+    return false
+}
+
+fun ASTNode.getPrevSiblingOnTheSameLineSkipCommentsAndWhitespace(): ASTNode? {
+    var node: ASTNode? = this.treePrev
+    while (node != null) {
+        return if (node.elementType == TokenType.WHITE_SPACE || ObjJTokenSets.COMMENTS.contains(node.elementType)) {
+            if (node.text.contains("\n")) {
+                null
+            } else {
+                node = node.treePrev
+                continue
+            }
+        } else node
+    }
+
+    return null
+}
+
+fun <PsiT: PsiElement> PsiElement?.thisOrParentAs(psiClass:Class<PsiT>) : PsiT? {
+    return if (psiClass.isInstance(this)) {
+        psiClass.cast(this)
+    } else {
+        this.getParentOfType(psiClass)
+    }
+}
 
 fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfTypeStrict(psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
     return this?.getSharedContextOfType(psiElement2, sharedClass) != null

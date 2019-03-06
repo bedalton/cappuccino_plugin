@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UNUSED_PARAMETER")
+
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -21,7 +23,7 @@ import com.intellij.lang.parser.GeneratedParserUtilBase.DUMMY_BLOCK
 import com.intellij.psi.TokenType.WHITE_SPACE
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
 
-class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: CommonCodeStyleSettings, val objjSettings: ObjJCodeStyleSettings) {
+class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: CommonCodeStyleSettings, private val objJSettings: ObjJCodeStyleSettings) {
 
     fun getSpacing(child1: Block?, child2: Block?): Spacing? {
         if (child1 !is AbstractBlock || child2 !is AbstractBlock) {
@@ -34,6 +36,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         val type1 = node1.elementType
         val node2 = child2.node
         val type2 = node2.elementType
+
 
         if (elementType == DUMMY_BLOCK || type1 == DUMMY_BLOCK || type2 == DUMMY_BLOCK) {
             return Spacing.createSpacing(0, 1, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -65,7 +68,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, nsp, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
         }*/
 
-        if (DIRECTIVE_GROUPS.contains(type1)) {
+        if (IMPORT_STATEMENTS.contains(type1)) {
             if (type2 == ObjJ_BLOCK_COMMENT) {
                 val next = FormatterUtil.getNextNonWhitespaceSibling(node2)
                 if (next != null && next.elementType == type1) {
@@ -85,7 +88,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (ObjJ_SEMI_COLON == type2) {
             return if (type1 == ObjJ_SEMI_COLON && elementType in ObjJTokenSets.STATEMENTS) {
-                addSingleSpaceIf(false, true) // Empty statement on new line.
+                addSingleSpaceIf(condition = false, linesFeed = true) // Empty statement on new line.
             } else Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
@@ -93,7 +96,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 0, false, 0)
 
         if (ObjJTokenSets.FUNCTION_DECLARATIONS.contains(type2)) {
-            var needsBlank = needsBlankLineBeforeFunction(elementType)
+            val needsBlank = needsBlankLineBeforeFunction(elementType)
             val lineFeeds = if (ObjJTokenSets.COMMENTS.contains(type1) || !needsBlank) 1 else 2
             return Spacing.createSpacing(0, 0, lineFeeds, needsBlank, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
@@ -204,9 +207,9 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
         if (type1 in ObjJTokenSets.STATEMENTS || type2 in ObjJTokenSets.STATEMENTS) {
             return if (type1 == ObjJ_BLOCK_COMMENT) {
-                addSingleSpaceIf(true, false)
+                addSingleSpaceIf(condition = true, linesFeed = false)
             } else {
-                addSingleSpaceIf(false, true)
+                addSingleSpaceIf(condition = false, linesFeed = true)
             }
         }
 
@@ -246,15 +249,15 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (type2 == ObjJ_FORMAL_VARIABLE_TYPE && elementType == ObjJ_METHOD_HEADER) {
-            return addSingleSpaceIf(objjSettings.SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE)
+            return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE)
         }
 
         if (type2 == ObjJ_VARIABLE_NAME && elementType == ObjJ_METHOD_DECLARATION_SELECTOR) {
-            return addSingleSpaceIf(objjSettings.SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME)
+            return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME)
         }
 
         if (type2 == ObjJ_METHOD_HEADER_SELECTOR_FORMAL_VARIABLE_TYPE && elementType == ObjJ_METHOD_DECLARATION_SELECTOR) {
-            return addSingleSpaceIf(objjSettings.SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE)
+            return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE)
         }
 
         if (elementType == ObjJ_SELECTOR_LITERAL && type1 == ObjJ_SELECTOR && type2 == ObjJ_COLON) {
@@ -321,14 +324,11 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (elementType == ObjJ_TERNARY_EXPR_PRIME) {
-            if (type2 == ObjJ_QUESTION_MARK) {
-                return addSingleSpaceIf(mySettings.SPACE_BEFORE_QUEST)
-            } else if (type2 == ObjJ_COLON) {
-                return addSingleSpaceIf(mySettings.SPACE_BEFORE_COLON)
-            } else if (type1 == ObjJ_QUESTION_MARK) {
-                return addSingleSpaceIf(mySettings.SPACE_AFTER_QUEST)
-            } else if (type1 == ObjJ_COLON) {
-                return addSingleSpaceIf(mySettings.SPACE_AFTER_COLON)
+            when {
+                type2 == ObjJ_QUESTION_MARK -> return addSingleSpaceIf(mySettings.SPACE_BEFORE_QUEST)
+                type2 == ObjJ_COLON -> return addSingleSpaceIf(mySettings.SPACE_BEFORE_COLON)
+                type1 == ObjJ_QUESTION_MARK -> return addSingleSpaceIf(mySettings.SPACE_AFTER_QUEST)
+                type1 == ObjJ_COLON -> return addSingleSpaceIf(mySettings.SPACE_AFTER_COLON)
             }
         }
 
@@ -461,6 +461,9 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (type2 == ObjJ_COMMA) {
+            if (type1 == ObjJ_COMMA) {
+                return noSpace()
+            }
             return addSingleSpaceIf(mySettings.SPACE_BEFORE_COMMA)
         }
 
@@ -486,7 +489,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (TOKENS_WITH_SPACE_AFTER.contains(type1) || KEYWORDS_WITH_SPACE_BEFORE.contains(type2)) {
-            return addSingleSpaceIf(true)
+            return Spacing.createDependentLFSpacing(1, 1, node1.textRange, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (elementType == ObjJ_FOR_LOOP_PARTS_IN_BRACES && type1 == ObjJ_SEMI_COLON) {
@@ -529,12 +532,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return createSpacingForCallChain(collectSurroundingMessageSends(), node2)
         }
         if (type1 == ObjJ_DOT) {
-            return noSpace() // Seems odd that no plugin has a setting for spaces around DOT -- need a Lisp mode!
+            return noSpace()
         }
 
         return if (type1 == ObjJ_RETURN && type2 !== ObjJ_SEMI_COLON) {
             addSingleSpaceIf(true)
-        } else Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        } else Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
 
     }
 
@@ -556,14 +559,14 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                               @CommonCodeStyleSettings.BraceStyleConstant braceStyleSetting: Int,
                               textRange: TextRange?): Spacing {
         val spaces = if (needSpaceSetting) 1 else 0
-        if (braceStyleSetting == CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED && textRange != null) {
-            return Spacing.createDependentLFSpacing(spaces, spaces, textRange, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        return if (braceStyleSetting == CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED && textRange != null) {
+            Spacing.createDependentLFSpacing(spaces, spaces, textRange, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         } else {
             val lineBreaks = if (braceStyleSetting == CommonCodeStyleSettings.END_OF_LINE || braceStyleSetting == CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED)
                 0
             else
                 1
-            return Spacing.createSpacing(spaces, spaces, lineBreaks, false, 0)
+            Spacing.createSpacing(spaces, spaces, lineBreaks, false, 0)
         }
     }
 
@@ -699,7 +702,8 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                         ObjJ_THROW,
                         ObjJ_IN,
                         ObjJ_LET,
-                        ObjJ_CONST
+                        ObjJ_CONST,
+                        ObjJ_QUALIFIED_METHOD_CALL_SELECTOR
                 )
 
         private val KEYWORDS_WITH_SPACE_BEFORE = TokenSet.create(
@@ -745,7 +749,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN
         )
         private val SKIP_COMMA = TokenSet.create(ObjJ_COMMA)
-        private val DIRECTIVE_GROUPS = TokenSet.create(ObjJ_IMPORT_FRAMEWORK, ObjJ_IMPORT_FILE)
+        private val IMPORT_STATEMENTS = TokenSet.create(ObjJ_IMPORT_FRAMEWORK, ObjJ_IMPORT_FILE)
 
 
         private fun doesMessageHaveArguments(node: ASTNode): Boolean {
@@ -845,7 +849,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             // The child is a line comment whose parent is the FILE.
             // Return true if it is (or will be) at the beginning of the line, or
             // following a block comment that is at the beginning of the line.
-            val node = (child as ObjJFormattedBlock).getNode()
+            val node = (child as ObjJFormattedBlock).node
             return isDirectlyPrecededByNewline(node)
         }
 
@@ -887,7 +891,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         private fun isDirectlyPrecededByBlockComment(child: Block): Boolean {
-            val node = (child as ObjJFormattedBlock).getNode()
+            val node = (child as ObjJFormattedBlock).node
             return isDirectlyPrecededByBlockComment(node)
         }
 
