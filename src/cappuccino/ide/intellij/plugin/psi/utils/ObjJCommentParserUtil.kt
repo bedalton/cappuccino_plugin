@@ -15,6 +15,7 @@ object ObjJCommentParserUtil {
     private val LOGGER: Logger = Logger.getLogger(ObjJCommentParserUtil::class.java.canonicalName)
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
     private const val IGNORE_FLAG = "@ignore"
+    private const val NO_INDEX_FLAG = "@noIndex"
     private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?@var\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
     private val SPACE_REGEX = "\\s+".toRegex()
 
@@ -46,7 +47,7 @@ object ObjJCommentParserUtil {
      */
     fun noIndex(elementIn:PsiElement, noIndex:NoIndex) : Boolean {
         return checkInInheritedComments(elementIn, true) {
-            noIndex.pattern.matcher(elementIn.text).find()
+            searchCommentForFlags(it.text, NO_INDEX_FLAG, noIndex.flag)
         }
     }
 
@@ -70,10 +71,14 @@ object ObjJCommentParserUtil {
     }
 
     private fun isIgnored(text:String, flag:IgnoreFlags? = null, requiredMatchingParam:String? = null) : Boolean {
+        return searchCommentForFlags(text, IGNORE_FLAG, flag.flag, requiredMatchingParam)
+    }
+
+    private fun searchCommentForFlags(text:String, prefix:String, flag:String?, param:String? = null) : Boolean {
         text.split("\\n".toRegex()).forEach lineForEach@{line ->
-            if (text.contains(IGNORE_FLAG)) {
+            if (text.contains(prefix)) {
                 // Take all text in line after @ignore and tokenize it
-                val flags = line.substringAfter("@ignore")
+                val flags = line.substringAfter(prefix)
                         .split(",")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
@@ -88,17 +93,16 @@ object ObjJCommentParserUtil {
                 flags.forEach flagForEach@{tag ->
                     val parts = tag.split(SPACE_REGEX)
                     // Flag doesn't match, keep looking
-                    if (parts[0] != flag.flag) {
+                    if (parts[0] != flag) {
                         return@flagForEach
                     }
                     // Flag matches and either doesn't need a matching param, flag doesn't have one, or param matches
-                    if (requiredMatchingParam == null || parts.size < 2 || requiredMatchingParam == parts[1]) {
+                    if (param == null || parts.size < 2 || param == parts[1]) {
                         return true
                     }
                 }
             }
         }
-        return false
     }
 
     private fun checkInInheritedComments(elementIn:PsiElement?, recursive: Boolean = true, check: (ASTNode) -> Boolean) : Boolean {
@@ -140,21 +144,20 @@ object ObjJCommentParserUtil {
 
 }
 
-enum class IgnoreFlags(val flag:String) {
-    IGNORE_METHOD("methodDeclaration"),
-    IGNORE_INCOMPATIBLE_METHOD_OVERRIDE("incompatibleOverride"),
-    IGNORE_RETURN("methodReturn"),
-    IGNORE_SIGNATURE("methodSignature"),
-    IGNORE_INVALID_SELECTOR("invalidSelector"),
-    IGNORE_UNDECLARED_VAR("undeclaredVar"),
-    IGNORE_CLASS("ignoreClass");
+enum class IgnoreFlags(val title:String, val flag:String) {
+    IGNORE_METHOD("Method declaration", "methodDeclaration"),
+    IGNORE_INCOMPATIBLE_METHOD_OVERRIDE("Incompatible method override", "incompatibleOverride"),
+    IGNORE_RETURN_STATEMENT("Ignore return statement", "incompatibleMethodReturn"),
+    IGNORE_INVALID_SELECTOR("Invalid or undefined method selector", "invalidSelector"),
+    IGNORE_UNDECLARED_VAR("Possibly undeclared variable", "undeclaredVar"),
+    IGNORE_CLASS("Ignore class in completions", "ignoreClass");
 }
 
-enum class NoIndex(val pattern:Pattern) {
-    ANY(Pattern.compile(".*#noIndexAny.*")),
-    METHOD(Pattern.compile(".*#noIndexMethod.*")),
-    FUNCTION(Pattern.compile(".*#noIndexFunction.*")),
-    GLOBAL(Pattern.compile(".*noIndexGlobal.*")),
-    CLASS(Pattern.compile(".*noIndexClass.*"));
+enum class NoIndex(val title:String, val flag:String) {
+    ANY("of any kind for %s", "any"),
+    METHOD("this method", "method"),
+    FUNCTION("this function", "function"),
+    GLOBAL("this global variable", "global"),
+    CLASS("this class", "class");
 
 }

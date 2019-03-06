@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreVariableNameIntention
+import cappuccino.ide.intellij.plugin.fixes.ObjJDisableUndeclaredVariableInspectionOnVariable
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveIgnoredVariableNameIntention
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -86,6 +86,9 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
+            if (ObjJCommentParserUtil.isIgnored(variableName, IgnoreFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
+                return
+            }
 
             var tempElement = variableName.getNextNonEmptySibling(true)
             if (tempElement != null && tempElement.text == ".") {
@@ -112,7 +115,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
             //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
-            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use", ObjJAddIgnoreVariableNameIntention(variableName.text))
+            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use", ObjJDisableUndeclaredVariableInspectionOnVariable(variableName))
 
         }
 
