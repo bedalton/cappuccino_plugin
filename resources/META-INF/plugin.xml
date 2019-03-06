@@ -1,6 +1,6 @@
 <idea-plugin>
-  <id>cappuccino.intellij.plugin</id>
-  <name>Objective-J Language Plugin</name>
+  <id>cappuccino.ide.intellij.plugin</id>
+  <name>Objective-J</name>
   <version>0.3.0</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
 
@@ -8,16 +8,18 @@
 <h1>Objective-J Language plugin</h1>
 <p>Provides basic autocomplete functionality for selector methods and variable names</p>
 <p>Plugin allows the use of a @var comment, in the format of "// @var ClassName variableName" to allow for more accurate completion suggestions</p>
-<p>Added support for @ignore to cause warning annotations to be skipped<br />
+<p>Added support for @ignore comments to suppress inspections<br />
   <ul>
-    <li>A plain annotation on a method with @ignore causes the method warnings to be skipped, but also to skip method in suggestions</li>
-    <li>Classes prefixed with an underscore are considered relative to document, and will not be suggested outside of it.</li>
+    <li>A plain annotation on a method with @ignore causes the method warnings to be skipped, as well as skip this method in suggestions</li>
+    <li>Classes prefixed with an underscore are considered relative to document, and will not be suggested outside of it.<br/>**This can be disabled in settings</li>
+    <li>To disable an inspection, press alt+enter to trigger dialog, then select the inspection and scope to ignore</li>
   </ul>
 </p>
+<p>Added protocol method generator for required methods. Trigger generator with alt+enter while cursor is on protocol name</p>
 <br/>
 <h2>Note</h2>
 <ul>
-	<li>Variable type resolution is not accurately implemented which causes suggestion of any method selector, even if not applicable to variable's type</li>
+	<li>Variable type resolution is not accurately implemented which causes suggestion of any method selector, even if not applicable to a variable's type</li>
 	<li>This plugin requires the original source files for the cappuccino framework to work. They can be downloaded
 		from the Cappuccino github page(<a href="https://github.com/cappuccino/cappuccino" alt="Cappuccino's GitHub Page">Link</a>)
 	</li>
@@ -37,6 +39,7 @@
 	<li>Variable, Function and Method declaration resolution</li>
 	<li>Syntax Highlighting</li>
 	<li>Invalid method call selector warnings</li>
+	<li>Improved automatic indentation. Formatter still needs work</li>
 </ul>
     ]]></description>
 
@@ -46,7 +49,10 @@
       <ul>
         <li>Added improved indentation support</li>
         <li>Added comment annotation for @var</li>
-        <li>Added @ignore annotation to ignore method warnings.</li>
+        <li>Added @ignore annotation to ignore inspections</li>
+        <li>Fixed incorrectly resolved qualified names. Qualified names should not be resolved.</li>
+        <li>Updated syntax highlighting colors.</li>
+        <li>Added protocol method stubs fixer</li>
       </ul>
       <h4>Version: 0.2</h4>
       <ul>
