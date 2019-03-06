@@ -111,7 +111,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return true
         }
 
-        if (ObjJCommentParserUtil.isIgnored(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR)) {
+        if (ObjJCommentParserUtil.isIgnored(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR)) {
             return true
         }
 
@@ -145,11 +145,11 @@ internal object ObjJMethodCallAnnotatorUtil {
             selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
             val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
             annotation.setNeedsUpdateOnTyping(true)
-            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.STATEMENT))
-            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.METHOD))
-            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.FUNCTION))
-            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.CLASS))
-            annotation.registerFix(ObjJAddIgnoreInspectionForScope(methodCall, IgnoreFlags.IGNORE_INVALID_SELECTOR, ObjJIgnoreScope.FILE))
+            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.STATEMENT))
+            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.METHOD))
+            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.FUNCTION))
+            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.CLASS))
+            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.FILE))
         }
 
         return false

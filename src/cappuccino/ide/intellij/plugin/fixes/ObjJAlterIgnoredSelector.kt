@@ -15,11 +15,11 @@ import com.intellij.util.IncorrectOperationException
 class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction() {
 
     override fun getText(): String {
-        return if (addToIgnored) "Add selector <$keyword> to ignored selectors list" else "Remove selector <${keyword}> from ignored selectors list"
+        return if (addToIgnored) "Add selector \"$keyword\" to ignored selectors list" else "Remove selector \"$keyword\" from ignored selectors list"
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
-        return true;
+        return true
     }
 
     @Throws(IncorrectOperationException::class)

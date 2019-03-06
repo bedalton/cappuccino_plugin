@@ -6,7 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.IgnoreFlags
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
@@ -21,7 +21,7 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.IncorrectOperationException
 
 
-abstract class ObjJAddIgnoreInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: IgnoreFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
+abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
     protected val pointer:SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
     protected abstract val writeAbove:PsiElement?
@@ -41,8 +41,8 @@ abstract class ObjJAddIgnoreInspectionBeforeElementOfKind (psiElement: PsiElemen
 
     private fun apply(project: Project, file: PsiFile) {
         val writeAbove = this.writeAbove ?: return
-        val ignoreComment = ObjJElementFactory.createIgnoreComment(project, flag, parameter)
-        writeAbove.parent.addBefore(ignoreComment, writeAbove)
+        val suppressInspectionComment = ObjJElementFactory.createIgnoreComment(project, flag, parameter)
+        writeAbove.parent.addBefore(suppressInspectionComment, writeAbove)
         DaemonCodeAnalyzer.getInstance(project).restart(file)
     }
 
@@ -52,7 +52,7 @@ abstract class ObjJAddIgnoreInspectionBeforeElementOfKind (psiElement: PsiElemen
 
 }
 
-class ObjJAddIgnoreInspectionForScope(psiElement: PsiElement, flag: IgnoreFlags, private val scope:ObjJIgnoreScope, private val parameter:String? = null) : ObjJAddIgnoreInspectionBeforeElementOfKind(psiElement, flag, parameter) {
+class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppressInspectionFlags, private val scope:ObjJSuppressInspectionScope, private val parameter:String? = null) : ObjJAddSuppressInspectionBeforeElementOfKind(psiElement, flag, parameter) {
     private var _writeAbove:SmartPsiElementPointer<PsiElement>? = null
     override val writeAbove:PsiElement? get () {
         var writeAbove = this._writeAbove?.element
@@ -61,11 +61,11 @@ class ObjJAddIgnoreInspectionForScope(psiElement: PsiElement, flag: IgnoreFlags,
         }
         val element = pointer.element ?: return null
         writeAbove = when (scope) {
-            ObjJIgnoreScope.STATEMENT -> getOutermostParentInEnclosingBlock(element)
-            ObjJIgnoreScope.CLASS -> element.getParentOfType(ObjJClassDeclarationElement::class.java)
-            ObjJIgnoreScope.METHOD -> element.getParentOfType(ObjJMethodDeclaration::class.java)
-            ObjJIgnoreScope.FUNCTION -> element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
-            ObjJIgnoreScope.FILE -> element.containingFile.firstChild
+            ObjJSuppressInspectionScope.STATEMENT -> getOutermostParentInEnclosingBlock(element)
+            ObjJSuppressInspectionScope.CLASS -> element.getParentOfType(ObjJClassDeclarationElement::class.java)
+            ObjJSuppressInspectionScope.METHOD -> element.getParentOfType(ObjJMethodDeclaration::class.java)
+            ObjJSuppressInspectionScope.FUNCTION -> element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+            ObjJSuppressInspectionScope.FILE -> element.containingFile.firstChild
         } ?: return null
         _writeAbove = SmartPointerManager.createPointer(writeAbove)
         return writeAbove
@@ -75,12 +75,12 @@ class ObjJAddIgnoreInspectionForScope(psiElement: PsiElement, flag: IgnoreFlags,
         val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
             " for parameter \"${parameter.trim()}.\""
         } else ""
-        return "Disable ${flag.title} inspection ${scope.scope}"+forParameter
+        return "Suppress ${flag.title} inspection ${scope.scope}"+forParameter
     }
 }
 
 
-enum class ObjJIgnoreScope(val scope:String) {
+enum class ObjJSuppressInspectionScope(val scope:String) {
     STATEMENT("for statement"),
     METHOD("for method"),
     FUNCTION("for function"),

@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreOvershadowedVariablesInProject
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressOvershadowedVariablesInspectionInProject
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveVarKeywordQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
@@ -96,7 +96,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
                     if (superVariable == null || superVariable.isEquivalentTo(variableName)) {
                         return
                     }
-                    problemsHolder.registerProblem(variableName, "Variable overshadows variable in enclosing block",ObjJIgnoreOvershadowedVariablesInProject(), ObjJRemoveVarKeywordQuickFix())
+                    problemsHolder.registerProblem(variableName, "Variable overshadows variable in enclosing block",ObjJSuppressOvershadowedVariablesInspectionInProject(), ObjJRemoveVarKeywordQuickFix())
                     return
                 }
             }
@@ -127,7 +127,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             val file = variableName.containingFile
             val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { variableToCheck -> variableName.text == variableToCheck.text }
             if (reference != null && reference != variableName) {
-                problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"), ObjJIgnoreOvershadowedVariablesInProject(),ObjJRemoveVarKeywordQuickFix())
+                problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"), ObjJSuppressOvershadowedVariablesInspectionInProject(),ObjJRemoveVarKeywordQuickFix())
                 return
             }
             for (declarationElement in ObjJFunctionsIndex.instance[variableName.text, variableName.project]) {
@@ -150,7 +150,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
                 }
                 Logger.getLogger("VariableOvershadowInspection: Shared context for function name overshadow: $sharedScope");
                 if (declarationElement.containingFile.isEquivalentTo(file) && declarationElement.functionNameNode != null && variableName.textRange.startOffset > declarationElement.functionNameNode!!.textRange.startOffset) {
-                    problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, sharedScope), ObjJIgnoreOvershadowedVariablesInProject(), ObjJRemoveVarKeywordQuickFix())
+                    problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_FUNCTION_NAME_STRING_FORMAT, sharedScope), ObjJSuppressOvershadowedVariablesInspectionInProject(), ObjJRemoveVarKeywordQuickFix())
                 }
 
             }
