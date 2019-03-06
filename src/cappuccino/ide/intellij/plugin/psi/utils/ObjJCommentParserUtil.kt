@@ -32,9 +32,7 @@ object ObjJCommentParserUtil {
                     if (matcher.find()) {
                         if (matcher.group(2) != varName)
                             return@forEach
-                        val type = matcher.group(1)
-                        LOGGER.info("Found type in comment $element.text is $type")
-                        return type
+                        return matcher.group(1)
                     }
 
                 }
