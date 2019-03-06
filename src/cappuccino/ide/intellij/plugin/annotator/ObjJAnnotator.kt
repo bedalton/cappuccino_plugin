@@ -13,8 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiTreeUtil
-import sun.tools.tree.ForStatement
-import sun.tools.tree.WhileStatement
 
 class ObjJAnnotator : Annotator {
 
@@ -43,7 +41,7 @@ class ObjJAnnotator : Annotator {
                 is ObjJReturnStatement -> {
                     //validateReturnStatement(element, annotationHolder)
                 }
-                is ObjJMethodHeader -> ObjJMethodDeclaratonAnnotator.annotateMethodHeaderDeclarations(element, annotationHolder)
+                is ObjJMethodHeader -> ObjJMethodDeclarationAnnotator.annotateMethodHeaderDeclarations(element, annotationHolder)
                 is ObjJVariableDeclaration -> validateVariableDeclaration(element, annotationHolder)
                 else -> validateMiscElement(element, annotationHolder)
             }

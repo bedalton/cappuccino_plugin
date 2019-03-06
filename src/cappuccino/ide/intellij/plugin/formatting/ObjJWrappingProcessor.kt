@@ -32,7 +32,6 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
         val childType = child.elementType
         val elementType = myNode.elementType
         if (childType === ObjJ_COMMA || childType === ObjJ_SEMI_COLON) return defaultWrap
-        Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("Creating wrap for element: $child")
         //
         // Function definition/call
         //
@@ -274,8 +273,8 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
             if (decl.findChildByType(ObjJ_VAR) != null) return true
             var child: ASTNode? = decl.firstChildNode
             while (child != null) {
-                Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("varDecListContainsVarInit child ${child.text}")
-                Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("Looping through children to find varDecListContainsVarInit")
+                //Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("varDecListContainsVarInit child ${child.text}")
+                //Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("Looping through children to find varDecListContainsVarInit")
                 if (child.findChildByType(ObjJ_VAR) != null) return true
                 child = child.treeNext
             }

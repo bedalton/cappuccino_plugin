@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -28,7 +30,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             override fun visitCompositeElement(element: ObjJCompositeElement) {
                 super.visitCompositeElement(element)
-                val block:ObjJBlock = element as? ObjJBlock ?: return
+                val block: ObjJBlock = element as? ObjJBlock ?: return
                 validateBlockReturnStatements(block, problemsHolder)
             }
         }
@@ -37,14 +39,14 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateBlockReturnStatements(block: ObjJBlock, problemsHolder: ProblemsHolder) {
-            if (ObjJCommentParserUtil.isIgnored(block, IgnoreFlags.IGNORE_RETURN, true)) {
+            if (ObjJCommentParserUtil.isIgnored(block, IgnoreFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
             if (returnStatementsList.isEmpty()) {
                 return
             }
-            val isFunction:Boolean = block.getParentOfType(ObjJFunctionDeclarationElement::class.java) != null
+            val isFunction: Boolean = block.getParentOfType(ObjJFunctionDeclarationElement::class.java) != null
             val isMethod = block is ObjJMethodBlock
             if (!isFunction && !isMethod) {
                 return
@@ -53,7 +55,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             val returnsWithoutExpression = ArrayList<ObjJReturnStatement>()
             for (returnStatement in returnStatementsList) {
                 if (isFunction) {
-                    if(returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
+                    if (returnStatement.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null) {
                         continue
                     }
                 } else if (isMethod) {
@@ -69,9 +71,9 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                     if (returnMethodCallReturnsVoid(methodCall)) {
                         returnsWithoutExpression.add(returnStatement)
                     }
-                } else if ( returnStatement.expr != null) {
+                } else if (returnStatement.expr != null) {
                     when (returnStatement.expr!!.text.toLowerCase()) {
-                        "nil","null","undefined" -> {
+                        "nil", "null", "undefined" -> {
                             returnsWithExpression.add(returnStatement)
                             returnsWithoutExpression.add(returnStatement)
                         }
@@ -105,7 +107,11 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 if (statementsNotToMark.contains(returnStatement)) {
                     continue
                 }
-                problemsHolder.registerProblem(returnStatement.expr ?: returnStatement.`return`, errorAnnotation, ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
+                val element = returnStatement.expr ?: returnStatement.`return`
+                problemsHolder.registerProblem(element, errorAnnotation, ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
             }
         }
 
@@ -117,16 +123,21 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                     when (returnStatement.expr?.text?.toLowerCase()) {
                         "nil", "null", "undefined" ->
                             continue@forloop
-                        else ->
+                        else -> {
+                            val element = returnStatement.expr ?: returnStatement.`return`
                             //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                            problemsHolder.registerProblem(returnStatement.expr
-                                    ?: returnStatement.`return`, "Not all return statements return a value")
+                            problemsHolder.registerProblem(element, "Not all return statements return a value",
+                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
+                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
+                                    ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
+                        }
                     }
                 }
 
             }
         }
-/*
+
+        /*
         private fun validateReturnStatement(element: ObjJReturnStatement, problemsHolder: ProblemsHolder) {
             if (element.getParentOfType(ObjJBlock::class.java) == null) {
                 problemsHolder.registerProblem(element, "return used outside of block")
@@ -137,7 +148,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             }
         }
 */
-        private fun returnMethodCallReturnsValue(methodCall: ObjJMethodCall?):Boolean {
+        private fun returnMethodCallReturnsValue(methodCall: ObjJMethodCall?): Boolean {
             if (methodCall == null) {
                 return false
             }
@@ -149,7 +160,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             return false
         }
 
-        private fun returnMethodCallReturnsVoid(methodCall: ObjJMethodCall?):Boolean {
+        private fun returnMethodCallReturnsVoid(methodCall: ObjJMethodCall?): Boolean {
             if (methodCall == null) {
                 return false
             }
@@ -161,7 +172,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             return false
         }
 
-        private fun getAllMethodsForCall(methodCall: ObjJMethodCall?) : List<ObjJMethodHeaderDeclaration<*>> {
+        private fun getAllMethodsForCall(methodCall: ObjJMethodCall?): List<ObjJMethodHeaderDeclaration<*>> {
             if (methodCall == null) {
                 return Collections.emptyList()
             }

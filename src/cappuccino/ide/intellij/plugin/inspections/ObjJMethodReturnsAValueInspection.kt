@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddIgnoreInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJIgnoreScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveMethodReturnTypeFix
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
@@ -35,7 +37,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateMethodReturn(methodDeclaration: ObjJMethodDeclaration, problemsHolder: ProblemsHolder) {
-            if (ObjJCommentParserUtil.isIgnored(methodDeclaration, IgnoreFlags.IGNORE_RETURN, true)) {
+            if (ObjJCommentParserUtil.isIgnored(methodDeclaration, IgnoreFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnType = methodDeclaration.methodHeader.returnType
@@ -49,12 +51,18 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             for(returnStatement in returns) {
                 val expr = returnStatement.expr
                 if (expr == null || expr.text.isEmpty()) {
-                    problemsHolder.registerProblem(returnStatement.`return`, "Method must return a value of type: '$returnType'")
+                    problemsHolder.registerProblem(returnStatement.`return`, "Method must return a value of type: '$returnType'",
+                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
+                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
+                            ObjJAddIgnoreInspectionForScope(returnStatement, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
                 }
             }
             if (!returnsValue) {
                 val element = methodDeclaration.methodBlock?.closeBrace ?: methodDeclaration.methodHeader.methodHeaderReturnTypeElement ?: methodDeclaration.methodBlock?.lastChild ?: methodDeclaration.lastChild
-                problemsHolder.registerProblem(element, "Method expects return statement", ObjJRemoveMethodReturnTypeFix(element))
+                problemsHolder.registerProblem(element, "Method expects return statement", ObjJRemoveMethodReturnTypeFix(element),
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.METHOD),
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.CLASS),
+                        ObjJAddIgnoreInspectionForScope(element, IgnoreFlags.IGNORE_RETURN_STATEMENT, ObjJIgnoreScope.FILE))
             }
         }
     }
