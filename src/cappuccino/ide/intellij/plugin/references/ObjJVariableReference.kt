@@ -102,7 +102,6 @@ class ObjJVariableReference(
         val psiElementInZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
         val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference == 0
         if (!psiElementInZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
-            LOGGER.info("This or Psi element is qualified")
             return false
         }
         if (thisElementIsZeroIndexedInQualifiedReference && psiElement is ObjJClassName) {
@@ -146,7 +145,6 @@ class ObjJVariableReference(
         //LOGGER.info("Resolving...")
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
-                LOGGER.info("Element is part of compiled objective-j file")
                 return null
             }
         } catch (ignored:Exception) {
