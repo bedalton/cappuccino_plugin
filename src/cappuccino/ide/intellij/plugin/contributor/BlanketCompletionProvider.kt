@@ -188,7 +188,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 if (it.getClassNameString().startsWith("_") && !element.containingFile.isEquivalentTo(it.containingFile)) {
                     return@forEach
                 }
-                if (CommentParserUtil.isIgnored(it)) {
+                if (ObjJCommentParserUtil.isIgnored(it) || ObjJCommentParserUtil.noIndex(it, NoIndex.CLASS) || ObjJCommentParserUtil.noIndex(it, NoIndex.ANY)) {
                     return@forEach
                 }
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
