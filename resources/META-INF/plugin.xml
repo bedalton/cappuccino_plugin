@@ -230,6 +230,8 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
 
+    <internalFileTemplate name="objective-j.file" />
+
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
     <!-- =============================== - ->
@@ -239,4 +241,13 @@
                                    implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
                                    -->
   </extensions>
+
+  <actions>
+    <action
+        id="ObjJ.NewFile"
+        icon="ObjJIcons.DOCUMENT_ICON"
+        class="cappuccino.ide.intellij.plugin.actions.ObjJCreateFileAction">
+      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+    </action>
+  </actions>
 </idea-plugin>
