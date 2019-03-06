@@ -2,6 +2,7 @@
 
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeaderReturnTypeElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.formatting.Block
 import com.intellij.formatting.Spacing
@@ -248,11 +249,19 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return addSingleSpaceIf(mySettings.SPACE_BEFORE_METHOD_PARENTHESES)
         }
 
-        if (type2 == ObjJ_FORMAL_VARIABLE_TYPE && elementType == ObjJ_METHOD_HEADER) {
+        if (elementType == ObjJ_METHOD_HEADER) {
+            if (type1 == ObjJ_OPEN_PAREN && type2 == ObjJ_METHOD_HEADER_RETURN_TYPE_ELEMENT)
+                return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_TYPE_AND_PARENS)
+            else if (type1 == ObjJ_METHOD_HEADER_RETURN_TYPE_ELEMENT && type2 == ObjJ_CLOSE_PAREN)
+                return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_TYPE_AND_PARENS)
+            return noSpace()
+        }
+
+        if (type2 == ObjJ_FORMAL_VARIABLE_TYPE && elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE)
         }
 
-        if (type2 == ObjJ_VARIABLE_NAME && elementType == ObjJ_METHOD_DECLARATION_SELECTOR) {
+        if (type2 == ObjJ_VARIABLE_NAME && elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             return addSingleSpaceIf(objJSettings.SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME)
         }
 
@@ -297,6 +306,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         if (elementType in ObjJTokenSets.FUNCTION_DECLARATIONS && type2 == ObjJ_BLOCK_ELEMENT) {
             return setBraceSpace(mySettings.SPACE_BEFORE_METHOD_LBRACE, mySettings.METHOD_BRACE_STYLE, child1.getTextRange())
         }
+
 
         if (type1 == ObjJ_OPEN_PAREN || type2 == ObjJ_CLOSE_PAREN) {
             if (elementType == ObjJ_IF_STATEMENT) {

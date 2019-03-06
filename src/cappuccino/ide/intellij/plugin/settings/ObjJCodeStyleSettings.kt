@@ -7,4 +7,5 @@ class ObjJCodeStyleSettings(settings:CodeStyleSettings) : CustomCodeStyleSetting
     var SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME = true
     var SPACE_BETWEEN_SELECTOR_AND_VALUE_IN_METHOD_CALL = true
     var SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE = false
+    var SPACE_BETWEEN_TYPE_AND_PARENS = false
 }
