@@ -35,7 +35,7 @@ class ObjJAddIgnoreVariableNameIntention(private val keyword:String) : BaseInten
 
     private fun apply(project: Project, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
-            ObjJPluginSettings.ignoreVariableName(keyword);
+            ObjJPluginSettings.ignoreVariableName(keyword)
             DaemonCodeAnalyzer.getInstance(project).restart(file)
         }
     }
