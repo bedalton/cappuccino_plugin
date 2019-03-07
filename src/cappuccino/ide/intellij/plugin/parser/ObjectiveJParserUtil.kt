@@ -11,6 +11,7 @@ import gnu.trove.TObjectLongHashMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.WHITE_SPACE
 
 import java.util.Objects
@@ -153,7 +154,7 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
         }
 
         fun isTokenWhitespaceOrComment(token:IElementType): Boolean {
-            return token == WHITE_SPACE ||
+            return token == TokenType.WHITE_SPACE ||
                     token == ObjJ_SINGLE_LINE_COMMENT ||
                     token == ObjJ_BLOCK_COMMENT_START ||
                     token == ObjJ_LINE_TERMINATOR
