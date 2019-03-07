@@ -122,7 +122,8 @@ function sayHello(aName)
                 AttributesDescriptor("Instance variables", ObjJSyntaxHighlighter.INSTANCE_VARIABLE),
                 AttributesDescriptor("Parameter Variables", ObjJSyntaxHighlighter.PARAMETER_VARIABLE),
                 AttributesDescriptor("Function Calls", ObjJSyntaxHighlighter.FUNCTION_NAME),
-                AttributesDescriptor("File Level Variables", ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE))
+                AttributesDescriptor("File Level Variables", ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE),
+                AttributesDescriptor("Global Variables", ObjJSyntaxHighlighter.GLOBAL_VARIABLE))
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
                 "identifier" to ObjJSyntaxHighlighter.ID,
                 "keyword" to ObjJSyntaxHighlighter.KEYWORD,
@@ -131,18 +132,11 @@ function sayHello(aName)
                 "varType" to ObjJSyntaxHighlighter.VARIABLE_TYPE,
                 "instanceVar" to ObjJSyntaxHighlighter.INSTANCE_VARIABLE,
                 "paramVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,
-                "globalVar" to ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE,
+                "globalVar" to ObjJSyntaxHighlighter.GLOBAL_VARIABLE,
                 "functionNames" to ObjJSyntaxHighlighter.FUNCTION_NAME,
                 "pp" to ObjJSyntaxHighlighter.PRE_PROCESSOR,
                 "at" to ObjJSyntaxHighlighter.AT_STATEMENT,
                 "funcName" to ObjJSyntaxHighlighter.FUNCTION_NAME
-
-
-
-
-
-
-
         )
     }
 }
