@@ -3,7 +3,9 @@ package cappuccino.ide.intellij.plugin.psi.types
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
+import jdk.nashorn.internal.parser.TokenType
 
 public object ObjJTokenSets {
 
@@ -128,5 +130,10 @@ public object ObjJTokenSets {
     val CALL_EXPRESSIONS = create(
             ObjJ_METHOD_CALL,
             ObjJ_FUNCTION_CALL
+    )
+
+    val WHITE_SPACE = create(
+            com.intellij.psi.TokenType.WHITE_SPACE,
+            ObjJ_LINE_TERMINATOR
     )
 }
