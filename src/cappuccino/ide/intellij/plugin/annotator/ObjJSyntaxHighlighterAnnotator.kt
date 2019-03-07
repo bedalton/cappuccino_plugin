@@ -73,7 +73,10 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             if (referencedVariable equals variableNameElement) {
                 return
             }
-            if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+            if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
+                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
+                return
+            } else if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
                 colorizeInstanceVariable(variableNameElement, referencedVariable, annotationHolder)
                 return
             } else if (referencedVariable.hasParentOfType(ObjJMethodDeclarationSelector::class.java) || referencedVariable.hasParentOfType(ObjJFormalParameterArg::class.java)) {
