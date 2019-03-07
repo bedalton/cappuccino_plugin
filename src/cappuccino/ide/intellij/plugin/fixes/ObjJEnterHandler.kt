@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.DataKeys
 //import com.intellij.openapi.actionSystem.DataKeys
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
@@ -34,9 +35,7 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         for (handler in handlers) {
             // Fetch element fresh from pointer each time, hoping that it stays current after modifications
             val element = pointer.element
-            if (element == null) {
-                return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
-            }
+                    ?: return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
             if (handler.doIf(editor, element)) {
                 result = EnterHandlerDelegate.Result.Default
             }
@@ -44,6 +43,16 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         //com.intellij.psi.codeStyle.CodeStyleManager.adjustLineIndent()
         return result
     }
+
+    /*
+    override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
+        val caretOffset = dataContext.getData(DataKeys.CARET)?.offset ?: return EnterHandlerDelegate.Result.Continue
+        val element:PsiElement = file.findElementAt(caretOffset) ?: return EnterHandlerDelegate.Result.Continue
+        if (MethodCallHandler.doIf(editor, element)) {
+            return EnterHandlerDelegate.Result.Default
+        }
+        return EnterHandlerDelegate.Result.Continue
+    }*/
 
     private fun getPointer(file:PsiFile, caretOffset:Int) : SmartPsiElementPointer<PsiElement>? {
         val psiElementIn:PsiElement = file.findElementAt(caretOffset) ?: return null
@@ -60,7 +69,7 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         }
 
         private val handlers:List<OnEnterHandler> = listOf(
-                MethodCallHandler,
+                //MethodCallHandler,
                 BlockEnterHandler,
                 ClassEnterHandler
         )
@@ -74,6 +83,9 @@ internal interface OnEnterHandler {
 
 object MethodCallHandler : OnEnterHandler {
 
+    val LOGGER:Logger by lazy {
+        ObjJEnterHandler.LOGGER
+    }
     override fun doIf(editor: Editor, psiElementIn: PsiElement) : Boolean {
         val methodCall:ObjJMethodCall = psiElementIn.thisOrParentAs(ObjJMethodCall::class.java) ?: return false
         val selectors = methodCall.qualifiedMethodCallSelectorList
@@ -93,7 +105,9 @@ object MethodCallHandler : OnEnterHandler {
     }
 
     private fun onIfQualifiedMethodCallSelector(editor: Editor, thisMethodCallSelector: ObjJQualifiedMethodCallSelector, prevSelector: ObjJQualifiedMethodCallSelector) : Boolean {
+        LOGGER.info("Enter handler on qualified method selector")
         if (!thisMethodCallSelector.node.isDirectlyPrecededByNewline()) {
+            LOGGER.info("Selector is not directly proceeded by a new line")
             return false
         }
         val document = editor.document
@@ -102,19 +116,23 @@ object MethodCallHandler : OnEnterHandler {
         val siblingColonOffset = prevSelector.colon.distanceFromStartOfLine(document)
         val thisSelectorColonOffset = thisMethodCallSelector.colon.distanceFromStartOfLine(document)
         val neededOffset = siblingColonOffset - thisSelectorColonOffset // if needs shift left is negative
-        val thisSelectorElementOffset = thisMethodCallSelector.distanceFromStartOfLine(document)
+        val thisSelectorElementOffset = thisMethodCallSelector.textRange.startOffset
         val newStart = thisSelectorElementOffset + neededOffset
         if (newStart < startOfLine) {
+            LOGGER.info("New start is less than new line")
             return false
         }
         if (neededOffset == 0) {
+            LOGGER.info("Needed offset is zero")
             return false
         }
         if (neededOffset > 0) {
+            LOGGER.info("Needed offset is $neededOffset")
             val neededText = " ".repeat(neededOffset)
             assert(neededText.length == neededOffset) {"Text was not of desired length" }
             editor.document.insertString(startOfLine, neededText)
         } else {
+            LOGGER.info("Needed offset is $neededOffset")
             val spaceOnlyRegex = "[^ ]".toRegex()
             val textRange = TextRange.create(startOfLine, startOfLine + neededOffset)
             if (document.getText(textRange).contains(spaceOnlyRegex)) {
