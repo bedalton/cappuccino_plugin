@@ -17,6 +17,7 @@ import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
@@ -123,8 +124,18 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (ObjJKeywordsList.keywords.contains(variableName.text)) {
                 return true
             }
+            val resolved = ObjJVariableReference(variableName).resolve()
+            if (resolved != null) {
+                return !isDeclaredInSameDeclaration(variableName, resolved)
+            }
             val precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
-            return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty() || ObjJVariableReference(variableName).resolve() != null
+            return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty()
+        }
+
+        private fun isDeclaredInSameDeclaration(variableName: ObjJVariableName, resolved:PsiElement) : Boolean {
+            val resolvedDeclaration = resolved.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
+            val thisVariableDeclaration = variableName.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
+            return resolvedDeclaration.isEquivalentTo(thisVariableDeclaration)
         }
 
         private fun isJsStandardVariable(variableName: ObjJVariableName): Boolean {
