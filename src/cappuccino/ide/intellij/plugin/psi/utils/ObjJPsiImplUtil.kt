@@ -1163,7 +1163,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun createTreeStructureElement(header: ObjJProtocolScopedBlock): ObjJStructureViewElement {
+    fun createTreeStructureElement(header: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(header)
         val text = if (header.atOptional != null) "@optional" else "@required"
         return ObjJStructureViewElement(header, PresentationData(text, fileName, null, null), "")

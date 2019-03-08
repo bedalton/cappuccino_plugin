@@ -194,7 +194,6 @@
 		REGULAR_EXPRESSION_LITERAL_TOKEN =	'regexp:/(([^\r\n\u2028\u2029\\/\[]|\\\\[^\r\n\u2028\u2029]) | \[ ([^\r\n\u2028\u2029\]\\] | \\\\[^\r\n\u2028\u2029])* \] )* / [a-zA-Z]*'
 	]
 	name (".*expr|.+Expr(Prime)?") ='expression'
-	extends(".+Block")=blockElement
 	consumeTokenMethod("block|.+Block")="consumeTokenFast"
 	name("block|.+Block")="statement block"
 	name(".+_COMMENT|comment")="comment"
@@ -339,7 +338,7 @@ private bodyStatement
 
 private preprocessorBodyStatement
 	::= <<inMode "inImplementation" >> methodDeclaration
-    |	<<inMode "inProtocol" >> protocolScopedBlock
+    |	<<inMode "inProtocol" >> protocolScopedMethodBlock
     |	<<inMode "inProtocol" >> protocolHeader
     |  	<<inMode "implementationInstanceVariables">> instanceVariableDeclaration eos?
     |	<<notInMode "inProtocol">> <<notInMode "inImplementation">> sourceElement
@@ -394,6 +393,7 @@ methodBlock
 	{
 		pin=1;
 		recoverWhile=recover_methodBlockStatements
+		extends=blockElement
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
@@ -1211,11 +1211,11 @@ private protocolHeader
 	;
 
 private protocolSection
-	::= protocolScopedBlock
+	::= protocolScopedMethodBlock
 	|	protocolStatementList
 	;
 
-protocolScopedBlock
+protocolScopedMethodBlock
 	::= ('@optional'|'@required') protocolStatementList?
 	{
 		implements=[
