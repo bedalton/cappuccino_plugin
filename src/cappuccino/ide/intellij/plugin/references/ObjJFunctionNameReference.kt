@@ -52,33 +52,27 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (DumbServiceImpl.isDumb(myElement.project)) {
             return null
         }
-        val allOut = ArrayList<PsiElement>()
-        val functions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).filter {
-            it.functionNameNode?.text == functionName
-        }
-        val startOffset = myElement.textRange.startOffset
-        val thisScope = myElement.getContainingScope()
 
-        if (functions.size == 1) {
-            return functions[0]
-        }
-        for (function in functions) {
-            val sharedScope = function.getContainingScope(myElement)
-            return function
-        }
+        val localFunctions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).toMutableList()
+        localFunctions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
+
+        val allOut = localFunctions.map { it.functionNameNode!! }.filter {
+            it.text == functionName
+        }.toMutableList()
+
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
-            if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {
+            if (functionDeclaration.containingFile.isEquivalentTo(file)) {
                 return functionDeclaration.functionNameNode
             }
         }
         for (function in PsiTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
-            if (function.functionName != null && function.functionName!!.text == myElement.text) {
+            if (function.functionName?.text == functionName) {
                 return function.functionName
             }
         }
-        return if (!allOut.isEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {
