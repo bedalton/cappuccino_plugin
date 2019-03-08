@@ -30,7 +30,7 @@ object ObjJPluginSettings {
     private val ignoreOvershadowedVariablesSetting = BooleanSetting(IGNORE_OVERSHADOWED_VARIABLES_KEY, IGNORE_OVERSHADOWED_VARIABLES_DEFAULT)
 
     private val IGNORE_UNDERSCORED_CLASSES_KEY = "objj.annotator.ignoreUnderscoredClasses"
-    private val IGNORE_UNDERSCORED_CLASSES_DEFAULT = false
+    private val IGNORE_UNDERSCORED_CLASSES_DEFAULT = true
     private val ignoreUnderscoredClassesSetting = BooleanSetting(IGNORE_UNDERSCORED_CLASSES_KEY, IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     var ignoreUnderscoredClasses:Boolean get() {
         return ignoreUnderscoredClassesSetting.value!!

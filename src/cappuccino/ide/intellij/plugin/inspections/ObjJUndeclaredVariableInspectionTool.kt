@@ -13,6 +13,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.*
@@ -87,7 +89,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (ObjJCommentParserUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
+            if (ObjJIgnoreEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
                 return
             }
 

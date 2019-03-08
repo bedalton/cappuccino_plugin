@@ -9,8 +9,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJCommentParserUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
@@ -39,7 +39,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateBlockReturnStatements(block: ObjJBlock, problemsHolder: ProblemsHolder) {
-            if (ObjJCommentParserUtil.isIgnored(block, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
+            if (ObjJIgnoreEvaluatorUtil.isIgnored(block, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)

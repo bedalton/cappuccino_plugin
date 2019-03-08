@@ -11,8 +11,8 @@ import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderImpl
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJCommentParserUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
@@ -37,7 +37,7 @@ class ObjJMethodHeaderStubType internal constructor(
         val returnType: String? = null//methodHeader.getReturnType();
         val required = methodHeader.isRequired
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
-        val ignored = ObjJCommentParserUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
+        val ignored = ObjJIgnoreEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
         return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve, ignored)
     }
 
