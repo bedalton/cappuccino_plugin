@@ -60,6 +60,9 @@ class ObjJColorSettingsPage : ColorSettingsPage {
 
 #pragma mark - Greeting Functions
 
+// Global Function
+<globalFunctionNames>thisFunctionIsGlobal</globalFunctionNames>(aVar)
+
 //This is a global variable
 globalGreeting = @"Hello %s!";
 
@@ -109,7 +112,9 @@ function sayHello(aName)
     }
 
     companion object {
-        private val DESCRIPTORS = arrayOf(AttributesDescriptor("@Directives", ObjJSyntaxHighlighter.AT_STATEMENT), AttributesDescriptor("#Preprocessors", ObjJSyntaxHighlighter.PRE_PROCESSOR),
+        private val DESCRIPTORS = arrayOf(
+                AttributesDescriptor("@Directives", ObjJSyntaxHighlighter.AT_STATEMENT),
+                AttributesDescriptor("#Preprocessors", ObjJSyntaxHighlighter.PRE_PROCESSOR),
                 AttributesDescriptor("Identifier", ObjJSyntaxHighlighter.ID),
                 AttributesDescriptor("Keyword", ObjJSyntaxHighlighter.KEYWORD),
                 AttributesDescriptor("String", ObjJSyntaxHighlighter.STRING),
@@ -122,6 +127,7 @@ function sayHello(aName)
                 AttributesDescriptor("Instance variables", ObjJSyntaxHighlighter.INSTANCE_VARIABLE),
                 AttributesDescriptor("Parameter Variables", ObjJSyntaxHighlighter.PARAMETER_VARIABLE),
                 AttributesDescriptor("Function Calls", ObjJSyntaxHighlighter.FUNCTION_NAME),
+                AttributesDescriptor("Global Function Calls", ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME),
                 AttributesDescriptor("File Level Variables", ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE),
                 AttributesDescriptor("Global Variables", ObjJSyntaxHighlighter.GLOBAL_VARIABLE))
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
@@ -134,6 +140,7 @@ function sayHello(aName)
                 "paramVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,
                 "globalVar" to ObjJSyntaxHighlighter.GLOBAL_VARIABLE,
                 "functionNames" to ObjJSyntaxHighlighter.FUNCTION_NAME,
+                "globalFunctionNames" to ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME,
                 "pp" to ObjJSyntaxHighlighter.PRE_PROCESSOR,
                 "at" to ObjJSyntaxHighlighter.AT_STATEMENT,
                 "funcName" to ObjJSyntaxHighlighter.FUNCTION_NAME
