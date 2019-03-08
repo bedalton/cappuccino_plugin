@@ -6,7 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction

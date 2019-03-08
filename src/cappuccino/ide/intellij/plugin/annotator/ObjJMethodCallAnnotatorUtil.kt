@@ -10,7 +10,9 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.ArrayList
@@ -111,7 +113,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return true
         }
 
-        if (ObjJCommentParserUtil.isIgnored(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR)) {
+        if (ObjJIgnoreEvaluatorUtil.isIgnored(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR)) {
             return true
         }
 

@@ -1,9 +1,12 @@
-package cappuccino.ide.intellij.plugin.psi.utils
+package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
@@ -11,10 +14,10 @@ import com.intellij.psi.impl.source.tree.PsiCommentImpl
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
-object ObjJCommentParserUtil {
+object ObjJIgnoreEvaluatorUtil {
 
     private val LOGGER: Logger by lazy {
-        Logger.getLogger(ObjJCommentParserUtil::class.java.canonicalName)
+        Logger.getLogger(ObjJIgnoreEvaluatorUtil::class.java.canonicalName)
     }
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
     private const val IGNORE_FLAG = "@ignore"
@@ -59,7 +62,7 @@ object ObjJCommentParserUtil {
      * Recursive in cases where multiple comments are used in sequence
      */
     fun isIgnored(elementIn: PsiElement?, flag: ObjJSuppressInspectionFlags? = null, recursive: Boolean = true): Boolean {
-        return ObjJCommentParserUtil.isIgnored(elementIn, flag, null, recursive)
+        return isIgnored(elementIn, flag, null, recursive)
     }
 
     /**
@@ -69,7 +72,7 @@ object ObjJCommentParserUtil {
     @Suppress("MemberVisibilityCanBePrivate")
     fun isIgnored(elementIn: PsiElement?, flag: ObjJSuppressInspectionFlags? = null, requiredMatchingParam: String? = null, recursive: Boolean = true): Boolean {
         return checkInInheritedComments(elementIn, recursive) {
-            return@checkInInheritedComments ObjJCommentParserUtil.isIgnored(it.text, flag?.flag, requiredMatchingParam) {
+            return@checkInInheritedComments isIgnored(it.text, flag?.flag, requiredMatchingParam) {
                 when (flag) {
                     ObjJSuppressInspectionFlags.IGNORE_CLASS -> ObjJPluginSettings.unqualifiedIgnore_ignoreClassAndContents
                     ObjJSuppressInspectionFlags.IGNORE_METHOD -> ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration
@@ -158,6 +161,15 @@ object ObjJCommentParserUtil {
             }
         }
         return false
+    }
+
+    fun shouldIgnoreUnderscore(element: PsiElement) : Boolean {
+        if(!ObjJPluginSettings.ignoreUnderscoredClasses)
+            return false
+        if (element.text.startsWith("_")) {
+            return true
+        }
+        return (element as? ObjJHasContainingClass)?.containingClassName?.startsWith("_") == true && !element.containingFile.isEquivalentTo(element.containingFile)
     }
 
 }
