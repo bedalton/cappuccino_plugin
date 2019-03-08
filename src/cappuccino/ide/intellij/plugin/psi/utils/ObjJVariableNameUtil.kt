@@ -172,29 +172,28 @@ object ObjJVariableNameUtil {
     fun getSiblingVariableAssignmentNameElement(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         var variableName: ObjJVariableName?
         variableName = getVariableNameDeclarationInContainingBlocks(element, qualifiedNameIndex, filter)
-        if (variableName != null && variableName inSameFile element) {
-            return if (!variableName.isEquivalentTo(element)) variableName else null
+        if (variableName != null && variableName inSameFile element && !variableName.isEquivalentTo(element)) {
+            return variableName
         }
         if (qualifiedNameIndex <= 1) {
             variableName = getFirstMatchOrNull(getAllMethodDeclarationSelectorVars(element), filter)
             if (variableName != null) {
                 //LOGGER.info("Sibling assignment is method declaration variable")
-                return if (!variableName.isEquivalentTo(element)) variableName else null
+                return variableName
             }
             variableName = getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
             if (variableName != null) {
                 //LOGGER.info("Sibling assignment is class instance variable")
-                return if (!variableName.isEquivalentTo(element)) variableName else null
+                return variableName
             }
             variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
             if (variableName != null) {
-                //LOGGER.info("Sibling assignment is iteration scope variable")
-                return if (!variableName.isEquivalentTo(element)) variableName else null
+                return variableName
             }
             variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
             if (variableName != null) {
                 //LOGGER.info("Sibling variable name in assignment is function scope")
-                return if (!variableName.isEquivalentTo(element)) variableName else null
+                return variableName
             }
             variableName = getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
             if (variableName != null) {
@@ -211,23 +210,23 @@ object ObjJVariableNameUtil {
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
         if (variableName != null) {
             //LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
-            return if (!variableName.isEquivalentTo(element)) variableName else null
+            return variableName
         }
         variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
         if (variableName != null) {
             //LOGGER.info("Sibling assignment is catch production variable")
-            return if (!variableName.isEquivalentTo(element)) variableName else null
+            return variableName
         }
         variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
         if (variableName != null) {
             //LOGGER.info("Sibling assignment is preproc scope variable")
-            return if (!variableName.isEquivalentTo(element)) variableName else null
+            return variableName
         }
         if (DumbService.isDumb(element.project)) {
             return null
         }
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
-        if (!globalVariableDeclarations.isEmpty()) {
+        if (globalVariableDeclarations.isNotEmpty()) {
             //LOGGER.info("Sibling assignment is in global variable index")
             return globalVariableDeclarations[0].variableName
         }

@@ -257,7 +257,8 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     }
 
     private fun addAllLocalFunctionNames(resultSet: CompletionResultSet, element: PsiElement) {
-        val functions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true)
+        val functions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).toMutableList()
+        functions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
         for (function in functions) {
             val functionName = function.functionNameNode?.text ?: continue
             val lookupElementBuilder = LookupElementBuilder
