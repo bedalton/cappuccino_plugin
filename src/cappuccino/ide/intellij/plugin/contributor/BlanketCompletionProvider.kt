@@ -15,11 +15,13 @@ import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIVE_VAR_NAMES
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.ArrayList
@@ -81,53 +83,10 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             return
         } else if (PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList::class.java) != null) {
             results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
-        } else if (element.getContainingScope() == ReferencedInScope.FILE) {
-            val prefix:String
-            when {
-                element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
-                    results = mutableListOf(
-                            "import",
-                            "typedef",
-                            "class",
-                            "implementation",
-                            "protocol",
-                            "end"
-                    )
-                    prefix = "@"
-                }
-                element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) -> {
-                    results = mutableListOf(
-                            "if",
-                            "include",
-                            "pragma",
-                            "define",
-                            "undef",
-                            "ifdef",
-                            "ifndef",
-                            "include",
-                            "error",
-                            "warning"
-                    )
-                    prefix = "#"
-                }
-                else -> {
-                    //LOGGER.log(Level.INFO, "File level completion for token type ${element.getElementType().toString()} failed.")
-                    results = mutableListOf()
-                    prefix = ""
-                }
-            }
-            results.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix + it).withInsertHandler { context, _ ->
-                    if (!EditorUtil.isTextAtOffset(context, " ")) {
-                        EditorUtil.insertText(context.editor, " ", true)
-                    }
-                })
-            }
-            if (results.isNotEmpty()) {
-                resultSet.stopHere()
-                return
-            }
         } else {
+            if (element.getContainingScope() == ReferencedInScope.FILE) {
+                addFileLevelCompletions(resultSet, element);
+            }
             if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
                 resultSet.stopHere()
                 return
@@ -156,13 +115,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 mutableListOf()
             }
 
-            if ((variableName?.indexInQualifiedReference ?: 0) < 1 && (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length?:0) > 0) {
+            if ((variableName?.indexInQualifiedReference ?: 0) < 1 && (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length ?: 0) > 0) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
                 results.addAll(getInClassKeywords(variableName))
                 results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
             } else {
-                //LOGGER.log(Level.INFO, "Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
+                LOGGER.info("Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
             }
         }
         getClassNameCompletions(resultSet, element)
@@ -215,6 +174,51 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         return out
     }
 
+    private fun addFileLevelCompletions(resultSet: CompletionResultSet, element:PsiElement) {
+        val prefix: String
+        val resultsTemp:List<String>
+        when {
+            element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
+                resultsTemp = mutableListOf(
+                        "import",
+                        "typedef",
+                        "class",
+                        "implementation",
+                        "protocol",
+                        "end"
+                )
+                prefix = "@"
+            }
+            element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) -> {
+                resultsTemp = mutableListOf(
+                        "if",
+                        "include",
+                        "pragma",
+                        "define",
+                        "undef",
+                        "ifdef",
+                        "ifndef",
+                        "include",
+                        "error",
+                        "warning"
+                )
+                prefix = "#"
+            }
+            else -> {
+                //LOGGER.log(Level.INFO, "File level completion for token type ${element.getElementType().toString()} failed.")
+                resultsTemp = mutableListOf()
+                prefix = ""
+            }
+        }
+        resultsTemp.forEach {
+            resultSet.addElement(LookupElementBuilder.create(it).withPresentableText(prefix + it).withInsertHandler { context, _ ->
+                if (!EditorUtil.isTextAtOffset(context, " ")) {
+                    EditorUtil.insertText(context.editor, " ", true)
+                }
+            })
+        }
+    }
+
     private fun getKeywordCompletions(element: PsiElement?): List<String> {
         val expression = element.getParentOfType( ObjJExpr::class.java)
         return if (expression == null || expression.text != element!!.text || expression.parent !is ObjJBlock) {
@@ -232,8 +236,13 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     private fun appendFunctionCompletions(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.replace(CARET_INDICATOR, "(.*)")
         val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
+        LOGGER.info("Function name pattern == $functionNamePattern - found: ${functions.size} results")
+        val ignoreFunctionPrefixedWithUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
         for (functionName in functions.keys) {
-            for (function in functions.get(functionName)!!) {
+            val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
+            for (function in functions.getValue(functionName)) {
+                if (shouldPossiblyIgnore && !element.containingFile.isEquivalentTo(function.containingFile))
+                    continue
                 ProgressIndicatorProvider.checkCanceled()
                 val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
 
@@ -243,6 +252,19 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                         .withInsertHandler(ObjJFunctionNameInsertHandler.instance)
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
             }
+        }
+        addAllLocalFunctionNames(resultSet, element)
+    }
+
+    private fun addAllLocalFunctionNames(resultSet: CompletionResultSet, element: PsiElement) {
+        val functions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true)
+        for (function in functions) {
+            val functionName = function.functionNameNode?.text ?: continue
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(functionName)
+                    .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withInsertHandler(ObjJFunctionNameInsertHandler.instance)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY ))
         }
     }
 
