@@ -69,7 +69,7 @@ globalGreeting = @"Hello %s!";
 //This is a regular variable
 var element = document.<funcName>getElementById</funcName>("tagName");
 
-<identifier>element</identifier>.<identifier>innerHTML</identifier> = @"21";
+<fileLevelVariable>element</fileLevelVariable>.<identifier>innerHTML</identifier> = @"21";
 
 var isValidName = function(aName)
 {
@@ -136,6 +136,7 @@ function sayHello(aName)
                 "string" to ObjJSyntaxHighlighter.STRING,
                 "literal2" to ObjJSyntaxHighlighter.SECONDARY_LITERAL,
                 "varType" to ObjJSyntaxHighlighter.VARIABLE_TYPE,
+                "fileLevelVariable" to ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE,
                 "instanceVar" to ObjJSyntaxHighlighter.INSTANCE_VARIABLE,
                 "paramVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,
                 "globalVar" to ObjJSyntaxHighlighter.GLOBAL_VARIABLE,
