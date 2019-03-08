@@ -21,6 +21,9 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.PRIMITIV
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.NoIndex
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
@@ -55,7 +58,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             var indexAfter = -1
             for (part in commentTokenParts) {
                 if (part == "@var") {
-                    afterVar = true;
+                    afterVar = true
                     continue
                 }
                 if (!afterVar) {
@@ -70,7 +73,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                     }
                     addCompletionElementsSimple(resultSet, variableNames)
                 } else {
-                    return;
+                    return
                 }
             }
             return
@@ -85,7 +88,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
         } else {
             if (element.getContainingScope() == ReferencedInScope.FILE) {
-                addFileLevelCompletions(resultSet, element);
+                addFileLevelCompletions(resultSet, element)
             }
             if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
                 resultSet.stopHere()
@@ -143,11 +146,12 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             }
         }
         if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
+            val ignoreUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
             ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach {
-                if (it.getClassNameString().startsWith("_") && !element.containingFile.isEquivalentTo(it.containingFile)) {
+                if (ObjJIgnoreEvaluatorUtil.shouldIgnoreUnderscore(element) || ObjJIgnoreEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS)) {
                     return@forEach
                 }
-                if (ObjJCommentParserUtil.isIgnored(it) || ObjJCommentParserUtil.noIndex(it, NoIndex.CLASS) || ObjJCommentParserUtil.noIndex(it, NoIndex.ANY)) {
+                if (ObjJIgnoreEvaluatorUtil.isIgnored(it) || ObjJIgnoreEvaluatorUtil.noIndex(it, NoIndex.CLASS) || ObjJIgnoreEvaluatorUtil.noIndex(it, NoIndex.ANY)) {
                     return@forEach
                 }
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
@@ -236,7 +240,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
     private fun appendFunctionCompletions(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.replace(CARET_INDICATOR, "(.*)")
         val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
-        LOGGER.info("Function name pattern == $functionNamePattern - found: ${functions.size} results")
         val ignoreFunctionPrefixedWithUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
         for (functionName in functions.keys) {
             val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
