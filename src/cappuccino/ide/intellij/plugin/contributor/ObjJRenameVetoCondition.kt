@@ -11,6 +11,6 @@ import com.intellij.psi.PsiElement
 class ObjJRenameVetoCondition : Condition<PsiElement> {
     override fun value(element: PsiElement): Boolean {
         return ObjJFileUtil.isFrameworkElement(element) ||
-                element is ObjJSelector
+                element is ObjJSelector // Prevents renaming of selectors
     }
 }

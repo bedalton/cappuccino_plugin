@@ -29,6 +29,67 @@ object ObjJPluginSettings {
     private val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
     private val ignoreOvershadowedVariablesSetting = BooleanSetting(IGNORE_OVERSHADOWED_VARIABLES_KEY, IGNORE_OVERSHADOWED_VARIABLES_DEFAULT)
 
+    private val IGNORE_UNDERSCORED_CLASSES_KEY = "objj.annotator.ignoreUnderscoredClasses"
+    private val IGNORE_UNDERSCORED_CLASSES_DEFAULT = false
+    private val ignoreUnderscoredClassesSetting = BooleanSetting(IGNORE_UNDERSCORED_CLASSES_KEY, IGNORE_UNDERSCORED_CLASSES_DEFAULT)
+    var ignoreUnderscoredClasses:Boolean get() {
+        return ignoreUnderscoredClassesSetting.value!!
+    } set(value) {
+        ignoreUnderscoredClassesSetting.value = value
+    }
+
+    private val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"
+    private val UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT = true
+    private val unqualifiedIgnoreUndeclaredVariablesSetting = BooleanSetting(UNQ_IGNORE_UNDECLARED_VARIABLES_KEY, UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT)
+    var unqualifiedIgnore_ignoreUndeclaredVariables:Boolean get() {
+        return unqualifiedIgnoreUndeclaredVariablesSetting.value!!
+    } set(value) {
+        unqualifiedIgnoreUndeclaredVariablesSetting.value = value
+    }
+
+    private val UNQ_IGNORE_METHOD_DECLARATION_KEY = "objj.annotator.unq_ignore.methodDeclaration"
+    private val UNQ_IGNORE_METHOD_DECLARATION_DEFAULT = true
+    private val unqualifiedIgnore_ignoreMethodDeclarationSetting = BooleanSetting(UNQ_IGNORE_METHOD_DECLARATION_KEY, UNQ_IGNORE_METHOD_DECLARATION_DEFAULT)
+    var unqualifiedIgnore_ignoreMethodDeclaration: Boolean get() {
+        return unqualifiedIgnore_ignoreMethodDeclarationSetting.value!!
+    } set(value) {
+        unqualifiedIgnore_ignoreMethodDeclarationSetting.value = value
+    }
+
+    private val UNQ_IGNORE_CONFLICTION_METHODS_KEY = "objj.annotator.unq_ignore.conflictingMethodDeclaration"
+    private val UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT = true
+    private val unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting = BooleanSetting(UNQ_IGNORE_CONFLICTION_METHODS_KEY, UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT)
+    var unqualifiedIgnore_ignoreConflictingMethodDeclaration: Boolean get() {
+        return unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting.value!!
+    } set(value) {
+        unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting.value = value
+    }
+
+    private val UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreMethodReturnErrors"
+    private val UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT = true
+    private val unqualifiedIgnore_methodReturnErrorsSetting = BooleanSetting(UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY, UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT)
+    var unqualifiedIgnore_ignoreMethodReturnErrors:Boolean get() {
+        return unqualifiedIgnore_methodReturnErrorsSetting.value!!
+    } set(value) {
+        unqualifiedIgnore_methodReturnErrorsSetting.value = value
+    }
+
+    private val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
+    private val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = true
+    private val unqualifiedIgnore_invalidSelectorErrorsSetting = BooleanSetting(UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY, UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT)
+    var unqualifiedIgnore_ignoreInvalidSelectorErrors:Boolean get() {
+        return unqualifiedIgnore_invalidSelectorErrorsSetting.value!!
+    } set(value) {
+        unqualifiedIgnore_invalidSelectorErrorsSetting.value = value
+    }
+    private val UNQ_IGNORE_CLASS_AND_CONTENTS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
+    private val UNQ_IGNORE_CLASS_AND_CONTENTS_DEFAULT = true
+    private val unqualifiedIgnore_ignoreClassAndContentsSetting = BooleanSetting(UNQ_IGNORE_CLASS_AND_CONTENTS_KEY, UNQ_IGNORE_CLASS_AND_CONTENTS_DEFAULT)
+    var unqualifiedIgnore_ignoreClassAndContents:Boolean get() {
+        return unqualifiedIgnore_ignoreClassAndContentsSetting.value!!
+    } set(value) {
+        unqualifiedIgnore_ignoreClassAndContentsSetting.value = value
+    }
 
     fun inferEOS(): Boolean {
         return inferEOS.value ?: INFER_EOS_DEFAULT
@@ -60,6 +121,11 @@ object ObjJPluginSettings {
 
     fun isIgnoredVariableName(keyword:String) : Boolean  = ignoredKeywordsSetting.isIgnoredKeyword(keyword)
 
+    var ignoredVariableNamesAsString:String get() {
+        return ignoredKeywordsSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoredKeywordsSetting.ignoreKeywords(value)
+    }
 
     fun ignoreSelector(keyword:String) = ignoreMissingSelectorsSetting.ignoreKeyword(keyword)
 
@@ -67,8 +133,13 @@ object ObjJPluginSettings {
 
     fun ignoredSelectors() : List<String> = ignoreMissingSelectorsSetting.ignoredKeywords()
 
-    fun isIgnoredSelector(keyword:String) : Boolean  = ignoreMissingSelectorsSetting.isIgnoredKeyword(keyword)
+    var ignoredSelectorsAsString:String get() {
+        return ignoreMissingSelectorsSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoreMissingSelectorsSetting.ignoreKeywords(value)
+    }
 
+    fun isIgnoredSelector(keyword:String) : Boolean  = ignoreMissingSelectorsSetting.isIgnoredKeyword(keyword)
 
     fun ignoreOvershadowedVariables() : Boolean {
         return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT

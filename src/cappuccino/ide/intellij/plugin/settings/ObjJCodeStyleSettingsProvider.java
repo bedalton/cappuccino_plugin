@@ -26,7 +26,7 @@ public class ObjJCodeStyleSettingsProvider extends CodeStyleSettingsProvider {
     @NotNull
     @Override
     public Configurable createSettingsPage(CodeStyleSettings settings, CodeStyleSettings originalSettings) {
-        return new CodeStyleAbstractConfigurable(settings, originalSettings, "Simple") {
+        return new CodeStyleAbstractConfigurable(settings, originalSettings, "Objective-J") {
             @Override
             protected CodeStyleAbstractPanel createPanel(CodeStyleSettings settings) {
                 return new ObjJCodeStyleMainPanel(getCurrentSettings(), settings);
