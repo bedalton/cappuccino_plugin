@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
@@ -8,10 +10,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -51,6 +53,19 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
             return null
         }
         val allOut = ArrayList<PsiElement>()
+        val functions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).filter {
+            it.functionNameNode?.text == functionName
+        }
+        val startOffset = myElement.textRange.startOffset
+        val thisScope = myElement.getContainingScope()
+
+        if (functions.size == 1) {
+            return functions[0]
+        }
+        for (function in functions) {
+            val sharedScope = function.getContainingScope(myElement)
+            return function
+        }
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
