@@ -13,8 +13,6 @@ object ObjJProtocolDeclarationPsiUtil {
     fun getHeaders(declaration: ObjJProtocolDeclaration): ProtocolMethods {
         val required = ArrayList<ObjJMethodHeader>()
         val optional = ArrayList<ObjJMethodHeader>()
-
-
         return ProtocolMethods(required, optional)
     }
 

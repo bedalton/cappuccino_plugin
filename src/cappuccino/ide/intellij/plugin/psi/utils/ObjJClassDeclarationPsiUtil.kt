@@ -132,7 +132,7 @@ fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethod
 
 fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> {
     val headers = declaration.getMethodHeaderList().toMutableList()
-    for (scopedBlock in declaration.protocolScopedBlockList) {
+    for (scopedBlock in declaration.protocolScopedMethodBlockList) {
         headers.addAll(scopedBlock.methodHeaderList)
     }
     return headers
@@ -196,7 +196,7 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
     for (protocolDeclaration in inheritedProtocols) {
         //Logger.getAnonymousLogger().log(Level.INFO, "Checking protocol <"+protocolDeclaration.getClassNameString()+"> for unimplemented methods.");
         addUnimplementedProtocolMethods(project, thisClassName, protocolDeclaration.getMethodHeaderList(), required)
-        for (scopedBlock in protocolDeclaration.protocolScopedBlockList) {
+        for (scopedBlock in protocolDeclaration.protocolScopedMethodBlockList) {
             ProgressIndicatorProvider.checkCanceled()
             val headerList = if (scopedBlock.atOptional != null) optional else required
             addUnimplementedProtocolMethods(project, thisClassName, scopedBlock.methodHeaderList, headerList)
