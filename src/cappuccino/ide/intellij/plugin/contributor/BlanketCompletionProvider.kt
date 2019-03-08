@@ -37,8 +37,6 @@ import com.intellij.codeInsight.lookup.LookupElement
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
-    private val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
-
     override fun addCompletions(
             parameters: CompletionParameters, context: ProcessingContext,
             resultSet: CompletionResultSet) {
@@ -78,7 +76,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                     }
                 }
             } else if (text.contains("@ignore")) {
-                var precededByComma = false
+                var precededByComma: Boolean
                 loop@ for (part in commentTokenParts) {
                     currentIndex++
                     if (part == "@ignore") {
@@ -93,7 +91,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                     if (precededByComma) {
                         continue
                     }
-                    
+
                     val place = commentTokenParts.size - indexAfter
                     when {
                         place <= 1 || precededByComma -> addCompletionElementsSimple(resultSet, ObjJSuppressInspectionFlags.values().map { it.flag })
@@ -105,11 +103,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                         ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
                 ))
                 resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler {
-                    insertionContext: InsertionContext, lookupElement: LookupElement ->
+                    insertionContext: InsertionContext, _: LookupElement ->
                     insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
                 })
                 resultSet.addElement(LookupElementBuilder.create("var").withPresentableText("@var").withInsertHandler {
-                    insertionContext: InsertionContext, lookupElement: LookupElement ->
+                    insertionContext: InsertionContext, _: LookupElement ->
                     insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
                 })
             }
@@ -118,7 +116,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
 
         if (element is ObjJAccessorPropertyType || element.getParentOfType( ObjJAccessorPropertyType::class.java) != null) {
-            results = ArrayUtils.search(ACCESSSOR_PROPERTY_TYPES, queryString) as MutableList<String>
+            results = ArrayUtils.search(ACCESSOR_PROPERTY_TYPES, queryString) as MutableList<String>
         } else if (isMethodCallSelector(element)) {
             ObjJMethodCallCompletionContributor2.addSelectorLookupElementsFromSelectorList(resultSet, element)
             return
@@ -129,11 +127,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 addFileLevelCompletions(resultSet, element)
             }
             if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
-                resultSet.stopHere()
-                return
-            }
-            if (element.hasParentOfType(ObjJMethodHeaderDeclaration::class.java)) {
-                addMethodHeaderVariableNameCompletions(resultSet, element)
                 resultSet.stopHere()
                 return
             }
@@ -156,13 +149,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 mutableListOf()
             }
 
-            if ((variableName?.indexInQualifiedReference ?: 0) < 1 && (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length ?: 0) > 0) {
+            if (variableName?.getParentOfType(ObjJMethodHeaderDeclaration::class.java) == null && (variableName?.indexInQualifiedReference ?: 0) < 1 && (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length ?: 0) > 0) {
                 appendFunctionCompletions(resultSet, element)
                 results.addAll(getKeywordCompletions(variableName))
                 results.addAll(getInClassKeywords(variableName))
                 results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
-            } else {
-                LOGGER.info("Variable name ${variableName?.text} is index of: "+variableName?.indexInQualifiedReference)
             }
         }
         getClassNameCompletions(resultSet, element)
@@ -184,7 +175,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
             }
         }
         if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
-            val ignoreUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
             ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach {
                 if (ObjJIgnoreEvaluatorUtil.shouldIgnoreUnderscore(element) || ObjJIgnoreEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS)) {
                     return@forEach
@@ -194,8 +184,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 }
                 resultSet.addElement(LookupElementBuilder.create(it.getClassNameString()).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
-            resultSet.addElement(LookupElementBuilder.create("self").withInsertHandler(ObjJClassNameInsertHandler.instance))
-            resultSet.addElement(LookupElementBuilder.create("super").withInsertHandler(ObjJClassNameInsertHandler.instance))
         }
     }
 
@@ -289,7 +277,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
                 val lookupElementBuilder = LookupElementBuilder
                         .create(functionName)
-                        .withTailText("(" + ArrayUtils.join(function.paramNames as List<String>, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                        .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                         .withInsertHandler(ObjJFunctionNameInsertHandler.instance)
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
             }
@@ -310,11 +298,6 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
     }
 
-    private fun addMethodHeaderVariableNameCompletions(resultSet: CompletionResultSet, variableName:PsiElement) {
-        val methodHeaderDeclaration:ObjJMethodDeclarationSelector = variableName.getParentOfType(ObjJMethodDeclarationSelector::class.java) ?: return
-        val formalVariableType = methodHeaderDeclaration.formalVariableType?.text ?: return
-    }
-
     private fun isMethodCallSelector(element: PsiElement?) : Boolean {
         if (element == null) {
             return false
@@ -333,8 +316,11 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
     companion object {
 
-        private val LOGGER = Logger.getLogger(BlanketCompletionProvider::class.java.name)
+        private const val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
 
-        private val ACCESSSOR_PROPERTY_TYPES = Arrays.asList("property", "getter", "setter", "readonly", "copy")
+        private val LOGGER by lazy {
+            Logger.getLogger(BlanketCompletionProvider::class.java.name)
+        }
+        private val ACCESSOR_PROPERTY_TYPES = Arrays.asList("property", "getter", "setter", "readonly", "copy")
     }
 }
