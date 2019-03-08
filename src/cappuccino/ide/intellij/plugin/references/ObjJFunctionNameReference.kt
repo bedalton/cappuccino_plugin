@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
@@ -8,10 +10,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 
 import java.util.ArrayList
 import java.util.logging.Level
@@ -50,20 +52,27 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (DumbServiceImpl.isDumb(myElement.project)) {
             return null
         }
-        val allOut = ArrayList<PsiElement>()
+
+        val localFunctions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).toMutableList()
+        localFunctions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
+
+        val allOut = localFunctions.map { it.functionNameNode!! }.filter {
+            it.text == functionName
+        }.toMutableList()
+
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
             ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
-            if (functionDeclaration.getContainingFile().isEquivalentTo(file)) {
+            if (functionDeclaration.containingFile.isEquivalentTo(file)) {
                 return functionDeclaration.functionNameNode
             }
         }
         for (function in PsiTreeUtil.getChildrenOfTypeAsList(myElement.containingFile, ObjJPreprocessorDefineFunction::class.java)) {
-            if (function.functionName != null && function.functionName!!.text == myElement.text) {
+            if (function.functionName?.text == functionName) {
                 return function.functionName
             }
         }
-        return if (!allOut.isEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {
