@@ -9,7 +9,7 @@ import com.intellij.psi.PsiFileFactory
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 
 import java.util.ArrayList
 import java.util.logging.Logger
