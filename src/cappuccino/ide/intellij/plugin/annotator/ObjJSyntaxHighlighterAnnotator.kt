@@ -125,7 +125,13 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
 
     private fun highlightFunctionName(functionCall: ObjJFunctionCall, annotationHolder: AnnotationHolder) {
         val functionName = functionCall.functionName ?: return
-        colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME, "defined in file: ${ObjJFileUtil.getContainingFileName(functionName)}")
+        val resolved = functionName.reference.resolve()
+        if (resolved != null) {
+            colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, "defined in file: ${ObjJFileUtil.getContainingFileName(functionName)}")
+        } else {
+            //colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME, "")
+        }
+
     }
 
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
