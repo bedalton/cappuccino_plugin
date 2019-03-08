@@ -16,7 +16,6 @@ object ObjJVariableTypeResolver {
 
     fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true): Set<String> {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJIgnoreEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
-            Logger.getLogger(ObjJVariableTypeResolver::class.java.canonicalName).info("Resolving type. Setting says: ${ObjJPluginSettings.resolveCallTargetFromAssignments}")
             return resolveVariableTypeWithoutMethodParse(variableName, recurse)
         }
         return setOf()
