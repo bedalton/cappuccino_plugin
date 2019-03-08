@@ -412,7 +412,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun isRequired(methodHeader: ObjJMethodHeader) =
-            methodHeader.getParentOfType(ObjJProtocolScopedBlock::class.java)?.atOptional == null
+            methodHeader.getParentOfType(ObjJProtocolScopedMethodBlock::class.java)?.atOptional == null
 
     fun getHeaderVariableNameMatching(methodHeader: ObjJMethodHeader?, variableName: String): ObjJVariableName? {
         if (methodHeader == null) {
