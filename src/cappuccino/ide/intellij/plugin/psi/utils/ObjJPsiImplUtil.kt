@@ -309,7 +309,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
-        return ObjJSelectorReferenceResolveUtil.getPossibleClassTypesForCallTarget(callTarget)
+        return ObjJSelectorReferenceResolveUtil.getPossibleClassTypesForCallTarget(callTarget).toList()
     }
 
     @JvmStatic
@@ -580,7 +580,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getAllInheritedClasses(className: String, project: Project): List<String> {
-        return ObjJInheritanceUtil.getAllInheritedClasses(className, project)
+        return ObjJInheritanceUtil.getAllInheritedClasses(className, project).toList()
     }
 
     @JvmStatic

@@ -36,12 +36,11 @@ object ObjJVariableNameUtil {
 
     fun getMatchingPrecedingVariableAssignmentNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
         val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String
-        if (variableName is ObjJVariableName) {
-            variableNameQualifiedString = getQualifiedNameAsString(variableName, qualifiedIndex)
+        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
+            getQualifiedNameAsString(variableName, qualifiedIndex)
         } else {
             //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableNameQualifiedString = variableName.text
+            variableName.text
         }
         val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
         return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) })
@@ -99,20 +98,13 @@ object ObjJVariableNameUtil {
         return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, { `var` -> `var` !== variableName && (`var`.getContainingFile().isEquivalentTo(file) || `var`.getTextRange().getStartOffset() < startOffset) })
     }
 
-    fun getPrecedingVariableNameElements(variableName: PsiElement, qualifiedIndex: Int): List<ObjJVariableName> {
-        val startOffset = variableName.textRange.startOffset
-        val file = variableName.containingFile
-        //LOGGER.log(Level.INFO, String.format("Qualified Index: <%d>; TextOffset: <%d>; TextRange: <%d,%d>", qualifiedIndex, variableName.getTextOffset(), variableName.getTextRange().getStartOffset(), variableName.getTextRange().getEndOffset()));
-        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, { `var` -> `var` !== variableName && (`var`.getContainingFile().isEquivalentTo(file) || `var`.getTextRange().getStartOffset() < startOffset) })
-    }
-
-    fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
+    private fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex)
 //LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
         return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
-    fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
+    private fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex)
 //LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
         return ArrayUtils.filter(rawVariableNameElements, filter)
@@ -127,7 +119,7 @@ object ObjJVariableNameUtil {
      *
      * todo Allow checking of non 0 qualified name index
      */
-    fun getSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
+    private fun getSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
         val result = ArrayList(getAllVariableNamesInContainingBlocks(element, qualifiedNameIndex))
         if (qualifiedNameIndex == 0) {
             result.addAll(getAllContainingClassInstanceVariables(element))
@@ -146,7 +138,7 @@ object ObjJVariableNameUtil {
     }
 
 
-    fun getSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
+    public fun getSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
         val result = getAllVariableNamesInAssignmentsInContainingBlocks(element, qualifiedNameIndex)
         var currentSize = result.size
         //LOGGER.log(Level.INFO, "Num from blocks: <"+currentSize+">");
@@ -633,7 +625,7 @@ object ObjJVariableNameUtil {
         val project = variableNameElement.project
         val variableName = variableNameElement.text
         val className = variableNameElement.containingClassName
-        val containingClassInheritedClasses:List<String> = ObjJInheritanceUtil.getAllInheritedClassesStrict(className, project)
+        val containingClassInheritedClasses:Set<String> = ObjJInheritanceUtil.appendAllInheritedClassesStrictToList(className, project)
         val classesContainingInstanceVariableWithName:List<String> = ObjJInstanceVariablesByNameIndex.instance[variableName, project].map {
             it.containingClassName
         }

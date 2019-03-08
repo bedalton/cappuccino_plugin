@@ -5,32 +5,42 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSet
 object ObjJPluginSettings {
 
     //EOS
-    private val INFER_EOS_KEY = "objj.parser.INFER_EOS"
-    private val INFER_EOS_DEFAULT = false
+    private const val INFER_EOS_KEY = "objj.parser.INFER_EOS"
+    private const val INFER_EOS_DEFAULT = false
     private val inferEOS = BooleanSetting(INFER_EOS_KEY, INFER_EOS_DEFAULT)
 
     //CallTarget
-    private val VALIDATE_CALL_TARGET = "objj.resolve.calltarget.RESOLVE_CALL_TARGET"
-    private val VALIDATE_CALL_TARGET_DEFAULT = false
+    private const val VALIDATE_CALL_TARGET = "objj.resolve.calltarget.VALIDATE_CALL_TARGET"
+    private const val VALIDATE_CALL_TARGET_DEFAULT = false
     private val validateCallTarget = BooleanSetting(VALIDATE_CALL_TARGET, VALIDATE_CALL_TARGET_DEFAULT)
 
+    // Resolve call target
+    private const val RESOLVE_CALL_TARGET = "objj.resolve.calltarget.RESOLVE_CALL_TARGET"
+    private const val RESOLVE_CALL_DEFAULT = true
+    private val resolveCallTargetSetting = BooleanSetting(RESOLVE_CALL_TARGET, RESOLVE_CALL_DEFAULT)
+    var resolveCallTargetFromAssignments:Boolean get() {
+        return resolveCallTargetSetting.value!!
+    } set (value) {
+        resolveCallTargetSetting.value = value
+    }
+
     //CallTarget
-    private val COLLAPSE_BY_DEFAULT_KEY = "objj.resolve.calltarget.RESOLVE_CALL_TARGET"
-    private val COLLAPSE_BY_DEFAULT_DEFAULT = false
+    private const val COLLAPSE_BY_DEFAULT_KEY = "objj.resolve.calltarget.COLLAPSE_BY_DEFAULT"
+    private const val COLLAPSE_BY_DEFAULT_DEFAULT = false
     private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
 
-    private val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties";
+    private const val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties";
     private val ignoredKeywordsSetting = ObjJIgnoredStringsListSetting(IGNORE_PROPERTIES_KEY)
 
-    private val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
+    private const val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
     private val ignoreMissingSelectorsSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_SELECTORS_KEY)
 
-    private val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
-    private val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
+    private const val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
+    private const val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
     private val ignoreOvershadowedVariablesSetting = BooleanSetting(IGNORE_OVERSHADOWED_VARIABLES_KEY, IGNORE_OVERSHADOWED_VARIABLES_DEFAULT)
 
-    private val IGNORE_UNDERSCORED_CLASSES_KEY = "objj.annotator.ignoreUnderscoredClasses"
-    private val IGNORE_UNDERSCORED_CLASSES_DEFAULT = true
+    private const val IGNORE_UNDERSCORED_CLASSES_KEY = "objj.annotator.ignoreUnderscoredClasses"
+    private const val IGNORE_UNDERSCORED_CLASSES_DEFAULT = true
     private val ignoreUnderscoredClassesSetting = BooleanSetting(IGNORE_UNDERSCORED_CLASSES_KEY, IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     var ignoreUnderscoredClasses:Boolean get() {
         return ignoreUnderscoredClassesSetting.value!!
@@ -38,8 +48,8 @@ object ObjJPluginSettings {
         ignoreUnderscoredClassesSetting.value = value
     }
 
-    private val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"
-    private val UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT = true
+    private const val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"
+    private const val UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT = true
     private val unqualifiedIgnoreUndeclaredVariablesSetting = BooleanSetting(UNQ_IGNORE_UNDECLARED_VARIABLES_KEY, UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT)
     var unqualifiedIgnore_ignoreUndeclaredVariables:Boolean get() {
         return unqualifiedIgnoreUndeclaredVariablesSetting.value!!
@@ -47,8 +57,8 @@ object ObjJPluginSettings {
         unqualifiedIgnoreUndeclaredVariablesSetting.value = value
     }
 
-    private val UNQ_IGNORE_METHOD_DECLARATION_KEY = "objj.annotator.unq_ignore.methodDeclaration"
-    private val UNQ_IGNORE_METHOD_DECLARATION_DEFAULT = true
+    private const val UNQ_IGNORE_METHOD_DECLARATION_KEY = "objj.annotator.unq_ignore.methodDeclaration"
+    private const val UNQ_IGNORE_METHOD_DECLARATION_DEFAULT = true
     private val unqualifiedIgnore_ignoreMethodDeclarationSetting = BooleanSetting(UNQ_IGNORE_METHOD_DECLARATION_KEY, UNQ_IGNORE_METHOD_DECLARATION_DEFAULT)
     var unqualifiedIgnore_ignoreMethodDeclaration: Boolean get() {
         return unqualifiedIgnore_ignoreMethodDeclarationSetting.value!!
@@ -56,8 +66,8 @@ object ObjJPluginSettings {
         unqualifiedIgnore_ignoreMethodDeclarationSetting.value = value
     }
 
-    private val UNQ_IGNORE_CONFLICTION_METHODS_KEY = "objj.annotator.unq_ignore.conflictingMethodDeclaration"
-    private val UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT = true
+    private const val UNQ_IGNORE_CONFLICTION_METHODS_KEY = "objj.annotator.unq_ignore.conflictingMethodDeclaration"
+    private const val UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT = true
     private val unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting = BooleanSetting(UNQ_IGNORE_CONFLICTION_METHODS_KEY, UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT)
     var unqualifiedIgnore_ignoreConflictingMethodDeclaration: Boolean get() {
         return unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting.value!!
@@ -65,8 +75,8 @@ object ObjJPluginSettings {
         unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting.value = value
     }
 
-    private val UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreMethodReturnErrors"
-    private val UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT = true
+    private const val UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreMethodReturnErrors"
+    private const val UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT = true
     private val unqualifiedIgnore_methodReturnErrorsSetting = BooleanSetting(UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY, UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT)
     var unqualifiedIgnore_ignoreMethodReturnErrors:Boolean get() {
         return unqualifiedIgnore_methodReturnErrorsSetting.value!!
@@ -74,16 +84,16 @@ object ObjJPluginSettings {
         unqualifiedIgnore_methodReturnErrorsSetting.value = value
     }
 
-    private val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
-    private val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = true
+    private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
+    private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = true
     private val unqualifiedIgnore_invalidSelectorErrorsSetting = BooleanSetting(UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY, UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT)
     var unqualifiedIgnore_ignoreInvalidSelectorErrors:Boolean get() {
         return unqualifiedIgnore_invalidSelectorErrorsSetting.value!!
     } set(value) {
         unqualifiedIgnore_invalidSelectorErrorsSetting.value = value
     }
-    private val UNQ_IGNORE_CLASS_AND_CONTENTS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
-    private val UNQ_IGNORE_CLASS_AND_CONTENTS_DEFAULT = true
+    private const val UNQ_IGNORE_CLASS_AND_CONTENTS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
+    private const val UNQ_IGNORE_CLASS_AND_CONTENTS_DEFAULT = true
     private val unqualifiedIgnore_ignoreClassAndContentsSetting = BooleanSetting(UNQ_IGNORE_CLASS_AND_CONTENTS_KEY, UNQ_IGNORE_CLASS_AND_CONTENTS_DEFAULT)
     var unqualifiedIgnore_ignoreClassAndContents:Boolean get() {
         return unqualifiedIgnore_ignoreClassAndContentsSetting.value!!

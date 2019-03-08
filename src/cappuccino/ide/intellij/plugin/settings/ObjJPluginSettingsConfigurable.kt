@@ -11,7 +11,8 @@ class ObjJPluginSettingsConfigurable : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return ObjJPluginSettings.ignoreUnderscoredClasses != pluginSettingsPanel.underscore_ignoreClassesCheckbox.isSelected ||
+        return  ObjJPluginSettings.resolveCallTargetFromAssignments != pluginSettingsPanel.resolveVariableTypeFromAssignments.isSelected ||
+                ObjJPluginSettings.ignoreUnderscoredClasses != pluginSettingsPanel.underscore_ignoreClassesCheckbox.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration != pluginSettingsPanel.unqualifiedIgnore_ignoreMethodDec.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreUndeclaredVariables != pluginSettingsPanel.unqualifiedIgnore_ignoreUndecVars.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreConflictingMethodDeclaration != pluginSettingsPanel.unqualifiedIgnore_ignoreConflictingMethodDecs.isSelected ||
@@ -26,6 +27,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
+        ObjJPluginSettings.resolveCallTargetFromAssignments = pluginSettingsPanel.resolveVariableTypeFromAssignments.isSelected
         ObjJPluginSettings.ignoreUnderscoredClasses = pluginSettingsPanel.underscore_ignoreClassesCheckbox.isSelected
         ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration = pluginSettingsPanel.unqualifiedIgnore_ignoreMethodDec.isSelected
         ObjJPluginSettings.unqualifiedIgnore_ignoreUndeclaredVariables = pluginSettingsPanel.unqualifiedIgnore_ignoreUndecVars.isSelected
@@ -38,6 +40,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
 
     override fun createComponent(): JComponent? {
         val component = pluginSettingsPanel.`$$$getRootComponent$$$`()
+        pluginSettingsPanel.resolveVariableTypeFromAssignments.isSelected = ObjJPluginSettings.resolveCallTargetFromAssignments
         pluginSettingsPanel.underscore_ignoreClassesCheckbox.isSelected = ObjJPluginSettings.ignoreUnderscoredClasses
         pluginSettingsPanel.unqualifiedIgnore_ignoreMethodDec.isSelected = ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration
         pluginSettingsPanel.unqualifiedIgnore_ignoreUndecVars.isSelected = ObjJPluginSettings.unqualifiedIgnore_ignoreUndeclaredVariables
