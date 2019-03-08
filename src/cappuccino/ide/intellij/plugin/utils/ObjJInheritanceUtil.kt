@@ -14,8 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.addProtocols
 
 import java.util.ArrayList
-import java.util.logging.Level
-import java.util.logging.Logger
 
 object ObjJInheritanceUtil {
 
@@ -27,8 +25,8 @@ object ObjJInheritanceUtil {
      * @throws IndexNotReadyInterruptingException thrown if index is not ready
      */
     @Throws(IndexNotReadyInterruptingException::class)
-    fun reduceToDeepestInheritance(classList: List<String>, project: Project): List<String> {
-        val superClasses = ArrayList<String>()
+    fun reduceToDeepestInheritance(classList: List<String>, project: Project): Set<String> {
+        val superClasses = mutableSetOf<String>()
         val out = ArrayList(classList)
         if (DumbService.isDumb(project)) {
             throw IndexNotReadyInterruptingException()
@@ -71,24 +69,24 @@ object ObjJInheritanceUtil {
         return false
     }
 
-    fun getAllInheritedClassesStrict(className: String, project: Project): MutableList<String> {
+    fun appendAllInheritedClassesStrictToList(className: String, project: Project): MutableSet<String> {
         return getAllInheritedClasses(className, project, false)
     }
 
-    fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableList<String> {
-        val inheritedClasses = ArrayList<String>()
-        getAllInheritedClasses(inheritedClasses, className, project, withProtocols)
+    fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableSet<String> {
+        val inheritedClasses = mutableSetOf<String>()
+        appendAllInheritedClassesToSet(inheritedClasses, className, project, withProtocols)
         return inheritedClasses
     }
 
 
-    fun getAllInheritedProtocols(className: String, project: Project): MutableList<ObjJProtocolDeclaration> {
-        val out = ArrayList<ObjJProtocolDeclaration>()
-        getAllInheritedProtocols(out, className, project)
+    fun appendAllInheritedProtocolsToSet(className: String, project: Project): MutableSet<ObjJProtocolDeclaration> {
+        val out = mutableSetOf<ObjJProtocolDeclaration>()
+        appendAllInheritedProtocolsToSet(out, className, project)
         return out
     }
 
-    private fun getAllInheritedProtocols(out: MutableList<ObjJProtocolDeclaration>, className: String, project: Project) {
+    private fun appendAllInheritedProtocolsToSet(out: MutableSet<ObjJProtocolDeclaration>, className: String, project: Project) {
         ProgressIndicatorProvider.checkCanceled()
         if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
@@ -103,7 +101,7 @@ object ObjJInheritanceUtil {
             return
         }
 
-        val temp = ObjJProtocolDeclarationsIndex.instance.get(className, project)
+        val temp = ObjJProtocolDeclarationsIndex.instance[className, project]
         if (temp.isEmpty()) {
             return
         }
@@ -112,7 +110,7 @@ object ObjJInheritanceUtil {
         val protocolList = thisProtocol.inheritedProtocolList ?: return
         for (parentProtocolNameElement in protocolList.classNameList) {
             ProgressIndicatorProvider.checkCanceled()
-            getAllInheritedProtocols(out, parentProtocolNameElement.getText(), project)
+            appendAllInheritedProtocolsToSet(out, parentProtocolNameElement.text, project)
             /*
             for (ObjJProtocolDeclaration currentProtocolInLoop: ObjJProtocolDeclarationsIndex.getInstance().get(parentProtocolNameElement.getText(), project)) {
                 ProgressIndicatorProvider.checkCanceled();
@@ -128,7 +126,7 @@ object ObjJInheritanceUtil {
         }
     }
 
-    private fun isProtocolInArray(protocolDeclarations: List<ObjJProtocolDeclaration>, className: String): Boolean {
+    private fun isProtocolInArray(protocolDeclarations: Set<ObjJProtocolDeclaration>, className: String): Boolean {
         for (protocolDeclaration in protocolDeclarations) {
             ProgressIndicatorProvider.checkCanceled()
             if (protocolDeclaration.getClassNameString() == className) {
@@ -138,11 +136,11 @@ object ObjJInheritanceUtil {
         return false
     }
 
-    fun getAllInheritedClassesStrict(classNames: MutableList<String>, className: String, project: Project) {
-        return getAllInheritedClasses(classNames, className, project, false)
+    fun appendAllInheritedClassesStrictToList(classNames: MutableSet<String>, className: String, project: Project) {
+        return appendAllInheritedClassesToSet(classNames, className, project, false)
     }
 
-    fun getAllInheritedClasses(classNames: MutableList<String>, className: String, project: Project, withProtocols:Boolean = true) {
+    private fun appendAllInheritedClassesToSet(classNames: MutableSet<String>, className: String, project: Project, withProtocols:Boolean = true) {
         if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
@@ -168,7 +166,7 @@ object ObjJInheritanceUtil {
                 if (superClassName == null || classNames.contains(superClassName)) {
                     continue
                 }
-                getAllInheritedClasses(classNames, superClassName, project)
+                appendAllInheritedClassesToSet(classNames, superClassName, project)
             }
         }
     }
@@ -220,8 +218,8 @@ object ObjJInheritanceUtil {
         }
     }
 
-    fun getInheritanceUpAndDown(className: String, project: Project): List<String> {
-        val referencedAncestors = ArrayList<String>()
+    fun getInheritanceUpAndDown(className: String, project: Project): Set<String> {
+        val referencedAncestors = mutableSetOf<String>()
         for (parentClass in ObjJInheritanceUtil.getAllInheritedClasses(className, project)) {
             if (!referencedAncestors.contains(parentClass)) {
                 referencedAncestors.add(parentClass)

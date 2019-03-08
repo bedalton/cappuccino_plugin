@@ -20,10 +20,21 @@ object ObjJIgnoreEvaluatorUtil {
         Logger.getLogger(ObjJIgnoreEvaluatorUtil::class.java.canonicalName)
     }
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
-    private const val IGNORE_FLAG = "@ignore"
+    public const val IGNORE_FLAG = "@ignore"
     private const val NO_INDEX_FLAG = "@noIndex"
-    private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?@var\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
+    public const val AT_VAR = "@var"
+    private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?$AT_VAR\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
     private val SPACE_REGEX = "\\s+".toRegex()
+    public val DO_NOT_RESOLVE = "doNotInferType"
+
+
+    fun isInferDisabled(elementIn:PsiElement, param: String?, recursive: Boolean = true) : Boolean {
+        return checkInInheritedComments(elementIn, recursive) {
+            return@checkInInheritedComments searchCommentForFlags(it.text, DO_NOT_RESOLVE, null, param) {
+                return@searchCommentForFlags true
+            }
+        }
+    }
 
     /**
      * Gets the variable type if declared in an @var comment

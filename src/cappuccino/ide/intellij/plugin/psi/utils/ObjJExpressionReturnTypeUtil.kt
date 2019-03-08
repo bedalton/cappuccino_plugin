@@ -1,12 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
-import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -34,7 +32,7 @@ typealias RightExpressionTest = (ObjJRightExpr) -> Boolean;
 @Throws(IndexNotReadyInterruptingException::class)
 @JvmOverloads
 
-fun ObjJExpr?.isReturnTypeInstanceOf(classType: String?, project: Project, defaultValueIfNull: Boolean = false): Boolean {
+fun ObjJExpr?.isReturnTypeInstanceOf(classType: String?, defaultValueIfNull: Boolean = false): Boolean {
     if (this == null) {
         return false
     }
@@ -63,10 +61,15 @@ fun ObjJExpr?.isReturnTypeInstanceOf(classType: String?, project: Project, defau
             return true
         }
     }
-    try {
-        return ObjJClassType.isSubclassOrSelf(classType, returnType, project)
+    if (classType == DOUBLE) {
+        if (returnType == FLOAT) {
+            return true
+        }
+    }
+    return try {
+        ObjJClassType.isSubclassOrSelf(classType, returnType, project)
     } catch (ignored: CannotDetermineException) {
-        return defaultValueIfNull
+        defaultValueIfNull
     }
 
 }
@@ -81,16 +84,12 @@ fun getReturnTypes(results: ExpressionReturnTypeResults, expr: ObjJExpr?): Expre
     if (expr == null) {
         return null
     }
-    if (testAllSubExpressions(expr, { isReturnTypeString(it) })) {
-        results.tick(STRING)
-    } else if (testAllSubExpressions(expr, { isReturnTypeInteger(it) })) {
-        results.tick(INT)
-    } else if (testAllSubExpressions(expr, { isReturnTypeFloat(it) })) {
-        results.tick(FLOAT)
-    } else if (testAllSubExpressions(expr, { isReturnTypeDouble(it) })) {
-        results.tick(DOUBLE)
-    } else if (testAllSubExpressions(expr, { isReturnTypeBOOL(it) })) {
-        results.tick(BOOL)
+    when {
+        testAllSubExpressions(expr) { isReturnTypeString(it) } -> results.tick(STRING)
+        testAllSubExpressions(expr) { isReturnTypeInteger(it) } -> results.tick(INT)
+        testAllSubExpressions(expr) { isReturnTypeFloat(it) } -> results.tick(FLOAT)
+        testAllSubExpressions(expr) { isReturnTypeDouble(it) } -> results.tick(DOUBLE)
+        testAllSubExpressions(expr) { isReturnTypeBOOL(it) } -> results.tick(BOOL)
     }
     for (varType in expr.getVariableNameType()) {
         results.tick(varType)
@@ -104,19 +103,19 @@ fun getReturnType(expr: ObjJExpr?, follow: Boolean): String? {
     if (expr == null) {
         return null
     }
-    if (testAllSubExpressions(expr, { isReturnTypeString(it) })) {
+    if (testAllSubExpressions(expr) { isReturnTypeString(it) }) {
         return STRING
     }
-    if (testAllSubExpressions(expr, { isReturnTypeFloat(it) })) {
+    if (testAllSubExpressions(expr) { isReturnTypeFloat(it) }) {
         return FLOAT
     }
-    if (testAllSubExpressions(expr, { isReturnTypeDouble(it) })) {
+    if (testAllSubExpressions(expr) { isReturnTypeDouble(it) }) {
         return DOUBLE
     }
-    if (testAllSubExpressions(expr, { isReturnTypeInteger(it) })) {
+    if (testAllSubExpressions(expr) { isReturnTypeInteger(it) }) {
         return INT
     }
-    if (testAllSubExpressions(expr, { isReturnTypeBOOL(it) })) {
+    if (testAllSubExpressions(expr) { isReturnTypeBOOL(it) }) {
         return BOOL
     }
     var returnType = getSelfOrSuper(expr)
@@ -132,7 +131,7 @@ fun getReturnType(expr: ObjJExpr?, follow: Boolean): String? {
         return returnTypes[0]
     } else if (!returnTypes.isEmpty()) {
         try {
-            returnTypes = ObjJInheritanceUtil.reduceToDeepestInheritance(returnTypes, expr.project)
+            returnTypes = ObjJInheritanceUtil.reduceToDeepestInheritance(returnTypes, expr.project).toList()
             if (returnTypes.size == 1) {
                 return returnTypes[0]
             }
@@ -554,27 +553,6 @@ private fun getReturnTypeFromMethodCall(methodCall: ObjJMethodCall, follow: Bool
     return if (hasId) "id" else defaultReturnType
 }
 
-fun getReturnTypeFromFormalVariableType(variableName: ObjJVariableName): List<String> {
-    val project = variableName.project
-    val variableNameText = variableName.qualifiedNameText ?: return ArrayUtils.EMPTY_STRING_ARRAY
-    if (variableName.containingClass != null) {
-        for (instanceVariableDeclaration in ObjJInstanceVariablesByClassIndex.instance.get(variableName.containingClassName, project)) {
-            if (instanceVariableDeclaration.variableName?.text == variableNameText) {
-                return ObjJInheritanceUtil.getAllInheritedClasses(instanceVariableDeclaration.formalVariableType.text, project)
-            }
-        }
-    }
-    val methodDeclaration = variableName.getParentOfType(ObjJMethodDeclaration::class.java) ?: return ArrayUtils.EMPTY_STRING_ARRAY
-    val methodHeaderVariable = ObjJMethodPsiUtils.getHeaderVariableNameMatching(methodDeclaration.methodHeader, variableNameText)
-    if (methodHeaderVariable != null) {
-        val className = methodHeaderVariable.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.className?.text
-        if (className != null) {
-            return ObjJInheritanceUtil.getAllInheritedClasses(className, methodHeaderVariable.project)
-        }
-    }
-    return ArrayUtils.EMPTY_STRING_ARRAY
-}
-
 private fun getSelfOrSuper(expr: ObjJExpr): String? {
     if (expr.text == "self") {
         return ObjJPsiImplUtil.getContainingClassName(expr)
@@ -582,53 +560,6 @@ private fun getSelfOrSuper(expr: ObjJExpr): String? {
         return ObjJPsiImplUtil.getContainingSuperClassName(expr)
     }
     return null
-}
-
-
-fun ObjJExpr.getVariableNameType(): List<String> {
-    val out = ArrayList<String>()
-    for (currentExpr in getAllSubExpressions(expr, false)) {
-        if (currentExpr.leftExpr == null) {
-            continue
-        }
-        if (isEquivalentTo(currentExpr)) {
-            continue
-        }
-        val project = project
-        val reference = currentExpr.leftExpr!!.qualifiedReference ?: continue
-        if (reference.text == "self") {
-            return ObjJInheritanceUtil.getAllInheritedClasses(ObjJHasContainingClassPsiUtil.getContainingClassName(reference), project)
-        }
-        if (reference.text == "super") {
-            val className = ObjJHasContainingClassPsiUtil.getContainingClassName(reference)
-            val classNames = ObjJInheritanceUtil.getAllInheritedClasses(className, project)
-            classNames.remove(className)
-            return classNames
-        }
-        val lastVar : ObjJVariableName  = reference.getLastVar() ?: continue
-        val fqName = ObjJVariableNameUtil.getQualifiedNameAsString(lastVar)
-        //TODO check for whether parameter should be lastVar or currentExpr
-        for (variableAssignment in ObjJVariableAssignmentsPsiUtil.getAllVariableAssignmentsMatchingName(lastVar, fqName)) {
-            val assignedValue = variableAssignment.assignedValue
-            if (assignedValue.isEquivalentTo(currentExpr)) {
-                continue
-            }
-            try {
-                val returnType = getReturnType(assignedValue, true)
-                if (returnType != null) {
-                    out.add(returnType);
-                }
-            } catch (e: MixedReturnTypeException) {
-                for (varType in e.returnTypesList) {
-                    if (!out.contains(varType)) {
-                        out.add(varType)
-                    }
-                }
-            }
-
-        }
-    }
-    return out
 }
 
 /*
@@ -678,113 +609,49 @@ public static List<String> getVariableNameType(@NotNull ObjJExpr expr) {
 
 class MixedReturnTypeException internal constructor(val returnTypesList: List<String>) : Exception("More than one return type found")
 
-class ExpressionReturnTypeResults private constructor(val references: MutableList<ExpressionReturnTypeReference>, private val project: Project) {
-    private var changed = false
-    private var referencedAncestors: MutableList<String>? = null
 
-    val inheritanceUpAndDown: List<String>
-        get() {
-            if (referencedAncestors != null && !changed) {
-                return referencedAncestors as MutableList<String>
-            } else if (DumbService.isDumb(project)) {
-                return ArrayUtils.EMPTY_STRING_ARRAY
-            } else {
-                referencedAncestors = ArrayList()
+fun ObjJExpr.getVariableNameType(): List<String> {
+    val out = ArrayList<String>()
+    for (currentExpr in getAllSubExpressions(expr, false)) {
+        if (currentExpr.leftExpr == null) {
+            continue
+        }
+        if (isEquivalentTo(currentExpr)) {
+            continue
+        }
+        val project = project
+        val reference = currentExpr.leftExpr?.qualifiedReference ?: continue
+        if (reference.text == "self") {
+            return ObjJInheritanceUtil.getAllInheritedClasses(ObjJHasContainingClassPsiUtil.getContainingClassName(reference), project).toList()
+        }
+        if (reference.text == "super") {
+            val className = ObjJHasContainingClassPsiUtil.getContainingClassName(reference)
+            val classNames = ObjJInheritanceUtil.getAllInheritedClasses(className, project)
+            classNames.remove(className)
+            return classNames.toList()
+        }
+        val lastVar : ObjJVariableName  = reference.lastVar ?: continue
+        val fqName = ObjJVariableNameUtil.getQualifiedNameAsString(lastVar)
+        //TODO check for whether parameter should be lastVar or currentExpr
+        for (variableAssignment in ObjJVariableAssignmentsPsiUtil.getAllVariableAssignmentsMatchingName(lastVar, fqName)) {
+            val assignedValue = variableAssignment.assignedValue
+            if (assignedValue.isEquivalentTo(currentExpr)) {
+                continue
             }
-            changed = false
-            for (result in references) {
-                if (isPrimitive(result.type)) {
-                    continue
+            try {
+                val returnType = getReturnType(assignedValue, true)
+                if (returnType != null) {
+                    out.add(returnType);
                 }
-                getInheritanceUpAndDown(referencedAncestors!!, result.type)
+            } catch (e: MixedReturnTypeException) {
+                for (varType in e.returnTypesList) {
+                    if (!out.contains(varType)) {
+                        out.add(varType)
+                    }
+                }
             }
-            return referencedAncestors as ArrayList<String>
-        }
 
-    constructor(project: Project) : this(ArrayList<ExpressionReturnTypeReference>(), project) {}
-
-    fun tick(refs: List<String>) {
-        for (ref in refs) {
-            tick(ref)
         }
     }
-
-    private fun tick(ref: String, ticks: Int) {
-        var ticks = ticks
-
-        var refObject = getReference(ref)
-        if (refObject == null) {
-            tick(ref)
-            ticks -= 1
-            refObject = getReference(ref)
-        }
-        assert(refObject != null)
-        refObject!!.references += ticks
-    }
-
-    fun tick(results: ExpressionReturnTypeResults) {
-        for (ref in results.references) {
-            tick(ref.type, ref.references)
-        }
-    }
-
-    fun tick(ref: String) {
-        if (ref.isEmpty()) {
-            return
-        }
-        var result = getReference(ref)
-        if (result != null) {
-            result.tick()
-        } else {
-            changed = true
-            result = ExpressionReturnTypeReference(ref)
-            references.add(result)
-        }
-    }
-
-    fun getReference(ref: String): ExpressionReturnTypeReference? {
-        if (ref.isEmpty()) {
-            return null
-        }
-        for (result in references) {
-            if (result.type == ref) {
-                return result
-            }
-        }
-        return null
-    }
-
-    fun isReferenced(ref: String): Boolean {
-        return getReference(ref) != null || inheritanceUpAndDown.contains(ref)
-    }
-
-    private fun getInheritanceUpAndDown(referencedAncestors: MutableList<String>, className: String) {
-        if (referencedAncestors.contains(className)) {
-            return
-        }
-        for (currentClassName in ObjJInheritanceUtil.getInheritanceUpAndDown(className, project)) {
-            if (!referencedAncestors.contains(currentClassName)) {
-                referencedAncestors.add(currentClassName)
-            }
-        }
-    }
-
-    fun numReferences(ref: String): Int {
-        val result = getReference(ref)
-        return result?.references ?: 0
-    }
-
-}
-
-class ExpressionReturnTypeReference internal constructor(val type: String) {
-    var references: Int = 0
-        internal set
-
-    init {
-        references = 1
-    }
-
-    internal fun tick(): Int {
-        return ++references
-    }
+    return out
 }

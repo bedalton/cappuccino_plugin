@@ -65,7 +65,7 @@ class ObjJVariableReference(
         if (classes != null) {
             return classes
         }
-        classes = ObjJInheritanceUtil.getAllInheritedClasses(myElement.containingClassName, myElement.project)
+        classes = ObjJInheritanceUtil.getAllInheritedClasses(myElement.containingClassName, myElement.project).toList()
         allInheritedClasses = classes
         return classes
     }

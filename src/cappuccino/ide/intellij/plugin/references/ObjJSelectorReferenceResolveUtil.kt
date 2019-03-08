@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
+import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
@@ -235,7 +236,7 @@ object ObjJSelectorReferenceResolveUtil {
                 }
             }
         }
-        return packageResolveResult(result, otherResults, containingClasses)
+        return packageResolveResult(result, otherResults, containingClasses?.toList())
     }
 
 
@@ -308,7 +309,7 @@ object ObjJSelectorReferenceResolveUtil {
             val possibleClasses = getPossibleClassTypesForCallTarget(callTarget)
             if (possibleClasses.isNotEmpty()) {
                 //LOGGER.info("Found call target type")
-                return possibleClasses
+                return possibleClasses.toList()
             }
         }
         //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
@@ -323,8 +324,8 @@ object ObjJSelectorReferenceResolveUtil {
         return classConstraints
     }
 
-    fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : List<String> {
-        val qualifiedReference = callTarget.qualifiedReference ?: return listOf()
+    fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : Set<String> {
+        val qualifiedReference = callTarget.qualifiedReference ?: return setOf()
         val methodCall = qualifiedReference.methodCall
         if (methodCall != null) {
             if (methodCall.selector?.text == "alloc") {
@@ -334,7 +335,7 @@ object ObjJSelectorReferenceResolveUtil {
         val variables = qualifiedReference.variableNameList
 
         if (variables.size != 1) {
-            return listOf()
+            return setOf()
         }
         val variableName = variables[0]
         val variableNameText = variableName.text
@@ -344,7 +345,7 @@ object ObjJSelectorReferenceResolveUtil {
             else -> {
                 ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
             }
-        } ?: return listOf(ObjJClassType.UNDETERMINED)
+        } ?: return ObjJVariableTypeResolver.resolveVariableType(variableName)
         return ObjJInheritanceUtil.getAllInheritedClasses(className, callTarget.project, true)
     }
 
