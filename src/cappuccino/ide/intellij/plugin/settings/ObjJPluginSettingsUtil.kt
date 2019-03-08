@@ -66,11 +66,8 @@ object ObjJPluginSettingsUtil {
 
         override var value: String?
             get() = ObjJPluginSettingsUtil.getValue(key, defaultValue)
-            set(value) {
-                var value = value
-                if (value == null) {
-                    value = defaultValue
-                }
+            set(valueIn) {
+                val value = valueIn ?: defaultValue
                 ObjJPluginSettingsUtil.setValue(key, value, defaultValue)
             }
     }
@@ -79,11 +76,8 @@ object ObjJPluginSettingsUtil {
 
         override var value: Int?
             get() = ObjJPluginSettingsUtil.getInt(key, defaultValue)
-            set(value) {
-                var value = value
-                if (value == null) {
-                    value = defaultValue
-                }
+            set(valueIn) {
+                val value = valueIn ?: defaultValue
                 ObjJPluginSettingsUtil.setValue(key, value, defaultValue)
             }
     }
@@ -92,11 +86,8 @@ object ObjJPluginSettingsUtil {
 
         override var value: Boolean?
             get() = ObjJPluginSettingsUtil.getBoolean(key, defaultValue)
-            set(value) {
-                var value = value
-                if (value == null) {
-                    value = defaultValue
-                }
+            set(valueIn) {
+                val value = valueIn ?: defaultValue
                 ObjJPluginSettingsUtil.setValue(key, value, defaultValue)
             }
     }
@@ -105,11 +96,8 @@ object ObjJPluginSettingsUtil {
 
         override var value: Float?
             get() = ObjJPluginSettingsUtil.getFloat(key, defaultValue)
-            set(value) {
-                var value = value
-                if (value == null) {
-                    value = defaultValue
-                }
+            set(valueIn) {
+                val value = valueIn ?: defaultValue
                 ObjJPluginSettingsUtil.setValue(key, value, defaultValue)
             }
     }
@@ -121,11 +109,8 @@ object ObjJPluginSettingsUtil {
                 val rawValue = ObjJPluginSettingsUtil.getInt(key, defaultValue.value)
                 return AnnotationLevel.getAnnotationLevel(rawValue)
             }
-            set(value) {
-                var value = value
-                if (value == null) {
-                    value = defaultValue
-                }
+            set(valueIn) {
+                val value = valueIn ?: defaultValue
                 ObjJPluginSettingsUtil.setValue(key, value.value, defaultValue.value)
             }
     }

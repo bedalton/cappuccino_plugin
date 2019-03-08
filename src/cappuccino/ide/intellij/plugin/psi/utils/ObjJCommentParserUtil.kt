@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
@@ -12,7 +13,9 @@ import java.util.regex.Pattern
 
 object ObjJCommentParserUtil {
 
-    private val LOGGER: Logger = Logger.getLogger(ObjJCommentParserUtil::class.java.canonicalName)
+    private val LOGGER: Logger by lazy {
+        Logger.getLogger(ObjJCommentParserUtil::class.java.canonicalName)
+    }
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
     private const val IGNORE_FLAG = "@ignore"
     private const val NO_INDEX_FLAG = "@noIndex"
@@ -45,7 +48,9 @@ object ObjJCommentParserUtil {
      */
     fun noIndex(elementIn: PsiElement, noIndex: NoIndex): Boolean {
         return checkInInheritedComments(elementIn, true) {
-            searchCommentForFlags(it.text, NO_INDEX_FLAG, noIndex.flag)
+            searchCommentForFlags(it.text, NO_INDEX_FLAG, noIndex.flag) {
+                true
+            }
         }
     }
 
@@ -64,15 +69,26 @@ object ObjJCommentParserUtil {
     @Suppress("MemberVisibilityCanBePrivate")
     fun isIgnored(elementIn: PsiElement?, flag: ObjJSuppressInspectionFlags? = null, requiredMatchingParam: String? = null, recursive: Boolean = true): Boolean {
         return checkInInheritedComments(elementIn, recursive) {
-            return@checkInInheritedComments ObjJCommentParserUtil.isIgnored(it.text, flag, requiredMatchingParam)
+            return@checkInInheritedComments ObjJCommentParserUtil.isIgnored(it.text, flag?.flag, requiredMatchingParam) {
+                when (flag) {
+                    ObjJSuppressInspectionFlags.IGNORE_CLASS -> ObjJPluginSettings.unqualifiedIgnore_ignoreClassAndContents
+                    ObjJSuppressInspectionFlags.IGNORE_METHOD -> ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration
+                    ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE -> ObjJPluginSettings.unqualifiedIgnore_ignoreConflictingMethodDeclaration
+                    ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT -> ObjJPluginSettings.unqualifiedIgnore_ignoreMethodReturnErrors
+                    ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR -> ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors
+                    ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_FUNCTION -> ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration
+                    ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR -> ObjJPluginSettings.unqualifiedIgnore_ignoreUndeclaredVariables
+                    else -> true
+                }
+            }
         }
     }
 
-    private fun isIgnored(text: String, flag: ObjJSuppressInspectionFlags? = null, requiredMatchingParam: String? = null): Boolean {
-        return searchCommentForFlags(text, IGNORE_FLAG, flag?.flag, requiredMatchingParam)
+    private fun isIgnored(text: String, flag: String? = null, requiredMatchingParam: String? = null, onNoTag:()->Boolean): Boolean {
+        return searchCommentForFlags(text, IGNORE_FLAG, flag, requiredMatchingParam, onNoTag)
     }
 
-    private fun searchCommentForFlags(text: String, prefix: String, flag: String?, param: String? = null): Boolean {
+    private fun searchCommentForFlags(text: String, prefix: String, flag: String?, param: String? = null, onNoTag:() -> Boolean): Boolean {
         text.split("\\n".toRegex()).forEach lineForEach@{ line ->
             if (text.contains(prefix)) {
                 // Take all text in line after @ignore and tokenize it
@@ -83,7 +99,10 @@ object ObjJCommentParserUtil {
 
                 // if flag is null or there are no actual flags set
                 // return default of true
-                if (flag == null || flags.isEmpty()) {
+                if (flag == null) {
+                    return true
+                }
+                if (flags.isEmpty() && onNoTag()) {
                     return true
                 }
 

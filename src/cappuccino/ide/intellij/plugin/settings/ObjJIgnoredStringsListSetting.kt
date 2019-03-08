@@ -8,17 +8,17 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
 
     fun ignoreKeyword(keyword:String) {
         if (ignoredKeywords.contains(keyword)) {
-            return;
+            return
         }
-        ignoredKeywords += keyword;
+        ignoredKeywords = ignoredKeywords + keyword
         ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
     fun removeIgnoredKeyword(keyword:String) {
         if (!ignoredKeywords.contains(keyword)) {
-            return;
+            return
         }
-        ignoredKeywords -= keyword;
+        ignoredKeywords = ignoredKeywords - keyword
         ignoreKeywords(ignoredKeywords.joinToString(IGNORE_KEYWORDS_DELIM))
     }
 
@@ -27,27 +27,27 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
     }
 
     fun isIgnoredKeyword(keyword:String) : Boolean {
-        return ignoredKeywords.contains(keyword);
+        return ignoredKeywords.contains(keyword)
     }
 
-    private fun ignoreKeywords(keywords:String) {
+    fun ignoreKeywords(keywords:String) {
         ignoredKeywordsSetting.value = keywords
-        ignoredKeywords = loadIgnoredKeywords();
+        ignoredKeywords = loadIgnoredKeywords()
     }
 
     private fun loadIgnoredKeywords() : MutableList<String> {
         val ignoredKeywords:MutableList<String> = ArrayList()
-        val keywordsString:String = ignoredKeywordsSetting.value ?: "";
+        val keywordsString:String = ignoredKeywordsSetting.value ?: ""
         for (keyword in keywordsString.split(IGNORE_KEYWORDS_DELIM)) {
-            val trimmedKeyword = keyword.trim();
+            val trimmedKeyword = keyword.trim()
             if (trimmedKeyword.isEmpty()) {
-                continue;
+                continue
             }
             ignoredKeywords.add(trimmedKeyword)
         }
-        return ignoredKeywords;
+        return ignoredKeywords
     }
     companion object {
-        private val IGNORE_KEYWORDS_DELIM = ","
+        public val IGNORE_KEYWORDS_DELIM = ","
     }
 }

@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>cappuccino.ide.intellij.plugin</id>
+  <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
   <version>0.3.0</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
@@ -96,7 +96,7 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/ObjJColorSchemeDefault.xml"/>
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
-
+    <applicationConfigurable instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
     <!-- ObjJ Libraries -->
     <!--sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" /-->
 
