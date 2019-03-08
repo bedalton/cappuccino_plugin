@@ -33,6 +33,7 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
+import com.intellij.codeInsight.lookup.LookupElement
 
 class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
@@ -48,34 +49,71 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
 
         if (element.getElementType() in ObjJTokenSets.COMMENTS) {
             val text = element.text
-            if (!text.contains("@var")) {
-                resultSet.stopHere()
-                return
-            }
             val commentText = text.substringBefore(CARET_INDICATOR, "")
-            val commentTokenParts:List<String> = commentText.split("\\s+".toRegex())
+            val commentTokenParts:List<String> = commentText.split("\\s+".toRegex()).map{ it.trim() }.filterNot { it.isEmpty() || it.contains("*") || it == "//" }
             var afterVar = false
             var indexAfter = -1
-            for (part in commentTokenParts) {
-                if (part == "@var") {
-                    afterVar = true
-                    continue
-                }
-                if (!afterVar) {
-                    continue
-                }
-                indexAfter++
-                if (indexAfter == 0) {
-                    getClassNameCompletions(resultSet, element)
-                } else if (indexAfter == 1) {
-                    val variableNames = element.getParentBlockChildrenOfType(ObjJVariableName::class.java, true).map {
-                        it.text
+            var currentIndex = 0
+            if (text.contains("@var")) {
+                loop@ for (part in commentTokenParts) {
+                    currentIndex++
+                    if (part == "@var") {
+                        afterVar = true
+                        indexAfter = currentIndex
+                        continue
                     }
-                    addCompletionElementsSimple(resultSet, variableNames)
-                } else {
-                    return
+                    if (!afterVar) {
+                        continue
+                    }
+                    val place = commentTokenParts.size - indexAfter
+                    when (place) {
+                        0,1 -> getClassNameCompletions(resultSet, element)
+                        2 -> {
+                            val variableNames = ObjJVariableNameUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
+                                it.text
+                            }
+                            addCompletionElementsSimple(resultSet, variableNames)
+                        }
+                        else -> break@loop
+                    }
                 }
+            } else if (text.contains("@ignore")) {
+                var precededByComma = false
+                loop@ for (part in commentTokenParts) {
+                    currentIndex++
+                    if (part == "@ignore") {
+                        afterVar = true
+                        indexAfter = currentIndex
+                        continue
+                    }
+                    if (!afterVar) {
+                        continue
+                    }
+                    precededByComma = part.trim() == ","
+                    if (precededByComma) {
+                        continue
+                    }
+                    
+                    val place = commentTokenParts.size - indexAfter
+                    when {
+                        place <= 1 || precededByComma -> addCompletionElementsSimple(resultSet, ObjJSuppressInspectionFlags.values().map { it.flag })
+                        else -> break@loop
+                    }
+                }
+            } else {
+                addCompletionElementsSimple(resultSet, listOf(
+                        ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
+                ))
+                resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler {
+                    insertionContext: InsertionContext, lookupElement: LookupElement ->
+                    insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
+                })
+                resultSet.addElement(LookupElementBuilder.create("var").withPresentableText("@var").withInsertHandler {
+                    insertionContext: InsertionContext, lookupElement: LookupElement ->
+                    insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
+                })
             }
+            resultSet.stopHere()
             return
         }
 
@@ -154,7 +192,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
                 if (ObjJIgnoreEvaluatorUtil.isIgnored(it) || ObjJIgnoreEvaluatorUtil.noIndex(it, NoIndex.CLASS) || ObjJIgnoreEvaluatorUtil.noIndex(it, NoIndex.ANY)) {
                     return@forEach
                 }
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
+                resultSet.addElement(LookupElementBuilder.create(it.getClassNameString()).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
             resultSet.addElement(LookupElementBuilder.create("self").withInsertHandler(ObjJClassNameInsertHandler.instance))
             resultSet.addElement(LookupElementBuilder.create("super").withInsertHandler(ObjJClassNameInsertHandler.instance))

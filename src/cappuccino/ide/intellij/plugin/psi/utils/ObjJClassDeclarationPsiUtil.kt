@@ -9,17 +9,14 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import com.intellij.ide.presentation.Presentation
 import icons.ObjJIcons
 import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
 import javax.swing.Icon
 
@@ -88,7 +85,7 @@ fun getContainingSuperClass(psiElement:ObjJCompositeElement,returnDefault: Boole
 
 fun addProtocols(
         classDeclarationElement: ObjJClassDeclarationElement<*>,
-        protocols: MutableList<String>) {
+        protocols: MutableSet<String>) {
     val stub = classDeclarationElement.stub
     val newProtocols: List<*>
     if (stub != null) {
@@ -154,7 +151,7 @@ fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: 
             return true
         }
     }
-    val instanceVariableDeclarationList = implementationDeclaration.instanceVariableList?.instanceVariableDeclarationList ?: return false;
+    val instanceVariableDeclarationList = implementationDeclaration.instanceVariableList?.instanceVariableDeclarationList ?: return false
     for (instanceVariableDeclaration in instanceVariableDeclarationList) {
         if (instanceVariableDeclaration.accessor == null) {
             continue
@@ -192,10 +189,10 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
     val thisClassName = declaration.getClassNameString()
     val required = ArrayList<ObjJMethodHeader>()
     val optional = ArrayList<ObjJMethodHeader>()
-    val inheritedProtocols = ObjJInheritanceUtil.getAllInheritedProtocols(protocolName, project)
+    val inheritedProtocols = ObjJInheritanceUtil.appendAllInheritedProtocolsToSet(protocolName, project)
     for (protocolDeclaration in inheritedProtocols) {
         //Logger.getAnonymousLogger().log(Level.INFO, "Checking protocol <"+protocolDeclaration.getClassNameString()+"> for unimplemented methods.");
-        addUnimplementedProtocolMethods(project, thisClassName, protocolDeclaration.getMethodHeaderList(), required)
+        addUnimplementedProtocolMethods(project, thisClassName, protocolDeclaration.methodHeaderList, required)
         for (scopedBlock in protocolDeclaration.protocolScopedMethodBlockList) {
             ProgressIndicatorProvider.checkCanceled()
             val headerList = if (scopedBlock.atOptional != null) optional else required
@@ -216,7 +213,7 @@ private fun addUnimplementedProtocolMethods(project: Project, className: String,
 }
 
 private fun isProtocolMethodImplemented(project: Project, classNameIn: String?, selector: String): Boolean {
-    var className: String? = classNameIn ?: return false;
+    var className: String? = classNameIn ?: return false
     while (className != null) {
         ProgressIndicatorProvider.checkCanceled()
         for (methodHeaderDeclaration in ObjJClassMethodIndex.instance[className, project]) {
@@ -235,7 +232,7 @@ private fun isProtocolMethodImplemented(project: Project, classNameIn: String?, 
 fun getPresentation(declaration:ObjJImplementationDeclaration): ItemPresentation {
     //LOGGER.log(Level.INFO, "Get Presentation <Implementation:"+implementationDeclaration.getClassNameString()+">");
     val text = declaration.getClassNameString() + if (declaration.isCategory()) " (${declaration.categoryName?.className?.text})" else ""
-    val icon = if (declaration.isCategory()) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
+    val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
         override fun getPresentableText(): String {
@@ -309,7 +306,7 @@ fun getPresentation(className:ObjJClassName) : ItemPresentation {
     } else if (parent is ObjJProtocolDeclaration) {
         return getPresentation(parent)
     }
-    return getDummyPresenter(className);
+    return getDummyPresenter(className)
 }
 
 fun getDummyPresenter(psiElement: ObjJCompositeElement) : ItemPresentation {

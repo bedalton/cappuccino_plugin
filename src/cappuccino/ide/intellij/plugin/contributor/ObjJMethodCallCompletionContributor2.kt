@@ -69,7 +69,7 @@ object ObjJMethodCallCompletionContributor2 {
         //LOGGER.log(Level.INFO, String.format("Call target: <%s> has scope of <%s> with selector: <%s>", elementsParentMethodCall.callTargetText, scope.toString(), selectorString))
         //Determine possible containing class names
         val possibleContainingClassNames: List<String> = when {
-            scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project)
+            scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
             selector != null -> ObjJSelectorReferenceResolveUtil.getClassConstraints(selector)
             else -> emptyList()
         }
