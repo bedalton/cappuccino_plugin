@@ -342,7 +342,7 @@ object ObjJSelectorReferenceResolveUtil {
             "self" -> variableName.containingClassName
             "super" -> variableName.getContainingSuperClass(true)?.text
             else -> {
-                ObjJCommentParserUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
+                ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
             }
         } ?: return listOf(ObjJClassType.UNDETERMINED)
         return ObjJInheritanceUtil.getAllInheritedClasses(className, callTarget.project, true)

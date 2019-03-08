@@ -3,7 +3,7 @@ package cappuccino.ide.intellij.plugin.fixes
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
