@@ -56,7 +56,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> !possibleFirstVar.isEquivalentTo(variableNameElement) && isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
 
     }
 
@@ -94,6 +94,7 @@ object ObjJVariableNameResolveUtil {
         }
         return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {
             possibleFirstDeclaration ->
+            !possibleFirstDeclaration.isEquivalentTo(variableNameElement)
             variableNameElement.text == possibleFirstDeclaration.text &&
                     (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
                     variableNameElement.indexInQualifiedReference == 0
