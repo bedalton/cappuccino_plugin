@@ -35,7 +35,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
-        if ((parentType == ObjJ_PROTOCOL_DECLARATION || parentType == ObjJ_PROTOCOL_SCOPED_BLOCK) && elementType == ObjJ_METHOD_HEADER) {
+        if ((parentType == ObjJ_PROTOCOL_DECLARATION || parentType == ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK) && elementType == ObjJ_METHOD_HEADER) {
             return Indent.getNoneIndent()
         }
 

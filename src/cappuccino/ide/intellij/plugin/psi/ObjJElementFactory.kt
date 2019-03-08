@@ -121,10 +121,18 @@ object ObjJElementFactory {
     }
 
     fun createMethodDeclarationText(methodHeader: ObjJMethodHeader) : String {
+        var returnStatementString = getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement).trim()
+        returnStatementString = if (returnStatementString.isNotEmpty()) {
+            "   " + returnStatementString+"\n"
+        } else {
+            ""
+        }
+
+
         return  "${methodHeader.text}\n" +
                 "{\n" +
                 "   //@todo provide implementation\n" +
-                "   ${getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement)}\n" +
+                returnStatementString +
                 "}"
     }
 
