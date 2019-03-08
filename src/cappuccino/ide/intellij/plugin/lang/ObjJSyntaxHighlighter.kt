@@ -146,6 +146,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
         val GLOBAL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_GLOBAL_VARIABLE", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE)
         val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val GLOBAL_FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_GLOBAL_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
 
     }

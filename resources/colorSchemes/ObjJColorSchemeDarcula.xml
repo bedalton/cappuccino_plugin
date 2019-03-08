@@ -1,23 +1,53 @@
 <?xml version='1.0'?>
 <list>
+
   <option name="ObjJ_VARIABLE_TYPE">
     <value>
       <option name="FOREGROUND" value="EB9448"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
+
   <option name="ObjJ_PARAMETER_VARIABLE">
     <value>
       <option name="FOREGROUND" value="697FB7"/>
     </value>
   </option>
-  <option name="ObjJ_FUNCTION_NAME" />
+
+  <option name="ObjJ_AT_STATEMENT">
+    <value>
+      <option name="FOREGROUND" value="6B88C5" />
+      <option name="FONT_TYPE" value="1" />
+    </value>
+  </option>
+
+  <option name="ObjJ_PRE_PROC">
+    <value>
+      <option name="FOREGROUND" value="6B88C5" />
+      <option name="FONT_TYPE" value="1" />
+    </value>
+  </option>
+
+  <option name="ObjJ_FUNCTION_NAME">
+    <value>
+      <option name="FONT_TYPE" value="0" />
+    </value>
+  </option>
+
+  <option name="ObjJ_GLOBAL_FUNCTION_NAME">
+    <value>
+      <option name="FOREGROUND" value="E8876B"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+
   <option name="ObjJ_INSTANCE_VARS">
     <value>
       <option name="FOREGROUND" value="A17797"/>
       <option name="FONT_TYPE" value="1"/>
     </value>
   </option>
+
   <option name="ObjJ_FILE_LEVEL_VARIABLE">
     <value>
       <option name="FOREGROUND" value="998302"/>
