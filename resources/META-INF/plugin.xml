@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.3.01</version>
+  <version>0.3.02</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
 
   <description><![CDATA[
@@ -41,9 +41,25 @@
 	<li>Invalid method call selector warnings</li>
 	<li>Improved automatic indentation. Formatter still needs work</li>
 </ul>
+<h2>Experimental</h2>
+<ul>
+	<li>Infer variable type for method call completion.<br/>
+	 **May be too aggressive, eliminating valid options
+	 </li>
+</ul>
     ]]></description>
 
   <change-notes><![CDATA[
+      <h4>Version: 0.3.02</h4>
+      <ul>
+        <li>Added experimental type resolution<br/>
+        <ul>
+          <li>Enabled by default, but can be disabled in settings if causing problems</li>
+          <li>Can be disabled for statement with comment // doNotInferType</li>
+        </ul>
+
+        </li>
+      </ul>
       <h4>Version: 0.3.01</h4>
       <ul>
         <li>Improved function completion for file scoped functions</li>
