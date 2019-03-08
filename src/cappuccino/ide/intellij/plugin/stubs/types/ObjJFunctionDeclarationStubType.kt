@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlock
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFunctionDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiFile
 
 class ObjJFunctionDeclarationStubType internal constructor(
         debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJFunctionDeclarationImpl, ObjJFunctionDeclarationStubImpl>(debugName, ObjJFunctionDeclarationImpl::class.java, ObjJFunctionDeclarationStubImpl::class.java) {
@@ -27,7 +28,6 @@ class ObjJFunctionDeclarationStubType internal constructor(
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        val scope = node?.psi?.getContainingScope() ?: return false
-        return scope == ReferencedInScope.FILE
+        return node?.psi?.parent as? PsiFile != null
     }
 }

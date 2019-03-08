@@ -1050,9 +1050,7 @@ object ObjJPsiImplUtil {
         if (element == null) {
             return null
         }
-        return if (element.containingFile == null || element.containingFile.virtualFile == null) {
-            null
-        } else element.containingFile.virtualFile.name
+        return element.containingFile?.name ?: element.containingFile?.virtualFile?.name
     }
 
     @JvmStatic

@@ -8,11 +8,38 @@
   </option>
   <option name="ObjJ_PARAMETER_VARIABLE">
     <value>
-      <option name="FOREGROUND" value="5B6A7D"/>
+      <option name="FOREGROUND" value="6D7D99"/>
       <option name="FONT_TYPE" value="3"/>
     </value>
   </option>
-  <option name="ObjJ_FUNCTION_NAME" />
+
+  <option name="ObjJ_AT_STATEMENT">
+    <value>
+      <option name="FOREGROUND" value="3B88B4" />
+      <option name="FONT_TYPE" value="1" />
+    </value>
+  </option>
+
+  <option name="ObjJ_PRE_PROC">
+    <value>
+      <option name="FOREGROUND" value="3B88B4" />
+      <option name="FONT_TYPE" value="1" />
+    </value>
+  </option>
+
+  <option name="ObjJ_FUNCTION_NAME">
+    <value>
+      <option name="FONT_TYPE" value="0" />
+    </value>
+  </option>
+
+  <option name="ObjJ_GLOBAL_FUNCTION_NAME">
+    <value>
+      <option name="FOREGROUND" value="B14E67"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+
   <option name="ObjJ_INSTANCE_VARS">
     <value>
       <option name="FOREGROUND" value="66207A"/>
