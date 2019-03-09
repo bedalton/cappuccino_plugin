@@ -52,12 +52,13 @@
   <change-notes><![CDATA[
       <h4>Version: 0.3.02</h4>
       <ul>
+        <li>Improved suggestion highlighting in suggestions for known types.<br/>
+        </li>
         <li>Added experimental type resolution<br/>
         <ul>
           <li>Enabled by default, but can be disabled in settings if causing problems</li>
           <li>Can be disabled for statement with comment // doNotInferType</li>
         </ul>
-
         </li>
       </ul>
       <h4>Version: 0.3.01</h4>
