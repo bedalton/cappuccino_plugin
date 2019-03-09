@@ -61,6 +61,7 @@
           </ul>
         </li>
         <li>Fixed error on @action return type
+        <li>Improved self and super resolution to account for method call</li>
       </ul>
       <h4>Version: 0.3.01</h4>
       <ul>
