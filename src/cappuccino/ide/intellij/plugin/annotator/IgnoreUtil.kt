@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object IgnoreUtil {
@@ -34,8 +33,8 @@ object IgnoreUtil {
         return false
     }
 
-    private fun getPrecedingComment(rootElement: PsiElement): ObjJComment? {
-        var rootElement = rootElement
+    private fun getPrecedingComment(rootElementIn: PsiElement): ObjJComment? {
+        var rootElement = rootElementIn
         var prev = rootElement.getPreviousNonEmptySibling(true)
         if (prev is ObjJComment) {
             return rootElement.prevSibling as ObjJComment

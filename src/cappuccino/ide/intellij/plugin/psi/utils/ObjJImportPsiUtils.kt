@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
 import java.util.regex.MatchResult
 import java.util.regex.Pattern
 
+@Suppress("UNUSED_PARAMETER")
 object ObjJImportPsiUtils {
     private val FRAMEWORK_REGEX = Pattern.compile("<(.*)/(.*)>")
 

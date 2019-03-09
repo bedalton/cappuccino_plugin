@@ -56,7 +56,7 @@ class ObjJVariableNameByScopeIndex private constructor() : ObjJStringStubIndexBa
         return getKeysInRange(fileName, blockStart, blockEnd, null, project)
     }
 
-    private fun getKeysInRange(fileName: String, blockStart: Int, blockEnd: Int, searchScope: GlobalSearchScope?, project: Project): List<String> {
+    private fun getKeysInRange(fileName: String, blockStart: Int, blockEnd: Int, @Suppress("UNUSED_PARAMETER") searchScope: GlobalSearchScope?, project: Project): List<String> {
         val keys = ArrayList<String>()
         val queryKey = getIndexKey(fileName, "(\\d+)", "(\\d+)")
 

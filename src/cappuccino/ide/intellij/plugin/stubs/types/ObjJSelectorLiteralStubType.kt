@@ -52,7 +52,7 @@ class ObjJSelectorLiteralStubType internal constructor(
         return ObjJSelectorLiteralStubImpl(stubParent, containingClassName, selectorStrings, shouldResolve)
     }
 
-    override fun indexStub(stub: ObjJSelectorLiteralStub, indexSink: IndexSink) {
-        ServiceManager.getService(StubIndexService::class.java).indexSelectorLiteral(stub, indexSink)
+    override fun indexStub(stub: ObjJSelectorLiteralStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexSelectorLiteral(stub, sink)
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.openapi.project.DumbService
@@ -20,10 +22,11 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.VOID_CLA
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import kotlin.collections.ArrayList
 
+@Suppress("UNUSED_PARAMETER")
 object ObjJMethodPsiUtils {
 
     private val LOGGER = Logger.getLogger(ObjJMethodPsiUtils::class.java.canonicalName)
-    val SELECTOR_SYMBOL = ":"
+    const val SELECTOR_SYMBOL = ":"
     val EMPTY_SELECTOR = getSelectorString("{EMPTY}")
     val ALLOC_SELECTOR = getSelectorString("alloc")
 
@@ -44,7 +47,7 @@ object ObjJMethodPsiUtils {
     fun getSelectorStringsFromSelectorList(selectors:List<ObjJSelector?>) : List<String> {
         val out:MutableList<String> = ArrayList()
         selectors.forEach {
-            out.add(if (it != null) it.getSelectorString(false) else "")
+            out.add(it?.getSelectorString(false) ?: "")
         }
         return out
     }
@@ -85,7 +88,7 @@ object ObjJMethodPsiUtils {
         return out
     }
 
-    fun getSelectorStringsFromMethodDeclarationSelectorList(
+    private fun getSelectorStringsFromMethodDeclarationSelectorList(
             selectorElements: List<ObjJMethodDeclarationSelector>): List<String> {
         if (selectorElements.isEmpty()) {
             return EMPTY_STRING_ARRAY
@@ -160,10 +163,10 @@ object ObjJMethodPsiUtils {
 
     @JvmStatic
     fun getSelectorList(methodHeader:ObjJMethodHeader): List<ObjJSelector?> {
-        val out:MutableList<ObjJSelector?> = ArrayList();
-        methodHeader.methodDeclarationSelectorList.forEach({selector ->
+        val out:MutableList<ObjJSelector?> = ArrayList()
+        methodHeader.methodDeclarationSelectorList.forEach { selector ->
             out.add(selector.selector)
-        })
+        }
         return out
     }
 
@@ -225,21 +228,20 @@ object ObjJMethodPsiUtils {
     fun getIdReturnType(varTypeId: ObjJVarTypeId, follow: Boolean = true): String {
         if (varTypeId.stub != null) {
             val stub = varTypeId.stub
-            if (!isUniversalMethodCaller(stub.idType) && stub.idType != null && stub.idType != "id") {
+            if (!isUniversalMethodCaller(stub.idType) && stub.idType != "id") {
                 //return stub.getIdType();
             }
         }
         if (varTypeId.className != null) {
             return varTypeId.className!!.text
         }
-        val declaration = varTypeId.getParentOfType(ObjJMethodDeclaration::class.java)
-                ?: //LOGGER.log(Level.INFO, "VarTypeId: Not Contained in a method declaration");
+        if (varTypeId.getParentOfType(ObjJMethodDeclaration::class.java) == null)
                 return ObjJClassType.ID
         var returnType: String?
-        try {
-            returnType = ObjJClassType.ID//getReturnTypeFromReturnStatements(declaration, follow)
+        returnType = try {
+            ObjJClassType.ID//getReturnTypeFromReturnStatements(declaration, follow)
         } catch (e: MixedReturnTypeException) {
-            returnType = e.returnTypesList[0]
+            e.returnTypesList[0]
         }
 
         if (returnType == ObjJClassType.UNDETERMINED) {
@@ -294,7 +296,7 @@ object ObjJMethodPsiUtils {
         if (accessorProperty.stub != null) {
             return accessorProperty.stub!!.returnTypeAsString
         }
-        val variableType = accessorProperty.getVarType()
+        val variableType = accessorProperty.varType
         return variableType ?: UNDETERMINED
     }
 
@@ -313,6 +315,7 @@ object ObjJMethodPsiUtils {
 
     fun findSelectorMatching(method: ObjJHasMethodSelector, selectorString: String): ObjJSelector? {
         for (selectorOb in method.selectorList) {
+            @Suppress("USELESS_IS_CHECK")
             if (selectorOb !is ObjJSelector) {
                 continue
             }
@@ -440,12 +443,10 @@ object ObjJMethodPsiUtils {
         companion object {
 
             fun getScope(scopeMarker: String): MethodScope {
-                return if (scopeMarker == STATIC.scopeMarker) {
-                    STATIC
-                } else if (scopeMarker == INSTANCE.scopeMarker) {
-                    INSTANCE
-                } else {
-                    INVALID
+                return when (scopeMarker) {
+                    STATIC.scopeMarker -> STATIC
+                    INSTANCE.scopeMarker -> INSTANCE
+                    else -> INVALID
                 }
             }
         }

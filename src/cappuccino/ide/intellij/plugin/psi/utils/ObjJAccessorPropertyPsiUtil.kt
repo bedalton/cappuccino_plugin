@@ -173,7 +173,7 @@ object ObjJAccessorPropertyPsiUtil {
      * @param accessorProperty accessor property
      * @return instance variable virtual getter method
      */
-    fun getGetterSelector(variableName: String, varType: String, accessorProperty: ObjJAccessorProperty): String? {
+    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") varType: String, accessorProperty: ObjJAccessorProperty): String? {
         return accessorProperty.stub?.getter ?: when (accessorProperty.accessorPropertyType.text) {
             "getter", "property", "copy", "readonly" -> (accessorProperty.accessor?.text
                     ?: variableName) + ObjJMethodPsiUtils.SELECTOR_SYMBOL
@@ -187,7 +187,7 @@ object ObjJAccessorPropertyPsiUtil {
      * @param varType var type as string
      * @return instance variable virtual getter method
      */
-    fun getGetterSelector(variableName: String, varType: String): String {
+    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") varType: String): String {
         return variableName + ObjJMethodPsiUtils.SELECTOR_SYMBOL
     }
 

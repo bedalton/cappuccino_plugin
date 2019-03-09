@@ -167,9 +167,9 @@ private fun getReturnTypeFromMethodCall(expr: ObjJExpr?, follow: Boolean): Strin
         return null
     }
     val returnTypes = ArrayList<String>()
-    var returnType: String? = null
+    var returnType: String?
     for (exprElementInLoop in getAllSubExpressions(expr, true)) {
-        val methodCall: ObjJMethodCall = exprElementInLoop?.leftExpr?.methodCall ?: continue
+        val methodCall: ObjJMethodCall = exprElementInLoop.leftExpr?.methodCall ?: continue
         try {
             returnType = getReturnTypeFromMethodCall(methodCall, follow, null)
             if (returnType == null) {
@@ -535,7 +535,7 @@ private fun getReturnTypeFromMethodCall(methodCall: ObjJMethodCall, follow: Bool
             continue
         }
         if (methodHeaderDeclaration is ObjJMethodHeader) {
-            returnType = ObjJMethodPsiUtils.getReturnType(methodHeaderDeclaration as ObjJMethodHeader, follow)
+            returnType = ObjJMethodPsiUtils.getReturnType(methodHeaderDeclaration, follow)
         }
         if (returnType == null) {
             continue

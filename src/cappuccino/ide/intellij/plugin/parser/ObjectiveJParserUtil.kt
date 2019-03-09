@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package cappuccino.ide.intellij.plugin.parser
 
 import com.intellij.lang.LighterASTNode
@@ -16,6 +18,7 @@ import com.intellij.psi.tree.TokenSet.WHITE_SPACE
 
 import java.util.Objects
 
+@Suppress("DEPRECATION")
 class ObjectiveJParserUtil : GeneratedParserUtilBase() {
     companion object {
 
@@ -153,7 +156,7 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             return elementType
         }
 
-        fun isTokenWhitespaceOrComment(token:IElementType): Boolean {
+        private fun isTokenWhitespaceOrComment(token:IElementType): Boolean {
             return token == TokenType.WHITE_SPACE ||
                     token == ObjJ_SINGLE_LINE_COMMENT ||
                     token == ObjJ_BLOCK_COMMENT_START ||

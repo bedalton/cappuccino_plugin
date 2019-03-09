@@ -16,7 +16,7 @@ object ObjJMethodDeclarationAnnotator {
         val containingClassName = containingClass.getClassNameString()
         Logger.getInstance(ObjJMethodDeclarationAnnotator::class.java).assertTrue(!DumbService.isDumb(project))
         for (classMethodHeader in ObjJClassMethodIndex.instance[containingClassName, project]) {
-            if (!containingClass.isEquivalentTo(classMethodHeader.getContainingClass())) {
+            if (!containingClass.isEquivalentTo(classMethodHeader.containingClass)) {
                 continue
             }
             if (classMethodHeader.isEquivalentTo(methodHeader)) {

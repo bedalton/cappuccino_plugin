@@ -32,7 +32,7 @@ class ObjJVarTypeIdStubType internal constructor(
         return ObjJVarTypeIdStubImpl(stubParent, idType, shouldResolve)
     }
 
-    override fun indexStub(stub: ObjJVarTypeIdStub, indexSink: IndexSink) {
+    override fun indexStub(stub: ObjJVarTypeIdStub, sink: IndexSink) {
         //ServiceManager.getService(StubIndexService.class).indexVarTypeId(stub, indexSink);
     }
 

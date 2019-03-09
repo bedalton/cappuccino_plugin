@@ -94,7 +94,7 @@ class ObjJVariableNameStubType internal constructor(
         return ObjJVariableNameStubImpl(parent, name, blockRanges, greatestRange, shouldResolve)
     }
 
-    override fun indexStub(stub: ObjJVariableNameStub, indexSink: IndexSink) {
-        ServiceManager.getService(StubIndexService::class.java).indexVariableName(stub, indexSink)
+    override fun indexStub(stub: ObjJVariableNameStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexVariableName(stub, sink)
     }
 }

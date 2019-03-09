@@ -16,6 +16,7 @@ import java.util.ArrayList
 import java.util.logging.Level
 import java.util.logging.Logger
 
+@Suppress("UNUSED_PARAMETER")
 object ObjJVariableNameUtil {
 
     private val LOGGER = Logger.getLogger("ObjJVariableNameUtil")
@@ -138,14 +139,10 @@ object ObjJVariableNameUtil {
     }
 
 
-    public fun getSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
+    fun getSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
         val result = getAllVariableNamesInAssignmentsInContainingBlocks(element, qualifiedNameIndex)
-        var currentSize = result.size
-        //LOGGER.log(Level.INFO, "Num from blocks: <"+currentSize+">");
         if (qualifiedNameIndex <= 1) {
             result.addAll(getAllContainingClassInstanceVariables(element))
-            //LOGGER.log(Level.INFO, "Num VariableNames after class vars: <"+result.size()+">");
-            currentSize = result.size
         }
 
         result.addAll(getAllAtGlobalFileVariables(element.containingFile))
@@ -217,7 +214,7 @@ object ObjJVariableNameUtil {
         if (DumbService.isDumb(element.project)) {
             return null
         }
-        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project] as MutableList
+        val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project]
         if (globalVariableDeclarations.isNotEmpty()) {
             //LOGGER.info("Sibling assignment is in global variable index")
             return globalVariableDeclarations[0].variableName
@@ -559,8 +556,8 @@ object ObjJVariableNameUtil {
     }
 
     private fun getAllIterationVariables(
-            iterationStatement: ObjJIterationStatement?): List<ObjJVariableName> {
-        var iterationStatement = iterationStatement
+            iterationStatementIn: ObjJIterationStatement?): List<ObjJVariableName> {
+        var iterationStatement = iterationStatementIn
         val result = ArrayList<ObjJVariableName>()
         while (iterationStatement != null) {
 
