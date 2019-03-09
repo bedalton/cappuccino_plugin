@@ -60,7 +60,7 @@ object ObjJVariableTypeResolver {
             return ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
         }
         val out = mutableSetOf<String>()
-        val varNameResults = getVariableTypeFromAssignments(variableName, recurse)
+        val varNameResults = getVariableTypeFromAssignments(variableName, recurse)?.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }?.toSet()
         if (varNameResults != null) {
             out.addAll(varNameResults)
         }

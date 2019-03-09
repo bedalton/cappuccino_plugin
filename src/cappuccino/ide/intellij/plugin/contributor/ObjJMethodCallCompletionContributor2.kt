@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -87,10 +88,20 @@ object ObjJMethodCallCompletionContributor2 {
     private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int) {
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
-                .filter { !(it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) || ObjJIgnoreEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)) && (!it.containingClassName.startsWith("_") || it.containingFile?.name == fileName) }
+                .filter {
+                    val isIgnored = it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
+                            ObjJIgnoreEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
+                    if (isIgnored) {
+                        false
+                    } else {
+                        !ObjJPluginSettings.ignoreUnderscoredClasses || !it.containingClassName.startsWith("_") || it.containingFile?.name == fileName
+                    }
+                }
         if (methodHeaders.isEmpty()) {
             return
         }
+        val filterIfStrict = ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown
+        val out = mutableListOf<SelectorCompletionPriorityTupple>()
         //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
         for (methodHeader: ObjJMethodHeaderDeclaration<*> in methodHeaders) {
             ProgressIndicatorProvider.checkCanceled()
@@ -99,17 +110,22 @@ object ObjJMethodCallCompletionContributor2 {
             if (!inScope(targetScope, methodHeader)) {
                 continue
             }
-            //Get the selector at index, or continue loop
-            val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames) {
-                if (possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName != possibleContainingClassNames[0]) {
+                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName != possibleContainingClassNames[0]) && filterIfStrict) {
                     continue
                 }
             }
+            //Get the selector at index, or continue loop
+            val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             //Determine the priority
             val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
             //Add the lookup element
-            ObjJSelectorLookupUtil.addSelectorLookupElement(result, selector, selectorIndex, priority)
+            out.add(SelectorCompletionPriorityTupple(selector, priority))
+        }
+
+        out.sortByDescending { it.priority }
+        out.forEach {
+            ObjJSelectorLookupUtil.addSelectorLookupElement(result, it.selector, selectorIndex, it.priority)
         }
     }
 
@@ -278,5 +294,7 @@ object ObjJMethodCallCompletionContributor2 {
         INSTANCE,
         ANY;
     }
+
+    internal data class SelectorCompletionPriorityTupple (val selector:ObjJSelector, val priority:Double)
 
 }

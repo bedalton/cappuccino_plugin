@@ -24,6 +24,15 @@ object ObjJPluginSettings {
         resolveCallTargetSetting.value = value
     }
 
+    private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN = "objj.resolve.calltarget.FILTER_STRICT_IF_TYPE_KNOWN"
+    private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN_DEFAULT = true
+    private val filterMethodCallsStrictIfTypeKnownSetting = BooleanSetting(RESOLVE_CALL_TARGET, RESOLVE_CALL_DEFAULT)
+    var filterMethodCallsStrictIfTypeKnown:Boolean get() {
+        return filterMethodCallsStrictIfTypeKnownSetting.value!!
+    } set (value) {
+        filterMethodCallsStrictIfTypeKnownSetting.value = value
+    }
+
     //CallTarget
     private const val COLLAPSE_BY_DEFAULT_KEY = "objj.resolve.calltarget.COLLAPSE_BY_DEFAULT"
     private const val COLLAPSE_BY_DEFAULT_DEFAULT = false
