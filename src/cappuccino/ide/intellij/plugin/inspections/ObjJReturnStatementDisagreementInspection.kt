@@ -100,7 +100,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             if (returnType == "@action") {
                 return
             } else {
-                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
+                //Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
             }
             val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
             val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
