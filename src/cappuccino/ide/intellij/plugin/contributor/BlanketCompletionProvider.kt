@@ -46,71 +46,7 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
         if (element.getElementType() in ObjJTokenSets.COMMENTS) {
-            val text = element.text
-            val commentText = text.substringBefore(CARET_INDICATOR, "")
-            val commentTokenParts:List<String> = commentText.split("\\s+".toRegex()).map{ it.trim() }.filterNot { it.isEmpty() || it.contains("*") || it == "//" }
-            var afterVar = false
-            var indexAfter = -1
-            var currentIndex = 0
-            if (text.contains("@var")) {
-                loop@ for (part in commentTokenParts) {
-                    currentIndex++
-                    if (part == "@var") {
-                        afterVar = true
-                        indexAfter = currentIndex
-                        continue
-                    }
-                    if (!afterVar) {
-                        continue
-                    }
-                    val place = commentTokenParts.size - indexAfter
-                    when (place) {
-                        0,1 -> getClassNameCompletions(resultSet, element)
-                        2 -> {
-                            val variableNames = ObjJVariableNameUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
-                                it.text
-                            }
-                            addCompletionElementsSimple(resultSet, variableNames)
-                        }
-                        else -> break@loop
-                    }
-                }
-            } else if (text.contains("@ignore")) {
-                var precededByComma: Boolean
-                loop@ for (part in commentTokenParts) {
-                    currentIndex++
-                    if (part == "@ignore") {
-                        afterVar = true
-                        indexAfter = currentIndex
-                        continue
-                    }
-                    if (!afterVar) {
-                        continue
-                    }
-                    precededByComma = part.trim() == ","
-                    if (precededByComma) {
-                        continue
-                    }
-
-                    val place = commentTokenParts.size - indexAfter
-                    when {
-                        place <= 1 || precededByComma -> addCompletionElementsSimple(resultSet, ObjJSuppressInspectionFlags.values().map { it.flag })
-                        else -> break@loop
-                    }
-                }
-            } else {
-                addCompletionElementsSimple(resultSet, listOf(
-                        ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
-                ))
-                resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler {
-                    insertionContext: InsertionContext, _: LookupElement ->
-                    insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
-                })
-                resultSet.addElement(LookupElementBuilder.create("var").withPresentableText("@var").withInsertHandler {
-                    insertionContext: InsertionContext, _: LookupElement ->
-                    insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
-                })
-            }
+            addCommentCompletions(resultSet, element)
             resultSet.stopHere()
             return
         }
@@ -160,11 +96,89 @@ class BlanketCompletionProvider : CompletionProvider<CompletionParameters>() {
         addCompletionElementsSimple(resultSet, results)
     }
 
+    private fun addCommentCompletions(resultSet:CompletionResultSet, element:PsiElement) {
+        val text = element.text?.substringBefore(CARET_INDICATOR, "") ?: return
+        for (commentLine in text.split("\\n".toRegex())) {
+            addCommentCompletionsForLine(resultSet, element, text)
+        }
+
+    }
+
+    private fun addCommentCompletionsForLine(resultSet: CompletionResultSet, element:PsiElement, textIn:String) {
+        val text = textIn.trim()
+        if (!text.startsWith("@")) {
+            return
+        }
+        val commentTokenParts:List<String> = text.split("\\s+".toRegex()).map{ it.trim() }.filterNot { it.isEmpty() || it.contains("*") || it == "//" }
+        var afterVar = false
+        var indexAfter = -1
+        var currentIndex = 0
+        if (text.contains("@var")) {
+            loop@ for (part in commentTokenParts) {
+                currentIndex++
+                if (part == "@var") {
+                    afterVar = true
+                    indexAfter = currentIndex
+                    continue
+                }
+                if (!afterVar) {
+                    continue
+                }
+                val place = commentTokenParts.size - indexAfter
+                when (place) {
+                    0,1 -> getClassNameCompletions(resultSet, element)
+                    2 -> {
+                        val variableNames = ObjJVariableNameUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
+                            it.text
+                        }
+                        addCompletionElementsSimple(resultSet, variableNames)
+                    }
+                    else -> break@loop
+                }
+            }
+        } else if (text.contains("@ignore")) {
+            var precededByComma: Boolean
+            loop@ for (part in commentTokenParts) {
+                currentIndex++
+                if (part == "@ignore") {
+                    afterVar = true
+                    indexAfter = currentIndex
+                    continue
+                }
+                if (!afterVar) {
+                    continue
+                }
+                precededByComma = part.trim() == ","
+                if (precededByComma) {
+                    continue
+                }
+
+                val place = commentTokenParts.size - indexAfter
+                when {
+                    place <= 1 || precededByComma -> addCompletionElementsSimple(resultSet, ObjJSuppressInspectionFlags.values().map { it.flag })
+                    else -> break@loop
+                }
+            }
+        } else {
+            addCompletionElementsSimple(resultSet, listOf(
+                    ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
+            ))
+            resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler {
+                insertionContext: InsertionContext, _: LookupElement ->
+                insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
+            })
+            resultSet.addElement(LookupElementBuilder.create("var").withPresentableText("@var").withInsertHandler {
+                insertionContext: InsertionContext, _: LookupElement ->
+                insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
+            })
+        }
+    }
+
     private fun getClassNameCompletions(resultSet: CompletionResultSet, element: PsiElement?) {
         if (element == null) {
             return
         }
-        if (element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
+        if (element.hasParentOfType(ObjJProtocolLiteral::class.java) || element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler.instance))
             }
