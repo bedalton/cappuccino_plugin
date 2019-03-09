@@ -2,7 +2,9 @@ package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressUndeclaredVariableInspectionOnVariable
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -118,7 +120,13 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
             //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
-            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use", ObjJAlterIgnoredUndeclaredVariable(variableName.text, addToIgnored = true), ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName))
+            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use",
+                    ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName),
+                    ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.METHOD),
+                    ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.FUNCTION),
+                    ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.CLASS),
+                    ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.FILE),
+                    ObjJAlterIgnoredUndeclaredVariable(variableName.text, addToIgnored = true))
 
         }
 

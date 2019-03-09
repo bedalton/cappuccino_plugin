@@ -24,6 +24,8 @@ import com.intellij.util.IncorrectOperationException
 abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
     protected val pointer:SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
+    // val writeAbove, Should be overwritten by accessor method,
+    // not by actually holding a reference to an element
     protected abstract val writeAbove:PsiElement?
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
