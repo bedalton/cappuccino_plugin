@@ -136,4 +136,21 @@ public object ObjJTokenSets {
             com.intellij.psi.TokenType.WHITE_SPACE,
             ObjJ_LINE_TERMINATOR
     )
+
+    val PREPROC_KEYWORDS = create(
+            ObjJ_PP_DEFINE,
+            ObjJ_PP_DEFINED,
+            ObjJ_PP_ELSE,
+            ObjJ_PP_ELSE_IF,
+            ObjJ_PP_END_IF,
+            ObjJ_PP_ERROR,
+            ObjJ_PP_FRAGMENT,
+            ObjJ_PP_IF,
+            ObjJ_PP_IF_DEF,
+            ObjJ_PP_IF_NDEF,
+            ObjJ_PP_INCLUDE,
+            ObjJ_PP_PRAGMA,
+            ObjJ_PP_UNDEF,
+            ObjJ_PP_WARNING
+    )
 }

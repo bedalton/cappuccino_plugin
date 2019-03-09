@@ -32,7 +32,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
     private val myWrappingProcessor: ObjJWrappingProcessor
     private val myAlignmentProcessor: ObjJAlignmentProcessor
     private var myChildWrap: Wrap? = null
-    private val myIndent: Indent
+    private val myIndent: Indent?
     private var myParent: BlockWithParent? = null
     private var mySubObjJFormattedBlocks: MutableList<ObjJFormattedBlock>? = null
     private val EMPTY = mutableListOf<ObjJFormattedBlock>()
