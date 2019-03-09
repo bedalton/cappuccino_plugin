@@ -10,7 +10,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 
 import java.util.ArrayList
-import java.util.Collections
 
 object ObjJFunctionDeclarationPsiUtil {
 
@@ -42,7 +41,7 @@ object ObjJFunctionDeclarationPsiUtil {
         } else {
             functionDeclaration.node.replaceChild(oldFunctionName.node, newFunctionName!!.node)
         }
-        return newFunctionName
+        return newFunctionName!!
     }
 
     /**
@@ -60,7 +59,7 @@ object ObjJFunctionDeclarationPsiUtil {
         //Get existing name node.
         val oldFunctionName = functionLiteral.functionNameNode
         //Create new name node
-        val newFunctionName = ObjJElementFactory.createVariableName(functionLiteral.project, name)
+        val newFunctionName = ObjJElementFactory.createFunctionName(functionLiteral.project, name)
         Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
 
         //Name node is not part of function literal, so name node may not be present.
@@ -137,7 +136,7 @@ object ObjJFunctionDeclarationPsiUtil {
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
         val out = ArrayList<ObjJVariableName>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
-            out.add((parameterArg as ObjJFormalParameterArg).variableName)
+            out.add(parameterArg.variableName)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
             out.add(functionDeclaration.lastFormalParameterArg!!.variableName)
@@ -154,7 +153,7 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         val out = ArrayList<String>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
-            out.add((parameterArg as ObjJFormalParameterArg).variableName.text)
+            out.add(parameterArg.variableName.text)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
             out.add(functionDeclaration.lastFormalParameterArg!!.variableName.text)
@@ -215,7 +214,7 @@ object ObjJFunctionDeclarationPsiUtil {
             functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
                 ?: return null
-        return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].getLastVar() else null
+        return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].lastVar else null
     }
 
 }

@@ -27,6 +27,7 @@ object ObjJVariablePsiUtil {
         return null
     }
 
+    /*
     fun ObjJInstanceVariableDeclaration.setName(newName: String): ObjJInstanceVariableDeclaration {
         val oldVariableName = variableName
         val newVariableName = ObjJElementFactory.createVariableName(project, newName)
@@ -49,7 +50,7 @@ object ObjJVariablePsiUtil {
             addAfter(newVariableName, after)
         }
         return this
-    }
+    }*/
 
     /**
      * Gets the last variableName element in a fully qualified name.

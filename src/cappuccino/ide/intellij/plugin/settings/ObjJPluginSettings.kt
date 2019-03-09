@@ -58,7 +58,7 @@ object ObjJPluginSettings {
     }
 
     private const val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"
-    private const val UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT = true
+    private const val UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT = false
     private val unqualifiedIgnoreUndeclaredVariablesSetting = BooleanSetting(UNQ_IGNORE_UNDECLARED_VARIABLES_KEY, UNQ_IGNORE_UNDECLARED_VARIABLES_DEFAULT)
     var unqualifiedIgnore_ignoreUndeclaredVariables:Boolean get() {
         return unqualifiedIgnoreUndeclaredVariablesSetting.value!!
@@ -76,7 +76,7 @@ object ObjJPluginSettings {
     }
 
     private const val UNQ_IGNORE_CONFLICTION_METHODS_KEY = "objj.annotator.unq_ignore.conflictingMethodDeclaration"
-    private const val UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT = true
+    private const val UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT = false
     private val unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting = BooleanSetting(UNQ_IGNORE_CONFLICTION_METHODS_KEY, UNQ_IGNORE_CONFLICTION_METHODS_DEFAULT)
     var unqualifiedIgnore_ignoreConflictingMethodDeclaration: Boolean get() {
         return unqualifiedIgnore_ignoreConflictingMethodDeclarationSetting.value!!
@@ -85,7 +85,7 @@ object ObjJPluginSettings {
     }
 
     private const val UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreMethodReturnErrors"
-    private const val UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT = true
+    private const val UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT = false
     private val unqualifiedIgnore_methodReturnErrorsSetting = BooleanSetting(UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY, UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT)
     var unqualifiedIgnore_ignoreMethodReturnErrors:Boolean get() {
         return unqualifiedIgnore_methodReturnErrorsSetting.value!!
@@ -94,7 +94,7 @@ object ObjJPluginSettings {
     }
 
     private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
-    private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = true
+    private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = false
     private val unqualifiedIgnore_invalidSelectorErrorsSetting = BooleanSetting(UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY, UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT)
     var unqualifiedIgnore_ignoreInvalidSelectorErrors:Boolean get() {
         return unqualifiedIgnore_invalidSelectorErrorsSetting.value!!

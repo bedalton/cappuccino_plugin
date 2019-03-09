@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*

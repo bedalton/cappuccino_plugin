@@ -75,7 +75,7 @@ class ObjJMethodCallStubType internal constructor(
     }
 
     override fun indexStub(
-            stub: ObjJMethodCallStub, indexSink: IndexSink) {
-        ServiceManager.getService(StubIndexService::class.java).indexMethodCall(stub, indexSink)
+            stub: ObjJMethodCallStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexMethodCall(stub, sink)
     }
 }

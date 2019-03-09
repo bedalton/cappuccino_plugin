@@ -52,7 +52,7 @@ internal object ObjJSemiColonAnnotatorUtil {
      * @return `true` if error element was added, `false` otherwise
      */
     private fun didAnnotateWithErrorElement(
-            element: ObjJNeedsSemiColon): Boolean {
+            @Suppress("UNUSED_PARAMETER") element: ObjJNeedsSemiColon): Boolean {
         return false
 
         /*final PsiErrorElement errorElement = ObjJElementFactory.createSemiColonErrorElement(element.getProject());

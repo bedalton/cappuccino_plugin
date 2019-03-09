@@ -37,12 +37,12 @@ object ObjJElementFactory {
         return variableAssignment.variableDeclarationList!!.variableNameList[0]
     }
 
-    fun createFunctionName(project: Project, functionName: String): ObjJFunctionName {
+    fun createFunctionName(project: Project, functionName: String): ObjJFunctionName? {
         val scriptText = String.format("function %s(){}", functionName)
         //LOGGER.log(Level.INFO, "Script text: <$scriptText>")
         val file = createFileFromText(project, scriptText)
         val functionDeclaration = file.getChildOfType( ObjJFunctionDeclaration::class.java)
-        return functionDeclaration!!.functionName!!
+        return functionDeclaration!!.functionName
     }
 
     fun createSpace(project: Project): PsiElement {

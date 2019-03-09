@@ -158,7 +158,7 @@ fun addProtocols(
     val stub = classDeclarationElement.stub
     val newProtocols: List<*>
     if (stub != null) {
-        val stubElement = stub as ObjJClassDeclarationStub<*>?
+        val stubElement = stub
         newProtocols = stubElement!!.inheritedProtocols
     } else {
         newProtocols = classDeclarationElement.getInheritedProtocols()
@@ -243,7 +243,7 @@ fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: 
 }
 
 
-fun getAllUnimplementedProtocolMethods(declaration:ObjJImplementationDeclaration): Map<ObjJClassName, ProtocolMethods> {
+fun getAllUnimplementedProtocolMethods(@Suppress("UNUSED_PARAMETER") declaration:ObjJImplementationDeclaration): Map<ObjJClassName, ProtocolMethods> {
     //todo
     return emptyMap()
 }

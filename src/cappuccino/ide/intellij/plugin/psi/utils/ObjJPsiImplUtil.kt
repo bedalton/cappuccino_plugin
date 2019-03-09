@@ -33,6 +33,7 @@ import java.util.*
 
 import java.util.regex.Pattern
 
+@Suppress("UNUSED_PARAMETER")
 object ObjJPsiImplUtil {
 
     //private val LOGGER = Logger.getLogger(ObjJPsiImplUtil::class.java.name)
@@ -134,7 +135,7 @@ object ObjJPsiImplUtil {
         if (newFunctionName.isEmpty()) {
             return oldFunctionName
         }
-        val functionName = ObjJElementFactory.createFunctionName(oldFunctionName.project, newFunctionName)
+        val functionName = ObjJElementFactory.createFunctionName(oldFunctionName.project, newFunctionName) ?: return oldFunctionName
         oldFunctionName.parent.node.replaceChild(oldFunctionName.node, functionName.node)
         return functionName
     }

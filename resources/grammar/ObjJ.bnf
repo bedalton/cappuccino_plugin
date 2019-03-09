@@ -1624,6 +1624,7 @@ private objectLiterals
     | 	objectLiteral
     | 	functionLiteral
     | 	selectorLiteral
+    | 	protocolLiteral
     /*| 	REGULAR_EXPRESSION_LITERAL_TOKEN_LITERAL*/
 	;
 
@@ -1669,6 +1670,10 @@ selectorLiteral
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub"
 		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType shouldResolve getContainingSuperClass]
 	}
+	;
+
+protocolLiteral
+	::= '@protocol' '(' className ')'
 	;
 
 private selectorLiteralSelectorList

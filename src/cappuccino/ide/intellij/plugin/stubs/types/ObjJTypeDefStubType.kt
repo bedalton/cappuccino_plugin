@@ -21,7 +21,7 @@ class ObjJTypeDefStubType internal constructor(
     override fun createStub(
             element: ObjJTypeDefImpl, parentStub: StubElement<*>): ObjJTypeDefStub {
         val className = element.classNameString
-        return ObjJTypeDefStubImpl(parentStub, className) as ObjJTypeDefStub
+        return ObjJTypeDefStubImpl(parentStub, className)
     }
 
 
@@ -37,7 +37,7 @@ class ObjJTypeDefStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parentStub: StubElement<*>): ObjJTypeDefStub {
         val className = StringRef.toString(stream.readName())
-        return ObjJTypeDefStubImpl(parentStub, className) as ObjJTypeDefStub
+        return ObjJTypeDefStubImpl(parentStub, className)
     }
 
     override fun indexStub(stub: ObjJTypeDefStub, sink: IndexSink) {

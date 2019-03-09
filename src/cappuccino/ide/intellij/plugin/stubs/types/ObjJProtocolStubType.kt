@@ -24,7 +24,7 @@ class ObjJProtocolStubType internal constructor(
         val className = element.getClassName()?.text ?: ""
         val protocols = element.getInheritedProtocols()
         val shouldResolve = shouldResolve(element.node)
-        return ObjJProtocolDeclarationStubImpl(parentStub, className, protocols, shouldResolve) as ObjJProtocolDeclarationStub
+        return ObjJProtocolDeclarationStubImpl(parentStub, className, protocols, shouldResolve)
     }
 
 
@@ -56,7 +56,7 @@ class ObjJProtocolStubType internal constructor(
             inheritedProtocols.add(StringRef.toString(stream.readName()))
         }
         val shouldResolve = stream.readBoolean()
-        return ObjJProtocolDeclarationStubImpl(parentStub, className, inheritedProtocols, shouldResolve) as ObjJProtocolDeclarationStub
+        return ObjJProtocolDeclarationStubImpl(parentStub, className, inheritedProtocols, shouldResolve)
     }
 
     override fun indexStub(stub: ObjJProtocolDeclarationStub, sink: IndexSink) {

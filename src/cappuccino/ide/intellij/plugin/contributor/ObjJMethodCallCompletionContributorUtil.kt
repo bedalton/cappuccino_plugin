@@ -58,7 +58,7 @@ object ObjJMethodCallCompletionContributorUtil {
         }
         val selectorString = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
         var selectorIndex = selectors.size - 1
-        val thisSelectorTrimmedText = psiElement.text.replace("\\s+".toRegex(), "")
+        psiElement.text.replace("\\s+".toRegex(), "")
         for (i in selectors.indices) {
             if (selectors[i] equals psiElement) {
                 selectorIndex = i
@@ -144,7 +144,7 @@ object ObjJMethodCallCompletionContributorUtil {
             return
         }
         val file = selectors[0].containingFile
-        val selectorString = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
+        @Suppress("UNUSED_VARIABLE") val selectorString = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
         val resolveResult = ObjJSelectorReferenceResolveUtil.resolveSelectorReferenceAsPsiElement(selectors, selectorIndex)
         if (resolveResult == null) {
             //LOGGER.log(Level.INFO, "Resolve result is null");
@@ -203,10 +203,10 @@ object ObjJMethodCallCompletionContributorUtil {
      * @param result completion result set
      * @param project containing project
      * @param possibleContainingClassNames possible class names to determine completion priority
-     * @param selectorString selector string to match
+     * @param _selectorString selector string to match
      */
-    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, possibleContainingClassNames: List<String>, selectorString: String?) {
-        var selectorString = selectorString
+    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, possibleContainingClassNames: List<String>, _selectorString: String?) {
+        var selectorString = _selectorString
         if (selectorString == null || selectorString.isEmpty()) {
             return
         }
