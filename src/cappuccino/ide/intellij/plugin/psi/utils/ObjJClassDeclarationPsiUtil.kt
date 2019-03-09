@@ -15,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.P
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.psi.PsiElement
 import icons.ObjJIcons
 import java.util.*
 import java.util.logging.Logger
@@ -46,41 +47,109 @@ fun getAllClassNameElements(project: Project): List<ObjJClassName> {
     return classNameElements
 }
 
+fun getContainingSuperClassName(psiElement: ObjJCompositeElement, returnDefault: Boolean) : String? {
+    val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement)
+            ?: //   LOGGER.log(Level.INFO, "Child element of type <"+childElement.getNode().getElementType().toString()+"> has no containing superclass.");
+            return null
+    val project = psiElement.project
+    if (containingClass !is ObjJImplementationDeclaration) {
+        return if (returnDefault) containingClass.getClassNameString() else null
+    }
+    if (!containingClass.isCategory) {
+        return containingClass.superClass?.text
+    }
+    return getCategoryClassBaseDeclaration(containingClass.getClassNameString(), project)?.superClassName ?: if (returnDefault) containingClass.getClassNameString() else null
+
+}
+
+private fun getCategoryClassBaseDeclaration(classNameString:String, project: Project) : ObjJImplementationDeclaration? {
+    val classDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[classNameString, project])
+    for (classDeclaration in classDeclarations) {
+        if (classDeclaration is ObjJImplementationDeclaration) {
+            if (classDeclaration.isCategory) {
+                continue
+            }
+            return classDeclaration
+        }
+    }
+    return null
+}
 
 /**
  * Gets the super class of the containing class declaration
  * @param returnDefault **true** if method should return containing class if super class is not found
  * @return containing super class
  */
-fun getContainingSuperClass(psiElement:ObjJCompositeElement,returnDefault: Boolean): ObjJClassName? {
-    val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement)
-            ?: //   LOGGER.log(Level.INFO, "Child element of type <"+childElement.getNode().getElementType().toString()+"> has no containing superclass.");
-            return null
+fun getContainingSuperClass(psiElement:ObjJCompositeElement, returnDefault: Boolean, filter: ((ObjJClassDeclarationElement<*>) -> Boolean)? = null): ObjJClassName? {
     val project = psiElement.project
-    if (containingClass !is ObjJImplementationDeclaration) {
-        return if (returnDefault) containingClass.getClassName() else null
-    }
-
-    val superClassName = (if (!containingClass.isCategory()) containingClass.superClassName else containingClass.getClassNameString())
-            ?: return if (returnDefault) containingClass.getClassName() else null
     //ProgressIndicatorProvider.checkCanceled();
     if (DumbService.isDumb(project)) {
         return null
     }
+    val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement) ?: return null
+    val superClassName = getContainingSuperClassName(psiElement, returnDefault) ?: return if (returnDefault) containingClass.getClassName() else null
+
     val superClassDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[superClassName, project])
     if (superClassDeclarations.size < 1) {
         //   LOGGER.log(Level.INFO, "Super class references an undefined class <"+superClassName+">");
         return if (returnDefault) containingClass.getClassName() else null
     }
+    var className:ObjJClassName? = null
     for (superClassDec in superClassDeclarations) {
         if (superClassDec is ObjJImplementationDeclaration) {
-            if (superClassDec.isEquivalentTo(containingClass) || superClassDec.isCategory()) {
+            className = superClassDec.getClassName() ?: continue
+            if (filter != null && filter(superClassDec)) {
+                return className
+            }
+            if (superClassDec.isEquivalentTo(containingClass) || superClassDec.isCategory) {
                 continue
             }
-            return superClassDeclarations[0].getClassName()
+            if (filter == null) {
+                return className
+            }
         }
     }
-    return null
+    return className
+}
+
+fun getContainingSuperClassWithSelector(psiElement: ObjJCompositeElement, selector:String, defaultName:ObjJClassName) : ObjJClassName {
+    val superClassName = getContainingSuperClass(psiElement, false) ?: return defaultName
+    return getContainingClassWithSelector(superClassName.text, selector, defaultName)
+}
+
+fun getContainingClassWithSelector(containingClassName:String, selector:String, defaultName:ObjJClassName) : ObjJClassName {
+    //ProgressIndicatorProvider.checkCanceled();
+    val project:Project = defaultName.project
+    if (DumbService.isDumb(project)) {
+        return defaultName
+    }
+    val classDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[containingClassName, project])
+    if (classDeclarations.size < 1) {
+        //   LOGGER.log(Level.INFO, "Super class references an undefined class <"+superClassName+">");
+        return defaultName
+    }
+    var potential:ObjJClassName? = null
+    var className:ObjJClassName? = null
+    for (classDeclaration in classDeclarations) {
+        if (classDeclaration is ObjJImplementationDeclaration) {
+            className = classDeclaration.getClassName() ?: continue
+            if (classDeclaration.hasMethod(selector)) {
+                if (classDeclaration.isCategory) {
+                    potential = className
+                } else {
+                    return className
+                }
+            } else if (potential == null) {
+                potential = className
+            }
+        } else if (potential == null) {
+            val protocol = classDeclaration as? ObjJProtocolDeclaration ?: continue
+            if (protocol.hasMethod(selector)) {
+                potential = className
+            }
+        }
+    }
+    return potential ?: className ?: defaultName
 }
 
 fun addProtocols(

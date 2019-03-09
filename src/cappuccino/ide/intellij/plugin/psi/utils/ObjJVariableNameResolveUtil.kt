@@ -2,15 +2,15 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object ObjJVariableNameResolveUtil {
 
-    //private val LOGGER = Logger.getLogger(ObjJVariableNameResolveUtil::class.java.name)
+    private val LOGGER by lazy {
+        Logger.getLogger(ObjJVariableNameResolveUtil::class.java.name)
+    }
 
     fun getVariableDeclarationElement(variableNameElement: ObjJVariableName): PsiElement? {
         val variableNameString = variableNameElement.text
@@ -22,14 +22,6 @@ object ObjJVariableNameResolveUtil {
         if (variableNameString == "this") {
             return null
         }
-
-        if (variableNameString == "self") {
-            return variableNameElement.containingClass?.getClassName()
-        }
-        if (variableNameString == "super") {
-            return variableNameElement.getContainingSuperClass()
-        }
-
         if (variableNameElement.indexInQualifiedReference != 0) {
             return ObjJVariableNameUtil.resolveQualifiedReferenceVariable(variableNameElement) ?: variableNameElement
         }
@@ -92,8 +84,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) {
-            possibleFirstDeclaration ->
+        return ObjJVariableNameUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstDeclaration ->
             !possibleFirstDeclaration.isEquivalentTo(variableNameElement)
             variableNameElement.text == possibleFirstDeclaration.text &&
                     (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
@@ -104,49 +95,33 @@ object ObjJVariableNameResolveUtil {
 
 
     private fun getClassNameIfVariableNameIsStaticReference(variableNameElement: ObjJVariableName): ObjJClassName? {
+
+        val variableNameText = variableNameElement.text
         var classNameElement: ObjJClassName? = null
-        var className = variableNameElement.text
-        val containingClass = ObjJPsiImplUtil.getContainingClass(variableNameElement)
-        if (className == "self") {
-            //LOGGER.log(Level.INFO, "Var name matches 'self'.");
-            if (containingClass != null) {
-                //LOGGER.log(Level.INFO, "Var name 'self' resolves to <" + variableNameElement.getText() + ">");
-                return containingClass.getClassName()
-            }
+        if (variableNameText == "self") {
+            //LOGGER.info("Var name is Self")
+            classNameElement = ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
         }
-        if (variableNameElement.text == "super") {
-            classNameElement = variableNameElement.getContainingSuperClass(true)
-            if (classNameElement == null && containingClass != null) {
-                classNameElement = containingClass.getClassName()
-            }
-        }
-        if (classNameElement != null) {
-            className = classNameElement.text
+        if (variableNameText == "super") {
+            //LOGGER.info("Is Super")
+            classNameElement = getContainingSuperClass(variableNameElement, true)
+                    ?: ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
         }
 
+        if (classNameElement == null) {
+            //LOGGER.warning("Class element for static variable name is null")
+            return null
+        }
+        val classNameString = classNameElement.text ?: return null
+        //LOGGER.info("Class Name is $classNameString")
         /*
-            Tries to find the most relevant class reference,
-            if variable name element is part of a method call
-         */
+                Tries to find the most relevant class reference,
+                if variable name element is part of a method call
+             */
         if (!DumbService.isDumb(variableNameElement.project)) {
-            val classDeclarationElements = ObjJClassDeclarationsIndex.instance[className, variableNameElement.project]
-            if (!classDeclarationElements.isEmpty()) {
-                val methodCall = variableNameElement.getParentOfType(ObjJMethodCall::class.java)
-                val methodCallSelectorString = methodCall?.selectorString
-                for (classDeclarationElement in classDeclarationElements) {
-                    if (methodCallSelectorString != null) {
-                        if (classDeclarationElement.hasMethod(methodCallSelectorString)) {
-                            return classDeclarationElement.getClassName()
-                        }
-                    } else if (classDeclarationElement is ObjJImplementationDeclaration) {
-                        if (!classDeclarationElement.isCategory) {
-                            return classDeclarationElement.getClassName()
-                        }
-                    } else {
-                        return classDeclarationElement.getClassName()
-                    }
-                }
-            }
+            val methodCall = variableNameElement.parent?.parent?.parent as? ObjJMethodCall ?: return classNameElement
+            val selector = methodCall.selectorString
+            return getContainingClassWithSelector(classNameString, selector, classNameElement)
         }
         return null
     }
