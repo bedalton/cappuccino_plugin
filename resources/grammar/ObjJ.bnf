@@ -332,7 +332,7 @@ private bodyStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods=[block="blockElement"]
+		methods=[block="statementOrBlock"]
 	}
     ;
 
@@ -359,8 +359,12 @@ statementOrBlock
 	::= blockElement
 	| 	singleBodyStatement
 	{
-		extends=blockElement
-		methods=[block="blockElement" getOpenBrace]
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+		]
+		methods=[block="this" getOpenBrace]
 	}
 	;
 
@@ -393,7 +397,7 @@ methodBlock
 	{
 		pin=1;
 		recoverWhile=recover_methodBlockStatements
-		extends=blockElement
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
@@ -573,7 +577,7 @@ elseIfStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList block="blockElement"]
+		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList block="statementOrBlock"]
 	}
 	;
 
@@ -598,7 +602,6 @@ doWhileStatement
 	{
 		pin=1
 		//recoverWhile=inLoopRecoverWhile
-		extends=whileStatement
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
@@ -609,7 +612,7 @@ doWhileStatement
 		methods =[
 		 	getConditionalExpression
 			getBlockList
-			block="blockElement"
+			getBlock
 		]
 	}
 	;
@@ -626,7 +629,7 @@ whileStatement
 
 		]
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
-		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="blockElement"]
+		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="statementOrBlock"]
 	}
 	;
 
@@ -653,7 +656,7 @@ forStatement
 		]
 		methods = [
 			getBlockList
-			block="blockElement"
+			block="statementOrBlock"
 		]
 	}
 	;
@@ -732,8 +735,8 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
-		extends=blockElement
-		methods= [block="blockElement" getBlockList getIterationStatementList]
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
+		methods= [block="statementOrBlock" getBlockList getIterationStatementList]
 	}
 	;
 
@@ -761,7 +764,7 @@ tryStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods = [getBlockList block="blockElement"]
+		methods = [getBlockList block="statementOrBlock" getBlock]
 		pin=1
 	}
 	;
@@ -771,7 +774,7 @@ catchProduction
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
-		methods=[block="blockElement" getBlockList]
+		methods=[block="statementOrBlock" getBlockList getBlock]
 	}
 	;
 
@@ -780,7 +783,7 @@ finallyProduction
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
-		methods=[block="blockElement" getBlockList]
+		methods=[block="statementOrBlock" getBlockList getBlock]
 	}
 	;
 
@@ -1150,8 +1153,11 @@ preprocessorBodyStatements
 	::= preprocessorBodyStatement+
 	{
 		recoverWhile=recover_preprocessorBodyStatements
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons" ]
-		extends=blockElement
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+		]
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
 	}
 	;
 

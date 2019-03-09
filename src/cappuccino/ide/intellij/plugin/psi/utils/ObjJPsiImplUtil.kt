@@ -81,7 +81,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getQualifiedNameParts(qualifiedReference:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReference): List<ObjJQualifiedReferenceComponent> {
         return ObjJVariableNameUtil.getQualifiedNameParts(qualifiedReference)
     }
 
@@ -198,7 +198,7 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getPresentation(classDec)
 
     @JvmStatic
-    fun getPresentation(className:ObjJClassName) : ItemPresentation {
+    fun getPresentation(className: ObjJClassName): ItemPresentation {
         return cappuccino.ide.intellij.plugin.psi.utils.getPresentation(className)
     }
 
@@ -209,14 +209,14 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getStringValue(stringLiteral: ObjJStringLiteral): String {
         val rawText = stringLiteral.text
-        val quotationMark:String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
+        val quotationMark: String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
         val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
-        return if (outText.endsWith(quotationMark))outText.substring(0, outText.length - 1) else outText
+        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - 1) else outText
 
     }
 
     @JvmStatic
-    fun toString(variableName:ObjJVariableName) : String {
+    fun toString(variableName: ObjJVariableName): String {
         return ObjJVariablePsiUtil.toString(variableName)
     }
 
@@ -296,7 +296,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariableType(globalVariableDeclaration: ObjJGlobalVariableDeclaration) : String? {
+    fun getVariableType(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String? {
         return ObjJVariablePsiUtil.getVariableType(globalVariableDeclaration)
     }
 
@@ -308,12 +308,12 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
 
     @JvmStatic
-    fun getPossibleCallTargetTypes(callTarget:ObjJCallTarget) : List<String> {
+    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget): List<String> {
         return ObjJSelectorReferenceResolveUtil.getPossibleClassTypesForCallTarget(callTarget).toList()
     }
 
     @JvmStatic
-    fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall) : List<String> {
+    fun getPossibleCallTargetTypes(methodCall: ObjJMethodCall): List<String> {
         return Collections.singletonList(ObjJClassType.UNDETERMINED)// ObjJCallTargetUtil.getPossibleCallTargetTypes(methodCall)
     }
 
@@ -454,7 +454,7 @@ object ObjJPsiImplUtil {
     fun getVarType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVarType(property)
 
     @JvmStatic
-    fun getFormalVariableType(selector:ObjJMethodDeclarationSelector) : ObjJFormalVariableType? {
+    fun getFormalVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return selector.methodHeaderSelectorFormalVariableType?.formalVariableType
     }
 
@@ -492,7 +492,7 @@ object ObjJPsiImplUtil {
             ObjJAccessorPropertyPsiUtil.getSetter(variableDeclaration)
 
     @JvmStatic
-    fun getAccessorPropertyList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty>  {
+    fun getAccessorPropertyList(declaration: ObjJInstanceVariableDeclaration): List<ObjJAccessorProperty> {
         return ObjJAccessorPropertyPsiUtil.getAccessorPropertiesList(declaration)
     }
 
@@ -621,7 +621,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVarType(variable:ObjJGlobalVariableDeclaration) : String? {
+    fun getVarType(variable: ObjJGlobalVariableDeclaration): String? {
         return ObjJClassType.UNDETERMINED
     }
 
@@ -636,12 +636,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariableNameString(globalVariableDeclaration: ObjJGlobalVariableDeclaration) : String {
+    fun getVariableNameString(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String {
         return globalVariableDeclaration.variableName.text
     }
 
     @JvmStatic
-    fun getLastVar(qualifiedReference: ObjJQualifiedReference) : ObjJVariableName? {
+    fun getLastVar(qualifiedReference: ObjJQualifiedReference): ObjJVariableName? {
         return ObjJVariablePsiUtil.getLastVariableName(qualifiedReference)
     }
 
@@ -657,12 +657,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getBlockList(hasBlock: ObjJHasBlockStatement): List<ObjJBlock> {
-        val block:ObjJBlock = hasBlock.block ?: return listOf()
+        val block: ObjJBlock = hasBlock.block ?: return listOf()
         return listOf(block)
     }
 
     @JvmStatic
-    fun getBlockList(switchStatement: ObjJSwitchStatement) : List<ObjJBlock> {
+    fun getBlockList(switchStatement: ObjJSwitchStatement): List<ObjJBlock> {
         val out = ArrayList<ObjJBlock>()
         for (clause in switchStatement.caseClauseList) {
             ProgressIndicatorProvider.checkCanceled()
@@ -675,15 +675,14 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getBlockList(ifStatement: ObjJIfStatement): List<ObjJBlock> {
         val out = ArrayList<ObjJBlock>()
-        out.addAll(ifStatement.blockElementList)
-        for(elseIfBlock in ifStatement.elseIfStatementList) {
+        out.addAll(ifStatement.getChildrenOfType(ObjJBlock::class.java))
+        for (elseIfBlock in ifStatement.elseIfStatementList) {
             ProgressIndicatorProvider.checkCanceled()
             val block = elseIfBlock.block
             if (block != null) {
                 out.add(block)
             }
         }
-        out.addAll(ifStatement.getChildrenOfType(ObjJBlock::class.java))
         return out
     }
 
@@ -729,8 +728,18 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getBlock(expr)
 
     @JvmStatic
-    fun getBlock(case:ObjJCaseClause) : ObjJBlock? {
+    fun getBlock(case: ObjJCaseClause): ObjJBlock? {
         return case.getChildOfType(ObjJBracketLessBlock::class.java)
+    }
+
+    @JvmStatic
+    fun getBlock(doWhileStatement: ObjJDoWhileStatement): ObjJBlock? {
+        return doWhileStatement.getChildOfType(ObjJStatementOrBlock::class.java)
+    }
+
+    @JvmStatic
+    fun getBlock(element:ObjJCompositeElement): ObjJBlock? {
+        return element.getChildOfType(ObjJBlock::class.java)
     }
 
     @JvmStatic
@@ -1054,7 +1063,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getConditionalExpression(composite:ObjJConditionalStatement) : ObjJExpr? {
+    fun getConditionalExpression(composite: ObjJConditionalStatement): ObjJExpr? {
         return composite.getChildOfType(ObjJConditionExpression::class.java)?.expr
     }
 
@@ -1353,12 +1362,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getIterationStatementList(block:ObjJBlockElement): List<ObjJIterationStatement> {
+    fun getIterationStatementList(block: ObjJBlockElement): List<ObjJIterationStatement> {
         return block.getChildrenOfType(ObjJIterationStatement::class.java)
     }
 
     @JvmStatic
-    fun getIterationStatementList(block:ObjJHasBlockStatement): List<ObjJIterationStatement> {
+    fun getIterationStatementList(block: ObjJHasBlockStatement): List<ObjJIterationStatement> {
         return block.getChildrenOfType(ObjJIterationStatement::class.java)
     }
 
