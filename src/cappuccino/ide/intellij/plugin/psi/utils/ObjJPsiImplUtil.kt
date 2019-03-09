@@ -716,7 +716,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getBlockList(defineFunction: ObjJPreprocessorDefineFunction): List<ObjJBlock> {
-        return getBlockList(defineFunction)
+        return cappuccino.ide.intellij.plugin.psi.utils.getBlockList(defineFunction)
     }
 
     @JvmStatic

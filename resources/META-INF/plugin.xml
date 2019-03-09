@@ -55,11 +55,12 @@
         <li>Improved suggestion highlighting in suggestions for known types.<br/>
         </li>
         <li>Added experimental type resolution<br/>
-        <ul>
-          <li>Enabled by default, but can be disabled in settings if causing problems</li>
-          <li>Can be disabled for statement with comment // doNotInferType</li>
-        </ul>
+          <ul>
+            <li>Enabled by default, but can be disabled in settings if causing problems</li>
+            <li>Can be disabled for statement with comment // doNotInferType</li>
+          </ul>
         </li>
+        <li>Fixed error on @action return type
       </ul>
       <h4>Version: 0.3.01</h4>
       <ul>

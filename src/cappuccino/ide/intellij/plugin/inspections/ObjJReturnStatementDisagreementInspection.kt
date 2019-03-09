@@ -17,6 +17,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import java.util.*
+import java.util.logging.Logger
 
 class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
 
@@ -96,6 +97,11 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
             val returnType = methodDeclaration.methodHeader.returnType
+            if (returnType == "@action") {
+                return
+            } else {
+                Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
+            }
             val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
             val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
             val statementsNotToMark = if (!shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
