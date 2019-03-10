@@ -1106,7 +1106,7 @@ preprocessorDefined
 	;
 
 private preprocessorInstanceVariableListIfStatement
-	::= <<inMode "implementationInstanceVariables">> PP_IF  preprocessorIfCondition LINE_TERMINATOR  preprocessorInstanceVariableList (PP_ELSE_IF (preprocessorIfExpr ('||'|'&&' preprocessorIfExpr)*) LINE_TERMINATOR preprocessorInstanceVariableList )* (PP_ELSE LINE_TERMINATOR preprocessorInstanceVariableList)? PP_END_IF LINE_TERMINATOR
+	::= <<inMode "implementationInstanceVariables">> PP_IF  preprocessorIfCondition LINE_TERMINATOR  preprocessorInstanceVariableList (PP_ELSE_IF (preprocessorIfExpr ('||'|'&&' preprocessorIfExpr)*) LINE_TERMINATOR preprocessorInstanceVariableList )* (PP_ELSE LINE_TERMINATOR preprocessorInstanceVariableList)? PP_END_IF (<<eof>> | LINE_TERMINATOR)
 	{
 		pin=2
 		extends=preprocessorIfStatement
