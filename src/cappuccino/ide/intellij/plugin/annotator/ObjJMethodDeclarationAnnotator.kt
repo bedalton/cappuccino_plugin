@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.DumbService
 import com.intellij.lang.annotation.AnnotationHolder
-import org.jetbrains.uast.getContainingClass
 
 object ObjJMethodDeclarationAnnotator {
 
@@ -20,12 +19,29 @@ object ObjJMethodDeclarationAnnotator {
                 continue
             }
             if (classMethodHeader.isEquivalentTo(methodHeader)) {
-                continue;
+                continue
             }
-            if (classMethodHeader.selectorString == thisSelector) {
+            if (classMethodHeader.selectorString == thisSelector && !isDifferentWhileSimilar(methodHeader, classMethodHeader)) {
                 annotationHolder.createErrorAnnotation(methodHeader, "Duplicate method selector in class")
                 return
             }
         }
+    }
+
+    private fun isDifferentWhileSimilar(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader) : Boolean
+    {
+        if (thisHeader.methodScope != otherHeader.methodScope) {
+            return true
+        }
+        // If Selector lengths are greater than one, then they are indeed overriding duplicated
+        // Only single selector method headers can be different with same selectors
+        // If one has a parameter and the other does not
+        if (thisHeader.selectorList.size > 1) {
+            return false
+        }
+        val thisSelector = thisHeader.methodDeclarationSelectorList.getOrNull(0) ?: return true
+        val otherSelector = otherHeader.methodDeclarationSelectorList.getOrNull(0) ?: return true
+        return (thisSelector.methodHeaderSelectorFormalVariableType == null && otherSelector.methodHeaderSelectorFormalVariableType != null) ||
+                (thisSelector.methodHeaderSelectorFormalVariableType != null && otherSelector.methodHeaderSelectorFormalVariableType == null)
     }
 }
