@@ -1,0 +1,144 @@
+{
+
+	tokens = [
+
+		INTERFACE = 'interface';
+		VAR = "var";
+		DECLARE = "declare";
+		CONST = "const";
+		EXTENDS = "extends"
+		WHITE_SPACE = "regexp:\s+";
+		SINGLE_LINE_COMMENT = "regexp://[^\n]*\n?";
+		BLOCK_COMMENT = "regexp:/\*(([^*]|\*[^/])*?(?=\*/))\*/";
+		LT = "<";
+		GT = ">";
+		DOUBLE_QUOTE = 'regexp:"([^"]|\\")*"';
+		SINGLE_QUOTE = "regexp:'([^']|\\')*'";
+		DASH = "-";
+		EQ = "=";
+		CLOSE_ELEMENT = "/>";
+		COLON = ":";
+		COMMA = ","
+		SEMI_COLON = ";";
+		OPEN_BRACE = "{";
+		CLOSE_BRACE = "}";
+		OPEN_PAREN = "(";
+		CLOSE_PAREN = ")";
+		OPT_SEPERATOR = "|";
+		DASH_LITERAL = "regexp:[a-zA-Z](-([a-zA-Z_0-9]*))*";
+		ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*";
+		OPTIONAL_ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*\?";
+		OPEN_BRACKET = '['
+		CLOSE_BRACKET = ']'
+
+	]
+}
+
+definition ::= (!<<eof>> statement)*
+
+statement
+	::= interfaceDeclaration
+	;
+
+interfaceDeclaration
+	::= 'interface' interfaceHeader '{' interfaceDeclarationProperties? '}'
+	{
+		pin=2
+	}
+	;
+
+interfaceHeader
+	::= className headerGenericParam extendsHeaderPart?
+	;
+
+extendsHeaderPart
+	::= 'extends' classNamesList
+	{
+		pin=1
+	}
+	;
+
+private classNamesList
+	::= className (',' className)*
+	{
+		//recoverWhile=classNamesList_recover
+	}
+	;
+
+private classNamesList_recover
+	::= !('{')
+	;
+
+interfaceDeclarationProperties
+	::= interfaceProperty+
+	;
+
+interfaceProperty
+	::= property
+	| 	function
+	;
+
+property
+	::= (namedArg|propertyDef) ':' variableTypeList ';'
+	{
+		pin=2
+	}
+	;
+
+propertyDef
+	::= '[' namedArg ':' className ']'
+	;
+
+function
+	::= functionName '(' functionArgs? ')' ';'
+	{
+		pin=2
+	}
+	;
+
+functionArgs
+	::= functionArg (',' functionArg)*
+	{
+		recoverWhile=functionArgs_recover
+	}
+	;
+
+private functionArgs_recover
+	::= !(")")
+	;
+
+functionArg
+	::=  namedArg COLON variableTypeList
+	;
+
+arrayBrackets
+	::= '[' ']'
+	;
+
+functionName
+	::= ID
+	;
+
+namedArg
+	::= (ID|OPTIONAL_ID)
+	;
+
+variableTypeList
+	::= variableType ('|' variableType)*
+	;
+
+variableType
+	::= className variableTail?
+	;
+
+variableTail
+	::= arrayBrackets | genericParameters
+	;
+
+genericParameters
+	::= '<' classNamesList '>'
+	;
+
+className
+	::= ID
+	;

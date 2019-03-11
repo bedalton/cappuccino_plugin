@@ -200,14 +200,14 @@ object ObjJBuiltInJsProperties {
         var warn:String? = null
         var extends:String? = null
 
-        fun param(name:String) = params.add(name);
+        fun param(name:String) = params.add(name)
 
         //Properties
         fun prop(name:String) = children.add(JsProperty(name))
         fun prop(name:String, init:JsProperty.()->Unit) = initProperty(JsProperty(name), init)
         protected fun initProperty(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            children.add(property);
+            property.init()
+            children.add(property)
             return property
         }
 
@@ -215,8 +215,8 @@ object ObjJBuiltInJsProperties {
         fun cfunc(name:String) = classFunctions.add(JsProperty(name))
         fun cfunc(name:String, init:JsProperty.()->Unit) = initFunction(JsProperty(name), init)
         protected fun initFunction(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            classFunctions.add(property);
+            property.init()
+            classFunctions.add(property)
             return property
         }
 
@@ -224,8 +224,8 @@ object ObjJBuiltInJsProperties {
         fun pfunc(name:String) = prototypeMethods.add(JsProperty(name))
         fun pfunc(name:String, init:JsProperty.()->Unit) = initPrototypeMethod(JsProperty(name), init)
         protected fun initPrototypeMethod(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            prototypeMethods.add(property);
+            property.init()
+            prototypeMethods.add(property)
             return property
         }
     }
