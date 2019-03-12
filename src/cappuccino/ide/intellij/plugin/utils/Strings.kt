@@ -39,3 +39,9 @@ fun String.repeat(times:Int) : String {
     }
     return stringBuilder.toString()
 }
+
+internal val uppercaseSplitRegex:Regex = "(?=\\p{Lu})".toRegex()
+
+fun String.splitOnUppercase() : List<String> {
+    return this.split(uppercaseSplitRegex)
+}
