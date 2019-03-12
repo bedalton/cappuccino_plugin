@@ -125,6 +125,9 @@ constDeclaration
 
 functionProperty
 	::= namedArg? '(' (propertyBase (',' propertyBase)*)? ')' '=>' variableTypeList
+	{
+		pin=2
+	}
 	;
 
 functionKeyOf
@@ -143,7 +146,7 @@ parenDef
 	;
 
 function
-	::= (functionName functionGenerics? '?'?)? '(' functionArgs? ')' functionReturn? ';'
+	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' functionReturn? ';'
 	{
 		pin=2
 	}
