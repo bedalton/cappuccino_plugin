@@ -15,9 +15,10 @@
 		BLOCK_COMMENT = "regexp:/\*(([^*]|\*[^/])*?(?=\*/))\*/";
 		DOUBLE_QUOTE = 'regexp:"([^"]|\\")*"';
 		SINGLE_QUOTE = "regexp:'([^']|\\')*'";
-		TYPE = "TYPE"
-		KEYOF = "KEYOF"
-		NEW_KEYWORD = "new"
+		TYPE = "type"
+		KEYOF = "keyof"
+		INTERSECT = '&'
+		ELIPSIS = "..."
 
 		FUNCTION_ARROW = "=>";
 		LT = "<";
@@ -35,7 +36,6 @@
 		OPT_SEPERATOR = "|";
 		DASH_LITERAL = "regexp:[a-zA-Z][a-zA-Z_0-9]*(-([a-zA-Z_0-9]*))+";
 		ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*";
-		OPTIONAL_ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*\?";
 		OPEN_BRACKET = '['
 		CLOSE_BRACKET = ']'
 		QUESTION_MARK = '?'
@@ -46,7 +46,8 @@
 definition ::= (!<<eof>> statement)*
 
 statement
-	::= interfaceDeclaration
+	::= constDeclaration
+	|	interfaceDeclaration
 	|	varDeclaration
 	| 	functionDeclaration
 	| 	keyMap
@@ -92,17 +93,13 @@ private classNamesList
 	}
 	;
 
-private classNamesList_recover
-	::= !('{')
-	;
-
 interfaceDeclarationProperties
 	::= interfaceProperty+
 	;
 
 interfaceProperty
-	::= property
-	| 	function
+	::= function
+	|	property
 	;
 
 property
@@ -114,14 +111,27 @@ property
 
 propertyBase
 	::= (namedArg | propertyDef | parenDef | string) '?'? ':' variableTypeList
+	{
+		pin=3
+	}
+	;
+
+constDeclaration
+	::= 'declare' 'const' propertyBase ';'
+	{
+		pin=2
+	}
 	;
 
 functionProperty
-	::= '(' (propertyBase (',' propertyBase)*)? ')' '=>' variableTypeList
+	::= namedArg? '(' (propertyBase (',' propertyBase)*)? ')' '=>' variableTypeList
 	;
 
 functionKeyOf
 	::= '<' className 'extends' KEYOF keyMapName '>'
+	{
+		pin = 4
+	}
 	;
 
 propertyDef
@@ -133,10 +143,15 @@ parenDef
 	;
 
 function
-	::= functionName functionKeyOf? '(' functionArgs? ')' functionReturn? ';'
+	::= (functionName functionGenerics? '?'?)? '(' functionArgs? ')' functionReturn? ';'
 	{
 		pin=2
 	}
+	;
+
+functionGenerics
+	::= genericParameters
+	| functionKeyOf
 	;
 
 private functionReturn
@@ -159,6 +174,9 @@ private functionArgs_recover
 
 functionArg
 	::=  namedArg COLON variableTypeList
+	{
+		pin = 2
+	}
 	;
 
 arrayBrackets
@@ -170,11 +188,18 @@ functionName
 	;
 
 keyMap
-	::= 'TYPE' keyMapName '=' string ('|' string)*
+	::= 'declare' 'type' keyMapName '=' keymapType ('|' keymapType)* ';'
+	{
+		pin = 2
+	}
+	;
+
+keymapType
+	::= string | className
 	;
 
 namedArg
-	::= (ID|OPTIONAL_ID|'TYPE')
+	::= '...'? (ID|'type') '?'?
 	;
 
 variableTypeList
@@ -186,18 +211,28 @@ private variableTypeListInternal
 	;
 
 variableType
-	::= '(' variableType ')' variableTail?
-	|	'(' variableTypeList ')' variableTail?
-	|	className variableTail?
-	| 	'void'
+	::= objectLiteral
+	|	variableTypeIntersect
 	|	functionProperty
+	|	variableTypePrime variableTail?
+	| 	'void'
+	;
+
+variableTypeIntersect
+	::=	variableTypePrime ('&' variableTypePrime)
+	;
+
+variableTypePrime
+	::=	'(' variableType ')'
+	|	'(' variableTypeList ')'
+	|	className
 	|	string
-	| 	'TYPE'
-	| 	objectLiteral
+	| 	'type'
 	;
 
 variableTail
-	::= arrayBrackets | genericParameters
+	::= arrayBrackets
+	| 	genericParameters
 	;
 
 genericParameters
@@ -208,14 +243,37 @@ returnType
 	::= variableType ('|' variableType)*
 	;
 
-className
-	::= ID genericClassNameParams?
-	| 'void'
-	;
 
 genericClassNameParams
 	::= '<' (className (',' className)*)? '>'
+	{
+		pin = 2
+	}
 	;
+
+className
+	::= ID extendsProperty
+	|	ID genericClassNameParams?
+	| 'void'
+	{
+		pin(".*")=2
+	}
+	;
+
+genericClassType
+	::= className extendsProperty?
+	{
+		pin=2
+	}
+	;
+
+private extendsProperty
+	::= 'extends' variableType
+	{
+		pin=1
+	}
+	;
+
 
 variableName
 	::= ID
