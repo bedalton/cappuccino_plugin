@@ -7,13 +7,21 @@
 		DECLARE = "declare";
 		CONST = "const";
 		EXTENDS = "extends"
+		READONLY = "readonly"
+		FUNCTION_KEYWORD = "function"
+		VOID = "void"
 		WHITE_SPACE = "regexp:\s+";
 		SINGLE_LINE_COMMENT = "regexp://[^\n]*\n?";
 		BLOCK_COMMENT = "regexp:/\*(([^*]|\*[^/])*?(?=\*/))\*/";
-		LT = "<";
-		GT = ">";
 		DOUBLE_QUOTE = 'regexp:"([^"]|\\")*"';
 		SINGLE_QUOTE = "regexp:'([^']|\\')*'";
+		TYPE = "TYPE"
+		KEYOF = "KEYOF"
+		NEW_KEYWORD = "new"
+
+		FUNCTION_ARROW = "=>";
+		LT = "<";
+		GT = ">";
 		DASH = "-";
 		EQ = "=";
 		CLOSE_ELEMENT = "/>";
@@ -25,11 +33,12 @@
 		OPEN_PAREN = "(";
 		CLOSE_PAREN = ")";
 		OPT_SEPERATOR = "|";
-		DASH_LITERAL = "regexp:[a-zA-Z](-([a-zA-Z_0-9]*))*";
+		DASH_LITERAL = "regexp:[a-zA-Z][a-zA-Z_0-9]*(-([a-zA-Z_0-9]*))+";
 		ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*";
 		OPTIONAL_ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*\?";
 		OPEN_BRACKET = '['
 		CLOSE_BRACKET = ']'
+		QUESTION_MARK = '?'
 
 	]
 }
@@ -38,6 +47,9 @@ definition ::= (!<<eof>> statement)*
 
 statement
 	::= interfaceDeclaration
+	|	varDeclaration
+	| 	functionDeclaration
+	| 	keyMap
 	;
 
 interfaceDeclaration
@@ -48,7 +60,22 @@ interfaceDeclaration
 	;
 
 interfaceHeader
-	::= className headerGenericParam extendsHeaderPart?
+	::= className headerGenericParam? extendsHeaderPart?
+	;
+
+headerGenericParam
+	::= '<' genericParams '>'
+	{
+		pin = 1
+	}
+	;
+
+genericParams
+	::= genericParam (',' genericParam)*
+	;
+
+genericParam
+	::= ID '=' className
 	;
 
 extendsHeaderPart
@@ -79,20 +106,43 @@ interfaceProperty
 	;
 
 property
-	::= (namedArg|propertyDef) ':' variableTypeList ';'
+	::= 'readonly'?  propertyBase ';'
 	{
 		pin=2
 	}
+	;
+
+propertyBase
+	::= (namedArg | propertyDef | parenDef | string) '?'? ':' variableTypeList
+	;
+
+functionProperty
+	::= '(' (propertyBase (',' propertyBase)*)? ')' '=>' variableTypeList
+	;
+
+functionKeyOf
+	::= '<' className 'extends' KEYOF keyMapName '>'
 	;
 
 propertyDef
 	::= '[' namedArg ':' className ']'
 	;
 
+parenDef
+	::= '(' namedArg ':' className ')'
+	;
+
 function
-	::= functionName '(' functionArgs? ')' ';'
+	::= functionName functionKeyOf? '(' functionArgs? ')' functionReturn? ';'
 	{
 		pin=2
+	}
+	;
+
+private functionReturn
+	::= ':' returnType
+	{
+		pin=1
 	}
 	;
 
@@ -112,23 +162,38 @@ functionArg
 	;
 
 arrayBrackets
-	::= '[' ']'
+	::= '[' className? ']'
 	;
 
 functionName
 	::= ID
 	;
 
+keyMap
+	::= 'TYPE' keyMapName '=' string ('|' string)*
+	;
+
 namedArg
-	::= (ID|OPTIONAL_ID)
+	::= (ID|OPTIONAL_ID|'TYPE')
 	;
 
 variableTypeList
+	::= variableTypeListInternal
+	;
+
+private variableTypeListInternal
 	::= variableType ('|' variableType)*
 	;
 
 variableType
-	::= className variableTail?
+	::= '(' variableType ')' variableTail?
+	|	'(' variableTypeList ')' variableTail?
+	|	className variableTail?
+	| 	'void'
+	|	functionProperty
+	|	string
+	| 	'TYPE'
+	| 	objectLiteral
 	;
 
 variableTail
@@ -139,6 +204,55 @@ genericParameters
 	::= '<' classNamesList '>'
 	;
 
+returnType
+	::= variableType ('|' variableType)*
+	;
+
 className
+	::= ID genericClassNameParams?
+	| 'void'
+	;
+
+genericClassNameParams
+	::= '<' (className (',' className)*)? '>'
+	;
+
+variableName
 	::= ID
 	;
+
+varDeclaration
+	::= 'declare' 'var' variableName ':' varType ';'
+	;
+
+functionDeclaration
+	::= 'declare' 'function' function
+	;
+
+string
+	::= SINGLE_QUOTE
+	| 	DOUBLE_QUOTE
+	;
+
+keyMapName
+	::= ID
+	;
+
+varType
+	::= objectLiteral
+	|	className
+	;
+
+objectLiteral
+	::= '{' objectLiteralProperties? '}'
+	;
+
+private objectLiteralProperties
+	::= objectLiteralProperty (',' objectLiteralProperty)*
+	;
+
+objectLiteralProperty
+	::= property
+	| 	function
+	;
+
