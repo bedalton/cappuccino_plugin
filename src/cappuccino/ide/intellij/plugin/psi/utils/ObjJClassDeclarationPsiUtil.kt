@@ -158,8 +158,7 @@ fun addProtocols(
     val stub = classDeclarationElement.stub
     val newProtocols: List<*>
     if (stub != null) {
-        val stubElement = stub
-        newProtocols = stubElement!!.inheritedProtocols
+        newProtocols = stub.inheritedProtocols
     } else {
         newProtocols = classDeclarationElement.getInheritedProtocols()
     }
