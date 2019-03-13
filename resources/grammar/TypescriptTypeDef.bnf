@@ -76,7 +76,7 @@ genericParams
 	;
 
 genericParam
-	::= genericClassType ('|' genericClassType)*
+	::= ID '=' className
 	;
 
 extendsHeaderPart
@@ -87,7 +87,7 @@ extendsHeaderPart
 	;
 
 private classNamesList
-	::= classType (',' classType)*
+	::= className (',' className)*
 	{
 		//recoverWhile=classNamesList_recover
 	}
@@ -98,11 +98,18 @@ interfaceDeclarationProperties
 	;
 
 interfaceProperty
-	::= function  ';'
-	|	'readonly'?  property ';'
+	::= function
+	|	property
 	;
 
 property
+	::= 'readonly'?  propertyBase ';'
+	{
+		pin=2
+	}
+	;
+
+propertyBase
 	::= (namedArg | propertyDef | parenDef | string) '?'? ':' variableTypeList
 	{
 		pin=3
@@ -110,14 +117,14 @@ property
 	;
 
 constDeclaration
-	::= 'declare' 'const' property ';'
+	::= 'declare' 'const' propertyBase ';'
 	{
 		pin=2
 	}
 	;
 
 functionProperty
-	::= namedArg? '(' (property (',' property)*)? ')' '=>' variableTypeList
+	::= namedArg? '(' (propertyBase (',' propertyBase)*)? ')' '=>' variableTypeList
 	;
 
 functionKeyOf
@@ -136,14 +143,10 @@ parenDef
 	;
 
 function
-	::= (functionName functionGenerics? '?'?)? '(' functionArgs? ')' functionReturn?
+	::= (functionName functionGenerics? '?'?)? '(' functionArgs? ')' functionReturn? ';'
 	{
 		pin=2
-		recoverWhile=function_recover
 	}
-	;
-private function_recover
-	::= !(';')
 	;
 
 functionGenerics
@@ -196,7 +199,7 @@ keymapType
 	;
 
 namedArg
-	::= '...'? (ID | 'type' | 'extends') '?'?
+	::= '...'? (ID|'type') '?'?
 	;
 
 variableTypeList
@@ -208,7 +211,7 @@ private variableTypeListInternal
 	;
 
 variableType
-	::= paramObjectType
+	::= objectLiteral
 	|	variableTypeIntersect
 	|	functionProperty
 	|	variableTypePrime variableTail?
@@ -216,13 +219,13 @@ variableType
 	;
 
 variableTypeIntersect
-	::=	classType ('&' classType)
+	::=	variableTypePrime ('&' variableTypePrime)
 	;
 
 variableTypePrime
 	::=	'(' variableType ')'
 	|	'(' variableTypeList ')'
-	|	classType
+	|	className
 	|	string
 	| 	'type'
 	;
@@ -242,29 +245,26 @@ returnType
 
 
 genericClassNameParams
-	::= '<' (genericClassType (',' genericClassType)*)? '>'
+	::= '<' (className (',' className)*)? '>'
 	{
 		pin = 2
 	}
 	;
 
-genericClassType
-	::= typeAlias
-	|	classType
+className
+	::= ID extendsProperty
+	|	ID genericClassNameParams?
+	| 'void'
 	{
-		pin=2
+		pin(".*")=2
 	}
 	;
 
-classType
-	::= className extendsProperty
-	|	className genericClassNameParams
-	|	className
-	;
-
-
-className
-	::= ID | 'void'
+genericClassType
+	::= className extendsProperty?
+	{
+		pin=2
+	}
 	;
 
 private extendsProperty
@@ -274,23 +274,17 @@ private extendsProperty
 	}
 	;
 
-typeAlias
-	::= className '=' className
-	;
 
 variableName
 	::= ID
 	;
 
 varDeclaration
-	::= 'declare' 'var' variableName ':' (objectLiteral|variableType) ';'
-	{
-		pin=2
-	}
+	::= 'declare' 'var' variableName ':' varType ';'
 	;
 
 functionDeclaration
-	::= 'declare' 'function' function  ';'
+	::= 'declare' 'function' function
 	;
 
 string
@@ -302,28 +296,21 @@ keyMapName
 	::= ID
 	;
 
-paramObjectType
-	::= '{' ( objectLiteralProperty (',' objectLiteralProperty)*) '}'
-	{
-		pin=2
-	}
+varType
+	::= objectLiteral
+	|	className
 	;
 
 objectLiteral
 	::= '{' objectLiteralProperties? '}'
-	{
-		pin=2
-	}
 	;
 
 private objectLiteralProperties
-	::= interfaceProperty*
+	::= objectLiteralProperty (',' objectLiteralProperty)*
 	;
 
 objectLiteralProperty
 	::= property
 	| 	function
 	;
-
-
 
