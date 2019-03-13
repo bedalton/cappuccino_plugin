@@ -118,6 +118,9 @@ constDeclaration
 
 functionProperty
 	::= namedArg? '(' (property (',' property)*)? ')' '=>' variableTypeList
+	{
+		pin=2
+	}
 	;
 
 functionKeyOf
@@ -136,7 +139,7 @@ parenDef
 	;
 
 function
-	::= (functionName functionGenerics? '?'?)? '(' functionArgs? ')' functionReturn?
+	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' functionReturn? ';'
 	{
 		pin=2
 		recoverWhile=function_recover
