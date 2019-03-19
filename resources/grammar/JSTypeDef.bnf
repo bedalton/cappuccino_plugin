@@ -1,0 +1,324 @@
+{
+
+	tokens = [
+
+		INSTANCE = 'instance';
+		VAR = "var";
+		GLOBAL = "global";
+		DECLARE = "declare";
+		EXTENDS = "extends"
+		READONLY = "readonly"
+		FUNCTION_KEYWORD = "function"
+		const = "const"
+		VOID = "void"
+		TYPE = 'type'
+		NAMESPACE = "namespace"
+		WHITE_SPACE = "regexp:\s+";
+		SINGLE_LINE_COMMENT = "regexp://[^\n]*\n?";
+		BLOCK_COMMENT = "regexp:/\*(([^*]|\*[^/])*?(?=\*/))\*/";
+		DOUBLE_QUOTE = 'regexp:"([^"]|\\")*"';
+		SINGLE_QUOTE = "regexp:'([^']|\\')*'";
+		TYPE = "type"
+		KEYOF = "keyof"
+		INTERSECT = '&'
+		ELIPSIS = "..."
+		OBJECT = "object"
+		IS_KEYWORD = 'is'
+
+		FUNCTION_ARROW = "=>";
+		LT = "<";
+		GT = ">";
+		DASH = "-";
+		EQ = "=";
+		CLOSE_ELEMENT = "/>";
+		COLON = ":";
+		COMMA = ","
+		SEMI_COLON = ";";
+		OPEN_BRACE = "{";
+		CLOSE_BRACE = "}";
+		OPEN_PAREN = "(";
+		CLOSE_PAREN = ")";
+		OPT_SEPERATOR = "|";
+		DASH_LITERAL = "regexp:[a-zA-Z][a-zA-Z_0-9]*(-([a-zA-Z_0-9]*))+";
+		ID = "regexp:[_$a-zA-Z][a-zA-Z_0-9]*";
+		OPEN_BRACKET = '['
+		CLOSE_BRACKET = ']'
+		QUESTION_MARK = '?'
+		DOT = '.'
+
+	]
+}
+
+definition ::= (!<<eof>> statement)*
+
+statement
+	::= namespaceDec
+	|	globalConst ';'
+	|	globalFunction ';'
+	|	globalObject
+	|	instanceTypeAlias
+	|	instanceType
+	|	';'
+	{
+		pin(".*")=1
+	}
+	;
+
+globalConst
+	::= 'global' '<' 'const' '>' variableProperty
+	{
+		pin=3
+	}
+	;
+
+globalFunction
+	::= 'global' '<' 'function' '>' functionProperty
+	{
+		pin=3
+	}
+	;
+
+functionProperty
+	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' ':' returnType
+	{
+		pin=4
+	}
+	;
+
+functionGenerics
+	::= '<' genericClassDec (',' genericClassDec)* '>'
+	{
+		pin=1
+	}
+	;
+
+private functionArgs
+	::= variableProperty (',' variableProperty)*
+	{
+		recoverWhile=functionArgs_recover
+	}
+	;
+
+private functionArgs_recover
+	::= !(')')
+	;
+
+
+instanceTypeAlias
+	::= '=' '<' variableType ('|' variableType)* '>'
+	;
+
+instanceType
+	::= 'instance' '<' 'type' '>' classDeclaration
+	{
+		pin=3
+	}
+	;
+
+
+classDeclarationBody
+	::= ':'? objectDeclaration
+	|	instanceTypeAlias
+	;
+
+globalObject
+	::= 'global' '<' 'object' '>' classDeclaration
+	;
+
+classDeclaration
+	::= className extendsStatement? classDeclarationBody?
+	{
+		pin=1
+	}
+	;
+
+objectDeclaration
+	::= '{' objectDeclarationProperties? '}'
+	{
+		pin=1
+	}
+	;
+
+private objectDeclarationProperties
+	::= objectDeclarationProperty (';' objectDeclarationProperty)* ';'?
+	|	objectDeclarationProperty (',' objectDeclarationProperty)*
+	|	objectDeclarationProperty
+	{
+		recoverWhile=objectDeclarationProperties_recover
+	}
+	;
+
+private objectDeclarationProperty
+	::= functionProperty
+	|	variableProperty
+	;
+
+private objectDeclarationProperties_recover
+	::= !("}")
+	;
+
+variableProperty
+	::= 'readonly'? '...'? variableName '?'? ':' variableType
+	{
+		pin=5
+	}
+	;
+
+variableType
+	::= stringLiteral
+	|	objectDeclaration
+	|	multipleTypesAsArray
+	|	functionVariableType
+	|	className variableTypePrime*
+	{
+
+	}
+	;
+
+multipleTypesAsArray
+	::= '(' variableType ')' '[' ']'
+	;
+
+private variableTypePrime
+	::= intersection
+	|	orType
+	|	arrayType
+	|	isClass
+	;
+
+isClass
+	::= 'is' className
+	{
+		pin=1
+	}
+	;
+
+
+intersection
+	::= '&' variableType
+	;
+orType
+	::= '|' variableType
+	;
+
+arrayType
+	::= '[' ']'
+	;
+
+
+functionVariableType
+	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' '->' returnType
+	{
+		pin=4
+	}
+	;
+
+objectKey
+	::= '[' variableProperty ']'
+	{
+		pin=2
+	}
+	;
+
+classNameWithExtends
+	::= className extendsStatement?
+	;
+
+extendsStatement
+	::= 'extends' className
+	{
+		pin=1
+	}
+	;
+
+returnType
+	::= 'void'
+	|	returnTypeFilter
+	|	variableType returnTypeGenerics?
+	;
+
+returnTypeFilter
+	::= variableName 'is' variableType
+	;
+
+returnTypeGenerics
+	::= '<' className (',' className)? '>'
+	;
+
+functionName
+	::= ID
+	;
+
+className
+	::= namespace? classNameElement classNamePrime?
+	{
+		pin=1
+	}
+	;
+
+namespaceDec
+	::= 'namespace' '<' moduleName '>' '{' statement* '}'
+	{
+		pin=1
+	}
+	;
+
+namespace
+	::= (moduleName '.')+
+	{
+		pin(".*")=2
+	}
+	;
+
+moduleName
+	::= ID
+	;
+
+classNameElement
+	::=	ID
+	|	'object'
+	;
+
+classNamePrime
+	::= genericClassList
+	{
+		pin=1
+	}
+	;
+
+genericClassList
+	::= '<' genericClassDec (',' genericClassDec)* '>'
+	;
+
+variableName
+	::= objectKey
+	|	ID
+	|	'global'
+	|	'type'
+	|	'extends'
+	;
+
+genericClassDec
+	::= genericKey genericExtendsStatementPrime
+	|	genericKey genericTypeAliasPrime
+	|	genericKey isClass
+	|	genericKey ('|' genericClassDec)*
+	|	genericKey
+	;
+
+genericExtendsStatementPrime
+	::= 'extends' className
+	;
+
+genericTypeAliasPrime
+	::=	'=' className
+	;
+
+genericKey
+	::= ID
+	;
+
+stringLiteral
+	::= DOUBLE_QUOTE
+	|	SINGLE_QUOTE
+	;

@@ -25,8 +25,8 @@ Modified to internal format by Daniel Badal
 /// ECMAScript APIs
 /////////////////////////////
 
-declare const NaN: number;
-declare const Infinity: number;
+global <const> NaN: number;
+global <const> Infinity: number;
 
 /**
  * Evaluates JavaScript code and executes it.
@@ -933,7 +933,7 @@ global <object> JSON {
      * @param replacer An array of strings and numbers that acts as a approved list for selecting the object properties that will be stringified.
      * @param space Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
      */
-    stringify(value: any, replacer?: (number | string)[] | null, space?: string | number): string;
+    stringify(value: any, replacer?: number[] | string[] | null, space?: string | number): string;
 }
 
 
@@ -1238,7 +1238,7 @@ instance <type> PromiseLike<T> {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 is T, TResult2 is never>(onfulfilled?: ((value: T) -> TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) -> TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
+    then<TResult1 is T, TResult2 is never>(onfulfilled?: (value: T) -> TResult1 | PromiseLike<TResult1> | undefined | null, onrejected?: (reason: any) -> TResult2 | PromiseLike<TResult2> | undefined | null): PromiseLike;
 }
 
 /**
@@ -1251,14 +1251,14 @@ instance <type> Promise<T> {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 is T, TResult2 is never>(onfulfilled?: ((value: T) -> TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) -> TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    then<TResult1 is T, TResult2 is never>(onfulfilled?: (value: T) -> TResult1 | PromiseLike<TResult1> | undefined | null, onrejected?: (reason: any) -> TResult2 | PromiseLike<TResult2> | undefined | null): Promise<TResult1 | TResult2>;
 
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult is never>(onrejected?: ((reason: any) -> TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    catch<TResult is never>(onrejected?: (reason: any) -> TResult | PromiseLike<TResult> | undefined | null): Promise<T | TResult>;
 }
 
 instance <type> ArrayLike<T> {
@@ -3874,7 +3874,7 @@ instance <type> Float64Array {
     [index: number]: number;
 }
 
-global <object< Float64Array {
+global <object> Float64Array {
     readonly prototype: Float64Array;
     new(length: number): Float64Array;
     new(arrayOrArrayBuffer: ArrayLike<number> | ArrayBuffer): Float64Array;
