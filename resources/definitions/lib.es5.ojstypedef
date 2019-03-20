@@ -97,9 +97,9 @@ global <function> escape(string: string): string;
  */
 global <function> unescape(string: string): string;
 
-instance <type> PropertyKey = <string | number | symbol>
+instance <object> PropertyKey = <string | number | symbol>
 
-instance <type> PropertyDescriptor {
+instance <object> PropertyDescriptor {
     configurable?: boolean;
     enumerable?: boolean;
     value?: any;
@@ -108,11 +108,11 @@ instance <type> PropertyDescriptor {
     set?(v: any): void;
 }
 
-instance <type> PropertyDescriptorMap {
+instance <object> PropertyDescriptorMap {
     [s: string]: PropertyDescriptor;
 }
 
-instance <type> Object {
+instance <object> Object {
     /** The initial value of Object.prototype.constructor is the standard built-in Object constructor. */
     constructor: Function;
 
@@ -259,7 +259,7 @@ global <object> Object {
 /**
  * Creates a new function.
  */
-instance <type> Function {
+instance <object> Function {
     /**
      * Calls the function, substituting the specified object for the this value of the function, and the specified array for the arguments of the function.
      * @param thisArg The object to be used as the this object.
@@ -303,7 +303,7 @@ global <object> Function {
     readonly prototype: Function;
 }
 
-instance <type> String {
+instance <object> String {
     /** Returns a string representation of a string. */
     toString(): string;
 
@@ -437,7 +437,7 @@ global <object> String {
 }
 
 
-instance <type> Boolean {
+instance <object> Boolean {
     /** Returns the primitive value of the specified object. */
     valueOf(): boolean;
 }
@@ -448,7 +448,7 @@ global <object> Boolean {
     readonly prototype: Boolean;
 }
 
-instance <type> Number {
+instance <object> Number {
     /**
      * Returns a string representation of an object.
      * @param radix Specifies a radix for converting numeric values to strings. This value is only used for numbers.
@@ -507,7 +507,7 @@ global <object> Number {
     readonly POSITIVE_INFINITY: number;
 }
 
-instance <type> TemplateStringsArray extends ReadonlyArray<string> {
+instance <object> TemplateStringsArray extends ReadonlyArray<string> {
     readonly raw: ReadonlyArray<string>;
 }
 
@@ -621,7 +621,7 @@ global <object> Math {
 }
 
 /** Enables basic storage and retrieval of dates and times. */
-instance <type> Date {
+instance <object> Date {
     /** Returns a string representation of a date. The format of the string depends on the locale. */
     toString(): string;
     /** Returns a date as a string value. */
@@ -799,17 +799,17 @@ global <object> Date {
     now(): number;
 }
 
-instance <type> RegExpMatchArray extends Array<string> {
+instance <object> RegExpMatchArray extends Array<string> {
     index?: number;
     input?: string;
 }
 
-instance <type> RegExpExecArray extends Array<string> {
+instance <object> RegExpExecArray extends Array<string> {
     index: number;
     input: string;
 }
 
-instance <type> RegExp {
+instance <object> RegExp {
     /**
      * Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search.
      * @param string The String object or string literal on which to perform the search.
@@ -848,7 +848,7 @@ global <object> RegExp {
     readonly prototype: RegExp;
 }
 
-instance <type> Error {
+instance <object> Error {
     name: string;
     message: string;
     stack?: string;
@@ -860,7 +860,7 @@ global <object> Error {
     readonly prototype: Error;
 }
 
-instance <type> EvalError extends Error;
+instance <object> EvalError extends Error;
 
 global <object> EvalError {
     new(message?: string): EvalError;
@@ -868,7 +868,7 @@ global <object> EvalError {
     readonly prototype: EvalError;
 }
 
-instance <type> RangeError extends Error;
+instance <object> RangeError extends Error;
 
 global <object> RangeError {
     new(message?: string): RangeError;
@@ -876,7 +876,7 @@ global <object> RangeError {
     readonly prototype: RangeError;
 }
 
-instance <type> ReferenceError extends Error;
+instance <object> ReferenceError extends Error;
 
 
 global <object> ReferenceError {
@@ -885,7 +885,7 @@ global <object> ReferenceError {
     readonly prototype: ReferenceError;
 }
 
-instance <type> SyntaxError extends Error;
+instance <object> SyntaxError extends Error;
 
 global <object> SyntaxError {
     new(message?: string): SyntaxError;
@@ -893,7 +893,7 @@ global <object> SyntaxError {
     readonly prototype: SyntaxError;
 }
 
-instance <type> TypeError extends Error;
+instance <object> TypeError extends Error;
 
 global <object> TypeError {
     new(message?: string): TypeError;
@@ -901,7 +901,7 @@ global <object> TypeError {
     readonly prototype: TypeError;
 }
 
-instance <type> URIError extends Error;
+instance <object> URIError extends Error;
 
 global <object> URIError {
     new(message?: string): URIError;
@@ -941,7 +941,7 @@ global <object> JSON {
 /// ECMAScript Array API (specially handled by compiler)
 /////////////////////////////
 
-instance <type> ReadonlyArray<T> {
+instance <object> ReadonlyArray<T> {
     /**
      * Gets the length of the array. This is a number one higher than the highest element defined in an array.
      */
@@ -1053,14 +1053,14 @@ instance <type> ReadonlyArray<T> {
     readonly [n: number]: T;
 }
 
-instance <type> ConcatArray<T> {
+instance <object> ConcatArray<T> {
     readonly length: number;
     readonly [n: number]: T;
     join(separator?: string): string;
     slice(start?: number, end?: number): T[];
 }
 
-instance <type> Array<T> {
+instance <object> Array<T> {
     /**
      * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
      */
@@ -1222,7 +1222,7 @@ global <object> Array {
     isArray(arg: any): arg is Array<any>;
 }
 
-instance <type> TypedPropertyDescriptor<T> {
+instance <object> TypedPropertyDescriptor<T> {
     enumerable?: boolean;
     configurable?: boolean;
     writable?: boolean;
@@ -1231,7 +1231,7 @@ instance <type> TypedPropertyDescriptor<T> {
     set?: (value: T) -> void;
 }
 
-instance <type> PromiseLike<T> {
+instance <object> PromiseLike<T> {
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1244,7 +1244,7 @@ instance <type> PromiseLike<T> {
 /**
  * Represents the completion of an asynchronous operation
  */
-instance <type> Promise<T> {
+instance <object> Promise<T> {
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1261,7 +1261,7 @@ instance <type> Promise<T> {
     catch<TResult is never>(onrejected?: (reason: any) -> TResult | PromiseLike<TResult> | undefined | null): Promise<T | TResult>;
 }
 
-instance <type> ArrayLike<T> {
+instance <object> ArrayLike<T> {
     readonly length: number;
     readonly [n: number]: T;
 }
@@ -1272,7 +1272,7 @@ instance <type> ArrayLike<T> {
  * but can be passed to a typed array or DataView Object to interpret the raw
  * buffer as needed.
  */
-instance <type> ArrayBuffer {
+instance <object> ArrayBuffer {
     /**
      * Read-only. The length of the ArrayBuffer (in bytes).
      */
@@ -1290,7 +1290,7 @@ global <object> ArrayBuffer {
     isView(arg: any): arg is ArrayBufferView;
 }
 
-instance <type> ArrayBufferView {
+instance <object> ArrayBufferView {
     /**
      * The ArrayBuffer instance referenced by the array.
      */
@@ -1307,7 +1307,7 @@ instance <type> ArrayBufferView {
     byteOffset: number;
 }
 
-instance <type> DataView {
+instance <object> DataView {
     readonly buffer: ArrayBuffer;
     readonly byteLength: number;
     readonly byteOffset: number;
@@ -1443,7 +1443,7 @@ global <object> DataView {
  * A typed array of 8-bit integer values. The contents are initialized to 0. If the requested
  * number of bytes could not be allocated an exception is raised.
  */
-instance <type> Int8Array {
+instance <object> Int8Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -1719,7 +1719,7 @@ global <object> Int8Array {
  * A typed array of 8-bit unsigned integer values. The contents are initialized to 0. If the
  * requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Uint8Array {
+instance <object> Uint8Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -1993,7 +1993,7 @@ global <object> Uint8Array {
  * A typed array of 8-bit unsigned integer (clamped) values. The contents are initialized to 0.
  * If the requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Uint8ClampedArray {
+instance <object> Uint8ClampedArray {
     /**
      * The size in bytes of each element in the array.
      */
@@ -2266,7 +2266,7 @@ global <object> Uint8ClampedArray {
  * A typed array of 16-bit signed integer values. The contents are initialized to 0. If the
  * requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Int16Array {
+instance <object> Int16Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -2540,7 +2540,7 @@ global <object> Int16Array {
  * A typed array of 16-bit unsigned integer values. The contents are initialized to 0. If the
  * requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Uint16Array {
+instance <object> Uint16Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -2815,7 +2815,7 @@ global <object> Uint16Array {
  * A typed array of 32-bit signed integer values. The contents are initialized to 0. If the
  * requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Int32Array {
+instance <object> Int32Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -3089,7 +3089,7 @@ global <object> Int32Array {
  * A typed array of 32-bit unsigned integer values. The contents are initialized to 0. If the
  * requested number of bytes could not be allocated an exception is raised.
  */
-instance <type> Uint32Array {
+instance <object> Uint32Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -3362,7 +3362,7 @@ global <object> Uint32Array {
  * A typed array of 32-bit float values. The contents are initialized to 0. If the requested number
  * of bytes could not be allocated an exception is raised.
  */
-instance <type> Float32Array {
+instance <object> Float32Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -3637,7 +3637,7 @@ global <object> Float32Array {
  * A typed array of 64-bit float values. The contents are initialized to 0. If the requested
  * number of bytes could not be allocated an exception is raised.
  */
-instance <type> Float64Array {
+instance <object> Float64Array {
     /**
      * The size in bytes of each element in the array.
      */
@@ -3907,7 +3907,7 @@ global <object> Float64Array {
 }
 
 namespace <Intl> {
-    instance <type> CollatorOptions {
+    instance <object> CollatorOptions {
         usage?: string;
         localeMatcher?: string;
         numeric?: boolean;
@@ -3916,7 +3916,7 @@ namespace <Intl> {
         ignorePunctuation?: boolean;
     }
 
-    instance <type> ResolvedCollatorOptions {
+    instance <object> ResolvedCollatorOptions {
         locale: string;
         usage: string;
         sensitivity: string;
@@ -3926,7 +3926,7 @@ namespace <Intl> {
         numeric: boolean;
     }
 
-    instance <type> Collator {
+    instance <object> Collator {
         compare(x: string, y: string): number;
         resolvedOptions(): ResolvedCollatorOptions;
     }
@@ -3936,7 +3936,7 @@ namespace <Intl> {
         supportedLocalesOf(locales: string | string[], options?: CollatorOptions): string[];
     };
 
-    instance <type>  NumberFormatOptions {
+    instance <object>  NumberFormatOptions {
         localeMatcher?: string;
         style?: string;
         currency?: string;
@@ -3949,7 +3949,7 @@ namespace <Intl> {
         maximumSignificantDigits?: number;
     }
 
-    instance <type>  ResolvedNumberFormatOptions {
+    instance <object>  ResolvedNumberFormatOptions {
         locale: string;
         numberingSystem: string;
         style: string;
@@ -3963,7 +3963,7 @@ namespace <Intl> {
         useGrouping: boolean;
     }
 
-    instance <type>  NumberFormat {
+    instance <object>  NumberFormat {
         format(value: number): string;
         resolvedOptions(): ResolvedNumberFormatOptions;
     }
@@ -3974,7 +3974,7 @@ namespace <Intl> {
         supportedLocalesOf(locales: string | string[], options?: NumberFormatOptions): string[];
     };
 
-    instance <type> DateTimeFormatOptions {
+    instance <object> DateTimeFormatOptions {
         localeMatcher?: string;
         weekday?: string;
         era?: string;
@@ -3990,7 +3990,7 @@ namespace <Intl> {
         timeZone?: string;
     }
 
-    instance <type> ResolvedDateTimeFormatOptions {
+    instance <object> ResolvedDateTimeFormatOptions {
         locale: string;
         calendar: string;
         numberingSystem: string;
@@ -4007,7 +4007,7 @@ namespace <Intl> {
         timeZoneName?: string;
     }
 
-    instance <type> DateTimeFormat {
+    instance <object> DateTimeFormat {
         format(date?: Date | number): string;
         resolvedOptions(): ResolvedDateTimeFormatOptions;
     }
@@ -4018,7 +4018,7 @@ namespace <Intl> {
     };
 }
 
-instance <type> String {
+instance <object> String {
     /**
       * Determines whether two strings are equivalent in the current or specified locale.
       * @param that String to compare to target string
@@ -4028,7 +4028,7 @@ instance <type> String {
     localeCompare(that: string, locales?: string | string[], options?: Intl.CollatorOptions): number;
 }
 
-instance <type>  Number {
+instance <object>  Number {
     /**
       * Converts a number to a string by using the current or specified locale.
       * @param locales A locale string or array of locale strings that contain one or more language or locale tags. If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale. If you omit this parameter, the default locale of the JavaScript runtime is used.
@@ -4037,7 +4037,7 @@ instance <type>  Number {
     toLocaleString(locales?: string | string[], options?: Intl.NumberFormatOptions): string;
 }
 
-instance <type> Date {
+instance <object> Date {
     /**
       * Converts a date and time to a string by using the current or specified locale.
       * @param locales A locale string or array of locale strings that contain one or more language or locale tags. If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale. If you omit this parameter, the default locale of the JavaScript runtime is used.

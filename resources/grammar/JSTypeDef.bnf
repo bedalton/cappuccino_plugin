@@ -5,12 +5,10 @@
 		INSTANCE = 'instance';
 		VAR = "var";
 		GLOBAL = "global";
-		DECLARE = "declare";
 		EXTENDS = "extends"
 		READONLY = "readonly"
 		FUNCTION_KEYWORD = "function"
 		const = "const"
-		VOID = "void"
 		TYPE = 'type'
 		NAMESPACE = "namespace"
 		WHITE_SPACE = "regexp:\s+";
@@ -24,8 +22,13 @@
 		ELIPSIS = "..."
 		OBJECT = "object"
 		IS_KEYWORD = 'is'
+		KEYMAP = 'keymap'
+		KEYSET = 'keyset'
+		IN = 'in'
+		OF = 'of'
+		WHEN = 'when';
 
-		FUNCTION_ARROW = "=>";
+		FUNCTION_ARROW = "->";
 		LT = "<";
 		GT = ">";
 		DASH = "-";
@@ -58,6 +61,8 @@ statement
 	|	globalObject
 	|	instanceTypeAlias
 	|	instanceType
+	|	keymap
+	|	keyset
 	|	';'
 	{
 		pin(".*")=1
@@ -65,7 +70,7 @@ statement
 	;
 
 globalConst
-	::= 'global' '<' 'const' '>' variableProperty
+	::= 'global' '<' 'const' '>' variableName '?'? ':' variableTypeList
 	{
 		pin=3
 	}
@@ -79,24 +84,27 @@ globalFunction
 	;
 
 functionProperty
-	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' ':' returnType
+	::= functionName? genericClassList? '?'? '(' functionArgs? ')' ':' returnType
 	{
 		pin=4
 	}
 	;
 
-functionGenerics
-	::= '<' genericClassDec (',' genericClassDec)* '>'
+private functionArgs
+	::= functionArg (',' functionArg)*
 	{
-		pin=1
+		pin(".*")=1
+		recoverWhile=functionArgs_recover
 	}
 	;
 
-private functionArgs
-	::= variableProperty (',' variableProperty)*
-	{
-		recoverWhile=functionArgs_recover
-	}
+functionArg
+	::= keyMapWhen
+	|	variableProperty
+	;
+
+keyMapWhen
+	::= 'when' (variableName '=')? stringLiteral ('|' stringLiteral)*
 	;
 
 private functionArgs_recover
@@ -105,13 +113,13 @@ private functionArgs_recover
 
 
 instanceTypeAlias
-	::= '=' '<' variableType ('|' variableType)* '>'
+	::= '=' '<' variableTypeList '>'
 	;
 
 instanceType
-	::= 'instance' '<' 'type' '>' classDeclaration
+	::= 'instance' '<' 'object' '>' classDeclaration
 	{
-		pin=3
+		pin(".*")=3
 	}
 	;
 
@@ -140,9 +148,9 @@ objectDeclaration
 	;
 
 private objectDeclarationProperties
-	::= objectDeclarationProperty (';' objectDeclarationProperty)* ';'?
-	|	objectDeclarationProperty (',' objectDeclarationProperty)*
-	|	objectDeclarationProperty
+	::= objectDeclarationProperty (',' objectDeclarationProperty)+
+	|	objectDeclarationProperty (';' objectDeclarationProperty)+ ';'?
+	|	objectDeclarationProperty ';'?
 	{
 		recoverWhile=objectDeclarationProperties_recover
 	}
@@ -158,56 +166,73 @@ private objectDeclarationProperties_recover
 	;
 
 variableProperty
-	::= 'readonly'? '...'? variableName '?'? ':' variableType
+	::= 'readonly'? '...'? variableName '?'? ':' variableTypeList
 	{
 		pin=5
 	}
 	;
 
-variableType
-	::= stringLiteral
-	|	objectDeclaration
-	|	multipleTypesAsArray
-	|	functionVariableType
-	|	className variableTypePrime*
-	{
+variableTypeList
+	::= variableType ('|' variableType)+
+	|	variableType
+	;
 
+variableType
+	::= parenEnclosedType
+	|	keyType
+	|	functionVariableType
+	|	stringLiteral
+	|	objectDeclaration
+	|	arrayType
+	|	intersection
+	| 	isClass
+	|	className
+	;
+
+keyType
+	::= '<' genericKey '>' 'of' keyMapName
+	{
+		pin = 4
 	}
 	;
 
-multipleTypesAsArray
-	::= '(' variableType ')' '[' ']'
-	;
-
-private variableTypePrime
-	::= intersection
-	|	orType
-	|	arrayType
-	|	isClass
-	;
-
 isClass
-	::= 'is' className
+	::= className 'is' className
 	{
-		pin=1
+		pin=2
 	}
 	;
 
 
 intersection
-	::= '&' variableType
+	::= className '&' className
+	{
+		pin=2
+	}
 	;
-orType
-	::= '|' variableType
+
+parenEnclosedType
+	::= '(' variableType ')'
+	{
+		//pin=2
+	}
 	;
 
 arrayType
-	::= '[' ']'
+	::=  arrayTypeTypes '[' ']' ('[' ']')*
+	{
+		pin=2;
+	}
+	;
+
+private arrayTypeTypes
+	::=	'(' className ('|'className)* ')'
+	| 	className
 	;
 
 
 functionVariableType
-	::= functionName? functionGenerics? '?'? '(' functionArgs? ')' '->' returnType
+	::= '(' functionArgs? ')' '->' returnType
 	{
 		pin=4
 	}
@@ -220,20 +245,37 @@ objectKey
 	}
 	;
 
-classNameWithExtends
-	::= className extendsStatement?
+keymap
+	::= '<' 'keymap' '>' keyMapName keyMapExtension? '{'  keymapProps '}' ';'?
+	;
+
+keyMapExtension
+	::= 'extends' keyMapName (',' keyMapName)*
+	;
+
+keymapProps
+	::= keymapProp (';' keymapProp)* ';'?
+	;
+
+keyset
+	::= '<' 'keyset' '>' keyMapName '=' stringLiteral ('|' stringLiteral)* ';'?
+	;
+
+keymapProp
+	::= stringLiteral ':' variableTypeList
 	;
 
 extendsStatement
-	::= 'extends' className
+	::= 'extends' className (',' variableType)*
+	|	':' variableTypeList
 	{
 		pin=1
 	}
 	;
 
 returnType
-	::= 'void'
-	|	returnTypeFilter
+	::= returnTypeFilter
+	|	variableTypeList
 	|	variableType returnTypeGenerics?
 	;
 
@@ -247,12 +289,13 @@ returnTypeGenerics
 
 functionName
 	::= ID
+	|	'of'
 	;
 
 className
-	::= namespace? classNameElement classNamePrime?
+	::= namespace? (/*<<inMode 'GENERIC_MODE'>> genericKey |*/ classNameElement) classNamePrime?
 	{
-		pin=1
+		pin=2
 	}
 	;
 
@@ -279,7 +322,7 @@ classNameElement
 	|	'object'
 	;
 
-classNamePrime
+private classNamePrime
 	::= genericClassList
 	{
 		pin=1
@@ -288,6 +331,9 @@ classNamePrime
 
 genericClassList
 	::= '<' genericClassDec (',' genericClassDec)* '>'
+	{
+		pin(".*")=1;
+	}
 	;
 
 variableName
@@ -296,25 +342,40 @@ variableName
 	|	'global'
 	|	'type'
 	|	'extends'
+	|	'namespace'
+	|	'when'
+	|	'is'
+	|	'object'
+	|	'readonly'
+	|	'of'
+	|	stringLiteral
 	;
 
 genericClassDec
 	::= genericKey genericExtendsStatementPrime
-	|	genericKey genericTypeAliasPrime
+	|	genericKey genericTypeAlias
+	|	genericKey genericKeyOf
 	|	genericKey isClass
-	|	genericKey ('|' genericClassDec)*
-	|	genericKey
+	|	/*<<enterMode 'GENERIC_MODE'>>*/ variableTypeList /*<<exitMode 'GENERIC_MODE'>>*/
 	;
 
 genericExtendsStatementPrime
-	::= 'extends' className
+	::= 'extends' variableTypeList
 	;
 
-genericTypeAliasPrime
+genericTypeAlias
 	::=	'=' className
 	;
 
+genericKeyOf
+	::= 'in' keyMapName
+	;
+
 genericKey
+	::= ID
+	;
+
+keyMapName
 	::= ID
 	;
 
