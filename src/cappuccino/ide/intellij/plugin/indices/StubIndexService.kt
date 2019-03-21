@@ -4,8 +4,6 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
@@ -14,13 +12,12 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 open class StubIndexService internal constructor() {
-    private val LOGGER = Logger.getLogger("#cappuccino.ide.intellij.plugin.indices.StubIndexService")
 
     open fun indexMethod(methodHeaderStub: ObjJMethodHeaderStub, indexSink: IndexSink) {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexMethod()> method")
     }
 
-    open fun indexMethodCall(methodHeaderStub: ObjJMethodCallStub, indexSink: IndexSink) {
+    open fun indexMethodCall(methodCallStub: ObjJMethodCallStub, indexSink: IndexSink) {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexMethodCall()> method")
     }
 
@@ -40,7 +37,7 @@ open class StubIndexService internal constructor() {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexInstanceVariable()> method")
     }
 
-    open fun indexFunctionDeclaration(variableDeclarationStub: ObjJFunctionDeclarationElementStub<*>, indexSink: IndexSink) {
+    open fun indexFunctionDeclaration(functionDeclarationStub: ObjJFunctionDeclarationElementStub<*>, indexSink: IndexSink) {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexFunctionDeclaration()> method")
     }
 
@@ -68,10 +65,6 @@ open class StubIndexService internal constructor() {
         LOGGER.log(Level.WARNING, "Using empty stub index method <indexImport()>")
     }
 
-    open fun indexVarTypeId(stub: ObjJVarTypeIdStub, indexSink: IndexSink) {
-
-    }
-
     open fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {
 
     }
@@ -92,8 +85,9 @@ open class StubIndexService internal constructor() {
     }
 
     companion object {
-
-        internal val INDEX_VERSION = ObjJStubVersions.SOURCE_STUB_VERSION
+        private val LOGGER by lazy {
+            Logger.getLogger("#cappuccino.ide.intellij.plugin.indices.StubIndexService")
+        }
         /**
          * Emtpy service implementation
          */

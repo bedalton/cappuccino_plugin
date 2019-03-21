@@ -81,8 +81,11 @@ abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodH
 
     companion object {
 
-        private val LOGGER = Logger.getLogger(ObjJMethodHeaderDeclarationsIndexBase::class.java.canonicalName)
-        private val VERSION = 2
+        @Suppress("unused")
+        private val LOGGER by lazy {
+            Logger.getLogger(ObjJMethodHeaderDeclarationsIndexBase::class.java.canonicalName)
+        }
+        private const val VERSION = 2
         private val PARTS_PATTERN = Pattern.compile("([a-z]*)?([A-Z0-9][a-z]*)*")
 
         private fun getParts(parts: String?): List<String> {

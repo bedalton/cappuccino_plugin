@@ -11,7 +11,7 @@ import java.util.ArrayList
 
 class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<ObjJClassDeclarationElement<*>>() {
 
-    protected override val indexedElementClass: Class<ObjJClassDeclarationElement<*>>
+    override val indexedElementClass: Class<ObjJClassDeclarationElement<*>>
         get() = ObjJClassDeclarationElement::class.java
 
     override fun getVersion(): Int {
@@ -44,6 +44,6 @@ class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<
     companion object {
         val instance = ObjJClassInheritanceIndex()
         private val KEY = IndexKeyUtil.createIndexKey<String, ObjJClassDeclarationElement<*>>(ObjJClassInheritanceIndex::class.java)
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 }

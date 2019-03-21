@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 
 class ObjJMethodCallIndex private constructor() : ObjJStringStubIndexBase<ObjJMethodCall>() {
 
-    protected override val indexedElementClass: Class<ObjJMethodCall>
+    override val indexedElementClass: Class<ObjJMethodCall>
         get() = ObjJMethodCall::class.java
 
     override fun getKey(): StubIndexKey<String, ObjJMethodCall> {
@@ -19,6 +19,6 @@ class ObjJMethodCallIndex private constructor() : ObjJStringStubIndexBase<ObjJMe
     companion object {
         private val KEY = IndexKeyUtil.createIndexKey(ObjJMethodCallIndex::class.java)
         val instance = ObjJMethodCallIndex()
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 }

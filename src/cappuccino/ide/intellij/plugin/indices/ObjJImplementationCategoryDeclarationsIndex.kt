@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 
 class ObjJImplementationCategoryDeclarationsIndex private constructor() : ObjJStringStubIndexBase<ObjJImplementationDeclaration>() {
 
-    protected override val indexedElementClass: Class<ObjJImplementationDeclaration>
+    override val indexedElementClass: Class<ObjJImplementationDeclaration>
         get() = ObjJImplementationDeclaration::class.java
 
     override fun getVersion(): Int {
@@ -20,7 +20,7 @@ class ObjJImplementationCategoryDeclarationsIndex private constructor() : ObjJSt
 
         val instance = ObjJImplementationCategoryDeclarationsIndex()
         private val KEY = IndexKeyUtil.createIndexKey(ObjJImplementationCategoryDeclarationsIndex::class.java)
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 
 }
