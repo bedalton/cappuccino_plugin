@@ -1,17 +1,12 @@
 package cappuccino.ide.intellij.plugin.structure;
 
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureChildElements;
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement;
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.NavigatablePsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjJStructureViewElement  implements StructureViewTreeElement, SortableTreeElement {
     private ObjJHasTreeStructureElement element;
@@ -61,8 +56,6 @@ public class ObjJStructureViewElement  implements StructureViewTreeElement, Sort
     @NotNull
     @Override
     public TreeElement[] getChildren() {
-        final TreeElement[] out = element.getTreeStructureChildElements();
-        //Logger.getLogger("StructureViewElement").log(Level.INFO, "Element <"+itemPresentation.getPresentableText()+"> has "+out.length + " child structure view elements");
-        return out;
+        return element.getTreeStructureChildElements();
     }
 }
