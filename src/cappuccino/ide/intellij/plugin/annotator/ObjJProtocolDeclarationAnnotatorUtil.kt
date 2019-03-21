@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
-import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
@@ -20,7 +19,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         val classNameElement = thisProtocolDeclaration.getClassName() ?: return
         val className = classNameElement.text
         val duplicates = ArrayList<ObjJProtocolDeclaration>()
-        for (protocolDeclaration in ObjJProtocolDeclarationsIndex.instance.get(className, classNameElement.project)) {
+        for (protocolDeclaration in ObjJProtocolDeclarationsIndex.instance[className, classNameElement.project]) {
             if (protocolDeclaration.isEquivalentTo(thisProtocolDeclaration)) {
                 continue
             }

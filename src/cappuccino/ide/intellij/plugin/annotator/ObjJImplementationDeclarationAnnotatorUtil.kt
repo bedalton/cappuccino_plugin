@@ -12,7 +12,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
 
 
     fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
-        if (declaration.isCategory()) {
+        if (declaration.isCategory) {
             annotateIfUndefinedImplementationForCategory(declaration.getClassName(), annotationHolder)
         } else {
             //annotateIfDuplicateImplementation(declaration, annotationHolder)
@@ -28,14 +28,16 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (className.isEmpty() || isUniversalMethodCaller(className)) {
             return
         }
-        for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance.get(className, classNameElement.project)) {
-            if (!implementationDeclaration.isCategory()) {
+        for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance[className, classNameElement.project]) {
+            if (!implementationDeclaration.isCategory) {
                 return
             }
         }
         annotationHolder.createErrorAnnotation(classNameElement, "Category references undefined implementation: <$className>")
     }
 
+    /*
+    @removed due to conflicts in library with test classes having the same name
     private fun annotateIfDuplicateImplementation(thisImplementationDeclaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
         val classNameElement = thisImplementationDeclaration.getClassName() ?: return
         val className = classNameElement.text
@@ -45,14 +47,14 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-    }
+    }*/
 
     private fun annotateUnimplementedProtocols(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
         val protocolListElement = declaration.inheritedProtocolList ?: return
         val protocols = protocolListElement.classNameList
         for (className in protocols) {
             val protocolName = className.text
-            if (ObjJProtocolDeclarationsIndex.instance.get(protocolName, declaration.project).isEmpty()) {
+            if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
                 annotationHolder.createErrorAnnotation(className, "Protocol with name <$protocolName> does not exist in project")
             }
             val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
