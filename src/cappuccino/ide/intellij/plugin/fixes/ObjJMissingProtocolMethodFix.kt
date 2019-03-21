@@ -17,6 +17,10 @@ import com.intellij.psi.PsiElement
 import java.util.logging.Logger
 import javax.swing.SwingUtilities
 
+/**
+ * Attempts to add missing protocol methods in an implementation class
+ * @todo allow selection of optional methods
+ */
 class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDeclaration, private val protocolName:String, private val methodHeaders: ProtocolMethods) : BaseIntentionAction() {
 
     override fun getText(): String {

@@ -13,13 +13,19 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.util.IncorrectOperationException
 
-
-
+/**
+ * Adds or Removes a variable name to a project level list of variable names that are always defined as existing
+ * Variables with this name are ignored thoughout the whole project, not just the current file
+ * To ignore the variable name in a given scope, it should use inspection suppression
+ */
 class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction(), LocalQuickFix {
 
 
     override fun getText(): String {
-        return if (addToIgnored) "Add variable name \"$keyword\" to globally ignored variables list" else "Remove variable name \"$keyword\" from globally ignored variable names list"
+        return if (addToIgnored)
+            "Add variable name \"$keyword\" to globally ignored variables list"
+         else
+            "Remove variable name \"$keyword\" from globally ignored variable names list"
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
