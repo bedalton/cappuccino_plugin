@@ -2,7 +2,6 @@
 
 package cappuccino.ide.intellij.plugin.formatting
 
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeaderReturnTypeElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.formatting.Block
 import com.intellij.formatting.Spacing
@@ -51,23 +50,9 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             }
         }
 
-        /*
-        if (elementType == ObjJLanguage && COMMENTS.contains(type1) && !COMMENTS.contains(type2)) {
-            final ASTNode prev = getPrevSiblingOnTheSameLineSkipCommentsAndWhitespace(((AbstractBlock)child1).getNode());
-            if (prev != null) {
-                final int lineBreaks = getMinLineBreaksBetweenTopLevelNodes(prev.getElementType(), type2);
-                return Spacing.createSpacing(0, 0, lineBreaks, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
-            }
-        }*/
         if (type1 == ObjJ_SINGLE_LINE_COMMENT) {
             return Spacing.createSpacing(0, 0, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
-        /*
-        if (type2 == SINGLE_LINE_DOC_COMMENT) {
-            int nsp = 2;
-            if (type1 == SINGLE_LINE_DOC_COMMENT || (type1 == ObjJ_OPEN_BRACE)) nsp = 1;
-            return Spacing.createSpacing(0, 0, nsp, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
-        }*/
 
         if (IMPORT_STATEMENTS.contains(type1)) {
             if (type2 == ObjJ_BLOCK_COMMENT) {

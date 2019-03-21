@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.formatting;
 
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets;
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes;
 import com.intellij.formatting.Alignment;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
@@ -33,12 +31,6 @@ public class ObjJAlignmentProcessor {
                 return myBaseAlignment;
             }
         }
-        /*if (elementType == ObjJ_ARGUMENTS) {
-            if (mySettings.ALIGN_MULTILINE_PARAMETERS_IN_CALLS) {
-                return myBaseAlignment;
-            }
-        }*/
-
         return null;
     }
 }
