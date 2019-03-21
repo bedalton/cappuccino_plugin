@@ -51,9 +51,9 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     private fun highlightVariableName(variableNameElement:ObjJVariableName, annotationHolder: AnnotationHolder) {
         val project = variableNameElement.project
         if (DumbService.isDumb(project)) {
-            DumbService.getInstance(project).runReadActionInSmartMode({
+            DumbService.getInstance(project).runReadActionInSmartMode {
                 highlightVariableName(variableNameElement, annotationHolder)
-            })
+            }
             return
         }
         val variableName = variableNameElement.text

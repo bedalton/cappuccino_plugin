@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.fixes.*
 import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -11,11 +10,7 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.utils.*
-
-import java.util.ArrayList
 
 /**
  * Annotator for method calls
@@ -145,7 +140,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             selector = methodCallSelectors[i]
             failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
             selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
-            val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
+            val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <$selectorToFailPoint>")
             annotation.setNeedsUpdateOnTyping(true)
             annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.STATEMENT))
             annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.METHOD))
@@ -195,85 +190,4 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
         return 0
     }
-
-    /**
-     * Validates and annotates the call target of a method call to ensure method call is possible.
-     * @param methodCall method call to check
-     * @param holder annotation holder
-     */
-    private fun validateCallTarget(methodCall: ObjJMethodCall, holder: AnnotationHolder) {
-        if (methodCall.selectorList.isEmpty()) {
-            return
-        }
-        val selectorList = methodCall.selectorList
-        var lastIndex = selectorList.size - 1
-        var lastSelector: ObjJSelector? = selectorList[lastIndex]
-        while (lastSelector == null && lastIndex > 0) {
-            lastSelector = selectorList[--lastIndex]
-        }
-        if (lastSelector == null) {
-            return
-        }
-        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(lastSelector)
-        var weakWarning: String? = null
-        val childClasses = ArrayList<String>()
-        val expectedContainingClasses: List<String>
-        if (!selectorResult.isEmpty) {
-            if (selectorResult.isNatural) {
-                return
-            }
-            expectedContainingClasses = selectorResult.possibleContainingClassNames
-            for (containingClass in expectedContainingClasses) {
-                ProgressIndicatorProvider.checkCanceled()
-                childClasses.addAll(ObjJClassInheritanceIndex.instance.getChildClassesAsStrings(containingClass, methodCall.project))
-            }
-            val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNamesFromSelector(selectorResult.result)
-            val childContainingClasses = ArrayList<String>()
-            for (className in actualContainingClasses) {
-                if (childClasses.contains(className) && !childContainingClasses.contains(className)) {
-                    childContainingClasses.add(className)
-                }
-            }
-            weakWarning = if (!childContainingClasses.isEmpty()) {
-                "Method found in possible child classes [" + ArrayUtils.join(childContainingClasses) + "] of [" + ArrayUtils.join(expectedContainingClasses) + "]"
-            } else {
-                "Method found in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in inferred classes [" + ArrayUtils.join(expectedContainingClasses) + "]"
-            }
-        }
-        selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(lastSelector)
-        if (!selectorResult.isEmpty) {
-            if (selectorResult.isNatural) {
-                return
-            } else if (weakWarning == null) {
-                weakWarning = "Method seems to reference a selector literal, but not in enclosing class"
-            }
-        }
-        if (selectorList.size == 1) {
-            var psiElementResult = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(selectorList[0], selectorResult.possibleContainingClassNames)
-            if (!psiElementResult.isEmpty) {
-                if (psiElementResult.isNatural) {
-                    return
-                } else if (weakWarning == null) {
-                    val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNames(psiElementResult.result)
-                    weakWarning = "Selector seems to reference an accessor method in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in the inferred classes [" + ArrayUtils.join(psiElementResult.possibleContainingClassNames) + "]"
-                }
-            } else {
-                psiElementResult = ObjJSelectorReferenceResolveUtil.getVariableReferences(selectorList[0], psiElementResult.possibleContainingClassNames)
-                if (!psiElementResult.isEmpty) {
-                    if (psiElementResult.isNatural) {
-                        return
-                    } else if (weakWarning == null) {
-                        val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNames(psiElementResult.result)
-                        weakWarning = "Selector seems to reference an instance variable in [" + ArrayUtils.join(actualContainingClasses) + "], not in the inferred classes [" + ArrayUtils.join(psiElementResult.possibleContainingClassNames) + "]"
-                    }
-                }
-            }
-        }
-        if (weakWarning != null) {
-            for (selector in methodCall.selectorList) {
-                holder.createWeakWarningAnnotation(selector, weakWarning)
-            }
-        }
-    }
-
 }

@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonIntention
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonQuickFix
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -105,8 +104,6 @@ internal object ObjJSemiColonAnnotatorUtil {
                 return true
             }
         }
-        //ASTNode nextNode = ObjJTreeUtil.getNextNonEmptyNode(psiElement, true);
-        //LOGGER.log(Level.INFO, "Element <"+( nextNode != null ? nextNode.getText() : "{UNDEF}")+"> is not an element blocking semi-colon");
         return false
     }
 }
