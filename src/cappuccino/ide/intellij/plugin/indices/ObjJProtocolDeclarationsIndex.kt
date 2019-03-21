@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 
 class ObjJProtocolDeclarationsIndex private constructor() : ObjJStringStubIndexBase<ObjJProtocolDeclaration>() {
 
-    protected override val indexedElementClass: Class<ObjJProtocolDeclaration>
+    override val indexedElementClass: Class<ObjJProtocolDeclaration>
         get() = ObjJProtocolDeclaration::class.java
 
     override fun getVersion(): Int {
@@ -20,7 +20,7 @@ class ObjJProtocolDeclarationsIndex private constructor() : ObjJStringStubIndexB
 
         val instance = ObjJProtocolDeclarationsIndex()
         private val KEY = IndexKeyUtil.createIndexKey(ObjJProtocolDeclarationsIndex::class.java)
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 
 }

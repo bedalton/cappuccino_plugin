@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 class ObjJMethodFragmentIndex private constructor() : ObjJStringStubIndexBase<ObjJMethodHeaderDeclaration<*>>() {
 
-    protected override val indexedElementClass: Class<ObjJMethodHeaderDeclaration<*>>
+    override val indexedElementClass: Class<ObjJMethodHeaderDeclaration<*>>
         get() = ObjJMethodHeaderDeclaration::class.java
 
     override fun getVersion(): Int {
@@ -19,6 +19,6 @@ class ObjJMethodFragmentIndex private constructor() : ObjJStringStubIndexBase<Ob
     companion object {
         val instance = ObjJMethodFragmentIndex()
         val KEY: StubIndexKey<String, ObjJMethodHeaderDeclaration<*>> = IndexKeyUtil.createIndexKey<String, ObjJMethodHeaderDeclaration<*>>(ObjJMethodFragmentIndex::class.java)
-        private val VERSION = 1
+        private const val VERSION = 1
     }
 }

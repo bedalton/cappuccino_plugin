@@ -20,7 +20,7 @@ class ObjJImplementationDeclarationsIndex private constructor() : ObjJStringStub
 
         val instance = ObjJImplementationDeclarationsIndex()
         private val KEY = IndexKeyUtil.createIndexKey(ObjJImplementationDeclarationsIndex::class.java)
-        private val VERSION = 3
+        private const val VERSION = 3
     }
 
 }

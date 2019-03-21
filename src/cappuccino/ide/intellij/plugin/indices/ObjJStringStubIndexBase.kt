@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
@@ -8,16 +7,12 @@ import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.StringUtil
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
-import java.util.regex.MatchResult
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : StringStubIndexExtension<ObjJElemT>() {
@@ -37,9 +32,7 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
 
         if (DumbService.getInstance(project).isDumb) {
             throw IndexNotReadyRuntimeException()
-            //return Collections.emptyList();
         }
-        //LOGGER.log(Level.INFO, "Index("+getClass().getSimpleName()+")->get("+variableName+")");
         return ArrayList(StubIndex.getElements(key, variableName, project, scope, indexedElementClass))
     }
 
@@ -63,7 +56,6 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
                 continue
             }
             if (StringUtil.startsAndEndsWith(key, start, tail)) {
-                //LOGGER.log(Level.INFO, "Found selector matching <"+start+"//"+tail+">: <"+key+">");
                 keys.add(key)
             } else {
                 notMatchingKeys.add(key)
@@ -92,9 +84,9 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         val out = HashMap<String, MutableList<ObjJElemT>>() as MutableMap<String, MutableList<ObjJElemT>>
         for (key in keys) {
             if (out.containsKey(key)) {
-                out[key]!!.addAll(get(key, project, if (globalSearchScope != null) globalSearchScope else GlobalSearchScope.allScope(project)))
+                out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)))
             } else {
-                out[key] = get(key, project, if (globalSearchScope != null) globalSearchScope else GlobalSearchScope.allScope(project))
+                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project))
             }
         }
         return out
@@ -127,17 +119,16 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
 
     @Throws(IndexNotReadyRuntimeException::class)
     @JvmOverloads
-    fun getKeysByPattern(patternString: String?, project: Project, globalSearchScope: GlobalSearchScope? = null): List<String> {
+    fun getKeysByPattern(patternString: String?, project: Project, @Suppress("UNUSED_PARAMETER") globalSearchScope: GlobalSearchScope? = null): List<String> {
         if (patternString == null) {
             return emptyList()
         }
         val matchingKeys = ArrayList<String>()
         val notMatchingKeys = ArrayList<String>()
-        var pattern: Pattern
-        try {
-            pattern = Pattern.compile(patternString)
+        val pattern: Pattern = try {
+            Pattern.compile(patternString)
         } catch (e: Exception) {
-            pattern = Pattern.compile(Pattern.quote(patternString))
+            Pattern.compile(Pattern.quote(patternString))
         }
 
         for (key in getAllKeys(project)) {
@@ -145,10 +136,8 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
                 continue
             }
             if (pattern.matcher(key).matches()) {
-                //LOGGER.log(Level.INFO, "Found Matching key for pattern: <"+patternString+">: <"+key+">");
                 matchingKeys.add(key)
             } else {
-                //LOGGER.log(Level.INFO, "Key <"+key+"> does not match pattern: <"+patternString+">");
                 notMatchingKeys.add(key)
             }
         }
@@ -183,16 +172,16 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
     }
 
     internal fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
-        return  if (scope != null)
-                    scope
-                else
-                    GlobalSearchScope.allScope(project)
+        return scope ?: GlobalSearchScope.allScope(project)
     }
 
     companion object {
 
-        private val LOGGER = Logger.getLogger(ObjJStringStubIndexBase::class.java.name)
-        protected val emptyList: Map<Any, Any> = emptyMap<Any, Any>()
-        private val VERSION = 3
+        @Suppress("unused")
+        private val LOGGER by lazy {
+            Logger.getLogger(ObjJStringStubIndexBase::class.java.name)
+        }
+        protected val emptyList: Map<Any, Any> = emptyMap()
+        private const val VERSION = 3
     }
 }

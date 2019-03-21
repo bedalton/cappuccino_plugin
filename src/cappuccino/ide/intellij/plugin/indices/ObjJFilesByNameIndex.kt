@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 
 class ObjJFilesByNameIndex private constructor() : ObjJStringStubIndexBase<ObjJFile>() {
 
-    protected override val indexedElementClass: Class<ObjJFile>
+    override val indexedElementClass: Class<ObjJFile>
         get() = ObjJFile::class.java
 
     override fun getVersion(): Int {
@@ -22,7 +22,7 @@ class ObjJFilesByNameIndex private constructor() : ObjJStringStubIndexBase<ObjJF
 
         private val KEY = IndexKeyUtil.createIndexKey(ObjJFilesByNameIndex::class.java)
 
-        private val VERSION = 3
+        private const val VERSION = 3
     }
 
 
