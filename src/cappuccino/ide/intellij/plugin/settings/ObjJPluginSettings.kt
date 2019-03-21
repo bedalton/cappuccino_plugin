@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
@@ -26,7 +28,7 @@ object ObjJPluginSettings {
 
     private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN = "objj.resolve.calltarget.FILTER_STRICT_IF_TYPE_KNOWN"
     private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN_DEFAULT = true
-    private val filterMethodCallsStrictIfTypeKnownSetting = BooleanSetting(RESOLVE_CALL_TARGET, RESOLVE_CALL_DEFAULT)
+    private val filterMethodCallsStrictIfTypeKnownSetting = BooleanSetting(RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN, RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN_DEFAULT)
     var filterMethodCallsStrictIfTypeKnown:Boolean get() {
         return filterMethodCallsStrictIfTypeKnownSetting.value!!
     } set (value) {
@@ -38,7 +40,7 @@ object ObjJPluginSettings {
     private const val COLLAPSE_BY_DEFAULT_DEFAULT = false
     private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
 
-    private const val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties";
+    private const val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties"
     private val ignoredKeywordsSetting = ObjJIgnoredStringsListSetting(IGNORE_PROPERTIES_KEY)
 
     private const val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
