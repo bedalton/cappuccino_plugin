@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.utils
 
 import com.intellij.openapi.project.Project
@@ -34,7 +36,6 @@ class ObjJFileUtil {
 
     private fun getImportsAsMap(file: PsiFile, imports: MutableMap<String, List<String>>) {
         val importStatements = file.getChildrenOfType( ObjJImportStatement::class.java)
-        val checked = ArrayList<String>()
         val project = file.project
         val searchScope = GlobalSearchScope.everythingScope(project)
         for (importStatement in importStatements) {
@@ -93,7 +94,7 @@ class ObjJFileUtil {
     companion object {
 
         private val EMPTY_FILE_LIST = emptyList<ObjJFile>()
-        val FILE_PATH_KEY = "__FILE__"
+        const val FILE_PATH_KEY = "__FILE__"
 
         fun getContainingFileName(psiElement: PsiElement?): String? {
             return getFileNameSafe(psiElement?.containingFile)
