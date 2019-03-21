@@ -1,21 +1,15 @@
 package cappuccino.ide.intellij.plugin.formatting
 
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import com.intellij.formatting.FormattingMode
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.FormatterUtil
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 
-import java.util.Arrays
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.TokenType.WHITE_SPACE
 
@@ -60,11 +54,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNormalIndent()
         }
 
-        /*if (parentType == ENUM_DEFINITION && isBetweenBraces(node)) {
-            // instead of isBetweenBraces(node) we can parse enum block as a separate ASTNode, or build formatter blocks not tied to AST.
-            return Indent.getNormalIndent();
-        }*/
-
         if (parentType == ObjJ_ARRAY_LITERAL || parentType == ObjJ_OBJECT_LITERAL) {
             if (elementType == ObjJ_OPEN_BRACE ||
                     elementType == ObjJ_AT_OPEN_BRACE ||
@@ -84,16 +73,16 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
-            when (braceStyle) {
+            return when (braceStyle) {
                 CommonCodeStyleSettings.END_OF_LINE -> {
-                    return if (elementType == ObjJ_OPEN_BRACE && FormatterUtil.isPrecededBy(parent, ObjJ_SINGLE_LINE_COMMENT, WHITE_SPACE)) {
+                    if (elementType == ObjJ_OPEN_BRACE && FormatterUtil.isPrecededBy(parent, ObjJ_SINGLE_LINE_COMMENT, WHITE_SPACE)) {
                         // Use Nystrom style rather than Allman.
                         Indent.getContinuationIndent()
                     } else Indent.getNoneIndent() // FALL THROUGH
                 }
-                CommonCodeStyleSettings.NEXT_LINE, CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED -> return Indent.getNoneIndent()
-                CommonCodeStyleSettings.NEXT_LINE_SHIFTED, CommonCodeStyleSettings.NEXT_LINE_SHIFTED2 -> return Indent.getNormalIndent()
-                else -> return Indent.getNoneIndent()
+                CommonCodeStyleSettings.NEXT_LINE, CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED -> Indent.getNoneIndent()
+                CommonCodeStyleSettings.NEXT_LINE_SHIFTED, CommonCodeStyleSettings.NEXT_LINE_SHIFTED2 -> Indent.getNormalIndent()
+                else -> Indent.getNoneIndent()
             }
         }
 
@@ -170,9 +159,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         if (elementType == ObjJ_OPEN_QUOTE && prevSiblingType == CLOSING_QUOTE && parentType == STRING_LITERAL_EXPRESSION) {
             return Indent.getContinuationIndent();
         }*/
-        if (BINARY_EXPRESSIONS.contains(parentType) && prevSibling != null) {
-            return Indent.getContinuationIndent()
-        }
 
         if (parentType == ObjJ_METHOD_CALL) {
             if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET, WHITE_SPACE)) {
@@ -254,45 +240,5 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
 
         val EXPRESSIONS = TokenSet.create(ObjJ_EXPR)
 
-        private val HAS_NO_INDENT_PAREN = TokenSet.create(
-                ObjJ_FUNCTION_DECLARATION,
-                ObjJ_ENCLOSED_EXPR,
-                ObjJ_PREPROCESSOR_DEFINE_FUNCTION,
-                ObjJ_FUNCTION_LITERAL,
-                ObjJ_REF_EXPRESSION,
-                ObjJ_DEREF_EXPRESSION,
-                ObjJ_NEW_EXPRESSION,
-                ObjJ_FUNCTION_CALL,
-                ObjJ_TYPE_OF,
-                ObjJ_SELECTOR_LITERAL,
-                ObjJ_ACCESSOR,
-                ObjJ_CONDITION_EXPRESSION,
-                ObjJ_FOR,
-                ObjJ_SWITCH_STATEMENT
-        )
-
-        private val BINARY_EXPRESSIONS = TokenSet.create(
-
-        )
-
-        private val HAS_NO_INDENT_BRACE = TokenSet.create(
-                ObjJ_METHOD_BLOCK,
-                ObjJ_FUNCTION_LITERAL,
-                ObjJ_BLOCK_ELEMENT,
-                ObjJ_SWITCH_STATEMENT
-        )
-
-        private fun isBetweenBraces(node: ASTNode): Boolean {
-            val elementType = node.elementType
-            if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) return false
-
-            var sibling: ASTNode? = node.treePrev
-            while (sibling != null) {
-                if (sibling.elementType == ObjJ_OPEN_BRACE) return true
-                sibling = sibling.treePrev
-            }
-
-            return false
-        }
     }
 }
