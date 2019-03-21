@@ -9,7 +9,6 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import java.util.logging.Logger
 
 
 object ObjJVariableTypeResolver {
@@ -189,6 +188,8 @@ object ObjJVariableTypeResolver {
         return null
     }
 
+    // @todo implement checks for call assignments
+    /*
     fun getCallTargetTypeIfAllocStatement(callTarget:ObjJCallTarget): String {
         val subMethodCall = callTarget.qualifiedReference?.methodCall ?: return callTarget.text
         val subMethodCallSelectorString = subMethodCall.selectorString
@@ -196,5 +197,5 @@ object ObjJVariableTypeResolver {
             return subMethodCall.getCallTargetText()
         }
         return callTarget.text
-    }
+    }*/
 }

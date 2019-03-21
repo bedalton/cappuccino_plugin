@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.CARET_INDICATOR
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.GENERIC_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
@@ -25,11 +26,9 @@ import icons.ObjJIcons
 import java.util.logging.Level
 import java.util.logging.Logger
 
-object ObjJMethodCallCompletionContributor2 {
+object ObjJMethodCallCompletionContributor {
 
-    private val LOGGER = Logger.getLogger(ObjJMethodCallCompletionContributor2::class.java.name)
-    val CARET_INDICATOR = ObjJCompletionContributor.CARET_INDICATOR
-
+    private val LOGGER = Logger.getLogger(ObjJMethodCallCompletionContributor::class.java.name)
 
     /**
      * Method to manage adding selector lookup elements to result set
@@ -225,9 +224,16 @@ object ObjJMethodCallCompletionContributor2 {
         else
             ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY
 
-        val variableName = instanceVariableDeclaration.variableName!!.name
+        val variableName = instanceVariableDeclaration.variableName?.name ?: return
         val variableType = instanceVariableDeclaration.formalVariableType.text
-        ObjJSelectorLookupUtil.addSelectorLookupElement(result, variableName, containingClass, "<$variableType>", priority, false, ObjJIcons.VARIABLE_ICON)
+        ObjJSelectorLookupUtil.addSelectorLookupElement(
+                resultSet = result,
+                suggestedText = variableName,
+                className = containingClass,
+                tailText = "<$variableType>",
+                priority = priority,
+                addSuffix = false,
+                icon = ObjJIcons.VARIABLE_ICON)
     }
 
 
@@ -239,7 +245,7 @@ object ObjJMethodCallCompletionContributor2 {
         //Get className
         val className = instanceVariable.containingClassName
 
-        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames) {
+        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames && ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown) {
             return
         }
 
@@ -249,12 +255,27 @@ object ObjJMethodCallCompletionContributor2 {
         //Add Getter
         val getter = instanceVariable.getter
         if (getter != null) {
-            ObjJSelectorLookupUtil.addSelectorLookupElement(result, getter.selectorString, className, "<" + instanceVariable.formalVariableType.text + ">", priority, false, ObjJIcons.ACCESSOR_ICON)
+            ObjJSelectorLookupUtil.addSelectorLookupElement(
+                    resultSet = result,
+                    suggestedText = getter.selectorString,
+                    className = className,
+                    tailText = "<" + instanceVariable.formalVariableType.text + ">",
+                    priority = priority,
+                    addSuffix = false,
+                    icon = ObjJIcons.ACCESSOR_ICON
+            )
         }
         //Add Setter
         val setter = instanceVariable.setter
         if (setter != null) {
-            ObjJSelectorLookupUtil.addSelectorLookupElement(result, setter.selectorString, className, "<" + instanceVariable.formalVariableType.text + ">", priority, false, ObjJIcons.ACCESSOR_ICON)
+            ObjJSelectorLookupUtil.addSelectorLookupElement(
+                    resultSet = result,
+                    suggestedText = setter.selectorString,
+                    className = className,
+                    tailText = "<" + instanceVariable.formalVariableType.text + ">",
+                    priority = priority,
+                    addSuffix = false,
+                    icon = ObjJIcons.ACCESSOR_ICON)
         }
     }
 

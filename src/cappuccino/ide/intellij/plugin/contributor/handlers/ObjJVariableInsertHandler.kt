@@ -16,7 +16,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
-class ObjJVariableInsertHandler private constructor() : InsertHandler<LookupElement> {
+object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
 
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
         handleInsert(lookupElement.psiElement, insertionContext.editor)
@@ -53,11 +53,6 @@ class ObjJVariableInsertHandler private constructor() : InsertHandler<LookupElem
     }
 
     fun isFunctionCompletion(element: PsiElement): Boolean {
-        return !DumbService.isDumb(element.project) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance.get(element.text, element.project).isEmpty()
-    }
-
-    companion object {
-
-        val instance = ObjJVariableInsertHandler()
+        return !DumbService.isDumb(element.project) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance[element.text, element.project].isEmpty()
     }
 }

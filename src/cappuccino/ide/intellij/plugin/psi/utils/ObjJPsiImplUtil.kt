@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider.CARET_INDICATOR
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
@@ -7,7 +8,6 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import com.intellij.psi.tree.IElementType
 import com.intellij.util.IncorrectOperationException
-import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -419,7 +419,7 @@ object ObjJPsiImplUtil {
         if (selector != null) {
             return selector
         }
-        val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.*)")) else null
+        val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(CARET_INDICATOR, "(.*)")) else null
         for (currentSelector in selectorList) {
 
             ProgressIndicatorProvider.checkCanceled()
