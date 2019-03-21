@@ -17,7 +17,6 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import java.util.*
-import java.util.logging.Logger
 
 class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
 
