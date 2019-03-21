@@ -1,11 +1,11 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider.CARET_INDICATOR
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
@@ -103,7 +103,7 @@ object ObjJSelectorReferenceResolveUtil {
             if (project == null) {
                 project = parent?.project ?: tempSelector.project
             }
-            if (baseSelector == null || tempSelector.text.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
+            if (baseSelector == null || tempSelector.text.contains(CARET_INDICATOR)) {
                 baseSelector = tempSelector
                 selectorIndex = i
                 break
@@ -122,9 +122,9 @@ object ObjJSelectorReferenceResolveUtil {
         }
         val classConstraints = if (parent != null) getClassConstraints(parent) else emptyList()
         val methodHeaders: Map<String, List<ObjJMethodHeaderDeclaration<*>>>
-        methodHeaders = if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
-            val pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)") + "(.*)"
-            ObjJUnifiedMethodIndex.instance.getByPatternFuzzy(pattern, baseSelector!!.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project)
+        methodHeaders = if (selector.contains(CARET_INDICATOR)) {
+            val pattern = selector.replace(CARET_INDICATOR, "(.+)") + "(.*)"
+            ObjJUnifiedMethodIndex.instance.getByPatternFuzzy(pattern, baseSelector!!.getSelectorString(false).replace(CARET_INDICATOR, ""), project)
             //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
         } else {
             ObjJUnifiedMethodIndex.instance.getByPattern(selector, null, project)

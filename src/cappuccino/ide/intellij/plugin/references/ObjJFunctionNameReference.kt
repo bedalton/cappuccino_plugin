@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
-import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
@@ -11,12 +9,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-import com.intellij.codeInsight.completion.PrioritizedLookupElement
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 
-import java.util.ArrayList
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {

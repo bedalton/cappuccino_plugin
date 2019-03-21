@@ -18,7 +18,7 @@ class ObjJCompletionContributor : CompletionContributor() {
                 PlatformPatterns
                         .psiElement()
                         .withLanguage(ObjJLanguage.instance),
-                BlanketCompletionProvider())
+                ObjJBlanketCompletionProvider)
     }
 
     /**
@@ -36,14 +36,14 @@ class ObjJCompletionContributor : CompletionContributor() {
         val element = context.parameters.position
         val editor = context.lookup.editor
         if (element is ObjJVariableName || element.parent is ObjJVariableName) {
-            if (ObjJVariableInsertHandler.instance.isFunctionCompletion(element)) {
+            if (ObjJVariableInsertHandler.isFunctionCompletion(element)) {
                 EditorUtil.insertText(editor, "()", false)
                 EditorUtil.offsetCaret(editor, 1)
             }
-            if (ObjJVariableInsertHandler.instance.shouldAppendFunctionParamComma(element)) {
+            if (ObjJVariableInsertHandler.shouldAppendFunctionParamComma(element)) {
                 //EditorUtil.insertText(editor, ", ", true);
             }
-            if (ObjJVariableInsertHandler.instance.shouldAppendClosingBracket(element)) {
+            if (ObjJVariableInsertHandler.shouldAppendClosingBracket(element)) {
                 //EditorUtil.insertText(editor, "]", false);
             }
         }

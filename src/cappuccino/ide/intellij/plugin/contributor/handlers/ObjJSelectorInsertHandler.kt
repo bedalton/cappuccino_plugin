@@ -6,14 +6,14 @@ import com.intellij.codeInsight.lookup.LookupElement
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 
-class ObjJSelectorInsertHandler private constructor() : InsertHandler<LookupElement> {
+object ObjJSelectorInsertHandler : InsertHandler<LookupElement> {
 
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
         insertColon(insertionContext, lookupElement)
         insertSpaceBefore(insertionContext) // must be after colon is inserted, otherwise the colon would be inserted in the wrong spot
     }
 
-    private fun insertColon(insertionContext: InsertionContext, lookupElement: LookupElement) {
+    private fun insertColon(insertionContext: InsertionContext, @Suppress("UNUSED_PARAMETER") lookupElement: LookupElement) {
         if (!EditorUtil.isTextAtOffset(insertionContext, ObjJMethodPsiUtils.SELECTOR_SYMBOL)) {
             EditorUtil.insertText(insertionContext, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true)
         }
@@ -24,10 +24,4 @@ class ObjJSelectorInsertHandler private constructor() : InsertHandler<LookupElem
             EditorUtil.insertText(insertionContext.editor, " ", insertionContext.startOffset, false)
         }
     }
-
-    companion object {
-
-        val instance = ObjJSelectorInsertHandler()
-    }
-
 }
