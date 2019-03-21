@@ -9,9 +9,6 @@ import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
-import com.intellij.openapi.editor.markup.EffectType
-import java.awt.Color
-import java.awt.Font
 
 class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
 
