@@ -21,6 +21,9 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.IncorrectOperationException
 
 
+/**
+ * Abstract class to add a suppress inspection statement to a block scope
+ */
 abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
     protected val pointer:SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
@@ -54,8 +57,14 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElem
 
 }
 
+/**
+ * Concrete implementation to add a inspection suppression for a ignore flag within a given scope
+ */
 class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppressInspectionFlags, private val scope:ObjJSuppressInspectionScope, private val parameter:String? = null) : ObjJAddSuppressInspectionBeforeElementOfKind(psiElement, flag, parameter) {
+    // Holds pointer to the kind of element that should be annotated
     private var _writeAbove:SmartPsiElementPointer<PsiElement>? = null
+
+    // Gets the element to write above.
     override val writeAbove:PsiElement? get () {
         var writeAbove = this._writeAbove?.element
         if (writeAbove != null) {

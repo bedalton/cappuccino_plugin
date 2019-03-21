@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.isType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
 import com.intellij.openapi.diagnostic.Logger

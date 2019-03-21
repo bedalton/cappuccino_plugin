@@ -10,12 +10,17 @@ import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.util.IncorrectOperationException
 
-
-
-class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction() {
+/**
+ * Adds or Removes a selector from a static list in the settings.
+ * Selectors in this list are ignored throughout the project
+ */
+class ObjJAlterIgnoredSelector(private val keyword:String, private val addToIgnored:Boolean) : BaseIntentionAction() {
 
     override fun getText(): String {
-        return if (addToIgnored) "Add selector \"$keyword\" to ignored selectors list" else "Remove selector \"$keyword\" from ignored selectors list"
+        return if (addToIgnored)
+            "Add selector \"$keyword\" to ignored selectors list"
+        else
+            "Remove selector \"$keyword\" from ignored selectors list"
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
@@ -35,7 +40,7 @@ class ObjJAlterIgnoredSelector(private val keyword:String, val addToIgnored:Bool
     }
 
     override fun getFamilyName(): String {
-        return ObjJInspectionProvider.GROUP_DISPLAY_NAME;
+        return ObjJInspectionProvider.GROUP_DISPLAY_NAME
     }
 
 }
