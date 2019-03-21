@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.StringSetting
 
-class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault:String = "") {
+class ObjJIgnoredStringsListSetting (val key:String, ignorePropertiesDefault:String = "") {
     private val ignoredKeywordsSetting = StringSetting(key, ignorePropertiesDefault)
     private var ignoredKeywords = ignoredKeywordsSetting.value!!.split(IGNORE_KEYWORDS_DELIM)
 
@@ -48,6 +48,6 @@ class ObjJIgnoredStringsListSetting (val key:String, val ignorePropertiesDefault
         return ignoredKeywords
     }
     companion object {
-        public val IGNORE_KEYWORDS_DELIM = ","
+        const val IGNORE_KEYWORDS_DELIM = ","
     }
 }
