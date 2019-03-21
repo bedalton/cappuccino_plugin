@@ -1,6 +1,10 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.CLASS
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FILE
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.METHOD
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveMethodReturnTypeFix
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
@@ -13,6 +17,7 @@ import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
 class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
@@ -52,18 +57,22 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
                 val expr = returnStatement.expr
                 if (expr == null || expr.text.isEmpty()) {
                     problemsHolder.registerProblem(returnStatement.`return`, "Method must return a value of type: '$returnType'",
-                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
-                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
-                            ObjJAddSuppressInspectionForScope(returnStatement, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
+                            suppressFix(returnStatement, METHOD),
+                            suppressFix(returnStatement, CLASS),
+                            suppressFix(returnStatement, FILE))
                 }
             }
             if (!returnsValue) {
                 val element = methodDeclaration.methodBlock?.closeBrace ?: methodDeclaration.methodHeader.methodHeaderReturnTypeElement ?: methodDeclaration.methodBlock?.lastChild ?: methodDeclaration.lastChild
                 problemsHolder.registerProblem(element, "Method expects return statement", ObjJRemoveMethodReturnTypeFix(element),
-                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
-                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
-                        ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
+                        suppressFix(element, METHOD),
+                        suppressFix(element, CLASS),
+                        suppressFix(element, FILE))
             }
+        }
+
+        fun suppressFix(element:PsiElement, scope:ObjJSuppressInspectionScope) : ObjJAddSuppressInspectionForScope {
+                    return ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, scope)
         }
     }
 }
