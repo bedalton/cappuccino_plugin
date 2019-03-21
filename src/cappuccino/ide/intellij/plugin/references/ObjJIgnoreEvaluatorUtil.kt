@@ -16,16 +16,17 @@ import java.util.regex.Pattern
 
 object ObjJIgnoreEvaluatorUtil {
 
+    @Suppress("unused")
     private val LOGGER: Logger by lazy {
         Logger.getLogger(ObjJIgnoreEvaluatorUtil::class.java.canonicalName)
     }
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
-    public const val IGNORE_FLAG = "@ignore"
+    private const val IGNORE_FLAG = "@ignore"
     private const val NO_INDEX_FLAG = "@noIndex"
-    public const val AT_VAR = "@var"
+    private const val AT_VAR = "@var"
     private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?$AT_VAR\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
     private val SPACE_REGEX = "\\s+".toRegex()
-    public val DO_NOT_RESOLVE = "doNotInferType"
+    const val DO_NOT_RESOLVE = "doNotInferType"
 
 
     fun isInferDisabled(elementIn:PsiElement, param: String?, recursive: Boolean = true) : Boolean {

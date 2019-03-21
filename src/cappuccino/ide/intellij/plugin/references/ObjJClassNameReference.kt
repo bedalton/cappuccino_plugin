@@ -45,7 +45,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         if (className == null) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val project = myElement.project;
+        val project = myElement.project
         ProgressIndicatorProvider.checkCanceled()
         if (DumbService.isDumb(project)) {
             return ResolveResult.EMPTY_ARRAY
@@ -60,7 +60,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         }
 
         for (classDec in classDeclarations) {
-            val classDecName = classDec.getClassName() ?: continue;
+            val classDecName = classDec.getClassName() ?: continue
             if (!classDecName.text.isEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
                 classNames.add(classDecName)
             }
