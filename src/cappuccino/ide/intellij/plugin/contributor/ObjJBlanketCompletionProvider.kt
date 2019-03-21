@@ -62,13 +62,18 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             PsiTreeUtil.getParentOfType(element, ObjJInheritedProtocolList::class.java) != null -> {
                 addProtocolNameCompletionElements(resultSet, element, queryString)
             }
+            element is ObjJFormalVariableType || element.hasParentOfType(ObjJFormalVariableType::class.java) -> {
+                getClassNameCompletions(resultSet, element)
+            }
+            element.hasParentOfType(ObjJInstanceVariableList::class.java) -> {
+                if (element.getElementType() == ObjJTypes.ObjJ_AT_FRAGMENT) {
+                    addCompletionElementsSimple(resultSet, listOf("accessors"));
+                }
+                resultSet.stopHere()
+            }
             else -> {
                 if (element.getContainingScope() == ReferencedInScope.FILE) {
                     addFileLevelCompletions(resultSet, element)
-                }
-                if (element.hasParentOfType(ObjJInstanceVariableList::class.java)) {
-                    resultSet.stopHere()
-                    return
                 }
 
                 if (ObjJVariablePsiUtil.isNewVarDec(element)) {

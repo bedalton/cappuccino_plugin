@@ -18,23 +18,46 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.ge
 
 object ObjJSelectorLookupUtil {
 
+    private val getterAccessorPropertyTypes = listOf("getter", "readonly", "copy", "property")
+    private val setterAccessorPropertyTypes = listOf("setter", "property")
+
     /**
      * Adds a selector lookup element to the completion contributor result set.
      */
     fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) {
-        val tailText = getSelectorLookupElementTailText(selector, selectorIndex)
-        val addColonSuffix = tailText != null || selectorIndex > 0
+        if (addAccessors(resultSet, selector, selectorIndex, priority)) {
+            return
+        }
+        addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
+
+    }
+
+    private fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int, priority: Double) {
+        val tailText = getSelectorLookupElementTailText(selector, isGetter, selectorIndex)
+        val addColonSuffix = !isGetter && (tailText != null || selectorIndex > 0)
         val containingFileOrClassName = getContainingClassOrFileName(selector)
         addSelectorLookupElement(resultSet, selector.text, containingFileOrClassName, tailText
                 ?: "", priority, addColonSuffix, ObjJPsiImplUtil.getIcon(selector))
+    }
 
+    private fun addAccessors(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) : Boolean {
+        if (selectorIndex != 0) return false
+        val isGetter = isGetterAccessor(selector)
+        if (isGetter) {
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = true, selectorIndex = selectorIndex, priority = priority)
+        }
+        val isSetter = isSetterAccessor(selector)
+        if (isSetter) {
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
+        }
+        return isGetter || isSetter
     }
 
     /**
      * Gets the tail text for a given element
      */
     private fun getSelectorLookupElementTailText(
-            selector: ObjJSelector, selectorIndex: Int): String? {
+            selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int): String? {
         // Gets all selectors that come after this one
         val trailingSelectors = ObjJMethodPsiUtils.getTrailingSelectorStrings(selector, selectorIndex)
         //Creates a string builder for building the tail text
@@ -43,6 +66,9 @@ object ObjJSelectorLookupUtil {
         // Add parameter type if it exists
         val paramType = getSelectorVariableType(selector)
         if (paramType != null) {
+            if (isGetter) {
+                return stringBuilder.append(paramType).toString()
+            }
             stringBuilder.append("(").append(paramType).append(")")
             val variableName = getSelectorVariableName(selector)
             if (variableName != null) {
@@ -56,6 +82,16 @@ object ObjJSelectorLookupUtil {
         }
         // Return tail text if any or null if empty
         return if (stringBuilder.length > 1) stringBuilder.toString() else null
+    }
+
+    private fun isGetterAccessor(selector:ObjJSelector) : Boolean {
+        val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
+        return property.accessorPropertyType.text in getterAccessorPropertyTypes
+    }
+
+    private fun isSetterAccessor(selector:ObjJSelector) : Boolean {
+        val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
+        return property.accessorPropertyType.text in setterAccessorPropertyTypes
     }
 
     /**
