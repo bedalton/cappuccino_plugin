@@ -11,11 +11,8 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 
 import java.util.ArrayList
-import java.util.logging.Logger
 
 class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
-
-    private val logger:Logger = Logger.getLogger(ObjJSelectorReference::class.java.canonicalName)
 
     private val thisMethodHeaderParent: ObjJMethodHeaderDeclaration<*>?
     private var _classConstraints: List<String>? = null
@@ -168,21 +165,10 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             }
             return PsiElementResolveResult.createResults(out)
         }
-        var result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
+        val result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
         if (!result.isEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
-        /*
-        result = ObjJSelectorReferenceResolveUtil.getVariableReferences(myElement, result.possibleContainingClassNames)
-        if (!result.isEmpty) {
-            return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
-        }
-        selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallPartialReferences(myElement, true)
-        return if (!result.isEmpty) {
-            PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
-        } else PsiElementResolveResult.EMPTY_ARRAY
-        //logger.log(Level.INFO, "Selector reference failed to multi resolve selector: <"+myElement.getSelectorString(true)+">");
-        */
         return PsiElementResolveResult.EMPTY_ARRAY
     }
 

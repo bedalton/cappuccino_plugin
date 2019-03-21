@@ -14,21 +14,13 @@ import java.util.*
 
 class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPolyVariantReferenceBase<ObjJHasMethodSelector>(psiElement, TextRange.create(0, psiElement.textLength)) {
 
-    private val selector: String
-    private val containingClass: String
-
-
-    init {
-        selector = psiElement.selectorString
-        this.containingClass = ObjJPsiImplUtil.getContainingClassName(psiElement)
-    }
-
+    private val selector: String = psiElement.selectorString
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         if (DumbService.isDumb(myElement.project)) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val result = ArrayList<PsiElement>(ObjJUnifiedMethodIndex.instance.get(selector, myElement.project))
+        val result = ArrayList<PsiElement>(ObjJUnifiedMethodIndex.instance[selector, myElement.project])
         return if (result.size > 0) {
             PsiElementResolveResult.createResults(result)
         } else PsiElementResolveResult.createResults(ObjJPsiImplUtil.getSelectorLiteralReference(myElement))
