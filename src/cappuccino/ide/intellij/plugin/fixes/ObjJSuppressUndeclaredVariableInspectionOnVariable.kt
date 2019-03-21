@@ -16,7 +16,9 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.IncorrectOperationException
 
 
-
+/**
+ * Creates a suppress inspection comment targeting an undeclared variable by name
+ */
 class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariableName) : BaseIntentionAction(), LocalQuickFix {
 
     private val variableNamePointer:SmartPsiElementPointer<ObjJVariableName> = SmartPointerManager.createPointer(variableName)
