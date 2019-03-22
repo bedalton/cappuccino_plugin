@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.stubs.interfaces
 
 
 import com.intellij.psi.stubs.StubElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import com.intellij.psi.PsiElement
 

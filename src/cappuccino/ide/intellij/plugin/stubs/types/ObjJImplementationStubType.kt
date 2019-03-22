@@ -14,7 +14,7 @@ import java.io.IOException
 import java.util.ArrayList
 
 class ObjJImplementationStubType internal constructor(
-        debugName: String) : ObjJClassDeclarationStubType<ObjJImplementationStub, ObjJImplementationDeclarationImpl>(debugName, ObjJImplementationDeclarationImpl::class.java, ObjJImplementationStub::class.java) {
+        debugName: String) : ObjJClassDeclarationStubType<ObjJImplementationStub, ObjJImplementationDeclarationImpl>(debugName, ObjJImplementationDeclarationImpl::class.java) {
 
     override fun createPsi(
             objJImplementationStub: ObjJImplementationStub): ObjJImplementationDeclarationImpl {
