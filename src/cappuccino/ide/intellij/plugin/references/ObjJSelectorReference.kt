@@ -24,7 +24,6 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         thisMethodHeaderParent = if (accessorMethods == null) element.getParentOfType(ObjJMethodHeaderDeclaration::class.java) else null
         val methodCallParent = element.getParentOfType(ObjJMethodCall::class.java)
         fullSelector = thisMethodHeaderParent?.selectorString ?: methodCallParent?.selectorString
-        //logger.log(Level.INFO, "Creating selector resolver for selector <"+fullSelector+">;");
     }
 
     private val callTargetClassTypesIfMethodCall: List<String> get() {
@@ -33,8 +32,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             return constraints
         }
         val methodCall = myElement.getParentOfType(ObjJMethodCall::class.java)
-                ?: //   logger.log(Level.INFO, "Selector is not in method call.");
-                return emptyList()
+                ?: return emptyList()
         if (DumbService.isDumb(myElement.project)) {
             return emptyList()
         }
@@ -45,82 +43,10 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 
     override fun getVariants(): Array<Any?> {
         return arrayOfNulls(0)
-        /*
-        val selector = myElement
-        val index = myElement.selectorIndex
-        val querySelector = ObjJMethodPsiUtils.getSelectorUntil(selector, false)
-        val methodHeaders = if (querySelector != null)
-            ObjJMethodFragmentIndex.instance[querySelector, myElement.project]
-        else
-            ObjJUnifiedMethodIndex.instance.getAll(myElement.project)
-        val foldingDescriptors:MutableList<String> = ArrayList()
-        var i = 0
-        methodHeaders.forEach({
-            val variantSelector = it.selectorList.getOrNull(index)?.getSelectorString(false) ?: return@forEach
-            if (foldingDescriptors.contains(variantSelector)) {
-                return@forEach
-            }
-            i++
-            foldingDescriptors.add(variantSelector)
-        })
-
-        logger.log(Level.INFO, "Added $i selector variants")
-        return foldingDescriptors.toTypedArray()
-        */
     }
 
-    /*
-    @NotNull
-    @Override
-    public Object[] getVariants() {
-        if (DumbService.isDumb(myElement.getProject())) {
-            return new Object[0];
-        }
-        logger.log(Level.INFO, "GetVariants");
-        String selectorUpToSelf = ObjJPsiImplUtil.getSelectorUntil(myElement, false);
-        if (selectorUpToSelf == null) {
-            return new Object[0];
-        }
-        List<ObjJMethodHeaderDeclaration> headers = ObjJMethodFragmentIndex.getInstance().get(selectorUpToSelf, myElement.getProject());
-        List<Object> results = new ArrayList<>();
-        ObjJHasMethodSelector parent = myElement.getParentOfType(ObjJHasMethodSelector.class);
-        int selectorIndex = parent != null ? parent.getSelectorList().indexOf(myElement) : 0;
-        ObjJMethodHeader parentHeader = myElement.getParentOfType( ObjJMethodHeader.class);
-        if (parentHeader != null) {
-            ObjJClassDeclarationElement classDeclarationElement = myElement.getContainingClass();
-            if (classDeclarationElement == null || classDeclarationElement.getInheritedProtocolList() == null) {
-                return new Object[0];
-            }
-            for (ObjJClassName className : classDeclarationElement.getInheritedProtocolList().getClassNameList()) {
-                for (ObjJMethodHeader header : ObjJClassMethodIndex.getInstance().get(className.getText(), className.getProject())) {
-                    if (!(header.getContainingClass() instanceof ObjJProtocolDeclaration)) {
-                        continue;
-                    }
-                    if (header.getSelectorString().startsWith(selectorUpToSelf)) {
-                        continue;
-                    }
-                    results.add(header.getSelectorStrings().get(selectorIndex));
-                }
-            }
-        }
-        if (selectorIndex == 0) {
-            results.addAll(ObjJInstanceVariablesByNameIndex.getInstance().getAll(myElement.getProject()));
-        }
-        while (headers.size() > 0) {
-            for (ObjJMethodHeaderDeclaration header : headers) {
-                ProgressIndicatorProvider.checkCanceled();
-                final List<ObjJSelector> selectors = header.getSelectorList();
-                if (selectors.size() > selectorIndex) {
-                    results.add(header.getSelectorList().get(selectorIndex));
-                }
-            }
-        }
-        return results.toArray();
-    }
-*/
     override fun isReferenceTo(
             elementToCheck: PsiElement): Boolean {
-        //logger.log(Level.INFO, "Checking if selector "+elementToCheck.getText()+" is reference to.");
         if (elementToCheck !is ObjJSelector) {
             return false
         }
@@ -133,7 +59,6 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (thisMethodHeaderParent != null) {
             return elementToCheckMethodCallSelector == fullSelector && (elementToCheckMethodCallTargetClasses.isEmpty() || ObjJClassType.UNDETERMINED in elementToCheckMethodCallTargetClasses || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
         } else if (accessorMethods != null) {
-            //logger.log(Level.INFO, "Accessor Methods <"+accessorMethods.getFirst()+","+accessorMethods.getSecond()+">; Method call selector: " + methodCallString);
             return (accessorMethods.getFirst() == elementToCheckMethodCallSelector || accessorMethods.getSecond() == elementToCheckMethodCallSelector) && (elementToCheckMethodCallTargetClasses.isEmpty() || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
         }
         if (elementToCheckAsMethodCall != null) {
