@@ -4,7 +4,7 @@ package cappuccino.ide.intellij.plugin.stubs.types
 object ObjJStubTypes {
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
     val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
-    public val FILE = ObjJFileStubType()
+    val FILE = ObjJFileStubType()
     val FUNCTION_DECLARATION = ObjJFunctionDeclarationStubType("ObjJ_FUNCTION_DECLARATION")
     val FUNCTION_LITERAL = ObjJFunctionLiteralStubType("ObjJ_FUNCTION_LITERAL")
     val GLOBAL_VARIABLE = ObjJGlobalVariableDeclarationStubType("ObjJ_GLOBAL_VARIABLE_DECLARATION")

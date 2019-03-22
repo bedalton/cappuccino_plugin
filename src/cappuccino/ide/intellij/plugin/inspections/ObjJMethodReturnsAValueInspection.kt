@@ -71,7 +71,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             }
         }
 
-        fun suppressFix(element:PsiElement, scope:ObjJSuppressInspectionScope) : ObjJAddSuppressInspectionForScope {
+        private fun suppressFix(element:PsiElement, scope:ObjJSuppressInspectionScope) : ObjJAddSuppressInspectionForScope {
                     return ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, scope)
         }
     }

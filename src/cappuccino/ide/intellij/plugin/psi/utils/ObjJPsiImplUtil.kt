@@ -74,7 +74,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReference): List<ObjJQualifiedReferenceComponent> {
-        return ObjJVariableNameUtil.getQualifiedNameParts(qualifiedReference)
+        return ObjJQualifiedReferenceUtil.getQualifiedNameParts(qualifiedReference)
     }
 
     @JvmStatic
@@ -313,22 +313,22 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorString(methodHeader: ObjJMethodHeader): String {
-        return getSelectorString(methodHeader)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(methodHeader)
     }
 
     @JvmStatic
     fun getSelectorString(selector: ObjJSelector, addSuffix: Boolean): String {
-        return getSelectorString(selector, addSuffix)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(selector, addSuffix)
     }
 
     @JvmStatic
     fun getSelectorString(selector: ObjJMethodDeclarationSelector, addSuffix: Boolean): String {
-        return getSelectorString(selector, addSuffix)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(selector, addSuffix)
     }
 
     @JvmStatic
     fun getSelectorString(selectorLiteral: ObjJSelectorLiteral): String {
-        return getSelectorString(selectorLiteral)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorString(selectorLiteral)
     }
 
     @JvmStatic
@@ -341,7 +341,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorStrings(methodHeader: ObjJMethodHeader): List<String> {
-        return getSelectorStrings(methodHeader)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorStrings(methodHeader)
     }
 
     @JvmStatic
@@ -354,7 +354,7 @@ object ObjJPsiImplUtil {
         return if (selectors.isNotEmpty()) {
             selectors
         } else
-            getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
+            cappuccino.ide.intellij.plugin.psi.utils.getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
     }
 
     @JvmStatic
@@ -380,7 +380,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getSelectorUntil(targetSelectorElement: ObjJSelector, include: Boolean): String? {
-        return getSelectorUntil(targetSelectorElement, include)
+        return cappuccino.ide.intellij.plugin.psi.utils.getSelectorUntil(targetSelectorElement, include)
     }
 
     @JvmStatic
@@ -573,12 +573,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getIndexInQualifiedReference(namedElement: PsiElement?): Int {
-        return ObjJVariableNameUtil.getIndexInQualifiedNameParent(namedElement)
+        return ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(namedElement)
     }
 
     @JvmStatic
     fun getIndexInQualifiedReference(namedElement: ObjJQualifiedReferenceComponent): Int {
-        return ObjJVariableNameUtil.getIndexInQualifiedNameParent(namedElement)
+        return ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(namedElement)
     }
 
     @JvmStatic
@@ -588,7 +588,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getLastVar(qualifiedReference: ObjJQualifiedReference): ObjJVariableName? {
-        return ObjJVariablePsiUtil.getLastVariableName(qualifiedReference)
+        return ObjJQualifiedReferenceUtil.getLastVariableName(qualifiedReference)
     }
 
 
@@ -898,9 +898,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getConditionalExpression(doWhileStatement: ObjJDoWhileStatement?): ObjJExpr? {
-        return if (doWhileStatement == null || doWhileStatement.conditionExpression == null) {
-            null
-        } else doWhileStatement.conditionExpression!!.expr
+        return doWhileStatement?.conditionExpression?.expr
     }
 
     // ============================== //
@@ -1000,18 +998,20 @@ object ObjJPsiImplUtil {
     fun createTreeStructureElement(protocol: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement
             = ObjJTreeStructureUtil.createTreeStructureElement(protocol)
     @JvmStatic
-    fun createTreeStructureElement(header: ObjJMethodDeclaration): ObjJStructureViewElement
-        = createTreeStructureElement(header.methodHeader)
+    fun createTreeStructureElement(methodDeclaration: ObjJMethodDeclaration): ObjJStructureViewElement
+        = createTreeStructureElement(methodDeclaration.methodHeader)
 
     @JvmStatic
     fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement
             = ObjJTreeStructureUtil.createTreeStructureElement(header)
+
     // ============================== //
     // =========== PARSER =========== //
     // ============================== //
 
     @JvmStatic
     fun eos(compositeElement: PsiElement?): Boolean = ObjJSharedParserFunctions.eos(compositeElement)
+
     @JvmStatic
     fun eosToken(ahead: IElementType?, hadLineTerminator: Boolean): Boolean = ObjJSharedParserFunctions.eosToken(ahead, hadLineTerminator)
 

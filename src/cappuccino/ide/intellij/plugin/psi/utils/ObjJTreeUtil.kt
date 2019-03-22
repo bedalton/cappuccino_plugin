@@ -14,7 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.TokenType
 
 import java.util.ArrayList

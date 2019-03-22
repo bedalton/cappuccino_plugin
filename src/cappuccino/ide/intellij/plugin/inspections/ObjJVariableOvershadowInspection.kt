@@ -112,7 +112,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             for (qualifiedReference in qualifiedReferences) {
                 varNames.add(qualifiedReference.primaryVar!!)
             }
-            return ObjJVariableNameUtil.getFirstMatchOrNull(varNames) { it.text == variableNameString && offset > it.textRange.startOffset } != null
+            return varNames.firstOrNull { it.text == variableNameString && offset > it.textRange.startOffset } != null
         }
 
         /**
@@ -122,7 +122,11 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
          */
         private fun annotateVariableIfOvershadowsFileVars(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
             val file = variableName.containingFile
-            val reference = ObjJVariableNameUtil.getFirstMatchOrNull(ObjJVariableNameUtil.getAllFileScopedVariables(file, 0)) { variableToCheck -> variableName.text == variableToCheck.text }
+            val reference = ObjJVariableNameAggregatorUtil
+                    .getAllFileScopedVariables(file, 0)
+                    .firstOrNull {
+                        variableToCheck -> variableName.text == variableToCheck.text
+                    }
             if (reference != null && reference != variableName) {
                 problemsHolder.registerProblem(variableName, String.format(OVERSHADOWS_VARIABLE_STRING_FORMAT, "file scope"), ObjJSuppressOvershadowedVariablesInspectionInProject())
                 return

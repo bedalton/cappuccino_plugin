@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -6,11 +8,9 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.INT
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.STRING
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
-import java.util.Arrays
-
 object ObjJBuiltInJsProperties {
 
-    val values = Arrays.asList("Infinity", "NaN", "null", "undefined")
+    val values = listOf("Infinity", "NaN", "null", "undefined")
 
     private val window = property(".") {
 
@@ -190,7 +190,7 @@ object ObjJBuiltInJsProperties {
 
     fun property (name:String, block:JsProperty.()->Unit) : JsProperty = JsProperty(name).apply(block)
 
-    class JsProperty internal constructor(public val name:String) {
+    class JsProperty internal constructor(val name:String) {
         val children = arrayListOf<JsProperty>()
         val params = arrayListOf<String>()
         val classFunctions = arrayListOf<JsProperty>()
@@ -200,32 +200,32 @@ object ObjJBuiltInJsProperties {
         var warn:String? = null
         var extends:String? = null
 
-        fun param(name:String) = params.add(name);
+        fun param(name:String) = params.add(name)
 
         //Properties
         fun prop(name:String) = children.add(JsProperty(name))
         fun prop(name:String, init:JsProperty.()->Unit) = initProperty(JsProperty(name), init)
-        protected fun initProperty(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            children.add(property);
+        private fun initProperty(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
+            property.init()
+            children.add(property)
             return property
         }
 
         // Class Function
         fun cfunc(name:String) = classFunctions.add(JsProperty(name))
         fun cfunc(name:String, init:JsProperty.()->Unit) = initFunction(JsProperty(name), init)
-        protected fun initFunction(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            classFunctions.add(property);
+        private fun initFunction(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
+            property.init()
+            classFunctions.add(property)
             return property
         }
 
         //ProtoType Methods
         fun pfunc(name:String) = prototypeMethods.add(JsProperty(name))
         fun pfunc(name:String, init:JsProperty.()->Unit) = initPrototypeMethod(JsProperty(name), init)
-        protected fun initPrototypeMethod(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
-            property.init();
-            prototypeMethods.add(property);
+        private fun initPrototypeMethod(property:JsProperty, init:JsProperty.()->Unit) : JsProperty {
+            property.init()
+            prototypeMethods.add(property)
             return property
         }
     }

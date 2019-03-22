@@ -46,7 +46,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (variableName?.getPreviousNonEmptySibling(true).getElementType() == ObjJTypes.ObjJ_DOT) {
+            if (variableName?.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
                 return
             }
 
@@ -138,7 +138,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (resolved != null) {
                 return !isDeclaredInSameDeclaration(variableName, resolved)
             }
-            val precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
+            val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty()
         }
 
@@ -154,10 +154,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         }
 
         private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
-            return ObjJVariableNameUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
+            return ObjJVariableNameAggregatorUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
                     isDeclaredInContainingMethodHeader(variableName) ||
                     isDeclaredInFunctionScope(variableName) ||
-                    !ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty()
+                    !ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty()
         }
 
         private fun isDeclaredInContainingMethodHeader(variableName: ObjJVariableName): Boolean {

@@ -3,7 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -38,7 +38,7 @@ class ObjJVariableOvershadowsClassVariable : LocalInspectionTool() {
                     ?: return
             val variableContainingClass = classDeclarationElement.getClassNameString()
             val variableNameText = variableName.text
-            for (instanceVariableName in ObjJVariableNameUtil.getAllContainingClassInstanceVariables(variableContainingClass, variableName.project)) {
+            for (instanceVariableName in ObjJVariableNameAggregatorUtil.getAllContainingClassInstanceVariables(variableContainingClass, variableName.project)) {
                 if (instanceVariableName.text == variableNameText) {
                     problemsHolder.registerProblem(variableName, "Variable overshadows class variable")
                     return

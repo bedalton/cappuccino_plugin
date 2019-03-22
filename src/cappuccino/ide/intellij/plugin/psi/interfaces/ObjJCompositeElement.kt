@@ -28,5 +28,4 @@ interface ObjJCompositeElement : PsiElement {
     fun <PsiT : PsiElement> getChildOfType(childClass:Class<PsiT>) : PsiT?
     fun <PsiT : PsiElement> getChildrenOfType(childClass:Class<PsiT>) : List<PsiT>
 
-    //ObjJCompositeElement getPsiOrParent();
 }

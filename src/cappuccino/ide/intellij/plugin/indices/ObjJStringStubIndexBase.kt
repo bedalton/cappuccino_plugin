@@ -8,8 +8,9 @@ import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.utils.StringUtil
+import cappuccino.ide.intellij.plugin.utils.StringUtil
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
 
 import java.util.*
 import java.util.logging.Logger
@@ -55,7 +56,7 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
             if (notMatchingKeys.contains(key) || keys.contains(key)) {
                 continue
             }
-            if (StringUtil.startsAndEndsWith(key, start, tail)) {
+            if (key.startsAndEndsWith(start, tail)) {
                 keys.add(key)
             } else {
                 notMatchingKeys.add(key)

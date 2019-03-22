@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBasedPsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
@@ -11,24 +10,9 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
 import java.util.ArrayList
-import java.util.logging.Level
-import java.util.logging.Logger
 
 object ObjJResolveableElementUtil {
-    private val LOGGER = Logger.getLogger(ObjJResolveableElementUtil::class.java.canonicalName)
 
-    fun <PsiT : PsiElement> onlyResolveableElements(elements: List<PsiT>?, file: PsiFile): List<PsiT> {
-        val out = ArrayList<PsiT>()
-        if (elements == null) {
-            return out
-        }
-        for (element in elements) {
-            if (true || shouldResolve(element) || file.isEquivalentTo(element.containingFile)) {
-                out.add(element)
-            }
-        }
-        return out
-    }
 
     fun <PsiT : PsiElement> onlyResolveableElements(elements: List<PsiT>?): List<PsiT> {
         val out = ArrayList<PsiT>()
@@ -37,20 +21,6 @@ object ObjJResolveableElementUtil {
         }
         for (element in elements) {
             if (shouldResolve(element)) {
-                out.add(element)
-            }
-        }
-        return out
-    }
-
-    fun <PsiT : ObjJResolveableElement<*>> onlyResolveables(elements: List<PsiT>?): List<PsiT> {
-        val out = ArrayList<PsiT>()
-        if (elements == null) {
-            return out
-        }
-        for (element in elements) {
-            val stub:ObjJResolveableStub<*>? = element.stub
-            if (stub != null && stub.shouldResolve() || element.shouldResolve()) {
                 out.add(element)
             }
         }

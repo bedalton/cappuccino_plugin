@@ -24,6 +24,7 @@ import java.util.logging.Logger
 @Suppress("unused")
 class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 
+
     override fun preprocessEnter(file: PsiFile, editor: Editor, caretOffsetRef: Ref<Int>, caretAdvance: Ref<Int>, dataContext: DataContext, originalHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
         if (file !is ObjJFile) {
             return EnterHandlerDelegate.Result.Continue
@@ -39,19 +40,8 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
                 result = EnterHandlerDelegate.Result.Default
             }
         }
-        //com.intellij.psi.codeStyle.CodeStyleManager.adjustLineIndent()
         return result
     }
-
-    /*
-    override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
-        val caretOffset = dataContext.getData(DataKeys.CARET)?.offset ?: return EnterHandlerDelegate.Result.Continue
-        val element:PsiElement = file.findElementAt(caretOffset) ?: return EnterHandlerDelegate.Result.Continue
-        if (MethodCallHandler.doIf(editor, element)) {
-            return EnterHandlerDelegate.Result.Default
-        }
-        return EnterHandlerDelegate.Result.Continue
-    }*/
 
     private fun getPointer(file:PsiFile, caretOffset:Int) : SmartPsiElementPointer<PsiElement>? {
         val psiElementIn:PsiElement = file.findElementAt(caretOffset) ?: return null
@@ -173,13 +163,11 @@ object BlockEnterHandler : OnEnterHandler {
  */
 object ClassEnterHandler : OnEnterHandler {
     override fun doIf(editor: Editor, psiElementIn: PsiElement): Boolean {
-        val classDeclaration: ObjJClassDeclarationElement<*>? = psiElementIn.thisOrParentAs(ObjJClassDeclarationElement::class.java) ?: return false
+        val classDeclaration: ObjJClassDeclarationElement<*> = psiElementIn as? ObjJClassDeclarationElement<*> ?: return false
         val hasEnd: Boolean = when (classDeclaration) {
             is ObjJImplementationDeclaration -> classDeclaration.atEnd != null
             is ObjJProtocolDeclaration -> classDeclaration.atEnd != null
-            else -> {
-                return false
-            }
+            else -> false
         }
 
         if (!hasEnd) {

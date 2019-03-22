@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
@@ -118,8 +119,17 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
+
+        if (node.treeParent?.elementType == ObjJStubTypes.FILE) {
+            return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
         if (myNode.treeParent?.psi is ObjJClassDeclarationElement<*>) {
             return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
+        if (myNode.treeParent?.elementType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
         if (elementType == ObjJ_METHOD_CALL) {

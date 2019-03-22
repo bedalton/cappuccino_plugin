@@ -11,6 +11,7 @@ import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.psi.tree.TokenSet
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.TokenType.WHITE_SPACE
 
 class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
@@ -26,6 +27,10 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
 
 
         val braceStyle = settings.BRACE_STYLE
+
+        if (parentType == ObjJStubTypes.FILE) {
+            return Indent.getNoneIndent()
+        }
 
         if (parent == null || parent.treeParent == null) {
             return Indent.getNoneIndent()
@@ -86,6 +91,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             }
         }
 
+        if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            return Indent.getNormalIndent()
+        }
 
         if (elementType == ObjJ_PREPROCESSOR_IF_STATEMENT) {
             if (parentType == ObjJ_METHOD_BLOCK) {
@@ -236,9 +244,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
     }
 
     companion object {
-
-
         val EXPRESSIONS = TokenSet.create(ObjJ_EXPR)
-
     }
 }

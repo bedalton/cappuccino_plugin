@@ -17,103 +17,22 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 @Suppress("UNUSED_PARAMETER")
-object ObjJVariableNameUtil {
+object ObjJVariableNameAggregatorUtil {
 
     private val LOGGER = Logger.getLogger("ObjJVariableNameUtil")
     private val EMPTY_VARIABLE_NAME_LIST = emptyList<ObjJVariableName>()
 
-    fun getMatchingPrecedingVariableNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
-        val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
-            getQualifiedNameAsString(variableName, qualifiedIndex)
-        } else {
-            //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableName.text
-        }
-
-        val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
-        return getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex, { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) })
-    }
-
-    fun getMatchingPrecedingVariableAssignmentNameElements(variableName: ObjJCompositeElement, qualifiedIndex: Int): List<ObjJVariableName> {
-        val startOffset = variableName.textRange.startOffset
-        val variableNameQualifiedString: String = if (variableName is ObjJVariableName) {
-            getQualifiedNameAsString(variableName, qualifiedIndex)
-        } else {
-            //LOGGER.log(Level.WARNING, "Trying to match variable name element to a non variable name. Element is of type: "+variableName.getNode().toString()+"<"+variableName.getText()+">");
-            variableName.text
-        }
-        val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
-        return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, { thisVariable -> isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex) })
-    }
-
-    private fun isMatchingElement(variableNameQualifiedString: String, variableToCheck: ObjJVariableName?, hasContainingClass: Boolean, startOffset: Int, qualifiedIndex: Int): Boolean {
-        if (variableToCheck == null) {
-            LOGGER.log(Level.SEVERE, "Variable name to check should not be null")
-            return false
-        }
-        val thisVariablesFqName = getQualifiedNameAsString(variableToCheck, qualifiedIndex)
-        //LOGGER.log(Level.INFO, "getMatchingPrecedingVariableNameElements: <"+variableNameQualifiedString+"> ?= <"+thisVariablesFqName+">");
-        if (variableNameQualifiedString != thisVariablesFqName) {
-            return false
-        }
-        //LOGGER.log(Level.INFO, "Variable names match for variable: <"+variableNameQualifiedString+">; Is Offset <"+startOffset+" < "+variableToCheck.getTextRange().getStartOffset() + "? " + (variableToCheck.getTextRange().getStartOffset() < startOffset));
-        if (variableToCheck.containingClass == null) {
-            if (hasContainingClass) {
-                return true
-            }
-        } else if (hasContainingClass) {
-            //return false;
-        }
-        return variableToCheck.textRange.startOffset < startOffset
-    }
-
-    @JvmOverloads
-    fun getQualifiedNameAsString(variableName: ObjJVariableName, stopBeforeIndex: Int = -1): String {
-        val qualifiedReference = variableName.getParentOfType( ObjJQualifiedReference::class.java)
-        return getQualifiedNameAsString(qualifiedReference, variableName.text, stopBeforeIndex) ?: ""
-    }
-
-    @JvmOverloads
-    fun getQualifiedNameAsString(qualifiedReference: ObjJQualifiedReference?, defaultValue: String?, stopBeforeIndex: Int = -1): String? {
-        if (qualifiedReference == null) {
-            return defaultValue
-        }
-        val variableNames = qualifiedReference.variableNameList
-        if (variableNames.isEmpty()) {
-            return defaultValue
-        }
-        val numVariableNames = if (stopBeforeIndex != -1 && variableNames.size > stopBeforeIndex) stopBeforeIndex else variableNames.size
-        val builder = StringBuilder(variableNames[0].text)
-        for (i in 1 until numVariableNames) {
-            builder.append(".").append(variableNames[i].text)
-        }
-        //LOGGER.log(Level.INFO, "Qualified name is: <"+builder.toString()+"> for var in file: "+variableName.getContainingFile().getVirtualFile().getName()+"> at offset: <"+variableName.getTextRange().getStartOffset()+">");
-        return builder.toString()
-    }
-
-    fun getPrecedingVariableAssignmentNameElements(variableName: PsiElement, qualifiedIndex: Int): List<ObjJVariableName> {
-        val startOffset = variableName.textRange.startOffset
-        val file = variableName.containingFile
-        //LOGGER.log(Level.INFO, String.format("Qualified Index: <%d>; TextOffset: <%d>; TextRange: <%d,%d>", qualifiedIndex, variableName.getTextOffset(), variableName.getTextRange().getStartOffset(), variableName.getTextRange().getEndOffset()));
-        return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex, { `var` -> `var` !== variableName && (`var`.getContainingFile().isEquivalentTo(file) || `var`.getTextRange().getStartOffset() < startOffset) })
-    }
-
-    private fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
-        val rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex)
-//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
-        return ArrayUtils.filter(rawVariableNameElements, filter)
-    }
-
-    private fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
+    /**
+     * Gets ALL variable names EVEN if NOT ASSIGNMENTS and filters them
+     */
+    internal fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
         val rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex)
-//LOGGER.log(Level.INFO, String.format("Get Siblings by var name before filter. BeforeFilter<%d>; AfterFilter:<%d>", rawVariableNameElements.size(), foldingDescriptors.size()));
         return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
 
     /**
-     * Gets every preceding variable name element, even if it is not an assignment
+     * Gets every preceding variable name element, even if it is NOT an assignment
      * @param element element to find siblings for
      * @param qualifiedNameIndex variable name index in chain, should be 0 for right now
      * @return list of variable name elements
@@ -134,11 +53,60 @@ object ObjJVariableNameUtil {
         result.addAll(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)))
         result.addAll(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)))
         result.addAll(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)))
-        //LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
         return result
     }
 
+    /**
+     * Gets ALL assignment variable names and then filters them according to the filter
+     */
+    private fun getAndFilterSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
+        val rawVariableNameElements = getSiblingVariableAssignmentNameElements(element, qualifiedNameIndex)
+        return ArrayUtils.filter(rawVariableNameElements, filter)
+    }
 
+
+    /**
+     * Gets all variable names inside a containing block, regardless of whether or not they are an assignment
+     */
+    private fun getAllVariableNamesInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
+
+        var containingBlock = element.getParentOfType( ObjJBlock::class.java)
+        var tempBlock = containingBlock
+        while (tempBlock != null) {
+            tempBlock = containingBlock!!.getParentOfType(ObjJBlock::class.java)
+            if (tempBlock == null) {
+                break
+            }
+            containingBlock = tempBlock
+        }
+        if (containingBlock == null) {
+            return EMPTY_VARIABLE_NAME_LIST
+        }
+        val containingFile = element.containingFile
+        val fileName = ObjJFileUtil.getContainingFileName(containingFile)!!
+        return ObjJVariableNameByScopeIndex.instance.getInRange(fileName, containingBlock.textRange, element.project)
+    }
+
+
+    /**
+     * Gets variable names used in variable assignments
+     */
+    fun getPrecedingVariableAssignmentNameElements(variableName: PsiElement, qualifiedIndex: Int): List<ObjJVariableName> {
+        val startOffset = variableName.textRange.startOffset
+        val file = variableName.containingFile
+        return getAndFilterSiblingVariableAssignmentNameElements(variableName, qualifiedIndex) {
+            itVar -> itVar !== variableName && (itVar.containingFile.isEquivalentTo(file) || itVar.textRange.startOffset < startOffset) }
+    }
+
+
+    /**
+     * Gets preceding variable name element IF is assignment
+     * @param element element to find siblings for
+     * @param qualifiedNameIndex variable name index in chain, should be 0 for right now
+     * @return list of variable name elements
+     *
+     * todo Allow checking of non 0 qualified name index
+     */
     fun getSiblingVariableAssignmentNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
         val result = getAllVariableNamesInAssignmentsInContainingBlocks(element, qualifiedNameIndex)
         if (qualifiedNameIndex <= 1) {
@@ -153,94 +121,75 @@ object ObjJVariableNameUtil {
         result.addAll(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)))
         result.addAll(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)))
         result.addAll(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)))
-        //LOGGER.log(Level.INFO, "Num VariableNames after getting file vars: <"+(result.size()-currentSize)+">");
         return result
     }
 
 
+    /**
+     * Gets the sibling variable assignment elements with a filter
+     */
     fun getSiblingVariableAssignmentNameElement(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
-        var variableName: ObjJVariableName?
-        variableName = getVariableNameDeclarationInContainingBlocks(element, qualifiedNameIndex, filter)
+
+        // Get variable name in declaration
+        var variableName: ObjJVariableName? = getVariableNameDeclarationInContainingBlocks(element, qualifiedNameIndex, filter)
+
+        // Ensure that variable name is not same as reference
         if (variableName != null && variableName inSameFile element && !variableName.isEquivalentTo(element)) {
             return variableName
         }
+
+        // If qualified index is less than one, do additional checks
         if (qualifiedNameIndex <= 1) {
             variableName = getFirstMatchOrNull(getAllMethodDeclarationSelectorVars(element), filter)
+                        ?: getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
+                        ?: getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType(ObjJIterationStatement::class.java)), filter)
+                        ?: getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
+                        ?: getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
+                        ?: getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
+            // If variable has been found, return it
             if (variableName != null) {
-                //LOGGER.info("Sibling assignment is method declaration variable")
-                return variableName
-            }
-            variableName = getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
-            if (variableName != null) {
-                //LOGGER.info("Sibling assignment is class instance variable")
-                return variableName
-            }
-            variableName = getFirstMatchOrNull(getAllIterationVariables(element.getParentOfType( ObjJIterationStatement::class.java)), filter)
-            if (variableName != null) {
-                return variableName
-            }
-            variableName = getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
-            if (variableName != null) {
-                //LOGGER.info("Sibling variable name in assignment is function scope")
-                return variableName
-            }
-            variableName = getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
-            if (variableName != null) {
-                //LOGGER.info("Sibling assignment is file scoped variable")
-                return variableName
-            }
-            variableName = getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
-            if (variableName != null) {
-                //LOGGER.info("Sibling assignment is global scoped variable")
                 return variableName
             }
         }
 
         variableName = getFirstMatchOrNull(getAllFileScopedVariables(element.containingFile, qualifiedNameIndex), filter)
+                    ?: getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
+                    ?: getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
+        // If variable has been found, return it
         if (variableName != null) {
-            //LOGGER.info("Sibling assignment is file scoped variable with qualified index > 1")
             return variableName
         }
-        variableName = getFirstMatchOrNull(getCatchProductionVariables(element.getParentOfType( ObjJCatchProduction::class.java)), filter)
-        if (variableName != null) {
-            //LOGGER.info("Sibling assignment is catch production variable")
-            return variableName
-        }
-        variableName = getFirstMatchOrNull(getPreprocessorDefineFunctionVariables(element.getParentOfType( ObjJPreprocessorDefineFunction::class.java)), filter)
-        if (variableName != null) {
-            //LOGGER.info("Sibling assignment is preproc scope variable")
-            return variableName
-        }
+
+        // Check that index is ready before searching one
         if (DumbService.isDumb(element.project)) {
             return null
         }
+        // Get global variables from index and return match if any
         val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[element.text, element.project]
         if (globalVariableDeclarations.isNotEmpty()) {
-            //LOGGER.info("Sibling assignment is in global variable index")
             return globalVariableDeclarations[0].variableName
         }
-        return null//getVariableNameDeclarationInContainingBlocksFuzzy(element, qualifiedNameIndex, filter)
+        return null
     }
 
-    private fun getVariableNameDeclarationInContainingBlocksFuzzy(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
-        val block = PsiTreeUtil.getTopmostParentOfType(element, ObjJBlock::class.java) ?: return null
-        val varName = element.text
-        val variableNames = block.getBlockChildrenOfType(ObjJVariableName::class.java, true).filter(filter)//ObjJVariableNameByScopeIndex.instance.getInRange(ObjJFileUtil.getContainingFileName(element.containingFile)!!, block.textRange, element.project)
-        return getFirstMatchOrNull(variableNames) { variableName ->
-            if (variableName.text != varName) {
-                return@getFirstMatchOrNull false
-            }
-            var parent : PsiElement = variableName.parent as? ObjJQualifiedReference ?: return@getFirstMatchOrNull false
-            parent = parent.parent
-            parent is ObjJBodyVariableAssignment || parent is ObjJVariableDeclaration
-        }
-    }
 
+    /**
+     * Gets variable name declaration in containing block
+     * @param element element who's parent we are searching for variable name declarations
+     * @param qualifiedNameIndex qualified name index of the variable name to search
+     * @param filter how to filter the results to return a single variable name
+     */
     private fun getVariableNameDeclarationInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return null
         return getVariableNameDeclarationInContainingBlocks(block, element, qualifiedNameIndex, filter)
     }
 
+    /**
+     * Gets variable name declaration inside this block
+     * @param block to search
+     * @param qualifiedNameIndex qualified name index of the variable name to search
+     * @param filter how to filter the results to return a single variable name
+     */
     private fun getVariableNameDeclarationInContainingBlocks(block:ObjJBlock, element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): ObjJVariableName? {
         val bodyVariableAssignments = block.getBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true) as MutableList
         var out: ObjJVariableName?
@@ -259,16 +208,9 @@ object ObjJVariableNameUtil {
         return if (parentBlock != null) return getVariableNameDeclarationInContainingBlocks(parentBlock, element, qualifiedNameIndex, filter) else null
     }
 
-    fun getFirstMatchOrNull(variableNameElements: List<ObjJVariableName>, filter: Filter<ObjJVariableName>): ObjJVariableName? {
-        for (variableName in variableNameElements) {
-            ProgressIndicatorProvider.checkCanceled()
-            if (filter(variableName)) {
-                return variableName
-            }
-        }
-        return null
-    }
-
+    /**
+     * Gets all variable name assignments witin a child elements parent block
+     */
     private fun getAllVariableNamesInAssignmentsInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int): MutableList<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
         val block = element as? ObjJBlock ?: PsiTreeUtil.getParentOfType(element, ObjJBlock::class.java) ?: return result
@@ -279,27 +221,6 @@ object ObjJVariableNameUtil {
             result.addAll(getAllVariablesFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex))
         }
         return result
-    }
-
-    private fun getAllVariableNamesInContainingBlocks(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
-
-        var containingBlock = element.getParentOfType( ObjJBlock::class.java)
-        var tempBlock = containingBlock
-        while (tempBlock != null) {
-            tempBlock = containingBlock!!.getParentOfType(ObjJBlock::class.java)
-            if (tempBlock == null) {
-                break
-            }
-            containingBlock = tempBlock
-        }
-        if (containingBlock == null) {
-            //LOGGER.log(Level.INFO, "Variable <"+element.getText()+">  is not in block");
-            return EMPTY_VARIABLE_NAME_LIST
-        }
-        val containingFile = element.containingFile
-        val fileName = ObjJFileUtil.getContainingFileName(containingFile)!!
-//LOGGER.log(Level.INFO, "Variable <"+element.getText()+"> is in block in file: <"+fileName+"> at offset: "+containingBlock.getTextRange().getStartOffset());
-        return ObjJVariableNameByScopeIndex.instance.getInRange(fileName, containingBlock.textRange, element.project)
     }
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
@@ -347,35 +268,6 @@ object ObjJVariableNameUtil {
         return result
     }
 
-
-    fun getIndexInQualifiedNameParent(variableName: PsiElement?): Int {
-        if (variableName == null) {
-            return -1
-        }
-        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else return 0
-        var qualifiedNameIndex:Int = -1
-        val parts = qualifiedReferenceParent.variableNameList
-        val numParts = parts.size
-        for (i in 0..(numParts-1)) {
-            val part = parts[i]
-            if (variableName.isEquivalentTo(part)) {
-                qualifiedNameIndex = i;
-                //LOGGER.info("Qualified variable ${variableName} in file ${variableName.containingFile?.name?:"UNDEF"} at index $qualifiedNameIndex")
-                break
-            }
-        }
-        if (qualifiedNameIndex < 0) {
-            LOGGER.info("Failed to qualified variable $variableName in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
-        }
-        if (qualifiedNameIndex > 1) {
-            val firstVariable = qualifiedReferenceParent.primaryVar ?: return qualifiedNameIndex
-            if (firstVariable.text == "self" || firstVariable.text == "super") {
-                qualifiedNameIndex -= 1
-            }
-        }
-        return qualifiedNameIndex
-    }
-
     fun getAllFileScopedVariables(file: PsiFile?, qualifiedNameIndex: Int): List<ObjJVariableName> {
         if (file == null) {
             //LOGGER.log(Level.INFO, "Cannot get all file scoped variables. File is null");
@@ -392,11 +284,10 @@ object ObjJVariableNameUtil {
     }
 
     private fun getAllPreProcDefinedVariables(file: PsiFile): List<ObjJVariableName> {
-        val definedFunctions: List<ObjJPreprocessorDefineFunction>
-        if (file is ObjJFile) {
-            definedFunctions = file.getChildrenOfType(ObjJPreprocessorDefineFunction::class.java)
+        val definedFunctions: List<ObjJPreprocessorDefineFunction> = if (file is ObjJFile) {
+            file.getChildrenOfType(ObjJPreprocessorDefineFunction::class.java)
         } else {
-            definedFunctions = file.getChildrenOfType( ObjJPreprocessorDefineFunction::class.java)
+            file.getChildrenOfType( ObjJPreprocessorDefineFunction::class.java)
         }
         val out = ArrayList<ObjJVariableName>()
         for (function in definedFunctions) {
@@ -472,7 +363,6 @@ object ObjJVariableNameUtil {
         val result = bodyVariableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
         val references = mutableListOf<ObjJQualifiedReference>()
         for (variableDeclaration in bodyVariableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
-            //LOGGER.log(Level.INFO,"VariableDec: <"+variableDeclaration.getText()+">");
             references.addAll(variableDeclaration.qualifiedReferenceList)
         }
         if (qualifiedNameIndex != 0) {
@@ -480,14 +370,11 @@ object ObjJVariableNameUtil {
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, "Checking variable dec for qualified reference: <"+qualifiedReference.getText()+">");
             if (qualifiedNameIndex == -1) {
                 result.addAll(qualifiedReference.variableNameList)
             } else if (qualifiedReference.variableNameList.size > qualifiedNameIndex) {
                 val suggestion = qualifiedReference.variableNameList[qualifiedNameIndex]
                 result.add(suggestion)
-            } else {
-                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is foldingDescriptors of bounds.");
             }
         }
         return result
@@ -511,7 +398,6 @@ object ObjJVariableNameUtil {
         }
         for (qualifiedReference in references) {
             ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, "Checking variable dec for qualified reference: <"+qualifiedReference.getText()+">");
             if (qualifiedNameIndex == -1) {
                 for (temp in qualifiedReference.variableNameList) {
                     if (filter(temp)) {
@@ -523,8 +409,6 @@ object ObjJVariableNameUtil {
                 if (filter(suggestion)) {
                     return suggestion
                 }
-            } else {
-                //LOGGER.log(Level.INFO, "Not adding variable <"+qualifiedReference.getText()+"> as Index is foldingDescriptors of bounds.");
             }
         }
         return null
@@ -542,26 +426,13 @@ object ObjJVariableNameUtil {
         return result
     }
 
-    fun getAllParentBlockVariables(element: PsiElement?, qualifiedIndex: Int): List<ObjJVariableName> {
-        val result = ArrayList<ObjJVariableName>()
-        if (element == null) {
-            return result
-        }
-        for (declaration in element.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)) {
-            ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
-            result.addAll(getAllVariablesFromBodyVariableAssignment(declaration, qualifiedIndex))
-        }
-        return result
-    }
-
     private fun getAllIterationVariables(
             iterationStatementIn: ObjJIterationStatement?): List<ObjJVariableName> {
         var iterationStatement = iterationStatementIn
         val result = ArrayList<ObjJVariableName>()
         while (iterationStatement != null) {
 
-            var variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
+            val variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
             if (iterationStatement is ObjJForStatement) {
                 variableDeclarationList.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableDeclarationList ?: listOf())
 
@@ -577,7 +448,6 @@ object ObjJVariableNameUtil {
             // get regular variable declarations in iteration statement
             for (declaration in variableDeclarationList) {
                 ProgressIndicatorProvider.checkCanceled()
-                //LOGGER.log(Level.INFO, "Adding all iteration statement variables for dec: <"+declaration.getText()+">");
                 for (qualifiedReference in declaration.qualifiedReferenceList) {
                     result.add(qualifiedReference.primaryVar!!)
                 }
@@ -607,67 +477,30 @@ object ObjJVariableNameUtil {
     }
 
     fun isInstanceVarDeclaredInClassOrInheritance(variableName: ObjJVariableName): Boolean {
-        return getFirstMatchOrNull(getAllContainingClassInstanceVariables(variableName), { `var` -> `var`.text == variableName.text }) != null
+        return getAllContainingClassInstanceVariables(variableName).firstOrNull { itVar -> itVar.text == variableName.text } != null
     }
 
-    fun variablesShareInstanceVariableScope(variableName: ObjJVariableName, variableName2: ObjJVariableName) : Boolean {
-        return instanceVariablesSharedClasses(variableName, variableName2).isNotEmpty()
-    }
-
-    fun instanceVariablesSharedClasses(variableName1:ObjJVariableName, variableName2:ObjJVariableName) : Set<String> {
-        return getVariableWithNameContainingClasses(variableName1) intersect getVariableWithNameContainingClasses(variableName2)
-    }
-
-    fun getVariableWithNameContainingClasses(variableNameElement:ObjJVariableName) : Set<String> {
-        val project = variableNameElement.project
-        val variableName = variableNameElement.text
-        val className = variableNameElement.containingClassName
-        val containingClassInheritedClasses:Set<String> = ObjJInheritanceUtil.appendAllInheritedClassesStrictToList(className, project)
-        val classesContainingInstanceVariableWithName:List<String> = ObjJInstanceVariablesByNameIndex.instance[variableName, project].map {
-            it.containingClassName
-        }
-        return containingClassInheritedClasses intersect classesContainingInstanceVariableWithName
-    }
-
-
-    fun resolveQualifiedReferenceVariable(variableName:ObjJVariableName) : ObjJVariableName? {
-        val formalVariableTypeInstanceVariableList = getFormalVariableInstanceVariables(variableName) ?: return null
-        return getFirstMatchOrNull(formalVariableTypeInstanceVariableList) {
-            variable -> variable.text == variableName.text
-        }
-    }
 
     fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {
         val index = variableName.indexInQualifiedReference
         if (index < 1) {
-            //LOGGER.log(Level.INFO, "ObjJVariableNameUtil.getFormalVariableInstanceVariables(${variableName.text}) Index is less than 1")
             return null
         }
         val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index - 1)
                 ?: return null
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
-                //LOGGER.log(Level.INFO, "Getting instance variable completions for self")
                 variableName.containingClassName
             }
             "super" -> {
-                //LOGGER.log(Level.INFO, "Getting instance variable completions for super")
                 variableName.getContainingSuperClass()?.text
             }
             else -> {
-                //LOGGER.log(Level.INFO, "Getting instance variable completions for variable ${variableName.text}")
                 val resolvedSibling = baseVariableName.reference.resolve() ?: return null
                 resolvedSibling.getParentOfType(ObjJMethodDeclarationSelector::class.java)?.formalVariableType?.text ?:
                 resolvedSibling.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
             }
         } ?: return null
-        //LOGGER.log(Level.INFO, "Resolved variable is of type: "+variableType)
         return getAllContainingClassInstanceVariables(variableType, variableName.project)
     }
-
-
-    fun getQualifiedNameParts(qualifiedName:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
-        return qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
-    }
-
 }

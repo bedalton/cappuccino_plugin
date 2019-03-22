@@ -2,15 +2,15 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.CARET_INDICATOR
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getIndexInQualifiedNameParent
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil.getQualifiedNameAsString
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil.getPrecedingVariableAssignmentNameElements
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getQualifiedNameAsString
 
 object ObjJVariableNameCompletionContributorUtil {
 
@@ -29,7 +29,7 @@ object ObjJVariableNameCompletionContributorUtil {
         if (variableName == null) {
             return null
         }
-        val completions = ObjJVariableNameUtil.getFormalVariableInstanceVariables(variableName) ?: return null
+        val completions = ObjJVariableNameAggregatorUtil.getFormalVariableInstanceVariables(variableName) ?: return null
         val out:ArrayList<String> = ArrayList()
         for (variableNameInLoop in completions) {
             out.add(variableNameInLoop.text)

@@ -2,7 +2,6 @@
 
 package cappuccino.ide.intellij.plugin.parser
 
-import com.intellij.lang.LighterASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.lang.parser.GeneratedParserUtilBase
@@ -14,9 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.psi.TokenType
-import com.intellij.psi.tree.TokenSet.WHITE_SPACE
-
-import java.util.Objects
 
 @Suppress("DEPRECATION")
 class ObjectiveJParserUtil : GeneratedParserUtilBase() {
