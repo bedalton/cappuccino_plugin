@@ -131,7 +131,7 @@ object ObjJAccessorPropertyPsiUtil {
 
     private fun getGetterFromAccessorPropertyList(accessorProperties: List<ObjJAccessorProperty>): String? {
         var getter: String? = null
-        accessorProperties.forEach(each@{ accessorProperty ->
+        accessorProperties.forEach each@{ accessorProperty ->
             val tempGetter = accessorProperty.stub?.getter ?: accessorProperty.accessor?.text
             when (accessorProperty.accessorPropertyType.text) {
                 "getter" -> {
@@ -140,7 +140,7 @@ object ObjJAccessorPropertyPsiUtil {
                 }
                 else -> getter = tempGetter
             }
-        })
+        }
         return getter
     }
 
@@ -194,7 +194,7 @@ object ObjJAccessorPropertyPsiUtil {
 
     /**
      * Builds and returns the setter virtual method selector
-     * @param variableName var name as string
+     * @param variableNameIn var name as string
      * @param varType var type as string
      * @return instance variable virtual setter method
      */

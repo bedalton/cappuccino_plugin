@@ -12,45 +12,24 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import com.intellij.psi.PsiElement
 import icons.ObjJIcons
 import java.util.*
-import java.util.logging.Logger
 import javax.swing.Icon
 
-private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJClassDeclarationPsiUtil")
 
+/**
+ * Determines whether an @implementation class is a category class
+ */
 fun isCategory(declaration:ObjJImplementationDeclaration): Boolean =
     declaration.stub?.isCategory ?: declaration.categoryName != null
 
-fun getAllClassNameElements(project: Project): List<ObjJClassName> {
-    val classDeclarationsIndex = ObjJClassDeclarationsIndex.instance
-    val classNameStrings = classDeclarationsIndex.getAllKeys(project)
-    val classNameElements = ArrayList<ObjJClassName>()
-    //ProgressIndicatorProvider.checkCanceled();
-    if (DumbService.isDumb(project)) {
-        throw IndexNotReadyRuntimeException()
-    }
-    for (classNameString in classNameStrings) {
-        val decs = classDeclarationsIndex[classNameString, project]
-        for (dec in decs) {
-            val classNameElement: ObjJClassName = dec.getClassName() ?: continue
-            if (classNameElements.contains(classNameElement)) {
-                continue
-            }
-            classNameElements.add(classNameElement)
-        }
-    }
-    return classNameElements
-}
-
+/**
+ * Gets the containing class's super class
+ */
 fun getContainingSuperClassName(psiElement: ObjJCompositeElement, returnDefault: Boolean) : String? {
-    val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement)
-            ?: //   LOGGER.log(Level.INFO, "Child element of type <"+childElement.getNode().getElementType().toString()+"> has no containing superclass.");
-            return null
+    val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement) ?: return null
     val project = psiElement.project
     if (containingClass !is ObjJImplementationDeclaration) {
         return if (returnDefault) containingClass.getClassNameString() else null
@@ -82,7 +61,6 @@ private fun getCategoryClassBaseDeclaration(classNameString:String, project: Pro
  */
 fun getContainingSuperClass(psiElement:ObjJCompositeElement, returnDefault: Boolean, filter: ((ObjJClassDeclarationElement<*>) -> Boolean)? = null): ObjJClassName? {
     val project = psiElement.project
-    //ProgressIndicatorProvider.checkCanceled();
     if (DumbService.isDumb(project)) {
         return null
     }
@@ -91,7 +69,6 @@ fun getContainingSuperClass(psiElement:ObjJCompositeElement, returnDefault: Bool
 
     val superClassDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[superClassName, project])
     if (superClassDeclarations.size < 1) {
-        //   LOGGER.log(Level.INFO, "Super class references an undefined class <"+superClassName+">");
         return if (returnDefault) containingClass.getClassName() else null
     }
     var className:ObjJClassName? = null
@@ -112,20 +89,13 @@ fun getContainingSuperClass(psiElement:ObjJCompositeElement, returnDefault: Bool
     return className
 }
 
-fun getContainingSuperClassWithSelector(psiElement: ObjJCompositeElement, selector:String, defaultName:ObjJClassName) : ObjJClassName {
-    val superClassName = getContainingSuperClass(psiElement, false) ?: return defaultName
-    return getContainingClassWithSelector(superClassName.text, selector, defaultName)
-}
-
 fun getContainingClassWithSelector(containingClassName:String, selector:String, defaultName:ObjJClassName) : ObjJClassName {
-    //ProgressIndicatorProvider.checkCanceled();
     val project:Project = defaultName.project
     if (DumbService.isDumb(project)) {
         return defaultName
     }
     val classDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[containingClassName, project])
     if (classDeclarations.size < 1) {
-        //   LOGGER.log(Level.INFO, "Super class references an undefined class <"+superClassName+">");
         return defaultName
     }
     var potential:ObjJClassName? = null
@@ -152,16 +122,15 @@ fun getContainingClassWithSelector(containingClassName:String, selector:String, 
     return potential ?: className ?: defaultName
 }
 
+
+/**
+ * Adds protocol classes to set
+ */
 fun addProtocols(
         classDeclarationElement: ObjJClassDeclarationElement<*>,
         protocols: MutableSet<String>) {
     val stub = classDeclarationElement.stub
-    val newProtocols: List<*>
-    if (stub != null) {
-        newProtocols = stub.inheritedProtocols
-    } else {
-        newProtocols = classDeclarationElement.getInheritedProtocols()
-    }
+    val newProtocols = stub?.inheritedProtocols ?: classDeclarationElement.getInheritedProtocols()
     for (protocol in newProtocols) {
         if (protocols.contains(protocol)) {
             continue
@@ -170,6 +139,9 @@ fun addProtocols(
     }
 }
 
+/**
+ * Gets the super class name for a class with a given name
+ */
 fun getSuperClassName(className: String, project: Project): String? {
     if (DumbService.isDumb(project)) {
         throw IndexNotReadyRuntimeException()
@@ -182,11 +154,17 @@ fun getSuperClassName(className: String, project: Project): String? {
     return null
 }
 
+/**
+ * Gets the super class given an implementation class
+ */
 fun getSuperClassName(declaration: ObjJImplementationDeclaration): String? {
     val stub = declaration.stub
     return if (stub != null) stub.superClassName else declaration.superClass?.text
 }
 
+/**
+ * Gets method headers for a class declaration
+ */
 fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethodHeader> {
     val headers = ArrayList<ObjJMethodHeader>()
     for (methodHeaderDeclaration in declaration.methodDeclarationList) {
@@ -195,16 +173,22 @@ fun getMethodHeaders(declaration:ObjJImplementationDeclaration): List<ObjJMethod
     return headers
 }
 
+/**
+ * Gets method headers for a given protocol element
+ */
 fun getMethodHeaders(declaration:ObjJProtocolDeclaration): List<ObjJMethodHeader> {
-    val headers = declaration.getMethodHeaderList().toMutableList()
+    val headers = declaration.methodHeaderList.toMutableList()
     for (scopedBlock in declaration.protocolScopedMethodBlockList) {
         headers.addAll(scopedBlock.methodHeaderList)
     }
     return headers
 }
 
-fun hasMethod(declaration:ObjJProtocolDeclaration,selector: String): Boolean {
-    for (methodHeader in declaration.getMethodHeaderList()) {
+/**
+ * Determines whether a protocol contains a given method
+ */
+fun hasMethod(declaration:ObjJProtocolDeclaration, selector: String): Boolean {
+    for (methodHeader in getMethodHeaders(declaration)) {
         if (methodHeader.selectorString == selector) {
             return true
         }
@@ -213,6 +197,9 @@ fun hasMethod(declaration:ObjJProtocolDeclaration,selector: String): Boolean {
     return false
 }
 
+/**
+ * Determines whether this implementation class has a given selector
+ */
 fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: String): Boolean {
     for (methodHeader in implementationDeclaration.getMethodHeaders()) {
         if (methodHeader.selectorString == selector) {
@@ -241,13 +228,17 @@ fun hasMethod(implementationDeclaration:ObjJImplementationDeclaration,selector: 
     return false
 }
 
-
+/**
+ * Gets all unimplemented protocol methods
+ */
 fun getAllUnimplementedProtocolMethods(@Suppress("UNUSED_PARAMETER") declaration:ObjJImplementationDeclaration): Map<ObjJClassName, ProtocolMethods> {
     //todo
     return emptyMap()
 }
 
-
+/**
+ * Gets unimplemented protocols for an @implementation declaration for a given protocol name
+ */
 fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolName: String): ProtocolMethods {
     val project = declaration.project
     if (DumbService.isDumb(project)) {
@@ -259,7 +250,6 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
     val optional = ArrayList<ObjJMethodHeader>()
     val inheritedProtocols = ObjJInheritanceUtil.appendAllInheritedProtocolsToSet(protocolName, project)
     for (protocolDeclaration in inheritedProtocols) {
-        //Logger.getAnonymousLogger().log(Level.INFO, "Checking protocol <"+protocolDeclaration.getClassNameString()+"> for unimplemented methods.");
         addUnimplementedProtocolMethods(project, thisClassName, protocolDeclaration.methodHeaderList, required)
         for (scopedBlock in protocolDeclaration.protocolScopedMethodBlockList) {
             ProgressIndicatorProvider.checkCanceled()
@@ -270,6 +260,9 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
     return ProtocolMethods(required, optional)
 }
 
+/**
+ * Adds unimplemented protocol methods to a list of headers
+ */
 private fun addUnimplementedProtocolMethods(project: Project, className: String,
                                             requiredHeaders: List<ObjJMethodHeader>, listOfUnimplemented: MutableList<ObjJMethodHeader>) {
     for (methodHeader in requiredHeaders) {
@@ -280,26 +273,28 @@ private fun addUnimplementedProtocolMethods(project: Project, className: String,
     }
 }
 
+/**
+ * Checks whether a protocol method has been implemented into any class or extension with a given name
+ */
 private fun isProtocolMethodImplemented(project: Project, classNameIn: String?, selector: String): Boolean {
     var className: String? = classNameIn ?: return false
     while (className != null) {
         ProgressIndicatorProvider.checkCanceled()
         for (methodHeaderDeclaration in ObjJClassMethodIndex.instance[className, project]) {
             if (methodHeaderDeclaration.selectorString == selector) {
-                //LOGGER.log(Level.INFO, "Class <$className> has required protocol method: <selector> in class: ${methodHeaderDeclaration.containingClassName} in file ${ObjJFileUtil.getContainingFileName(methodHeaderDeclaration)}")
                 return true
             }
         }
-        //LOGGER.log(Level.INFO, "Class <"+className+"> does not have required protocol method: <"+selector+">");
         className = getSuperClassName(className, project)
     }
     return false
 }
 
-
+/**
+ * Gets the presentation object for an @implementation declaration
+ */
 fun getPresentation(declaration:ObjJImplementationDeclaration): ItemPresentation {
-    //LOGGER.log(Level.INFO, "Get Presentation <Implementation:"+implementationDeclaration.getClassNameString()+">");
-    val text = declaration.getClassNameString() + if (declaration.isCategory()) " (${declaration.categoryName?.className?.text})" else ""
+    val text = declaration.getClassNameString() + if (declaration.isCategory) " (${declaration.categoryName?.className?.text})" else ""
     val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
@@ -317,8 +312,10 @@ fun getPresentation(declaration:ObjJImplementationDeclaration): ItemPresentation
     }
 }
 
+/**
+ * Gets presentation for a protocol declaration
+ */
 fun getPresentation(declaration:ObjJProtocolDeclaration): ItemPresentation {
-    //LOGGER.log(Level.INFO, "Get Presentation <Protocol:"+protocolDeclaration.getClassNameString()+">");
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
         override fun getPresentableText(): String {
@@ -335,6 +332,9 @@ fun getPresentation(declaration:ObjJProtocolDeclaration): ItemPresentation {
     }
 }
 
+/**
+ * Get all inherited protocols for a given class
+ */
 fun getInheritedProtocols(classDeclaration:ObjJImplementationDeclaration) : List<String> {
     val stubProtocols = classDeclaration.stub?.inheritedProtocols
     if (stubProtocols != null) {
@@ -343,6 +343,9 @@ fun getInheritedProtocols(classDeclaration:ObjJImplementationDeclaration) : List
     return getProtocolListAsStrings(classDeclaration.inheritedProtocolList)
 }
 
+/**
+ * Gets inherited protocols for a given protocol
+ */
 fun getInheritedProtocols(protocolDeclaration:ObjJProtocolDeclaration) : List<String> {
     val stubProtocols = protocolDeclaration.stub?.inheritedProtocols
     if (stubProtocols != null) {
