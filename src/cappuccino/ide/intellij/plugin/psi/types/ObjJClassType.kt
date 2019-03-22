@@ -1,198 +1,136 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package cappuccino.ide.intellij.plugin.psi.types
 
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIsOfClassType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
 import java.util.*
 
+data class ObjJClassTypeName(val className: String)
+
 /**
  * A simple class declaring virtual class type references
  */
-class ObjJClassType
-/**
- * Constructs a class type using a class name string
- * @param className class name as string
- */
-private constructor(//Class name as string
-        /**
-         * Gets the class name as string
-         * @return class name as string
-         */
-        val className: String) {
+object ObjJClassType {
 
-    /**
-     * Checks whether this class type has given class name
-     * @param className class name
-     * @return `true` if class names match, `false` otherwise
-     */
-    fun hasClassName(className: String): Boolean {
-        return className == this.className
+    const val ARRAY = "CPArray"
+    const val OBJECT = "CPDictionary"
+    const val ID = "id"
+    const val BOOL = "BOOL"
+    const val STRING = "CPString"
+    const val INT = "int"
+    const val UNSIGNED = "unsigned"
+    const val SIGNED = "signed"
+    const val CHAR = "char"
+    const val SHORT = "short"
+    const val BYTE = "byte"
+    const val LONG = "long"
+    const val FLOAT = "float"
+    const val DOUBLE = "double"
+    @Deprecated("")
+    val SELECTOR = "selector"
+    const val FUNCTION = "function"
+    const val REGEX = "regex"
+    const val UNDETERMINED = "id"
+    const val CPOBJECT = "CPObject"
+    const val JSOBJECT = "JSObject"
+    const val CLASS = "Class"
+    const val CPAPP = "CPApp"
+    const val CPAPPLICATION = "CPApplication"
+    const val NIL = "NIL"
+    const val JS_FUNCTION = "func"
+    const val SEL = "SEL"
+    const val PROTOCOL = "Protocol"
+    const val AT_ACTION = "@action"
+    val PRIMITIVE_VAR_NAMES = listOf(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT)
+    private val INT_EQUIVALENTS = Arrays.asList(INT, UNSIGNED, SIGNED, CHAR, SHORT, BYTE)
+    private val LONG_EQUIVALENTS = mutableListOf<String>()
+    private val FLOAT_EQUIVALENTS = mutableListOf<String>()
+    private val DOUBLE_EQUIVALENTS = mutableListOf<String>()
+    private val NUMERIC_TYPES = mutableListOf<String>()
+
+    init {
+        LONG_EQUIVALENTS.add(LONG)
+        LONG_EQUIVALENTS.addAll(INT_EQUIVALENTS)
+
+        FLOAT_EQUIVALENTS.add(FLOAT)
+        FLOAT_EQUIVALENTS.addAll(LONG_EQUIVALENTS)
+
+        DOUBLE_EQUIVALENTS.add(DOUBLE)
+        DOUBLE_EQUIVALENTS.addAll(FLOAT_EQUIVALENTS)
+        NUMERIC_TYPES.addAll(DOUBLE_EQUIVALENTS)
     }
 
-    /**
-     * Checks whether two class types are considered references to the same place
-     * @param classType class type
-     * @return `true` if class types are considered equal. `false` otherwise
-     */
-    fun isClassType(classType: ObjJClassType?): Boolean {
-        return classType != null && hasClassName(classType.className)
-    }
+
+    //Container of existing class types
+    private val classTypes = HashMap<String, ObjJClassTypeName>()
+    const val UNDEF_CLASS_NAME = "{UNDEF}"
+    val UNDEF = ObjJClassType.getClassType(UNDEF_CLASS_NAME)
+    const val VOID_CLASS_NAME = "void"
+    val VOID = ObjJClassType.getClassType(VOID_CLASS_NAME)
 
     /**
-     * Overrides class to check if two classes are equal
-     * @param object object to check equality for
-     * @return `true` if considered equal, `false otherwise`
+     * Static class type getter, used to ensure that only one version of class type exists for class name
+     * May be unnecessary as class type has overriding equals method that checks a given class name equality
      */
-    override fun equals(`object`: Any?): Boolean {
-        //Object is null, and not equal
-        if (`object` == null) {
-            return false
+    @Synchronized
+    fun getClassType(className: String?): ObjJClassTypeName {
+        if (className == null) {
+            return ObjJClassType.UNDEF
         }
+        if (classTypes.containsKey(className)) {
+            val classType = classTypes[className]
+            if (classType != null) {
+                return classType
+            }
+        }
+        val classType = ObjJClassTypeName(className)
+        classTypes[className] = classType
+        return classType
+    }
 
-        // Actually points to exact same object
-        if (`object` === this) {
+    @Throws(IndexNotReadyInterruptingException::class, CannotDetermineException::class)
+    fun isSubclassOrSelf(parentClass: String, subclass: String, project: Project): Boolean {
+        if (parentClass == subclass) {
             return true
         }
-        val classType: ObjJClassType?
-        // Object of class is of ClassType
-        if (`object` is ObjJClassType) {
-            classType = `object`
-            // Object is instance of IsClass Type
-            // Get class type referenced by interface
-        } else if (`object` is ObjJIsOfClassType) {
-            classType = `object`.classType
-            // Object does not have known reference to a class type
-        } else {
-            classType = null
+        if (INT_EQUIVALENTS.contains(parentClass)) {
+            return INT_EQUIVALENTS.contains(subclass)
         }
-        //Returns true if a class type is found, and if they are equal
-        return classType != null && isClassType(classType)
+
+        if (parentClass == LONG) {
+            return LONG_EQUIVALENTS.contains(subclass)
+        }
+
+        if (parentClass == FLOAT) {
+            return FLOAT_EQUIVALENTS.contains(subclass)
+        }
+        if (parentClass == DOUBLE) {
+            return DOUBLE_EQUIVALENTS.contains(subclass)
+        }
+        if (parentClass == ID) {
+            return !isPrimitive(subclass)
+        }
+        if (subclass == ID) {
+            return !isPrimitive(parentClass)
+        }
+
+        if (parentClass == PROTOCOL) {
+            return !isPrimitive(subclass)
+        }
+
+        return if (DumbService.isDumb(project)) {
+            false
+        } else ObjJInheritanceUtil.isSubclassOrSelf(parentClass, subclass, project)
     }
 
-    companion object {
-
-        val ARRAY = "CPArray"
-        val OBJECT = "CPDictionary"
-        val ID = "id"
-        val BOOL = "BOOL"
-        val STRING = "CPString"
-        val INT = "int"
-        val UNSIGNED = "unsigned"
-        val SIGNED = "signed"
-        val CHAR = "char"
-        val SHORT = "short"
-        val BYTE = "byte"
-        val LONG = "long"
-        val FLOAT = "float"
-        val DOUBLE = "double"
-        @Deprecated("")
-        val SELECTOR = "selector"
-        val FUNCTION = "function"
-        val REGEX = "regex"
-        val UNDETERMINED = "id"
-        val CPOBJECT = "CPObject"
-        val JSOBJECT = "JSObject"
-        val CLASS = "Class"
-        val CPAPP = "CPApp"
-        val CPAPPLICATION = "CPApplication"
-        val NIL = "NIL"
-        val JS_FUNCTION = "func"
-        val SEL = "SEL"
-        val PROTOCOL = "Protocol"
-        val AT_ACTION = "@action"
-
-        private val INT_EQUIVALENTS = Arrays.asList(INT, UNSIGNED, SIGNED, CHAR, SHORT, BYTE)
-        private val LONG_EQUIVALENTS = ArrayList<String>()
-        private val FLOAT_EQUIVALENTS = ArrayList<String>()
-        private val DOUBLE_EQUIVALENTS = ArrayList<String>()
-        private val NUMERIC_TYPES = ArrayList<String>()
-
-        init {
-            LONG_EQUIVALENTS.add(LONG)
-            LONG_EQUIVALENTS.addAll(INT_EQUIVALENTS)
-
-            FLOAT_EQUIVALENTS.add(FLOAT)
-            FLOAT_EQUIVALENTS.addAll(LONG_EQUIVALENTS)
-
-            DOUBLE_EQUIVALENTS.add(DOUBLE)
-            DOUBLE_EQUIVALENTS.addAll(FLOAT_EQUIVALENTS)
-            NUMERIC_TYPES.addAll(DOUBLE_EQUIVALENTS)
-        }
-
-
-        //Container of existing class types
-        private val classTypes = HashMap<String, ObjJClassType>()
-        const val UNDEF_CLASS_NAME = "{UNDEF}"
-        val UNDEF = ObjJClassType.getClassType(UNDEF_CLASS_NAME)
-        const val VOID_CLASS_NAME = "void"
-        val VOID = ObjJClassType.getClassType(VOID_CLASS_NAME)
-
-        val PRIMITIVE_VAR_NAMES = Arrays.asList(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT)!!
-
-        /**
-         * Static class type getter, used to ensure that only one version of class type exists for class name
-         * May be unnecessary as class type has overriding equals method that checks a given class name equality
-         */
-        @Synchronized
-        fun getClassType(className: String?): ObjJClassType {
-            if (className == null) {
-                return ObjJClassType.UNDEF
-            }
-            if (classTypes.containsKey(className)) {
-                val classType = classTypes[className]
-                if (classType != null) {
-                    return classType
-                }
-            }
-            val classType = ObjJClassType(className)
-            classTypes[className] = classType
-            return classType
-        }
-
-        @Throws(IndexNotReadyInterruptingException::class, CannotDetermineException::class)
-        fun isSubclassOrSelf(parentClass: String, subclass: String, project: Project): Boolean {
-            if (parentClass == subclass) {
-                return true
-            }
-            if (INT_EQUIVALENTS.contains(parentClass)) {
-                return INT_EQUIVALENTS.contains(subclass)
-            }
-
-            if (parentClass == LONG) {
-                return LONG_EQUIVALENTS.contains(subclass)
-            }
-
-            if (parentClass == FLOAT) {
-                return FLOAT_EQUIVALENTS.contains(subclass)
-            }
-            if (parentClass == DOUBLE) {
-                return DOUBLE_EQUIVALENTS.contains(subclass)
-            }
-            if (parentClass == ID) {
-                return !isPrimitive(subclass)
-            }
-            if (subclass == ID) {
-                return !isPrimitive(parentClass)
-            }
-
-            if (parentClass == PROTOCOL) {
-                return !isPrimitive(subclass)
-            }
-
-            return if (DumbService.isDumb(project)) {
-                false
-            } else ObjJInheritanceUtil.isSubclassOrSelf(parentClass, subclass, project)
-        }
-
-        fun isPrimitive(className: String): Boolean {
-            return NUMERIC_TYPES.contains(className) ||
-                    className == BOOL ||
-                    className == SEL
-        }
+    fun isPrimitive(className: String): Boolean {
+        return NUMERIC_TYPES.contains(className) ||
+                className == BOOL ||
+                className == SEL
     }
-
 }
