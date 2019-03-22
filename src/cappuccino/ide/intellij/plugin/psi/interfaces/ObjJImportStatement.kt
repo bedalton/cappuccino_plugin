@@ -12,7 +12,7 @@ interface ObjJImportStatement<StubT : ObjJImportStub<*>> : ObjJStubBasedElement<
 
     companion object {
 
-        val DELIMITER = "::"
+        const val DELIMITER = "::"
     }
 
 }

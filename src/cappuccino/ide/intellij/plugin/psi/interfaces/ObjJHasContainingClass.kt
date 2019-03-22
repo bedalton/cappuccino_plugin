@@ -11,7 +11,7 @@ interface ObjJHasContainingClass : ObjJCompositeElement {
     val containingClassName: String
         get() {
             val containingClass = containingClass
-            return if (containingClass != null) containingClass.classType.className else ObjJClassType.UNDEF.className
+            return containingClass?.classType?.className ?: ObjJClassType.UNDEF.className
         }
 
     val containingClass: ObjJClassDeclarationElement<*>?
