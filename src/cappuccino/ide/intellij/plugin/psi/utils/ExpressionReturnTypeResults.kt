@@ -7,7 +7,10 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import java.util.ArrayList
 
-
+/**
+ * Holder for a result set for a given variables type.
+ * Holds the number of a times a class comes up in the search.
+ */
 class ExpressionReturnTypeResults private constructor(val references: MutableList<ExpressionReturnTypeReference>, private val project: Project) {
     private var changed = false
     private var referencedAncestors: MutableList<String>? = null
@@ -31,14 +34,24 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
             return referencedAncestors as ArrayList<String>
         }
 
+    /**
+     * Public constructor to create empty result set
+     */
     constructor(project: Project) : this(ArrayList<ExpressionReturnTypeReference>(), project)
 
+    /**
+     * Ticks a set of class name references
+     * Ticking increases the priority of a potential variable class
+     */
     fun tick(refs: Set<String>) {
         for (ref in refs) {
             tick(ref)
         }
     }
-
+    /**
+     * Ticks a reference adding to a previous or given number of tick
+     * Ticking increases the priority of a potential variable class
+     */
     private fun tick(ref: String, ticksIn: Int) {
         var ticks = ticksIn
 
@@ -52,12 +65,18 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
         refObject!!.references += ticks
     }
 
+    /**
+     * Ticks a result set
+     */
     fun tick(results: ExpressionReturnTypeResults) {
         for (ref in results.references) {
             tick(ref.type, ref.references)
         }
     }
 
+    /**
+     * Ticks a single class reference
+     */
     fun tick(ref: String) {
         if (ref.isEmpty()) {
             return
@@ -72,6 +91,9 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
         }
     }
 
+    /**
+     * Gets the reference for a given class name
+     */
     fun getReference(ref: String): ExpressionReturnTypeReference? {
         if (ref.isEmpty()) {
             return null
@@ -84,6 +106,9 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
         return null
     }
 
+    /**
+     * Gets the list of classes above and below a class in inheritance hierarchy
+     */
     private fun getInheritanceUpAndDown(referencedAncestors: MutableList<String>, className: String) {
         if (referencedAncestors.contains(className)) {
             return
@@ -96,6 +121,9 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
     }
 }
 
+/**
+ * Simple holder class for a class name and it's number of references
+ */
 class ExpressionReturnTypeReference internal constructor(val type: String) {
     var references: Int = 0
         internal set

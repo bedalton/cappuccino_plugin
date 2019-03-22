@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.stubs.interfaces
 
 import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import com.intellij.psi.PsiElement
 
 interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT> {
@@ -16,7 +17,7 @@ interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT>
 
     val isRequired: Boolean
 
-    val returnType: ObjJClassType
+    val returnType: ObjJClassTypeName
 
     val returnTypeAsString: String
 

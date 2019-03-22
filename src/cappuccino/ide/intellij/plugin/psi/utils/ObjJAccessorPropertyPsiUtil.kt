@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.utils.Strings
 import cappuccino.ide.intellij.plugin.utils.upperCaseFirstLetter
-import java.util.*
 
 object ObjJAccessorPropertyPsiUtil {
 
@@ -49,6 +48,7 @@ object ObjJAccessorPropertyPsiUtil {
 
     /**
      * Gets list of selector elements
+     * In this case the single selector object defined in @accessors(=:selector) statement
      * @param accessorProperty accessor property
      * @return list of selector psi elements for accessor property virtual method
      */
@@ -65,10 +65,15 @@ object ObjJAccessorPropertyPsiUtil {
     fun getSelectorString(accessorProperty: ObjJAccessorProperty): String =
             accessorProperty.accessor?.getSelectorString(true) ?: ObjJMethodPsiUtils.EMPTY_SELECTOR
 
-
+    /**
+     * Gets selector string for an accessor setter property
+     * @param accessorProperty accessor property
+     * @return virtual method setter selector string
+     */
     fun getSetter(accessorProperty: ObjJAccessorProperty): String? =
             accessorProperty.stub?.setter
                     ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.setter?.selectorString
+                    ?: getSetter(accessorProperty)
 
     /**
      * Build and return setter of an instance variable
@@ -95,7 +100,7 @@ object ObjJAccessorPropertyPsiUtil {
                     if (varType == "BOOL" && accessor.length > 2 && accessor.substring(0, 2) == "is") {
                         "set" + accessor.substring(2)
                     } else {
-                        "set" + Strings.upperCaseFirstLetter(accessor)!!
+                        "set" + accessor.upperCaseFirstLetter()
                     }
                 }
             }
@@ -110,8 +115,9 @@ object ObjJAccessorPropertyPsiUtil {
 
 
     fun getGetter(accessorProperty: ObjJAccessorProperty): String? =
-            accessorProperty.stub?.setter
+            accessorProperty.stub?.getter
                     ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.getter?.selectorString
+                    ?: getGetter(accessorProperty)
 
 
     /**
@@ -121,49 +127,42 @@ object ObjJAccessorPropertyPsiUtil {
      */
     fun getGetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
         val varType = variableDeclaration.stub?.varType ?: variableDeclaration.formalVariableType.text
-        val getter: String? = variableDeclaration.stub?.getter
+        val getter: String = variableDeclaration.stub?.getter
                 ?: getGetterFromAccessorPropertyList(variableDeclaration.accessorPropertyList)
-                ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: return null
-        val selectorStrings: List<String> = listOf(getter!!)
+                ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text
+                ?: return null
+        val selectorStrings: List<String> = listOf(getter)
         val paramTypes = listOf(varType)
-        return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, varType, true, variableDeclaration.shouldResolve(), false)
+        return ObjJMethodHeaderStubImpl(
+                parent = null,
+                className = variableDeclaration.containingClassName,
+                isStatic = false,
+                selectorStrings = selectorStrings,
+                paramTypes = paramTypes,
+                returnType = varType,
+                isRequired = true,
+                shouldResolve = variableDeclaration.shouldResolve(),
+                ignored = false)
     }
 
+    /**
+     * Gets getter from a list of accessor properties
+     * Useful if an @accessor has a combination of keywords such as getter, setter, readonly, property, copy
+     */
     private fun getGetterFromAccessorPropertyList(accessorProperties: List<ObjJAccessorProperty>): String? {
         var getter: String? = null
         accessorProperties.forEach each@{ accessorProperty ->
-            val tempGetter = accessorProperty.stub?.getter ?: accessorProperty.accessor?.text
+            val tempGetter = accessorProperty.stub?.getter ?: accessorProperty.accessor?.text ?: getGetter(accessorProperty)
             when (accessorProperty.accessorPropertyType.text) {
                 "getter" -> {
                     getter = tempGetter
                     return@each
                 }
-                else -> getter = tempGetter
+                "setter" -> return@each
+                "readonly", "copy", "property" -> getter = tempGetter
             }
         }
         return getter
-    }
-
-    /**
-     * Gets accessor property names for a given accessor property, returns collection in the event property kind = "property"
-     * @param variableName variable name
-     * @param varType variable type
-     * @param accessorProperty property element
-     * @return collection of String method selectors
-     */
-    fun getAccessorPropertyMethods(variableName: String, varType: String, accessorProperty: ObjJAccessorProperty): List<String> {
-        val propertyMethods = ArrayList<String>()
-        //Getter
-        val getter = getGetterSelector(variableName, varType, accessorProperty)
-        if (getter != null) {
-            propertyMethods.add(getter)
-        }
-        //Setter
-        val setter = getSetterSelector(variableName, varType, accessorProperty)
-        if (setter != null) {
-            propertyMethods.add(setter)
-        }
-        return propertyMethods
     }
 
     /**
@@ -227,7 +226,7 @@ object ObjJAccessorPropertyPsiUtil {
         }
         //get accessor string if available
         var accessor: String? = accessorProperty.accessor?.text
-        val propertyType = accessorProperty.accessorPropertyType.text;
+        val propertyType = accessorProperty.accessorPropertyType.text
         //Accessor is setter specific ie. @accessor(setter=setValue)
         //Return accessor as is
         if (accessor != null && propertyType == "setter") {
@@ -256,5 +255,5 @@ object ObjJAccessorPropertyPsiUtil {
         }
     }
 
-    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList ?: emptyList();
+    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList ?: emptyList()
 }

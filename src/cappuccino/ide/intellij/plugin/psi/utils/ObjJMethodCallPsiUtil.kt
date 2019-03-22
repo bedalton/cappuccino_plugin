@@ -3,36 +3,13 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.psi.*
 
 import java.util.ArrayList
-import java.util.logging.Logger
 
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.ID
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDEF_CLASS_NAME
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.isPrimitive
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.isPrimitive
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.psi.PsiElement
-
-private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodCallPsiUtil")
-private val GET_CLASS_METHOD_SELECTOR = ObjJMethodPsiUtils.getSelectorString("class")
-private val GET_SUPERCLASS_METHOD_SELECTOR = ObjJMethodPsiUtils.getSelectorString("superclass")
-val IS_KIND_OF_CLASS_METHOD_SELECTOR = ObjJMethodPsiUtils.getSelectorString("isKindOfClass")
-
-fun getSelectorString(methodCall : ObjJMethodCall): String {
-    return methodCall.stub?.selectorString
-            ?: ObjJMethodPsiUtils.getSelectorStringFromSelectorStrings(methodCall.selectorStrings)
-}
-
-
-fun isUniversalMethodCaller(className: String): Boolean {
-    return !isPrimitive(className) && (UNDETERMINED == className || UNDEF_CLASS_NAME == className) || ID == className
-}
-
-fun getSelectorStrings(methodCall:ObjJMethodCall): List<String> {
-    val selectors: List<String>? = methodCall.stub?.selectorStrings
-    if (selectors != null && selectors.isNotEmpty())
-        return selectors
-    return ObjJMethodPsiUtils.getSelectorStringsFromSelectorList(getSelectorList(methodCall));
-}
 
 fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
     val singleSelector = methodCall.selector
@@ -49,10 +26,6 @@ fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
     }
     return out
 }
-
-fun getCallTargetText(methodCall:ObjJMethodCall): String =
-        methodCall.stub?.callTarget ?: methodCall.callTarget.text
-
 
 /**
  * Gets selectors from incomplete method call
@@ -80,15 +53,15 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
 
     // If psi parent is a qualified method call,
     // find it's index in selector array for autocompletion
-    if (psiElement.parent is ObjJQualifiedMethodCallSelector) {
+    selectorIndex = if (psiElement.parent is ObjJQualifiedMethodCallSelector) {
         val qualifiedMethodCallSelector = psiElement.parent as ObjJQualifiedMethodCallSelector
         if (qualifiedMethodCallSelector.selector != null) {
-            selectorIndex = selectors.indexOf(qualifiedMethodCallSelector.selector!!)
+            selectors.indexOf(qualifiedMethodCallSelector.selector!!)
         } else {
-            selectorIndex = selectors.size - 1
+            selectors.size - 1
         }
     } else {
-        selectorIndex = selectors.size - 1
+        selectors.size - 1
     }
 
     // Find orphaned elements in method call
@@ -102,4 +75,11 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
     val selector = ObjJElementFactory.createSelector(project, psiElement.text) ?: return selectors
     selectors.add(selector)
     return selectors
+}
+
+fun getCallTargetText(methodCall:ObjJMethodCall): String =
+        methodCall.stub?.callTarget ?: methodCall.callTarget.text
+
+fun isUniversalMethodCaller(className: String): Boolean {
+    return !isPrimitive(className) && (UNDETERMINED == className || UNDEF_CLASS_NAME == className) || ID == className
 }

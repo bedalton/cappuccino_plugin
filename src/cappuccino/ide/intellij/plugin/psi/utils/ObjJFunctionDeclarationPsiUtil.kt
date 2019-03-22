@@ -13,8 +13,11 @@ import java.util.ArrayList
 
 object ObjJFunctionDeclarationPsiUtil {
 
+    /**
+     * Gets the functions name
+     */
     fun getName(functionDeclaration: ObjJFunctionDeclaration): String {
-        return if (functionDeclaration.functionName != null) functionDeclaration.functionName!!.text else ""
+        return functionDeclaration.functionName?.text ?: ""
     }
 
     /**
@@ -71,6 +74,9 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
 
+    /**
+     * Renames a preproc function
+     */
     fun setName(defineFunction: ObjJPreprocessorDefineFunction, name: String): PsiElement {
         if (defineFunction.functionName != null) {
             val functionName = ObjJElementFactory.createFunctionName(defineFunction.project, name)
@@ -89,20 +95,47 @@ object ObjJFunctionDeclarationPsiUtil {
         return defineFunction
     }
 
+    /**
+     * Gets this functions qualified name component
+     */
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String? {
         return functionCall.functionName?.text
     }
 
+    /**
+     * Gets a function literals name if any.
+     * returns empty string if no name found
+     */
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         if (functionLiteral.stub != null) {
             return functionLiteral.stub.fqName
         }
+        // Get containing varaible declaration if any
+        // if not, return
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
-        return if (variableDeclaration == null || variableDeclaration.qualifiedReferenceList.isEmpty()) {
-            ""
-        } else ObjJPsiImplUtil.getPartsAsString(variableDeclaration.qualifiedReferenceList[0])
+                ?: return ""
+
+        // Get qualified reference name list.
+        // Declarations can contain a string of references pointing to the same variable
+        // In this case the function literal
+        val qualifiedReferenceList = variableDeclaration.qualifiedReferenceList
+
+        // Loop through qualified name parts, and search for a qualified name with a single name element
+        for (qualifiedReference in qualifiedReferenceList) {
+            val parts = qualifiedReference.qualifiedNameParts
+            if (parts.size > 1) continue
+            // Must check if variable name, as some qualified name parts can also be method calls or function calls
+            // Unlikely here as it should not be assignable to, but have to be sure.
+            val variableName = (parts[0] as? ObjJVariableName)?.text ?: continue
+            if (variableName.isNotEmpty())
+                return variableName
+        }
+        return ""
     }
 
+    /**
+     * Gets the preprocessor function definitions name as a string
+     */
     fun getFunctionNameAsString(functionDeclaration: ObjJPreprocessorDefineFunction): String {
         if (functionDeclaration.stub != null) {
             return functionDeclaration.stub.functionName
@@ -110,6 +143,9 @@ object ObjJFunctionDeclarationPsiUtil {
         return if (functionDeclaration.functionName != null) functionDeclaration.functionName!!.text else if (functionDeclaration.variableName != null) functionDeclaration.variableName!!.text else "{UNDEF}"
     }
 
+    /**
+     * Gets a list of function names for a function literal
+     */
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         val out = ArrayList<String>()
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
@@ -124,7 +160,9 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         return out
     }
-
+    /**
+     * Gets the function definitions name as a string
+     */
     fun getFunctionNameAsString(functionDeclaration: ObjJFunctionDeclaration): String {
         if (functionDeclaration.stub != null) {
             return functionDeclaration.stub.functionName
@@ -132,6 +170,9 @@ object ObjJFunctionDeclarationPsiUtil {
         return if (functionDeclaration.functionName != null) functionDeclaration.functionName!!.text else ""
     }
 
+    /**
+     * Gets function parameters' variable name elements
+     */
     fun getParamNameElements(
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
         val out = ArrayList<ObjJVariableName>()
@@ -145,6 +186,9 @@ object ObjJFunctionDeclarationPsiUtil {
 
     }
 
+    /**
+     * Gets function parameters' names as strings
+     */
     fun getParamNames(
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
         if (functionDeclaration.stub != null) {
@@ -161,6 +205,9 @@ object ObjJFunctionDeclarationPsiUtil {
         return out
     }
 
+    /**
+     * Gets the return type if cached
+     */
     fun getReturnType(
             functionDeclaration: ObjJFunctionDeclaration): String {
         if (functionDeclaration.stub != null) {
@@ -169,6 +216,9 @@ object ObjJFunctionDeclarationPsiUtil {
         return ObjJClassType.UNDETERMINED
     }
 
+    /**
+     * Gets the return type if cached
+     */
     fun getReturnType(
             functionLiteral: ObjJFunctionLiteral): String {
         if (functionLiteral.stub != null) {
@@ -176,45 +226,44 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         return ObjJClassType.UNDETERMINED
     }
-
+    /**
+     * Gets the return type if cached
+     */
     fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? {
         return if (functionDefinition.stub != null) {
             functionDefinition.stub.returnType
         } else ObjJClassType.UNDETERMINED
-        /*
-        if (functionDefinition.getPreprocessorDefineBody() != null) {
-            ObjJPreprocessorDefineBody defineBody = functionDefinition.getPreprocessorDefineBody();
-            List<ObjJReturnStatement> returnStatements = new ArrayList<>();
-            if (defineBody.getBlock() != null) {
-                ObjJBlock block = defineBody.getBlock();
-                returnStatements.addAll(ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJReturnStatement.class, true));
-            } else if (defineBody.getPreprocessorBodyStatementList() != null) {
-                ObjJPreprocessorBodyStatementList statementList = defineBody.getPreprocessorBodyStatementList();
-                if (statementList != null) {
-                    returnStatements.addAll(statementList.getReturnStatementList());
-                    for (ObjJBlock block : statementList.getBlockList()) {
-                        java.util.logging.LOGGER.log(Level.INFO, "Looping preprocessor block in block");
-                        returnStatements.addAll(ObjJBlockPsiUtil.getBlockChildrenOfType(block, ObjJReturnStatement.class, true));
-                    }
-                }
-            }
-            for (ObjJReturnStatement returnStatement : returnStatements) {
-                java.util.logging.LOGGER.log(Level.INFO, "Looping return statement: <"+returnStatement.getText()+">");
-                if (returnStatement.getExpr() != null) {
-                    //todo Figure foldingDescriptors how to get the expression return types, when index is not ready.
-                    List<String> types = Collections.emptyList();// ObjJVarTypeResolveUtil.getExpressionReturnTypes(returnStatement.getExpr(), true);
-                    return !types.isEmpty() ? types.get(0) : ObjJClassType.UNDETERMINED;
-                }
-            }
-        }
-        */
     }
 
+    /**
+     * Gets the function name node in  a function literal
+     */
     fun getFunctionNameNode(
             functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
+        // Get containing varaible declaration if any
+        // if not, return
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
                 ?: return null
-        return if (!variableDeclaration.qualifiedReferenceList.isEmpty()) variableDeclaration.qualifiedReferenceList[0].lastVar else null
+
+        // Get qualified reference name list.
+        // Declarations can contain a string of references pointing to the same variable
+        // In this case the function literal
+        val qualifiedReferenceList = variableDeclaration.qualifiedReferenceList
+
+        // Loop through qualified name parts, and search for a qualified name with a single name element
+        for (qualifiedReference in qualifiedReferenceList) {
+            val parts = qualifiedReference.qualifiedNameParts
+            if (parts.size > 1) continue
+
+            // Must check if variable name, as some qualified name parts can also be method calls or function calls
+            // Unlikely here as it should not be assignable to, but have to be sure.
+            val variableName = (parts[0] as? ObjJVariableName) ?: continue
+
+            // @todo check if returning first is the best course of action
+            if (variableName.text.isNotEmpty())
+                return variableName
+        }
+        return null
     }
 
 }

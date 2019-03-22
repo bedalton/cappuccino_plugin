@@ -4,47 +4,14 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
-import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
-import cappuccino.ide.intellij.plugin.psi.utils.addProtocols
-
-import java.util.ArrayList
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 object ObjJInheritanceUtil {
-
-    /**
-     * Meant to take an array of inheritance, and reduce it to the deepest descendant in the tree
-     * @param classList list of classes
-     * @param project project
-     * @return list of deepest descendants
-     * @throws IndexNotReadyInterruptingException thrown if index is not ready
-     */
-    @Throws(IndexNotReadyInterruptingException::class)
-    fun reduceToDeepestInheritance(classList: List<String>, project: Project): Set<String> {
-        val superClasses = mutableSetOf<String>()
-        val out = ArrayList(classList)
-        if (DumbService.isDumb(project)) {
-            throw IndexNotReadyInterruptingException()
-        }
-        for (className in classList) {
-            if (superClasses.contains(className)) {
-                out.remove(className)
-                continue
-            }
-            for (parentClassName in getAllInheritedClasses(className, project)) {
-                if (out.contains(parentClassName)) {
-                    out.remove(parentClassName)
-                }
-                superClasses.add(parentClassName)
-            }
-            out.add(className)
-        }
-        return superClasses
-    }
 
     fun appendAllInheritedClassesStrictToList(className: String, project: Project): MutableSet<String> {
         return getAllInheritedClasses(className, project, false)
@@ -161,6 +128,22 @@ object ObjJInheritanceUtil {
             }
         }
         return referencedAncestors
+    }
+
+    /**
+     * Adds protocol classes to set
+     */
+    private fun addProtocols(
+            classDeclarationElement: ObjJClassDeclarationElement<*>,
+            protocols: MutableSet<String>) {
+        val stub = classDeclarationElement.stub
+        val newProtocols = stub?.inheritedProtocols ?: classDeclarationElement.getInheritedProtocols()
+        for (protocol in newProtocols) {
+            if (protocols.contains(protocol)) {
+                continue
+            }
+            protocols.add(protocol)
+        }
     }
 
 }

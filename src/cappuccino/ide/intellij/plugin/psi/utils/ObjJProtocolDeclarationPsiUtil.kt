@@ -8,15 +8,6 @@ import java.util.Collections
 
 object ObjJProtocolDeclarationPsiUtil {
 
-    val EMPTY_PROTOCOL_METHODS_RESULT = ProtocolMethods(emptyList(), emptyList())
-
-    fun getHeaders(declaration: ObjJProtocolDeclaration): ProtocolMethods {
-        val required = ArrayList<ObjJMethodHeader>()
-        val optional = ArrayList<ObjJMethodHeader>()
-        return ProtocolMethods(required, optional)
-    }
-
-
     class ProtocolMethods(val required: List<ObjJMethodHeader>, val optional: List<ObjJMethodHeader>)
 
 }

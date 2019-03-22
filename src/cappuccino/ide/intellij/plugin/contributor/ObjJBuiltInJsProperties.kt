@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.BOOL
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.INT
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.STRING
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.BOOL
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.INT
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.STRING
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 import java.util.Arrays
 
