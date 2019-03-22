@@ -76,7 +76,7 @@ object ObjJElementFactory {
         val param = if (paramIn == null || paramIn.trim().isEmpty()) {
             ""
         } else {
-            " " + paramIn
+            " $paramIn"
         }
         val scriptText = "// @ignore " + ignoreFlags.flag + param
         val file = createFileFromText(project, scriptText)
@@ -123,12 +123,10 @@ object ObjJElementFactory {
     fun createMethodDeclarationText(methodHeader: ObjJMethodHeader) : String {
         var returnStatementString = getDefaultReturnValueString(methodHeader.methodHeaderReturnTypeElement).trim()
         returnStatementString = if (returnStatementString.isNotEmpty()) {
-            "   " + returnStatementString+"\n"
+            "   $returnStatementString\n"
         } else {
             ""
         }
-
-
         return  "${methodHeader.text}\n" +
                 "{\n" +
                 "   //@todo provide implementation\n" +
