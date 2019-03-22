@@ -110,7 +110,7 @@ object ObjJMethodCallCompletionContributor {
                 continue
             }
             if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames) {
-                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName != possibleContainingClassNames[0]) && filterIfStrict) {
+                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames) && filterIfStrict) {
                     continue
                 }
             }
@@ -303,7 +303,7 @@ object ObjJMethodCallCompletionContributor {
     }
 
     private fun getPriority(possibleContainingClassNames: List<String>, className: String, priorityIfTarget: Double, priorityIfNotTarget: Double): Double {
-        return if (possibleContainingClassNames.isEmpty() || possibleContainingClassNames.contains(className)) {
+        return if (possibleContainingClassNames.contains(className)) {
             priorityIfTarget
         } else {
             priorityIfNotTarget
