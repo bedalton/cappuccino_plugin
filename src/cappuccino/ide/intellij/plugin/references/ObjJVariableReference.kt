@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -8,6 +9,7 @@ import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
@@ -135,6 +137,11 @@ class ObjJVariableReference(
         if (variableName == null) {
             variableName = globalVariableNameElement
         }
+        if (variableName == null) {
+            variableName = resolveIfClassName()
+            if (variableName != null)
+                return variableName
+        }
         if (variableName is ObjJVariableName && variableName.indexInQualifiedReference > 0) {
             return if (nullIfSelfReferencing) {
                 null
@@ -145,7 +152,24 @@ class ObjJVariableReference(
         if (nullIfSelfReferencing) {
             return variableName
         }
+
         return variableName ?: myElement
+    }
+
+    private fun resolveIfClassName() : PsiElement? {
+        val callTarget = myElement.parent?.parent as? ObjJCallTarget ?: return null
+        val selector = (callTarget.parent as? ObjJMethodCall)?.selectorString ?: return null
+        var classes: List<ObjJClassDeclarationElement<*>> = ObjJClassDeclarationsIndex.instance[myElement.text, element.project]
+        if (selector.isEmpty() || classes.isEmpty())
+            return null
+        val classesTemp = classes.filter {
+            it.hasMethod(selector)
+        }
+        if (classesTemp.isNotEmpty()) {
+            classes = classesTemp
+        }
+        return classes.firstOrNull { it is ObjJImplementationDeclaration && !it.isCategory }
+                ?: classes.firstOrNull()
     }
 
     override fun getVariants(): Array<Any> {
