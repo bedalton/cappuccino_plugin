@@ -49,8 +49,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         val localFunctions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).toMutableList()
         localFunctions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
 
-        val allOut = localFunctions.map { it.functionNameNode!! }.filter {
-            it.text == functionName
+        val allOut = localFunctions.map { it.functionNameNode }.filter {
+            it != null && it.text == functionName
         }.toMutableList()
 
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
