@@ -31,7 +31,6 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         if (declaration.accessor?.atAccessors != null && declaration.accessorPropertyList.isEmpty() && !variableName.isEmpty()) {
             getter = ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, declaration.formalVariableType.text)
             setter = ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, declaration.formalVariableType.text)
-            //Logger.getAnonymousLogger().log(Level.INFO, "Variable: <"+variableName+">; getter: <"+getter+">; setter: <"+setter+">");
         }
         val shouldResolve = declaration.shouldResolve()
         return ObjJInstanceVariableDeclarationStubImpl(stubElement, declaration.containingClassName, declaration.formalVariableType.text, variableName, getter, setter, shouldResolve)

@@ -28,6 +28,7 @@ class ObjJMethodCallStubType internal constructor(
             methodCall: ObjJMethodCallImpl, stubParent: StubElement<*>): ObjJMethodCallStub {
         val className = methodCall.containingClassName
         val callTarget = methodCall.callTargetText
+        // @todo calculate call target type and store it
         val callTargetTypes = listOf(ObjJClassType.UNDETERMINED)//methodCall.getPossibleCallTargetTypes();
         val selectorStrings = methodCall.selectorStrings
         val shouldResolve = methodCall.shouldResolve()

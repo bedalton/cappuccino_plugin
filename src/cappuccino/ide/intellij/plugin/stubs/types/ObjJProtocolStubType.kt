@@ -12,7 +12,7 @@ import java.io.IOException
 import java.util.ArrayList
 
 class ObjJProtocolStubType internal constructor(
-        debugName: String) : ObjJClassDeclarationStubType<ObjJProtocolDeclarationStub, ObjJProtocolDeclarationImpl>(debugName, ObjJProtocolDeclarationImpl::class.java, ObjJProtocolDeclarationStub::class.java) {
+        debugName: String) : ObjJClassDeclarationStubType<ObjJProtocolDeclarationStub, ObjJProtocolDeclarationImpl>(debugName, ObjJProtocolDeclarationImpl::class.java) {
 
     override fun createPsi(
             objJProtocolDeclarationStub: ObjJProtocolDeclarationStub): ObjJProtocolDeclarationImpl {

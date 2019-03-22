@@ -8,15 +8,9 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 class ObjJInstanceVariableDeclarationStubImpl(parent: StubElement<*>, containingClass: String?, override val varType: String, override val variableName: String, getter: String?, setter: String?, private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJInstanceVariableDeclarationImpl>(parent, ObjJStubTypes.INSTANCE_VAR), ObjJInstanceVariableDeclarationStub {
 
-    override val containingClass: String
-    override val getter: String?
-    override val setter: String?
-
-    init {
-        this.containingClass = containingClass ?: ObjJClassType.UNDEF_CLASS_NAME
-        this.getter = if (getter != null && getter.length > 0) getter else null
-        this.setter = if (setter != null && setter.length > 0) setter else null
-    }
+    override val containingClass: String = containingClass ?: ObjJClassType.UNDEF_CLASS_NAME
+    override val getter: String? = if (getter != null && getter.isNotEmpty()) getter else null
+    override val setter: String? = if (setter != null && setter.isNotEmpty()) setter else null
 
     override fun shouldResolve(): Boolean {
         return shouldResolve

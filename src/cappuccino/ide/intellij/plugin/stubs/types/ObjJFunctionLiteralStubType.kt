@@ -8,7 +8,7 @@ import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFunctionLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 
 class ObjJFunctionLiteralStubType internal constructor(
-        debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJFunctionLiteralImpl, ObjJFunctionLiteralStubImpl>(debugName, ObjJFunctionLiteralImpl::class.java, ObjJFunctionLiteralStubImpl::class.java) {
+        debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJFunctionLiteralImpl>(debugName, ObjJFunctionLiteralImpl::class.java) {
 
     override fun createPsi(
             stub: ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>): ObjJFunctionLiteralImpl {
