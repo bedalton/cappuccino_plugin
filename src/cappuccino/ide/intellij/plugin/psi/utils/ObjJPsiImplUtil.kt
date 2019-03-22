@@ -299,7 +299,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget): List<String> {
-        return ObjJSelectorReferenceResolveUtil.getPossibleClassTypesForCallTarget(callTarget).toList()
+        return cappuccino.ide.intellij.plugin.references.getPossibleClassTypesForCallTarget(callTarget).toList()
     }
 
     @JvmStatic
