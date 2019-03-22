@@ -6,43 +6,11 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.Filter
 import java.util.*
-import java.util.logging.Logger
 import kotlin.collections.ArrayList
-
-private val LOGGER = Logger.getLogger("cappuccino.ide.intellij.plugin.psi.utils.ObjJBlockPsiUtil")
-
-/**
- * Gets first child of type in block or child blocks, without filter
- *
- * @param firstBlock outermost block to get children from
- * @param aClass     class of items to filter by
- * @param <T>        child element type
- * @return first child of type in block or child blocks
-</T> */
-fun <T : PsiElement> ObjJBlock?.getBlockChildOfType(aClass: Class<T>): T? {
-    val out = getBlockChildrenOfType(aClass, true, null, true, -1)
-    return if (!out.isEmpty()) out[0] else null
-}
-
-/**
- * Gets first child of type in block or child blocks, with filter
- *
- * @param firstBlock outermost block to get children from
- * @param aClass     class of items to filter by
- * @param filter     element filter
- * @param <T>        child element type
- * @return first child element matching element class and filter criteria
-</T> */
-fun <T : PsiElement> ObjJBlock?.getBlockChildOfType(aClass: Class<T>,
-                                                    filter: Filter<T>): T? {
-    val out = getBlockChildrenOfType(aClass, true, filter, true, -1)
-    return if (!out.isEmpty()) out[0] else null
-}
 
 /**
  * Gets all block children of a type, potentially recursively
  *
- * @param firstBlock outermost block to get children from
  * @param aClass     class of items to filter by
  * @param recursive  whether to check child blocks for matching child elements
  * @param <T>        child element type
@@ -54,40 +22,8 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
 }
 
 /**
- * Gets all block children of a type, potentially recursively
- *
- * @param firstBlock outermost block to get children from
- * @param aClass     class of items to filter by
- * @param recursive  whether to check child blocks for matching child elements
- * @param <T>        child element type
- * @return list of child elements matching type
-</T> */
-fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
-        aClass: Class<T>, recursive: Boolean,
-        offset: Int): List<T> {
-    return getBlockChildrenOfType(aClass, recursive, null, false, offset)
-}
-
-/**
  * Gets list of block children of type using a filter
  *
- * @param firstBlock outermost block to get children from
- * @param aClass     class of items to filter by
- * @param recursive  whether to check child blocks for matching child elements
- * @param filter     element filter
- * @param <T>        type of child element to work on
-</T> */
-fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
-        aClass: Class<T>, recursive: Boolean,
-        filter: Filter<T>,
-        offset: Int): List<T> {
-    return getBlockChildrenOfType(aClass, recursive, filter, false, offset)
-}
-
-/**
- * Gets list of block children of type using a filter
- *
- * @param firstBlock outermost block to get children from
  * @param aClass     class of items to filter by
  * @param recursive  whether to check child blocks for matching child elements
  * @param filter     element filter
@@ -103,7 +39,6 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
  * Gets all block children of a type
  * Can filter if desired, and can return first matching item as a singleton list
  *
- * @param firstBlock  outermost block to get children from
  * @param aClass      class of items to filter by
  * @param recursive   whether to check child blocks for matching child elements
  * @param filter      element filter
@@ -239,28 +174,23 @@ fun getBlock(expr:ObjJExpr): ObjJBlock? {
 }
 
 fun getBlockList(hasBlockStatements:ObjJHasBlockStatement) : List<ObjJBlock> {
-    val out = hasBlockStatements.getChildrenOfType(ObjJBlock::class.java) as MutableList
-    return out;
+    return hasBlockStatements.getChildrenOfType(ObjJBlock::class.java) as MutableList
 }
 
 /**
  * Gets the outer scope for a given element
  * Mostly used to determine whether two variable name elements have the same scope
- * @param psiElement element to find containing scope block for.
  * @return scope block for element
  */
 fun PsiElement?.getScopeBlock(): ObjJBlock? {
     if (this == null) {
         return null
     }
-    var block = getFunctionBlockRange(this)
+    val block = getFunctionBlockRange(this)
     if (block != null) {
         return block
     }
-    block = getMethodBlockRange(this)
-    return if (block != null) {
-        block
-    } else null
+    return getMethodBlockRange(this)
 }
 
 private fun getFunctionBlockRange(element: PsiElement): ObjJBlock? {

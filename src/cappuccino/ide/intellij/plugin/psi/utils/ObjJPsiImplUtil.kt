@@ -15,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
@@ -141,7 +142,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getClassType(classDeclaration: ObjJClassDeclarationElement<*>): ObjJClassType {
+    fun getClassType(classDeclaration: ObjJClassDeclarationElement<*>): ObjJClassTypeName {
         val classNameString = classDeclaration.getClassNameString()
         return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
     }

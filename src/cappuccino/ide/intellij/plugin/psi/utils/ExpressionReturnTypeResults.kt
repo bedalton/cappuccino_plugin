@@ -31,7 +31,7 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
             return referencedAncestors as ArrayList<String>
         }
 
-    constructor(project: Project) : this(ArrayList<ExpressionReturnTypeReference>(), project) {}
+    constructor(project: Project) : this(ArrayList<ExpressionReturnTypeReference>(), project)
 
     fun tick(refs: Set<String>) {
         for (ref in refs) {
@@ -84,10 +84,6 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
         return null
     }
 
-    fun isReferenced(ref: String): Boolean {
-        return getReference(ref) != null || inheritanceUpAndDown.contains(ref)
-    }
-
     private fun getInheritanceUpAndDown(referencedAncestors: MutableList<String>, className: String) {
         if (referencedAncestors.contains(className)) {
             return
@@ -98,12 +94,6 @@ class ExpressionReturnTypeResults private constructor(val references: MutableLis
             }
         }
     }
-
-    fun numReferences(ref: String): Int {
-        val result = getReference(ref)
-        return result?.references ?: 0
-    }
-
 }
 
 class ExpressionReturnTypeReference internal constructor(val type: String) {
