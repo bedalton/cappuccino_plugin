@@ -21,11 +21,9 @@ import com.intellij.lang.Language
 import com.intellij.psi.*
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
-import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.ObjJElementUtils
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -41,9 +39,9 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
     val psiOrParent: ObjJCompositeElement
         get() = this
 
-    constructor(stub: T, nodeType: IStubElementType<*, *>) : super(stub, nodeType) {}
+    constructor(stub: T, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    constructor(node: ASTNode) : super(node) {}
+    constructor(node: ASTNode) : super(node)
 
     override fun getLanguage(): Language {
         return ObjJLanguage.instance
@@ -51,12 +49,6 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
 
     override fun toString(): String {
         return elementType.toString()
-    }
-
-    @Throws(IncorrectOperationException::class)
-    override fun delete() {
-        ObjJElementUtils.deleteSemicolon(this)
-        super.delete()
     }
 
     override fun <T:PsiElement> getParentOfType(parentClass:Class<T>) : T? = PsiTreeUtil.getParentOfType(this, parentClass)

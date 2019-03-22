@@ -12,5 +12,5 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
     constructor(
             stub: ObjJProtocolDeclarationStub) : super(stub, ObjJStubTypes.PROTOCOL)
 
-    constructor(node: ASTNode) : super(node) {}
+    constructor(node: ASTNode) : super(node)
 }

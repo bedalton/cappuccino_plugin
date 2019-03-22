@@ -16,7 +16,7 @@ import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.ObjJ_OPEN_BRACE
 
 public class ObjJBlockMixin extends ObjJCompositeElementImpl implements ObjJBlock, ObjJHasBlockStatement, ObjJHasBlockStatements, ObjJCompositeElement, ObjJChildrenRequireSemiColons, ObjJHasIgnoreStatements {
 
-    public ObjJBlockMixin(
+    ObjJBlockMixin(
             @NotNull
                     ASTNode node) {
         super(node);
