@@ -92,7 +92,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         }
         val project = methodCall.project
         //Get full selector signature
-        val fullSelector = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
+        val fullSelector = getSelectorStringFromSelectorList(selectors)
 
         //Check that method selector signature is valid, and return if it is
         if (isValidMethodCall(fullSelector, project)) {
@@ -129,7 +129,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             return false
         }
 
-        val selectorToFailPoint = StringBuilder(ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors.subList(0, failIndex)))
+        val selectorToFailPoint = StringBuilder(getSelectorStringFromSelectorList(selectors.subList(0, failIndex)))
         val methodCallSelectors = methodCall.qualifiedMethodCallSelectorList
         //assert methodCallSelectors.size() == methodCall.getSelectorStrings().size() : "Method call is returning difference lengthed selector lists. Call: <"+methodCall.getText()+">. Qualified: <"+methodCallSelectors.size()+">; Strings: <"+methodCall.getSelectorStrings().size()+">";
         val numSelectors = methodCallSelectors.size
@@ -139,7 +139,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         for (i in failIndex until numSelectors) {
             selector = methodCallSelectors[i]
             failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
-            selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
+            selectorToFailPoint.append(getSelectorString(selectors[i], true))
             val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <$selectorToFailPoint>")
             annotation.setNeedsUpdateOnTyping(true)
             annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.STATEMENT))

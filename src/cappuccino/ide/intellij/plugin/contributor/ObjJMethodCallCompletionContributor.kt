@@ -60,7 +60,7 @@ object ObjJMethodCallCompletionContributor {
         }
 
         val selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
-        val selectorString: String = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
+        val selectorString: String = getSelectorStringFromSelectorList(selectors)
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
         val selector: ObjJSelector? = if (selectorIndex >= 0 && selectorIndex < selectors.size) selectors[selectorIndex] else null
 

@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
 
-
 import java.util.ArrayList
 
 typealias Filter<T> = (T) -> Boolean
@@ -74,4 +73,10 @@ object ArrayUtils {
         return out
     }
 
+}
+
+
+
+fun <T> getFirstMatchOrNull(variableNameElements: List<T>, filter: Filter<T>): T? {
+    return variableNameElements.firstOrNull(filter)
 }

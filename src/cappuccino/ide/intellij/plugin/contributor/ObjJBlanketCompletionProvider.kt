@@ -48,7 +48,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
         when {
-            element.getElementType() in ObjJTokenSets.COMMENTS -> {
+            element.elementType in ObjJTokenSets.COMMENTS -> {
                 ObjJCommentCompletionProvider.addCommentCompletions(resultSet, element)
                 resultSet.stopHere()
             }
@@ -66,8 +66,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 getClassNameCompletions(resultSet, element)
             }
             element.hasParentOfType(ObjJInstanceVariableList::class.java) -> {
-                if (element.getElementType() == ObjJTypes.ObjJ_AT_FRAGMENT) {
-                    addCompletionElementsSimple(resultSet, listOf("accessors"));
+                if (element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT) {
+                    addCompletionElementsSimple(resultSet, listOf("accessors"))
                 }
                 resultSet.stopHere()
             }
@@ -119,7 +119,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (element == null) {
             return
         }
-        if (element.hasParentOfType(ObjJProtocolLiteral::class.java) || element.hasParentOfType(ObjJInheritedProtocolList::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
+        if (element.hasParentOfType(ObjJProtocolLiteral::class.java) ||
+                element.hasParentOfType(ObjJInheritedProtocolList::class.java) ||
+                element.hasParentOfType(ObjJFormalVariableType::class.java) ||
+                element.elementType in ObjJTokenSets.COMMENTS
+        ) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
@@ -129,7 +133,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
-        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.getElementType() in ObjJTokenSets.COMMENTS) {
+        if(element.hasParentOfType( ObjJCallTarget::class.java) || element.hasParentOfType(ObjJFormalVariableType::class.java) || element.elementType in ObjJTokenSets.COMMENTS) {
             ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach {
                 if (ObjJIgnoreEvaluatorUtil.shouldIgnoreUnderscore(element) || ObjJIgnoreEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS)) {
                     return@forEach

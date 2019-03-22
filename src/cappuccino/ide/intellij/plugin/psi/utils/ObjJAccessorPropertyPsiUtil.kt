@@ -73,7 +73,6 @@ object ObjJAccessorPropertyPsiUtil {
     fun getSetter(accessorProperty: ObjJAccessorProperty): String? =
             accessorProperty.stub?.setter
                     ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.setter?.selectorString
-                    ?: getSetter(accessorProperty)
 
     /**
      * Build and return setter of an instance variable
@@ -117,7 +116,6 @@ object ObjJAccessorPropertyPsiUtil {
     fun getGetter(accessorProperty: ObjJAccessorProperty): String? =
             accessorProperty.stub?.getter
                     ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.getter?.selectorString
-                    ?: getGetter(accessorProperty)
 
 
     /**

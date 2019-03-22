@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Contract
 import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
+import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
 
 object ObjJSelectorLookupUtil {
 
@@ -59,7 +60,7 @@ object ObjJSelectorLookupUtil {
     private fun getSelectorLookupElementTailText(
             selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int): String? {
         // Gets all selectors that come after this one
-        val trailingSelectors = ObjJMethodPsiUtils.getTrailingSelectorStrings(selector, selectorIndex)
+        val trailingSelectors = getTrailingSelectorStrings(selector, selectorIndex)
         //Creates a string builder for building the tail text
         val stringBuilder = StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
 

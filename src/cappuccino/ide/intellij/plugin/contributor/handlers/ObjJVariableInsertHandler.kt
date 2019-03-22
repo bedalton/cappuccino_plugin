@@ -12,7 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
@@ -53,6 +53,6 @@ object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
     }
 
     fun isFunctionCompletion(element: PsiElement): Boolean {
-        return !DumbService.isDumb(element.project) && ObjJVariableNameUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance[element.text, element.project].isEmpty()
+        return !DumbService.isDumb(element.project) && ObjJVariableNameAggregatorUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance[element.text, element.project].isEmpty()
     }
 }

@@ -29,9 +29,7 @@ fun String.upperCaseFirstLetter() : String {
     } else this.substring(0, 1).toUpperCase() + this.substring(1)
 }
 
-fun String?.notNullOrDefault(defaultValue: String) : String =
-        this ?: defaultValue
-
+@Suppress("unused")
 fun String.substringFromEnd(start:Int, subtractFromEnd:Int) : String =
         Strings.substringFromEnd(this, start, subtractFromEnd)
 
@@ -45,6 +43,11 @@ fun String.repeat(times:Int) : String {
 
 internal val uppercaseSplitRegex:Regex = "(?=\\p{Lu})".toRegex()
 
+@Suppress("unused")
 fun String.splitOnUppercase() : List<String> {
     return this.split(uppercaseSplitRegex)
+}
+
+fun String?.startsAndEndsWith(start: String?, end: String?): Boolean {
+    return this != null && (start == null || this.startsWith(start)) && (end == null || this.endsWith(end))
 }

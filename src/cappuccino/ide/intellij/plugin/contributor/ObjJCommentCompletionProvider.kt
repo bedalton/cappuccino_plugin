@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -62,7 +62,7 @@ object ObjJCommentCompletionProvider {
             when (place) {
                 0,1 -> ObjJBlanketCompletionProvider.getClassNameCompletions(resultSet, element)
                 2 -> {
-                    val variableNames = ObjJVariableNameUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
+                    val variableNames = ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
                         it.text
                     }
                     addCompletionElementsSimple(resultSet, variableNames)

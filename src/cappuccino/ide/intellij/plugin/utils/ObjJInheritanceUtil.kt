@@ -13,10 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 object ObjJInheritanceUtil {
 
-    fun appendAllInheritedClassesStrictToList(className: String, project: Project): MutableSet<String> {
-        return getAllInheritedClasses(className, project, false)
-    }
-
     fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableSet<String> {
         val inheritedClasses = mutableSetOf<String>()
         appendAllInheritedClassesToSet(inheritedClasses, className, project, withProtocols)
@@ -112,22 +108,6 @@ object ObjJInheritanceUtil {
         return if (parentClass == UNDETERMINED || parentClass == UNDETERMINED) {
             true
         } else getAllInheritedClasses(subclassName, project).contains(parentClass)
-    }
-
-
-    fun getInheritanceUpAndDown(className: String, project: Project): Set<String> {
-        val referencedAncestors = mutableSetOf<String>()
-        for (parentClass in ObjJInheritanceUtil.getAllInheritedClasses(className, project)) {
-            if (!referencedAncestors.contains(parentClass)) {
-                referencedAncestors.add(parentClass)
-            }
-        }
-        for (childClass in ObjJClassInheritanceIndex.instance.getChildClassesAsStrings(className, project)) {
-            if (!referencedAncestors.contains(childClass)) {
-                referencedAncestors.add(childClass)
-            }
-        }
-        return referencedAncestors
     }
 
     /**
