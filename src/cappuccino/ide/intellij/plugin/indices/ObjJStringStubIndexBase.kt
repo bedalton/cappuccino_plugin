@@ -8,7 +8,6 @@ import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.StringUtil
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
 
