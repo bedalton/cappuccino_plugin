@@ -30,8 +30,6 @@ class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPo
         return if (DumbService.isDumb(myElement.project)) {
             arrayOf()
         } else arrayOf()
-        //final List<ObjJMethodHeaderDeclaration> result = ObjJUnifiedMethodIndex.getInstance().getKeysByPattern(selector+"(.*)", myElement.getProject());
-        //return result.toArray();
     }
 
     override fun handleElementRename(selectorString: String): PsiElement {
