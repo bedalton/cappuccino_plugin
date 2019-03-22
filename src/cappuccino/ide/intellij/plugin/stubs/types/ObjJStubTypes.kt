@@ -1,10 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFile
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
-import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFile
-import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFramework
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportFrameworkStub
 
 object ObjJStubTypes {
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
