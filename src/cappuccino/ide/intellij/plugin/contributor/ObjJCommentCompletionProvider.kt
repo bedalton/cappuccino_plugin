@@ -32,7 +32,7 @@ object ObjJCommentCompletionProvider {
             text.contains("@ignore") -> getIgnoreCompletions(resultSet, commentTokenParts)
             else -> {
                 addCompletionElementsSimple(resultSet, listOf(
-                        ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
+                    ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
                 ))
                 resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler { insertionContext: InsertionContext, _: LookupElement ->
                     insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
