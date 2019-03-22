@@ -1,3 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi
 
-val STATIC_VAR_NAMES = listOf("this", "Array", "ObjectiveJ", "arguments", "document", "window")
+import java.util.*
+
+val STATIC_VAR_NAMES = Arrays.asList("this", "Array", "ObjectiveJ", "arguments", "document", "window")
