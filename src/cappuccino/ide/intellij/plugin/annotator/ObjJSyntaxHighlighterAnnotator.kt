@@ -126,6 +126,9 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     private fun highlightFunctionName(functionCall: ObjJFunctionCall, annotationHolder: AnnotationHolder) {
         val functionName = functionCall.functionName ?: return
         val resolved = functionName.reference.resolve()
+        if (resolved?.getParentOfType(ObjJMethodHeader::class.java) != null) {
+            colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
+        }
         if (resolved != null) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, "defined in file: ${ObjJFileUtil.getContainingFileName(functionName)}")
         } else {
