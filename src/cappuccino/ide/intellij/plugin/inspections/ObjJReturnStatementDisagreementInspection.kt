@@ -96,7 +96,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
             val returnType = methodDeclaration.methodHeader.returnType
-            if (returnType == "@action") {
+            if (returnType == "@action" || returnType == "IBAction") {
                 return
             } else {
                 //Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
