@@ -150,7 +150,7 @@ object ObjJAccessorPropertyPsiUtil {
     private fun getGetterFromAccessorPropertyList(accessorProperties: List<ObjJAccessorProperty>): String? {
         var getter: String? = null
         accessorProperties.forEach each@{ accessorProperty ->
-            val tempGetter = accessorProperty.stub?.getter ?: accessorProperty.accessor?.text ?: getGetter(accessorProperty)
+            val tempGetter = accessorProperty.stub?.getter ?: accessorProperty.accessor?.text
             when (accessorProperty.accessorPropertyType.text) {
                 "getter" -> {
                     getter = tempGetter
