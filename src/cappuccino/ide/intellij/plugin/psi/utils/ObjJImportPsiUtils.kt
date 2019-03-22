@@ -1,8 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
-import java.util.regex.MatchResult
 import java.util.regex.Pattern
 
 @Suppress("UNUSED_PARAMETER")

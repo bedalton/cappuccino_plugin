@@ -23,11 +23,14 @@ object Strings {
 
 }
 
+fun String.upperCaseFirstLetter() : String {
+    return if (this.length < 2) {
+        this.toUpperCase()
+    } else this.substring(0, 1).toUpperCase() + this.substring(1)
+}
+
 fun String?.notNullOrDefault(defaultValue: String) : String =
         this ?: defaultValue
-
-fun String.upperCaseFirstLetter() : String =
-        Strings.upperCaseFirstLetter(this) ?: this
 
 fun String.substringFromEnd(start:Int, subtractFromEnd:Int) : String =
         Strings.substringFromEnd(this, start, subtractFromEnd)

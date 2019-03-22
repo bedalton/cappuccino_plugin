@@ -4,9 +4,6 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveTrailingStringFormatParame
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.MixedReturnTypeException
-import cappuccino.ide.intellij.plugin.psi.utils.getReturnType
-import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
@@ -51,7 +48,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 return
             }
             val format = expressions.removeAt(0)
-            val formatVarType: String = try {
+            /*val formatVarType: String = try {
                 getReturnType(format, true)
             } catch (e: MixedReturnTypeException) {
                 e.returnTypesList[0]
@@ -60,7 +57,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
             if (!isUniversalMethodCaller(formatVarType) && formatVarType != ObjJClassType.STRING) {
                 problemsHolder.registerProblem(format, "First parameter should be of type CPString")
                 return
-            }
+            }*/
             if (format.leftExpr == null || format.leftExpr!!.primary == null || format.leftExpr!!.primary!!.stringLiteral == null) {
                 //   LOGGER.log(Level.INFO, "[CPString initWithFormat] should have string expression first, but does not. Actual text: <"+format.getText()+">");
                 return

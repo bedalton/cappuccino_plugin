@@ -1,7 +1,6 @@
-@file:Suppress("unused")
-
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -11,57 +10,20 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import org.jetbrains.annotations.Contract
 
-import java.util.logging.Logger
-
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.UNDETERMINED
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.AT_ACTION
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.Companion.VOID_CLASS_NAME
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJMethodPsiUtils {
-
-    private val LOGGER = Logger.getLogger(ObjJMethodPsiUtils::class.java.canonicalName)
     const val SELECTOR_SYMBOL = ":"
     val EMPTY_SELECTOR = getSelectorString("{EMPTY}")
-    val ALLOC_SELECTOR = getSelectorString("alloc")
-
-
-    @Contract(pure = true)
-    fun getSelectorString(selector: String?): String {
-        return (selector ?: "") + SELECTOR_SYMBOL
-    }
-
-    fun getSelectorStringFromSelectorStrings(selectors: List<String>): String {
-        return ArrayUtils.join(selectors, SELECTOR_SYMBOL, true)
-    }
-
-    fun getSelectorStringFromSelectorList(selectors: List<ObjJSelector?>): String {
-        return getSelectorStringFromSelectorStrings(getSelectorStringsFromSelectorList(selectors))
-    }
-
-    fun getSelectorStringsFromSelectorList(selectors:List<ObjJSelector?>) : List<String> {
-        val out:MutableList<String> = ArrayList()
-        selectors.forEach {
-            out.add(it?.getSelectorString(false) ?: "")
-        }
-        return out
-    }
-
-    fun getSelectorElementsFromMethodDeclarationSelectorList(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJSelector> {
-        if (declarationSelectors == null || declarationSelectors.isEmpty()) {
-            return emptyList()
-        }
-        val out = ArrayList<ObjJSelector>()
-        for (selector in declarationSelectors) {
-            out.add(selector.selector!!)
-        }
-        return out
-    }
 
     @Contract("null -> !null")
     fun getParamTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
@@ -86,54 +48,6 @@ object ObjJMethodPsiUtils {
             out.add(if (selector.varType != null) selector.varType!!.text else "")
         }
         return out
-    }
-
-    private fun getSelectorStringsFromMethodDeclarationSelectorList(
-            selectorElements: List<ObjJMethodDeclarationSelector>): List<String> {
-        if (selectorElements.isEmpty()) {
-            return EMPTY_STRING_ARRAY
-        }
-        val selectorStrings = ArrayList<String>()
-        for (selectorElement in selectorElements) {
-            selectorStrings.add(getSelectorString(selectorElement, false))
-        }
-        return selectorStrings
-    }
-
-    fun getSelectorString(selectorElement: ObjJMethodDeclarationSelector?, addSuffix: Boolean): String {
-        val selector = selectorElement?.selector
-        return getSelectorString(selector, addSuffix)
-    }
-
-    @Contract(pure = true)
-    fun getSelectorString(selectorElement: ObjJSelector?, addSuffix: Boolean): String {
-        val selector = if (selectorElement != null) selectorElement.text else ""
-        return if (addSuffix) {
-            selector + SELECTOR_SYMBOL
-        } else {
-            selector
-        }
-    }
-
-    fun getSelectorString(selectorLiteral: ObjJSelectorLiteral): String {
-        return selectorLiteral.stub?.selectorString ?: getSelectorStringFromSelectorStrings(selectorLiteral.selectorStrings)
-    }
-
-
-    fun getSelectorUntil(targetSelectorElement: ObjJSelector, include: Boolean): String? {
-        val parent = targetSelectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
-                ?: return null
-
-        val builder = StringBuilder()
-        val selectorIndex = if (include)  targetSelectorElement.selectorIndex else targetSelectorElement.selectorIndex - 1
-        if (selectorIndex <=0 && !include) {
-            return null
-        }
-        val selectors = parent.selectorList.subList(0, selectorIndex)
-        for (subSelector in selectors) {
-            builder.append(ObjJMethodPsiUtils.getSelectorString(subSelector, true))
-        }
-        return builder.toString()
     }
 
     fun getSelectorIndex(selector:ObjJSelector) : Int {
@@ -170,19 +84,6 @@ object ObjJMethodPsiUtils {
         return out
     }
 
-    /**
-     * Gets all selector sibling selector strings after the given index
-     * @param selector base selector
-     * @param selectorIndex selector index
-     * @return list of trailing sibling selectors as strings
-     */
-    fun getTrailingSelectorStrings(selector: ObjJSelector, selectorIndex: Int): List<String> {
-        val methodHeaderDeclaration = selector.getParentOfType( ObjJMethodHeaderDeclaration::class.java)
-        val temporarySelectorsList = methodHeaderDeclaration?.selectorStrings ?: EMPTY_STRING_ARRAY
-        val numSelectors = temporarySelectorsList.size
-        return if (numSelectors > selectorIndex) temporarySelectorsList.subList(selectorIndex + 1, numSelectors) else ArrayUtils.EMPTY_STRING_ARRAY
-    }
-
 
     fun getSelectorLiteralReference(hasSelectorElement: ObjJHasMethodSelector): ObjJSelectorLiteral? {
         val containingClassName = hasSelectorElement.containingClassName
@@ -195,6 +96,42 @@ object ObjJMethodPsiUtils {
                 return selectorLiteral
             }
         }
+        return null
+    }
+    @JvmStatic
+    fun getThisOrPreviousNonNullSelector(hasMethodSelector: ObjJHasMethodSelector?, subSelector: String?, selectorIndex: Int): ObjJSelector? {
+        if (hasMethodSelector == null) {
+            return null
+        }
+        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileName(hasMethodSelector)+">");
+        val selectorList = hasMethodSelector.selectorList
+        //LOGGER.log(Level.INFO, "Got selector list.");
+        if (selectorList.isEmpty()) {
+            //LOGGER.log(Level.WARNING, "Cannot get this or previous non null selector when selector list is empty");
+            return null
+        }
+        var thisSelectorIndex: Int
+        thisSelectorIndex = if (selectorIndex < 0 || selectorIndex >= selectorList.size) {
+            selectorList.size - 1
+        } else {
+            selectorIndex
+        }
+        var selector: ObjJSelector? = selectorList[thisSelectorIndex]
+        while ((selector == null || selector.getSelectorString(false).isEmpty()) && thisSelectorIndex > 0) {
+            selector = selectorList[--thisSelectorIndex]
+        }
+        if (selector != null) {
+            return selector
+        }
+        val subSelectorPattern = if (subSelector != null) Pattern.compile(subSelector.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")) else null
+        for (currentSelector in selectorList) {
+
+            ProgressIndicatorProvider.checkCanceled()
+            if (subSelectorPattern == null || subSelectorPattern.matcher(currentSelector.getSelectorString(false)).matches()) {
+                return currentSelector
+            }
+        }
+        //LOGGER.log(Level.WARNING, "Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
         return null
     }
 
@@ -256,41 +193,6 @@ object ObjJMethodPsiUtils {
         return returnType ?: varTypeId.text
     }
 
-    @Throws(MixedReturnTypeException::class)
-    private fun getReturnTypeFromReturnStatements(declaration: ObjJMethodDeclaration, follow: Boolean): String? {
-        var returnType: String?
-        val returnTypes = ArrayList<String>()
-        val returnStatements = declaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
-        if (returnStatements.isEmpty()) {
-            //LOGGER.log(Level.INFO, "Cannot get return type from return statements, as no return statements exist");
-            return null
-        } else {
-            //LOGGER.log(Level.INFO, "Found <"+returnStatements.size()+"> return statements");
-        }
-        for (returnStatement in returnStatements) {
-            if (returnStatement.expr == null) {
-                continue
-            }
-            returnType = getReturnType(returnStatement.expr, follow)
-            if (returnType == null) {
-                continue
-            }
-            if (returnType == ObjJClassType.UNDETERMINED) {
-                continue
-            }
-            if (returnTypes.contains(returnType)) {
-                return returnType
-            }
-            returnTypes.add(returnType)
-        }
-        if (returnTypes.size == 1) {
-            return returnTypes[0]
-        }
-        return if (returnTypes.size > 1) {
-            //LOGGER.log(Level.INFO, "Found more than one possible return type");
-            ArrayUtils.join(returnTypes)
-        } else UNDETERMINED
-    }
 
     fun getReturnType(accessorProperty: ObjJAccessorProperty): String {
         if (accessorProperty.stub != null) {
@@ -308,10 +210,6 @@ object ObjJMethodPsiUtils {
     // ============================== //
     // ===== Selector Functions ===== //
     // ============================== //
-    fun getSelectorStrings(methodHeader: ObjJMethodHeader): List<String> {
-        return methodHeader.stub?.selectorStrings ?: ObjJMethodPsiUtils.getSelectorStringsFromMethodDeclarationSelectorList(methodHeader.methodDeclarationSelectorList)
-    }
-
 
     fun findSelectorMatching(method: ObjJHasMethodSelector, selectorString: String): ObjJSelector? {
         for (selectorOb in method.selectorList) {
@@ -326,9 +224,6 @@ object ObjJMethodPsiUtils {
         return null
     }
 
-    fun getSelectorString(methodHeader: ObjJMethodHeader): String {
-        return methodHeader.stub?.selectorString ?: ObjJMethodPsiUtils.getSelectorStringFromSelectorStrings(getSelectorStrings(methodHeader))
-    }
 
     fun setName(selectorElement: ObjJSelector, newSelectorValue: String): PsiElement {
         val newSelector = ObjJElementFactory.createSelector(selectorElement.project, newSelectorValue)
@@ -398,20 +293,6 @@ object ObjJMethodPsiUtils {
         return if (hasMethodSelector is ObjJMethodHeader) {
             hasMethodSelector.stub?.isStatic ?: getMethodScope(hasMethodSelector) == MethodScope.STATIC
         } else false
-    }
-
-
-    fun isClassMethod(methodHeader: ObjJMethodHeaderDeclaration<*>, possibleClasses: List<String>): Boolean {
-        if (possibleClasses.isEmpty() || possibleClasses.contains(ObjJClassType.UNDETERMINED)) {
-            return true
-        }
-        val methodContainingClass = methodHeader.containingClassName
-        for (className in possibleClasses) {
-            if (possibleClasses.contains(methodContainingClass) || ObjJHasContainingClassPsiUtil.isSimilarClass(methodContainingClass, className)) {
-                return true
-            }
-        }
-        return false
     }
 
     fun isRequired(methodHeader: ObjJMethodHeader) =
