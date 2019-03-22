@@ -69,7 +69,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 return true
             }
             var matches = true
-            if (thisHeader.returnType != thatHeader.returnType) {
+            if (thisHeader.returnType != thatHeader.returnType && thisHeader.returnType != "IBAction" || thatHeader.returnType == "IBAction" ) {
                 val methodHeaderReturnTypeElement = thisHeader.methodHeaderReturnTypeElement
                 if (methodHeaderReturnTypeElement != null) {
                     val thisHeaderReturnType = methodHeaderReturnTypeElement.formalVariableType

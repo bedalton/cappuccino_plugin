@@ -46,7 +46,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
                 return
             }
             val returnType = methodDeclaration.methodHeader.returnType
-            if (returnType == ObjJClassType.VOID_CLASS_NAME || returnType == "@action") {
+            if (returnType == ObjJClassType.VOID_CLASS_NAME || returnType == "@action" || returnType == "IBAction") {
                 return
             }
             val returns = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true) {
