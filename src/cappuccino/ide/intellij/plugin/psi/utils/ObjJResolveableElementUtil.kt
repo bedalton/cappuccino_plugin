@@ -1,18 +1,14 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.StubBasedPsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJResolveableStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
 import java.util.ArrayList
 
 object ObjJResolveableElementUtil {
-
 
     fun <PsiT : PsiElement> onlyResolveableElements(elements: List<PsiT>?): List<PsiT> {
         val out = ArrayList<PsiT>()
@@ -39,10 +35,10 @@ object ObjJResolveableElementUtil {
         } else shouldResolve(psiElement, "Ignoring " + (if (psiElement is ObjJImplementationDeclaration) "class" else "protocol") + " " + psiElement.getClassNameString())
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun shouldResolve(psiElement: PsiElement?, shouldNotResolveLoggingStatement: String?): Boolean {
-        if (true) {
-            return true
-        }
+        @Suppress("ConstantConditionIf")
+        /*
         if (psiElement == null) {
             return false
         }
@@ -64,6 +60,8 @@ object ObjJResolveableElementUtil {
             shouldResolveParent = parentResolveableElement.shouldResolve()
         }
         return shouldResolveParent
+        */
+        return true
     }
 
     fun shouldResolve(hasContainingClass: ObjJHasContainingClass?): Boolean {
