@@ -223,7 +223,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * Index typedefs for completion and or validation
      */
     override fun indexTypeDef(stub:ObjJTypeDefStub, indexSink: IndexSink) {
-        // @todo actually implement this index method
+        indexSink.occurrence<ObjJTypeDef, String>(ObjJTypeDefIndex.KEY, stub.className)
     }
 
     companion object {
