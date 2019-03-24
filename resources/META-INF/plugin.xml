@@ -189,7 +189,7 @@
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodReturnsAValueInspection"
-                     level="ERROR"
+                     level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Method returns a value"
@@ -225,6 +225,15 @@
                      order="last"
     />
 
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidMethodParameterClassTypeInspection"
+                     level="ERROR"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Invalid method parameter class type"
+                     shortName="InvalidMethodParameterClassType"
+    />
+
 
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
@@ -247,6 +256,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 
