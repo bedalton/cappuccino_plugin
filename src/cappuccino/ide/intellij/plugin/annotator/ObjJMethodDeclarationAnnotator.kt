@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.DumbService
 import com.intellij.lang.annotation.AnnotationHolder
@@ -38,35 +39,11 @@ object ObjJMethodDeclarationAnnotator {
                 continue
             }
             // Check if method selectors can be considered duplicates or not.
-            if (classMethodHeader.selectorString == thisSelector && !isDifferentWhileSimilar(methodHeader, classMethodHeader)) {
+            if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader)) {
                 annotationHolder.createErrorAnnotation(methodHeader, "Duplicate method selector in class")
                 return
             }
         }
     }
 
-    /**
-     * Determines whether two methods in the same class are truly different.
-     * This is due to overlaps of static and instnace method selectors
-     * And also with single selector methods where one has a parameter and the other does not
-     */
-    private fun isDifferentWhileSimilar(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader) : Boolean
-    {
-        // If one method is static, while another is an instance method, ignore
-        if (thisHeader.methodScope != otherHeader.methodScope) {
-            return true
-        }
-        // If Selector lengths are greater than one, then they are indeed overriding duplicated
-        // Only single selector method headers can be different with same selectors
-        // If one has a parameter and the other does not
-        if (thisHeader.selectorList.size > 1) {
-            return false
-        }
-        val thisSelector = thisHeader.methodDeclarationSelectorList.getOrNull(0) ?: return true
-        val otherSelector = otherHeader.methodDeclarationSelectorList.getOrNull(0) ?: return true
-
-        // Return different if one selector has a parameter, and the other does not
-        return (thisSelector.methodHeaderSelectorFormalVariableType == null && otherSelector.methodHeaderSelectorFormalVariableType != null) ||
-                (thisSelector.methodHeaderSelectorFormalVariableType != null && otherSelector.methodHeaderSelectorFormalVariableType == null)
-    }
 }

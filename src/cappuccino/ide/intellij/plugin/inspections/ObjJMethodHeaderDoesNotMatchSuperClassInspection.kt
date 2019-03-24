@@ -12,6 +12,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -52,7 +53,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 if (!inheritedClasses.contains(aHeader.containingClassName) || aHeader !is ObjJMethodHeader || aHeader.isEquivalentTo(header)) {
                     continue
                 }
-                if (!matches(header, aHeader, problemsHolder)) {
+                if (!matches(header, aHeader, problemsHolder) && !ObjJMethodPsiUtils.hasSimilarDisposition(header, aHeader)) {
                     problemsHolder.registerProblem(header, "Incompatible inherited method override",
                             suppressInspectionFix(header, STATEMENT),
                             suppressInspectionFix(header, METHOD),
@@ -68,6 +69,9 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
             if (ObjJIgnoreEvaluatorUtil.isIgnored(thisHeader, ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE)) {
                 return true
             }
+            if (!ObjJMethodPsiUtils.hasSimilarDisposition(thisHeader, thatHeader))
+                return true
+
             var matches = true
             if (thisHeader.returnType != thatHeader.returnType && thisHeader.returnType != "IBAction" || thatHeader.returnType == "IBAction" ) {
                 val methodHeaderReturnTypeElement = thisHeader.methodHeaderReturnTypeElement
