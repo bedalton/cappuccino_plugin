@@ -18,11 +18,12 @@ data class ObjJClassTypeName(val className: String)
 object ObjJClassType {
 
     const val ARRAY = "CPArray"
-    const val OBJECT = "CPDictionary"
+    const val CPDICTIONARY = "CPDictionary"
     const val ID = "id"
     const val BOOL = "BOOL"
     const val STRING = "CPString"
     const val INT = "int"
+    const val CPINT = "CPInteger"
     const val UNSIGNED = "unsigned"
     const val SIGNED = "signed"
     const val CHAR = "char"
@@ -33,7 +34,7 @@ object ObjJClassType {
     const val DOUBLE = "double"
     @Deprecated("")
     val SELECTOR = "selector"
-    const val FUNCTION = "function"
+    const val FUNCTION = "Function"
     const val REGEX = "regex"
     const val UNDETERMINED = "id"
     const val CPOBJECT = "CPObject"
@@ -46,7 +47,45 @@ object ObjJClassType {
     const val SEL = "SEL"
     const val PROTOCOL = "Protocol"
     const val AT_ACTION = "@action"
-    val PRIMITIVE_VAR_NAMES = listOf(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT)
+    const val CG_RECT = "CGRect"
+    const val CG_SIZE = "CGSize"
+    const val CG_POINT = "CGPoint"
+    const val CG_IMAGE = "CGImage"
+    const val DOM_ELEMENT = "DOMElement"
+    const val OBJECT_LIT = "Object"
+    val PRIMITIVE_VAR_NAMES = listOf(ID, SHORT, LONG, UNSIGNED, SIGNED, BYTE, CHAR, DOUBLE, BOOL, FLOAT, INT)
+    val ADDITIONAL_PREDEFINED_CLASSES = listOf(
+            ID,
+            SHORT,
+            LONG,
+            UNSIGNED,
+            SIGNED,
+            BYTE,
+            CHAR,
+            DOUBLE,
+            BOOL,
+            FLOAT,
+            INT,
+            STRING,
+            CPINT,
+            FUNCTION,
+            REGEX,
+            CPOBJECT,
+            JSOBJECT,
+            CLASS,
+            CPAPP,
+            CPAPPLICATION,
+            CPDICTIONARY,
+            SEL,
+            PROTOCOL,
+            CG_RECT,
+            CG_SIZE,
+            DOM_ELEMENT,
+            JS_FUNCTION,
+            CG_POINT,
+            CG_IMAGE,
+            OBJECT_LIT)
+
     private val INT_EQUIVALENTS = Arrays.asList(INT, UNSIGNED, SIGNED, CHAR, SHORT, BYTE)
     private val LONG_EQUIVALENTS = mutableListOf<String>()
     private val FLOAT_EQUIVALENTS = mutableListOf<String>()

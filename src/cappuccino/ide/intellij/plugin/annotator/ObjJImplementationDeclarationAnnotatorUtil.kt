@@ -3,10 +3,17 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.project.DumbService
 
 /**
  * Implementation annotator
@@ -26,6 +33,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             annotateIfDuplicateImplementation(declaration, annotationHolder)
         }*/
         annotateUnimplementedProtocols(declaration, annotationHolder)
+        annotateInvalidClassNamesInInstanceVariables(declaration, annotationHolder)
     }
 
     /**
@@ -50,7 +58,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement, "Category references undefined implementation: <$className>")
+        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidClassForCategory").format(className))
     }
 
 
@@ -87,7 +95,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
         val protocolName = protocolNameElement.text
         if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
-            annotationHolder.createErrorAnnotation(protocolNameElement, "Protocol with name <$protocolName> does not exist in project")
+            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidProtocolName").format(protocolName))
         }
     }
 
@@ -102,8 +110,45 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (unimplementedMethods.required.isEmpty())
             return
         // Annotate and register fix for missing required members
-        annotationHolder.createErrorAnnotation(protocolNameElement, "Missing required protocol methods")
+        annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missingProtocolMethod"))
                 .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+    }
+
+    private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+        if (DumbService.isDumb(declaration.project)) {
+            return
+        }
+        val variables = declaration.instanceVariableList?.instanceVariableDeclarationList ?: return
+        for (variable:ObjJInstanceVariableDeclaration in variables) {
+            annotateInstanceVariableIfClassNameInvalid(variable, annotationHolder)
+        }
+    }
+
+    private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolder) {
+        val variableType = variable.formalVariableType
+        val className:ObjJClassName
+        className = if (variableType.varTypeId != null) {
+            // No className present return as valid
+            if (variableType.varTypeId?.className == null){
+                return
+            }
+            variableType.varTypeId?.className ?: return
+        } else {
+            variableType.className ?: return
+        }
+
+        val isValidClass = ObjJClassTypePsiUtil.isValidClass(className) ?: true
+        if (isValidClass)
+            return
+
+        val classNameString:String = className.text ?: return
+        var severity = HighlightSeverity.ERROR
+        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassNF")
+        if (classNameString.startsWith("CG")) {
+            severity = HighlightSeverity.WARNING
+            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassPNF")
+        }
+        annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString))
     }
 
 }
