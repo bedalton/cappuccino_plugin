@@ -182,6 +182,11 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName.parent is ObjJInstanceVariableDeclaration) {
                 return true
             }
+
+            if (variableName.parent is ObjJInstanceVariableList) {
+                return true;
+            }
+
             //If variable name element is itself a method header declaration variable
             if (variableName.getParentOfType(ObjJMethodHeaderDeclaration::class.java) != null) {
                 return true
