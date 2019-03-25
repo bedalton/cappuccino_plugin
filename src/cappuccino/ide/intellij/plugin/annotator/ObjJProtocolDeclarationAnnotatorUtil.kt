@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
@@ -28,7 +29,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         if (duplicates.isEmpty()) {
             return
         }
-        val errorMessage = StringBuilder("Duplicate protocol <$className> found in ")
+        val errorMessage = StringBuilder(ObjJBundle.message("objective-j.annotator-messages.protocol-declaration.duplicate", className))
         for (protocolDeclaration in duplicates) {
             errorMessage.append(ObjJFileUtil.getContainingFileName(protocolDeclaration)).append(", ")
         }
