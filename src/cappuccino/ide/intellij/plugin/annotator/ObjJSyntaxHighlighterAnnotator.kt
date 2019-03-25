@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -64,7 +65,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         if (parent is ObjJQualifiedReference) {
             val index = parent.variableNameList.indexOf(variableNameElement)
             if (index == 0) {
-                if (!ObjJClassDeclarationsIndex.instance[variableName, project].isEmpty()) {
+                if (!ObjJClassDeclarationsIndex.instance[variableName, project].isEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
                     colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
                     return
                 }
