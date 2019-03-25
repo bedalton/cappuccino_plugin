@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
@@ -18,9 +19,9 @@ class ObjJAlterIgnoredSelector(private val keyword:String, private val addToIgno
 
     override fun getText(): String {
         return if (addToIgnored)
-            "Add selector \"$keyword\" to ignored selectors list"
+            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.add", keyword)
         else
-            "Remove selector \"$keyword\" from ignored selectors list"
+            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.remove", keyword)
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
