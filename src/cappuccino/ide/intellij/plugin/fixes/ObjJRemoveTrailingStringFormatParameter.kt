@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.isType
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.Nls
 class ObjJRemoveTrailingStringFormatParameter(element: PsiElement) : LocalQuickFixOnPsiElement(element) {
 
     override fun getText(): String {
-        return "Removing extraneous string format parameter"
+        return ObjJBundle.message("objective-j.intentions.remove-trailing-string-format-parameter")
     }
 
     override fun invoke(

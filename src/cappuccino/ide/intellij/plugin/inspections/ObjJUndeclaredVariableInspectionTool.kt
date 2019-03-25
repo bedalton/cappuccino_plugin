@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressUndeclaredVariableInspec
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
@@ -87,7 +88,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
-                problemsHolder.registerProblem(variableName, "Ignoring possibly undefined variable", ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
+                problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.ignoring.text"), ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
                 return
             }
 
@@ -102,7 +103,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     val functionCall = tempElement as ObjJFunctionCall?
                     if (functionCall!!.functionName != null && functionCall.functionName!!.text == "call") {
                         if (ObjJFunctionsIndex.instance[variableName.name, variableName.project].isEmpty()) {
-                            problemsHolder.registerProblem(variableName, "Failed to find function with name <" + variableName.name + ">")
+                            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.failed-to-find.text", variableName.name))
                         }
                         return
                     }

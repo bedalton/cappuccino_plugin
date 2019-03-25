@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveTrailingStringFormatParameter
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -44,7 +45,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
             }
             val expressions = methodCall.qualifiedMethodCallSelectorList[0].exprList
             if (expressions.size < 1) {
-                problemsHolder.registerProblem(methodCall, "String with format requires first parameter to be a non-nil string")
+                problemsHolder.registerProblem(methodCall, ObjJBundle.message("objective-j.inspection.string-format.first-parameter-must-be-string.text"))
                 return
             }
             val format = expressions.removeAt(0)
@@ -87,11 +88,11 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                         continue
                     }
                     //LOGGER.log(Level.INFO, "Current substring = <"+builder.toString()+">");
-                    problemsHolder.registerProblem(methodCall, TextRange.create(offset, offset + 2), String.format("Not enough values for format. Expected <%d>, found <%d>", numMatches, numExpressions))
+                    problemsHolder.registerProblem(methodCall, TextRange.create(offset, offset + 2), ObjJBundle.message("objective-j.inspection.string-format.not-enough-values.text", numMatches, numExpressions))
                 }
             } else if (numMatches < numExpressions) {
                 for (i in numMatches until numExpressions) {
-                    problemsHolder.registerProblem(expressions[i], String.format("Too many arguments found for string format. Expected <%d>, found <%d>", numMatches, numExpressions), ObjJRemoveTrailingStringFormatParameter(expressions[i]))
+                    problemsHolder.registerProblem(expressions[i], ObjJBundle.message("objective-j.inspection.string-format.too-many-values.text", numMatches, numExpressions), ObjJRemoveTrailingStringFormatParameter(expressions[i]))
                 }
             }
             /*

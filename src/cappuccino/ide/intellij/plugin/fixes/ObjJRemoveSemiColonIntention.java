@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes;
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider;
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle;
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon;
 import cappuccino.ide.intellij.plugin.utils.EditorUtil;
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
@@ -29,7 +30,7 @@ public class ObjJRemoveSemiColonIntention extends BaseIntentionAction {
     @NotNull
     @Override
     public String getText() {
-        return "Remove extraneous semi-colon";
+        return ObjJBundle.message("objective-j.intentions.remove-extraneous-semi-colon.text");
     }
 
     @Nls

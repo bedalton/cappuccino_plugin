@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
@@ -27,7 +28,7 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
     }
 
     override fun getText(): String {
-        return "Suppress undefined variable inspection for variable \"${variableName?.text}\""
+        return ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection", variableName?.text ?: "#")
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
