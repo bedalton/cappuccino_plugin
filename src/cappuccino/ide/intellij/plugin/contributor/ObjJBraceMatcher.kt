@@ -8,6 +8,9 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 
+/**
+ * Attempts to create a matching brace for a given starting brace
+ */
 class ObjJBraceMatcher : PairedBraceMatcher {
 
 
