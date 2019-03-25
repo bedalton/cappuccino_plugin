@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FILE
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.METHOD
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveMethodReturnTypeFix
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
@@ -56,7 +57,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             for(returnStatement in returns) {
                 val expr = returnStatement.expr
                 if (expr == null || expr.text.isEmpty()) {
-                    problemsHolder.registerProblem(returnStatement.`return`, "Method must return a value of type: '$returnType'",
+                    problemsHolder.registerProblem(returnStatement.`return`, ObjJBundle.message("objective-j.inspections.method-return-value.must-have-type.text", returnType),
                             suppressFix(returnStatement, METHOD),
                             suppressFix(returnStatement, CLASS),
                             suppressFix(returnStatement, FILE))
@@ -64,7 +65,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             }
             if (!returnsValue) {
                 val element = methodDeclaration.methodBlock?.closeBrace ?: methodDeclaration.methodHeader.methodHeaderReturnTypeElement ?: methodDeclaration.methodBlock?.lastChild ?: methodDeclaration.lastChild
-                problemsHolder.registerProblem(element, "Method expects return statement", ObjJRemoveMethodReturnTypeFix(element),
+                problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.method-return-value.method-expects-return-statement.text"), ObjJRemoveMethodReturnTypeFix(element),
                         suppressFix(element, METHOD),
                         suppressFix(element, CLASS),
                         suppressFix(element, FILE))

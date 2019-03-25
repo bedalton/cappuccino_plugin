@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -19,7 +20,7 @@ class ObjJSuppressOvershadowedVariablesInspectionInProject : BaseIntentionAction
     }
 
     override fun getText(): String {
-        return "Suppress overshadowed variable inspection in project"
+        return ObjJBundle.message("objective-j.intentions.suppress-overshadowed-variable-inspection.text")
     }
 
     @Nls

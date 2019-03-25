@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FILE
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.METHOD
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.STATEMENT
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -54,7 +55,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                     continue
                 }
                 if (!matches(header, aHeader, problemsHolder) && !ObjJMethodPsiUtils.hasSimilarDisposition(header, aHeader)) {
-                    problemsHolder.registerProblem(header, "Incompatible inherited method override",
+                    problemsHolder.registerProblem(header, ObjJBundle.message("objective-j.inspections.method-header-match.incompat-method-override.text"),
                             suppressInspectionFix(header, STATEMENT),
                             suppressInspectionFix(header, METHOD),
                             suppressInspectionFix(header, FUNCTION),
@@ -78,7 +79,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 if (methodHeaderReturnTypeElement != null) {
                     val thisHeaderReturnType = methodHeaderReturnTypeElement.formalVariableType
                     matches = if (methodHeaderReturnTypeElement.formalVariableType.varTypeId != null && thatHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId == null) {
-                        problemsHolder.registerProblem(thisHeaderReturnType, "Method return type is less specific than parent class", ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.returnType),
+                        problemsHolder.registerProblem(thisHeaderReturnType, ObjJBundle.message("objective-j.inspections.method-header-match.return-type-less-specific.text"), ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.returnType),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, STATEMENT),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, METHOD),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, FUNCTION),
@@ -89,7 +90,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                                     ?: "", thisHeader.methodHeaderReturnTypeElement?.text ?: "", thisHeader.project)) {
                         true
                     } else {
-                        registerProblem(problemsHolder, methodHeaderReturnTypeElement, "Overridden method should have return type <" + thatHeader.returnType + ">", ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.returnType))
+                        registerProblem(problemsHolder, methodHeaderReturnTypeElement, ObjJBundle.message("objective-j.inspections.method-header-match.should-have-return-type.text", thatHeader.returnType), ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.returnType))
                         false
                     }
                 } else {
@@ -103,14 +104,14 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 val thisVarType = selector.varType
                 if (!Objects.equals(thisVarType?.text, otherParam.text)) {
                     if (thisVarType != null && (thisVarType.text?.toLowerCase() != "void" && otherParam.varTypeId != null)) {
-                        problemsHolder.registerProblem(thisVarType, "Overridden parent is less specific", ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisVarType, otherParam.text),
+                        problemsHolder.registerProblem(thisVarType, ObjJBundle.message("objective-j.inspections.method-header-match.parent-less-specific.text"), ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisVarType, otherParam.text),
                                 suppressInspectionFix(thisVarType, STATEMENT),
                                 suppressInspectionFix(thisVarType, METHOD),
                                 suppressInspectionFix(thisVarType, FUNCTION),
                                 suppressInspectionFix(thisVarType, CLASS),
                                 suppressInspectionFix(thisVarType, FILE))
                     } else {
-                        val errorMessage = "Parameter should have type <" + otherParam.text + ">"
+                        val errorMessage = ObjJBundle.message("objective-j.inspections.method-header-match.should-have-type.text", otherParam.text)
                         if (thisVarType != null) {
                             registerProblem(problemsHolder, thisVarType, errorMessage, ObjJChangeVarTypeToMatchQuickFix(thisVarType, otherParam.text))
                         } else if (selector.methodHeaderSelectorFormalVariableType?.openParen != null && selector.methodHeaderSelectorFormalVariableType?.closeParen != null) {
