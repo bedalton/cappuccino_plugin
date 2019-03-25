@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
@@ -23,9 +24,9 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
 
     override fun getText(): String {
         return if (addToIgnored)
-            "Add variable name \"$keyword\" to globally ignored variables list"
+            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.add", keyword)
          else
-            "Remove variable name \"$keyword\" from globally ignored variable names list"
+            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.remove", keyword)
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
