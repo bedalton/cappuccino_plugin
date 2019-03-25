@@ -59,7 +59,7 @@ object ObjJQualifiedReferenceUtil {
         if (variableName == null) {
             return -1
         }
-        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else return 0
+        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else 0
         var qualifiedNameIndex:Int = -1
         val parts = qualifiedReferenceParent.variableNameList
         val numParts = parts.size
