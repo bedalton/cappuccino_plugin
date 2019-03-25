@@ -45,10 +45,10 @@ class ObjJInvalidMethodParameterClassTypeInspection : LocalInspectionTool() {
             if (isValid)
                 return
             if (className.text?.startsWith("CG") == true) {
-                holder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassPNF", className.text), ProblemHighlightType.WEAK_WARNING)
+                holder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text), ProblemHighlightType.WEAK_WARNING)
                 return
             }
-            holder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassPNF", className.text))
+            holder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text))
         }
 
         private fun getClassNameParam(selector:ObjJMethodDeclarationSelector) : ObjJClassName? {

@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nls
 
 class ObjJChangeVarTypeToMatchQuickFix(element: PsiElement, private val newType:String) : LocalQuickFixOnPsiElement(element) {
     override fun getText(): String {
-        return ObjJBundle.message("objective-j.intentions.change-variable-type", newType)
+        return ObjJBundle.message("objective-j.intentions.change-variable-type.prompt", newType)
     }
 
     override fun invoke(

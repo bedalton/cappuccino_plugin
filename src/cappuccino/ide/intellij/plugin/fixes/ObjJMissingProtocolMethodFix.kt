@@ -69,7 +69,7 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
         }
         if (sibling == null) {
             SwingUtilities.invokeLater {
-                Messages.showDialog(project, ERROR_MESSAGE_TEMPLATE.format(protocolName, ObjJBundle.message("objective-j.intentions.missing-protocol-fix.failmessage.message.declaration-malformed")), ERROR_TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
+                Messages.showDialog(project, ERROR_MESSAGE_TEMPLATE.format(protocolName, ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.declaration-malformed-message.text")), ERROR_TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
             }
             return
         }
@@ -83,8 +83,8 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
     }
 
     companion object {
-        val ERROR_TITLE = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.failmessage.title")
-        val ERROR_MESSAGE_TEMPLATE:String = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.failmessage.message")
+        val ERROR_TITLE = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.title")
+        val ERROR_MESSAGE_TEMPLATE:String = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.generic-message.text")
 
         private fun numberOfReturnsNeeded(element:PsiElement, position:ElementPosition, required:Int) : Int {
             var remaining = required

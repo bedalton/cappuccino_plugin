@@ -20,7 +20,7 @@ class ObjJSuppressOvershadowedVariablesInspectionInProject : BaseIntentionAction
     }
 
     override fun getText(): String {
-        return ObjJBundle.message("objective-j.intentions.suppress-overshadowed-variable-inspection.text")
+        return ObjJBundle.message("objective-j.intentions.suppress-overshadowed-variable-inspection.prompt")
     }
 
     @Nls

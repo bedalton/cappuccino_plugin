@@ -19,9 +19,9 @@ class ObjJAlterIgnoredSelector(private val keyword:String, private val addToIgno
 
     override fun getText(): String {
         return if (addToIgnored)
-            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.add", keyword)
+            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.add-ignore-selector.prompt", keyword)
         else
-            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.remove", keyword)
+            ObjJBundle.message("objective-j.intentions.alter-ignored-selector.remove-ignored-selector.prompt", keyword)
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {

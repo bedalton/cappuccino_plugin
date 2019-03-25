@@ -25,7 +25,7 @@ public class ObjJAddSemiColonIntention extends BaseIntentionAction {
     @NotNull
     @Override
     public String getText() {
-        return ObjJBundle.message("objective-j.intentions.add-semi-colon.text");
+        return ObjJBundle.message("objective-j.intentions.add-semi-colon.prompt");
     }
 
     @Nls

@@ -57,7 +57,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             for(returnStatement in returns) {
                 val expr = returnStatement.expr
                 if (expr == null || expr.text.isEmpty()) {
-                    problemsHolder.registerProblem(returnStatement.`return`, ObjJBundle.message("objective-j.inspections.method-return-value.must-have-type.text", returnType),
+                    problemsHolder.registerProblem(returnStatement.`return`, ObjJBundle.message("objective-j.inspections.method-return-value.must-have-type.message", returnType),
                             suppressFix(returnStatement, METHOD),
                             suppressFix(returnStatement, CLASS),
                             suppressFix(returnStatement, FILE))
@@ -65,7 +65,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             }
             if (!returnsValue) {
                 val element = methodDeclaration.methodBlock?.closeBrace ?: methodDeclaration.methodHeader.methodHeaderReturnTypeElement ?: methodDeclaration.methodBlock?.lastChild ?: methodDeclaration.lastChild
-                problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.method-return-value.method-expects-return-statement.text"), ObjJRemoveMethodReturnTypeFix(element),
+                problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.method-return-value.method-expects-return-statement.message"), ObjJRemoveMethodReturnTypeFix(element),
                         suppressFix(element, METHOD),
                         suppressFix(element, CLASS),
                         suppressFix(element, FILE))

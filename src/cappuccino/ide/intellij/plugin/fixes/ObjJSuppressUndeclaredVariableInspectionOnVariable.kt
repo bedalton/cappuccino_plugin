@@ -28,7 +28,7 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
     }
 
     override fun getText(): String {
-        return ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection", variableName?.text ?: "#")
+        return ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection.prompt", variableName?.text ?: "#")
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {

@@ -45,7 +45,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
             }
             val expressions = methodCall.qualifiedMethodCallSelectorList[0].exprList
             if (expressions.size < 1) {
-                problemsHolder.registerProblem(methodCall, ObjJBundle.message("objective-j.inspection.string-format.first-parameter-must-be-string.text"))
+                problemsHolder.registerProblem(methodCall, ObjJBundle.message("objective-j.inspection.string-format.first-parameter-must-be-string.message"))
                 return
             }
             val format = expressions.removeAt(0)
@@ -88,11 +88,11 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                         continue
                     }
                     //LOGGER.log(Level.INFO, "Current substring = <"+builder.toString()+">");
-                    problemsHolder.registerProblem(methodCall, TextRange.create(offset, offset + 2), ObjJBundle.message("objective-j.inspection.string-format.not-enough-values.text", numMatches, numExpressions))
+                    problemsHolder.registerProblem(methodCall, TextRange.create(offset, offset + 2), ObjJBundle.message("objective-j.inspection.string-format.not-enough-values.message", numMatches, numExpressions))
                 }
             } else if (numMatches < numExpressions) {
                 for (i in numMatches until numExpressions) {
-                    problemsHolder.registerProblem(expressions[i], ObjJBundle.message("objective-j.inspection.string-format.too-many-values.text", numMatches, numExpressions), ObjJRemoveTrailingStringFormatParameter(expressions[i]))
+                    problemsHolder.registerProblem(expressions[i], ObjJBundle.message("objective-j.inspection.string-format.too-many-values.message", numMatches, numExpressions), ObjJRemoveTrailingStringFormatParameter(expressions[i]))
                 }
             }
             /*

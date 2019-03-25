@@ -85,9 +85,9 @@ class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppre
 
     override fun getText(): String {
         val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
-            ObjJBundle.message("objective-j.intentions.suppress-inspection.for-parameter", parameter.trim())
+            ObjJBundle.message("objective-j.intentions.suppress-inspection.for-parameter.prompt-fragment", parameter.trim())
         } else ""
-        return ObjJBundle.message("objective-j.intentions.suppress-inspection.text", flag.title, scope.scope, forParameter)
+        return ObjJBundle.message("objective-j.intentions.suppress-inspection.prompt", flag.title, scope.scope, forParameter)
     }
 }
 

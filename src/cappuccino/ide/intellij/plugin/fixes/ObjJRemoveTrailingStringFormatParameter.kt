@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nls
 class ObjJRemoveTrailingStringFormatParameter(element: PsiElement) : LocalQuickFixOnPsiElement(element) {
 
     override fun getText(): String {
-        return ObjJBundle.message("objective-j.intentions.remove-trailing-string-format-parameter")
+        return ObjJBundle.message("objective-j.intentions.remove-trailing-string-format-parameter.prompt")
     }
 
     override fun invoke(
