@@ -17,6 +17,9 @@ import javax.swing.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
 
+/**
+ * Utility for looking up possible selector completions
+ */
 object ObjJSelectorLookupUtil {
 
     private val getterAccessorPropertyTypes = listOf("getter", "readonly", "copy", "property")
@@ -33,6 +36,9 @@ object ObjJSelectorLookupUtil {
 
     }
 
+    /**
+     * Adds a selector lookup element while specifying if it is a getter or not
+     */
     private fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int, priority: Double) {
         val tailText = getSelectorLookupElementTailText(selector, isGetter, selectorIndex)
         val addColonSuffix = !isGetter && (tailText != null || selectorIndex > 0)
@@ -41,6 +47,9 @@ object ObjJSelectorLookupUtil {
                 ?: "", priority, addColonSuffix, ObjJPsiImplUtil.getIcon(selector))
     }
 
+    /**
+     * Adds an accessor method, branching if is getter, setter, or both
+     */
     private fun addAccessors(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) : Boolean {
         if (selectorIndex != 0) return false
         val isGetter = isGetterAccessor(selector)
@@ -85,11 +94,17 @@ object ObjJSelectorLookupUtil {
         return if (stringBuilder.length > 1) stringBuilder.toString() else null
     }
 
+    /**
+     * Determines whether accessor flags for selector include a getter
+     */
     private fun isGetterAccessor(selector:ObjJSelector) : Boolean {
         val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
         return property.accessorPropertyType.text in getterAccessorPropertyTypes
     }
 
+    /**
+     * Determines whether accessor flags for selector include a setter
+     */
     private fun isSetterAccessor(selector:ObjJSelector) : Boolean {
         val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
         return property.accessorPropertyType.text in setterAccessorPropertyTypes

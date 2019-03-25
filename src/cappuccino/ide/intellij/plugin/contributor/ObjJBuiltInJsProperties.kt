@@ -8,6 +8,10 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.INT
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.STRING
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
+/**
+ * Attempt at creating a declarative set of javascript completion commands
+ * @todo actually implement or fix this system
+ */
 object ObjJBuiltInJsProperties {
 
     val values = listOf("Infinity", "NaN", "null", "undefined")

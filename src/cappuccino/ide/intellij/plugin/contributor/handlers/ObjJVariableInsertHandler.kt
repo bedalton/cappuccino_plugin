@@ -16,13 +16,22 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
+/**
+ * Handles variable name completion events
+ */
 object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
 
+    /**
+     * Entry point for insertion
+     */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
         handleInsert(lookupElement.psiElement, insertionContext.editor)
 
     }
 
+    /**
+     * Performs appropriate inserts
+     */
     private fun handleInsert(
             element: PsiElement?, editor: Editor) {
         if (element == null) {
@@ -40,18 +49,27 @@ object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
         }
     }
 
+    /**
+     * Appends comma if is a function parameter
+     */
     fun shouldAppendFunctionParamComma(element: PsiElement): Boolean {
         val parentExpression = element.getParentOfType( ObjJExpr::class.java) ?: return false
         val nextNonEmptyNode = parentExpression.getNextNonEmptyNode(true)
         return parentExpression.parent is ObjJFunctionCall && (nextNonEmptyNode == null || nextNonEmptyNode.elementType !== ObjJTypes.ObjJ_COMMA)
     }
 
+    /**
+     * Appends closing bracket if inside a method call
+     */
     fun shouldAppendClosingBracket(element: PsiElement?): Boolean {
         val parentExpression = element.getParentOfType( ObjJExpr::class.java) ?: return false
         val methodCall = parentExpression.getParentOfType( ObjJMethodCall::class.java)
         return methodCall != null && methodCall.closeBracket == null
     }
 
+    /**
+     * Checks whether this variable name is in fact a method
+     */
     fun isFunctionCompletion(element: PsiElement): Boolean {
         return !DumbService.isDumb(element.project) && ObjJVariableNameAggregatorUtil.getPrecedingVariableAssignmentNameElements(element, 0).isEmpty() && !ObjJFunctionsIndex.instance[element.text, element.project].isEmpty()
     }
