@@ -88,7 +88,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
-                problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.ignoring.text"), ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
+                problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.ignoring.message"), ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
                 return
             }
 
@@ -103,7 +103,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     val functionCall = tempElement as ObjJFunctionCall?
                     if (functionCall!!.functionName != null && functionCall.functionName!!.text == "call") {
                         if (ObjJFunctionsIndex.instance[variableName.name, variableName.project].isEmpty()) {
-                            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.failed-to-find.text", variableName.name))
+                            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.failed-to-find.message", variableName.name))
                         }
                         return
                     }
