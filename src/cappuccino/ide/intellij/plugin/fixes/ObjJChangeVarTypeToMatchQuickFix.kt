@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.isType
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.Nls
 
 class ObjJChangeVarTypeToMatchQuickFix(element: PsiElement, private val newType:String) : LocalQuickFixOnPsiElement(element) {
     override fun getText(): String {
-        return "Change variable type to '$newType'?"
+        return ObjJBundle.message("objective-j.intentions.change-variable-type", newType)
     }
 
     override fun invoke(
