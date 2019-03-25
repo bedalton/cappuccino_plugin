@@ -152,3 +152,5 @@ fun sharesSameFile(element1:PsiElement?, element2:PsiElement?) : Boolean {
     val file2 = element2?.containingFile ?: return false
     return file1.isEquivalentTo(file2) && file1.virtualFile?.path == file2.virtualFile?.path
 }
+
+val PsiElement.containingFileName: String? get() {return ObjJFileUtil.getContainingFileName(this) }
