@@ -51,3 +51,24 @@ fun String.splitOnUppercase() : List<String> {
 fun String?.startsAndEndsWith(start: String?, end: String?): Boolean {
     return this != null && (start == null || this.startsWith(start)) && (end == null || this.endsWith(end))
 }
+
+fun String.trimFromBeginning(vararg prefixes:String, repeatedly:Boolean = true) : String {
+    return this.trimFromBeginning(prefixes.toList(), repeatedly)
+}
+
+fun String.trimFromBeginning(prefixes:List<String>, repeatedly:Boolean = true) : String {
+    var out = this
+    var changed:Boolean
+    do {
+        changed = false
+        prefixes.forEach foreach@{prefix ->
+            if (prefix.isEmpty())
+                return@foreach
+            if (!out.startsWith(prefix))
+                return@foreach
+            out = out.substring(prefix.length)
+            changed = true
+        }
+    } while(changed && repeatedly)
+    return out
+}
