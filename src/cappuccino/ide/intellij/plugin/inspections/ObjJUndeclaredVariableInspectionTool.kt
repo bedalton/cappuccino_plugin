@@ -96,7 +96,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            var tempElement = variableName.getNextNonEmptySibling(true)
+            /*var tempElement = variableName.getNextNonEmptySibling(true)
             if (tempElement != null && tempElement.text == ".") {
                 tempElement = tempElement.getNextNonEmptySibling(true)
                 if (tempElement is ObjJFunctionCall) {
@@ -108,7 +108,8 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                         return
                     }
                 }
-            }
+            }*/
+
             val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
             if (!declarations.isEmpty()) {
                 return
