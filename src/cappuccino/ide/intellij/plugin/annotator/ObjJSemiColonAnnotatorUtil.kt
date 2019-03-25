@@ -75,22 +75,23 @@ internal object ObjJSemiColonAnnotatorUtil {
      */
     private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolder) {
         val errorRange = TextRange.create(element.textRange.endOffset - 1, element.textRange.endOffset)
-        annotationHolder.createErrorAnnotation(errorRange, ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing"))
+        annotationHolder.createErrorAnnotation(errorRange, ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"))
                 .registerFix(ObjJAddSemiColonIntention(element))
     }
 
     /**
      * Determines whether this element requires a semi-colon
+     * Element needs semi-colon if has class ObjJNeedsSemiColon &&
+     * direct parent is ObjJChildrenRequireSemiColons
      * @param psiElement element to check
      * @return `true` if element requires trailing semi-colon, `false` otherwise
      */
     private fun requiresSemiColon(psiElement: PsiElement?): Boolean {
-        // If this element a requires semi-colon element
-        return if (psiElement !is ObjJNeedsSemiColon) {
+        // If this element a requires semi-colon element find out if parent requires one
+        return if (psiElement is ObjJNeedsSemiColon)
+            psiElement.parent is ObjJChildrenRequireSemiColons
+        else // Element does not need semi-colon, return false
             false
-        } else psiElement.parent is ObjJChildrenRequireSemiColons
-        //Elements only need a semi-colon when they are direct descendants of a ObjJChildrenRequiresSemiColons element
-        // This ensures that element that may need semi-colons are not flagged when part of a larger expression
     }
 
     /**

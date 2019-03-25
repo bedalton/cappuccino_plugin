@@ -24,9 +24,9 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
 
     override fun getText(): String {
         return if (addToIgnored)
-            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.add", keyword)
+            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.add-ignore-var.prompt", keyword)
          else
-            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.remove", keyword)
+            ObjJBundle.message("objective-j.intentions.alter-ignored-variable.remove-ignored-var.text", keyword)
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {

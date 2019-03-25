@@ -105,7 +105,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
             val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
             val statementsNotToMark = if (!shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
-            val errorAnnotation = if (shouldHaveReturnExpression) ObjJBundle.message("objective-j.inspections.return-statement-disagreement.missing-value-expected.text", returnType) else ObjJBundle.message("objective-j.inspections.return-statement-disagreement.no-value-expected.text")
+            val errorAnnotation = if (shouldHaveReturnExpression) ObjJBundle.message("objective-j.inspections.return-statement-disagreement.missing-value-expected.message", returnType) else ObjJBundle.message("objective-j.inspections.return-statement-disagreement.no-value-expected.message")
             for (returnStatement in statementsToMark) {
                 if (returnStatement.expr?.leftExpr?.functionCall != null) {
                     continue
@@ -132,7 +132,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                         else -> {
                             val element = returnStatement.expr ?: returnStatement.`return`
                             //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                            problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.return-statement-disagreement.not-all-return-value.text"),
+                            problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.return-statement-disagreement.not-all-return-value.message"),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))

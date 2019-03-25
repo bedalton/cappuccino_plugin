@@ -3,13 +3,10 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 import com.intellij.lang.annotation.HighlightSeverity
@@ -58,7 +55,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidClassForCategory", className))
+        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
     }
 
 
@@ -95,7 +92,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
         val protocolName = protocolNameElement.text
         if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
-            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidProtocolName", protocolName))
+            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undec-protocol.message", protocolName))
         }
     }
 
@@ -110,7 +107,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (unimplementedMethods.required.isEmpty())
             return
         // Annotate and register fix for missing required members
-        annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missingProtocolMethod"))
+        annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
                 .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
     }
 
@@ -143,10 +140,10 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
 
         val classNameString:String = className.text ?: return
         var severity = HighlightSeverity.ERROR
-        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassNF")
+        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.undec-class.message")
         if (classNameString.startsWith("CG")) {
             severity = HighlightSeverity.WARNING
-            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instanceVarClassPNF")
+            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message")
         }
         annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString))
     }

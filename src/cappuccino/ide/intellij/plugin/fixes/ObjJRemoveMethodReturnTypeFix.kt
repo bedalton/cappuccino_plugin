@@ -18,7 +18,7 @@ import com.intellij.psi.PsiFile
 class ObjJRemoveMethodReturnTypeFix(element:PsiElement) : LocalQuickFixOnPsiElement(element) {
     override fun getFamilyName(): String = ObjJInspectionProvider.GROUP_DISPLAY_NAME
 
-    override fun getText(): String = ObjJBundle.message("objective-j.intentions.remove-return-type.text")
+    override fun getText(): String = ObjJBundle.message("objective-j.intentions.remove-return-type.message")
 
     override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
         Logger.getInstance(ObjJRemoveMethodReturnTypeFix::class.java).assertTrue(startElement == endElement)

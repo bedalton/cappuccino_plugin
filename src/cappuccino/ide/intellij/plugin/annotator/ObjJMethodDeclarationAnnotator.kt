@@ -41,7 +41,7 @@ object ObjJMethodDeclarationAnnotator {
             }
             // Check if method selectors can be considered duplicates or not.
             if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader)) {
-                annotationHolder.createErrorAnnotation(methodHeader, ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate"))
+                annotationHolder.createErrorAnnotation(methodHeader, ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate-selector.message"))
                 return
             }
         }
