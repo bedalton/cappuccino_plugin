@@ -18,5 +18,11 @@ infix fun PsiElement?.isType (elementType:IElementType) : Boolean = if (this != 
 
 fun PsiElement.tokenType() : IElementType = this.node.elementType
 
+infix fun <T : PsiElement> PsiElement?.isOrHasParentOfType (parentClass:Class<T>) : Boolean =
+        this != null && (parentClass.isInstance(this) || this.getParentOfType(parentClass) != null)
+
 infix fun <T : PsiElement> PsiElement?.hasParentOfType (parentClass:Class<T>) : Boolean =
         this != null && this.getParentOfType(parentClass) != null
+
+infix fun <T : PsiElement> PsiElement?.doesNotHaveParentOfType (parentClass:Class<T>) : Boolean =
+        this != null && this.getParentOfType(parentClass) == null
