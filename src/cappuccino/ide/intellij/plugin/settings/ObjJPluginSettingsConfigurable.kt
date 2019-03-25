@@ -20,7 +20,8 @@ class ObjJPluginSettingsConfigurable : Configurable {
                 ObjJPluginSettings.unqualifiedIgnore_ignoreMethodReturnErrors != pluginSettingsPanel.unqualifiedIgnore_ignoreMethodReturnErrors.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors != pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected ||
                 ObjJPluginSettings.ignoredSelectorsAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
-                ObjJPluginSettings.ignoredVariableNamesAsString != pluginSettingsPanel.globallyIgnoredSelectors.text
+                ObjJPluginSettings.ignoredVariableNamesAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
+                ObjJPluginSettings.ignoredFunctionNamesAsString != pluginSettingsPanel.globallyIgnoredFunctionNames.text
     }
 
     override fun getDisplayName(): String {
@@ -38,6 +39,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
         ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors = pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected
         ObjJPluginSettings.ignoredSelectorsAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
         ObjJPluginSettings.ignoredVariableNamesAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
+        ObjJPluginSettings.ignoredFunctionNamesAsString = pluginSettingsPanel.globallyIgnoredFunctionNames.text
     }
 
     override fun createComponent(): JComponent? {
@@ -52,6 +54,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
         pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected = ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredSelectorsAsString
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredVariableNamesAsString
+        pluginSettingsPanel.globallyIgnoredFunctionNames.text = ObjJPluginSettings.ignoredFunctionNamesAsString
         return component
     }
 

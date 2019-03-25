@@ -234,6 +234,15 @@
                      shortName="InvalidMethodParameterClassType"
     />
 
+    <localInspection  language="ObjectiveJ"
+                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidFunctionNameInspection"
+                      level="ERROR"
+                      displayName="Invalid function name"
+                      shortName="InvalidFunctionName"
+                      groupName="Objective-J"
+                      enabledByDefault="true"
+    />
+
 
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
