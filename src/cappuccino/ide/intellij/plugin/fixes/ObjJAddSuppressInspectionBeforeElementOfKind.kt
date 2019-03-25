@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -84,9 +85,9 @@ class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppre
 
     override fun getText(): String {
         val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
-            " for parameter \"${parameter.trim()}.\""
+            ObjJBundle.message("objective-j.intentions.suppress-inspection.for-parameter", parameter.trim())
         } else ""
-        return "Suppress ${flag.title} inspection ${scope.scope}"+forParameter
+        return ObjJBundle.message("objective-j.intentions.suppress-inspection.text", flag.title, scope.scope, forParameter)
     }
 }
 
