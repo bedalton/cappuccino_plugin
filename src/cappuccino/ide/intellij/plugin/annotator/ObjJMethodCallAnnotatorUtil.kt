@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.indices.*
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
@@ -61,7 +62,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         if (methodCall.selectorList.size > 1) {
             for (selector in methodCall.qualifiedMethodCallSelectorList) {
                 if (selector.exprList.isEmpty() && selector.selector != null) {
-                    holder.createErrorAnnotation(selector.selector!!, "Missing expression")
+                    holder.createErrorAnnotation(selector.selector!!, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.missingExpression"))
                     return
                 }
             }
@@ -99,7 +100,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         // If selector is single in size, markup simply
         if (selectors.size == 1) {
             val selector = selectors.getOrNull(0) ?: return true
-            val annotation = annotationHolder.createErrorAnnotation(selector, "Failed to find selector matching <${selector.getSelectorString(true)}>")
+            val annotation = annotationHolder.createErrorAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selectorMatchFailed", selector.getSelectorString(true)))
             addInvalidSelectorFixes(annotation, methodCall, fullSelector)
             return false
         }
@@ -109,7 +110,7 @@ internal object ObjJMethodCallAnnotatorUtil {
 
         //If fail index is less than one, mark all selectors and return;
         if (failIndex < 0) {
-            val annotation = annotationHolder.createErrorAnnotation(methodCall, "Failed to find selector matching <$fullSelector>")
+            val annotation = annotationHolder.createErrorAnnotation(methodCall,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selectorMatchFailed", fullSelector))
             addInvalidSelectorFixes(annotation, methodCall, fullSelector)
             return false
         }
@@ -153,7 +154,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         selectorToFailPointTextSoFar.append(getSelectorString(selector.selector, true))
 
         // Create annotation
-        val annotation = annotationHolder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <$selectorToFailPointTextSoFar>")
+        val annotation = annotationHolder.createErrorAnnotation(failPoint!!,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selectorMatchFailed", selectorToFailPointTextSoFar))
         annotation.setNeedsUpdateOnTyping(true)
         // Add fixes
         addInvalidSelectorFixes(annotation, methodCall, fullSelector)
@@ -195,7 +196,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
             // If ignored, add fix to remove it from ignored list
             for (selector in methodCall.selectorList) {
-                annotationHolder.createInfoAnnotation(selector, "missing selector: <$fullSelector> is ignored")
+                annotationHolder.createInfoAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selectorIgnored", fullSelector))
                         .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
             }
             return true
@@ -227,7 +228,6 @@ internal object ObjJMethodCallAnnotatorUtil {
             if (!ObjJUnifiedMethodIndex.instance.getStartingWith(selector, project).isEmpty() || !ObjJSelectorInferredMethodIndex.instance.getStartingWith(selector, project).isEmpty()) {
                 continue
             }
-            //LOGGER.log(Level.INFO, "Selector match failed at index: <"+i+"> in with selector: <"+builder.toString()+">");
             return i
         }
         return 0
