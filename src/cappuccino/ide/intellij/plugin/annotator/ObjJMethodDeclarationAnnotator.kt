@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import com.intellij.openapi.diagnostic.Logger
@@ -40,7 +41,7 @@ object ObjJMethodDeclarationAnnotator {
             }
             // Check if method selectors can be considered duplicates or not.
             if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader)) {
-                annotationHolder.createErrorAnnotation(methodHeader, "Duplicate method selector in class")
+                annotationHolder.createErrorAnnotation(methodHeader, ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate"))
                 return
             }
         }
