@@ -153,4 +153,27 @@ object ObjJTokenSets {
             ObjJ_PP_UNDEF,
             ObjJ_PP_WARNING
     )
+
+    val VAR_TYPE_KEYWORDS = create(
+            ObjJTypes.ObjJ_VAR_TYPE_BOOL,
+            ObjJTypes.ObjJ_VAR_TYPE_INT,
+            ObjJTypes.ObjJ_VAR_TYPE_SHORT,
+            ObjJTypes.ObjJ_VAR_TYPE_LONG,
+            ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG,
+            ObjJTypes.ObjJ_VAR_TYPE_UNSIGNED,
+            ObjJTypes.ObjJ_VAR_TYPE_SIGNED,
+            ObjJTypes.ObjJ_VAR_TYPE_FLOAT,
+            ObjJTypes.ObjJ_VAR_TYPE_DOUBLE,
+            ObjJTypes.ObjJ_VAR_TYPE_BYTE,
+            ObjJTypes.ObjJ_VAR_TYPE_ID
+    )
+
+    val ITERATION_STATEMENT_KEYWORDS = create(
+            ObjJTypes.ObjJ_IF,
+            ObjJTypes.ObjJ_ELSE,
+            ObjJTypes.ObjJ_IN,
+            ObjJTypes.ObjJ_FOR,
+            ObjJTypes.ObjJ_WHILE,
+            ObjJTypes.ObjJ_DO
+    )
 }
