@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.annotator
 
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
@@ -23,7 +24,7 @@ object ObjJVariableDeclarationAnnotator {
             // Check that method call is not being assigned to directly
             // Values can only be assigned to (.) or [array] expressions
             if (qualifiedReference.methodCall != null && qualifiedReference.qualifiedNameParts.isEmpty()) {
-                annotationHolder.createErrorAnnotation(qualifiedReference.getNextSiblingOfType(ObjJTypes.ObjJ_EQUALS)?:qualifiedReference, "Cannot assign value to method call")
+                annotationHolder.createErrorAnnotation(qualifiedReference.getNextSiblingOfType(ObjJTypes.ObjJ_EQUALS)?:qualifiedReference, ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.cannotAssignValueToMethodCall"))
                 return
             }
             // Check that there is not a qualified reference in a 'var' declaration
@@ -43,14 +44,14 @@ object ObjJVariableDeclarationAnnotator {
                     }
                     textRange = TextRange.create(startOffset, variableDeclaration.textRange.endOffset)
                 }
-                annotationHolder.createErrorAnnotation(textRange, "Cannot use qualified reference with 'var' assignment keyword")
+                annotationHolder.createErrorAnnotation(textRange, ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.qualifiedWithVar"))
                 return
             }
             // Check that the last part of a qualified name is not a function call
             // as these cannot be assigned to
             val lastChild = qualifiedReference.qualifiedNameParts.last() ?: return
             if (lastChild is ObjJFunctionCall) {
-                annotationHolder.createErrorAnnotation(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset), "Cannot assign value to function call")
+                annotationHolder.createErrorAnnotation(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset), ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.cannotAssignValueToFunctionCall"))
             }
         }
     }
