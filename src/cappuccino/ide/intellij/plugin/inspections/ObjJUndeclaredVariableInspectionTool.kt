@@ -184,6 +184,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return true
             }
 
+            if (variableName.parent is ObjJVariableDeclarationList) {
+                return true
+            }
+
             if (variableName.parent is ObjJInstanceVariableList) {
                 return true;
             }
@@ -257,9 +261,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     return true
                 } else if (variableDeclaration.parent is ObjJGlobalVariableDeclaration) {
                     return true
-                }// else {
-                //LOGGER.log(Level.INFO, "Variable declaration has a parent of type: <"+variableDeclaration.getParent().getNode().getElementType().toString()+">");
-                //}
+                }
                 assignment = if (variableDeclaration.parent is ObjJBodyVariableAssignment) variableDeclaration.parent as ObjJBodyVariableAssignment else null
             }
             return assignment != null && assignment.varModifier != null
