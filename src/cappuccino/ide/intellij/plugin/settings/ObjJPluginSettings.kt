@@ -46,6 +46,9 @@ object ObjJPluginSettings {
     private const val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
     private val ignoreMissingSelectorsSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_SELECTORS_KEY)
 
+    private const val IGNORE_MISSING_FUNCTIONS_KEY = "objj.annotator.ignoreMissingFunctions"
+    private val ignoreMissingFunctionSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_FUNCTIONS_KEY)
+
     private const val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
     private const val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
     private val ignoreOvershadowedVariablesSetting = BooleanSetting(IGNORE_OVERSHADOWED_VARIABLES_KEY, IGNORE_OVERSHADOWED_VARIABLES_DEFAULT)
@@ -133,6 +136,9 @@ object ObjJPluginSettings {
         this.collapseByDefault.value = collapse
     }
 
+    // ============================== //
+    // ======= Ignore Variable ====== //
+    // ============================== //
 
     fun ignoreVariableName(keyword:String) = ignoredKeywordsSetting.ignoreKeyword(keyword)
 
@@ -148,6 +154,9 @@ object ObjJPluginSettings {
         ignoredKeywordsSetting.ignoreKeywords(value)
     }
 
+    // ============================== //
+    // ====== Ignore Selector ======= //
+    // ============================== //
     fun ignoreSelector(keyword:String) = ignoreMissingSelectorsSetting.ignoreKeyword(keyword)
 
     fun doNotIgnoreSelector(keyword:String) = ignoreMissingSelectorsSetting.removeIgnoredKeyword(keyword)
@@ -161,6 +170,26 @@ object ObjJPluginSettings {
     }
 
     fun isIgnoredSelector(keyword:String) : Boolean  = ignoreMissingSelectorsSetting.isIgnoredKeyword(keyword)
+
+    // ============================== //
+    // ==== Ignore Function Names === //
+    // ============================== //
+
+    fun ignoreFunctionName(keyword:String) = ignoreMissingFunctionSetting.ignoreKeyword(keyword)
+
+    fun removeIgnoredFunctionName(keyword:String) = ignoreMissingFunctionSetting.removeIgnoredKeyword(keyword)
+
+    fun ignoredFunctionNames() : List<String> = ignoreMissingFunctionSetting.ignoredKeywords()
+
+    fun isIgnoredFunctionName(keyword:String) : Boolean  = ignoreMissingFunctionSetting.isIgnoredKeyword(keyword)
+
+    var ignoredFunctionNamesAsString:String get() {
+        return ignoreMissingFunctionSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoreMissingFunctionSetting.ignoreKeywords(value)
+    }
+
+
 
     fun ignoreOvershadowedVariables() : Boolean {
         return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT
