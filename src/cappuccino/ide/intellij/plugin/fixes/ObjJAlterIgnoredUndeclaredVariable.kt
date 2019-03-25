@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 /**
@@ -39,7 +40,7 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
 
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invoke(project, editor)
+        invoke(project, editor, file)
     }
 
     private fun invoke(project: Project, editor:Editor?) {
@@ -49,7 +50,7 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
             } else {
                 ObjJPluginSettings.removeIgnoredVariableName(keyword)
             }
-            if (editor != null) DaemonCodeAnalyzer.getInstance(project).updateVisibleHighlighters(editor)
+            FileContentUtilCore.reparseFiles()
         }
     }
 
