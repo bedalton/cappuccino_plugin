@@ -58,7 +58,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidClassForCategory").format(className))
+        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidClassForCategory", className))
     }
 
 
@@ -95,7 +95,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
         val protocolName = protocolNameElement.text
         if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
-            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidProtocolName").format(protocolName))
+            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.invalidProtocolName", protocolName))
         }
     }
 
