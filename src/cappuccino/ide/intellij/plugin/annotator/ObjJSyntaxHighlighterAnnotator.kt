@@ -1,22 +1,32 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.utils.containingFileName
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
+/**
+ * Adds highlighting colors to Objective-J Fiels
+ */
 class ObjJSyntaxHighlighterAnnotator : Annotator {
+
+    /**
+     * Entry method to begin highlighting elements
+     */
     override fun annotate(
             psiElement: PsiElement,
             annotationHolder: AnnotationHolder) {
@@ -27,95 +37,110 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             is ObjJFunctionCall -> highlightFunctionName(psiElement, annotationHolder)
             is ObjJFunctionName -> if (psiElement.hasParentOfType(ObjJFunctionCall::class.java)) colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
             else -> when (psiElement.tokenType()) {
-                ObjJTypes.ObjJ_VAR_TYPE_BOOL,
-                ObjJTypes.ObjJ_VAR_TYPE_INT,
-                ObjJTypes.ObjJ_VAR_TYPE_SHORT,
-                ObjJTypes.ObjJ_VAR_TYPE_LONG,
-                ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG,
-                ObjJTypes.ObjJ_VAR_TYPE_UNSIGNED,
-                ObjJTypes.ObjJ_VAR_TYPE_SIGNED,
-                ObjJTypes.ObjJ_VAR_TYPE_FLOAT,
-                ObjJTypes.ObjJ_VAR_TYPE_DOUBLE,
-                ObjJTypes.ObjJ_VAR_TYPE_BYTE,
-                ObjJTypes.ObjJ_VAR_TYPE_ID -> stripVarTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
-
-                ObjJTypes.ObjJ_IF,
-                ObjJTypes.ObjJ_ELSE,
-                ObjJTypes.ObjJ_IN,
-                ObjJTypes.ObjJ_FOR,
-                ObjJTypes.ObjJ_WHILE,
-                ObjJTypes.ObjJ_DO -> stripLoopWordsIfInSelector(psiElement, annotationHolder)
+                in ObjJTokenSets.VAR_TYPE_KEYWORDS ->
+                    stripVarTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
+                in ObjJTokenSets.ITERATION_STATEMENT_KEYWORDS ->
+                    stripLoopWordsIfInSelector(psiElement, annotationHolder)
             }
         }
     }
 
+    /**
+     * Highlights variable name elements
+     * Differentiates between static class name references, and variable names
+     */
     private fun highlightVariableName(variableNameElement:ObjJVariableName, annotationHolder: AnnotationHolder) {
         val project = variableNameElement.project
+        // Ensure indices are ready
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runReadActionInSmartMode {
                 highlightVariableName(variableNameElement, annotationHolder)
             }
             return
         }
+
+        // Gets variable name and checks for keywords usage
         val variableName = variableNameElement.text
-        if (variableName == "self" || variableName == "super" || variableName == "this") {
+        if (variableNameElement.hasParentOfType(ObjJClassDeclarationElement::class.java) && (variableName == "self" || variableName == "super" || variableName == "this")) {
             colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.KEYWORD)
         }
-        val parent = variableNameElement.parent
-        if (parent is ObjJQualifiedReference) {
-            val index = parent.variableNameList.indexOf(variableNameElement)
-            if (index == 0) {
-                if (!ObjJClassDeclarationsIndex.instance[variableName, project].isEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
-                    colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
-                    return
-                }
-            }
-            val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve() ?: return
-            if (referencedVariable equals variableNameElement) {
-                return
-            }
-            if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
-                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
-                return
-            } else if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
-                colorizeInstanceVariable(variableNameElement, referencedVariable, annotationHolder)
-                return
-            } else if (referencedVariable.hasParentOfType(ObjJMethodDeclarationSelector::class.java) || referencedVariable.hasParentOfType(ObjJFormalParameterArg::class.java)) {
-                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
-                return
-            } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
-                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE, "defined in file: "+(referencedVariable ?: variableNameElement).containingFile.originalFile.name)
-            }
 
+        // Get parent for use in evaluations
+        val parent = variableNameElement.parent
+        // Branch for parent being in qualified reference
+        if (parent is ObjJQualifiedReference) {
+            annotateVariableNameInQualifiedReference(variableNameElement, parent, project, annotationHolder)
         }
     }
 
+    /**
+     * Add colorization to variables names in qualified references
+     * Parses reference to root declaration and colors based on that
+     */
+    private fun annotateVariableNameInQualifiedReference(variableNameElement:ObjJVariableName, parent:ObjJQualifiedReference, project:Project, annotationHolder: AnnotationHolder) {
+        val variableName = variableNameElement.text
+        val index = parent.variableNameList.indexOf(variableNameElement)
+        if (index == 0) {
+            if (!ObjJClassDeclarationsIndex.instance[variableName, project].isEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
+                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
+                return
+            }
+        }
+        val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve() ?: return
+        if (referencedVariable equals variableNameElement) {
+            return
+        }
+        if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
+            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
+            return
+        } else if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+            colorizeInstanceVariable(variableNameElement, referencedVariable, annotationHolder)
+            return
+        } else if (referencedVariable.hasParentOfType(ObjJMethodDeclarationSelector::class.java) || referencedVariable.hasParentOfType(ObjJFormalParameterArg::class.java)) {
+            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
+            return
+        } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
+            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE, ObjJBundle.message("objective-j.general.defined-in-file.text", (referencedVariable ?: variableNameElement).containingFileName.toString()))
+        }
+
+    }
+
+    /**
+     * Colors instance variables and annotates them with their declared class
+     */
     private fun colorizeInstanceVariable(variableNameElement:ObjJVariableName, referencedVariable:PsiElement?, annotationHolder: AnnotationHolder) {
         val message:String?
         if (referencedVariable is ObjJVariableName) {
-            message = "defined in class: "+referencedVariable.containingClassName
+            message = ObjJBundle.message("objective-j.general.defined-in-class.text", referencedVariable.containingClassName)
         } else {
             message = null
         }
         colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE, message)
     }
 
+    /**
+     * Highlights a given classname element
+     */
     private fun highlightClassName(classNameElement:ObjJClassName, annotationHolder: AnnotationHolder) {
         colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
     }
 
+    /**
+     * Strips variable type highlighting, if it is not used inside a valid block
+     * Sometimes keywords are used as variable names, and this has to remove misleading colorization
+     */
     private fun stripVarTypesAnnotationIfNotInValidBlock(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
-        if (psiElement.getParentOfType(ObjJBlock::class.java) != null) {
+        if (psiElement.hasParentOfType(ObjJBlock::class.java)) {
             stripAnnotation(psiElement, annotationHolder)
             return
         }
-        if (psiElement.getParentOfType(ObjJInstanceVariableList::class.java) == null && psiElement.getParentOfType(ObjJMethodDeclarationSelector::class.java) == null) {
+        if (psiElement.doesNotHaveParentOfType(ObjJInstanceVariableList::class.java) && psiElement.doesNotHaveParentOfType(ObjJMethodDeclarationSelector::class.java)) {
             stripAnnotation(psiElement, annotationHolder)
         }
     }
 
     private fun stripLoopWordsIfInSelector(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
-        if (psiElement.getParentOfType(ObjJMethodCall::class.java) != null) {
+        if (psiElement.hasParentOfType(ObjJMethodCall::class.java)) {
             stripAnnotation(psiElement, annotationHolder)
         }
     }
@@ -131,19 +156,30 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
         }
         if (resolved != null) {
-            colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, "defined in file: ${ObjJFileUtil.getContainingFileName(functionName)}")
+            colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))
         } else {
             //colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME, "")
         }
 
     }
 
+    /**
+     * Strips info annotations from a given element
+     * Making it appear as regular text
+     */
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
         annotationHolder.createInfoAnnotation(psiElement, "").enforcedTextAttributes = TextAttributes.ERASE_MARKER
     }
 
+    /**
+     * Helper function to add color and style to a given element
+     */
     private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolder, attribute:TextAttributesKey, message:String? = null) {
         annotationHolder.createInfoAnnotation(psiElement, message).textAttributes = attribute
+    }
+
+    companion object {
+
     }
 
 }
