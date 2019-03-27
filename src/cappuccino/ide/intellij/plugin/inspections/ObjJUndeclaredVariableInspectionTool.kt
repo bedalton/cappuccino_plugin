@@ -121,7 +121,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName.hasText("self") || variableName.hasText("super")) {
                 return
             }
-            //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
             problemsHolder.registerProblem(variableName, "Variable may not have been declared before use",
                     ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName),
                     ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.METHOD),
@@ -190,7 +189,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (variableName.parent is ObjJInstanceVariableList) {
-                return true;
+                return true
             }
 
             //If variable name element is itself a method header declaration variable
