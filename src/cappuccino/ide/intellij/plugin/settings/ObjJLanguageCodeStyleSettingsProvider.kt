@@ -23,7 +23,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
     }
 
     override fun getCodeSample(settingsType: LanguageCodeStyleSettingsProvider.SettingsType): String? {
-        return         return """
+    return """
 @import <Foundation/Foundation.j>
 #include "SomeClass.j"
 
