@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.codeInsight.lookup.LookupValueWithPriority
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -54,13 +55,12 @@ object ObjJFunctionNameCompletionProvider {
     }
 
     private fun addAllGlobalJSFIles(resultSet: CompletionResultSet) {
-        for (function in globalJsFunctions.filterNot { it.skipCompletion || it.functionName.isEmpty() }) {
-            addGlobalFunctionName(resultSet, function.functionName)
+        for (function in globalJsFunctions.filterNot { it.skipCompletion || it.name.isEmpty() }) {
+            addGlobalFunctionName(resultSet, function.name)
         }
     }
 
-    private fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String) {
-        val priority = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
+    private fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String, priority: Double = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY) {
         val lookupElementBuilder = LookupElementBuilder
                 .create(functionName)
                 .withInsertHandler(ObjJFunctionNameInsertHandler)
