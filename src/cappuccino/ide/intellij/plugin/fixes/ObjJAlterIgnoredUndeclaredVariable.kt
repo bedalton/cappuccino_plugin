@@ -35,7 +35,7 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
     }
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        invoke(project, FileEditorManager.getInstance(project).selectedTextEditor)
+        invoke()
     }
 
     @Throws(IncorrectOperationException::class)
@@ -43,7 +43,7 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
         invoke(project, editor, file)
     }
 
-    private fun invoke(project: Project, editor:Editor?) {
+    private fun invoke() {
         ApplicationManager.getApplication().invokeLater {
             if (addToIgnored) {
                 ObjJPluginSettings.ignoreVariableName(keyword)
