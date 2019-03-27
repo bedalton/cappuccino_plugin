@@ -24,6 +24,7 @@ class ObjJFileUtil {
      * @param project project to get files from
      * @return files for import file names
      */
+    @Suppress("UNUSED_PARAMETER")
     fun getImportedFiles(importedFileNames: List<String>, project: Project): List<ObjJFile> {
         return EMPTY_FILE_LIST
     }
