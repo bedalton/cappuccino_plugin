@@ -17,8 +17,6 @@ import com.intellij.psi.util.PsiTreeUtil
 
 object ObjJFunctionNameCompletionProvider {
 
-    private val globalJSFunctionNames = listOf("ABS", "ASIN", "ACOS", "ATAN", "ATAN2", "SIN", "COS", "TAN", "EXP", "POW", "CEIL", "FLOOR", "ROUND", "MIN", "MAX", "RAND", "SQRT", "E", "LN2", "LN10", "LOG", "LOG2E", "LOG10E", "PI", "PI2", "PI_2", "SQRT1_2", "SQRT2", "CPLog", "alert", "parseFloat", "parseInt", "isFinite", "isNaN","setTimeout","clearTimeout")
-
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
         val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
@@ -56,13 +54,16 @@ object ObjJFunctionNameCompletionProvider {
     }
 
     private fun addAllGlobalJSFIles(resultSet: CompletionResultSet) {
-        val priority = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
-        for(functionName in globalJSFunctionNames) {
-            val lookupElementBuilder = LookupElementBuilder
-                    .create(functionName)
-                    .withTailText("(global)")
-                    .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
+        for (function in globalJsFunctions.filterNot { it.skipCompletion || it.functionName.isEmpty() }) {
+            addGlobalFunctionName(resultSet, function.functionName)
         }
+    }
+
+    private fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String) {
+        val priority = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
+        val lookupElementBuilder = LookupElementBuilder
+                .create(functionName)
+                .withInsertHandler(ObjJFunctionNameInsertHandler)
+        resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
     }
 }
