@@ -18,7 +18,7 @@ class ObjJTypeDefIndex : ObjJStringStubIndexBase<ObjJTypeDef>() {
 
     companion object {
 
-        private const val VERSION = 2
+        private const val VERSION = 3
         val instance = ObjJTypeDefIndex()
         val KEY = IndexKeyUtil.createIndexKey<String, ObjJTypeDef>(ObjJTypeDefIndex::class.java)
     }
