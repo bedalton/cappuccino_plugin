@@ -420,11 +420,10 @@ object ObjJVariableNameAggregatorUtil {
 
         val result = mutableListOf<ObjJVariableName>()
         while (functionDeclarationElement != null) {
-            if (functionDeclarationElement.formalParameterArgList.isEmpty()) {
-                return EMPTY_VARIABLE_NAME_LIST
-            }
-            for (parameterArg in functionDeclarationElement.formalParameterArgList) {
-                result.add(parameterArg.variableName)
+            if (functionDeclarationElement.formalParameterArgList.isNotEmpty()) {
+                for (parameterArg in functionDeclarationElement.formalParameterArgList) {
+                    result.add(parameterArg.variableName)
+                }
             }
             functionDeclarationElement = functionDeclarationElement.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         }
