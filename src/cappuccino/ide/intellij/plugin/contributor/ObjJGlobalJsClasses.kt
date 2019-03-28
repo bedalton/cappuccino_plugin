@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-data class GlobalJSClass(val className: String, val constructor: GlobalJSConstructor = GlobalJSConstructor(), val functions: List<GlobalJSClassFunction> = listOf(), val staticFunctions: List<GlobalJSClassFunction> = listOf(), val properties: List<JsProperty> = listOf(), val staticProperties: List<JsProperty> = listOf(), val extends: String? = null, val comment: String? = null)
+data class GlobalJSClass(val className: String, val constructor: GlobalJSConstructor = GlobalJSConstructor(), val functions: List<GlobalJSClassFunction> = listOf(), val staticFunctions: List<GlobalJSClassFunction> = listOf(), val properties: List<JsProperty> = listOf(), val staticProperties: List<JsProperty> = listOf(), val extends: String? = null, val comment: String? = null, val static:Boolean = false)
 
 data class JsProperty(val name: String, val type: String = "?", val isPublic: Boolean = true, val nullable: Boolean = true, val readonly:Boolean = false, val comment: String? = null)
 
@@ -1086,6 +1086,13 @@ val globalJSClasses = listOf(
                 properties = listOf(
                         p("isa", "CPNumber")
                 )
+        ),
+        c (
+                className = "Math",
+                static = true
+        ),
+        c (
+                className = "Document"
         )
 )
 
