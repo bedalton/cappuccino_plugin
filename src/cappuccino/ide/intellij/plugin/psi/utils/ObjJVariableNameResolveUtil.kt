@@ -87,12 +87,11 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        val variableName:String = variableNameElement.text
+        val elementStartOffset = variableNameElement.textRange.startOffset
         return ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstDeclaration ->
             !possibleFirstDeclaration.isEquivalentTo(variableNameElement) &&
-            variableName == possibleFirstDeclaration.text &&
-                    (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || variableNameElement.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) &&
-                    variableNameElement.indexInQualifiedReference == 0
+            variableNameString == possibleFirstDeclaration.text &&
+                    (!variableNameElement.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || elementStartOffset > possibleFirstDeclaration.textRange.startOffset)
         }
 
     }
