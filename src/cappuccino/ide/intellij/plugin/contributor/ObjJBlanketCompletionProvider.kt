@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.PRIMITIVE_VAR_NAMES
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
@@ -164,6 +165,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             results.addAll(getInClassKeywords(variableName))
             results.addAll(Arrays.asList("YES", "yes", "NO", "no", "true", "false"))
         }
+        results.addAll(ObjJGlobalJSVariablesNames)
         addCompletionElementsSimple(resultSet, results)
     }
 
@@ -192,7 +194,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
         // Append primitive var types if necessary
         if (shouldAddPrimitiveTypes(element)) {
-            PRIMITIVE_VAR_NAMES.forEach {
+            ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
