@@ -415,13 +415,18 @@ object ObjJVariableNameAggregatorUtil {
     }
 
     private fun getAllFunctionScopeVariables(
-            functionDeclarationElement: ObjJFunctionDeclarationElement<*>?): List<ObjJVariableName> {
-        if (functionDeclarationElement == null || functionDeclarationElement.formalParameterArgList.isEmpty()) {
-            return EMPTY_VARIABLE_NAME_LIST
-        }
-        val result = ArrayList<ObjJVariableName>()
-        for (parameterArg in functionDeclarationElement.formalParameterArgList) {
-            result.add(parameterArg.variableName)
+            functionDeclarationElementIn: ObjJFunctionDeclarationElement<*>?): List<ObjJVariableName> {
+        var functionDeclarationElement = functionDeclarationElementIn
+
+        val result = mutableListOf<ObjJVariableName>()
+        while (functionDeclarationElement != null) {
+            if (functionDeclarationElement.formalParameterArgList.isEmpty()) {
+                return EMPTY_VARIABLE_NAME_LIST
+            }
+            for (parameterArg in functionDeclarationElement.formalParameterArgList) {
+                result.add(parameterArg.variableName)
+            }
+            functionDeclarationElement = functionDeclarationElement.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         }
         return result
     }
