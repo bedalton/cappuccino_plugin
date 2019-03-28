@@ -28,7 +28,7 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
     /**
      * Gets the menu name
      */
-    override fun getActionName(p0: PsiDirectory?, p1: String?, p2: String?): String =
+    override fun getActionName(p0: PsiDirectory?, p1: String, p2: String?): String =
             ObjJBundle.message("objective-j.actions.new-file.title")
 
     /**
