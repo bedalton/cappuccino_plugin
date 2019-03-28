@@ -24,6 +24,7 @@ object ObjJClassType {
     const val STRING = "CPString"
     const val INT = "int"
     const val CPINT = "CPInteger"
+    const val CPUINT = "CPUInteger"
     const val UNSIGNED = "unsigned"
     const val SIGNED = "signed"
     const val CHAR = "char"
@@ -68,6 +69,7 @@ object ObjJClassType {
             INT,
             STRING,
             CPINT,
+            CPUINT,
             FUNCTION,
             REGEX,
             CPOBJECT,
