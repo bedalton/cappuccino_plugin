@@ -1,0 +1,38 @@
+
+ThemeState
+_CPMenuWindowBackgroundStyle
+CPAttributeType
+CPRuleEditorNestingMode
+CPTextTabType
+CPFontSymbolicTraits
+CPRangePointer
+FloatArray
+CPTabStopType
+CPLineSweepDirection
+CPLineMovementDirection
+CPSelectionAffinity
+UIntegerReference
+CPArrayRef
+CPColorPanelMode
+CPTextVerticalAlignment
+CPDocumentChangeType
+NSPoint
+CPContext
+Image
+CPKeyValueObservingOptions
+CPTableViewDropOperation
+CPControlTint
+
+
+CPTextStorage add semicolons
+DOMElemet mispelled in CPTextView
+
+
+
+missing functions in CPWindow
+CPDOMDisplayServerSetStyleLeftTop
+CPDOMDisplayServerSetStyleSize
+CPDOMDisplayServerAppendChild
+CPDOMDisplayServerAppendChild
+CPDOMDisplayServerRemoveChild
+CPDOMDisplayServerSetStyleLeftTop
