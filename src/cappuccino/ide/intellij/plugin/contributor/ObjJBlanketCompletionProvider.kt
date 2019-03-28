@@ -21,6 +21,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.NoIndex
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.util.Arrays
@@ -202,6 +203,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         // Append implementation declaration names if in correct context
         if (shouldAddImplementationClassNameCompletions(element)) {
             addImplementationClassNameElements(element, resultSet)
+            addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
         }
     }
 
