@@ -24,6 +24,7 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import java.util.logging.Logger
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
@@ -137,7 +138,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
             val resolved = ObjJVariableReference(variableName).resolve()
             if (resolved != null) {
-                return !isDeclaredInSameDeclaration(variableName, resolved)
+                return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }
             val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty()
