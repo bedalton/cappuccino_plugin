@@ -55,7 +55,7 @@ object ObjJFunctionNameCompletionProvider {
     }
 
     private fun addAllGlobalJSFIles(resultSet: CompletionResultSet) {
-        for (function in globalJsFunctions.filterNot { it.skipCompletion || it.name.isEmpty() }) {
+        for (function in globalJsFunctions.filterNot { it.name.isEmpty() }) {
             addGlobalFunctionName(resultSet, function.name)
         }
     }
