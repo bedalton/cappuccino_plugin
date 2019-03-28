@@ -21,7 +21,8 @@ class ObjJPluginSettingsConfigurable : Configurable {
                 ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors != pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected ||
                 ObjJPluginSettings.ignoredSelectorsAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
                 ObjJPluginSettings.ignoredVariableNamesAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
-                ObjJPluginSettings.ignoredFunctionNamesAsString != pluginSettingsPanel.globallyIgnoredFunctionNames.text
+                ObjJPluginSettings.ignoredFunctionNamesAsString != pluginSettingsPanel.globallyIgnoredFunctionNames.text ||
+                ObjJPluginSettings.ignoredClassNamesAsString != pluginSettingsPanel.globallyIgnoredClassNames.text
     }
 
     override fun getDisplayName(): String {
@@ -40,6 +41,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
         ObjJPluginSettings.ignoredSelectorsAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
         ObjJPluginSettings.ignoredVariableNamesAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
         ObjJPluginSettings.ignoredFunctionNamesAsString = pluginSettingsPanel.globallyIgnoredFunctionNames.text
+        ObjJPluginSettings.ignoredClassNamesAsString = pluginSettingsPanel.globallyIgnoredClassNames.text
     }
 
     override fun createComponent(): JComponent? {
@@ -55,6 +57,7 @@ class ObjJPluginSettingsConfigurable : Configurable {
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredSelectorsAsString
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredVariableNamesAsString
         pluginSettingsPanel.globallyIgnoredFunctionNames.text = ObjJPluginSettings.ignoredFunctionNamesAsString
+        pluginSettingsPanel.globallyIgnoredClassNames.text = ObjJPluginSettings.ignoredClassNamesAsString
         return component
     }
 

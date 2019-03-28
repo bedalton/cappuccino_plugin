@@ -189,6 +189,27 @@ object ObjJPluginSettings {
         ignoreMissingFunctionSetting.ignoreKeywords(value)
     }
 
+    // ============================== //
+    // ===== Ignore Class Names ===== //
+    // ============================== //
+    private const val IGNORE_MISSING_CLASSES_KEY = "objj.annotator.ignoreMissingFunctions"
+    private val ignoreMissingClassNamesSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_FUNCTIONS_KEY)
+
+
+    fun ignoreClassName(keyword:String) = ignoreMissingClassNamesSetting.ignoreKeyword(keyword)
+
+    fun removeIgnoredClassName(keyword:String) = ignoreMissingClassNamesSetting.removeIgnoredKeyword(keyword)
+
+    fun ignoredClassNames() : List<String> = ignoreMissingClassNamesSetting.ignoredKeywords()
+
+    fun isIgnoredClassName(keyword:String) : Boolean  = ignoreMissingClassNamesSetting.isIgnoredKeyword(keyword)
+
+    var ignoredClassNamesAsString:String get() {
+        return ignoreMissingClassNamesSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoreMissingClassNamesSetting.ignoreKeywords(value)
+    }
+
 
 
     fun ignoreOvershadowedVariables() : Boolean {
