@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
@@ -19,6 +20,8 @@ object ObjJClassTypePsiUtil {
         if (classNameString in ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES || classNameString.contains("signed"))
             return true
         val project:Project = className.project
+        if (globalJSClassNames.contains(classNameString))
+            return true
         if (DumbService.isDumb(project))
             return null
         return classNameString in ObjJClassDeclarationsIndex.instance.getAllKeys(project) ||
