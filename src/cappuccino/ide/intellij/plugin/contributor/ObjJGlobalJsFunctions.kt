@@ -1,150 +1,138 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 
-private val globalJsFunctionString = listOf (
-        //CFBundle.js
-        "CFBundleCopyLocalizedString", "CFBundleCopyBundleLocalizations", "CFCopyLocalizedString", "CFCopyLocalizedStringFromTable", "CFCopyLocalizedStringFromTableInBundle", "CFCopyLocalizedStringWithDefaultValue", "CFBundleGetMainBundle",
-        // CFError.js
-        "CFErrorCreate", "CFErrorCreateWithUserInfoKeysAndValues", "CFErrorGetCode", "CFErrorGetDomain", "CFErrorCopyDescription", "CFErrorCopyUserInfo", "CFErrorCopyFailureReason", "CFErrorCopyRecoverySuggestion",
-        // CFHTTPRequest.js
-        "CFHTTPRequest",
-        // CFPropertyList.js
-        "CFPropertyList",
-        "CFPropertyListCreate"
-)
-
-private val ABS = fn (
+private val ABS = fn(
         name = "ABS",
-        parameters = listOf (p(name = "x", type = "number", comment = "A numeric expression for which the absolute value is needed.")),
+        parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression for which the absolute value is needed.")),
         comment = "Returns the absolute value of a number (the value without regard to whether it is positive or negative).\nFor example, the absolute value of -5 is the same as the absolute value of 5.",
         returns = "number"
 )
 
-private val ACOS = fn (
+private val ACOS = fn(
         name = "ACOS",
-        parameters = listOf (
-                p(name = "x" , type = "number", comment = "A numeric")),
+        parameters = listOf(
+                p(name = "x", type = "number", comment = "A numeric")),
         comment = "Returns the arc cosine (or inverse cosine) of a number.",
         returns = "number"
 )
 
-private val ASIN = fn (
+private val ASIN = fn(
         name = "ASIN",
-        parameters = listOf (
-               p(name =  "x", type = "number", comment = "A numeric expression")),
+        parameters = listOf(
+                p(name = "x", type = "number", comment = "A numeric expression")),
         comment = "Returns the arc sine of a number.",
         returns = "number"
 )
 
-private val ATAN = fn (
+private val ATAN = fn(
         name = "ATAN",
-        parameters = listOf (
+        parameters = listOf(
                 p(name = "x", type = "number", comment = "A numeric expression for which the arctangent is needed.")),
         comment = "Returns the arc tangent of a number",
         returns = "number"
 )
 
-private val ATAN2 = fn (
+private val ATAN2 = fn(
         name = "ATAN2",
-        parameters = listOf (
-                p (name = "y", type = "number", comment = "A numeric expression representing the cartesian y-coordinate."),
-                p (name = "x", type = "number", comment = "A numeric expression representing the cartesian x-coordinate.")
+        parameters = listOf(
+                p(name = "y", type = "number", comment = "A numeric expression representing the cartesian y-coordinate."),
+                p(name = "x", type = "number", comment = "A numeric expression representing the cartesian x-coordinate.")
         ),
         comment = "Returns the angle (in radians) from the X axis to a point.",
         returns = "number"
 )
 
-private val SIN = fn (
+private val SIN = fn(
         name = "SIN",
-        parameters = listOf (p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
+        parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the sine of a number",
         returns = "number"
 )
 
-private val COS = fn (
+private val COS = fn(
         name = "COS",
-        parameters = listOf (
-                p(name = "x" , type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
+        parameters = listOf(
+                p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the cosine of a number",
         returns = "number"
 )
 
-private val TAN = fn (
+private val TAN = fn(
         name = "TAN",
-        parameters = listOf (p (name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
+        parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the tangent of a number",
         returns = "number"
 )
 
-private val EXP = fn (
+private val EXP = fn(
         name = "EXP",
-        parameters = listOf (p(name = "x", type = "number", comment = "A numeric expression representing the power of e.")),
+        parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression representing the power of e.")),
         comment = "Returns e (the base of natural logarithms) raised to a power.",
         returns = "number"
 )
 
-private val POW = fn (
+private val POW = fn(
         name = "POW",
-        parameters = listOf (
+        parameters = listOf(
                 p(name = "x", type = "number", comment = "The base value of the expression."),
-                p (name = "y", type = "number", comment = "The exponent value of the expression.")),
+                p(name = "y", type = "number", comment = "The exponent value of the expression.")),
         comment = "Returns the value of a base expression taken to a specified power.",
         returns = "number"
 )
 
-private val CEIL = fn (
+private val CEIL = fn(
         name = "CEIL",
-        parameters = listOf (p("x", "number")),
+        parameters = listOf(p("x", "number")),
         comment = "",
         returns = "number"
 )
 
-private val FLOOR = fn (
+private val FLOOR = fn(
         name = "FLOOR",
-        parameters = listOf (p("x", "number")),
+        parameters = listOf(p("x", "number")),
         comment = "",
         returns = "number"
 )
 
 
-private val ROUND = fn (
+private val ROUND = fn(
         name = "ROUND",
-        parameters = listOf (p("x", "number")),
+        parameters = listOf(p("x", "number")),
         comment = "",
         returns = "number"
 )
 
-private val MIN = fn (
+private val MIN = fn(
         name = "MIN",
-        parameters = listOf (p("...values", "number")),
+        parameters = listOf(p("...values", "number")),
         comment = "Returns the smaller of a set of supplied numeric expressions.",
         returns = "number"
 )
 
-private val MAX = fn (
+private val MAX = fn(
         name = "MAX",
-        parameters = listOf (p("...values", "number")),
+        parameters = listOf(p("...values", "number")),
         comment = "Returns the larger of a set of supplied numeric expressions.",
         returns = "number"
 )
 
-private val RAND = fn (
+private val RAND = fn(
         name = "RAND",
-        parameters = listOf (p("x", "number")),
+        parameters = listOf(p("x", "number")),
         comment = "Returns a pseudorandom number between 0 and 1.",
         returns = "number"
 )
 
-private val SQRT = fn (
+private val SQRT = fn(
         name = "SQRT",
-        parameters = listOf (p("x", "number")),
+        parameters = listOf(p("x", "number")),
         comment = "Returns the square root of a number.",
         returns = "number"
 )
 
 
-private fun createGlobalJsFunctions(): List<GlobalJsFunction> {
-        val globalJsFunctions = mutableListOf<GlobalJsFunction>(
+private fun createGlobalJsFunctions(): List<JsFunction> {
+        val globalJsFunctions = mutableListOf<JsFunction>(
                 ABS, ACOS, ASIN, ATAN, ATAN2, SIN, COS, TAN, EXP, POW, CEIL, FLOOR, ROUND, RAND, MIN, MAX, SQRT,
                 fn(
                         name = "CPLogRegister",
@@ -276,17 +264,6 @@ private fun createGlobalJsFunctions(): List<GlobalJsFunction> {
                         name = "isFinite",
                         parameters = listOf(p(name = "string", type = "string")),
                         returns = "number"
-                ),
-                fn(
-                        name = "setTimeout",
-                        parameters = listOf(
-                                p(name = "callback", type = "string"),
-                                p(name = "timeout", type = "number")),
-                        returns = "number"
-                ),
-                fn(
-                        name = "clearTimeout",
-                        parameters = listOf(p(name = "ref", type = "number"))
                 ),
                 fn(
                         name = "decodeURI",
@@ -432,52 +409,557 @@ private fun createGlobalJsFunctions(): List<GlobalJsFunction> {
                         skipCompletion = true
                 ),
                 fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = "?"),
-                fn(
-                        name = "objj_method",
-                        parameters = listOf(
-                                p("aName", "string"),
-                                p("anImplementation", "IMP"),
-                                p("types", "string[]")
-                        ),
-                        returns = "?"
-                ),
-                fn(name = "class_getName", parameters = listOf(p("aClass", "Class")), returns = "string", skipCompletion = true),
+                fn(name = "class_getName", parameters = listOf(p("aClass", "objj_class")), returns = "string", skipCompletion = true),
                 fn(name = "class_isMetaClass", parameters = listOf(p("aClass")), returns = "BOOL", skipCompletion = true),
-                fn(name = "class_getSuperclass", parameters = listOf(p("aClass")), returns = "Class", skipCompletion = true),
-                fn(name = "class_setSuperclass", parameters = listOf(p("aClass", "Class"), p("aSuperClass", "Class")), skipCompletion = true),
+                fn(name = "class_getSuperclass", parameters = listOf(p("aClass")), returns = "objj_class", skipCompletion = true),
+                fn(name = "class_setSuperclass", parameters = listOf(p("aClass", "objj_class"), p("aSuperClass", "objj_class")), skipCompletion = true),
                 fn(
                         name = "class_addIvar",
                         parameters = listOf(
-                                p("aClass", "Class"),
+                                p("aClass", "objj_class"),
                                 p("aName", "string"),
                                 p("aType", "string")
                         ),
                         skipCompletion = true
                 ),
-                fn(name = "class_addIvars", parameters = listOf(p("aClass", "Class"), p("ivars", "objj_ivar[]")), skipCompletion = true),
-                fn(name = "class_copyIvarList", parameters = listOf(p("aClass", "Class")), returns = "objj_ivar[]", skipCompletion = true),
+                fn(name = "class_addIvars", parameters = listOf(p("aClass", "objj_class"), p("ivars", "objj_ivar[]")), skipCompletion = true),
+                fn(name = "class_copyIvarList", parameters = listOf(p("aClass", "objj_class")), returns = "objj_ivar[]", skipCompletion = true),
                 fn(
                         name = "class_addMethod",
                         parameters = listOf(
-                                p ("aClass", "Class"),
-                                p ("aName", "SEL"),
-                                p ("anImplementation", "IMP"),
-                                p ("types", "string[]")
-                        )),
-                fn (
+                                p("aClass", "objj_class"),
+                                p("aName", "SEL"),
+                                p("anImplementation", "IMP"),
+                                p("types", "string[]")),
+                        skipCompletion = true
+                ),
+                fn(
                         name = "class_addMethods",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("methods", "objj_method[]")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_getInstanceMethod",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aSelector", "SEL")),
+                        returns = "objj_method",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_getInstanceVariable",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aName", "string")),
+                        returns = "objj_ivar",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_getClassMethod",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aSelector", "SEL")),
+                        returns = "objj_method",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_respondsToSelector",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aSelector", "SEL")),
+                        returns = "objj_method",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_copyMethodList",
+                        parameters = listOf(
+                                p("aClass", "objj_class")),
+                        returns = "Method[]",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_getVersion",
+                        parameters = listOf(
+                                p("aClass", "objj_class")),
+                        returns = "number",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_setVersion",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aVersion", "int")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_replaceMethod",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aSelector", "SEL"),
+                                p("aMethodImplementation", "objj_method")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_addProtocol",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aProtocol", "objj_protocol")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_conformsToProtocol",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aProtocol", "objj_protocol")
+                        ),
+                        returns = "BOOL",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_copyProtocolList",
+                        parameters = listOf(
+                                p("aClass", "objj_class")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "class_copyProtocolList",
+                        parameters = listOf(
+                                p("aClass", "objj_class")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_conformsToProtocol",
+                        parameters = listOf(
+                                p("p1", "objj_protocol"),
+                                p("p2", "objj_protocol")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_allocateProtocol",
+                        parameters = listOf(p("aName", "string")),
+                        returns = "objj_protocol",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_registerProtocol",
+                        parameters = listOf(
+                                p("proto", "objj_protocol")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_getName",
+                        parameters = listOf(
+                                p("proto", "objj_protocol")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_addMethodDescription",
+                        parameters = listOf(
+                                p("proto", "objj_protocol"),
+                                p("aSelector", "SEL"),
+                                p("types", "string[]"),
+                                p("isRequired", "BOOL"),
+                                p("isInstanceMethod", "BOOL")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_addMethodDescriptions",
+                        parameters = listOf(
+                                p("proto", "objj_protocol"),
+                                p("methods", "objj_method[]"),
+                                p("isRequired", "BOOL"),
+                                p("isInstanceMethod", "BOOL")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_copyMethodDescriptionList",
+                        parameters = listOf(
+                                p("proto", "objj_protocol"),
+                                p("isRequired", "BOOL"),
+                                p("isInstanceMethod", "BOOL")),
+                        returns = "objj_method[]",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "protocol_addProtocol",
+                        parameters = listOf(
+                                p("proto", "objj_protocol"),
+                                p("addition", "objj_protocol")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_allocateTypeDef",
+                        parameters = listOf(
+                                p("aName", "string")
+                        ),
+                        returns = "objj_typeDef"
+                ),
+                fn(
+                        name = "objj_registerTypeDef",
+                        parameters = listOf(
+                                p("typeDef", "objj_typeDef")
+                        )
+                ),
+                fn(
+                        name = "typeDef_getName",
+                        parameters = listOf(
+                                p("typeDef", "objj_typeDef")
+                        )
+                ),
+                fn(
+                        name = "_objj_forward",
+                        parameters = listOf(
+                                p("self", "?"),
+                                p("_cmd", "?"))
+                ),
+                fn(
+                        name = "class_getMethodImplementation",
+                        parameters = listOf(
+                                p("aClass", "objj_class"),
+                                p("aSelector", "SEL")),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_enumerateClassesUsingBlock",
+                        parameters = listOf(
+                                p("aBlock", "Function(objj_class)")
+                        )
+                ),
+                fn(
+                        name = "objj_allocateClassPair",
+                        parameters = listOf(
+                                p("superClass", "objj_class"),
+                                p("aName", "string")
+                        ),
+                        returns = "objj_class",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_registerClassPair",
+                        parameters = listOf(
+                                p("aClass", "objj_class")),
+                        skipCompletion = true
+                ),
+                fn(name = "objj_resetRegisterClasses"),
+                fn(
+                        name = "class_createInstance",
+                        parameters = listOf(
+                                p("aClass", "objj_class")),
+                        returns = "object",
+                        skipCompletion = true),
+                fn(
+                        name = "object_getClassName",
+                        parameters = listOf(
+                                p("anObject", "object")),
+                        returns = "string",
+                        skipCompletion = true),
+                fn(
+                        name = "objj_lookUpClass",
+                        parameters = listOf(
+                                p("aName", "string")
+                        ),
+                        returns = "objj_class",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_getClass",
+                        parameters = listOf(
+                                p("aName", "string")
+                        ),
+                        returns = "objj_class",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_getClassList",
+                        parameters = listOf(
+                                p("buffer", "CPArray"),
+                                p("bufferLength", "int")),
+                        returns = "int",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_getMetaClass",
+                        parameters = listOf(
+                                p("aName", "string")),
+                        returns = "?",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_getProtocol",
+                        parameters = listOf(
+                                p("aName", "string")),
+                        returns = "objj_protocol",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_getTypeDef",
+                        parameters = listOf(
+                                p("aName", "string")),
+                        returns = "objj_typeDef",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "ivar_getName",
+                        parameters = listOf(
+                                p("anIvar", "objj_ivar")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "ivar_getTypeEncoding",
+                        parameters = listOf(
+                                p("anIvar", "objj_ivar")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSend",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendFast",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendFast0",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendFast1",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendFast2",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendFast3",
+                        parameters = listOf(
+                                p("aReceiver", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendSuper",
+                        parameters = listOf(
+                                p("aSuper", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendSuper0",
+                        parameters = listOf(
+                                p("aSuper", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendSuper1",
+                        parameters = listOf(
+                                p("aSuper", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendSuper2",
+                        parameters = listOf(
+                                p("aSuper", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "objj_msgSendSuper3",
+                        parameters = listOf(
+                                p("aSuper", "id"),
+                                p("aSelector", "SEL"),
+                                p("...args", "?[]")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_getName",
+                        parameters = listOf(
+                                p("aMethod", "objj_method")
+                        ),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_copyReturnType",
+                        parameters = listOf(
+                                p("aMethod", "objj_method")),
+                        returns = "?",
+                        comment = "This will not return correct values if the compiler does not have the option 'IncludeTypeSignatures'",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_copyArgumentType",
+                        parameters = listOf(
+                                p("aMethod", "objj_method"),
+                                p("anIndex", "int")),
+                        returns = "?",
+                        comment = "This will not return correct values for index > 1 if the compiler does not have the option 'IncludeTypeSignatures'",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_getNumberOfArguments",
+                        parameters = listOf(
+                                p("aMethod", "objj_method")),
+                        returns = "int",
+                        comment = "Returns number of arguments for a method. The first argument is 'self' and the second is the selector.\n" +
+                                "Those are followed by the method arguments. So for example it will return 2 for a method with no arguments.",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_getImplementation",
+                        parameters = listOf(
+                                p("aMethod", "objj_method")),
+                        returns = "IMP",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_setImplementation",
+                        parameters = listOf(
+                                p("aMethod", "objj_method"),
+                                p("anImplementation", "IMP")),
+                        returns = "IMP",
+                        comment = "returns old implementation",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "method_exchangeImplementations",
+                        parameters = listOf(
+                                p("lhs", "objj_method"),
+                                p("rhs", "objj_method")
+                        ),
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "sel_getName",
+                        parameters = listOf(p("aSelector", "SEL")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "sel_getUid",
+                        parameters = listOf(p("aName", "string")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "sel_isEqual",
+                        parameters = listOf(
+                                p("lhs", "SEL"),
+                                p("rhs", "SEL")
+                        ),
+                        returns = "BOOL",
+                        skipCompletion = true
+                ),
+                fn(
+                        name = "sel_registerName",
+                        parameters = listOf(p("aName", "string")),
+                        returns = "string",
+                        skipCompletion = true
+                ),
+                fn("atob", listOf(p("encodedString", "string")), returns = "string"),
+                fn("btoa", listOf(p("rawString", "string")), returns = "string"),
+                fn(
+                        name = "fetch",
+                        parameters = listOf(
+                                p("input", "RequestInfo"),
+                                p("init", "RequestInit", nullable = true)),
+                        returns = "Promise<Response>"
+                ),
 
+                fn(
+                        name = "clearInterval",
+                        parameters = listOf(p("handler", "numer"))
+                ),
+                fn(
+                        name = "clearTimeout",
+                        parameters = listOf(p(name = "ref", type = "number"))
+                ),
+                fn(
+                        name = "createImageBitmap",
+                        parameters = listOf(p("image", "ImageBitmapSource")),
+                        returns = "Promise<ImageBitmap>"
+                ),
+                fn(
+                        name = "createImageBitmap(image: ImageBitmapSource, sx: number, sy: number, sw: number, sh: number): ",
+                        parameters = listOf(
+                                p("image", "ImageBitmapSource"),
+                                p("sx", "number"),
+                                p("sy", "number"),
+                                p("sw", "number"),
+                                p("sh", "number")),
+                        returns = "Promise<ImageBitmap>"
+                ),
+                fn("queueMicrotask", listOf(p("callback", "Function"))),
+                fn(
+                        name = "setInterval",
+                        parameters = listOf(
+                                p("handler", "TimerHandler"),
+                                p("timeout", "number"),
+                                p("...arguments", "any[]")),
+                        returns = "number"
+                ),
+                fn(
+                        name = "setTimeout",
+                        parameters = listOf(
+                                p("handler", "TimerHandler"),
+                                p("timeout", "number"),
+                                p("...arguments", "any[]")),
+                        returns = "number"
+                ),
+                fn (
+                        name = "CPThemeState",
+                        parameters = listOf(p("...values", "string|ThemeState")),
+                        returns = "ThemeState"
                 )
 
-
         )
-        globalJsFunctionString.forEach {
-                globalJsFunctions.add(fn(
-                        name = it,
-                        parameters = listOf(),
-                        skipCompletion = true
-                ))
-        }
+        globalJsFunctions.addAll(Window.functions)
         return globalJsFunctions
 }
 
@@ -485,7 +967,7 @@ val globalJsFunctions = createGlobalJsFunctions()
 
 val globalJsFunctionNames = globalJsFunctions.names()
 
-data class GlobalJsFunction (override val name:String, override val parameters:List<JsProperty> = listOf(), override val returns:String? = null, override val comment:String? = null, val skipCompletion:Boolean = false, val fileName:String? = null) : JsFunction
+data class GlobalJsFunction(override val name: String, override val parameters: List<JsProperty> = listOf(), override val returns: String? = null, override val comment: String? = null, val skipCompletion: Boolean = false, val fileName: String? = null) : JsFunction
 
 typealias fn = GlobalJsFunction
 
