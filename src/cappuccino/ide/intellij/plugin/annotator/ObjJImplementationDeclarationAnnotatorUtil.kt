@@ -140,10 +140,10 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
 
         val classNameString:String = className.text ?: return
         var severity = HighlightSeverity.ERROR
-        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.undec-class.message")
+        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.undec-class.message", classNameString)
         if (classNameString.startsWith("CG")) {
             severity = HighlightSeverity.WARNING
-            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message")
+            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", classNameString)
         }
         annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString))
     }
