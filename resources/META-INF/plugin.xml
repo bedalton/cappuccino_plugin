@@ -55,6 +55,9 @@
       <ul>
         <li>Added class name completion to instance variables.</li>
         <li>Added simple function name checking</li>
+        <li>Added Method parameter type checking</li>
+        <li>Added ability to suppress return type checking</li>
+        <li>Added basic autocomplete in @var and @ignore comment statements</li>
       </ul>
       <h5>Fixes</h5>
       <ul>
