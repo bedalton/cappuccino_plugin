@@ -146,6 +146,7 @@ object ObjJVariableNameAggregatorUtil {
                         ?: getFirstMatchOrNull(getAllFunctionScopeVariables(element.getParentOfType(ObjJFunctionDeclarationElement::class.java)), filter)
                         ?: getFirstMatchOrNull(getAllGlobalScopedFileVariables(element.containingFile), filter)
                         ?: getFirstMatchOrNull(getAllAtGlobalFileVariables(element.containingFile), filter)
+                        ?: getFirstMatchOrNull(getAllContainingClassInstanceVariables(element), filter)
             // If variable has been found, return it
             if (variableName != null) {
                 return variableName
@@ -224,7 +225,11 @@ object ObjJVariableNameAggregatorUtil {
     }
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
-        return if (element is ObjJHasContainingClass) getAllContainingClassInstanceVariables(element.containingClassName, element.project) else emptyList()
+        if (element is ObjJHasContainingClass)
+            getAllContainingClassInstanceVariables(element.containingClassName, element.project)
+        val containingClass = element.getParentOfType(ObjJClassDeclarationElement::class.java)
+                ?: return emptyList()
+        return getAllContainingClassInstanceVariables(containingClass.getClassNameString(), element.project)
     }
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {

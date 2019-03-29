@@ -3,6 +3,8 @@
 package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
+import cappuccino.ide.intellij.plugin.utils.orDefault
+import cappuccino.ide.intellij.plugin.utils.orFalse
 
 object ObjJPluginSettings {
 
@@ -57,9 +59,18 @@ object ObjJPluginSettings {
     private const val IGNORE_UNDERSCORED_CLASSES_DEFAULT = true
     private val ignoreUnderscoredClassesSetting = BooleanSetting(IGNORE_UNDERSCORED_CLASSES_KEY, IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     var ignoreUnderscoredClasses:Boolean get() {
-        return ignoreUnderscoredClassesSetting.value!!
+        return ignoreUnderscoredClassesSetting.value.orDefault(IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     } set(value) {
         ignoreUnderscoredClassesSetting.value = value
+    }
+
+    private const val IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER = "objj.inspection.ignoreMissingClassesWhenSuffixedWithRefOrPointer"
+    private const val IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT = false
+    private val ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting = BooleanSetting(IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER, IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT)
+    var ignoreMissingClassesWhenSuffixedWithRefOrPointer:Boolean get() {
+        return ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting.value.orDefault(IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT)
+    } set(value) {
+        ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting.value = value
     }
 
     private const val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"

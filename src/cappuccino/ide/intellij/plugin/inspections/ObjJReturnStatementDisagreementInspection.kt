@@ -97,7 +97,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
             val returnType = methodDeclaration.methodHeader.returnType
-            if (returnType == "@action" || returnType == "IBAction") {
+            if (returnType == "@action" || returnType == "IBAction" || returnType == "void" /* Added to allow void annotation to be handled elsewhere */) {
                 return
             } else {
                 //Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
@@ -143,17 +143,6 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             }
         }
 
-        /*
-        private fun validateReturnStatement(element: ObjJReturnStatement, problemsHolder: ProblemsHolder) {
-            if (element.getParentOfType(ObjJBlock::class.java) == null) {
-                problemsHolder.registerProblem(element, "return used outside of block")
-            } else if (element.expr != null &&
-                    element.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null &&
-                    element.getParentOfType(ObjJMethodDeclaration::class.java) == null) {
-                problemsHolder.registerProblem(element, "Return value not captured")
-            }
-        }
-*/
         private fun returnMethodCallReturnsValue(methodCall: ObjJMethodCall?): Boolean {
             if (methodCall == null) {
                 return false

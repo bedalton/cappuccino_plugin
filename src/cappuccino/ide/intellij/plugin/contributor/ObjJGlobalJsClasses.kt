@@ -1,8 +1,25 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-data class GlobalJSClass(val className: String, val constructor: GlobalJSConstructor = GlobalJSConstructor(), val functions: List<GlobalJSClassFunction> = listOf(), val staticFunctions: List<GlobalJSClassFunction> = listOf(), val properties: List<JsProperty> = listOf(), val staticProperties: List<JsProperty> = listOf(), val extends: String? = null, val comment: String? = null, val static:Boolean = false)
+data class GlobalJSClass(
+        val className: String,
+        val constructor: GlobalJSConstructor = GlobalJSConstructor(),
+        val functions: List<GlobalJSClassFunction> = listOf(),
+        val staticFunctions: List<GlobalJSClassFunction> = listOf(),
+        val properties: List<JsProperty> = listOf(),
+        val staticProperties: List<JsProperty> = listOf(),
+        val extends: String? = null,
+        val comment: String? = null,
+        val static:Boolean = false,
+        val isStruct:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
-data class JsProperty(val name: String, val type: String = "?", val isPublic: Boolean = true, val nullable: Boolean = true, val readonly:Boolean = false, val comment: String? = null)
+data class JsProperty(
+        val name: String,
+        val type: String = "?",
+        val isPublic: Boolean = true,
+        val nullable: Boolean = true,
+        val readonly:Boolean = false,
+        val comment: String? = null,
+        val default:String? = null)
 
 interface JsFunction {
     val name: String
@@ -1093,7 +1110,38 @@ val globalJSClasses = listOf(
         ),
         c (
                 className = "Document"
+        ),
+        c (
+                className = "Array"
+        ),
+        c (
+                className = "RegExp",
+                constructor = ctor (listOf(
+                        p ("pattern", "string|RegExp"),
+                        p ("flags", "string", nullable = true)
+                )),
+                functions = listOf(
+                        f (
+                                name = "exec",
+                                parameters = listOf(p("string", "string", comment = "The String object or string literal on which to perform the search.")),
+                                returns = "string[]|null",
+                                comment = "Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search."
+                        ),
+                        f (
+                                name = "test",
+                                parameters = listOf(
+                                        p("string", "string", comment = "String on which to perform the search")),
+                                returns = "BOOL",
+                                comment = "Returns a Boolean value that indicates whether or not a pattern exists in a searched string.")
+                ),
+                properties = listOf(
+                        p ("source", "string", readonly = true, comment = "Returns a copy of the text of the regular expression pattern"),
+                        p ("global", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the global flag (g) used with a regular expression.", default = "false"),
+                        p ("ignoreCase", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the ignoreCase flag (i) used with a regular expression.", default = "false"),
+                        p ("multiline", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the multiline flag (m) used with a regular expression.", default = "false")
+
+                )
         )
 )
 
-val globalJSClassNames = globalJSClasses.map { it.className }
+val globalJSClassNames = globalJSClasses.filter{ !it.isStruct }.map { it.className }
