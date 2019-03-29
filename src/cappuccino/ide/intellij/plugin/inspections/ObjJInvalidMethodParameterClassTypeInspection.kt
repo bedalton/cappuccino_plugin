@@ -51,25 +51,73 @@ class ObjJInvalidMethodParameterClassTypeInspection : LocalInspectionTool() {
             }
             if (isValid)
                 return
-            if (className.text?.startsWith("CG") == true) {
-                problemsHolder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text), ProblemHighlightType.WEAK_WARNING,
-                        ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD),
-                        ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS),
-                        ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE),
-                        ObjJAlterIgnoredClassNames(className.text, addToIgnored = true))
-                return
+            val classNameText = className.text?.replace("(Ref|Pointer)$".toRegex(), "") ?: return
+            val classNameEndedInPointerOrRef = classNameText != className.text
+            when {
+                classNameEndedInPointerOrRef -> {
+                    val isValidWithoutRefOrPointer = ObjJClassTypePsiUtil.isValidClass(classNameText, className.project) ?: return
+                    if (isValidWithoutRefOrPointer && ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer) {
+                        return
+                    }
+                    registerIfEndsInRefOrPointer(className, problemsHolder)
+                }
+                classNameText.startsWith("CG") -> registerIfEndsInCG(className, problemsHolder)
+                else -> registerDefault(className, problemsHolder)
             }
-            problemsHolder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text),
-                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD),
-                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS),
-                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE),
-                    ObjJAlterIgnoredClassNames(className.text, addToIgnored = true))
         }
 
         private fun getClassNameParam(selector:ObjJMethodDeclarationSelector) : ObjJClassName? {
             val formalVariableType = selector.formalVariableType
                     ?: return null
             return formalVariableType.varTypeId?.className ?: formalVariableType.className
+        }
+
+        private fun registerIfEndsInCG(className: ObjJClassName, problemsHolder: ProblemsHolder) {
+            problemsHolder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text),
+                    ProblemHighlightType.WEAK_WARNING,
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE),
+                    ObjJAlterIgnoredClassNames(className.text, addToIgnored = true))
+        }
+
+        private fun registerIfEndsInRefOrPointer(className:ObjJClassName, problemsHolder: ProblemsHolder) {
+            if (ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer) {
+                registerIfEndsInRefOrPointerAndSettingIsTrue(className, problemsHolder)
+            } else {
+                registerIfEndsInRefOrPointerAndSettingIsFalse(className, problemsHolder)
+            }
+            return
+        }
+
+        private fun registerIfEndsInRefOrPointerAndSettingIsTrue(className:ObjJClassName, problemsHolder: ProblemsHolder) {
+            problemsHolder.registerProblem(
+                    className,
+                    ObjJBundle.message("objective-j.inspections.class-type-inspection.is-ignoring-ref-and-pointer.message"),
+                    ProblemHighlightType.INFORMATION,
+                    ObjJAlterIgnoreClassNamesWithSuffixRefOrPointer(false),
+                    ObjJAlterIgnoredClassNames(className.text, addToIgnored = true)
+            )
+        }
+
+        private fun registerIfEndsInRefOrPointerAndSettingIsFalse(className:ObjJClassName, problemsHolder: ProblemsHolder) {
+            problemsHolder.registerProblem(
+                    className,
+                    ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text),
+                    ObjJAlterIgnoreClassNamesWithSuffixRefOrPointer(true),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE),
+                    ObjJAlterIgnoredClassNames(className.text, addToIgnored = true)
+            )
+        }
+
+        private fun registerDefault(className: ObjJClassName, problemsHolder: ProblemsHolder) {
+            problemsHolder.registerProblem(className, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", className.text),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS),
+                    ObjJAddSuppressInspectionForScope(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE),
+                    ObjJAlterIgnoredClassNames(className.text, addToIgnored = true))
         }
     }
 }

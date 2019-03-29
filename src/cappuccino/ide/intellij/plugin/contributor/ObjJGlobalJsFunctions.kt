@@ -956,6 +956,121 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "CPThemeState",
                         parameters = listOf(p("...values", "string|ThemeState")),
                         returns = "ThemeState"
+                ),
+                fn (
+                        name = "require",
+                        parameters = listOf(p("x", "string")),
+                        returns = "?"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleLeftTop",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p("aTransform", "?"),
+                                p("aLeft", "number"),
+                                p("aTop", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleRightTop",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p("aTransform", "?"),
+                                p("aRight", "number"),
+                                p("aTop", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleLeftBottom",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p("aTransform", "?"),
+                                p("aLeft", "number"),
+                                p("aBottom", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleRightBottom",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p("aTransform", "?"),
+                                p("aRight", "number"),
+                                p("aBottom", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleSize",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p ("aWidth", "number"),
+                                p("aHeight", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetSize",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p ("aWidth", "number"),
+                                p("aHeight", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerSetStyleBackgroundSize",
+                        parameters = listOf(
+                                p("aDOMElement", "DOMElement"),
+                                p ("aWidth", "number"),
+                                p("aHeight", "number")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerAppendChild",
+                        parameters = listOf(
+                                p("aParentElement", "DOMElement"),
+                                p ("aChildElement", "DOMElement")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerInsertBefore",
+                        parameters = listOf(
+                                p("aParentElement", "DOMElement"),
+                                p("aChildElement", "DOMElement"),
+                                p("aBeforeElement", "DOMElement")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "CPDOMDisplayServerRemoveChild",
+                        parameters = listOf(
+                                p("aParentElement", "DOMElement"),
+                                p("aChildElement", "DOMElement")
+                        ),
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "PREPARE_DOM_OPTIMIZATION",
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "EXECUTE_DOM_INSTRUCTIONS",
+                        fileName = "CPDOMDisplayServer.h"
+                ),
+                fn (
+                        name = "PLATFORM",
+                        parameters = listOf(p("FEATURE")),
+                        fileName = "Platform.h"
+                ),
+                fn (
+                        name = "_IS_NUMERIC",
+                        parameters = listOf(p("n", "number")),
+                        fileName = "Foundation.h"
                 )
 
         )

@@ -82,6 +82,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val element = parameters.position
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
         when {
+            element.hasParentOfType(ObjJTypeDef::class.java) -> {
+                resultSet.stopHere()
+                return
+            }
             // Comment
             element.elementType in ObjJTokenSets.COMMENTS || element is PsiCommentImpl ->
                 ObjJCommentCompletionProvider.addCommentCompletions(resultSet, element)

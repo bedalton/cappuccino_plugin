@@ -50,6 +50,17 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <h4>Version: 0.3.03</h4>
+      <h5>Improvements</h5>
+      <ul>
+        <li>Added class name completion to instance variables.</li>
+        <li>Added simple function name checking</li>
+      </ul>
+      <h5>Fixes</h5>
+      <ul>
+        <li>Fixed nested function variables being marked as undeclared</li>
+        <li>Added Typedef declarations to suggestions</li>
+      </ul>
       <h4>Version: 0.3.02</h4>
       <ul>
         <li>Improved suggestion highlighting in suggestions for known types.<br/>
@@ -242,6 +253,16 @@
                       groupName="Objective-J"
                       enabledByDefault="true"
     />
+
+    <localInspection  language="ObjectiveJ"
+                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVoidMethodReturnAValueInspection"
+                      level="WARNING"
+                      displayName="Void method returns a value"
+                      shortName="VoidMethodReturnsAValue"
+                      groupName="Objective-J"
+                      enabledByDefault="true"
+    />
+
 
 
     <!-- Indices -->

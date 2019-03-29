@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
+import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
@@ -94,6 +95,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJIgnoreEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
+                return
+            }
+
+            if (variableName.text in ObjJGlobalJSVariablesNames) {
                 return
             }
 

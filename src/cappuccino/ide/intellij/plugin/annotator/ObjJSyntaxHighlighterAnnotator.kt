@@ -154,6 +154,11 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         val resolved = functionName.reference.resolve()
         if (resolved?.getParentOfType(ObjJMethodHeader::class.java) != null) {
             colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
+            return
+        }
+        if (resolved?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
+            colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE)
+            return
         }
         if (resolved != null) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))

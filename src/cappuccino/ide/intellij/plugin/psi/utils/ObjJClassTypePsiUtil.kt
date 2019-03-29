@@ -31,4 +31,20 @@ object ObjJClassTypePsiUtil {
         return classNameString in ObjJClassDeclarationsIndex.instance.getAllKeys(project) ||
                 classNameString in ObjJTypeDefIndex.instance.getAllKeys(project)
     }
+
+    /**
+     * Determines whether this class name string references a defined class
+     * Also takes into account @typedef statements
+     */
+    fun isValidClass(classNameString:String, project: Project) : Boolean? {
+        // Is primitive type, do not continue check
+        if (classNameString in ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES || classNameString.contains("signed"))
+            return true
+        if (globalJSClassNames.contains(classNameString))
+            return true
+        if (DumbService.isDumb(project))
+            return null
+        return classNameString in ObjJClassDeclarationsIndex.instance.getAllKeys(project) ||
+                classNameString in ObjJTypeDefIndex.instance.getAllKeys(project)
+    }
 }

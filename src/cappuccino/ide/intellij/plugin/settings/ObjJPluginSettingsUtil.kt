@@ -65,7 +65,6 @@ object ObjJPluginSettingsUtil {
     }
 
     class StringSetting internal constructor(private val key: String, private val defaultValue: String) : Setting<String> {
-
         override var value: String?
             get() = ObjJPluginSettingsUtil.getValue(key, defaultValue)
             set(valueIn) {
@@ -105,7 +104,6 @@ object ObjJPluginSettingsUtil {
     }
 
     class AnnotationLevelSetting internal constructor(private val key: String, private val defaultValue: AnnotationLevel) : Setting<AnnotationLevel> {
-
         override var value: AnnotationLevel?
             get() {
                 val rawValue = ObjJPluginSettingsUtil.getInt(key, defaultValue.value)
