@@ -4,7 +4,6 @@ package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
 import cappuccino.ide.intellij.plugin.utils.orDefault
-import cappuccino.ide.intellij.plugin.utils.orFalse
 
 object ObjJPluginSettings {
 
@@ -204,7 +203,7 @@ object ObjJPluginSettings {
     // ===== Ignore Class Names ===== //
     // ============================== //
     private const val IGNORE_MISSING_CLASSES_KEY = "objj.annotator.ignoreMissingFunctions"
-    private val ignoreMissingClassNamesSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_FUNCTIONS_KEY)
+    private val ignoreMissingClassNamesSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_CLASSES_KEY)
 
 
     fun ignoreClassName(keyword:String) = ignoreMissingClassNamesSetting.ignoreKeyword(keyword)

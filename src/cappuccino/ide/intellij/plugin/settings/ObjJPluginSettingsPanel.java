@@ -146,7 +146,7 @@ public class ObjJPluginSettingsPanel {
         settingsPanel.add(label11, new GridConstraints(24, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         globallyIgnoredFunctionNames = new JTextArea();
         globallyIgnoredFunctionNames.setLineWrap(true);
-        settingsPanel.add(globallyIgnoredFunctionNames, new GridConstraints(25, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, 50), null, 0, false));
+        settingsPanel.add(globallyIgnoredFunctionNames, new GridConstraints(25, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, 50), null, 0, false));
         final JLabel label12 = new JLabel();
         this.$$$loadLabelText$$$(label12, ResourceBundle.getBundle("cappuccino/ide/intellij/plugin/lang/objective-j-bundle").getString("objective-j.settings.global-ignores.class-names.title"));
         settingsPanel.add(label12, new GridConstraints(26, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -158,6 +158,7 @@ public class ObjJPluginSettingsPanel {
         this.$$$loadLabelText$$$(label13, ResourceBundle.getBundle("cappuccino/ide/intellij/plugin/lang/objective-j-bundle").getString("objective-j.settings.global-ignores.class-names.hint"));
         settingsPanel.add(label13, new GridConstraints(27, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         globallyIgnoredClassNames = new JTextArea();
+        globallyIgnoredClassNames.setLineWrap(true);
         settingsPanel.add(globallyIgnoredClassNames, new GridConstraints(28, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         ignoreMissingClassesWhenSuffixedWithRefOrPointer = new JCheckBox();
         this.$$$loadButtonText$$$(ignoreMissingClassesWhenSuffixedWithRefOrPointer, ResourceBundle.getBundle("cappuccino/ide/intellij/plugin/lang/objective-j-bundle").getString("objective-j.settings.classes.on-ref-or-pointer-suffix.checkbox"));
