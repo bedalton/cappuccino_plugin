@@ -39,8 +39,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             }
         }
 
-
-
         if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
                 return Indent.getNoneIndent()
