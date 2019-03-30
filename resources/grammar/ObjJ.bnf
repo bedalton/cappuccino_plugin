@@ -850,7 +850,7 @@ methodDeclaration
 methodHeader
 	::= methodScopeMarker '(' (methodHeaderReturnTypeElement) ')' methodHeaderSelectorList
 	{
-		pin=2
+		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub"
 		implements = [
@@ -1224,6 +1224,7 @@ private protocolSection
 protocolScopedMethodBlock
 	::= ('@optional'|'@required') protocolStatementList?
 	{
+		pin=1
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
