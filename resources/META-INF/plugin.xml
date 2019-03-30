@@ -1,116 +1,116 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.3.02</version>
+  <version>0.3.03</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
-
   <description><![CDATA[
-<h1>Objective-J Language plugin</h1>
-<p>Provides basic autocomplete functionality for selector methods and variable names</p>
-<p>Plugin allows the use of a @var comment, in the format of "// @var ClassName variableName" to allow for more accurate completion suggestions</p>
-<p>Added support for @ignore comments to suppress inspections<br />
-  <ul>
-    <li>A plain annotation on a method with @ignore causes the method warnings to be skipped, as well as skip this method in suggestions</li>
-    <li>Classes prefixed with an underscore are considered relative to document, and will not be suggested outside of it.<br/>**This can be disabled in settings</li>
-    <li>To disable an inspection, press alt+enter to trigger dialog, then select the inspection and scope to ignore</li>
-  </ul>
-</p>
-<p>Added protocol method generator for required methods. Trigger generator with alt+enter while cursor is on protocol name</p>
-<br/>
-<h2>Note</h2>
-<ul>
-	<li>Variable type resolution is not accurately implemented which causes suggestion of any method selector, even if not applicable to a variable's type</li>
-	<li>This plugin requires the original source files for the cappuccino framework to work. They can be downloaded
-		from the Cappuccino github page(<a href="https://github.com/cappuccino/cappuccino" alt="Cappuccino's GitHub Page">Link</a>)
-	</li>
-	<li>
-		<p>Plugin does <b>NOT</b> use Intellij's javascript plugin<br/></p>
-		<ul>
-			<li><i>Javascript completion and error checking is not provided</i></li>
-		</ul>
-	</li>
-</ul>
-<br/>
-<br/>
-<h2>Working</h2>
-<ul>
-	<li>Non-Intelligent method call selector completion</li>
-	<li>Variable name completion</li>
-	<li>Variable, Function and Method declaration resolution</li>
-	<li>Syntax Highlighting</li>
-	<li>Invalid method call selector warnings</li>
-	<li>Improved automatic indentation. Formatter still needs work</li>
-</ul>
-<h2>Experimental</h2>
-<ul>
-	<li>Infer variable type for method call completion.<br/>
-	 **May be too aggressive, eliminating valid options
-	 </li>
-</ul>
+    <h1>Objective-J Language plugin</h1>
+    <p>Provides basic autocomplete functionality for selector methods and variable names</p>
+    <p>Plugin allows the use of a @var comment, in the format of "// @var ClassName variableName" to allow for more accurate completion suggestions</p>
+    <p>Added support for @ignore comments to suppress inspections<br />
+    <ul>
+      <li>A plain annotation on a method with @ignore causes the method warnings to be skipped, as well as skip this method in suggestions</li>
+      <li>Classes prefixed with an underscore are considered relative to document, and will not be suggested outside of it.<br/>**This can be disabled in settings</li>
+      <li>To disable an inspection, press alt+enter to trigger dialog, then select the inspection and scope to ignore</li>
+    </ul>
+    </p>
+    <p>Added protocol method generator for required methods. Trigger generator with alt+enter while cursor is on protocol name</p>
+    <br/>
+    <h2>Note</h2>
+    <ul>
+      <li>Variable type resolution is not accurately implemented which causes suggestion of any method selector, even if not applicable to a variable's type</li>
+      <li>This plugin requires the original source files for the cappuccino framework to work. They can be downloaded
+        from the Cappuccino github page(<a href="https://github.com/cappuccino/cappuccino" alt="Cappuccino's GitHub Page">Link</a>)
+      </li>
+      <li>
+        <p>Plugin does <b>NOT</b> use Intellij's javascript plugin<br/></p>
+        <ul>
+          <li><i>Javascript completion and error checking is not provided</i></li>
+        </ul>
+      </li>
+    </ul>
+    <br/>
+    <br/>
+    <h3>Please report issues to our <a href="https://github.com/bedalton/cappuccino_plugin/issues">GitHub issues page</a></h3>
+    <h2>Working</h2>
+    <ul>
+      <li>Non-Intelligent method call selector completion</li>
+      <li>Variable name completion</li>
+      <li>Variable, Function and Method declaration resolution</li>
+      <li>Syntax Highlighting</li>
+      <li>Invalid method call selector warnings</li>
+      <li>Improved automatic indentation. Formatter still needs work</li>
+    </ul>
+    <h2>Experimental</h2>
+    <ul>
+      <li>Infer variable type for method call completion.<br/>
+        **May be too aggressive, eliminating valid options
+      </li>
+    </ul>
     ]]></description>
 
   <change-notes><![CDATA[
-      <h4>Version: 0.3.03</h4>
-      <h5>Improvements</h5>
-      <ul>
-        <li>Added class name completion to instance variables and method parameters.</li>
-        <li>Added simple function name checking</li>
-        <li>Added Method parameter type checking</li>
-        <li>Minor Improvements to variable type resolution for known types</li>
-        <li>Added ability to suppress return type checking</li>
-        <li>Added basic autocomplete in @var and @ignore comment statements</li>
-        <li>Added Typedef declarations to suggestions</li>
-      </ul>
-      <h5>Fixes</h5>
-      <ul>
-        <li>Fixed nested function variables being marked as undeclared</li>
-        <li>Fixed backspace prevented in some cases</li>
-        <li>Separated return inspection when return type is void</li>
-        <li>Fixed overzealous @end completion in @protocol and @implementation</li>
-        <li>Removed unnecessary completions in certain cases</li>
-      </ul>
-      <h5>Known Problems</h5>
-      <ul>Weird spacing and indentation</ul>
-      <ul></ul>
-      <h4>Version: 0.3.02</h4>
-      <ul>
-        <li>Improved suggestion highlighting in suggestions for known types.<br/>
-        </li>
-        <li>Added experimental type resolution<br/>
-          <ul>
-            <li>Enabled by default, but can be disabled in settings if causing problems</li>
-            <li>Can be disabled for statement with comment // doNotInferType</li>
-          </ul>
-        </li>
-        <li>Fixed error on @action return type
-        <li>Improved self and super resolution to account for method call</li>
-      </ul>
-      <h4>Version: 0.3.01</h4>
-      <ul>
-        <li>Improved function completion for file scoped functions</li>
-      </ul>
-      <h4>Version: 0.3</h4>
-      <ul>
-        <li>Added improved indentation support</li>
-        <li>Added comment annotation for @var</li>
-        <li>Added @ignore annotation to ignore inspections</li>
-        <li>Fixed incorrectly resolved qualified names. Qualified names should not be resolved.</li>
-        <li>Updated syntax highlighting colors.</li>
-        <li>Added protocol method stubs fixer</li>
-      </ul>
-      <h4>Version: 0.2</h4>
-      <ul>
+    <h4>Version: 0.3.03</h4>
+    <h5>Improvements</h5>
+    <ul>
+      <li>Added class name completion to instance variables and method parameters.</li>
+      <li>Added simple function name checking</li>
+      <li>Added Method parameter type checking</li>
+      <li>Minor Improvements to variable type resolution for known types</li>
+      <li>Added ability to suppress return type checking</li>
+      <li>Added basic autocomplete in @var and @ignore comment statements</li>
+      <li>Added Typedef declarations to suggestions</li>
+    </ul>
+    <h5>Fixes</h5>
+    <ul>
+      <li>Fixed nested function variables being marked as undeclared</li>
+      <li>Fixed backspace prevented in some cases</li>
+      <li>Separated return inspection when return type is void</li>
+      <li>Fixed overzealous @end completion in @protocol and @implementation</li>
+      <li>Removed unnecessary completions in certain cases</li>
+    </ul>
+    <h5>Known Problems</h5>
+    <ul>Weird spacing and indentation</ul>
+    <ul></ul>
+    <h4>Version: 0.3.02</h4>
+    <ul>
+      <li>Improved suggestion highlighting in suggestions for known types.<br/>
+      </li>
+      <li>Added experimental type resolution<br/>
+        <ul>
+          <li>Enabled by default, but can be disabled in settings if causing problems</li>
+          <li>Can be disabled for statement with comment // doNotInferType</li>
+        </ul>
+      </li>
+      <li>Fixed error on @action return type
+      <li>Improved self and super resolution to account for method call</li>
+    </ul>
+    <h4>Version: 0.3.01</h4>
+    <ul>
+      <li>Improved function completion for file scoped functions</li>
+    </ul>
+    <h4>Version: 0.3</h4>
+    <ul>
+      <li>Added improved indentation support</li>
+      <li>Added comment annotation for @var</li>
+      <li>Added @ignore annotation to ignore inspections</li>
+      <li>Fixed incorrectly resolved qualified names. Qualified names should not be resolved.</li>
+      <li>Updated syntax highlighting colors.</li>
+      <li>Added protocol method stubs fixer</li>
+    </ul>
+    <h4>Version: 0.2</h4>
+    <ul>
       <li>removed buggy method selector rename</li>
       <li>Improved variable name autocompletion</li>
       <li>Added method declaration inspections</li>
       <li>0.2.02
-      <ul>
-        <li>Fixed error on null selector when annotating</li>
-      </ul>
+        <ul>
+          <li>Fixed error on null selector when annotating</li>
+        </ul>
       </li>
-      </ul>
+    </ul>
     ]]>
-  </change-notes>
+    </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
   <idea-version since-build="173.0"/>
@@ -178,7 +178,7 @@
                      enabledByDefault="true"
                      displayName="Overshadowing Variable Declarations"
                      shortName="VariableOvershadowsParentVariable"
-                     />
+    />
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVariableOvershadowsClassVariable"
@@ -316,9 +316,9 @@
 
   <actions>
     <action
-        id="ObjJ.NewFile"
-        icon="ObjJIcons.DOCUMENT_ICON"
-        class="cappuccino.ide.intellij.plugin.actions.ObjJCreateFileAction">
+            id="ObjJ.NewFile"
+            icon="ObjJIcons.DOCUMENT_ICON"
+            class="cappuccino.ide.intellij.plugin.actions.ObjJCreateFileAction">
       <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
     </action>
   </actions>
