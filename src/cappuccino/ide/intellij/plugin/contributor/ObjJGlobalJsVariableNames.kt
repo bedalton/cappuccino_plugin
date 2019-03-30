@@ -58,3 +58,8 @@ val ObjJGlobalJSVariables:List<JsProperty> = {
 }()
 
 val ObjJGlobalJSVariablesNames = ObjJGlobalJSVariables.map { it.name }
+
+val ObjJGlobalVariableNamesWithoutIgnores =
+        ObjJGlobalJSVariables
+                .filterNot {it.ignore}
+                .map { it.name }
