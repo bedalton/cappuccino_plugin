@@ -53,16 +53,21 @@
       <h4>Version: 0.3.03</h4>
       <h5>Improvements</h5>
       <ul>
-        <li>Added class name completion to instance variables.</li>
+        <li>Added class name completion to instance variables and method parameters.</li>
         <li>Added simple function name checking</li>
         <li>Added Method parameter type checking</li>
+        <li>Minor Improvements to variable type resolution for known types</li>
         <li>Added ability to suppress return type checking</li>
         <li>Added basic autocomplete in @var and @ignore comment statements</li>
+        <li>Added Typedef declarations to suggestions</li>
       </ul>
       <h5>Fixes</h5>
       <ul>
         <li>Fixed nested function variables being marked as undeclared</li>
-        <li>Added Typedef declarations to suggestions</li>
+        <li>Fixed backspace prevented in some cases</li>
+        <li>Separated return inspection when return type is void</li>
+        <li>Fixed overzealous @end completion in @protocol and @implementation</li>
+        <li>Removed unnecessary completions in certain cases</li>
       </ul>
       <h4>Version: 0.3.02</h4>
       <ul>
