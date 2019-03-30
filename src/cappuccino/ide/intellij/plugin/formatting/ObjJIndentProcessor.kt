@@ -13,6 +13,7 @@ import com.intellij.psi.tree.TokenSet
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.TokenType.WHITE_SPACE
+import java.util.logging.Logger
 
 class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
     @Suppress("UNUSED_PARAMETER", "UNUSED_VARIABLE")
@@ -32,7 +33,17 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
+        if (parentType == ObjJ_IMPLEMENTATION_DECLARATION) {
+            if ((prevSibling == ObjJ_OPEN_BRACE || prevSibling == ObjJ_SEMI_COLON || prevSibling == ObjJ_INSTANCE_VARIABLE_DECLARATION) && elementType != ObjJ_CLOSE_BRACE) {
+                Indent.getNormalIndent()
+            }
+        }
+
+
+
         if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
+                return Indent.getNoneIndent()
             return Indent.getNormalIndent()
         }
 
