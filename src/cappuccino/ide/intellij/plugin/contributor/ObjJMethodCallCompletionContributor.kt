@@ -114,14 +114,15 @@ object ObjJMethodCallCompletionContributor {
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             //Determine the priority
             val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
-            //Add the lookup element
-            out.add(SelectorCompletionPriorityTupple(selector, priority))
+
 
             if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
                 if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames)) {
                     filteredOut.add(SelectorCompletionPriorityTupple(selector, GENERIC_METHOD_SUGGESTION_PRIORITY))
+                    continue
                 }
-            }
+            }//Add the lookup element
+            out.add(SelectorCompletionPriorityTupple(selector, priority))
         }
         if (out.isEmpty()) {
             out = filteredOut
