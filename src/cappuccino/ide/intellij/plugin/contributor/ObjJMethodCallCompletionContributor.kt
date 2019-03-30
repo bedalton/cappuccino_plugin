@@ -13,7 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.getClassConstraints
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
@@ -101,7 +100,8 @@ object ObjJMethodCallCompletionContributor {
             return
         }
         val filterIfStrict = ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown
-        val out = mutableListOf<SelectorCompletionPriorityTupple>()
+        var out = mutableListOf<SelectorCompletionPriorityTupple>()
+        val filteredOut = mutableListOf<SelectorCompletionPriorityTupple>()
         //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
         for (methodHeader: ObjJMethodHeaderDeclaration<*> in methodHeaders) {
             ProgressIndicatorProvider.checkCanceled()
@@ -110,19 +110,22 @@ object ObjJMethodCallCompletionContributor {
             if (!inScope(targetScope, methodHeader)) {
                 continue
             }
-            if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames) {
-                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames) && filterIfStrict) {
-                    continue
-                }
-            }
             //Get the selector at index, or continue loop
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             //Determine the priority
             val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
             //Add the lookup element
             out.add(SelectorCompletionPriorityTupple(selector, priority))
-        }
 
+            if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
+                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames)) {
+                    filteredOut.add(SelectorCompletionPriorityTupple(selector, GENERIC_METHOD_SUGGESTION_PRIORITY))
+                }
+            }
+        }
+        if (out.isEmpty()) {
+            out = filteredOut
+        }
         out.sortByDescending { it.priority }
         out.forEach {
             ObjJSelectorLookupUtil.addSelectorLookupElement(result, it.selector, selectorIndex, it.priority)
