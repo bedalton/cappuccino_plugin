@@ -72,9 +72,23 @@ object ArrayUtils {
         }
         return out
     }
-
 }
 
+fun List<String>.startsWith(prefix:String) : Boolean {
+    this.forEach {
+        if (it.startsWith(prefix))
+            return true
+    }
+    return false;
+}
+
+fun List<String>.startsWithAny(prefixes:List<String>) : Boolean {
+    prefixes.forEach {
+        if (this.startsWith(it))
+            return true
+    }
+    return false
+}
 
 
 fun <T> getFirstMatchOrNull(variableNameElements: List<T>, filter: Filter<T>): T? {
