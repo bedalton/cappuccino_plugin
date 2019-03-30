@@ -33,7 +33,7 @@ class ObjJClassNameStubType(
     @Throws(IOException::class)
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): ObjJClassNameStub {
-        val className:StringRef = stream.readName() ?: StringRef.fromString("");
+        val className:StringRef = stream.readName() ?: StringRef.fromString("")
         return ObjJClassNameStubImpl(parent,className)
     }
 }

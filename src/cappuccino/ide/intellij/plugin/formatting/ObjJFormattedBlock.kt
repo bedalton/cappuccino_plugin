@@ -7,9 +7,9 @@ import cappuccino.ide.intellij.plugin.psi.ObjJArguments
 import cappuccino.ide.intellij.plugin.psi.ObjJIfStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
@@ -26,7 +26,7 @@ import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import java.util.logging.Logger
 
-class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
+class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
     private val myIndentProcessor: ObjJIndentProcessor
     private val mySpacingProcessor: ObjJSpacingProcessor
     private val myWrappingProcessor: ObjJWrappingProcessor
@@ -35,7 +35,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
     private val myIndent: Indent?
     private var myParent: BlockWithParent? = null
     private var mySubObjJFormattedBlocks: MutableList<ObjJFormattedBlock>? = null
-    private val EMPTY = mutableListOf<ObjJFormattedBlock>()
+    private val _empty = mutableListOf<ObjJFormattedBlock>()
 
     private val subObjJFormattedBlocks: List<ObjJFormattedBlock>?
         get() {
@@ -44,13 +44,13 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
                 for (block in subBlocks) {
                     mySubObjJFormattedBlocks!!.add(block as ObjJFormattedBlock)
                 }
-                mySubObjJFormattedBlocks = if (!mySubObjJFormattedBlocks!!.isEmpty()) mySubObjJFormattedBlocks else EMPTY
+                mySubObjJFormattedBlocks = if (!mySubObjJFormattedBlocks!!.isEmpty()) mySubObjJFormattedBlocks else _empty
             }
             return mySubObjJFormattedBlocks
         }
 
     init {
-        val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(ObjJCodeStyleSettings::class.java)
+        @Suppress("DEPRECATION") val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(ObjJCodeStyleSettings::class.java)
         myIndentProcessor = ObjJIndentProcessor(myContext.objJSettings)
         mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjStyleSettings)
         myWrappingProcessor = ObjJWrappingProcessor(node, myContext.objJSettings)
@@ -85,7 +85,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
         return children
     }
 
-    fun createChildWrap(child: ASTNode): Wrap {
+    private fun createChildWrap(child: ASTNode): Wrap {
         val childType = child.elementType
         val wrap = myWrappingProcessor.createChildWrap(child, Wrap.createWrap(WrapType.NONE, false), myChildWrap)
 
@@ -95,7 +95,7 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
         return wrap
     }
 
-    protected fun createChildAlignment(child: ASTNode): Alignment? {
+    private fun createChildAlignment(child: ASTNode): Alignment? {
         val type = child.elementType
         return if (type !== ObjJ_OPEN_PAREN && !ObjJTokenSets.BLOCKS.contains(type)) {
             myAlignmentProcessor.createChildAlignment()
@@ -119,8 +119,17 @@ class ObjJFormattedBlock protected constructor(node: ASTNode, wrap: Wrap?, align
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
+
+        if (node.treeParent?.elementType == ObjJStubTypes.FILE) {
+            return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
         if (myNode.treeParent?.psi is ObjJClassDeclarationElement<*>) {
             return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
+        if (myNode.treeParent?.elementType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
         if (elementType == ObjJ_METHOD_CALL) {

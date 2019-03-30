@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
-import com.intellij.psi.StubBasedPsiElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.ObjJLastFormalParameterArg
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub

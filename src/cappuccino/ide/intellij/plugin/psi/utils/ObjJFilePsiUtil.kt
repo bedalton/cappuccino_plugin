@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.openapi.roots.ProjectRootManager
@@ -9,13 +11,16 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 import java.nio.file.FileSystems
 import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
+
+/**
+ * @todo implement class to resolve imports and framework names
+ */
 object ObjJFilePsiUtil {
 
-    private val LOGGER = Logger.getLogger(ObjJFilePsiUtil::class.java.name)
+    private val LOGGER by lazy {Logger.getLogger(ObjJFilePsiUtil::class.java.name)}
     private val SEPARATOR = FileSystems.getDefault().separator
     private val INFO_PLIST_DICT_PATTERN = Pattern.compile(".*<dict>(.*)</dict>.*")
     private val INFO_PLIST_PROPERTY_PATTERN = Pattern.compile("(<key>(.*)</key>\n<[^>]+>(.*)</[^>]+>)*")
@@ -57,6 +62,10 @@ object ObjJFilePsiUtil {
         } else null
     }
 
+    /**
+     * Gets all import statements in an ObjJFile as strings
+     * Useful when determining what files have been imported for class resolution
+     */
     fun getImportsAsStrings(file: ObjJFile): List<String> {
         val importStatements = file.getChildrenOfType( ObjJImportStatement::class.java)
         if (importStatements.isEmpty()) {

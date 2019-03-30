@@ -14,7 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.TokenType
 
 import java.util.ArrayList
@@ -97,11 +96,18 @@ fun ASTNode.getPreviousNonEmptySiblingIgnoringComments(): ASTNode? {
     }
     return node
 }
+fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
+    var node = this.getPreviousNonEmptyNode(true)
+    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
+        node = node.getPreviousNonEmptyNode(true)
+    }
+    return node
+}
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.treePrev ?: return null
+    var out: ASTNode? = this?.treePrev ?: this?.treeParent?.treePrev ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
         out = if (out.treePrev == null) {
-            TreeUtil.prevLeaf(out)
+            out.treeParent?.treePrev
         } else {
             out.treePrev
         }
@@ -119,22 +125,14 @@ fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement
 }
 
 fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.node?.treePrev ?: return null
-    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
-        out = if (out.treePrev == null) {
-            TreeUtil.prevLeaf(out)
-        } else {
-            out.treePrev
-        }
-    }
-    return out
+    return this?.node?.getPreviousNonEmptyNode(ignoreLineTerminator)
 }
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.node?.treeNext
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
         out = if (out.treeNext == null) {
-            TreeUtil.nextLeaf(out)
+            out.treeParent.treeNext
         } else {
             out.treeNext
         }
@@ -239,5 +237,5 @@ fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?,
 
 
 internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
-    return out != null && (ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR || out.elementType === com.intellij.psi.TokenType.WHITE_SPACE || out.psi is PsiErrorElement)
+    return out != null && ((ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR) || out.elementType === com.intellij.psi.TokenType.WHITE_SPACE || out.psi is PsiErrorElement)
 }

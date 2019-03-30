@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
@@ -17,6 +18,10 @@ import com.intellij.psi.PsiElement
 import java.util.logging.Logger
 import javax.swing.SwingUtilities
 
+/**
+ * Attempts to add missing protocol methods in an implementation class
+ * @todo allow selection of optional methods
+ */
 class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDeclaration, private val protocolName:String, private val methodHeaders: ProtocolMethods) : BaseIntentionAction() {
 
     override fun getText(): String {
@@ -39,9 +44,9 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
             addMethods(project, editor.document)
         } catch (e:Exception) {
             SwingUtilities.invokeLater {
-                Messages.showDialog(project, MESSAGE.format(protocolName, "An unexpected error occurred"), TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
+                Messages.showDialog(project, ERROR_MESSAGE_TEMPLATE.format(protocolName, "An unexpected error occurred"), ERROR_TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
             }
-            Logger.getLogger(ObjJMissingProtocolMethodFix::class.java.canonicalName).severe(MESSAGE.format(protocolName, "An unexpected error occurred") + "; Error: "+e.message)
+            Logger.getLogger(ObjJMissingProtocolMethodFix::class.java.canonicalName).severe(ERROR_MESSAGE_TEMPLATE.format(protocolName, "An unexpected error occurred") + "; Error: "+e.message)
         }
         DaemonCodeAnalyzer.getInstance(declaration.project).restart(declaration.containingFile)
     }
@@ -64,7 +69,7 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
         }
         if (sibling == null) {
             SwingUtilities.invokeLater {
-                Messages.showDialog(project, MESSAGE.format(protocolName, "Implementation declaration is not well formed"), TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
+                Messages.showDialog(project, ERROR_MESSAGE_TEMPLATE.format(protocolName, ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.declaration-malformed-message.text")), ERROR_TITLE, listOf("OK").toTypedArray(), 0, Messages.getWarningIcon())
             }
             return
         }
@@ -78,8 +83,8 @@ class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDec
     }
 
     companion object {
-        const val TITLE = "Protocol Implementation Failure"
-        const val MESSAGE:String = "Failed to create placeholder methods for protocol %s. %s"
+        val ERROR_TITLE = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.title")
+        val ERROR_MESSAGE_TEMPLATE:String = ObjJBundle.message("objective-j.intentions.missing-protocol-fix.fail-message.generic-message.text")
 
         private fun numberOfReturnsNeeded(element:PsiElement, position:ElementPosition, required:Int) : Int {
             var remaining = required

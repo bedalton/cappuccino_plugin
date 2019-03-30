@@ -1,21 +1,16 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.formatting.Wrap
 import com.intellij.formatting.WrapType
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiErrorElement
-import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.psi.formatter.WrappingUtil
-import com.intellij.psi.tree.IElementType
-import com.intellij.psi.tree.TokenSet
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import java.util.logging.Logger
 
 
 // TODO Eliminate redundancy. This gets called multiple times by CodeStyleManagerImpl.reformatText().
@@ -49,10 +44,10 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
                 // First, do persistent object management.
                 if (myNode.firstChildNode === child && childType !== ObjJ_FORMAL_PARAMETER_ARG) {
                     val childs = myNode.getChildren(ObjJIndentProcessor.EXPRESSIONS)
-                    if (childs.size >= 7) { // Approximation; dart_style uses dynamic programming with cost-based analysis to choose.
-                        wrap = Wrap.createWrap(WrapType.ALWAYS, true)
+                    wrap = if (childs.size >= 7) { // Approximation; dart_style uses dynamic programming with cost-based analysis to choose.
+                        Wrap.createWrap(WrapType.ALWAYS, true)
                     } else {
-                        wrap = Wrap.createWrap(WrapType.NORMAL, true) // NORMAL,CHOP_DOWN_IF_LONG
+                        Wrap.createWrap(WrapType.NORMAL, true) // NORMAL,CHOP_DOWN_IF_LONG
                     }
                     if (myNode.lastChildNode !== child) {
                         myNode.putUserData(ObjJ_ARGUMENT_LIST_WRAP_KEY, wrap)
@@ -222,79 +217,25 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
         return myNode.lastChildNode === child
     }
 
-    private fun sharedWrap(child: ASTNode, key: Key<Wrap>): Wrap? {
-        val wrap: Wrap?
-        if (myNode.firstChildNode === child) {
-            wrap = Wrap.createWrap(WrapType.CHOP_DOWN_IF_LONG, true)
-            if (myNode.lastChildNode !== child) {
-                myNode.putUserData(key, wrap)
-            }
-        } else {
-            wrap = myNode.getUserData(key)
-            if (myNode.lastChildNode === child) {
-                myNode.putUserData(key, null)
-            }
-        }
-        return wrap
-    }
-
     companion object {
 
         // Consider using a single key -- the grammar doesn't allow mis-use.
         private val ObjJ_TERNARY_EXPRESSION_WRAP_KEY = Key.create<Wrap>("TERNARY_EXPRESSION_WRAP_KEY")
-        private val ObjJ_EXPRESSION_LIST_WRAP_KEY = Key.create<Wrap>("EXPRESSION_LIST_WRAP_KEY")
         private val ObjJ_ARGUMENT_LIST_WRAP_KEY = Key.create<Wrap>("ARGUMENT_LIST_WRAP_KEY")
-        private val ObjJ_TYPE_LIST_WRAP_KEY = Key.create<Wrap>("TYPE_LIST_WRAP_KEY")
 
         private fun createWrap(isNormal: Boolean): Wrap {
             return Wrap.createWrap(if (isNormal) WrapType.NORMAL else WrapType.NONE, true)
         }
 
-        //private static Wrap createChildWrap(ASTNode child, int parentWrap, boolean newLineAfterLBrace, boolean newLineBeforeRBrace) {
-        //  IElementType childType = child.getElementType();
-        //  if (childType != LPAREN && childType != RPAREN) {
-        //    if (FormatterUtil.isPrecededBy(child, LBRACKET)) {
-        //      if (newLineAfterLBrace) {
-        //        return Wrap.createChildWrap(Wrap.createWrap(parentWrap, true), WrapType.ALWAYS, true);
-        //      }
-        //      else {
-        //        return Wrap.createWrap(WrapType.NONE, true);
-        //      }
-        //    }
-        //    return Wrap.createWrap(WrappingUtil.getWrapType(parentWrap), true);
-        //  }
-        //  if (childType == RBRACKET && newLineBeforeRBrace) {
-        //    return Wrap.createWrap(WrapType.ALWAYS, true);
-        //  }
-        //  return Wrap.createWrap(WrapType.NONE, true);
-        //}
-
         private fun varDeclListContainsVarInit(decl: ASTNode): Boolean {
             if (decl.findChildByType(ObjJ_VAR) != null) return true
             var child: ASTNode? = decl.firstChildNode
             while (child != null) {
-                //Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("varDecListContainsVarInit child ${child.text}")
-                //Logger.getLogger(ObjJWrappingProcessor::class.java.canonicalName).info("Looping through children to find varDecListContainsVarInit")
                 if (child.findChildByType(ObjJ_VAR) != null) return true
                 child = child.treeNext
             }
             return false
         }
 
-        private fun isNotFirstInitializer(child: ASTNode): Boolean {
-            var prev:ASTNode? = child
-            var isFirst = false
-            while (prev != null) {
-                prev = prev.treePrev
-                if (prev == null) break
-                if (prev.elementType === ObjJ_COLON) {
-                    return isFirst
-                }
-                if (prev.elementType !== TokenType.WHITE_SPACE && !ObjJTokenSets.COMMENTS.contains(prev.elementType)) {
-                    isFirst = true
-                }
-            }
-            return isFirst
-        }
     }
 }

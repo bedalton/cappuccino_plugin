@@ -50,6 +50,25 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <h4>Version: 0.3.03</h4>
+      <h5>Improvements</h5>
+      <ul>
+        <li>Added class name completion to instance variables and method parameters.</li>
+        <li>Added simple function name checking</li>
+        <li>Added Method parameter type checking</li>
+        <li>Minor Improvements to variable type resolution for known types</li>
+        <li>Added ability to suppress return type checking</li>
+        <li>Added basic autocomplete in @var and @ignore comment statements</li>
+        <li>Added Typedef declarations to suggestions</li>
+      </ul>
+      <h5>Fixes</h5>
+      <ul>
+        <li>Fixed nested function variables being marked as undeclared</li>
+        <li>Fixed backspace prevented in some cases</li>
+        <li>Separated return inspection when return type is void</li>
+        <li>Fixed overzealous @end completion in @protocol and @implementation</li>
+        <li>Removed unnecessary completions in certain cases</li>
+      </ul>
       <h4>Version: 0.3.02</h4>
       <ul>
         <li>Improved suggestion highlighting in suggestions for known types.<br/>
@@ -189,7 +208,7 @@
 
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMethodReturnsAValueInspection"
-                     level="ERROR"
+                     level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Method returns a value"
@@ -225,6 +244,34 @@
                      order="last"
     />
 
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidMethodParameterClassTypeInspection"
+                     level="ERROR"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Invalid method parameter class type"
+                     shortName="InvalidMethodParameterClassType"
+    />
+
+    <localInspection  language="ObjectiveJ"
+                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidFunctionNameInspection"
+                      level="ERROR"
+                      displayName="Invalid function name"
+                      shortName="InvalidFunctionName"
+                      groupName="Objective-J"
+                      enabledByDefault="true"
+    />
+
+    <localInspection  language="ObjectiveJ"
+                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJVoidMethodReturnAValueInspection"
+                      level="WARNING"
+                      displayName="Void method returns a value"
+                      shortName="VoidMethodReturnsAValue"
+                      groupName="Objective-J"
+                      enabledByDefault="true"
+    />
+
+
 
     <!-- Indices -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
@@ -247,6 +294,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodFragmentIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
 

@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
@@ -16,7 +17,9 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.IncorrectOperationException
 
 
-
+/**
+ * Creates a suppress inspection comment targeting an undeclared variable by name
+ */
 class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariableName) : BaseIntentionAction(), LocalQuickFix {
 
     private val variableNamePointer:SmartPsiElementPointer<ObjJVariableName> = SmartPointerManager.createPointer(variableName)
@@ -25,7 +28,7 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
     }
 
     override fun getText(): String {
-        return "Suppress undefined variable inspection for variable \"${variableName?.text}\""
+        return ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection.prompt", variableName?.text ?: "#")
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {

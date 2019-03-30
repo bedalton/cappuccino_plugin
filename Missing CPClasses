@@ -1,0 +1,78 @@
+
+ThemeState
+_CPMenuWindowBackgroundStyle
+CPAttributeType
+CPRuleEditorNestingMode
+CPTextTabType
+CPFontSymbolicTraits
+CPRangePointer
+FloatArray
+CPTabStopType
+CPLineSweepDirection
+CPLineMovementDirection
+CPSelectionAffinity
+UIntegerReference
+CPArrayRef
+CPColorPanelMode
+CPTextVerticalAlignment
+CPDocumentChangeType
+NSPoint
+CPContext
+Image
+CPKeyValueObservingOptions
+CPTableViewDropOperation
+CPControlTint
+
+
+CPTextStorage add semicolons
+DOMElemet mispelled in CPTextView
+
+
+
+missing functions in CPWindow
+CPDOMDisplayServerSetStyleLeftTop
+CPDOMDisplayServerSetStyleSize
+CPDOMDisplayServerAppendChild
+CPDOMDisplayServerAppendChild
+CPDOMDisplayServerRemoveChild
+CPDOMDisplayServerSetStyleLeftTop
+
+
+CGColor.j:#215 = missing function = CGColorSpaceEqualToColorSpace
+
+CGContextText.j:#40 = missing function = _CGPointMakeZero
+
+_CPPredicateEditorRowNode#79 = -(BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)originalTemplate = does not return a value, and no value has been expected in the one instance of its use
+
+CPPredicateEditorRowTemplate:#125,467,524,696 = CPAttributeType not defined
+
+CPRuleEditor.j#299 = CPRuleEditorNestingMode undefined = is assigned to instance variable labeled cpinteger, Should be typedef'd
+
+_CPRTFParser.j#153 = CPTextTabType undefined = value is not used. Is assigned a value of a js int of 0
+CPFontDescriptor.j#177 = CPFontSymbolicTraits = value assigned is bitshifted int
+CPLayoutManager.j#all over = CPRangePointer where CPRange does exist
+CPParagraphStyle.j#185 = CPTabStopType
+CPTextContainer.j#192,103 = CPLineSweepDirection, CPLineMovementDirection
+CPTextView.j#903,916 = CPSelectionAffinity = is assigned int value of 0
+CPTextView.j#1291 = CPSelection = assigned value of CPMakeRange = CPRange
+CPTextView.j#1300, 1309,1317 = Return type integer, should it be CPInteger? int? Is there a difference between CPInteger and int
+CPTypesetter.j#95 = UIntegerReference?
+CPWindow.j#390, CPDOMDisplayServerSetStyleLeftTop where is this defined
+-#393, CPDOMDisplayServerSetStyleSize, CPDOMDisplayServerAppendChild, CPDOMDisplayServerInsertBefore, CPDOMDisplayServerRemoveChild
+CPDisplayServer.j#25 = PREPARE_DOM_OPTIMIZATION() not defined
+
+_CPPopoverWindow.j#221, has parameter type (void) despite super method having return type of id
+
+CPArrayController.j#655 should return a BOOL value, but does not
+CPBezierPath.j#234, 242 = CPArrayRef, CGFloatRef ? Value is later @deref'd, so should items with ending text Ref be assumed to be @ref items
+CPBezierPath.j#264 = CGFloat
+CPColorPanel.j#115 = CPColorPanelMode
+CPControl.j#806 = CPTextVerticalAlignment
+CPCursor.j#198 = perhaps cssString is meant to not be global
+CPDocument.j#634 = CPSaveOperationType == @group CPSaveOperationType comment
+
+CPGradient.j#160 = NSPoint, maybe CGPoint
+CPObjectController.j#588 = CPKeyValueObservingOptions
+CPProgressIndicator.j#250 = CPControlTint
+CPSplitView.j#692,695 = _IS_NUMERIC not found
+

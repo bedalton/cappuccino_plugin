@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
+import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
@@ -9,6 +10,7 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressUndeclaredVariableInspec
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
@@ -23,6 +25,7 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import java.util.logging.Logger
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
@@ -46,7 +49,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (variableName?.getPreviousNonEmptySibling(true).getElementType() == ObjJTypes.ObjJ_DOT) {
+            if (variableName?.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
                 return
             }
 
@@ -87,7 +90,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJPluginSettings.isIgnoredVariableName(variableName.text)) {
-                problemsHolder.registerProblem(variableName, "Ignoring possibly undefined variable", ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
+                problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.ignoring.message"), ProblemHighlightType.INFORMATION, ObjJAlterIgnoredUndeclaredVariable(variableName.text, false))
                 return
             }
 
@@ -95,19 +98,24 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            var tempElement = variableName.getNextNonEmptySibling(true)
+            if (variableName.text in ObjJGlobalJSVariablesNames) {
+                return
+            }
+
+            /*var tempElement = variableName.getNextNonEmptySibling(true)
             if (tempElement != null && tempElement.text == ".") {
                 tempElement = tempElement.getNextNonEmptySibling(true)
                 if (tempElement is ObjJFunctionCall) {
                     val functionCall = tempElement as ObjJFunctionCall?
                     if (functionCall!!.functionName != null && functionCall.functionName!!.text == "call") {
                         if (ObjJFunctionsIndex.instance[variableName.name, variableName.project].isEmpty()) {
-                            problemsHolder.registerProblem(variableName, "Failed to find function with name <" + variableName.name + ">")
+                            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.failed-to-find.message", variableName.name))
                         }
                         return
                     }
                 }
-            }
+            }*/
+
             val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
             if (!declarations.isEmpty()) {
                 return
@@ -119,7 +127,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName.hasText("self") || variableName.hasText("super")) {
                 return
             }
-            //LOGGER.log(Level.INFO, "Var <" + variableName.getText() + "> is undeclared.");
             problemsHolder.registerProblem(variableName, "Variable may not have been declared before use",
                     ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName),
                     ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.METHOD),
@@ -136,9 +143,9 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
             val resolved = ObjJVariableReference(variableName).resolve()
             if (resolved != null) {
-                return !isDeclaredInSameDeclaration(variableName, resolved)
+                return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }
-            val precedingVariableNameReferences = ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
+            val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty()
         }
 
@@ -154,10 +161,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         }
 
         private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
-            return ObjJVariableNameUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
+            return ObjJVariableNameAggregatorUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
                     isDeclaredInContainingMethodHeader(variableName) ||
                     isDeclaredInFunctionScope(variableName) ||
-                    !ObjJVariableNameUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty()
+                    !ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty()
         }
 
         private fun isDeclaredInContainingMethodHeader(variableName: ObjJVariableName): Boolean {
@@ -182,6 +189,15 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName.parent is ObjJInstanceVariableDeclaration) {
                 return true
             }
+
+            if (variableName.parent is ObjJVariableDeclarationList) {
+                return true
+            }
+
+            if (variableName.parent is ObjJInstanceVariableList) {
+                return true
+            }
+
             //If variable name element is itself a method header declaration variable
             if (variableName.getParentOfType(ObjJMethodHeaderDeclaration::class.java) != null) {
                 return true
@@ -251,9 +267,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     return true
                 } else if (variableDeclaration.parent is ObjJGlobalVariableDeclaration) {
                     return true
-                }// else {
-                //LOGGER.log(Level.INFO, "Variable declaration has a parent of type: <"+variableDeclaration.getParent().getNode().getElementType().toString()+">");
-                //}
+                }
                 assignment = if (variableDeclaration.parent is ObjJBodyVariableAssignment) variableDeclaration.parent as ObjJBodyVariableAssignment else null
             }
             return assignment != null && assignment.varModifier != null

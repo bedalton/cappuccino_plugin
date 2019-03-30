@@ -1,7 +1,8 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package cappuccino.ide.intellij.plugin.utils
 
 import com.intellij.codeInsight.completion.InsertionContext
-import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -9,13 +10,8 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.util.io.directoryContent
-
-import java.util.logging.Level
-import java.util.logging.Logger
 
 object EditorUtil {
-    private val LOGGER = Logger.getLogger(EditorUtil::class.java.name)
 
     fun runWriteAction(writeAction: Runnable, project: Project?) {
         val application = ApplicationManager.getApplication()

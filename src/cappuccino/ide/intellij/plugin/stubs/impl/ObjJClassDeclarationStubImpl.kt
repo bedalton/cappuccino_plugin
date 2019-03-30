@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.stubs.impl
 
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
-import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 

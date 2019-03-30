@@ -16,14 +16,24 @@ import com.intellij.psi.PsiDirectory
 import java.util.*
 import java.util.logging.Logger
 
+/**
+ * Creates a file
+ * @todo implement multiple file types (ie. implementations or protocols)
+ */
 class ObjJCreateFileAction: CreateFileFromTemplateAction(
         ObjJBundle.message("objective-j.actions.new-file.title"),
         ObjJBundle.message("objective-j.actions.new-file.description"),
         ObjJIcons.DOCUMENT_ICON), DumbAware {
 
-    override fun getActionName(p0: PsiDirectory?, p1: String?, p2: String?): String =
+    /**
+     * Gets the menu name
+     */
+    override fun getActionName(p0: PsiDirectory?, p1: String, p2: String?): String =
             ObjJBundle.message("objective-j.actions.new-file.title")
 
+    /**
+     * Builds the dialog object
+     */
     override fun buildDialog(project: Project, directory: PsiDirectory, builder: CreateFileFromTemplateDialog.Builder) {
         Logger.getLogger(ObjJCreateFileAction::class.java.canonicalName).info("Called build dialog")
         builder.setTitle(ObjJBundle.message("objective-j.actions.new-file.title"))
@@ -37,6 +47,10 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
                 .addKind("File", ObjJIcons.DOCUMENT_ICON, "file")
     }
 
+    /**
+     * Creates the file given a filename and template name
+     * @todo implement more than one file type
+     */
     override fun createFileFromTemplate(fileName: String, template: FileTemplate, dir: PsiDirectory) = try {
         val className = FileUtilRt.getNameWithoutExtension(fileName)
         val type = when(template.name) {
@@ -55,6 +69,9 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
         null
     }
 
+    /**
+     * Creates a properties object containing properties passed to the template.
+     */
     companion object {
         fun createProperties(project: Project, fileName:String, className: String, type:String): Properties {
             val properties = FileTemplateManager.getInstance(project).defaultProperties

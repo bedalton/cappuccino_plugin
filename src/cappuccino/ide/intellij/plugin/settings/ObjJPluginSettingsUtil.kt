@@ -1,9 +1,11 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.settings
 
 import com.intellij.ide.util.PropertiesComponent
 
 object ObjJPluginSettingsUtil {
-    private val PREFIX = "cappuccino.ide.intellij.plugin.setting."
+    private const val PREFIX = "cappuccino.ide.intellij.plugin.setting."
 
     /**
      * Set value or unset if equals to default value
@@ -63,7 +65,6 @@ object ObjJPluginSettingsUtil {
     }
 
     class StringSetting internal constructor(private val key: String, private val defaultValue: String) : Setting<String> {
-
         override var value: String?
             get() = ObjJPluginSettingsUtil.getValue(key, defaultValue)
             set(valueIn) {
@@ -103,7 +104,6 @@ object ObjJPluginSettingsUtil {
     }
 
     class AnnotationLevelSetting internal constructor(private val key: String, private val defaultValue: AnnotationLevel) : Setting<AnnotationLevel> {
-
         override var value: AnnotationLevel?
             get() {
                 val rawValue = ObjJPluginSettingsUtil.getInt(key, defaultValue.value)
@@ -124,14 +124,11 @@ object ObjJPluginSettingsUtil {
 
         companion object {
             internal fun getAnnotationLevel(value: Int): AnnotationLevel {
-                return if (value >= ERROR.value) {
-                    ERROR
-                } else if (value >= WARNING.value) {
-                    WARNING
-                } else if (value >= WEAK_WARNING.value) {
-                    WEAK_WARNING
-                } else {
-                    IGNORE
+                return when {
+                    value >= ERROR.value -> ERROR
+                    value >= WARNING.value -> WARNING
+                    value >= WEAK_WARNING.value -> WEAK_WARNING
+                    else -> IGNORE
                 }
             }
         }

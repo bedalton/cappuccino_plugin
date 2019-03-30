@@ -28,6 +28,7 @@ public class ObjJSDKType extends SdkType {
         return file.exists();
     }
 
+    @NotNull
     @Override
     public String suggestSdkName(String currentSdkName, String sdkHome) {
         File plist = new File(sdkHome, PLIST_INFO_NAME);
@@ -40,13 +41,13 @@ public class ObjJSDKType extends SdkType {
             }
             line = line != null ? bufferedReader.readLine() : null;
             if (line == null) {
-                return null;
+                return "";
             }
             return line.replace("<string>", "").replace("</string>", "");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return "";
     }
 
     @Nullable

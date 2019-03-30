@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.stubs.impl
 import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJAccessorPropertyImpl
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
@@ -34,7 +35,7 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val isRequired: Boolean
         get() = false
 
-    override val returnType: ObjJClassType
+    override val returnType: ObjJClassTypeName
         get() = if (getter != null) ObjJClassType.getClassType(varType) else ObjJClassType.VOID
 
     override val returnTypeAsString: String
