@@ -2,11 +2,10 @@ package cappuccino.ide.intellij.plugin.indices
 
 import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJMethodHeader>() {
 
-    protected override val indexedElementClass: Class<ObjJMethodHeader>
+    override val indexedElementClass: Class<ObjJMethodHeader>
         get() = ObjJMethodHeader::class.java
 
     override fun getKey(): StubIndexKey<String, ObjJMethodHeader> {
@@ -20,7 +19,7 @@ class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJM
     companion object {
         private val KEY = IndexKeyUtil.createIndexKey(ObjJClassMethodIndex::class.java)
         val instance = ObjJClassMethodIndex()
-        private val VERSION = 3
+        private const val VERSION = 3
     }
 
 

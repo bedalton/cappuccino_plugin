@@ -39,16 +39,13 @@ class ObjJFindUsagesProvider : FindUsagesProvider {
 
     override fun getType(
             psiElement: PsiElement): String {
-        if (psiElement is ObjJSelector) {
-            return "method Selector"
-        } else if (psiElement is ObjJVariableName) {
-            return "variable"
-        } else if (psiElement is ObjJClassName) {
-            return "class"
-        } else if (psiElement is ObjJFunctionName) {
-            return "function"
+        return when (psiElement) {
+            is ObjJSelector -> "method Selector"
+            is ObjJVariableName -> "variable"
+            is ObjJClassName -> "class"
+            is ObjJFunctionName -> "function"
+            else -> ""
         }
-        return ""
     }
 
     override fun getDescriptiveName(

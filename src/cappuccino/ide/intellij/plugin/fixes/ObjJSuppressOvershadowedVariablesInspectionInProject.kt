@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.fixes
 
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -10,13 +11,16 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import org.jetbrains.annotations.Nls
 
-class ObjJSuppressOvershadowedVariablesInspectionInProject() : BaseIntentionAction(), LocalQuickFix {
+/**
+ * Fix to disable the inspection of overshadowed variables. Perhaps I should change this to a scoped inspection settings
+ */
+class ObjJSuppressOvershadowedVariablesInspectionInProject : BaseIntentionAction(), LocalQuickFix {
     override fun applyFix(p0: Project, p1: ProblemDescriptor) {
         apply()
     }
 
     override fun getText(): String {
-        return "Suppress overshadowed variable inspection in project"
+        return ObjJBundle.message("objective-j.intentions.suppress-overshadowed-variable-inspection.prompt")
     }
 
     @Nls

@@ -1,6 +1,9 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
+import cappuccino.ide.intellij.plugin.utils.orDefault
 
 object ObjJPluginSettings {
 
@@ -26,7 +29,7 @@ object ObjJPluginSettings {
 
     private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN = "objj.resolve.calltarget.FILTER_STRICT_IF_TYPE_KNOWN"
     private const val RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN_DEFAULT = true
-    private val filterMethodCallsStrictIfTypeKnownSetting = BooleanSetting(RESOLVE_CALL_TARGET, RESOLVE_CALL_DEFAULT)
+    private val filterMethodCallsStrictIfTypeKnownSetting = BooleanSetting(RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN, RESOLVE_CALL_TARGET_FILTER_STRICT_IF_TYPE_KNOWN_DEFAULT)
     var filterMethodCallsStrictIfTypeKnown:Boolean get() {
         return filterMethodCallsStrictIfTypeKnownSetting.value!!
     } set (value) {
@@ -38,11 +41,14 @@ object ObjJPluginSettings {
     private const val COLLAPSE_BY_DEFAULT_DEFAULT = false
     private val collapseByDefault = BooleanSetting(COLLAPSE_BY_DEFAULT_KEY, COLLAPSE_BY_DEFAULT_DEFAULT)
 
-    private const val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties";
+    private const val IGNORE_PROPERTIES_KEY = "objj.annotator.ignoreProperties"
     private val ignoredKeywordsSetting = ObjJIgnoredStringsListSetting(IGNORE_PROPERTIES_KEY)
 
     private const val IGNORE_MISSING_SELECTORS_KEY = "objj.annotator.ignoreMissingSelector"
     private val ignoreMissingSelectorsSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_SELECTORS_KEY)
+
+    private const val IGNORE_MISSING_FUNCTIONS_KEY = "objj.annotator.ignoreMissingFunctions"
+    private val ignoreMissingFunctionSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_FUNCTIONS_KEY)
 
     private const val IGNORE_OVERSHADOWED_VARIABLES_KEY = "objj.annotator.ignoreOvershadowed"
     private const val IGNORE_OVERSHADOWED_VARIABLES_DEFAULT = false
@@ -52,9 +58,18 @@ object ObjJPluginSettings {
     private const val IGNORE_UNDERSCORED_CLASSES_DEFAULT = true
     private val ignoreUnderscoredClassesSetting = BooleanSetting(IGNORE_UNDERSCORED_CLASSES_KEY, IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     var ignoreUnderscoredClasses:Boolean get() {
-        return ignoreUnderscoredClassesSetting.value!!
+        return ignoreUnderscoredClassesSetting.value.orDefault(IGNORE_UNDERSCORED_CLASSES_DEFAULT)
     } set(value) {
         ignoreUnderscoredClassesSetting.value = value
+    }
+
+    private const val IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER = "objj.inspection.ignoreMissingClassesWhenSuffixedWithRefOrPointer"
+    private const val IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT = false
+    private val ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting = BooleanSetting(IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER, IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT)
+    var ignoreMissingClassesWhenSuffixedWithRefOrPointer:Boolean get() {
+        return ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting.value.orDefault(IGNORE_MISSING_CLASSES_WHEN_SUFFIXED_WITH_REF_OR_POINTER_DEFAULT)
+    } set(value) {
+        ignoreMissingClassesWhenSuffixedWithRefOrPointerSetting.value = value
     }
 
     private const val UNQ_IGNORE_UNDECLARED_VARIABLES_KEY = "objj.annotator.unq_ignore.undeclaredVariables"
@@ -131,6 +146,9 @@ object ObjJPluginSettings {
         this.collapseByDefault.value = collapse
     }
 
+    // ============================== //
+    // ======= Ignore Variable ====== //
+    // ============================== //
 
     fun ignoreVariableName(keyword:String) = ignoredKeywordsSetting.ignoreKeyword(keyword)
 
@@ -146,6 +164,9 @@ object ObjJPluginSettings {
         ignoredKeywordsSetting.ignoreKeywords(value)
     }
 
+    // ============================== //
+    // ====== Ignore Selector ======= //
+    // ============================== //
     fun ignoreSelector(keyword:String) = ignoreMissingSelectorsSetting.ignoreKeyword(keyword)
 
     fun doNotIgnoreSelector(keyword:String) = ignoreMissingSelectorsSetting.removeIgnoredKeyword(keyword)
@@ -159,6 +180,47 @@ object ObjJPluginSettings {
     }
 
     fun isIgnoredSelector(keyword:String) : Boolean  = ignoreMissingSelectorsSetting.isIgnoredKeyword(keyword)
+
+    // ============================== //
+    // ==== Ignore Function Names === //
+    // ============================== //
+
+    fun ignoreFunctionName(keyword:String) = ignoreMissingFunctionSetting.ignoreKeyword(keyword)
+
+    fun removeIgnoredFunctionName(keyword:String) = ignoreMissingFunctionSetting.removeIgnoredKeyword(keyword)
+
+    fun ignoredFunctionNames() : List<String> = ignoreMissingFunctionSetting.ignoredKeywords()
+
+    fun isIgnoredFunctionName(keyword:String) : Boolean  = ignoreMissingFunctionSetting.isIgnoredKeyword(keyword)
+
+    var ignoredFunctionNamesAsString:String get() {
+        return ignoreMissingFunctionSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoreMissingFunctionSetting.ignoreKeywords(value)
+    }
+
+    // ============================== //
+    // ===== Ignore Class Names ===== //
+    // ============================== //
+    private const val IGNORE_MISSING_CLASSES_KEY = "objj.annotator.ignoreMissingFunctions"
+    private val ignoreMissingClassNamesSetting = ObjJIgnoredStringsListSetting(IGNORE_MISSING_CLASSES_KEY)
+
+
+    fun ignoreClassName(keyword:String) = ignoreMissingClassNamesSetting.ignoreKeyword(keyword)
+
+    fun removeIgnoredClassName(keyword:String) = ignoreMissingClassNamesSetting.removeIgnoredKeyword(keyword)
+
+    fun ignoredClassNames() : List<String> = ignoreMissingClassNamesSetting.ignoredKeywords()
+
+    fun isIgnoredClassName(keyword:String) : Boolean  = ignoreMissingClassNamesSetting.isIgnoredKeyword(keyword)
+
+    var ignoredClassNamesAsString:String get() {
+        return ignoreMissingClassNamesSetting.ignoredKeywords().joinToString(ObjJIgnoredStringsListSetting.IGNORE_KEYWORDS_DELIM + " ")
+    } set(value) {
+        ignoreMissingClassNamesSetting.ignoreKeywords(value)
+    }
+
+
 
     fun ignoreOvershadowedVariables() : Boolean {
         return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT

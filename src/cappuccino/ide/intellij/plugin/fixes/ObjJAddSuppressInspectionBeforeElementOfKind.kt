@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -21,6 +22,9 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.IncorrectOperationException
 
 
+/**
+ * Abstract class to add a suppress inspection statement to a block scope
+ */
 abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
     protected val pointer:SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
@@ -54,8 +58,14 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElem
 
 }
 
+/**
+ * Concrete implementation to add a inspection suppression for a ignore flag within a given scope
+ */
 class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppressInspectionFlags, private val scope:ObjJSuppressInspectionScope, private val parameter:String? = null) : ObjJAddSuppressInspectionBeforeElementOfKind(psiElement, flag, parameter) {
+    // Holds pointer to the kind of element that should be annotated
     private var _writeAbove:SmartPsiElementPointer<PsiElement>? = null
+
+    // Gets the element to write above.
     override val writeAbove:PsiElement? get () {
         var writeAbove = this._writeAbove?.element
         if (writeAbove != null) {
@@ -75,9 +85,9 @@ class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppre
 
     override fun getText(): String {
         val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
-            " for parameter \"${parameter.trim()}.\""
+            ObjJBundle.message("objective-j.intentions.suppress-inspection.for-parameter.prompt-fragment", parameter.trim())
         } else ""
-        return "Suppress ${flag.title} inspection ${scope.scope}"+forParameter
+        return ObjJBundle.message("objective-j.intentions.suppress-inspection.prompt", flag.title, scope.scope, forParameter)
     }
 }
 

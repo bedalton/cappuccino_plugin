@@ -18,7 +18,7 @@ class ObjJCompletionContributor : CompletionContributor() {
                 PlatformPatterns
                         .psiElement()
                         .withLanguage(ObjJLanguage.instance),
-                BlanketCompletionProvider())
+                ObjJBlanketCompletionProvider)
     }
 
     /**
@@ -36,14 +36,14 @@ class ObjJCompletionContributor : CompletionContributor() {
         val element = context.parameters.position
         val editor = context.lookup.editor
         if (element is ObjJVariableName || element.parent is ObjJVariableName) {
-            if (ObjJVariableInsertHandler.instance.isFunctionCompletion(element)) {
+            if (ObjJVariableInsertHandler.isFunctionCompletion(element)) {
                 EditorUtil.insertText(editor, "()", false)
                 EditorUtil.offsetCaret(editor, 1)
             }
-            if (ObjJVariableInsertHandler.instance.shouldAppendFunctionParamComma(element)) {
+            if (ObjJVariableInsertHandler.shouldAppendFunctionParamComma(element)) {
                 //EditorUtil.insertText(editor, ", ", true);
             }
-            if (ObjJVariableInsertHandler.instance.shouldAppendClosingBracket(element)) {
+            if (ObjJVariableInsertHandler.shouldAppendClosingBracket(element)) {
                 //EditorUtil.insertText(editor, "]", false);
             }
         }
@@ -60,6 +60,7 @@ class ObjJCompletionContributor : CompletionContributor() {
         val GENERIC_METHOD_SUGGESTION_PRIORITY = -10.0
         val GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY = -50.0
         val FUNCTIONS_NOT_IN_FILE_PRIORITY = -70.0
+        val FUNCTION_SHOULD_SKIP = -120.0
     }
 
 }

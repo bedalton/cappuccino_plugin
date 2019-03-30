@@ -7,19 +7,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 
 
 object ObjJResolveUtil {
-
-
-    fun treeWalkUp(place: PsiElement?, processor: PsiScopeProcessor): Boolean {
-        var lastParent: PsiElement? = null
-        var run = place
-        while (run != null) {
-            if (place !== run && !run.processDeclarations(processor, ResolveState.initial(), lastParent, place!!)) return false
-            lastParent = run
-            run = run.parent
-        }
-        return true
-    }
-
     fun processChildren(element: PsiElement,
                         processor: PsiScopeProcessor,
                         substitutor: ResolveState,

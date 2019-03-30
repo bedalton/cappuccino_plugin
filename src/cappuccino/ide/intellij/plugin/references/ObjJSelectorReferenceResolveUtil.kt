@@ -2,10 +2,8 @@ package cappuccino.ide.intellij.plugin.references
 
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.contributor.ObjJMethodCallCompletionContributorUtil
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
@@ -15,7 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
-import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.collections.ArrayList
@@ -39,11 +36,14 @@ object ObjJSelectorReferenceResolveUtil {
         if (DumbService.isDumb(element.project)) {
             return EMPTY_SELECTORS_RESULT
         }
-        //LOGGER.log(Level.INFO, "Searching for methods matching selector: <"+fullSelector+">, in file: "+element.getContainingFile().getVirtualFile().getName());
+
         val methodHeaders = ObjJUnifiedMethodIndex.instance[fullSelector, element.project]
         return prune(classConstraints, methodHeaders, element.text, selectorIndex)
     }
 
+    /**
+     * Gets method selectors with matching first part of string
+     */
     @Suppress("unused")
     internal fun getMethodCallPartialReferences(
             element: ObjJSelector?, includeSelf: Boolean): SelectorResolveResult<ObjJSelector> {
@@ -69,118 +69,10 @@ object ObjJSelectorReferenceResolveUtil {
         }
     }
 
-    fun resolveSelectorReferenceAsPsiElement(selectors: List<ObjJSelector>, selectorIndex: Int): SelectorResolveResult<ObjJSelector>? {
-        val result = resolveSelectorReferenceRaw(selectors, selectorIndex) ?: return null
-        return if (!result.methodHeaders.isEmpty()) {
-            prune(result.classConstraints, result.methodHeaders, result.baseSelector.text, result.index)
-        } else {
-            null
-        }
-    }
-
-    private fun resolveSelectorReferenceRaw(selectors: List<ObjJSelector>, selectorIndexIn: Int): RawResult? {
-        var selectorIndex = selectorIndexIn
-        //Have to loop over elements as some selectors in list may have been virtually created
-        var parent: ObjJMethodCall? = null
-        if (selectors.isEmpty()) {
-            return null
-        }
-        if (selectorIndex < 0 || selectorIndex >= selectors.size) {
-            selectorIndex = selectors.size - 1
-        }
-        var baseSelector: ObjJSelector? = selectors[selectorIndex]
-        var project: Project? = baseSelector?.project
-        for (selector in selectors) {
-            if (parent == null) {
-                parent = selector.getParentOfType( ObjJMethodCall::class.java)
-            }
-            if (parent != null && parent.containingClassName == ObjJElementFactory.PlaceholderClassName) {
-                parent = null
-            }
-        }
-        for (i in selectors.size - 1 downTo 1) {
-            val tempSelector = selectors[i]
-            if (project == null) {
-                project = parent?.project ?: tempSelector.project
-            }
-            if (baseSelector == null || tempSelector.text.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
-                baseSelector = tempSelector
-                selectorIndex = i
-                break
-            }
-        }
-        if (project == null) {
-            //LOGGER.log(Level.INFO, "Parent and base selector are null");
-            return null
-        }
-
-        val selector = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors).replace("\\s+".toRegex(), "")
-        //LOGGER.log(Level.INFO, "Selector for method call is: <"+ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)+">");
-        if (selector.isEmpty()) {
-            //LOGGER.log(Level.INFO, "Selector search failed with empty selector.");
-            return null
-        }
-        val classConstraints = if (parent != null) getClassConstraints(parent) else emptyList()
-        val methodHeaders: Map<String, List<ObjJMethodHeaderDeclaration<*>>>
-        methodHeaders = if (selector.contains(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR)) {
-            val pattern = selector.replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, "(.+)") + "(.*)"
-            ObjJUnifiedMethodIndex.instance.getByPatternFuzzy(pattern, baseSelector!!.getSelectorString(false).replace(ObjJMethodCallCompletionContributorUtil.CARET_INDICATOR, ""), project)
-            //LOGGER.log(Level.INFO, "Getting selectors for selector pattern: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
-        } else {
-            ObjJUnifiedMethodIndex.instance.getByPattern(selector, null, project)
-            //LOGGER.log(Level.INFO, "Getting selectors with selector beginning: <"+selector+">. Found <"+methodHeaders.size()+"> methods");
-        }
-        //List<ObjJMethodHeaderDeclaration> methodHeaders = ObjJUnifiedMethodFragmentIndex.getInstance().get(selectorFragment, element.getProject());
-        return if (!methodHeaders.isEmpty()) {
-            RawResult(methodHeaders, classConstraints, baseSelector!!, selectorIndex)
-        } else {
-            null
-        }
-    }
-
-    private fun prune(classConstraints: List<String>, methodHeaders: Map<String, List<ObjJMethodHeaderDeclaration<*>>>, subSelector: String, selectorIndex: Int): SelectorResolveResult<ObjJSelector> {
-        val result = HashMap<String, MutableList<ObjJSelector>>()
-        val others = HashMap<String, MutableList<ObjJSelector>>()
-        var selectorElement: ObjJSelector?
-        for (key in methodHeaders.keys) {
-            val headers : MutableList<ObjJMethodHeaderDeclaration<*>> = methodHeaders[key] as MutableList<ObjJMethodHeaderDeclaration<*>>
-            for (methodHeader in headers) {
-                ProgressIndicatorProvider.checkCanceled()
-                selectorElement = ObjJPsiImplUtil.getThisOrPreviousNonNullSelector(methodHeader, subSelector, selectorIndex)
-                if (selectorElement == null) {
-                    //LOGGER.log(Level.SEVERE, "Method header returned an empty selector in matched header");
-                    continue
-                }
-                if (sharesContainingClass(classConstraints, methodHeader)) {
-                    put(result, key, selectorElement)
-                } else {
-                    put(others, key, selectorElement)
-                }
-            }
-        }
-        val resultOut = getFirstElements(result)
-        val othersOut = getFirstElements(others)
-        return SelectorResolveResult(resultOut, othersOut, classConstraints)
-    }
-
-    private fun getFirstElements(resultSet: Map<String, List<ObjJSelector>>): List<ObjJSelector> {
-        val out = ArrayList<ObjJSelector>()
-        for (key in resultSet.keys) {
-            val elements = resultSet[key]
-            if (!elements!!.isEmpty()) {
-                out.add(elements[0])
-            }
-        }
-        return out
-    }
-
-    private fun put(map: MutableMap<String, MutableList<ObjJSelector>>, key: String, declaration: ObjJSelector) {
-        if (!map.containsKey(key)) {
-            map[key] = ArrayList()
-        }
-        map[key]!!.add(declaration)
-    }
-
+    /**
+     * Prunes empty selectors and sorts them
+     * @returns a selector resolve result with selectors sorted based on perceived applicability
+     */
     private fun prune(classConstraints: List<String>, methodHeaders: List<ObjJMethodHeaderDeclaration<*>>, subSelector: String, selectorIndex: Int): SelectorResolveResult<ObjJSelector> {
         val result = ArrayList<ObjJSelector>()
         val others = ArrayList<ObjJSelector>()
@@ -193,21 +85,25 @@ object ObjJSelectorReferenceResolveUtil {
                 continue
             }
             if (sharesContainingClass(classConstraints, methodHeader)) {
-                //LOGGER.log(Level.INFO, "Method selector shares containing class in list <"+ArrayUtils.join(classConstraints)+">");
                 result.add(selectorElement)
             } else {
-                //LOGGER.log(Level.INFO, "Method does not share containing class");
                 others.add(selectorElement)
             }
         }
-        //LOGGER.log(Level.INFO, "Finished pruning method headers.");
         return packageResolveResult(result, others, classConstraints)
     }
 
+    /**
+     * Checks if a containing class is in a set of class constraints
+     * returns true if an UNDETERMINED class identifier has been found
+     */
     private fun sharesContainingClass(classConstraints: List<String>, hasContainingClass: ObjJHasContainingClass): Boolean {
         return classConstraints.isEmpty() || classConstraints.contains(ObjJClassType.UNDETERMINED) || classConstraints.contains(hasContainingClass.containingClassName)
     }
 
+    /**
+     * Gets completion based on selector literals.
+     */
     fun getSelectorLiteralReferences(selectorElement: ObjJSelector?): SelectorResolveResult<ObjJSelector> {
         if (selectorElement == null) {
             return EMPTY_SELECTORS_RESULT
@@ -240,6 +136,9 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
 
+    /**
+     * Gets accessor method references
+     */
     fun getInstanceVariableSimpleAccessorMethods(selectorElement: ObjJSelector, classConstraintsIn: List<String>): SelectorResolveResult<PsiElement> {
         var classConstraints = classConstraintsIn
         if (classConstraints.isEmpty()) {
@@ -264,6 +163,12 @@ object ObjJSelectorReferenceResolveUtil {
         return packageResolveResult(result, otherResult, classConstraints)
     }
 
+
+    /**
+     * Can be used to find if selector matches an objects properties
+     * currently unused
+     */
+    @Suppress("unused")
     fun getVariableReferences(selectorElement: ObjJSelector, classConstraintsIn: List<String>): SelectorResolveResult<PsiElement> {
         var classConstraints = classConstraintsIn
         val variableName = selectorElement.getSelectorString(false)
@@ -272,7 +177,6 @@ object ObjJSelectorReferenceResolveUtil {
         }
         val result = ArrayList<PsiElement>()
         val otherResult = ArrayList<PsiElement>()
-        //ProgressIndicatorProvider.checkCanceled();
         if (DumbService.isDumb(selectorElement.project)) {
             return EMPTY_RESULT
         }
@@ -292,91 +196,13 @@ object ObjJSelectorReferenceResolveUtil {
         return SelectorResolveResult(result, otherResult, classConstraints ?: emptyList())
     }
 
-    fun getClassConstraints(element: ObjJSelector): List<String> {
-        return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java))
-    }
-
-
-    private fun getClassConstraints(element: ObjJHasMethodSelector?): List<String> {
-        if (element !is ObjJMethodCall) {
-            //   LOGGER.log(Level.INFO, "Selector is not in method call.");
-            return emptyList()
-        }
-        val classConstraints: List<String>
-        val methodCall = element as ObjJMethodCall?
-        val callTarget:ObjJCallTarget? = methodCall?.callTarget
-        if (callTarget != null) {
-            val possibleClasses = getPossibleClassTypesForCallTarget(callTarget)
-            if (possibleClasses.isNotEmpty()) {
-                //LOGGER.info("Found call target type")
-                return possibleClasses.toList()
-            }
-        }
-        //String callTargetText = ObjJCallTargetUtil.getCallTargetTypeIfAllocStatement(callTarget);
-        //LOGGER.log(Level.INFO, "Getting Call Target Class Constraints for target text: <"+callTargetText+">");
-
-        classConstraints = methodCall?.callTarget?.possibleCallTargetTypes ?: mutableListOf()
-        /*if (!classConstraints.isEmpty()) {
-            LOGGER.log(Level.INFO, "Call target: <"+methodCall.getCallTarget().getText()+"> is possibly of type: ["+ArrayUtils.join(classConstraints)+"]");
-        } else {
-            LOGGER.log(Level.INFO, "Failed to infer call target type for target named <"+methodCall.getCallTarget().getText()+">.");
-        }*/
-        return classConstraints
-    }
-
-    fun getPossibleClassTypesForCallTarget(callTarget:ObjJCallTarget) : Set<String> {
-        val qualifiedReference = callTarget.qualifiedReference ?: return setOf()
-        val methodCall = qualifiedReference.methodCall
-        if (methodCall != null) {
-            if (methodCall.selector?.text == "alloc") {
-                return ObjJInheritanceUtil.getAllInheritedClasses(methodCall.callTargetText, methodCall.project, true)
-            }
-        }
-        val variables = qualifiedReference.variableNameList
-
-        if (variables.size != 1) {
-            return setOf()
-        }
-        val variableName = variables[0]
-        val variableNameText = variableName.text
-        val className = when (variableNameText) {
-            "self" -> variableName.containingClassName
-            "super" -> variableName.getContainingSuperClass(true)?.text
-            else -> {
-                ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
-            }
-        } ?: return ObjJVariableTypeResolver.resolveVariableType(variableName)
-        return ObjJInheritanceUtil.getAllInheritedClasses(className, callTarget.project, true)
-    }
-
-    /**
-     * Attempts to find a variables type, if the variable is declared as an instance variable
-     * @return variable type if it is known form an instance variable declaration
-     */
-    private fun getTypeFromInstanceVariables(variableName:ObjJVariableName) : String? {
-        val referencedVariable = variableName.reference.resolve() ?: return null
-        val instanceVariable = referencedVariable.getParentOfType(ObjJInstanceVariableDeclaration::class.java) ?: return null
-        val type = instanceVariable.formalVariableType
-        if (type.varTypeId != null) {
-            return type.varTypeId?.className?.text ?: ObjJClassType.UNDETERMINED
-        }
-        return type.text
-     }
-
-    class SelectorResolveResult<T> internal constructor(val naturalResult: List<T>, val otherResult: List<T>, val possibleContainingClassNames: List<String>) {
-        val isNatural: Boolean = !naturalResult.isEmpty()
+    class SelectorResolveResult<T> internal constructor(private val naturalResult: List<T>, private val otherResult: List<T>, val possibleContainingClassNames: List<String>) {
+        private val isNatural: Boolean = !naturalResult.isEmpty()
 
         val result: List<T>
             get() = if (isNatural) naturalResult else otherResult
 
         val isEmpty: Boolean
             get() = result.isEmpty()
-
-        init {
-            //LOGGER.log(Level.INFO, "Selector resolve result has <"+naturalResult.size()+"> natural results, and <"+otherResult.size()+"> other results");
-        }
     }
-
-    class RawResult internal constructor(internal val methodHeaders: Map<String, List<ObjJMethodHeaderDeclaration<*>>>, internal val classConstraints: List<String>, internal val baseSelector: ObjJSelector, val index: Int)
-
 }

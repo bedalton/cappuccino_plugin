@@ -9,21 +9,21 @@ import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.DataKeys
-//import com.intellij.openapi.actionSystem.DataKeys
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
-import java.util.logging.Level
 import java.util.logging.Logger
 
+/**
+ * Enter handler delegate to simplify autocompleting elements
+ */
 @Suppress("unused")
 class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
+
 
     override fun preprocessEnter(file: PsiFile, editor: Editor, caretOffsetRef: Ref<Int>, caretAdvance: Ref<Int>, dataContext: DataContext, originalHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
         if (file !is ObjJFile) {
@@ -40,19 +40,8 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
                 result = EnterHandlerDelegate.Result.Default
             }
         }
-        //com.intellij.psi.codeStyle.CodeStyleManager.adjustLineIndent()
         return result
     }
-
-    /*
-    override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
-        val caretOffset = dataContext.getData(DataKeys.CARET)?.offset ?: return EnterHandlerDelegate.Result.Continue
-        val element:PsiElement = file.findElementAt(caretOffset) ?: return EnterHandlerDelegate.Result.Continue
-        if (MethodCallHandler.doIf(editor, element)) {
-            return EnterHandlerDelegate.Result.Default
-        }
-        return EnterHandlerDelegate.Result.Continue
-    }*/
 
     private fun getPointer(file:PsiFile, caretOffset:Int) : SmartPsiElementPointer<PsiElement>? {
         val psiElementIn:PsiElement = file.findElementAt(caretOffset) ?: return null
@@ -77,10 +66,17 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 }
 
 
+/**
+ * Interface to implement for enter handlers
+ */
 internal interface OnEnterHandler {
     fun doIf(editor: Editor, psiElementIn: PsiElement) : Boolean
 }
 
+/**
+ * Method call formatter
+ * Unfortunately this appears not to be the place to add this information
+ * /
 object MethodCallHandler : OnEnterHandler {
 
     val LOGGER:Logger by lazy {
@@ -143,8 +139,11 @@ object MethodCallHandler : OnEnterHandler {
 
         return true
     }
-}
+}*/
 
+/**
+ * A block enter handler to complete the block if open
+ */
 object BlockEnterHandler : OnEnterHandler {
     override fun doIf(editor: Editor, psiElementIn: PsiElement): Boolean {
         val block = psiElementIn.thisOrParentAs(ObjJBlock::class.java) ?: return false
@@ -158,15 +157,17 @@ object BlockEnterHandler : OnEnterHandler {
 
 }
 
+/**
+ * Should autocomplete implementation and protocol class statements
+ * @todo actually make it work in all instances.
+ */
 object ClassEnterHandler : OnEnterHandler {
     override fun doIf(editor: Editor, psiElementIn: PsiElement): Boolean {
-        val classDeclaration: ObjJClassDeclarationElement<*>? = psiElementIn.thisOrParentAs(ObjJClassDeclarationElement::class.java) ?: return false
+        val classDeclaration: ObjJClassDeclarationElement<*> = psiElementIn as? ObjJClassDeclarationElement<*> ?: return false
         val hasEnd: Boolean = when (classDeclaration) {
             is ObjJImplementationDeclaration -> classDeclaration.atEnd != null
             is ObjJProtocolDeclaration -> classDeclaration.atEnd != null
-            else -> {
-                return false
-            }
+            else -> false
         }
 
         if (!hasEnd) {

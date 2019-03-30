@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
-import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
@@ -11,17 +9,12 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-import com.intellij.codeInsight.completion.PrioritizedLookupElement
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 
-import java.util.ArrayList
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
-    private val file: PsiFile = functionName.containingFile;
+    private val file: PsiFile = functionName.containingFile
     private val isFunctionCall:Boolean get () {
         return myElement.parent is ObjJFunctionCall
     }
@@ -56,8 +49,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         val localFunctions = element.getParentBlockChildrenOfType(ObjJFunctionDeclarationElement::class.java, true).toMutableList()
         localFunctions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
 
-        val allOut = localFunctions.map { it.functionNameNode!! }.filter {
-            it.text == functionName
+        val allOut = localFunctions.map { it.functionNameNode }.filter {
+            it != null && it.text == functionName
         }.toMutableList()
 
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
@@ -84,6 +77,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
     }
 
     companion object {
+        @Suppress("unused")
         private val LOGGER by lazy {
             Logger.getLogger(ObjJFunctionNameReference::class.java.name)
         }

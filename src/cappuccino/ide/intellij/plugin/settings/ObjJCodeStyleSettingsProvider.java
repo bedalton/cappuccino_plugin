@@ -41,7 +41,7 @@ public class ObjJCodeStyleSettingsProvider extends CodeStyleSettingsProvider {
     }
 
     private static class ObjJCodeStyleMainPanel extends TabbedLanguageCodeStylePanel {
-        public ObjJCodeStyleMainPanel(CodeStyleSettings currentSettings, CodeStyleSettings settings) {
+        ObjJCodeStyleMainPanel(CodeStyleSettings currentSettings, CodeStyleSettings settings) {
             super(ObjJLanguage.getInstance(), currentSettings, settings);
         }
     }

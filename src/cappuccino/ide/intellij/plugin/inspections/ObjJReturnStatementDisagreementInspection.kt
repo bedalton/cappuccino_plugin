@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
@@ -17,7 +18,6 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import java.util.*
-import java.util.logging.Logger
 
 class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
 
@@ -97,7 +97,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
             val returnType = methodDeclaration.methodHeader.returnType
-            if (returnType == "@action") {
+            if (returnType == "@action" || returnType == "IBAction" || returnType == "void" /* Added to allow void annotation to be handled elsewhere */) {
                 return
             } else {
                 //Logger.getLogger(ObjJReturnStatementDisagreementInspection::class.java.canonicalName).info("Return type is ${returnType}")
@@ -105,7 +105,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             val shouldHaveReturnExpression = returnType != ObjJClassType.VOID_CLASS_NAME
             val statementsToMark = if (shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
             val statementsNotToMark = if (!shouldHaveReturnExpression) returnsWithoutExpression else returnsWithExpression
-            val errorAnnotation = if (shouldHaveReturnExpression) "Return statement is missing return element. Element should be of type: <$returnType>" else "Method with return type void should not return a value."
+            val errorAnnotation = if (shouldHaveReturnExpression) ObjJBundle.message("objective-j.inspections.return-statement-disagreement.missing-value-expected.message", returnType) else ObjJBundle.message("objective-j.inspections.return-statement-disagreement.no-value-expected.message")
             for (returnStatement in statementsToMark) {
                 if (returnStatement.expr?.leftExpr?.functionCall != null) {
                     continue
@@ -132,7 +132,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                         else -> {
                             val element = returnStatement.expr ?: returnStatement.`return`
                             //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                            problemsHolder.registerProblem(element, "Not all return statements return a value",
+                            problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.return-statement-disagreement.not-all-return-value.message"),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
                                     ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
@@ -143,17 +143,6 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
             }
         }
 
-        /*
-        private fun validateReturnStatement(element: ObjJReturnStatement, problemsHolder: ProblemsHolder) {
-            if (element.getParentOfType(ObjJBlock::class.java) == null) {
-                problemsHolder.registerProblem(element, "return used outside of block")
-            } else if (element.expr != null &&
-                    element.getParentOfType(ObjJFunctionDeclarationElement::class.java) == null &&
-                    element.getParentOfType(ObjJMethodDeclaration::class.java) == null) {
-                problemsHolder.registerProblem(element, "Return value not captured")
-            }
-        }
-*/
         private fun returnMethodCallReturnsValue(methodCall: ObjJMethodCall?): Boolean {
             if (methodCall == null) {
                 return false

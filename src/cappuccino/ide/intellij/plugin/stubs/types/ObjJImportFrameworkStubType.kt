@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
-import cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
 

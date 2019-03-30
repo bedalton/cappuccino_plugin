@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.contributor
 import com.intellij.lang.refactoring.NamesValidator
 import com.intellij.openapi.project.Project
 
-import java.util.Arrays
 import java.util.regex.Pattern
 
 class ObjJNameValidator : NamesValidator {

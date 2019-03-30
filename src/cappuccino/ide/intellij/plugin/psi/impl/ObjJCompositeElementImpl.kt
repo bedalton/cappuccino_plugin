@@ -38,23 +38,20 @@ open class ObjJCompositeElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
     }
 
     override fun getPresentation(): ItemPresentation? {
-        //LOGGER.log(Level.INFO, "Get Presentation <"+this.getNode().getElementType().toString()+">");
         val text = UsageViewUtil.createNodeText(this)
-        return if (text != null) {
-            object : ItemPresentation {
-                override fun getPresentableText(): String {
-                    return text
-                }
-
-                override fun getLocationString(): String {
-                    return containingFile.name
-                }
-
-                override fun getIcon(b: Boolean): Icon? {
-                    return this@ObjJCompositeElementImpl.getIcon(0)
-                }
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return text
             }
-        } else super.getPresentation()
+
+            override fun getLocationString(): String {
+                return containingFile.name
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return this@ObjJCompositeElementImpl.getIcon(0)
+            }
+        }
     }
 
     override fun <T:PsiElement> getParentOfType(parentClass:Class<T>) : T? = PsiTreeUtil.getParentOfType(this, parentClass)

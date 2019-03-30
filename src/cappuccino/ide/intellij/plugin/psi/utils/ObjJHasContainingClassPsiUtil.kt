@@ -3,21 +3,13 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
-import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 
-import java.util.ArrayList
-
-
 object ObjJHasContainingClassPsiUtil {
-
-    fun isSimilarClass(methodContainingClass: String, className: String): Boolean {
-        return isUniversalMethodCaller(className) || isUniversalMethodCaller(methodContainingClass) || className == methodContainingClass
-    }
 
     fun getContainingClass(element: PsiElement?): ObjJClassDeclarationElement<*>? {
         return element.getParentOfType( ObjJClassDeclarationElement::class.java)
@@ -29,7 +21,7 @@ object ObjJHasContainingClassPsiUtil {
             return stub.containingClassName
         }
         val containingClass = methodHeader.containingClass
-        return if (containingClass != null) containingClass.classType.className else ObjJClassType.UNDEF_CLASS_NAME
+        return containingClass?.classType?.className ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {
@@ -48,44 +40,6 @@ object ObjJHasContainingClassPsiUtil {
         val stub = selectorLiteral.stub
         return stub?.containingClassName ?: getContainingClassName(selectorLiteral.containingClass)
     }
-
-    fun getContainingClassNamesFromSelector(elements: List<ObjJSelector>): List<String> {
-        val out = ArrayList<String>()
-        for (element in elements) {
-
-        }
-        return out
-    }
-
-    fun getContainingClassNames(elements: List<PsiElement>): List<String> {
-        val out = ArrayList<String>()
-        for (element in elements) {
-            var className: String? = null
-            if (elements is ObjJHasContainingClass) {
-                className = (element as ObjJHasContainingClass).containingClassName
-            } else if (element is ObjJCompositeElement) {
-                className = getContainingClassName(element)
-            }
-            if (className != null && !out.contains(className)) {
-                out.add(className)
-            }
-        }
-        return out
-    }
-
-    fun sharesContainingClass(className: String, vararg elements: PsiElement): Boolean {
-        for (element in elements) {
-            if (!ObjJHasContainingClassPsiUtil.hasContainingClass(element, className)) {
-                return false
-            }
-        }
-        return true
-    }
-
-    fun hasContainingClass(element: PsiElement?, className: String): Boolean {
-        return className == ObjJClassType.UNDETERMINED || element != null && element is ObjJHasContainingClass && element.containingClassName == className
-    }
-
 
     fun getContainingClassOrFileName(psiElement: PsiElement): String {
         var containingClassName: String? = null
@@ -108,7 +62,7 @@ object ObjJHasContainingClassPsiUtil {
         val classDeclarationElement = getContainingClass(element)
         return if (classDeclarationElement == null || classDeclarationElement !is ObjJImplementationDeclaration) {
             null
-        } else classDeclarationElement.getSuperClassName()
+        } else classDeclarationElement.superClassName
     }
 
 

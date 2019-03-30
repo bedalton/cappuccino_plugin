@@ -1,8 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
-
 import java.util.ArrayList
-import java.util.Collections
 
 typealias Filter<T> = (T) -> Boolean
 object ArrayUtils {
@@ -74,25 +72,25 @@ object ArrayUtils {
         }
         return out
     }
-
-    fun <K, T> flatten(map: Map<K, List<T>>): List<T> {
-        val out = ArrayList<T>()
-        for (key in map.keys) {
-            val list: List<T> = map[key] ?: continue
-            out.addAll(list);
-        }
-        return out
-    }
-
 }
-/**
- * Joins
- * @param list list of strings to join
- * @return string of string elements joined by delimiter
- */
-/**
- * Joins
- * @param list list of strings to join
- * @param delimiter joining string
- * @return string of string elements joined by delimiter
- */
+
+fun List<String>.startsWith(prefix:String) : Boolean {
+    this.forEach {
+        if (it.startsWith(prefix))
+            return true
+    }
+    return false;
+}
+
+fun List<String>.startsWithAny(prefixes:List<String>) : Boolean {
+    prefixes.forEach {
+        if (this.startsWith(it))
+            return true
+    }
+    return false
+}
+
+
+fun <T> getFirstMatchOrNull(variableNameElements: List<T>, filter: Filter<T>): T? {
+    return variableNameElements.firstOrNull(filter)
+}

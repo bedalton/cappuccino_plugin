@@ -14,8 +14,8 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationEl
 import java.io.IOException
 import java.util.ArrayList
 
-abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclarationElement<out ObjJFunctionDeclarationElementStub<*>>, Stub : ObjJFunctionDeclarationElementStub<PsiT>> internal constructor(
-        debugName: String, functionDecClass: Class<PsiT>, stubClass: Class<Stub>) : ObjJStubElementType<ObjJFunctionDeclarationElementStub<PsiT>, PsiT>(debugName, functionDecClass) {
+abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclarationElement<out ObjJFunctionDeclarationElementStub<*>>> internal constructor(
+        debugName: String, functionDecClass: Class<PsiT>) : ObjJStubElementType<ObjJFunctionDeclarationElementStub<PsiT>, PsiT>(debugName, functionDecClass) {
 
     override fun createStub(
             element: PsiT, stubParent: StubElement<*>): ObjJFunctionDeclarationElementStub<PsiT> {
@@ -43,7 +43,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         stream.writeName(stub.fqName)
         stream.writeInt(stub.numParams)
         for (param in stub.paramNames) {
-            stream.writeName(param as String)
+            stream.writeName(param)
         }
         stream.writeName(stub.returnType)
         stream.writeBoolean(stub.shouldResolve())

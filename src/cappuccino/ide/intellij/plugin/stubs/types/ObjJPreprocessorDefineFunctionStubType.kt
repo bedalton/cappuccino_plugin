@@ -6,7 +6,7 @@ import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPreprocessorFunctionDeclara
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 
 class ObjJPreprocessorDefineFunctionStubType internal constructor(
-        debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJPreprocessorDefineFunctionImpl, ObjJPreprocessorFunctionDeclarationStubImpl>(debugName, ObjJPreprocessorDefineFunctionImpl::class.java, ObjJPreprocessorFunctionDeclarationStubImpl::class.java) {
+        debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJPreprocessorDefineFunctionImpl>(debugName, ObjJPreprocessorDefineFunctionImpl::class.java) {
 
     override fun createPsi(
             stub: ObjJFunctionDeclarationElementStub<ObjJPreprocessorDefineFunctionImpl>): ObjJPreprocessorDefineFunctionImpl {

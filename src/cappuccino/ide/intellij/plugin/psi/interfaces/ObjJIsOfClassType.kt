@@ -1,16 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 
 
 interface ObjJIsOfClassType {
 
-    val classType: ObjJClassType
+    val classType: ObjJClassTypeName
 
-    companion object {
-        val UNDEF: ObjJIsOfClassType = object : ObjJIsOfClassType {
-            override val classType: ObjJClassType
-                get() = ObjJClassType.UNDEF
-        }
-    }
 }

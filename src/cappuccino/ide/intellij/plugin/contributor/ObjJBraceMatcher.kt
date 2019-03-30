@@ -7,9 +7,10 @@ import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import java.util.logging.Level
-import java.util.logging.Logger
 
+/**
+ * Attempts to create a matching brace for a given starting brace
+ */
 class ObjJBraceMatcher : PairedBraceMatcher {
 
 
@@ -18,13 +19,10 @@ class ObjJBraceMatcher : PairedBraceMatcher {
     }
 
     override fun isPairedBracesAllowedBeforeType(lbraceType: IElementType, nextTokenType: IElementType?): Boolean {
-        //Logger.getLogger("ObjJBraceMatcher").log(Level.INFO, "Matching Brace: "+lbraceType.toString() + " in context: "+nextTokenType.toString())
-        return if (lbraceType === ObjJTypes.ObjJ_OPEN_BRACKET) {
-            isPairedBracketAllowedBeforeType(nextTokenType)
-        } else if (lbraceType == ObjJ_LESS_THAN) {
-            nextTokenType == ObjJ_INHERITED_PROTOCOL_LIST
-        } else {
-            isAllowed(NOT_BEFORE, nextTokenType)
+        return when {
+            lbraceType === ObjJTypes.ObjJ_OPEN_BRACKET -> isPairedBracketAllowedBeforeType(nextTokenType)
+            lbraceType == ObjJ_LESS_THAN -> nextTokenType == ObjJ_INHERITED_PROTOCOL_LIST
+            else -> isAllowed(NOT_BEFORE, nextTokenType)
         }
     }
 

@@ -1,15 +1,15 @@
+@file:Suppress("unused")
+
 package cappuccino.ide.intellij.plugin.psi.types
 
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
-import jdk.nashorn.internal.parser.TokenType
 
-public object ObjJTokenSets {
+object ObjJTokenSets {
 
-    public val BLOCKS = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK,
+    val BLOCKS = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK)
     val BLOCKS_EXT = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK, ObjJStubTypes.FILE)
@@ -152,5 +152,28 @@ public object ObjJTokenSets {
             ObjJ_PP_PRAGMA,
             ObjJ_PP_UNDEF,
             ObjJ_PP_WARNING
+    )
+
+    val VAR_TYPE_KEYWORDS = create(
+            ObjJTypes.ObjJ_VAR_TYPE_BOOL,
+            ObjJTypes.ObjJ_VAR_TYPE_INT,
+            ObjJTypes.ObjJ_VAR_TYPE_SHORT,
+            ObjJTypes.ObjJ_VAR_TYPE_LONG,
+            ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG,
+            ObjJTypes.ObjJ_VAR_TYPE_UNSIGNED,
+            ObjJTypes.ObjJ_VAR_TYPE_SIGNED,
+            ObjJTypes.ObjJ_VAR_TYPE_FLOAT,
+            ObjJTypes.ObjJ_VAR_TYPE_DOUBLE,
+            ObjJTypes.ObjJ_VAR_TYPE_BYTE,
+            ObjJTypes.ObjJ_VAR_TYPE_ID
+    )
+
+    val ITERATION_STATEMENT_KEYWORDS = create(
+            ObjJTypes.ObjJ_IF,
+            ObjJTypes.ObjJ_ELSE,
+            ObjJTypes.ObjJ_IN,
+            ObjJTypes.ObjJ_FOR,
+            ObjJTypes.ObjJ_WHILE,
+            ObjJTypes.ObjJ_DO
     )
 }

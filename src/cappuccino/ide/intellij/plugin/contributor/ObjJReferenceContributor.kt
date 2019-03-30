@@ -9,9 +9,10 @@ import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 
 import com.intellij.patterns.PlatformPatterns.psiElement
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
 class ObjJReferenceContributor : PsiReferenceContributor() {
+
+
     override fun registerReferenceProviders(
             psiReferenceRegistrar: PsiReferenceRegistrar) {
         //Selector
@@ -28,9 +29,6 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
 
         val functionName = psiElement(ObjJFunctionName::class.java)
         psiReferenceRegistrar.registerReferenceProvider(functionName, FunctionNameReferenceProvider())
-
-        //After
-        //   LOGGER.log(Level.INFO, "Registered Providers");
     }
 
     private class SelectorReferenceProvider : PsiReferenceProvider() {
@@ -117,8 +115,8 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
             return if (psiElement is ObjJClassName) arrayOf(createReference(psiElement as ObjJVariableName)) else PsiReference.EMPTY_ARRAY
         }
 
-        private fun createReference(`var`: ObjJVariableName): PsiReference {
-            return ObjJVariableReference(`var`)
+        private fun createReference(variableName: ObjJVariableName): PsiReference {
+            return ObjJVariableReference(variableName)
         }
 
         override fun acceptsTarget(target: PsiElement): Boolean {

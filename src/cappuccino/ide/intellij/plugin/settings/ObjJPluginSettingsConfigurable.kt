@@ -14,13 +14,16 @@ class ObjJPluginSettingsConfigurable : Configurable {
         return  ObjJPluginSettings.resolveCallTargetFromAssignments != pluginSettingsPanel.resolveVariableTypeFromAssignments.isSelected ||
                 ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown != pluginSettingsPanel.filterMethodCallStrictIfTypeKnown.isSelected ||
                 ObjJPluginSettings.ignoreUnderscoredClasses != pluginSettingsPanel.underscore_ignoreClassesCheckbox.isSelected ||
+                ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer != pluginSettingsPanel.ignoreMissingClassesWhenSuffixedWithRefOrPointer.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreMethodDeclaration != pluginSettingsPanel.unqualifiedIgnore_ignoreMethodDec.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreUndeclaredVariables != pluginSettingsPanel.unqualifiedIgnore_ignoreUndecVars.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreConflictingMethodDeclaration != pluginSettingsPanel.unqualifiedIgnore_ignoreConflictingMethodDecs.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreMethodReturnErrors != pluginSettingsPanel.unqualifiedIgnore_ignoreMethodReturnErrors.isSelected ||
                 ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors != pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected ||
                 ObjJPluginSettings.ignoredSelectorsAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
-                ObjJPluginSettings.ignoredVariableNamesAsString != pluginSettingsPanel.globallyIgnoredSelectors.text
+                ObjJPluginSettings.ignoredVariableNamesAsString != pluginSettingsPanel.globallyIgnoredSelectors.text ||
+                ObjJPluginSettings.ignoredFunctionNamesAsString != pluginSettingsPanel.globallyIgnoredFunctionNames.text ||
+                ObjJPluginSettings.ignoredClassNamesAsString != pluginSettingsPanel.globallyIgnoredClassNames.text
     }
 
     override fun getDisplayName(): String {
@@ -38,6 +41,9 @@ class ObjJPluginSettingsConfigurable : Configurable {
         ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors = pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected
         ObjJPluginSettings.ignoredSelectorsAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
         ObjJPluginSettings.ignoredVariableNamesAsString = pluginSettingsPanel.globallyIgnoredSelectors.text
+        ObjJPluginSettings.ignoredFunctionNamesAsString = pluginSettingsPanel.globallyIgnoredFunctionNames.text
+        ObjJPluginSettings.ignoredClassNamesAsString = pluginSettingsPanel.globallyIgnoredClassNames.text
+        ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer = pluginSettingsPanel.ignoreMissingClassesWhenSuffixedWithRefOrPointer.isSelected
     }
 
     override fun createComponent(): JComponent? {
@@ -52,6 +58,9 @@ class ObjJPluginSettingsConfigurable : Configurable {
         pluginSettingsPanel.unqualifiedIgnore_ignoreInvalidSelectors.isSelected = ObjJPluginSettings.unqualifiedIgnore_ignoreInvalidSelectorErrors
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredSelectorsAsString
         pluginSettingsPanel.globallyIgnoredSelectors.text = ObjJPluginSettings.ignoredVariableNamesAsString
+        pluginSettingsPanel.globallyIgnoredFunctionNames.text = ObjJPluginSettings.ignoredFunctionNamesAsString
+        pluginSettingsPanel.globallyIgnoredClassNames.text = ObjJPluginSettings.ignoredClassNamesAsString
+        pluginSettingsPanel.ignoreMissingClassesWhenSuffixedWithRefOrPointer.isSelected = ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer
         return component
     }
 

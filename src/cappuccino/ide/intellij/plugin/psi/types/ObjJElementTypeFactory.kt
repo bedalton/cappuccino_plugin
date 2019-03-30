@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.types
 
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERTY
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.CLASS_NAME

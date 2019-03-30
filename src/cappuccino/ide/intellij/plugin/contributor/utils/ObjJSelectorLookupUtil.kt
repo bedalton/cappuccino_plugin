@@ -1,16 +1,12 @@
 package cappuccino.ide.intellij.plugin.contributor.utils
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJSelectorInsertHandler
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.utils.*
@@ -19,38 +15,104 @@ import org.jetbrains.annotations.Contract
 import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import com.intellij.codeInsight.lookup.LookupElementRenderer
+import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
 
+/**
+ * Utility for looking up possible selector completions
+ */
 object ObjJSelectorLookupUtil {
 
+    private val getterAccessorPropertyTypes = listOf("getter", "readonly", "copy", "property")
+    private val setterAccessorPropertyTypes = listOf("setter", "property")
+
+    /**
+     * Adds a selector lookup element to the completion contributor result set.
+     */
     fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) {
-        val tailText = getSelectorLookupElementTailText(selector, selectorIndex)
-        val addColonSuffix = tailText != null || selectorIndex > 0
-        val containingFileOrClassName = getContainingClassOrFileName(selector)
-        addSelectorLookupElement(resultSet, selector.text, containingFileOrClassName, tailText
-                ?: "", priority, addColonSuffix, ObjJPsiImplUtil.getIcon(selector))
+        if (addAccessors(resultSet, selector, selectorIndex, priority)) {
+            return
+        }
+        addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
 
     }
 
+    /**
+     * Adds a selector lookup element while specifying if it is a getter or not
+     */
+    private fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int, priority: Double) {
+        val tailText = getSelectorLookupElementTailText(selector, isGetter, selectorIndex)
+        val addColonSuffix = !isGetter && (tailText != null || selectorIndex > 0)
+        val containingFileOrClassName = getContainingClassOrFileName(selector)
+        addSelectorLookupElement(resultSet, selector.text, containingFileOrClassName, tailText
+                ?: "", priority, addColonSuffix, ObjJPsiImplUtil.getIcon(selector))
+    }
+
+    /**
+     * Adds an accessor method, branching if is getter, setter, or both
+     */
+    private fun addAccessors(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) : Boolean {
+        if (selectorIndex != 0) return false
+        val isGetter = isGetterAccessor(selector)
+        if (isGetter) {
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = true, selectorIndex = selectorIndex, priority = priority)
+        }
+        val isSetter = isSetterAccessor(selector)
+        if (isSetter) {
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
+        }
+        return isGetter || isSetter
+    }
+
+    /**
+     * Gets the tail text for a given element
+     */
     private fun getSelectorLookupElementTailText(
-            selector: ObjJSelector, selectorIndex: Int): String? {
-        val trailingSelectors = ObjJMethodPsiUtils.getTrailingSelectorStrings(selector, selectorIndex)
+            selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int): String? {
+        // Gets all selectors that come after this one
+        val trailingSelectors = getTrailingSelectorStrings(selector, selectorIndex)
+        //Creates a string builder for building the tail text
         val stringBuilder = StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
+
+        // Add parameter type if it exists
         val paramType = getSelectorVariableType(selector)
         if (paramType != null) {
+            if (isGetter) {
+                return stringBuilder.append(paramType).toString()
+            }
             stringBuilder.append("(").append(paramType).append(")")
             val variableName = getSelectorVariableName(selector)
             if (variableName != null) {
                 stringBuilder.append(variableName)
             }
         }
-        if (!trailingSelectors.isEmpty()) {
+
+        // Add trailing selectors if any
+        if (trailingSelectors.isNotEmpty()) {
             stringBuilder.append(" ").append(ArrayUtils.join(trailingSelectors, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true))
         }
+        // Return tail text if any or null if empty
         return if (stringBuilder.length > 1) stringBuilder.toString() else null
     }
 
+    /**
+     * Determines whether accessor flags for selector include a getter
+     */
+    private fun isGetterAccessor(selector:ObjJSelector) : Boolean {
+        val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
+        return property.accessorPropertyType.text in getterAccessorPropertyTypes
+    }
+
+    /**
+     * Determines whether accessor flags for selector include a setter
+     */
+    private fun isSetterAccessor(selector:ObjJSelector) : Boolean {
+        val property:ObjJAccessorProperty = selector.getParentOfType(ObjJAccessorProperty::class.java) ?: return false
+        return property.accessorPropertyType.text in setterAccessorPropertyTypes
+    }
+
+    /**
+     * Gets the selector variable type
+     */
     @Contract("null -> null")
     private fun getSelectorVariableType(selector: ObjJSelector?): String? {
         if (selector == null) {
@@ -64,6 +126,9 @@ object ObjJSelectorLookupUtil {
         return instanceVariableDeclaration?.formalVariableType?.text
     }
 
+    /**
+     * Gets selector variable name
+     */
     @Contract("null -> null")
     private fun getSelectorVariableName(selector: ObjJSelector?): String? {
         if (selector == null) {
@@ -79,33 +144,38 @@ object ObjJSelectorLookupUtil {
 
     /**
      * Adds selector lookup element
-     * @param result result set
-     * @param targetElement target element
+     * @param resultSet resultSet set
+     * @param suggestedText text to suggest in completion
+     * @param className containing class name used in tail text
      * @param priority se
      * @param tailText lookup element tail text
-     * @param useInsertHandler use insert handler for colon placement
      * @param icon icon to use in completion list
      */
     @JvmOverloads
-    fun addSelectorLookupElement(result: CompletionResultSet, targetElement: PsiElement, tailText: String?, priority: Double, useInsertHandler: Boolean, icon: Icon? = null) {
-        if (targetElement !is ObjJCompositeElement) {
-            return
-        }
-        val className = ObjJHasContainingClassPsiUtil.getContainingClassOrFileName(targetElement)
-        val elementBuilder = createSelectorLookupElement(targetElement.getText(), className, tailText, useInsertHandler, icon)
-        result.addElement(PrioritizedLookupElement.withPriority(elementBuilder, priority))
-    }
-
-    @JvmOverloads
-    fun addSelectorLookupElement(result: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, icon: Icon? = null) {
+    fun addSelectorLookupElement(resultSet: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, icon: Icon? = null) {
         val selectorLookupElement = when (priority) {
-            TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY, TARGETTED_METHOD_SUGGESTION_PRIORITY -> createSelectorLookupElement(suggestedText, className, tailText, addSuffix, icon).bold()
-            else -> createSelectorLookupElement(suggestedText, className, tailText, addSuffix, icon)
+            TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY, TARGETTED_METHOD_SUGGESTION_PRIORITY ->
+                createSelectorLookupElement(
+                        suggestedText = suggestedText,
+                        className = className,
+                        tailText = tailText,
+                        useInsertHandler = addSuffix,
+                        icon = icon).bold()
+            else -> createSelectorLookupElement(
+                    suggestedText = suggestedText,
+                    className = className,
+                    tailText = tailText,
+                    useInsertHandler = addSuffix,
+                    icon = icon)
         }
-        result.addElement(PrioritizedLookupElement.withPriority(selectorLookupElement, priority))
+        val prioritizedLookupElement = PrioritizedLookupElement.withPriority(selectorLookupElement, priority)
+        resultSet.addElement(prioritizedLookupElement)
     }
 
-    fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, icon: Icon?): LookupElementBuilder {
+    /**
+     * Creates a lookup element builder base for a selector
+     */
+    private fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, icon: Icon?): LookupElementBuilder {
         var elementBuilder = LookupElementBuilder
                 .create(suggestedText)
         if (tailText != null) {
@@ -118,17 +188,9 @@ object ObjJSelectorLookupUtil {
             elementBuilder = elementBuilder.withIcon(icon)
         }
         if (useInsertHandler) {
-            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler.instance)
+            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler)
         }
         return elementBuilder
     }
 
 }
-/**
- * Adds a selector lookup element
- * @param result result set
- * @param targetElement target element
- * @param priority se
- * @param tailText lookup element tail text
- * @param useInsertHandler use insert handler for colon placement
- */

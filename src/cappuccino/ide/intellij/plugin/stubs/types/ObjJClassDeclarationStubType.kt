@@ -5,5 +5,4 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 
 abstract class ObjJClassDeclarationStubType<StubT : ObjJClassDeclarationStub<PsiT>, PsiT : ObjJClassDeclarationElement<*>> internal constructor(
         debugName: String,
-        psiClass: Class<PsiT>,
-        stubClass: Class<StubT>) : ObjJStubElementType<StubT, PsiT>(debugName, psiClass)
+        psiClass: Class<PsiT>) : ObjJStubElementType<StubT, PsiT>(debugName, psiClass)

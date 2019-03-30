@@ -5,37 +5,64 @@ import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.project.DumbService
 
+/**
+ * Implementation annotator
+ * Used to annotate invalid implementation declarations
+ */
 internal object ObjJImplementationDeclarationAnnotatorUtil {
 
 
+    /**
+     * Annotation entry point
+     */
     fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
-        if (declaration.isCategory()) {
+        if (declaration.isCategory) {
             annotateIfUndefinedImplementationForCategory(declaration.getClassName(), annotationHolder)
-        } else {
-            //annotateIfDuplicateImplementation(declaration, annotationHolder)
-        }
+        }/*else {
+            // Annotation for duplicate implementations was removed due to conflicts in test files
+            annotateIfDuplicateImplementation(declaration, annotationHolder)
+        }*/
         annotateUnimplementedProtocols(declaration, annotationHolder)
+        annotateInvalidClassNamesInInstanceVariables(declaration, annotationHolder)
     }
 
+    /**
+     * Annotate categories, if we cannot find a definition for their base implementation
+     */
     private fun annotateIfUndefinedImplementationForCategory(classNameElement: ObjJClassName?, annotationHolder: AnnotationHolder) {
+
+        // Check that className element is not null
         if (classNameElement == null) {
             return
         }
+
+        // Ensure that class name can be resolved
         val className = classNameElement.text
         if (className.isEmpty() || isUniversalMethodCaller(className)) {
             return
         }
-        for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance.get(className, classNameElement.project)) {
-            if (!implementationDeclaration.isCategory()) {
+
+        // Ensure that a non-category implementation exists for class with name
+        for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance[className, classNameElement.project]) {
+            if (!implementationDeclaration.isCategory) {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement, "Category references undefined implementation: <$className>")
+        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
     }
 
+
+    /*
+    @todo make smarter to work with duplicates in test files
+    @todo check for duplicates only on import, to ensure no clash is made.
+    @removed due to conflicts in library with test classes having the same name
     private fun annotateIfDuplicateImplementation(thisImplementationDeclaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
         val classNameElement = thisImplementationDeclaration.getClassName() ?: return
         val className = classNameElement.text
@@ -45,57 +72,80 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-    }
+    }*/
 
+    /**
+     * Annotates protocol problems
+     */
     private fun annotateUnimplementedProtocols(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
         val protocolListElement = declaration.inheritedProtocolList ?: return
         val protocols = protocolListElement.classNameList
         for (className in protocols) {
-            val protocolName = className.text
-            if (ObjJProtocolDeclarationsIndex.instance.get(protocolName, declaration.project).isEmpty()) {
-                annotationHolder.createErrorAnnotation(className, "Protocol with name <$protocolName> does not exist in project")
-            }
-            val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
-            if (!unimplementedMethods.required.isEmpty()) {
-                annotationHolder.createErrorAnnotation(className, "Missing required protocol methods")
-                        .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
-            }
+            annotateUndefinedProtocolName(declaration, className, annotationHolder)
+            annotateUnimplementedProtocolMethods(declaration, className, annotationHolder)
         }
     }
 
-    /*
-    private static boolean validateAndAnnotateMethod(ObjJMethodHeader expected, ObjJMethodHeader actual, AnnotationHolder annotationHolder) {
-        if (!expected.getSelectorString().equals(actual.getSelectorString())) {
-            return false;
+    /**
+     * Annotate undefined protocol names
+     */
+    private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
+        val protocolName = protocolNameElement.text
+        if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
+            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undec-protocol.message", protocolName))
         }
-        List<ObjJFormalVariableType> actualParamTypes = actual.getParamTypes();
-        List<ObjJFormalVariableType> expectedParamTypes = expected.getParamTypes();
-        if (actualParamTypes.size() != expectedParamTypes.size()) {
-            annotationHolder.createErrorAnnotation(actual, "Mismatched expected parameter types, and actual parameter types");
-        }
-        ObjJFormalVariableType actualParamType;
-        ObjJFormalVariableType expectedParamType;
-        for (int i=0;i<actualParamTypes.size();i++) {
-            expectedParamType = expectedParamTypes.size() > i ? expectedParamTypes.get(i) : null;
-            actualParamType = actualParamTypes.get(i);
-            if (expectedParamType == null || actualParamType == null) {
-                continue;
-            }
-            if (expectedParamType.getVarTypeId() != null) {
-                if ( actualParamType.getVarTypeId() != null) {
-                    continue;
-                }
-            }
-
-            if (expectedParamType.getText().equals(actualParamType.getText())) {
-                annotationHolder.createErrorAnnotation(actualParamType, "Method in protocol expected parameter type <"+expectedParamType.getText()+">, but found type <"+actualParamType.getText()+">");
-            }
-        }
-        if (!expected.getReturnType().equals(actual.getReturnType())) {
-            annotationHolder.createErrorAnnotation(actual.getMethodHeaderReturnTypeElement() != null ? actual.getMethodHeaderReturnTypeElement() : actual, "Unexpected return type from delegate method. Expected return type <"+expected.getReturnType()+">");
-        }
-        return true;
     }
-*/
+
+    /**
+     * Annotate unimplemented or partially implemented protocols
+     */
+    private fun annotateUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
+        // Get protocol name as string
+        val protocolName = protocolNameElement.text
+        // Find all unimplemented methods
+        val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
+        if (unimplementedMethods.required.isEmpty())
+            return
+        // Annotate and register fix for missing required members
+        annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
+                .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+    }
+
+    private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+        if (DumbService.isDumb(declaration.project)) {
+            return
+        }
+        val variables = declaration.instanceVariableList?.instanceVariableDeclarationList ?: return
+        for (variable:ObjJInstanceVariableDeclaration in variables) {
+            annotateInstanceVariableIfClassNameInvalid(variable, annotationHolder)
+        }
+    }
+
+    private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolder) {
+        val variableType = variable.formalVariableType
+        val className:ObjJClassName
+        className = if (variableType.varTypeId != null) {
+            // No className present return as valid
+            if (variableType.varTypeId?.className == null){
+                return
+            }
+            variableType.varTypeId?.className ?: return
+        } else {
+            variableType.className ?: return
+        }
+
+        val isValidClass = ObjJClassTypePsiUtil.isValidClass(className) ?: true
+        if (isValidClass)
+            return
+
+        val classNameString:String = className.text ?: return
+        var severity = HighlightSeverity.ERROR
+        var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.undec-class.message", classNameString)
+        if (classNameString.startsWith("CG")) {
+            severity = HighlightSeverity.WARNING
+            message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", classNameString)
+        }
+        annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString))
+    }
 
 }

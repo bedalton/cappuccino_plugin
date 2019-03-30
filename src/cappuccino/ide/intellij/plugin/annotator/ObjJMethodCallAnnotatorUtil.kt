@@ -2,27 +2,30 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.fixes.*
 import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.indices.*
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.utils.*
-
-import java.util.ArrayList
+import com.intellij.lang.annotation.Annotation
 
 /**
- * Annotator for method calls
+ * Annotator/Validator of method calls
  */
 internal object ObjJMethodCallAnnotatorUtil {
 
-    //private static final Logger LOGGER = Logger.getLogger(ObjJMethodCallAnnotatorUtil.class.getName());
+    // List of scopes to add fixes to
+    private val scopeList = listOf(
+            ObjJSuppressInspectionScope.STATEMENT,
+            ObjJSuppressInspectionScope.METHOD,
+            ObjJSuppressInspectionScope.FUNCTION,
+            ObjJSuppressInspectionScope.CLASS,
+            ObjJSuppressInspectionScope.FILE
+    )
 
     /**
      * Responsible for annotating method calls
@@ -32,15 +35,18 @@ internal object ObjJMethodCallAnnotatorUtil {
     fun annotateMethodCall(
             methodCall: ObjJMethodCall,
             holder: AnnotationHolder) {
+
         //First validate that all selector sub elements are present
         validateMissingSelectorElements(methodCall, holder)
+
         //Validate the method for selector exists. if not, stop annotation
         if (!validMethodSelector(methodCall, holder)) {
             //Method call is invalid, stop annotations
             return
         }
-        //Check that call target for method call is valid
-        //Only used is setting for validate call target is set.
+
+        // Check that call target for method call is valid
+        // Only used is setting for validate call target is set.
         if (ObjJPluginSettings.validateCallTarget()) {// && !IgnoreUtil.shouldIgnore(methodCall, ElementType.CALL_TARGET)) {
             //validateCallTarget(methodCall, holder)
         }
@@ -56,106 +62,117 @@ internal object ObjJMethodCallAnnotatorUtil {
         if (methodCall.selectorList.size > 1) {
             for (selector in methodCall.qualifiedMethodCallSelectorList) {
                 if (selector.exprList.isEmpty() && selector.selector != null) {
-                    holder.createErrorAnnotation(selector.selector!!, "Missing expression")
+                    holder.createErrorAnnotation(selector.selector!!, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.method-call-missing-expression.message"))
                     return
                 }
             }
         }
     }
 
-    /*
-     * Validates and annotates a selector literal
-     * @param selectorLiteral selector literal
-     * @param holder annotation holder
-     * /
-    fun annotateSelectorLiteral(
-            selectorLiteral: ObjJSelectorLiteral,
-            holder: AnnotationHolder) {
-        //TODO annotations for selector literals are in some cases selector contracts or declarations
-        /*
-        final Project project = selectorLiteral.getProject();
-        final List<ObjJSelector> selectors = selectorLiteral.getSelectorList();
-        annotateSelectorReference(project, selectors, holder);
-        */
-    }*/
-
     /**
      * Validates and annotates method selector signature
      * @param methodCall method call
-     * @param holder annotation holder
+     * @param annotationHolder annotation annotationHolder
      * @return **true** if valid, **false** otherwise
      */
-    private fun validMethodSelector(methodCall: ObjJMethodCall, holder: AnnotationHolder): Boolean {
+    private fun validMethodSelector(methodCall: ObjJMethodCall, annotationHolder: AnnotationHolder): Boolean {
+        // Get project
+        val project = methodCall.project
 
-        /*if (false && IgnoreUtil.shouldIgnore(methodCall, ElementType.METHOD)) {
-            return true;
-        }*/
         //Checks that there are selectors
         val selectors = methodCall.selectorList
         if (selectors.isEmpty()) {
             return false
         }
-        val project = methodCall.project
         //Get full selector signature
-        val fullSelector = ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors)
+        val fullSelector = getSelectorStringFromSelectorList(selectors)
 
         //Check that method selector signature is valid, and return if it is
         if (isValidMethodCall(fullSelector, project)) {
             return true
         }
 
-
-        if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
-            for (selector in selectors) {
-                holder.createInfoAnnotation(selector, "missing selector: <$fullSelector> is ignored")
-                        .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
-            }
+        // Check if selector is ignored through annotations or other means
+        if (isIgnored(methodCall, fullSelector, annotationHolder)) {
             return true
         }
 
-        if (ObjJIgnoreEvaluatorUtil.isIgnored(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR)) {
-            return true
-        }
-
+        // If selector is single in size, markup simply
         if (selectors.size == 1) {
             val selector = selectors.getOrNull(0) ?: return true
-            holder.createErrorAnnotation(selector, "Failed to find selector matching <${selector.getSelectorString(true)}>")
-                    .registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
+            val annotation = annotationHolder.createErrorAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selector.getSelectorString(true)))
+            addInvalidSelectorFixes(annotation, methodCall, fullSelector)
             return false
         }
+
         //Selector is invalid, so find first non-matching selector
         val failIndex = getSelectorFailedIndex(methodCall.selectorStrings, project)
 
         //If fail index is less than one, mark all selectors and return;
         if (failIndex < 0) {
-            //LOGGER.log(Level.INFO, "Selector fail index returned a negative index.");
-            val annotation = holder.createErrorAnnotation(methodCall, "Failed to find selector matching <$fullSelector>")
-            annotation.registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
+            val annotation = annotationHolder.createErrorAnnotation(methodCall,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", fullSelector))
+            addInvalidSelectorFixes(annotation, methodCall, fullSelector)
             return false
         }
 
-        val selectorToFailPoint = StringBuilder(ObjJMethodPsiUtils.getSelectorStringFromSelectorList(selectors.subList(0, failIndex)))
-        val methodCallSelectors = methodCall.qualifiedMethodCallSelectorList
-        //assert methodCallSelectors.size() == methodCall.getSelectorStrings().size() : "Method call is returning difference lengthed selector lists. Call: <"+methodCall.getText()+">. Qualified: <"+methodCallSelectors.size()+">; Strings: <"+methodCall.getSelectorStrings().size()+">";
-        val numSelectors = methodCallSelectors.size
-        var selector: ObjJQualifiedMethodCallSelector
-        var failPoint: PsiElement?
-        //Markup invalid
-        for (i in failIndex until numSelectors) {
-            selector = methodCallSelectors[i]
-            failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
-            selectorToFailPoint.append(ObjJMethodPsiUtils.getSelectorString(selectors[i], true))
-            val annotation = holder.createErrorAnnotation(failPoint!!, "Failed to find selector matching <" + selectorToFailPoint.toString() + ">")
-            annotation.setNeedsUpdateOnTyping(true)
-            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.STATEMENT))
-            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.METHOD))
-            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.FUNCTION))
-            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.CLASS))
-            annotation.registerFix(ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, ObjJSuppressInspectionScope.FILE))
-        }
-
+        // Annotate all selectors individually
+        annotateInvalidSelectorsIndividually(methodCall, selectors, failIndex, fullSelector, annotationHolder)
         return false
     }
+
+    /**
+     * Annotates only the selectors not matching any known selector
+     * Highlights these and adds fixes on a selector by selector basis
+     */
+    private fun annotateInvalidSelectorsIndividually(methodCall:ObjJMethodCall, selectors:List<ObjJSelector>, failIndex:Int, fullSelector: String, annotationHolder: AnnotationHolder){
+        val selectorToFailPointTextSoFar = StringBuilder(getSelectorStringFromSelectorList(selectors.subList(0, failIndex)))
+        val methodCallSelectors = methodCall.qualifiedMethodCallSelectorList
+        val numSelectors = methodCallSelectors.size
+        var selector: ObjJQualifiedMethodCallSelector
+        //loop through invalid selectors and annotate them
+        for (i in failIndex until numSelectors) {
+            selector = methodCallSelectors.getOrNull(i) ?: return
+            annotateInvalidSelector(methodCall, selector, selectorToFailPointTextSoFar, fullSelector, annotationHolder)
+        }
+    }
+
+    /**
+     * Annotates a single selector with an error annotation
+     */
+    private fun annotateInvalidSelector(
+            methodCall:ObjJMethodCall,
+            selector:ObjJQualifiedMethodCallSelector,
+            selectorToFailPointTextSoFar:StringBuilder,
+            fullSelector: String,
+            annotationHolder: AnnotationHolder
+    ) {
+        // Uses fail point and not strictly the selector as some
+        // qualified selectors do not have text selectors, but are just colons
+        val failPoint = if (selector.selector != null && !selector.selector!!.text.isEmpty()) selector.selector else selector.colon
+
+        // Append fail text to this option
+        selectorToFailPointTextSoFar.append(getSelectorString(selector.selector, true))
+
+        // Create annotation
+        val annotation = annotationHolder.createErrorAnnotation(failPoint!!,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selectorToFailPointTextSoFar))
+        annotation.setNeedsUpdateOnTyping(true)
+        // Add fixes
+        addInvalidSelectorFixes(annotation, methodCall, fullSelector)
+    }
+
+    /**
+     * Adds all fixes for an invalid selector
+     * @todo add fix to add a selector matching to a class
+     */
+    private fun addInvalidSelectorFixes(annotation: Annotation, methodCall: ObjJMethodCall, fullSelector: String) {
+        annotation.registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
+        for(scope in scopeList) {
+            val fix = ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, scope)
+            annotation.registerFix(fix)
+        }
+    }
+
+
 
     /**
      * Brute force method to check if method call is valid
@@ -172,7 +189,30 @@ internal object ObjJMethodCallAnnotatorUtil {
     }
 
     /**
-     * Gets selector index where selector stops being valid.
+     * Checks whether or not a selector is in any way ignored.
+     */
+    private fun isIgnored(methodCall: ObjJMethodCall, fullSelector: String, annotationHolder: AnnotationHolder) : Boolean {
+        // Ensure that selector is not listed in project level ignore list
+        if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
+            // If ignored, add fix to remove it from ignored list
+            for (selector in methodCall.selectorList) {
+                annotationHolder.createInfoAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.invalid-selector-ignored.message", fullSelector))
+                        .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
+            }
+            return true
+        }
+
+        // Ensure that selector is not annoted with ignore statement
+        if (ObjJIgnoreEvaluatorUtil.isIgnored(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR)) {
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Gets index of selector where selector stops being valid.
+     * This allows for partial matches where possibly the
+     * first selector matches a method, but the second does not
      * @param selectors selector list
      * @param project project
      * @return index of first invalid selector
@@ -190,90 +230,9 @@ internal object ObjJMethodCallAnnotatorUtil {
             if (!ObjJUnifiedMethodIndex.instance.getStartingWith(selector, project).isEmpty() || !ObjJSelectorInferredMethodIndex.instance.getStartingWith(selector, project).isEmpty()) {
                 continue
             }
-            //LOGGER.log(Level.INFO, "Selector match failed at index: <"+i+"> in with selector: <"+builder.toString()+">");
             return i
         }
         return 0
-    }
-
-    /**
-     * Validates and annotates the call target of a method call to ensure method call is possible.
-     * @param methodCall method call to check
-     * @param holder annotation holder
-     */
-    private fun validateCallTarget(methodCall: ObjJMethodCall, holder: AnnotationHolder) {
-        if (methodCall.selectorList.isEmpty()) {
-            return
-        }
-        val selectorList = methodCall.selectorList
-        var lastIndex = selectorList.size - 1
-        var lastSelector: ObjJSelector? = selectorList[lastIndex]
-        while (lastSelector == null && lastIndex > 0) {
-            lastSelector = selectorList[--lastIndex]
-        }
-        if (lastSelector == null) {
-            return
-        }
-        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(lastSelector)
-        var weakWarning: String? = null
-        val childClasses = ArrayList<String>()
-        val expectedContainingClasses: List<String>
-        if (!selectorResult.isEmpty) {
-            if (selectorResult.isNatural) {
-                return
-            }
-            expectedContainingClasses = selectorResult.possibleContainingClassNames
-            for (containingClass in expectedContainingClasses) {
-                ProgressIndicatorProvider.checkCanceled()
-                childClasses.addAll(ObjJClassInheritanceIndex.instance.getChildClassesAsStrings(containingClass, methodCall.project))
-            }
-            val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNamesFromSelector(selectorResult.result)
-            val childContainingClasses = ArrayList<String>()
-            for (className in actualContainingClasses) {
-                if (childClasses.contains(className) && !childContainingClasses.contains(className)) {
-                    childContainingClasses.add(className)
-                }
-            }
-            weakWarning = if (!childContainingClasses.isEmpty()) {
-                "Method found in possible child classes [" + ArrayUtils.join(childContainingClasses) + "] of [" + ArrayUtils.join(expectedContainingClasses) + "]"
-            } else {
-                "Method found in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in inferred classes [" + ArrayUtils.join(expectedContainingClasses) + "]"
-            }
-        }
-        selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(lastSelector)
-        if (!selectorResult.isEmpty) {
-            if (selectorResult.isNatural) {
-                return
-            } else if (weakWarning == null) {
-                weakWarning = "Method seems to reference a selector literal, but not in enclosing class"
-            }
-        }
-        if (selectorList.size == 1) {
-            var psiElementResult = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(selectorList[0], selectorResult.possibleContainingClassNames)
-            if (!psiElementResult.isEmpty) {
-                if (psiElementResult.isNatural) {
-                    return
-                } else if (weakWarning == null) {
-                    val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNames(psiElementResult.result)
-                    weakWarning = "Selector seems to reference an accessor method in classes [" + ArrayUtils.join(actualContainingClasses) + "], not in the inferred classes [" + ArrayUtils.join(psiElementResult.possibleContainingClassNames) + "]"
-                }
-            } else {
-                psiElementResult = ObjJSelectorReferenceResolveUtil.getVariableReferences(selectorList[0], psiElementResult.possibleContainingClassNames)
-                if (!psiElementResult.isEmpty) {
-                    if (psiElementResult.isNatural) {
-                        return
-                    } else if (weakWarning == null) {
-                        val actualContainingClasses = ObjJHasContainingClassPsiUtil.getContainingClassNames(psiElementResult.result)
-                        weakWarning = "Selector seems to reference an instance variable in [" + ArrayUtils.join(actualContainingClasses) + "], not in the inferred classes [" + ArrayUtils.join(psiElementResult.possibleContainingClassNames) + "]"
-                    }
-                }
-            }
-        }
-        if (weakWarning != null) {
-            for (selector in methodCall.selectorList) {
-                holder.createWeakWarningAnnotation(selector, weakWarning)
-            }
-        }
     }
 
 }

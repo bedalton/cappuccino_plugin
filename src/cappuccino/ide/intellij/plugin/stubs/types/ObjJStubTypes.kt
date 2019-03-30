@@ -1,15 +1,10 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFile
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
-import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFile
-import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFramework
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportFrameworkStub
 
 object ObjJStubTypes {
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
     val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
-    public val FILE = ObjJFileStubType()
+    val FILE = ObjJFileStubType()
     val FUNCTION_DECLARATION = ObjJFunctionDeclarationStubType("ObjJ_FUNCTION_DECLARATION")
     val FUNCTION_LITERAL = ObjJFunctionLiteralStubType("ObjJ_FUNCTION_LITERAL")
     val GLOBAL_VARIABLE = ObjJGlobalVariableDeclarationStubType("ObjJ_GLOBAL_VARIABLE_DECLARATION")
