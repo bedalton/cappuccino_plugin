@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 
@@ -68,11 +69,11 @@ object ObjJVariableTypeResolver {
 
     private fun getVariableTypeFromAssignments(variableName:ObjJVariableName, recurse: Boolean) : Set<String>? {
         val fromBodyVariableAssignments = getVariableTypeFromBodyVariableAssignments(variableName, recurse)
-        if (fromBodyVariableAssignments != null) {
+        if (fromBodyVariableAssignments?.isNotEmpty().orFalse()) {
             return fromBodyVariableAssignments
         }
         val fromExpressionAssignments = getVariableTypeFromExpressionAssignments(variableName, recurse)
-        if (fromExpressionAssignments != null) {
+        if (fromExpressionAssignments?.isNotEmpty().orFalse()) {
             return fromExpressionAssignments
         }
         return null
@@ -85,7 +86,7 @@ object ObjJVariableTypeResolver {
         val variableNameText = variableName.text
         val assignmentsRaw =variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
                 .flatMap { it.variableDeclarationList?.variableDeclarationList ?: emptyList() }
-                .filter { it.qualifiedReferenceList.map { q -> q.text == variableNameText }.isNotEmpty() }
+                .filter { it.qualifiedReferenceList.any { q -> q.text == variableNameText } }
 
         val out = mutableSetOf<String>()
         for (variableDeclaration in assignmentsRaw) {
@@ -99,9 +100,17 @@ object ObjJVariableTypeResolver {
     }
 
     private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean) : Set<String>? {
-        val assignmentsRaw:List<ObjJVariableDeclaration> = variableName.getParentBlockChildrenOfType(ObjJExpr::class.java, true)
-                .filter { it.leftExpr?.variableDeclaration != null }
-                .map { it.leftExpr!!.variableDeclaration!! }
+        val assignmentsRaw:List<ObjJVariableDeclaration> = variableName
+                .getParentBlockChildrenOfType(ObjJExpr::class.java, true)
+                .mapNotNull {expr ->  expr.leftExpr?.variableDeclaration }
+                // Convoluted check to ensure that any of the qualified references listed in a compound expression
+                // contain a variable with this name
+                .filter {
+                    it.qualifiedReferenceList.any { qRef ->
+                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0) is ObjJVariableName
+                    }
+                }
+
         val out = mutableSetOf<String>()
         assignmentsRaw.forEach {
             val set = getVariableTypeFromAssignment(it, recurse) ?: return@forEach
