@@ -32,6 +32,10 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
+        if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            return Indent.getNormalIndent()
+        }
+
         if (parent == null || parent.treeParent == null) {
             return Indent.getNoneIndent()
         }
@@ -91,9 +95,12 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             }
         }
 
-        if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
+        if (parentType == ObjJ_METHOD_BLOCK)
             return Indent.getNormalIndent()
+        if (parentType == ObjJ_VARIABLE_DECLARATION_LIST) {
+            return Indent.getSpaceIndent(4)
         }
+
 
         if (elementType == ObjJ_PREPROCESSOR_IF_STATEMENT) {
             if (parentType == ObjJ_METHOD_BLOCK) {
