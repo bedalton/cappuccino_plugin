@@ -39,7 +39,11 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
 
         if (elementType == DUMMY_BLOCK || type1 == DUMMY_BLOCK || type2 == DUMMY_BLOCK) {
-            return Spacing.createSpacing(0, 1, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if (type1 == ObjJ_AT_IMPLEMENTATION) {
+            return Spacing.createSpacing(1, Int.MAX_VALUE, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (type2 == ObjJ_SINGLE_LINE_COMMENT && !isDirectlyPrecededByNewline(node2)) {
@@ -150,7 +154,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 spaces = 1
                 keepBreaks = false
             } else if (type1 == ObjJ_OPEN_BRACE && type2 == ObjJTokenSets.STATEMENTS || type2 == ObjJ_CLOSE_BRACE && type1 == ObjJTokenSets.STATEMENTS) {
-                lineFeeds = 1
+                lineFeeds = 0
                 keepBreaks = false
                 blanks = 0
             } else if (type1 == ObjJ_OPEN_BRACE && type2 == ObjJ_SINGLE_LINE_COMMENT) {
@@ -163,7 +167,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 keepBreaks = true
             }
 
-            val maxSpaces = if (node1 is PsiErrorElement || node2 is PsiErrorElement) 1 else spaces
+            val maxSpaces = if (node1 is PsiErrorElement || node2 is PsiErrorElement) Int.MAX_VALUE else spaces
             return Spacing.createSpacing(spaces, maxSpaces, lineFeeds, keepBreaks, blanks)
         }
         if (elementType == ObjJTokenSets.STATEMENTS && (parentType == ObjJ_CASE_CLAUSE || parentType == ObjJ_DEFAULT_CLAUSE)) {
@@ -173,7 +177,6 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 && node1.treeNext !is PsiErrorElement && node1.lastChildNode !is PsiErrorElement) {
             return addLineBreak()
         }
-
         // Special checks for switch formatting according to dart_style, which conflicts with settings.
         if (type2 == ObjJ_CLOSE_BRACE && (type1 == ObjJ_CASE_CLAUSE || type1 == ObjJ_DEFAULT_CLAUSE)) {
             // No blank line before closing brace in switch statement.
@@ -197,6 +200,10 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             } else {
                 addSingleSpaceIf(condition = false, linesFeed = true)
             }
+        }
+
+        if (parentType == ObjJ_METHOD_HEADER_SELECTOR_FORMAL_VARIABLE_TYPE) {
+            return noSpace()
         }
 
         if (type2 == ObjJ_OPEN_PAREN) {
@@ -530,9 +537,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return noSpace()
         }
 
-        return if (type1 == ObjJ_RETURN && type2 !== ObjJ_SEMI_COLON) {
-            addSingleSpaceIf(true)
-        } else Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        return Spacing.createSpacing(0, Integer.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
 
     }
 
