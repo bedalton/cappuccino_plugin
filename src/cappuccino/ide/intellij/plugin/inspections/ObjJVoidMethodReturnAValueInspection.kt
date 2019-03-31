@@ -102,7 +102,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
             for (returnStatement in returnsWithExpression) {
                 val element = returnStatement.expr ?: returnStatement.`return`
                 //var annotationElement: PsiElement? = functionDeclarationElement.functionNameNode
-                problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.return-statement-disagreement.not-all-return-value.message"),
+                problemsHolder.registerProblem(element, ObjJBundle.message("objective-j.inspections.return-statement-disagreement.no-value-expected.message"),
                         ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.METHOD),
                         ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.CLASS),
                         ObjJAddSuppressInspectionForScope(element, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, ObjJSuppressInspectionScope.FILE))
