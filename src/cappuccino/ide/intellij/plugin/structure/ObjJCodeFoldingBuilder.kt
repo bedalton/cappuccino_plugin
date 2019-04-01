@@ -63,7 +63,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (numInstanceVariables > 0 || numMethods > 0) {
                 placeholderText += " hidden"
             }
-            return ObjJFoldingDescriptor(declaration, startOffset, endOffset, group, placeholderText)
+            return ObjJFoldingDescriptor.create(declaration, startOffset, endOffset, group, placeholderText)
         }
 
         fun execute(protocol:ObjJProtocolDeclaration, group:FoldingGroup) : FoldingDescriptor? {
@@ -75,7 +75,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             }
             val numMethods = protocol.getMethodHeaders().size
             val placeholderString = if (numMethods > 0) "...$numMethods hidden" else null
-            return ObjJFoldingDescriptor(protocol, startOffset, endOffset, group, placeholderString)
+            return ObjJFoldingDescriptor.create(protocol, startOffset, endOffset, group, placeholderString)
         }
 
         fun execute(pragma:ObjJPreprocessorPragma, group:FoldingGroup) : FoldingDescriptor? {
@@ -84,7 +84,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (startOffset >= endOffset) {
                 return null
             }
-            return ObjJFoldingDescriptor(pragma, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor.create(pragma, startOffset, endOffset, group)
         }
 
         fun execute(variableAssignment: ObjJBodyVariableAssignment, group:FoldingGroup) : FoldingDescriptor? {
@@ -93,27 +93,31 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (startOffset >= endOffset) {
                 return null
             }
-            return ObjJFoldingDescriptor(variableAssignment, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor.create(variableAssignment, startOffset, endOffset, group)
         }
 
         fun execute(function: ObjJFunctionDeclarationElement<*>, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset = function.functionNameNode?.textRange?.endOffset ?: return null
             val endOffset = (function.block?.textRange?.endOffset ?: return null)
-            return ObjJFoldingDescriptor(function, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor.create(function, startOffset, endOffset, group)
         }
 
         fun execute(methodDeclaration:ObjJMethodDeclaration, group:FoldingGroup) : FoldingDescriptor? {
             val startRange = methodDeclaration.methodHeader.textRange.endOffset
             val endRange = methodDeclaration.block?.textRange?.endOffset ?: return null
-            return ObjJFoldingDescriptor(methodDeclaration, startRange, endRange, group)
+            return ObjJFoldingDescriptor.create(methodDeclaration, startRange, endRange, group)
         }
 
         fun execute(instanceVariablesList:ObjJInstanceVariableList, group:FoldingGroup) : FoldingDescriptor? {
             val endOffset: Int = instanceVariablesList.textRange.endOffset - 1
+
             val startOffset = if (instanceVariablesList.textRange.startOffset + 1 < endOffset)
                 instanceVariablesList.textRange.startOffset + 1
             else
                 instanceVariablesList.textRange.startOffset
+            if (startOffset < 0 || startOffset >= endOffset) {
+                return null
+            }
             val numInstanceVariables:Int = instanceVariablesList.instanceVariableDeclarationList.size
             val placeholder:String =
                     when {
@@ -121,18 +125,21 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
                         numInstanceVariables > 1 -> "...$numInstanceVariables variables hidden"
                         else -> ""
                     }
-            return ObjJFoldingDescriptor(instanceVariablesList, startOffset, endOffset, group, placeholder)
+            return ObjJFoldingDescriptor.create(instanceVariablesList, startOffset, endOffset, group, placeholder)
         }
 
         fun execute(comment:ObjJComment, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset = comment.textRange.startOffset + 2
             val endOffset:Int = comment.textRange.endOffset - 2
-            return ObjJFoldingDescriptor(comment, startOffset, endOffset, group)
+            return ObjJFoldingDescriptor.create(comment, startOffset, endOffset, group)
         }
     }
 }
 
-private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOffset: Int, group: FoldingGroup, placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
+private class ObjJFoldingDescriptor private constructor(element: PsiElement, startOffset: Int, endOffset: Int, group: FoldingGroup, placeholderString: String? = defaultPlaceholderText) : FoldingDescriptor(element.node, TextRange(startOffset, endOffset), group) {
+
+
+
     private val placeholderString:String
 
     override fun getPlaceholderText(): String {
@@ -140,6 +147,13 @@ private class ObjJFoldingDescriptor(element: PsiElement, startOffset: Int, endOf
     }
     companion object {
         const val defaultPlaceholderText:String = "..."
+
+        fun create(element: PsiElement, startOffset: Int, endOffset: Int, group: FoldingGroup, placeholderString: String? = null) : ObjJFoldingDescriptor? {
+            if (startOffset < 0 || startOffset >= endOffset) {
+                return null
+            }
+            return ObjJFoldingDescriptor(element, startOffset, endOffset, group, placeholderString)
+        }
     }
 
 
