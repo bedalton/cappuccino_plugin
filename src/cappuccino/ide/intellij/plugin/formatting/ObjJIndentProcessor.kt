@@ -21,6 +21,8 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         val elementType = node.elementType
         val prevSibling = node.getPreviousNonEmptySiblingIgnoringComments()
         val prevSiblingType = prevSibling?.elementType
+        val nextSibling = node.getNextNonEmptyNode(true)
+        val nextSiblingType = nextSibling?.elementType
         val parent = node.treeParent
         val parentType = parent?.elementType
         val superParent = parent?.treeParent
@@ -32,6 +34,13 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         if (parentType == ObjJStubTypes.FILE) {
             return Indent.getNoneIndent()
         }
+
+        if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
+            return Indent.getNoneIndent()
+        }
+
+        if (elementType == ObjJ_BLOCK_ELEMENT)
+            return Indent.getNoneIndent()
 
         if (parentType == ObjJ_IMPLEMENTATION_DECLARATION) {
             if ((prevSibling == ObjJ_OPEN_BRACE || prevSibling == ObjJ_SEMI_COLON || prevSibling == ObjJ_INSTANCE_VARIABLE_DECLARATION) && elementType != ObjJ_CLOSE_BRACE) {
@@ -90,19 +99,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             } else Indent.getNoneIndent()
         }
 
-        if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
-            return when (braceStyle) {
-                CommonCodeStyleSettings.END_OF_LINE -> {
-                    if (elementType == ObjJ_OPEN_BRACE && FormatterUtil.isPrecededBy(parent, ObjJ_SINGLE_LINE_COMMENT, WHITE_SPACE)) {
-                        // Use Nystrom style rather than Allman.
-                        Indent.getContinuationIndent()
-                    } else Indent.getNoneIndent() // FALL THROUGH
-                }
-                CommonCodeStyleSettings.NEXT_LINE, CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED -> Indent.getNoneIndent()
-                CommonCodeStyleSettings.NEXT_LINE_SHIFTED, CommonCodeStyleSettings.NEXT_LINE_SHIFTED2 -> Indent.getNormalIndent()
-                else -> Indent.getNoneIndent()
-            }
-        }
 
         if (parentType == ObjJ_METHOD_BLOCK)
             return Indent.getNormalIndent()
