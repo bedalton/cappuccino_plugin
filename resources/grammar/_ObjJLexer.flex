@@ -58,14 +58,14 @@ VAR_TYPE_SHORT=((unsigned|signed)[ ]+)?short
 VAR_TYPE_INT=((unsigned|signed)[ ]+)?int
 VAR_TYPE_LONG_LONG=((unsigned|signed)[ ]+)?long[ ]+long
 VAR_TYPE_LONG=((unsigned|signed)[ ]+)?long
-IMPORT_FRAMEWORK_LITERAL=<.*"/".*>
+IMPORT_FRAMEWORK_LITERAL=<[a-zA-Z0-9\-_]+"/"[a-zA-Z0-9\-_]+(\.j)?>
 //BAD_SINGLE_QUOTE_STRING_LITERAL=\' SINGLE_QUOTE_STRING
 SINGLE_QUOTE_TEXT = ([^\\\'\r\n]|\\ [\\\'brfntvuU0])+
 //SINGLE_QUOTE_STRING_LITERAL = {BAD_SINGLE_QUOTE_STRING_LITERAL}\'
 //BAD_DOUBLE_QUOTE_STRING_LITERAL=(@\"|\")
 DOUBLE_QUOTE_TEXT = ([^\\\"\r\n]|\\ [\\\"brfntvuU0])+
 //DOUBLE_QUOTE_STRING_LITERAL = {BAD_DOUBLE_QUOTE_STRING_LITERAL}\"
-BOOLEAN_LITERAL=(true|false|YES|yes|NO|no)
+BOOLEAN_LITERAL=(true|false|YES|NO)
 HEX_INTEGER_LITERAL=0 [xX] [0-9a-fA-F]+
 OCTAL_INTEGER_LITERAL=0 [0-7]+
 OCTAL_INTEGER_LITERAL2=0 [oO] [0-7]+
@@ -77,7 +77,11 @@ BAD_BLOCK_COMMENT="/"\* {BLOCK_COMMENT_TEXT}
 BLOCK_COMMENT_TEXT = ([^*]|\*[^/]|'\n'|'\r'|";"|\s)+
 BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
-REGULAR_EXPRESSION_LITERAL = \/ [^\r\n\u2028\u2029\*\/] (([^\r\n\u2028\u2029/\[]| "\\" [^\r\n\u2028\u2029]{1})+ | \[ (\\? [^\r\n\u2028\u2029\]/])* \] )* \/ [a-zA-Z]*
+REGEXP_LITERAL_SET = \[ ([^\]]|\\[\[\]]|\/)* \]
+REGEXP_ESCAPED_CHAR = \\ [^\r\n\u2028\u2029]
+REGEXP_CHAR_SIMPLE = [^\r\n\u2028\u2029\\/\[\]]
+REGEXP_VALID_CHAR = {REGEXP_LITERAL_SET} | {REGEXP_ESCAPED_CHAR} | {REGEXP_CHAR_SIMPLE}
+REGEXP_END = \/ [a-zA-Z]*
 ID=[$_a-zA-Z][_a-zA-Z0-9]*
 PP_UNDEF = #\s*undef
 PP_IF_DEF = #\s*ifdef
@@ -94,7 +98,7 @@ PP_WARNING = #\s*warning
 PP_INCLUDE = #\s*include
 PP_FRAGMENT = #\s+{ID}
 WHITE_SPACE=\p{Blank}+
-%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT
+%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP
 %%
 
 
@@ -127,6 +131,14 @@ WHITE_SPACE=\p{Blank}+
 	"*/"								 { yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
   	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
  	'.*'/'\n'							 { return ObjJ_BLOCK_COMMENT_LINE; }
+}
+
+<IN_REGEXP> {
+  	{REGEXP_VALID_CHAR}					 {}
+  	{REGEXP_ESCAPED_CHAR}				 {}
+  	{REGEXP_END}						 { yybegin(YYINITIAL); return ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN; }
+	{LINE_TERMINATOR}					 { yybegin(YYINITIAL); return BAD_CHARACTER;}
+	<<EOF>>								 { yybegin(YYINITIAL); return BAD_CHARACTER; }
 }
 
 <YYINITIAL,PREPROCESSOR> {
@@ -204,7 +216,7 @@ WHITE_SPACE=\p{Blank}+
 	"@implementation"                    { canRegex(false); return ObjJ_AT_IMPLEMENTATION; }
 	"@outlet"                            { canRegex(false); return ObjJ_AT_OUTLET; }
 	"@{"                                 { canRegex(true); return ObjJ_AT_OPEN_BRACE; }
-	"null"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
+	"null"|"NULL"                               { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"                                { canRegex(false); return ObjJ_NIL; }
 	"Nil"                                { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
@@ -259,7 +271,6 @@ WHITE_SPACE=\p{Blank}+
 	"const"                              { canRegex(false);  return ObjJ_CONST; }
 	";"                                  { canRegex(true); return ObjJ_SEMI_COLON; }
 	{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
-	{SINGLE_LINE_COMMENT}                { canRegex(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
 	{LINE_TERMINATOR}                    { return WHITE_SPACE; }
 	{VAR_TYPE_BYTE}                      { canRegex(false);  return ObjJ_VAR_TYPE_BYTE; }
@@ -280,35 +291,21 @@ WHITE_SPACE=\p{Blank}+
 	{DECIMAL_LITERAL2}                   { canRegex(false);  return ObjJ_DECIMAL_LITERAL; }
 	{INTEGER_LITERAL}                    { canRegex(false);  return ObjJ_INTEGER_LITERAL; }
 	{ID}                                 { canRegex(false); return ObjJ_ID; }
-	{REGULAR_EXPRESSION_LITERAL}		 {
-											/*final String text = yytext().toString();
-    											final int backtrack = text.length() -1;
-    											int i = 1;
-    											String nextChar;
-    											do {
-    												nextChar = text.substr(i,++i);
-    												backtrack--;
-    											}
-    											while(!nextChar.equals(" "));
-    											if (canRegex()) {
-    												canRegex(true);
-    												return ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN;
-    										 	} else {
-    										 		yypushback(yytext().length()-1);
-    										 		return ObjJ_DIVIDE;
-    										 	}*/
+	"/"{REGEXP_VALID_CHAR}
+        								 {
 											if (canRegex()) {
 												canRegex(true);
-												return ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN;
+												yybegin(IN_REGEXP);
 										 	} else if (yytext().toString().substring(1,2).equals("=")){
 										 		yypushback(yytext().length()-2);
 										 		return ObjJ_DIVIDE_ASSIGN;
 											} else {
-												yypushback(yytext().length()-1);
+												yypushback(yytext().length()-2);
 										 		return ObjJ_DIVIDE;
 										 	}
 										 }
 	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); return ObjJ_BLOCK_COMMENT; }
+	{SINGLE_LINE_COMMENT}                { canRegex(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	//{BAD_DOUBLE_QUOTE_STRING_LITERAL}	 { canRegex(false);	return ObjJ_QUO_TEXT; }
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }
 
