@@ -38,8 +38,8 @@ class ObjJColorSettingsPage : ColorSettingsPage {
 -(void) setBackgroundColor:(<varType>CPColor</varType>)aColor
 {
     //A Line Comment
-    var i = 0;
-
+    var i = 0,
+        regexp = <literal2>/[hH]ello/g</literal2>;
     <identifier>i</identifier>++
     <instanceVar>_backgroundColor</instanceVar> = <paramVar>aColor</paramVar>;
 }

@@ -122,7 +122,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_END ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY) {
             attrKey = BLOCK_COMMENT
-        } else if (tokenType == ObjJTypes.ObjJ_PRAGMA_MARKER || tokenType == ObjJTypes.ObjJ_REGULAR_EXPRESSION_LITERAL) {
+        } else if (tokenType == ObjJTypes.ObjJ_PRAGMA_MARKER || tokenType == ObjJTypes.ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN) {
             attrKey = SECONDARY_LITERAL
         }
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
@@ -137,7 +137,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         val STRING:TextAttributesKey = createTextAttributesKey("ObjJ_STRING", DefaultLanguageHighlighterColors.STRING)
         val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
-        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_PREPROCESSOR_VAR", DefaultLanguageHighlighterColors.CONSTANT)
+        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_SECONDARY_LITERAL", DefaultLanguageHighlighterColors.CONSTANT)
         val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
         val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
