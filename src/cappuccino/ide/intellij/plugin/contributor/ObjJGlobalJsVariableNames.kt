@@ -51,7 +51,8 @@ val ObjJGlobalJSVariables:List<JsProperty> = {
             p("kCFPropertyListOpenStepFormat", "number"),
             p("kCFPropertyListXMLFormat_v1_0", "number"),
             p("kCFPropertyListBinaryFormat_v1_0", "number"),
-            p("kCFPropertyList280NorthFormat_v1_0", "number")
+            p("kCFPropertyList280NorthFormat_v1_0", "number"),
+            p ("DEBUG", "BOOL")
     )
     out.addAll(Window.properties)
     out

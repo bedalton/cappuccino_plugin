@@ -7,38 +7,49 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.codeInsight.lookup.LookupValueWithPriority
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import java.util.logging.Logger
 
 object ObjJFunctionNameCompletionProvider {
 
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
-        val functions = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
-        val ignoreFunctionPrefixedWithUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
-        for (functionName in functions.keys) {
-            val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
-            for (function in functions.getValue(functionName)) {
-                if (shouldPossiblyIgnore && !element.containingFile.isEquivalentTo(function.containingFile))
-                    continue
-                ProgressIndicatorProvider.checkCanceled()
-                val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
-
-                val lookupElementBuilder = LookupElementBuilder
-                        .create(functionName)
-                        .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
-                        .withInsertHandler(ObjJFunctionNameInsertHandler)
-                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
-            }
-        }
-        addAllGlobalJSFIles(resultSet)
+        addAllGlobalJSFunctionNames(resultSet, (functionNamePattern.length - 5) > 8)
         addAllLocalFunctionNames(resultSet, element)
+    }
+
+    private fun addIndexBasedCompletions(resultSet: CompletionResultSet, element: PsiElement) {
+        val ignoreFunctionPrefixedWithUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
+        val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
+        val functionsRaw = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
+        val functions = functionsRaw.flatMap { it.value }
+                .filter {
+                    when (it.functionScope) {
+                        ObjJFunctionScope.GLOBAL_SCOPE -> true
+                        ObjJFunctionScope.FILE_SCOPE -> element.parent.isEquivalentTo(it.containingFile)
+                        else -> false
+                    }
+                }
+        for (function in functions) {
+            ProgressIndicatorProvider.checkCanceled()
+            val functionName = function.functionNameAsString
+            val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
+            if (shouldPossiblyIgnore && !element.containingFile.isEquivalentTo(function.containingFile))
+                continue
+            val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(functionName)
+                    .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
+        }
     }
 
     private fun addAllLocalFunctionNames(resultSet: CompletionResultSet, element: PsiElement) {
@@ -54,9 +65,17 @@ object ObjJFunctionNameCompletionProvider {
         }
     }
 
-    private fun addAllGlobalJSFIles(resultSet: CompletionResultSet) {
-        for (function in globalJsFunctions.filterNot { it.name.isEmpty() }) {
-            addGlobalFunctionName(resultSet, function.name)
+    private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, showEvenSkipped:Boolean) {
+        val functions = if (showEvenSkipped) {
+            Logger.getLogger("#ObjJFunctionNameCompletionProvider").info("Showing even skipped")
+            globalJsFunctionNames
+        } else {
+            Logger.getLogger("#ObjJFunctionNameCompletionProvider").info("Not showing skipped")
+            globalJsFunctionNamesMinusSkips
+        }
+
+        for (function in functions) {
+            addGlobalFunctionName(resultSet, function)
         }
     }
 

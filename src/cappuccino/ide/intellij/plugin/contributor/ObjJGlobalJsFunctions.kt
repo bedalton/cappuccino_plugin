@@ -379,7 +379,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 ),
                 fn(
                         name = "objj_generateObjectUID",
-                        returns = "int"
+                        returns = "int",
+                        skipCompletion = true
                 ),
                 fn(
                         name = "CFPropertyListCreate",
@@ -408,7 +409,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("object")),
                         skipCompletion = true
                 ),
-                fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = "?"),
+                fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = "?", skipCompletion = true),
                 fn(name = "class_getName", parameters = listOf(p("aClass", "objj_class")), returns = "string", skipCompletion = true),
                 fn(name = "class_isMetaClass", parameters = listOf(p("aClass")), returns = "BOOL", skipCompletion = true),
                 fn(name = "class_getSuperclass", parameters = listOf(p("aClass")), returns = "objj_class", skipCompletion = true),
@@ -598,25 +599,29 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aName", "string")
                         ),
-                        returns = "objj_typeDef"
+                        returns = "objj_typeDef",
+                        skipCompletion = true
                 ),
                 fn(
                         name = "objj_registerTypeDef",
                         parameters = listOf(
                                 p("typeDef", "objj_typeDef")
-                        )
+                        ),
+                        skipCompletion = true
                 ),
                 fn(
                         name = "typeDef_getName",
                         parameters = listOf(
                                 p("typeDef", "objj_typeDef")
-                        )
+                        ),
+                        skipCompletion = true
                 ),
                 fn(
                         name = "_objj_forward",
                         parameters = listOf(
                                 p("self", "?"),
-                                p("_cmd", "?"))
+                                p("_cmd", "?")),
+                        skipCompletion = true
                 ),
                 fn(
                         name = "class_getMethodImplementation",
@@ -629,7 +634,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "objj_enumerateClassesUsingBlock",
                         parameters = listOf(
                                 p("aBlock", "Function(objj_class)")
-                        )
+                        ),
+                        skipCompletion = true
                 ),
                 fn(
                         name = "objj_allocateClassPair",
@@ -646,7 +652,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aClass", "objj_class")),
                         skipCompletion = true
                 ),
-                fn(name = "objj_resetRegisterClasses"),
+                fn(name = "objj_resetRegisterClasses", skipCompletion = true),
                 fn(
                         name = "class_createInstance",
                         parameters = listOf(
@@ -935,7 +941,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("sh", "number")),
                         returns = "Promise<ImageBitmap>"
                 ),
-                fn("queueMicrotask", listOf(p("callback", "Function"))),
+                fn("queueMicrotask", listOf(p("callback", "Function")),
+                        skipCompletion = true),
                 fn(
                         name = "setInterval",
                         parameters = listOf(
@@ -970,7 +977,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aLeft", "number"),
                                 p("aTop", "number")
                         ),
-                        fileName = "CPDOMDisplayServer"
+                        fileName = "CPDOMDisplayServer",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleRightTop",
@@ -980,7 +988,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aRight", "number"),
                                 p("aTop", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleLeftBottom",
@@ -990,7 +999,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aLeft", "number"),
                                 p("aBottom", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleRightBottom",
@@ -1000,7 +1010,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aRight", "number"),
                                 p("aBottom", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleSize",
@@ -1009,7 +1020,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p ("aWidth", "number"),
                                 p("aHeight", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetSize",
@@ -1018,7 +1030,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p ("aWidth", "number"),
                                 p("aHeight", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleBackgroundSize",
@@ -1027,7 +1040,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p ("aWidth", "number"),
                                 p("aHeight", "number")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerAppendChild",
@@ -1035,7 +1049,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aParentElement", "DOMElement"),
                                 p ("aChildElement", "DOMElement")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerInsertBefore",
@@ -1044,7 +1059,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aChildElement", "DOMElement"),
                                 p("aBeforeElement", "DOMElement")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "CPDOMDisplayServerRemoveChild",
@@ -1052,15 +1068,18 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aParentElement", "DOMElement"),
                                 p("aChildElement", "DOMElement")
                         ),
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "PREPARE_DOM_OPTIMIZATION",
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "EXECUTE_DOM_INSTRUCTIONS",
-                        fileName = "CPDOMDisplayServer.h"
+                        fileName = "CPDOMDisplayServer.h",
+                        skipCompletion = true
                 ),
                 fn (
                         name = "PLATFORM",
@@ -1070,7 +1089,8 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 fn (
                         name = "_IS_NUMERIC",
                         parameters = listOf(p("n", "number")),
-                        fileName = "Foundation.h"
+                        fileName = "Foundation.h",
+                        skipCompletion = true
                 )
 
         )
@@ -1081,6 +1101,12 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
 val globalJsFunctions = createGlobalJsFunctions()
 
 val globalJsFunctionNames = globalJsFunctions.names()
+
+val globalJsFunctionNamesMinusSkips = globalJsFunctions
+        .filterNot {
+                it is GlobalJsFunction && it.skipCompletion
+        }
+        .map { it.name }
 
 data class GlobalJsFunction(override val name: String, override val parameters: List<JsProperty> = listOf(), override val returns: String? = null, override val comment: String? = null, val skipCompletion: Boolean = false, val fileName: String? = null) : JsFunction
 
