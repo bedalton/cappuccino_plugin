@@ -427,7 +427,8 @@ object ObjJVariableNameAggregatorUtil {
         while (functionDeclarationElement != null) {
             if (functionDeclarationElement.formalParameterArgList.isNotEmpty()) {
                 for (parameterArg in functionDeclarationElement.formalParameterArgList) {
-                    result.add(parameterArg.variableName)
+                    if (parameterArg.variableName != null)
+                        result.add(parameterArg.variableName!!)
                 }
             }
             functionDeclarationElement = functionDeclarationElement.getParentOfType(ObjJFunctionDeclarationElement::class.java)
@@ -478,11 +479,11 @@ object ObjJVariableNameAggregatorUtil {
         if (function == null || function.formalParameterArgList.isEmpty()) {
             return EMPTY_VARIABLE_NAME_LIST
         }
-        val result = ArrayList<ObjJVariableName>()
+        val result = mutableListOf<ObjJVariableName?>()
         for (formalParameterArg in function.formalParameterArgList) {
             result.add(formalParameterArg.variableName)
         }
-        return result
+        return result.filterNotNull()
     }
 
     fun isInstanceVarDeclaredInClassOrInheritance(variableName: ObjJVariableName): Boolean {
