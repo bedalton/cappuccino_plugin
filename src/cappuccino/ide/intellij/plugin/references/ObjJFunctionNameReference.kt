@@ -26,6 +26,12 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (element.text != functionName) {
             return false
         }
+
+        if (myElement?.indexInQualifiedReference != 0) {
+            LOGGER.info("Function name: ${myElement.text} is not first in qname")
+            return false;
+        }
+
         val elementIsFunctionCall = element.parent is ObjJFunctionCall
         val elementIsFunctionDeclaration = !elementIsFunctionCall && element.parent is ObjJFunctionDeclaration
         if (isFunctionDeclaration && elementIsFunctionDeclaration) {
@@ -43,6 +49,10 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
 
     override fun resolve(): PsiElement? {
         if (DumbServiceImpl.isDumb(myElement.project)) {
+            return null
+        }
+
+        if (myElement?.indexInQualifiedReference != 0) {
             return null
         }
 
