@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.containingFileName
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
@@ -90,16 +91,18 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         if (referencedVariable equals variableNameElement) {
             return
         }
-        if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
-            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
-            return
-        } else if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
+        if (referencedVariable.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             colorizeInstanceVariable(variableNameElement, referencedVariable, annotationHolder)
             return
         } else if (referencedVariable.hasParentOfType(ObjJMethodDeclarationSelector::class.java) || referencedVariable.hasParentOfType(ObjJFormalParameterArg::class.java)) {
             colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.PARAMETER_VARIABLE)
             return
-        } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
+        } else if (referencedVariable.hasParentOfType(ObjJBlockElement::class.java)) {
+
+        } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
+            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
+            return
+        } else if (referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
             colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE, ObjJBundle.message("objective-j.general.defined-in-file.text", (referencedVariable ?: variableNameElement).containingFileName.toString()))
         }
 
