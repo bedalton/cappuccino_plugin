@@ -40,7 +40,7 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
 
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invoke(project, editor, file)
+        invoke()
     }
 
     private fun invoke() {
