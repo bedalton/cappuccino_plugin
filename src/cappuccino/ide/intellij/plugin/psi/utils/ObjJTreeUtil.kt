@@ -119,6 +119,37 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
+
+fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
+    var node = this.getNextNonEmptyNode(true)
+    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
+        node = node.getNextNonEmptyNode(true)
+    }
+    return node
+}
+fun ASTNode.getNextNonEmptyNodeIgnoringComments(): ASTNode? {
+    var node = this.getNextNonEmptyNode(true)
+    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
+        node = node.getNextNonEmptyNode(true)
+    }
+    return node
+}
+fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
+    var out: ASTNode? = this?.treeNext ?: this?.treeParent?.treeNext ?: return null
+    while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
+        out = if (out.treeNext == null) {
+            out.treeParent?.treeNext
+        } else {
+            out.treeNext
+        }
+        if (out == null) {
+            return null
+        }
+        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
+    }
+    return out
+}
+
 fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
     val node = getNextNonEmptyNode(ignoreLineTerminator)
     return node?.psi
