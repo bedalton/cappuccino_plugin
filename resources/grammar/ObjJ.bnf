@@ -248,7 +248,7 @@ comment
     ;
 
 blockComment
-	::= BLOCK_COMMENT_START blockCommentBody BLOCK_COMMENT_END
+	::= BLOCK_COMMENT_START blockCommentBody? BLOCK_COMMENT_END
 	{
 		pin=1
 	}
@@ -462,6 +462,7 @@ private variableDeclarationListVariableDeclaration
 globalVariableDeclaration
 	::= variableName '=' expr
 	{
+		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub"
 		implements=[
@@ -798,7 +799,7 @@ deleteStatement
 functionDeclaration
 	::= 'function' (<<notInMode "varDec">> functionName) formalParameterList blockElement
 	{
-		pin=1
+		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
@@ -823,6 +824,7 @@ functionDeclaration
 			getFormalParameterArgList
 			getLastFormalParameterArg
 			block="blockElement"
+			getFunctionScope
 		]
 
 	}
@@ -1055,6 +1057,7 @@ preprocessorDefineFunction
 			getFormalParameterArgList
 			getLastFormalParameterArg
 			getIterationStatementList
+			getFunctionScope
 		]
 	}
 	;
@@ -1265,7 +1268,7 @@ typeDef
 	;
 
 global
-	::= '@global' variableName expr?
+	::= '@global' variableName
 	;
 
 formalParameterList
@@ -1284,7 +1287,7 @@ private recover_formalParameterList_inner
 	;
 
 formalParameterArg
-	::= variableName ('=' expr)?
+	::= (UNDEFINED|variableName ('=' expr)?)
 	{
 		pin(".*")=1
 		recoverWhile=recover_formalParameterArg
@@ -1348,6 +1351,7 @@ private propertyName
 	::= ID
 	|	stringLiteral
     | 	integer
+    |	variableName
 	;
 
 methodCall
@@ -1410,7 +1414,7 @@ classDependencyStatement
 private expressionSequence
 	::= expr (',' expr?)*
 	{
-		pin(".*")=2
+		pin(".*")=1
 		//recoverWhile=recover_expressionSequence
 	}
 	;
@@ -1454,7 +1458,7 @@ leftExpr
 
 refExpression::='@ref' '(' variableName ')';
 derefExpression::='@deref' '(' variableName ')';
-newExpression::= 'new' expr arguments?;
+newExpression::= 'new' (functionCall|expr arguments?) ;
 
 enclosedExpr
 	::= arrayIndexSelector
@@ -1462,7 +1466,10 @@ enclosedExpr
 	;
 
 private parenEnclosedExpr
-	::= '(' expr ')'
+	::= '(' expr? ')'
+	{
+		pin=1
+	}
 	;
 private incrementExpr
 	::= ('--'|'++') qualifiedReference
@@ -1470,7 +1477,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= (functionName|methodCall) arrayIndexSelector* arguments
+	::= (functionName|methodCall) arrayIndexSelector* arguments (arguments|arrayIndexSelector)*
 	{
 		pin=3
 		implements=[
@@ -1495,6 +1502,8 @@ rightExpr
 	| 	logicExprPrime
 	|	mathExprPrime
 	|	comparisonExprPrime
+	|	arguments
+	|	enclosedExpr
 	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
 	;
@@ -1623,6 +1632,7 @@ private recover_varTypeIdClassName
 private objectLiterals
 	::=	arrayLiteral
     | 	objectLiteral
+    |	functionDeclaration
     | 	functionLiteral
     | 	selectorLiteral
     | 	protocolLiteral
@@ -1654,7 +1664,9 @@ functionLiteral
 			createFoldingDescriptor
 			getFormalParameterArgList
 			getLastFormalParameterArg
-			block="blockElement"]
+			block="blockElement"
+			getFunctionScope
+		]
 	}
 	;
 
@@ -1708,7 +1720,7 @@ callTarget
 	;
 
 qualifiedReference
-	::= (variableName|methodCall) qualifiedReferencePrimary*
+	::= (variableName|methodCall|enclosedExpr) qualifiedReferencePrimary*
 	{
 		methods = [
 			primaryVar ="/variableName[0]"
@@ -1727,6 +1739,9 @@ private qualifiedReferencePrimary
 
 arrayIndexSelector
 	::= '[' expr ']'
+	{
+		//pin = 1
+	}
 	;
 
 stringLiteral
@@ -1786,6 +1801,19 @@ className
 variableName
 	::= ID
 	|	'this'
+	| 	VAR_TYPE_CHAR
+	| 	VAR_TYPE_BYTE
+	| 	VAR_TYPE_SHORT
+	| 	VAR_TYPE_INT
+	| 	VAR_TYPE_LONG
+	| 	VAR_TYPE_FLOAT
+	| 	VAR_TYPE_DOUBLE
+	| 	VAR_TYPE_IBOUTLET
+	| 	VAR_TYPE_IBACTION
+	| 	VAR_TYPE_BOOL
+	| 	VAR_TYPE_SEL
+	| 	VAR_TYPE_UNSIGNED
+	| 	VAR_TYPE_SIGNED
 	{
 
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"

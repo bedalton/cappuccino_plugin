@@ -16,6 +16,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.openapi.editor.FoldingGroup
@@ -745,6 +746,14 @@ object ObjJPsiImplUtil {
         return ObjJFunctionDeclarationPsiUtil.getParamNameElements(functionDeclaration)
     }
 
+    /**
+     * A method to get the function scope of a given function
+     * This is to prevent a current problem of resolving to functions outside scope.
+     */
+    @JvmStatic
+    fun getFunctionScope(functionDeclaration:ObjJFunctionDeclarationElement<*>) : ObjJFunctionScope =
+            ObjJFunctionDeclarationPsiUtil.getFunctionScope(functionDeclaration)
+
     @JvmStatic
     fun getParamNames(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getParamNames(functionDeclaration)
@@ -1057,18 +1066,18 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getExprList(functionCall: ObjJFunctionCall): List<ObjJExpr> {
-        return functionCall.arguments.exprList
+        return functionCall.argumentsList[0].exprList
     }
 
 
     @JvmStatic
     fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement {
-        return functionCall.arguments.closeParen
+        return functionCall.argumentsList[0].closeParen
     }
 
     @JvmStatic
     fun getOpenParen(functionCall: ObjJFunctionCall): PsiElement {
-        return functionCall.arguments.openParen
+        return functionCall.argumentsList[0].openParen
     }
 
     @JvmStatic
