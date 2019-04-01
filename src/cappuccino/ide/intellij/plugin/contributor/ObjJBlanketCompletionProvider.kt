@@ -172,6 +172,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Adds variable name completion elements
      */
     private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
+
+        if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
+            return;
+        }
         val variableName = element as? ObjJVariableName ?: element.parent as? ObjJVariableName
         val results = if (variableName != null) {
             ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
@@ -215,9 +219,16 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (element == null) {
             return
         }
+
+        // If is first item in array, there is a chance that this array will truly
+        // become a method call, no way to be sure until a comma or selector is written
+        val isFirstItemInArray = isFirstItemInArray(element)
+
+        // If in method header, fill in with protocols and classes
         val inMethodHeader = element.parent is ObjJClassDeclarationElement<*> && element.getPreviousNonEmptySibling(true).elementType in listOf(ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_OPEN_PAREN)
+
         // Add protocols if allowed
-        if (shouldAddProtocolNameCompletions(element) || inMethodHeader) {
+        if (shouldAddProtocolNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
@@ -234,10 +245,16 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
 
         // Append implementation declaration names if in correct context
-        if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader) {
+        if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
             addImplementationClassNameElements(element, resultSet)
             addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
         }
+    }
+
+    private fun isFirstItemInArray(element:PsiElement): Boolean {
+        val expression = element.thisOrParentAs(ObjJExpr::class.java) ?: return false
+        val arrayLiteralParent = expression.parent as? ObjJArrayLiteral ?: return false
+        return arrayLiteralParent.getChildrenOfType(ObjJExpr::class.java).size == 1
     }
 
     /**
