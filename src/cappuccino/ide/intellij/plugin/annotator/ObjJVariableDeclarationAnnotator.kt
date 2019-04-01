@@ -36,7 +36,7 @@ object ObjJVariableDeclarationAnnotator {
             }
             // Check that the last part of a qualified name is not a function call
             // as these cannot be assigned to
-            val lastChild = qualifiedReference.qualifiedNameParts.last() ?: return
+            val lastChild = qualifiedReference.qualifiedNameParts.lastOrNull() ?: return
             if (lastChild is ObjJFunctionCall) {
                 annotationHolder.createErrorAnnotation(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset), ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.assign-to-func-call.message"))
             }
