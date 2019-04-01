@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.contributor
+package cappuccino.ide.intellij.plugin.formatting
 
 import com.intellij.lang.BracePair
 import com.intellij.lang.PairedBraceMatcher
@@ -7,6 +7,7 @@ import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import com.intellij.psi.TokenType
 
 /**
  * Attempts to create a matching brace for a given starting brace
@@ -20,23 +21,9 @@ class ObjJBraceMatcher : PairedBraceMatcher {
 
     override fun isPairedBracesAllowedBeforeType(lbraceType: IElementType, nextTokenType: IElementType?): Boolean {
         return when {
-            lbraceType === ObjJTypes.ObjJ_OPEN_BRACKET -> isPairedBracketAllowedBeforeType(nextTokenType)
-            lbraceType == ObjJ_LESS_THAN -> nextTokenType == ObjJ_INHERITED_PROTOCOL_LIST
-            else -> isAllowed(NOT_BEFORE, nextTokenType)
+            lbraceType == ObjJ_LESS_THAN -> nextTokenType == ObjJ_INHERITED_PROTOCOL_LIST || nextTokenType == ObjJ_OPEN_BRACE
+            else -> nextTokenType in allowBraceBefore
         }
-    }
-
-    private fun isPairedBracketAllowedBeforeType(contextType: IElementType?): Boolean {
-        return isAllowed(NOT_BEFORE, contextType) && isAllowed(NO_BRACE_BEFORE, contextType)
-    }
-
-    private fun isAllowed(notBeforeElements: Array<IElementType>, contextType: IElementType?): Boolean {
-        for (notBefore in notBeforeElements) {
-            if (contextType === notBefore) {
-                return false
-            }
-        }
-        return true
     }
 
     override fun getCodeConstructStart(file: PsiFile, openingBraceOffset: Int): Int {
@@ -56,7 +43,18 @@ class ObjJBraceMatcher : PairedBraceMatcher {
                 BracePair(ObjJ_BLOCK_COMMENT_START, ObjJ_BLOCK_COMMENT_END, true)
         )
 
-        private val NOT_BEFORE = arrayOf(ObjJ_RETURN, ObjJ_CONTINUE, ObjJ_BREAK, ObjJ_VAR, ObjJ_FOR, ObjJ_WHILE, ObjJ_DO, ObjJ_IF, ObjJ_OPEN_BRACE, ObjJ_OPEN_BRACKET, ObjJ_OPEN_PAREN, ObjJ_AT_OPEN_BRACE, ObjJ_AT_OPENBRACKET, ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO)
-        private val NO_BRACE_BEFORE = arrayOf(ObjJ_VAR)
+        private val allowBraceBefore = listOf(
+                ObjJ_SEMI_COLON,
+                ObjJ_COMMA,
+                ObjJ_CLOSE_PAREN,
+                ObjJ_CLOSE_BRACE,
+                ObjJ_CLOSE_BRACKET,
+                ObjJ_DOT,
+                ObjJ_METHOD_HEADER,
+                ObjJ_PLUS,
+                ObjJ_MINUS,
+                ObjJ_AT_END,
+                TokenType.WHITE_SPACE
+        )
     }
 }
