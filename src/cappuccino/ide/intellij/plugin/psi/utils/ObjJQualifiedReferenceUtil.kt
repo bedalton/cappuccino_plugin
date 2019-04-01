@@ -55,13 +55,29 @@ object ObjJQualifiedReferenceUtil {
         }
     }
 
-    fun getIndexInQualifiedNameParent(variableName: PsiElement?): Int {
+    fun getIndexInQualifiedNameParent(variableNameIn: PsiElement?): Int {
+        // Find first qualified reference parent
+        val qualifiedReferenceParent = variableNameIn?.getParentOfType(ObjJQualifiedReference::class.java) ?: return 0
+
+        // Find if element who's parent is this qualified reference.
+        // Good for elements like function name, who's direct parent is not qualified reference
+        var variableName:PsiElement? = variableNameIn
+        while (variableName != null && !variableName.parent.isEquivalentTo(qualifiedReferenceParent)) {
+            if (variableName.parent is ObjJRightExpr) {
+                return -1 // not sure why, but was in original code
+            }
+            variableName = variableName.parent
+        }
+
+        // If qualified reference cannot be found, something has gone wrong.
+        // THIS SHOULD NOT HAPPEN
+        assert(variableName != null)
         if (variableName == null) {
+            LOGGER.severe("Qualified name component failed to find its own parent")
             return -1
         }
-        val qualifiedReferenceParent = variableName.parent as? ObjJQualifiedReference ?: return if (variableName.getParentOfType(ObjJRightExpr::class.java) != null) -1 else 0
         var qualifiedNameIndex:Int = -1
-        val parts = qualifiedReferenceParent.variableNameList
+        val parts = qualifiedReferenceParent.qualifiedNameParts
         val numParts = parts.size
         for (i in 0..(numParts-1)) {
             val part = parts[i]
@@ -71,7 +87,7 @@ object ObjJQualifiedReferenceUtil {
             }
         }
         if (qualifiedNameIndex < 0) {
-            LOGGER.info("Failed to qualified variable $variableName in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
+            //LOGGER.info("Failed to qualified variable ${variableName.text} in file ${variableName.containingFile?.name?:"UNDEF"} with $numParts parts in qualified reference")
         }
         if (qualifiedNameIndex > 1) {
             val firstVariable = qualifiedReferenceParent.primaryVar ?: return qualifiedNameIndex
