@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
@@ -8,8 +9,11 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import com.intellij.psi.util.PsiTreeUtil
 
 import java.util.ArrayList
+import kotlin.math.min
 
 object ObjJFunctionDeclarationPsiUtil {
 
@@ -17,7 +21,7 @@ object ObjJFunctionDeclarationPsiUtil {
      * Gets the functions name
      */
     fun getName(functionDeclaration: ObjJFunctionDeclaration): String {
-        return functionDeclaration.functionName?.text ?: ""
+        return functionDeclaration.functionName.text ?: ""
     }
 
     /**
@@ -175,14 +179,14 @@ object ObjJFunctionDeclarationPsiUtil {
      */
     fun getParamNameElements(
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
-        val out = ArrayList<ObjJVariableName>()
+        val out = mutableListOf<ObjJVariableName?>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
             out.add(parameterArg.variableName)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
             out.add(functionDeclaration.lastFormalParameterArg!!.variableName)
         }
-        return out
+        return out.filterNotNull()
 
     }
 
@@ -195,14 +199,14 @@ object ObjJFunctionDeclarationPsiUtil {
 
             return (functionDeclaration.stub as ObjJFunctionDeclarationElementStub<*>).paramNames
         }
-        val out = ArrayList<String>()
+        val out = mutableListOf<String?>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
-            out.add(parameterArg.variableName.text)
+            out.add(parameterArg.variableName?.text)
         }
         if (functionDeclaration.lastFormalParameterArg != null) {
-            out.add(functionDeclaration.lastFormalParameterArg!!.variableName.text)
+            out.add(functionDeclaration.lastFormalParameterArg?.variableName?.text)
         }
-        return out
+        return out.filterNotNull()
     }
 
     /**
@@ -236,10 +240,87 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
     /**
+     * A method to get the function scope of a given function
+     * This is to prevent a current problem of resolving to functions outside scope.
+     */
+    fun getFunctionScope(functionDeclaration:ObjJFunctionDeclarationElement<*>, useStub:Boolean = true) : ObjJFunctionScope {
+        if (useStub) {
+            val stubScope = functionDeclaration.stub?.scope
+            if (stubScope != null) {
+                return stubScope
+            }
+        }
+        if (functionDeclaration.parent is ObjJFile) {
+            return ObjJFunctionScope.GLOBAL_SCOPE;
+        }
+
+        if (functionDeclaration.parent is ObjJBlockElement) {
+            return ObjJFunctionScope.PRIVATE
+        }
+
+        if (functionDeclaration.hasParentOfType(ObjJPreprocessorDefineFunction::class.java))
+            return ObjJFunctionScope.GLOBAL_SCOPE
+
+        if (functionDeclaration.functionNameNode == null)
+            return ObjJFunctionScope.INVALID
+
+        val expr = functionDeclaration.getParentOfType(ObjJExpr::class.java) ?: return ObjJFunctionScope.PRIVATE
+
+        if (expr.parent is ObjJArguments || expr.parent is ObjJQualifiedMethodCallSelector) {
+            return ObjJFunctionScope.PARAMETER_SCOPE
+        }
+
+        if (expr.parent is ObjJGlobalVariableDeclaration) {
+            return ObjJFunctionScope.GLOBAL_SCOPE
+        }
+
+        val variableDeclaration = expr.parent as? ObjJVariableDeclaration ?: return ObjJFunctionScope.PRIVATE
+        val bodyDeclaration = variableDeclaration.parent?.parent as? ObjJBodyVariableAssignment
+        if (bodyDeclaration?.varModifier != null) {
+            return ObjJFunctionScope.FILE_SCOPE
+        }
+
+        /*
+        var largestScope = Int.MAX_VALUE
+        variableDeclaration.qualifiedReferenceList.forEach {
+            val parts = it.qualifiedNameParts
+            if (parts.size != 1)
+                return@forEach
+            val part = parts.getOrNull(0) as? ObjJVariableName ?: return@forEach;
+            // @todo should possibly return global scope as I think that is how javascript works
+            val reference = part.reference.resolve() ?: return ObjJFunctionScope.PRIVATE
+            if (reference.parent is ObjJGlobalVariableDeclaration) {
+                return ObjJFunctionScope.GLOBAL_SCOPE
+            }
+            val qnameParent = reference.parent?.parent?.parent?.parent as? ObjJBodyVariableAssignment
+            if (qnameParent == null || qnameParent.parent !is ObjJFile) {
+                largestScope = min(largestScope, ObjJFunctionScope.PRIVATE.intVal)
+                return@forEach
+            }
+            largestScope = min(largestScope, ObjJFunctionScope.FILE_SCOPE.intVal)
+        }
+
+*/
+        return ObjJFunctionScope.PRIVATE
+    }
+
+    private fun isParameterScope(functionDeclaration:ObjJFunctionDeclarationElement<*>) : Boolean {
+        return PsiTreeUtil.getParentOfType(functionDeclaration,
+                ObjJArguments::class.java,
+                ObjJMethodCall::class.java) != null
+    }
+
+    /**
      * Gets the function name node in  a function literal
      */
     fun getFunctionNameNode(
             functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
+
+        // If is namelessParameter, ignore
+        val expr = functionLiteral.getParentOfType(ObjJExpr::class.java)
+        if (expr != null) {
+
+        }
         // Get containing varaible declaration if any
         // if not, return
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)

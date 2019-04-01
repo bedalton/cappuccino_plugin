@@ -4,6 +4,7 @@ import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPreprocessorFunctionDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 
 class ObjJPreprocessorDefineFunctionStubType internal constructor(
         debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJPreprocessorDefineFunctionImpl>(debugName, ObjJPreprocessorDefineFunctionImpl::class.java) {
@@ -18,7 +19,8 @@ class ObjJPreprocessorDefineFunctionStubType internal constructor(
                                      fqName: String,
                                      paramNames: List<String>,
                                      returnType: String?,
-                                     shouldResolve: Boolean): ObjJFunctionDeclarationElementStub<ObjJPreprocessorDefineFunctionImpl> {
+                                     shouldResolve: Boolean,
+                                     scope:ObjJFunctionScope): ObjJFunctionDeclarationElementStub<ObjJPreprocessorDefineFunctionImpl> {
         return ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve)
     }
 }

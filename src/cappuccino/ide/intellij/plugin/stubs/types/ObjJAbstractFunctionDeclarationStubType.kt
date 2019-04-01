@@ -8,7 +8,11 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 
 import java.io.IOException
@@ -24,7 +28,8 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         val paramNames = element.paramNames
         val returnType = element.returnType
         val shouldResolve = element.shouldResolve()
-        return createStub(stubParent, fileName, functionNameString, paramNames, returnType, shouldResolve)
+        val scope = element.functionScope
+        return createStub(stubParent, fileName, functionNameString, paramNames, returnType, shouldResolve, scope)
     }
 
     internal abstract fun createStub(parent: StubElement<*>,
@@ -32,7 +37,8 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
                                      fqName: String,
                                      paramNames: List<String>,
                                      returnType: String?,
-                                     shouldResolve: Boolean): ObjJFunctionDeclarationElementStub<PsiT>
+                                     shouldResolve: Boolean,
+                                     scope:ObjJFunctionScope): ObjJFunctionDeclarationElementStub<PsiT>
 
     @Throws(IOException::class)
     override fun serialize(
@@ -47,6 +53,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         }
         stream.writeName(stub.returnType)
         stream.writeBoolean(stub.shouldResolve())
+        stream.writeInt(stub.scope.intVal)
     }
 
     @Throws(IOException::class)
@@ -61,7 +68,8 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         }
         val returnType = StringRef.toString(stream.readName())
         val shouldResolve = stream.readBoolean()
-        return createStub(stubParent, fileName, fqName, paramNames, returnType, shouldResolve)
+        val scope = ObjJFunctionScope.fromValue(stream.readInt())
+        return createStub(stubParent, fileName, fqName, paramNames, returnType, shouldResolve, scope)
     }
 
     override fun indexStub(stub: ObjJFunctionDeclarationElementStub<PsiT>, sink: IndexSink) {
@@ -69,6 +77,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return node!!.psi is ObjJFunctionDeclarationElement<*>
+        val psi = node?.psi as? ObjJFunctionLiteral ?: return false
+        return ObjJFunctionDeclarationPsiUtil.getFunctionScope(psi, false) == ObjJFunctionScope.FILE_SCOPE || ObjJFunctionDeclarationPsiUtil.getFunctionScope(psi, false) == ObjJFunctionScope.GLOBAL_SCOPE
     }
 }
