@@ -12,7 +12,9 @@ import gnu.trove.TObjectLongHashMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.TokenType
+import java.util.logging.Logger
 
 @Suppress("DEPRECATION")
 class ObjectiveJParserUtil : GeneratedParserUtilBase() {
@@ -47,6 +49,11 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             val flags = getParsingModes(builder_)
             if (!flags.increment(mode)) flags.put(mode, 1)
             return true
+        }
+
+        @JvmStatic
+        fun eol(builder_: PsiBuilder, level: Int): Boolean {
+            return builder_.tokenText?.contains("\n".toRegex()).orTrue()
         }
 
         @JvmStatic
