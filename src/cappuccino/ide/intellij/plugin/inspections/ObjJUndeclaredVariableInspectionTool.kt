@@ -3,10 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
-import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressUndeclaredVariableInspectionOnVariable
+import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -98,7 +95,9 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (variableName.text in ObjJGlobalJSVariablesNames) {
+            val variableNameString = variableName.text
+
+            if (variableNameString in ObjJGlobalJSVariablesNames) {
                 return
             }
 
@@ -120,14 +119,25 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (!declarations.isEmpty()) {
                 return
             }
-            if (variableName.text.substring(0, 1) == variableName.text.substring(0, 1).toUpperCase()) {
+            if (variableNameString.substring(0, 1) == variableNameString.substring(0, 1).toUpperCase() && variableNameString != variableNameString.toUpperCase()) {
+                if (ObjJIgnoreEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_CLASS, variableNameString) || ObjJPluginSettings.isIgnoredClassName(variableNameString))
+                    return
+                problemsHolder.registerProblem(
+                        variableName,
+                        ObjJBundle.message("objective-j.inspection.undec-var.class-may-not-have-been-declared.message"),
+                        ObjJAlterIgnoredClassNames(variableNameString, true),
+                        ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.METHOD, variableNameString),
+                        ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FUNCTION, variableNameString),
+                        ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS, variableNameString),
+                        ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE, variableNameString)
+                )
                 return
             }
 
             if (variableName.hasText("self") || variableName.hasText("super")) {
                 return
             }
-            problemsHolder.registerProblem(variableName, "Variable may not have been declared before use",
+            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.var-may-not-have-been-declared.message"),
                     ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName),
                     ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.METHOD),
                     ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, ObjJSuppressInspectionScope.FUNCTION),
@@ -176,7 +186,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             val functionDeclarationElement = variableName.getParentOfType(ObjJFunctionDeclarationElement::class.java)
             if (functionDeclarationElement != null) {
                 for (ob in functionDeclarationElement.formalParameterArgList) {
-                    if (ob.variableName.text == variableName.text) {
+                    if (ob.variableName?.text == variableName.text) {
                         return true
                     }
                 }
