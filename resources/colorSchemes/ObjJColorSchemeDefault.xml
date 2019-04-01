@@ -27,6 +27,13 @@
     </value>
   </option>
 
+  <option name="ObjJ_SECONDARY_LITERAL">
+    <value>
+      <option name="FOREGROUND" value="4D960D" />
+      <option name="FONT_TYPE" value="1" />
+    </value>
+  </option>
+
   <option name="ObjJ_FUNCTION_NAME">
     <value>
       <option name="FONT_TYPE" value="0" />
