@@ -156,7 +156,7 @@
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
     <psi.referenceContributor implementation="cappuccino.ide.intellij.plugin.contributor.ObjJReferenceContributor"/>
     <completion.contributor language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor" />
-    <lang.braceMatcher language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJBraceMatcher"/>
+    <lang.braceMatcher language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJBraceMatcher"/>
     <quoteHandler fileType="ObjectiveJ" className="cappuccino.ide.intellij.plugin.formatting.ObjJQuoteHandler"/>
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
