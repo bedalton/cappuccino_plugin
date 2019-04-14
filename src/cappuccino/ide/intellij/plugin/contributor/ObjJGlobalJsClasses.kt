@@ -40,8 +40,8 @@ typealias p = JsProperty
 val Window:GlobalJSClass = c(
         className = "Window",
         properties = listOf(
-                p("sessionStorage", "Storage", readonly = true),
-                p("localStorage", "Storage", readonly = true),
+                p ("sessionStorage", "Storage", readonly = true),
+                p ("localStorage", "Storage", readonly = true),
                 p ("console", "Console", nullable = true, readonly = true),
                 p ("onabort", "Function", comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
                 p ("onanimationcancel", type = "Function(this: Window, ev: AnimationEvent)=>void", nullable = true, ignore = true),
@@ -213,7 +213,7 @@ val Window:GlobalJSClass = c(
                 p ("pageYOffset", "number"),
                 p ("parent", "Window"),
                 p ("performance", "Performance"),
-                p("personalbar", "BarProp"),
+                p ("personalbar", "BarProp"),
                 p ("screen", "Screen"),
                 p ("screenLeft", "number"),
                 p ("screenTop", "number"),
