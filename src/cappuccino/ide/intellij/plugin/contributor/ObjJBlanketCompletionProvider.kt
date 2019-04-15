@@ -84,6 +84,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.getPreviousNonEmptySibling(false)?.elementType in ObjJTokenSets.IMPORT_BLOCKS -> {
+                resultSet.stopHere()
+                return
+            }
             // Comment
             element.elementType in ObjJTokenSets.COMMENTS || element is PsiCommentImpl ->
                 ObjJCommentCompletionProvider.addCommentCompletions(resultSet, element)

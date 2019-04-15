@@ -124,7 +124,8 @@ object ObjJPsiImplUtil {
         if (newFunctionName.isEmpty()) {
             return oldFunctionName
         }
-        val functionName = ObjJElementFactory.createFunctionName(oldFunctionName.project, newFunctionName) ?: return oldFunctionName
+        val functionName = ObjJElementFactory.createFunctionName(oldFunctionName.project, newFunctionName)
+                ?: return oldFunctionName
         oldFunctionName.parent.node.replaceChild(oldFunctionName.node, functionName.node)
         return functionName
     }
@@ -386,7 +387,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getThisOrPreviousNonNullSelector(hasMethodSelector: ObjJHasMethodSelector?, subSelector: String?, selectorIndex: Int): ObjJSelector? =
-        ObjJMethodPsiUtils.getThisOrPreviousNonNullSelector(hasMethodSelector, subSelector, selectorIndex)
+            ObjJMethodPsiUtils.getThisOrPreviousNonNullSelector(hasMethodSelector, subSelector, selectorIndex)
 
     @JvmStatic
     fun findSelectorMatching(method: ObjJHasMethodSelector, selectorString: String): ObjJSelector? {
@@ -611,9 +612,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getBlockList(switchStatement: ObjJSwitchStatement): List<ObjJBlock> =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(switchStatement)
+
     @JvmStatic
     fun getBlockList(ifStatement: ObjJIfStatement): List<ObjJBlock> =
             cappuccino.ide.intellij.plugin.psi.utils.getBlockList(ifStatement)
+
     @JvmStatic
     fun getBlockList(block: ObjJBlockElement): List<ObjJBlock> {
         return Arrays.asList(block)
@@ -666,7 +669,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getBlock(element:ObjJCompositeElement): ObjJBlock? {
+    fun getBlock(element: ObjJCompositeElement): ObjJBlock? {
         return element.getChildOfType(ObjJBlock::class.java)
     }
 
@@ -751,7 +754,7 @@ object ObjJPsiImplUtil {
      * This is to prevent a current problem of resolving to functions outside scope.
      */
     @JvmStatic
-    fun getFunctionScope(functionDeclaration:ObjJFunctionDeclarationElement<*>) : ObjJFunctionScope =
+    fun getFunctionScope(functionDeclaration: ObjJFunctionDeclarationElement<*>): ObjJFunctionScope =
             ObjJFunctionDeclarationPsiUtil.getFunctionScope(functionDeclaration)
 
     @JvmStatic
@@ -826,7 +829,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getDescriptiveText(psiElement: PsiElement): String? =
-        ObjJDescriptionUtil.getDescriptiveText(psiElement)
+            ObjJDescriptionUtil.getDescriptiveText(psiElement)
 
     // ============================== //
     // ========== Imports =========== //
@@ -992,27 +995,22 @@ object ObjJPsiImplUtil {
             ObjJTreeStructureUtil.createTreeStructureElement(declaration)
 
     @JvmStatic
-    fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement>
-        = ObjJTreeStructureUtil.getTreeStructureChildElements(declaration)
+    fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> = ObjJTreeStructureUtil.getTreeStructureChildElements(declaration)
 
     @JvmStatic
-    fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement
-            = ObjJTreeStructureUtil.createTreeStructureElement(instanceVariable)
+    fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(instanceVariable)
 
     @JvmStatic
-    fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement
-            = ObjJTreeStructureUtil.createTreeStructureElement(declaration)
+    fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(declaration)
 
     @JvmStatic
-    fun createTreeStructureElement(protocol: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement
-            = ObjJTreeStructureUtil.createTreeStructureElement(protocol)
-    @JvmStatic
-    fun createTreeStructureElement(methodDeclaration: ObjJMethodDeclaration): ObjJStructureViewElement
-        = createTreeStructureElement(methodDeclaration.methodHeader)
+    fun createTreeStructureElement(protocol: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(protocol)
 
     @JvmStatic
-    fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement
-            = ObjJTreeStructureUtil.createTreeStructureElement(header)
+    fun createTreeStructureElement(methodDeclaration: ObjJMethodDeclaration): ObjJStructureViewElement = createTreeStructureElement(methodDeclaration.methodHeader)
+
+    @JvmStatic
+    fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(header)
 
     // ============================== //
     // =========== PARSER =========== //
@@ -1029,8 +1027,7 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getIcon(element: PsiElement): Icon?
-            = cappuccino.ide.intellij.plugin.utils.getIcon(element)
+    fun getIcon(element: PsiElement): Icon? = cappuccino.ide.intellij.plugin.utils.getIcon(element)
 
 
     @JvmStatic
