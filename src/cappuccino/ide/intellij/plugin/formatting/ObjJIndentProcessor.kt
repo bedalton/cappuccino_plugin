@@ -16,8 +16,7 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import java.util.logging.Logger
 
 class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
-    @Suppress("UNUSED_PARAMETER", "UNUSED_VARIABLE")
-    fun getChildIndent(node: ASTNode,  mode: FormattingMode): Indent? {
+    fun getChildIndent(node: ASTNode): Indent? {
         val elementType = node.elementType
         val prevSibling = node.getPreviousNonEmptySiblingIgnoringComments()
         val prevSiblingType = prevSibling?.elementType
@@ -28,8 +27,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         val superParent = parent?.treeParent
         val superParentType = superParent?.elementType
 
-
-        val braceStyle = settings.BRACE_STYLE
+        Logger.getLogger("#ObjJIndentProcessor").info("type: $elementType(${node.text}); parent: $parentType; prev: $prevSiblingType(${prevSibling?.text}); next: $nextSiblingType(${nextSibling?.text}); ")
 
         if (parentType == ObjJStubTypes.FILE) {
             return Indent.getNoneIndent()
@@ -39,19 +37,43 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
-        if (elementType == ObjJ_BLOCK_ELEMENT)
-            return Indent.getNoneIndent()
-
-        if (parentType == ObjJ_IMPLEMENTATION_DECLARATION) {
-            if ((prevSibling == ObjJ_OPEN_BRACE || prevSibling == ObjJ_SEMI_COLON || prevSibling == ObjJ_INSTANCE_VARIABLE_DECLARATION) && elementType != ObjJ_CLOSE_BRACE) {
-                Indent.getNormalIndent()
-            }
+        if (prevSibling == ObjJ_OPEN_BRACE || nextSiblingType == ObjJ_CLOSE_BRACE) {
+            Indent.getNormalIndent()
         }
 
         if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
                 return Indent.getNoneIndent()
             return Indent.getNormalIndent()
+        }
+
+
+        if (parentType == ObjJ_FOR_STATEMENT || parentType == ObjJ_WHILE_STATEMENT || parentType == ObjJ_DO_WHILE_STATEMENT) {
+            if (elementType == ObjJ_STATEMENT_OR_BLOCK && node.firstChildNode?.elementType !in ObjJTokenSets.BLOCKS) {
+                return Indent.getNormalIndent()
+            }
+            return Indent.getNoneIndent()
+        } else if (parentType == ObjJ_STATEMENT_OR_BLOCK) {
+            return Indent.getNoneIndent()
+        }
+
+        if (elementType in ObjJTokenSets.BLOCKS)
+            return Indent.getNoneIndent()
+
+        if (elementType == ObjJ_STATEMENT_OR_BLOCK) {
+            return Indent.getNoneIndent()
+        }
+
+        if (parentType in ObjJTokenSets.BLOCKS) {
+            if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
+                return Indent.getNoneIndent()
+            return Indent.getNormalIndent()
+        }
+
+        if (parentType == ObjJ_IMPLEMENTATION_DECLARATION) {
+            if ((prevSibling == ObjJ_OPEN_BRACE || prevSibling == ObjJ_SEMI_COLON || prevSibling == ObjJ_INSTANCE_VARIABLE_DECLARATION) && elementType != ObjJ_CLOSE_BRACE) {
+                Indent.getNormalIndent()
+            }
         }
 
         if (parent == null || parent.treeParent == null) {
@@ -145,7 +167,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if ((parentType == ObjJ_CASE_CLAUSE || parentType == ObjJ_DEFAULT_CLAUSE) && elementType == ObjJ_BRACKET_LESS_BLOCK) {
-            return Indent.getNormalIndent()
+            return Indent.getNoneIndent()
         }
 
         if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !ObjJTokenSets.BLOCKS.contains(elementType)) {
@@ -219,7 +241,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (elementType == ObjJ_SEMI_COLON && FormatterUtil.isPrecededBy(node, ObjJ_SINGLE_LINE_COMMENT, WHITE_SPACE)) {
-            return Indent.getContinuationIndent()
+            return Indent.getNormalIndent()
         }
 
         if (elementType == ObjJ_DOT) {
@@ -238,7 +260,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACE, WHITE_SPACE)) {
-            return Indent.getContinuationIndent()
+            return Indent.getNormalIndent()
         }
 
         if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACKET, WHITE_SPACE)) {

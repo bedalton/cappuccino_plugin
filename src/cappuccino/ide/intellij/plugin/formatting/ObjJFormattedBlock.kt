@@ -55,7 +55,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjStyleSettings)
         myWrappingProcessor = ObjJWrappingProcessor(node, myContext.objJSettings)
         myAlignmentProcessor = ObjJAlignmentProcessor(node, myContext.objJSettings)
-        myIndent = myIndentProcessor.getChildIndent(myNode, myContext.mode)
+        myIndent = myIndentProcessor.getChildIndent(myNode)
     }
 
     override fun getIndent(): Indent? {
@@ -96,10 +96,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
     }
 
     private fun createChildAlignment(child: ASTNode): Alignment? {
-        val type = child.elementType
-        return if (type !== ObjJ_OPEN_PAREN && !ObjJTokenSets.BLOCKS.contains(type)) {
-            myAlignmentProcessor.createChildAlignment()
-        } else null
+        return null
     }
 
     override fun isIncomplete(): Boolean {
@@ -115,13 +112,30 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         val previousBlock = if (newIndex == 0) null else subObjJFormattedBlocks!![newIndex - 1]
         val previousType = previousBlock?.node?.elementType
 
+        //return ChildAttributes(myIndentProcessor.getChildIndent(myNode), null)
+
         if (previousType === ObjJ_OPEN_BRACE || previousType === ObjJ_OPEN_BRACKET) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
+        if (previousType == ObjJ_FOR_LOOP_HEADER || previousType == ObjJ_CONDITION_EXPRESSION) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (myNode.treeParent?.elementType in ObjJTokenSets.BLOCKS) {
+            return ChildAttributes(Indent.getNormalIndent(), null);
+        }
 
         if (node.treeParent?.elementType == ObjJStubTypes.FILE) {
             return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
+        if (previousType == ObjJ_OPEN_BRACE) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType == ObjJ_INSTANCE_VARIABLE_DECLARATION) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
         if (myNode.treeParent?.psi is ObjJClassDeclarationElement<*>) {
@@ -177,6 +191,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
                 return ChildAttributes(Indent.getContinuationIndent(), null)
             }
         }
+
         return if (myParent == null && isIncomplete) {
             ChildAttributes(Indent.getContinuationIndent(), null)
         } else ChildAttributes(previousBlock.indent, previousBlock.alignment)
