@@ -301,7 +301,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget): List<String> {
-        return cappuccino.ide.intellij.plugin.references.getPossibleClassTypesForCallTarget(callTarget).toList()
+        return getPossibleClassTypesForCallTarget(callTarget).toList()
     }
 
     @JvmStatic
@@ -356,7 +356,7 @@ object ObjJPsiImplUtil {
         return if (selectors.isNotEmpty()) {
             selectors
         } else
-            cappuccino.ide.intellij.plugin.psi.utils.getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
+            getSelectorStringsFromSelectorList(selectorLiteral.selectorList)
     }
 
     @JvmStatic
@@ -781,16 +781,19 @@ object ObjJPsiImplUtil {
         return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
     }
 
-
     @JvmStatic
-    fun getOpenBrace(@Suppress("UNUSED_PARAMETER") element: PsiElement): PsiElement? {
-        val block = element as? ObjJBlock ?: return null
-        return block.node.getChildren(TokenSet.create(ObjJTypes.ObjJ_OPEN_BRACE)).getOrNull(0)?.psi
+    fun getOpenBraceOrAtOpenBrace(element:PsiElement) : PsiElement? {
+        return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE) ?: element.getChildByType(ObjJTypes.ObjJ_AT_OPEN_BRACE)
     }
 
     @JvmStatic
-    fun getCloseBrace(@Suppress("UNUSED_PARAMETER") block: ObjJBlock): PsiElement? {
-        return block.node.getChildren(TokenSet.create(ObjJTypes.ObjJ_CLOSE_BRACE)).getOrNull(0)?.psi
+    fun getOpenBrace(element:PsiElement) : PsiElement? {
+        return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE)
+    }
+
+    @JvmStatic
+    fun getCloseBrace(element:PsiElement) : PsiElement? {
+        return element.getChildByType(ObjJTypes.ObjJ_CLOSE_BRACE)
     }
 
     // ============================== //
