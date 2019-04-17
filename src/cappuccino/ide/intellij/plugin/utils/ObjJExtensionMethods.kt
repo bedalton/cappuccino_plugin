@@ -13,3 +13,11 @@ fun Boolean?.orFalse() : Boolean {
 fun Boolean?.orTrue() : Boolean {
     return this ?: true
 }
+
+fun <T> T?.orElse(defaultValue: T) : T {
+    return this ?: defaultValue
+}
+
+fun <T> T?.or(defaultValue: T) : T {
+    return this ?: defaultValue
+}
