@@ -401,10 +401,12 @@ blockElement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[
 			getBlockList
 			getIterationStatementList
+			getCloseBrace
 		]
 	}
 	;
@@ -418,9 +420,11 @@ methodBlock
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[
 			getIterationStatements
+			getCloseBrace
 		]
 	}
 	;
@@ -727,7 +731,10 @@ switchStatement
 	::= 'switch' '(' expr ')' '{' switchBody '}'
 	{
 		pin=1
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
+		]
 		methods=[getBlockList]
 	}
 	;
@@ -753,7 +760,7 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
-		methods= [block="statementOrBlock" getBlockList getIterationStatementList]
+		methods= [getBlockList getIterationStatementList]
 	}
 	;
 
@@ -1021,6 +1028,7 @@ instanceVariableList
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[createFoldingDescriptor]
 	}
@@ -1341,6 +1349,10 @@ objectLiteral
 	{
 		pin(".*")=2
 	 	//recoverWhile=recoverExprSequence
+	 	implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
+	 	]
 	}
 	;
 
@@ -1352,7 +1364,7 @@ private objectLiteralPropertiesList
 	;
 
 private recover_objectLiteralPropertiesList
-	::= !'}'
+	::= !('}')
 	;
 
 propertyAssignment
@@ -1363,7 +1375,7 @@ propertyAssignment
 	}
 	;
 
-private propertyName
+propertyName
 	::= ID
 	|	stringLiteral
     | 	integer
