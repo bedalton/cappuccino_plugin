@@ -49,7 +49,7 @@ class ObjJSpacingProcessorOld(private val myNode: ASTNode, private val mySetting
         if (type2 == ObjJ_SINGLE_LINE_COMMENT && !isDirectlyPrecededByNewline(node2)) {
             // line comment after code on the same line: do not add line break here, it may be used to ignore warning
             // but after '{' in class or function definition Dart Style inserts line break, so let's do the same
-            if (type1 !== ObjJ_OPEN_BRACE || ObjJTokenSets.CLASS_DECLARATIONS.contains(elementType) && !ObjJTokenSets.BLOCKS.contains(elementType)) {
+            if (type1 !== ObjJ_OPEN_BRACE || ObjJTokenSets.CLASS_DECLARATIONS.contains(elementType) && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
                 return Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE, 0)
             }
         }
@@ -173,7 +173,7 @@ class ObjJSpacingProcessorOld(private val myNode: ASTNode, private val mySetting
         if (elementType == ObjJTokenSets.STATEMENTS && (parentType == ObjJ_CASE_CLAUSE || parentType == ObjJ_DEFAULT_CLAUSE)) {
             return Spacing.createSpacing(0, 0, 1, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
-        if (!ObjJTokenSets.COMMENTS.contains(type2) && ObjJTokenSets.BLOCKS.contains(parentType)
+        if (!ObjJTokenSets.COMMENTS.contains(type2) && ObjJTokenSets.INDENT_CHILDREN.contains(parentType)
                 && node1.treeNext !is PsiErrorElement && node1.lastChildNode !is PsiErrorElement) {
             return addLineBreak()
         }
@@ -222,10 +222,10 @@ class ObjJSpacingProcessorOld(private val myNode: ASTNode, private val mySetting
                 // Always have a single space following the closing paren of an if-condition.
                 val nsp = if (mySettings.SPACE_BEFORE_IF_LBRACE) 1 else 0
                 var lf = 0
-                if (!ObjJTokenSets.BLOCKS.contains(type2) && mySettings.SPECIAL_ELSE_IF_TREATMENT) {
+                if (!ObjJTokenSets.INDENT_CHILDREN.contains(type2) && mySettings.SPECIAL_ELSE_IF_TREATMENT) {
                     if (FormatterUtil.isFollowedBy(node2, ObjJ_ELSE, ObjJ_SEMI_COLON)) lf = 1
                 }
-                return Spacing.createSpacing(nsp, nsp, lf, !ObjJTokenSets.BLOCKS.contains(type2) && mySettings.KEEP_LINE_BREAKS, 0)
+                return Spacing.createSpacing(nsp, nsp, lf, !ObjJTokenSets.INDENT_CHILDREN.contains(type2) && mySettings.KEEP_LINE_BREAKS, 0)
             }
             if (type1 == ObjJ_SEMI_COLON && type2 == ObjJ_ELSE) {
                 // If the then-part is on the line with the condition put the else-part on the next line.
@@ -273,7 +273,7 @@ class ObjJSpacingProcessorOld(private val myNode: ASTNode, private val mySetting
         //
         //Spacing before left braces
         //
-        if (ObjJTokenSets.BLOCKS.contains(type2)) {
+        if (ObjJTokenSets.INDENT_CHILDREN.contains(type2)) {
             if (elementType == ObjJ_IF_STATEMENT && type1 !== ObjJ_ELSE) {
                 return setBraceSpace(mySettings.SPACE_BEFORE_IF_LBRACE, mySettings.BRACE_STYLE, child1.getTextRange())
             } else if (elementType == ObjJ_IF_STATEMENT && type1 == ObjJ_ELSE) {
@@ -426,7 +426,7 @@ class ObjJSpacingProcessorOld(private val myNode: ASTNode, private val mySetting
             if (type2 !== ObjJ_OPEN_BRACE) {
                 // Keep single-statement else-part on same line?
                 val lf = if (mySettings.SPECIAL_ELSE_IF_TREATMENT) 1 else 0
-                return Spacing.createSpacing(1, 1, lf, !ObjJTokenSets.BLOCKS.contains(type2) && mySettings.KEEP_LINE_BREAKS, 0)
+                return Spacing.createSpacing(1, 1, lf, !ObjJTokenSets.INDENT_CHILDREN.contains(type2) && mySettings.KEEP_LINE_BREAKS, 0)
             }
         }
 
