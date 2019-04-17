@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.Filter
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.*
@@ -225,4 +226,17 @@ private fun getBlockForFunction(element: PsiElement): ObjJBlock? {
 private fun getBlockForMethod(element: PsiElement): ObjJBlock? {
     val declaration = element.getParentOfType(ObjJMethodDeclaration::class.java)
     return declaration?.block
+}
+
+
+private fun getOpenBraceOrAtOpenBrace(element:ObjJHasBraces) : PsiElement? {
+    return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE) ?: element.getChildByType(ObjJTypes.ObjJ_AT_OPEN_BRACE)
+}
+
+private fun getOpenBrace(element:ObjJHasBraces) : PsiElement? {
+    return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE)
+}
+
+private fun getCloseBrace(element:ObjJHasBraces) : PsiElement? {
+    return element.getChildByType(ObjJTypes.ObjJ_CLOSE_BRACE)
 }
