@@ -243,6 +243,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
+        }
+
+        if (shouldAddJsClassNames(element)) {
             globalJSClassNames.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
@@ -253,6 +256,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addImplementationClassNameElements(element, resultSet)
             addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
         }
+    }
+
+    private fun shouldAddJsClassNames(element:PsiElement) : Boolean {
+        return false
     }
 
     private fun isFirstItemInArray(element:PsiElement): Boolean {
