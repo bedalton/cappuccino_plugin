@@ -10,7 +10,8 @@ data class GlobalJSClass(
         val extends: String? = null,
         val comment: String? = null,
         val static:Boolean = false,
-        val isStruct:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
+        val isStruct:Boolean = false,
+        val isObjJ:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
 data class JsProperty(
         val name: String,
