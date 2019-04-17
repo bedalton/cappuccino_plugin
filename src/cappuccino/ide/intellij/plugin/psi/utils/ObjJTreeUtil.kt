@@ -11,12 +11,14 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.document
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.TokenType
 
 import java.util.ArrayList
 import java.util.logging.Logger
+
 
 private val LOGGER:Logger by lazy {
     Logger.getLogger("#ObjJTreeUtil")
@@ -190,6 +192,10 @@ fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
+fun PsiElement.distanceFromStartOfLine() : Int? {
+    val document = this.document?: return null
+    return distanceFromStartOfLine(document)
+}
 
 fun PsiElement.distanceFromStartOfLine(editor:Editor) : Int {
     return this.distanceFromStartOfLine(editor.document)
@@ -205,7 +211,7 @@ fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
 
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
-    var node:ASTNode? = this.treePrev
+    var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return false
     while (node != null) {
         if (node.elementType == ObjJTypes.ObjJ_LINE_TERMINATOR)
             return true
@@ -276,7 +282,7 @@ fun <PsiT : PsiElement> PsiElement?.siblingOfTypeOccursAtLeastOnceBefore(sibling
     return false
 }
 
-fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<com.intellij.psi.PsiElement>?, stubClass: Class<StubT>): List<StubT> {
+fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<PsiElement>?, stubClass: Class<StubT>): List<StubT> {
     return if (parent == null) {
         emptyList()
     } else filterStubChildren(parent.childrenStubs, stubClass)
