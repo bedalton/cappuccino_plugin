@@ -122,7 +122,7 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
         if (elementType === ObjJ_IF_STATEMENT) {
             if (childType === ObjJ_ELSE) {
                 return createWrap(mySettings.ELSE_ON_NEW_LINE)
-            } else if (!ObjJTokenSets.BLOCKS.contains(childType) && child === child.treeParent.lastChildNode) {
+            } else if (!ObjJTokenSets.INDENT_CHILDREN.contains(childType) && child === child.treeParent.lastChildNode) {
                 return createWrap(true)
             }
         }

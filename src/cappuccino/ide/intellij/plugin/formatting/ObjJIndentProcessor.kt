@@ -1,8 +1,11 @@
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
+import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJRightExpr
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import com.intellij.formatting.FormattingMode
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiFile
@@ -11,11 +14,12 @@ import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.psi.tree.TokenSet
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.TokenType.WHITE_SPACE
 import java.util.logging.Logger
 
-class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
+class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private val objjSettings:ObjJCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
         val elementType = node.elementType
         val prevSibling = node.getPreviousNonEmptySiblingIgnoringComments()
@@ -26,8 +30,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         val parentType = parent?.elementType
         val superParent = parent?.treeParent
         val superParentType = superParent?.elementType
-
-        Logger.getLogger("#ObjJIndentProcessor").info("type: $elementType(${node.text}); parent: $parentType; prev: $prevSiblingType(${prevSibling?.text}); next: $nextSiblingType(${nextSibling?.text}); ")
 
         if (parentType == ObjJStubTypes.FILE) {
             return Indent.getNoneIndent()
@@ -49,7 +51,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
 
 
         if (parentType == ObjJ_FOR_STATEMENT || parentType == ObjJ_WHILE_STATEMENT || parentType == ObjJ_DO_WHILE_STATEMENT) {
-            if (elementType == ObjJ_STATEMENT_OR_BLOCK && node.firstChildNode?.elementType !in ObjJTokenSets.BLOCKS) {
+            if (elementType == ObjJ_STATEMENT_OR_BLOCK && node.firstChildNode?.elementType !in ObjJTokenSets.INDENT_CHILDREN) {
                 return Indent.getNormalIndent()
             }
             return Indent.getNoneIndent()
@@ -57,14 +59,14 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
-        if (elementType in ObjJTokenSets.BLOCKS)
+        if (elementType in ObjJTokenSets.INDENT_CHILDREN)
             return Indent.getNoneIndent()
 
         if (elementType == ObjJ_STATEMENT_OR_BLOCK) {
             return Indent.getNoneIndent()
         }
 
-        if (parentType in ObjJTokenSets.BLOCKS) {
+        if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
                 return Indent.getNoneIndent()
             return Indent.getNormalIndent()
@@ -72,7 +74,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
 
         if (parentType == ObjJ_IMPLEMENTATION_DECLARATION) {
             if ((prevSibling == ObjJ_OPEN_BRACE || prevSibling == ObjJ_SEMI_COLON || prevSibling == ObjJ_INSTANCE_VARIABLE_DECLARATION) && elementType != ObjJ_CLOSE_BRACE) {
-                Indent.getNormalIndent()
+                return Indent.getNormalIndent()
             }
         }
 
@@ -106,12 +108,23 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         if (parentType == ObjJ_ARRAY_LITERAL || parentType == ObjJ_OBJECT_LITERAL) {
             if (elementType == ObjJ_OPEN_BRACE ||
                     elementType == ObjJ_AT_OPEN_BRACE ||
-                    elementType == ObjJ_CLOSE_BRACE ||
-                    elementType == ObjJ_OPEN_BRACKET ||
-                    elementType == ObjJ_AT_OPENBRACKET ||
-                    elementType == ObjJ_CLOSE_BRACKET) {
+                    elementType == ObjJ_CLOSE_BRACE) {
                 return Indent.getNoneIndent()
             }
+
+            if (elementType == ObjJ_PROPERTY_ASSIGNMENT) {
+                if (objjSettings.ALIGN_PROPERTIES) {
+                    val propertyAssignment =
+                            node.psi?.getSelfOrParentOfType(ObjJPropertyAssignment::class.java)
+                                    ?: return Indent.getNormalIndent()
+                    val spacing = propertyAssignment.getObjectLiteralPropertySpacing()
+                    if (spacing != null && spacing > 0) {
+                        return Indent.getSpaceIndent(spacing)
+                    }
+                }
+                return Indent.getNormalIndent()
+            }
+
             // Be careful to preserve typing behavior.
             if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_EXPR || elementType == ObjJ_COMMA) {
                 return Indent.getNormalIndent()
@@ -120,7 +133,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
                 Indent.getNormalIndent()
             } else Indent.getNoneIndent()
         }
-
 
         if (parentType == ObjJ_METHOD_BLOCK)
             return Indent.getNormalIndent()
@@ -136,7 +148,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNormalIndent(false)
         }
 
-        if (ObjJTokenSets.BLOCKS.contains(parentType)) {
+        if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
             val psi = node.psi
             return if (psi.parent is PsiFile) {
                 Indent.getNoneIndent()
@@ -146,6 +158,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         if (elementType == ObjJ_METHOD_DECLARATION) {
             return Indent.getNoneIndent()
         }
+        if (elementType == ObjJ_METHOD_DECLARATION_SELECTOR) {
+            return Indent.getContinuationIndent()
+        }
 
 
         if (parentType == ObjJ_ENCLOSED_EXPR) {
@@ -154,12 +169,23 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             } else Indent.getContinuationIndent()
         }
 
-        if (parentType == ObjJ_METHOD_CALL && elementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
-            return Indent.getContinuationIndent()
+        if (parentType == ObjJ_FOR_STATEMENT && prevSiblingType == ObjJ_FOR_LOOP_PARTS_IN_BRACES && elementType !in ObjJTokenSets.INDENT_CHILDREN) {
+            return Indent.getNormalIndent()
         }
 
-        if (parentType == ObjJ_FOR_STATEMENT && prevSiblingType == ObjJ_FOR_LOOP_PARTS_IN_BRACES && !ObjJTokenSets.BLOCKS.contains(elementType)) {
-            return Indent.getNormalIndent()
+        if (elementType == ObjJ_FOR_LOOP_PARTS_IN_BRACES) {
+            return Indent.getNoneIndent()
+        }
+
+        if (parentType == ObjJ_IN_EXPR) {
+            return when {
+                elementType == ObjJ_IN -> Indent.getContinuationIndent()
+                elementType == ObjJ_OPEN_PAREN -> Indent.getNoneIndent()
+                prevSiblingType == ObjJ_OPEN_PAREN -> Indent.getNormalIndent()
+                elementType == ObjJ_EXPR -> Indent.getContinuationIndent()
+                elementType == ObjJ_OPEN_PAREN || elementType == ObjJ_CLOSE_PAREN -> Indent.getNoneIndent()
+                else -> Indent.getNoneIndent()
+            }
         }
 
         if (parentType == ObjJ_SWITCH_STATEMENT && (elementType == ObjJ_CASE_CLAUSE || elementType == ObjJ_DEFAULT_CLAUSE)) {
@@ -170,21 +196,21 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getNoneIndent()
         }
 
-        if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !ObjJTokenSets.BLOCKS.contains(elementType)) {
+        if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
             return Indent.getNormalIndent()
         }
 
-        if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !ObjJTokenSets.BLOCKS.contains(elementType)) {
+        if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
             return Indent.getNormalIndent()
         }
 
         if (parentType == ObjJ_RETURN_STATEMENT &&
                 prevSiblingType == ObjJ_RETURN &&
-                !ObjJTokenSets.BLOCKS.contains(elementType)) {
+                !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
             return Indent.getNoneIndent()
         }
 
-        if (parentType == ObjJ_IF_STATEMENT && !ObjJTokenSets.BLOCKS.contains(elementType) &&
+        if (parentType == ObjJ_IF_STATEMENT && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType) &&
                 (prevSiblingType == ObjJ_CLOSE_PAREN || (prevSiblingType == ObjJ_ELSE && elementType != ObjJ_IF_STATEMENT))) {
             return Indent.getNormalIndent()
         }
@@ -202,17 +228,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getContinuationIndent();
         }*/
 
-        if (parentType == ObjJ_METHOD_CALL) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET, WHITE_SPACE)) {
-                return Indent.getContinuationIndent()
-            }
-        }
-
-        if (parentType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
-            if (FormatterUtil.isPrecededBy(node, ObjJ_COLON, WHITE_SPACE)) {
-                return Indent.getContinuationIndent()
-            }
-        }
 
         if (elementType == ObjJ_FUNCTION_CALL) {
             if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR, WHITE_SPACE)) {
@@ -221,9 +236,54 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (parentType == ObjJ_INHERITED_PROTOCOL_LIST) {
-            return if (elementType == ObjJ_LESS_THAN || elementType == ObjJ_GREATER_THAN) {
+            return if (elementType == ObjJ_LESS_THAN || elementType == ObjJ_GREATER_THAN)
                 Indent.getNoneIndent()
-            } else Indent.getContinuationIndent()
+            else
+                Indent.getNormalIndent()
+        }
+
+        if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
+            if (objjSettings.ALIGN_SELECTORS) {
+                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
+                if (selectorSpacing != null && selectorSpacing > 0) {
+                    return Indent.getSpaceIndent(selectorSpacing)
+                }
+            }
+            return Indent.getNormalIndent()
+        }
+
+
+        if (elementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+            if (objjSettings.ALIGN_SELECTORS) {
+                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java)?.getSelectorAlignmentSpacing()
+                if (selectorSpacing != null && selectorSpacing >= 4) {
+                    return Indent.getSpaceIndent(selectorSpacing)
+                }
+            }
+            return Indent.getNormalIndent()
+        }
+
+        if (parentType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+            if (FormatterUtil.isPrecededBy(node, ObjJ_COLON, WHITE_SPACE)) {
+                return Indent.getContinuationIndent()
+            }
+        }
+
+        if (parentType == ObjJ_METHOD_CALL) {
+            if (elementType == ObjJ_CALL_TARGET)
+                return Indent.getNormalIndent()
+            if (FormatterUtil.isPrecededBy(node, ObjJ_CALL_TARGET, WHITE_SPACE)) {
+                return Indent.getNormalIndent()
+            }
+            if (elementType == ObjJ_COLON)
+                return Indent.getContinuationIndent()
+            if (elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
+                return Indent.getNoneIndent()
+            }
+        }
+
+        if (elementType == ObjJ_METHOD_HEADER_SELECTOR_FORMAL_VARIABLE_TYPE || parentType == ObjJ_METHOD_HEADER_SELECTOR_FORMAL_VARIABLE_TYPE) {
+            return Indent.getNormalIndent()
         }
 
         if (parentType == ObjJ_ASSIGNMENT_EXPR_PRIME) {
@@ -248,11 +308,72 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
             return Indent.getContinuationIndent()
         }
 
+        if (elementType == ObjJ_ACCESSOR) {
+            return Indent.getNormalIndent()
+        }
+
+        if (elementType == ObjJ_AT_ACCESSORS) {
+            return Indent.getNormalIndent()
+        }
+
+        if (parentType == ObjJ_ACCESSOR) {
+            return Indent.getNormalIndent()
+        }
+
+        if (superParentType == ObjJ_STATEMENT_OR_BLOCK) {
+            if (elementType != ObjJ_BLOCK_ELEMENT) {
+                return Indent.getNormalIndent()
+            }
+            return Indent.getNoneIndent()
+        }
+
+        if (parent == ObjJ_STATEMENT_OR_BLOCK || superParent == ObjJ_STATEMENT_OR_BLOCK) {
+            return if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE || elementType in ObjJTokenSets.INDENT_CHILDREN)
+                Indent.getNoneIndent()
+            else
+                Indent.getNormalIndent()
+        }
+
+        if (parentType == ObjJ_COMPARISON_EXPR_PRIME) {
+            return Indent.getContinuationIndent()
+        }
+
+        if (elementType == ObjJ_RIGHT_EXPR) {
+            return if (node.psi.hasParentOfType(ObjJRightExpr::class.java)) {
+                Indent.getNoneIndent()
+            } else
+                Indent.getNormalIndent()
+        }
+
+        if (parentType == ObjJ_RIGHT_EXPR) {
+            return Indent.getNoneIndent()
+        }
+
+        if (elementType == ObjJ_ACCESSOR_PROPERTY) {
+            return Indent.getContinuationIndent()
+        }
+
+        if (elementType == ObjJ_ACCESSOR_PROPERTY_TYPE) {
+            return Indent.getContinuationIndent()
+        }
+
+        if (elementType == ObjJ_EQUALS) {
+            return Indent.getContinuationIndent()
+        }
+
+        if (parentType == ObjJ_TERNARY_EXPR_PRIME) {
+            if (prevSiblingType == ObjJ_COLON || elementType == ObjJ_COLON) {
+                return Indent.getContinuationIndent()
+            }
+            return Indent.getNormalIndent()
+        }
+
+
         if (FormatterUtil.isPrecededBy(node, ObjJ_ASSIGNMENT_OPERATOR, WHITE_SPACE)) {
             return Indent.getContinuationIndent()
         }
         if (FormatterUtil.isPrecededBy(node, ObjJ_MATH_OP, WHITE_SPACE)) {
-            return Indent.getContinuationIndent()
+            return Indent.getNormalIndent()
         }
 
         if (FormatterUtil.isPrecededBy(node, ObjJ_COMMA, WHITE_SPACE) && elementType != ObjJ_VARIABLE_DECLARATION) {
@@ -264,13 +385,14 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
         }
 
         if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_BRACKET, WHITE_SPACE)) {
-            return Indent.getContinuationIndent()
+            return Indent.getNormalIndent()
         }
 
         if (FormatterUtil.isPrecededBy(node, ObjJ_OPEN_PAREN, WHITE_SPACE)) {
-            return Indent.getContinuationIndent()
+            return Indent.getNormalIndent()
         }
 
+        //Logger.getLogger("#ObjJIndentProcessor").info("Indent-> type: $elementType(${node.text}); parent: $parentType; prev: $prevSiblingType(${prevSibling?.text}); next: $nextSiblingType(${nextSibling?.text}); ")
         return if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
             Indent.getNoneIndent()
         } else Indent.getNoneIndent()
@@ -279,5 +401,8 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings) {
 
     companion object {
         val EXPRESSIONS = TokenSet.create(ObjJ_EXPR)
+        val LOGGER:Logger by lazy {
+            Logger.getLogger("#"+ObjJIndentProcessor::class.java.canonicalName)
+        }
     }
 }
