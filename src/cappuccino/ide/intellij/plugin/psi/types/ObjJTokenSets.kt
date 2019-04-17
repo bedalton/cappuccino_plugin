@@ -9,8 +9,11 @@ import com.intellij.psi.tree.TokenSet.create
 
 object ObjJTokenSets {
 
-    val BLOCKS = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK,
+    val INDENT_CHILDREN = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK , ObjJ_INSTANCE_VARIABLE_LIST)
+
+    val HAS_BRACES = create(ObjJ_BLOCK_ELEMENT, ObjJ_METHOD_BLOCK, ObjJ_INSTANCE_VARIABLE_LIST, ObjJ_SWITCH_STATEMENT)
+
     val BLOCKS_EXT = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK, ObjJ_PROTOCOL_SCOPED_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK, ObjJStubTypes.FILE)
 
@@ -83,7 +86,7 @@ object ObjJTokenSets {
     )
 
     val COMPARISON_OPERATORS = create(
-        ObjJ_LESS_THAN,
+            ObjJ_LESS_THAN,
             ObjJ_LESS_THAN_EQUALS,
             ObjJ_GREATER_THAN,
             ObjJ_GREATER_THAN_EQUALS
@@ -101,6 +104,16 @@ object ObjJTokenSets {
             ObjJ_BIT_XOR
     )
 
+    val MATH_OPERATORS = create(
+            ObjJ_PLUS,
+            ObjJ_MINUS,
+            ObjJ_BIT_NOT,
+            ObjJ_NOT,
+            ObjJ_MULTIPLY,
+            ObjJ_DIVIDE,
+            ObjJ_MODULUS
+    )
+
     val ASSIGNMENT_OPERATORS = create(
             ObjJ_MULTIPLY_ASSIGN,
             ObjJ_DIVIDE_ASSIGN,
@@ -113,22 +126,48 @@ object ObjJTokenSets {
             ObjJ_RIGHT_SHIFT_LOGICAL_ASSIGN,
             ObjJ_BIT_AND_ASSIGN,
             ObjJ_BIT_XOR_ASSIGN,
-            ObjJ_BIT_OR_ASSIGN
+            ObjJ_BIT_OR_ASSIGN,
+            ObjJ_EQUALS
     )
 
-    val METHOD_HEADER_DECLARATION_SELECTOR = create(
-            ObjJ_METHOD_DECLARATION_SELECTOR,
-            ObjJ_FIRST_METHOD_DECLARATION_SELECTOR
-    )
+    val ALL_OPERATORS = create(
 
-    val MATH_OPERATORS = create(
+            ObjJ_MULTIPLY_ASSIGN,
+            ObjJ_DIVIDE_ASSIGN,
+            ObjJ_MODULUS_ASSIGN,
+            ObjJ_PLUS_ASSIGN,
+            ObjJ_MINUS_ASSIGN,
+            ObjJ_LEFT_SHIFT_ARITHMATIC_ASSIGN,
+            ObjJ_RIGHT_SHIFT_ARITHMATIC_ASSIGN,
+            ObjJ_LEFT_SHIFT_LOGICAL_ASSIGN,
+            ObjJ_RIGHT_SHIFT_LOGICAL_ASSIGN,
+            ObjJ_BIT_AND_ASSIGN,
+            ObjJ_BIT_XOR_ASSIGN,
+            ObjJ_BIT_OR_ASSIGN,
+            ObjJ_EQUALS,
             ObjJ_PLUS,
             ObjJ_MINUS,
             ObjJ_BIT_NOT,
             ObjJ_NOT,
             ObjJ_MULTIPLY,
             ObjJ_DIVIDE,
-            ObjJ_MODULUS
+            ObjJ_MODULUS,
+            ObjJ_BIT_AND,
+            ObjJ_BIT_OR,
+            ObjJ_BIT_XOR,
+            ObjJ_EQUALS,
+            ObjJ_IDENTITY_EQUALS,
+            ObjJ_NOT_EQUALS,
+            ObjJ_IDENTITY_NOT_EQUALS,
+            ObjJ_LESS_THAN,
+            ObjJ_LESS_THAN_EQUALS,
+            ObjJ_GREATER_THAN,
+            ObjJ_GREATER_THAN_EQUALS
+    )
+
+    val METHOD_HEADER_DECLARATION_SELECTOR = create(
+            ObjJ_METHOD_DECLARATION_SELECTOR,
+            ObjJ_FIRST_METHOD_DECLARATION_SELECTOR
     )
 
     val PREFIX_OPERATOR = create(
