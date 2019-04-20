@@ -1,0 +1,210 @@
+{
+
+	tokens = [
+		WHITE_SPACE = "regexp:\s+";
+		DOC_COMMENT = "regexp:/\*(.*|\n)*\*/";
+		LINE_COMMENT = "regexp://[^\n]*"
+		INTERFACE = "interface";
+		COMMA = ",";
+		EXTENDS = 'extends';
+		COLON = ":";
+		SEMI_COLON = ";";
+		GT = ">";
+		LT = "<";
+		OPEN_BRACKET = "[";
+		CLOSE_BRACKET = "]";
+		OPEN_BRACE = "{";
+		CLOSE_BRACE = "}";
+		ID = "regexp:[a-zA-Z_$][a-zA-Z0-9_]*";
+		IN = "in";
+		OF = "of";
+		EQ = "=";
+		OPEN_PARN = "(";
+		CLOSE_PAREN = ")";
+		QUESTION_MARK = "?";
+		PROTOTYPE = "prototype";
+		OBJECT = "object"
+	]
+}
+
+file ::= (statement)*;
+
+statement
+	::= comment
+	|	objectDefintion
+	| 	interfaceDeclaration
+	;
+
+objectDefintion
+	::= 'object' className objectDefinitionBody
+	;
+
+objectDefinitionBody
+	::= objectBodyStatementBlock ';'?
+	| 	'=' classTypeList  ';'
+	;
+
+objectBodyStatementBlock
+	::= '{'  objectBodyStatements? '}'
+	{
+		pin=1;
+	}
+	;
+
+private objectBodyStatements
+	::= objectBodyStatement (';' objectBodyStatement)* ';'?
+	{
+		recoverWhile=bodyStatements_recover
+	}
+	;
+private objectBodyStatement
+	::= 'prototype' ':' classType
+	|	propertyDefinition
+	|	functionDefinition
+	|	propertyAccessor
+	{
+		recoverWhile=bodyStatement_recover
+	}
+	;
+
+
+interfaceDeclaration
+	::= 'interface' className extendsStatement? definitionBody
+	{
+		pin = 1;
+	}
+	;
+
+definitionBody
+	::= bodyStatementBlock ';'?
+	| 	'=' classTypeList  ';'
+	;
+
+bodyStatementBlock
+	::= '{'  bodyStatements? '}'
+	{
+		pin=1;
+	}
+	;
+
+private bodyStatements
+	::= bodyStatement (';' bodyStatement)* ';'?
+	{
+		recoverWhile=bodyStatements_recover
+	}
+	;
+
+private bodyStatements_recover
+	::= !('}')
+	;
+
+private bodyStatement
+	::= propertyDefinition
+	|	functionDefinition
+	|	propertyAccessor
+	{
+		recoverWhile=bodyStatement_recover
+	}
+	;
+
+private bodyStatement_recover
+	::= !(";")
+	;
+
+functionDefinition
+	::= functionName? '(' functionArguments')' ':' nullableClassTypeList
+	{
+		pin=2
+	}
+	;
+functionArguments
+	::=  functionArgument (',' functionArgument)
+	{
+		recoverWhile=functionArguments_recover
+	}
+	;
+
+functionArgument
+	::= keyMapIn
+	|	keyMapOut
+	|	propertyDefinition
+	;
+
+keyMapIn
+	::= className 'in' genericID
+	;
+
+keyMapOut
+	::= genericID 'of' className
+	;
+
+private functionArguments_recover
+	::= !(')')
+	;
+
+
+propertyDefinition
+	::= propertyName '?'? ':' nullableClassTypeList
+	{
+		pin=3;
+	}
+	;
+
+propertyAccessor
+	::= '[' propertyName ':' classTypeList ']' ':' nullableClassTypeList
+	;
+
+extendsStatement
+	::= 'extends' classTypeList
+	;
+
+comment
+	::= DOC_COMMENT
+	|	LINE_COMMENT
+	;
+
+classTypeList
+	::= classType ('|' classType)*
+	;
+
+nullableClassTypeList
+	::= nullableClassType ('|' nullableClassType)*
+	;
+
+private nullableClassType
+	::= classType '?'?
+	;
+
+
+classType
+	::= bodyStatementBlock
+	|	genericClass
+	|	array
+	|	className
+	;
+
+genericClass
+	::= className generics
+	;
+
+array
+	::= (genericClass | className)  ('[' ']')+
+	;
+
+generics
+	::= '<' classTypeList (',' classTypeList)* '>'
+	;
+
+className ::= ID
+
+functionName
+	::= ID
+	;
+
+propertyName
+	::= ID
+	;
+
+genericID
+	::= ID
+	;
