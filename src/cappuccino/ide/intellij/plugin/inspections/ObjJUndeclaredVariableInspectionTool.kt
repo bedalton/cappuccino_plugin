@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
+import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -22,7 +23,6 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
-import java.util.logging.Logger
 
 class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
@@ -101,6 +101,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
+            if (variableNameString in globalJSClassNames) {
+                return
+            }
+
             /*var tempElement = variableName.getNextNonEmptySibling(true)
             if (tempElement != null && tempElement.text == ".") {
                 tempElement = tempElement.getNextNonEmptySibling(true)
@@ -116,7 +120,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }*/
 
             val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
-            if (!declarations.isEmpty()) {
+            if (declarations.isNotEmpty()) {
                 return
             }
             if (variableNameString.substring(0, 1) == variableNameString.substring(0, 1).toUpperCase() && variableNameString != variableNameString.toUpperCase()) {
@@ -156,7 +160,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }
             val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
-            return !precedingVariableNameReferences.isEmpty() || !ObjJFunctionsIndex.instance[variableName.text, variableName.project].isEmpty()
+            return precedingVariableNameReferences.isNotEmpty() || ObjJFunctionsIndex.instance[variableName.text, variableName.project].isNotEmpty()
         }
 
         private fun isDeclaredInSameDeclaration(variableName: ObjJVariableName, resolved:PsiElement) : Boolean {
@@ -174,7 +178,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             return ObjJVariableNameAggregatorUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
                     isDeclaredInContainingMethodHeader(variableName) ||
                     isDeclaredInFunctionScope(variableName) ||
-                    !ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isEmpty()
+                    ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isNotEmpty()
         }
 
         private fun isDeclaredInContainingMethodHeader(variableName: ObjJVariableName): Boolean {
