@@ -67,7 +67,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             "class",
             "implementation",
             "protocol",
-            "end"
+            "end",
+            "selector",
+            "global"
     )
 
 
@@ -97,12 +99,17 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             // Method call
             isMethodCallSelector(element) ->
                 ObjJMethodCallCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
+            element.hasParentOfType(ObjJSelectorLiteral::class.java) ->
+                ObjJSelectorLiteralCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             // Inherited protocol list
             element.hasParentOfType(ObjJInheritedProtocolList::class.java) ->
                 addProtocolNameCompletionElements(resultSet, element, queryString)
             // Formal Variable type
             element.isOrHasParentOfType(ObjJFormalVariableType::class.java) ->
                 formalVariableTypeCompletion(element, resultSet)
+            // Function Name
+            element.isOrHasParentOfType(ObjJFunctionName::class.java) ->
+                ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
             // Instance variable list
             element.hasParentOfType(ObjJInstanceVariableList::class.java) ->
                 instanceVariableListCompletion(element, resultSet)

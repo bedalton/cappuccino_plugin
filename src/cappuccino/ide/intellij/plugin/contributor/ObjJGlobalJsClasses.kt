@@ -1143,6 +1143,17 @@ val globalJSClasses = listOf(
         ),
         c (
                 className = "Image"
+        ),
+        c (
+                className = "CPLog",
+                staticFunctions = listOf(
+                        f("fatal"),
+                        f("error"),
+                        f("warn"),
+                        f("info"),
+                        f("debug"),
+                        f("trace")
+                )
         )
 )
 
