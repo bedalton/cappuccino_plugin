@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReference
 import cappuccino.ide.intellij.plugin.psi.ObjJRightExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
@@ -22,6 +23,10 @@ object ObjJQualifiedReferenceUtil {
         val variableNames = qualifiedReference.variableNameList
         val lastIndex = variableNames.size - 1
         return if (!variableNames.isEmpty()) variableNames[lastIndex] else null
+    }
+
+    fun getQualifiedNameText(functionName:ObjJFunctionName) : String? {
+        return functionName.text
     }
 
     @JvmOverloads
@@ -63,15 +68,14 @@ object ObjJQualifiedReferenceUtil {
         // Good for elements like function name, who's direct parent is not qualified reference
         var variableName:PsiElement? = variableNameIn
         while (variableName != null && !variableName.parent.isEquivalentTo(qualifiedReferenceParent)) {
-            if (variableName.parent is ObjJRightExpr) {
-                return -1 // not sure why, but was in original code
-            }
             variableName = variableName.parent
         }
 
         // If qualified reference cannot be found, something has gone wrong.
         // THIS SHOULD NOT HAPPEN
-        assert(variableName != null)
+        assert(variableName != null) {
+            "Qualified name component failed to find its own parent"
+        }
         if (variableName == null) {
             LOGGER.severe("Qualified name component failed to find its own parent")
             return -1
@@ -79,7 +83,7 @@ object ObjJQualifiedReferenceUtil {
         var qualifiedNameIndex:Int = -1
         val parts = qualifiedReferenceParent.qualifiedNameParts
         val numParts = parts.size
-        for (i in 0..(numParts-1)) {
+        for (i in 0 until numParts) {
             val part = parts[i]
             if (variableName.isEquivalentTo(part)) {
                 qualifiedNameIndex = i
