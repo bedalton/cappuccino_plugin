@@ -115,7 +115,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
 
         //return ChildAttributes(myIndentProcessor.getChildIndent(myNode), null)
 
-        LOGGER.info("Child Attribute for: $elementType in $parentType")
+        //LOGGER.info("Child Attribute for: $elementType in $parentType")
 
         if (previousType === ObjJ_OPEN_BRACE || previousType === ObjJ_OPEN_BRACKET) {
             return ChildAttributes(Indent.getNormalIndent(), null)
