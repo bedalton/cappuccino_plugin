@@ -5,11 +5,13 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
 import java.util.ArrayList
@@ -247,11 +249,12 @@ object ObjJFunctionDeclarationPsiUtil {
                 return stubScope
             }
         }
-        if (functionDeclaration.parent is ObjJFile) {
+
+        if (functionDeclaration.parent is ObjJFile || functionDeclaration.parent is PsiFile) {
             return ObjJFunctionScope.GLOBAL_SCOPE
         }
 
-        if (functionDeclaration.parent is ObjJBlockElement) {
+        if (functionDeclaration.parent is ObjJBlock) {
             return ObjJFunctionScope.PRIVATE
         }
 
