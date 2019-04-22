@@ -9,14 +9,15 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 /**
  * Handles completion insertion of selectors
  */
-object ObjJSelectorInsertHandler : InsertHandler<LookupElement> {
+class ObjJSelectorInsertHandler(private val insertSpace:Boolean) : InsertHandler<LookupElement> {
 
     /**
      * Handle insertion entry point
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
         insertColon(insertionContext, lookupElement)
-        insertSpaceBefore(insertionContext) // must be after colon is inserted, otherwise the colon would be inserted in the wrong spot
+        if (insertSpace)
+            insertSpaceBefore(insertionContext) // must be after colon is inserted, otherwise the colon would be inserted in the wrong spot
     }
 
     /**
