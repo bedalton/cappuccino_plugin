@@ -20,7 +20,7 @@ import java.util.ArrayList
 import java.util.logging.Logger
 
 
-private val LOGGER:Logger by lazy {
+internal val LOGGER:Logger by lazy {
     Logger.getLogger("#ObjJTreeUtil")
 }
 
