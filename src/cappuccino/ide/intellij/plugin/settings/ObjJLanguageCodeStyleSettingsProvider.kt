@@ -15,14 +15,24 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
         if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.SPACING_SETTINGS) {
             consumer.showStandardOptions("SPACE_AROUND_ASSIGNMENT_OPERATORS")
             consumer.renameStandardOption("SPACE_AROUND_ASSIGNMENT_OPERATORS", "Separator")
+            consumer.showStandardOptions("SPACE_AFTER_COMMA")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE", "Space Between Selector and Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME", "Space After Variable Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_RETURN_TYPE_AND_FIRST_SELECTOR", "Space After Return Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_TYPE_AND_PARENS", "Space Between Type and Parenthesis", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_SELECTORS_IN_METHOD_DECLARATION", "Align Method Declaration Selector Colons", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_SELECTOR_AND_VALUE_IN_METHOD_CALL", "Space Between Selector and Value", "Method Call")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_SELECTORS_IN_METHOD_CALL", "Align Method Call Selector Colons", "Method Call")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BEFORE_PAREN_STATEMENT", "Space Between control keyword and paren statement", "General")
         } else if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
         } else if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
             consumer.showStandardOptions("FORCE_BRACE_ON_NEW_LINE")
+            consumer.showStandardOptions("SPACE_BEFORE_LBRACE")
         }
     }
 
-    override fun getCodeSample(settingsType: LanguageCodeStyleSettingsProvider.SettingsType): String? {
+    override fun getCodeSample(settingsType: SettingsType): String? {
     return """
 @import <Foundation/Foundation.j>
 #include "SomeClass.j"
@@ -47,7 +57,18 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
     _backgroundColor = aColor;
 }
 
--(CPString) colorHex
+-(void) setBackgroundColor:(CPColor)aColor
+forType:(DomType)clazz
+withFilter:(Function)type
+{
+    //A Line Comment
+    var i = 0;
+
+    i++
+    _backgroundColor = aColor;
+}
+
+-(CPString)colorHex
 {
     if (_backgroundColor)
     {
@@ -58,6 +79,14 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
         return Nil
     }
 }
+
+-(void)method2
+{
+    [self setBackgroundColor:_backgroundColor
+    forType:[DomType anchor]
+    withFilter: _domFilterFunction];
+}
+
 
 @end
 
@@ -92,6 +121,6 @@ function sayHello(aName, var2)
     return null;
 }
 
-        """
+        """.trimIndent()
     }
 }
