@@ -77,7 +77,8 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        val psi = node?.psi as? ObjJFunctionLiteral ?: return false
-        return ObjJFunctionDeclarationPsiUtil.getFunctionScope(psi, false) == ObjJFunctionScope.FILE_SCOPE || ObjJFunctionDeclarationPsiUtil.getFunctionScope(psi, false) == ObjJFunctionScope.GLOBAL_SCOPE
+        val psi = node?.psi as? ObjJFunctionDeclarationElement<*> ?: return false
+        val functionScope = ObjJFunctionDeclarationPsiUtil.getFunctionScope(psi, false)
+        return functionScope == ObjJFunctionScope.FILE_SCOPE || functionScope == ObjJFunctionScope.GLOBAL_SCOPE
     }
 }
