@@ -496,8 +496,13 @@ object ObjJVariableNameAggregatorUtil {
         if (index < 1) {
             return null
         }
-        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.get(index - 1)
+        val baseVariableName: ObjJVariableName = variableName.getParentOfType(ObjJQualifiedReference::class.java)?.variableNameList?.getOrNull(index - 1)
                 ?: return null
+
+        if (baseVariableName == variableName) {
+            return null
+        }
+
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
                 variableName.containingClassName
