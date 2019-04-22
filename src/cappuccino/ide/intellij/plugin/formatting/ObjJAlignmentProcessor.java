@@ -40,7 +40,7 @@ public class ObjJAlignmentProcessor {
                 return myBaseAlignment;
             }
         }
-        if (objjSettings.getALIGN_SELECTORS()) {
+        if (objjSettings.getALIGN_SELECTORS_IN_METHOD_DECLARATION() || objjSettings.getALIGN_SELECTORS_IN_METHOD_CALL()) {
             if (ObjJTokenSets.INSTANCE.getMETHOD_HEADER_DECLARATION_SELECTOR().contains(childType) ||
             childType == ObjJTypes.ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
                 return Alignment.createAlignment(true);
