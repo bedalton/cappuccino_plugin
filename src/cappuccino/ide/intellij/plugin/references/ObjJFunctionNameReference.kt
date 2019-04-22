@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.utils.orFalse
 
 import java.util.logging.Logger
 
@@ -28,7 +29,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         }
 
         if (myElement?.indexInQualifiedReference != 0) {
-            LOGGER.info("Function name: ${myElement.text} is not first in qname")
             return false;
         }
 
@@ -40,7 +40,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         if (isFunctionCall && elementIsFunctionCall) {
             return false
         }
-        if (resolve()?.isEquivalentTo(element) == true) {
+        if (resolve()?.isEquivalentTo(element).orFalse()) {
             return true
         }
         val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
