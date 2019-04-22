@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.formatting
 
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
-import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
-import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
-import cappuccino.ide.intellij.plugin.psi.ObjJRightExpr
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import com.intellij.formatting.Indent
@@ -36,6 +33,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE) {
+            if (node.treeParent == ObjJ_VARIABLE_DECLARATION ||
+                    node.treeParent?.treeParent == ObjJ_VARIABLE_DECLARATION ||
+                    node.treeParent?.treeParent?.treeParent == ObjJ_VARIABLE_DECLARATION) {
+                return Indent.getNormalIndent()
+            }
             return Indent.getNoneIndent()
         }
 
@@ -243,7 +245,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
-            if (objjSettings.ALIGN_SELECTORS) {
+            if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION) {
                 val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
                 if (selectorSpacing != null && selectorSpacing > 0) {
                     return Indent.getSpaceIndent(selectorSpacing)
@@ -254,7 +256,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
 
 
         if (elementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
-            if (objjSettings.ALIGN_SELECTORS) {
+            if (objjSettings.ALIGN_SELECTORS_IN_METHOD_CALL) {
                 val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java)?.getSelectorAlignmentSpacing()
                 if (selectorSpacing != null && selectorSpacing >= 4) {
                     return Indent.getSpaceIndent(selectorSpacing)

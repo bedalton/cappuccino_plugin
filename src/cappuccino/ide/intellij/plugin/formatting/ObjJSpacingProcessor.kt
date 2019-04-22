@@ -15,9 +15,7 @@ import com.intellij.psi.formatter.common.AbstractBlock
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.orElse
-import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.lang.parser.GeneratedParserUtilBase.DUMMY_BLOCK
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -70,6 +68,10 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 1, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
+        if (myNode.psi?.isOrHasParentOfType(ObjJSelectorLiteral::class.java).orFalse()) {
+            return Spacing.createSpacing(0, 0, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
         if (elementType == ObjJ_OBJECT_LITERAL) {
             if (type1 == ObjJ_OPEN_BRACE || type1 == ObjJ_AT_OPEN_BRACE || type2 == ObjJ_CLOSE_BRACE) {
                 return Spacing.createSpacing(0, Int.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -102,19 +104,19 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 }
             }
         }
-        if (objJSettings.ALIGN_SELECTORS && type2 in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
+        if (objJSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION && type2 in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             if (node2.isDirectlyPrecededByNewline()) {
                 val selectorSpacing = node2.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objJSettings)
                 if (selectorSpacing != null) {
                     return Spacing.createSpacing(selectorSpacing, selectorSpacing, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
                 } else {
-                    LOGGER.info("Failed to get selector spacing.")
+                    LOGGER.warning("Failed to get selector spacing.")
                 }
             }
             return Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
-        if (objJSettings.ALIGN_SELECTORS && type2 == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+        if (objJSettings.ALIGN_SELECTORS_IN_METHOD_CALL && type2 == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
 
             val methodCallSelector = node2.psi?.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java)
             val spacing = methodCallSelector?.getSelectorAlignmentSpacing()
@@ -137,7 +139,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (elementType == ObjJ_DO_WHILE_STATEMENT) {
             if (type1 == ObjJ_DO && type2 == ObjJ_STATEMENT_OR_BLOCK) {
-                return if (mySettings.SPACE_BEFORE_DO_LBRACE && !objJSettings.BRACE_ON_NEW_LINE) {
+                return if (objJSettings.SPACE_BEFORE_LBRACE && !objJSettings.BRACE_ON_NEW_LINE) {
                     Spacing.createSpacing(1, 1, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
                 } else if (objJSettings.BRACE_ON_NEW_LINE) {
                     Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -287,7 +289,8 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if ((type2 == ObjJ_OPEN_BRACE || type2 == ObjJ_CLOSE_BRACE) && objJSettings.BRACE_ON_NEW_LINE) {
-            return Spacing.createSpacing(0, 0, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            val minSpace = if (type2 == ObjJ_OPEN_BRACE && objJSettings.SPACE_BEFORE_LBRACE && node1.textContains(')')) 1 else 0
+            return Spacing.createSpacing(minSpace, Int.MAX_VALUE, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (elementType == DUMMY_BLOCK || type1 == DUMMY_BLOCK || type2 == DUMMY_BLOCK) {
@@ -330,7 +333,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             if (type1 == ObjJ_CLOSE_PAREN && type2 == ObjJ_OPEN_BRACE) {
                 return when {
                     objJSettings.BRACE_ON_NEW_LINE -> Spacing.createSpacing(0, 0, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
-                    mySettings.SPACE_BEFORE_DO_LBRACE -> Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+                    objJSettings.SPACE_BEFORE_LBRACE -> Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
                     else -> Spacing.createSpacing(0, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
                 }
             }
@@ -404,7 +407,6 @@ fun ObjJPropertyAssignment.getObjectLiteralPropertySpacing() : Int? {
 
     // Calculate offset between this selectors colon, and the longest length to colon
     return if (longestLengthToColon > 0 && propertyNameLength < longestLengthToColon) {
-        ObjJIndentProcessor.LOGGER.info("ObjectLiteralSpacing: ${longestLengthToColon - propertyNameLength}; ThisPropLength: $propertyNameLength; LongestLength: $longestLengthToColon")
         longestLengthToColon - propertyNameLength + EditorUtil.tabSize(this).orElse(0)
     } else {
         0
@@ -422,10 +424,11 @@ fun ObjJPropertyAssignment.getLongestLengthToColon() : Int? {
             .filter { it.node?.isDirectlyPrecededByNewline() == true }
             .map { it.propertyName.textLength }
             .max()
+    val tabSize = EditorUtil.tabSize(this) ?: 0
     // Offset secondary colons by the indent size
     // Hopefully this stays true
-    return if (furthestColon != null && distanceToFirstColon != null)
-        max(furthestColon, distanceToFirstColon)
+    return if (furthestColon != null)
+        max(furthestColon + tabSize, distanceToFirstColon)
     else furthestColon ?: distanceToFirstColon
 }
 
@@ -456,7 +459,6 @@ fun ObjJMethodDeclarationSelector.getSelectorAlignmentSpacing(objJSettings: ObjJ
     }
 
     return if (longestLengthToColon > 0 && thisSelectorLength <= longestLengthToColon) {
-        ObjJIndentProcessor.LOGGER.info("MethodDecSelectorSpacing: ${longestLengthToColon - thisSelectorLength}; ThisSelLength: $thisSelectorLength")
         longestLengthToColon - thisSelectorLength
     } else {
         null
@@ -467,9 +469,13 @@ fun ObjJMethodDeclarationSelector.getSelectorAlignmentSpacing(objJSettings: ObjJ
  * Calculates the spacing necessary to align selector colons in this method call
  */
 fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing() : Int? {
+
+    val selector = this.getParentOfType(ObjJHasMethodSelector::class.java) ?: return null
+
     // Find the longest length to a colon in this call
     // This is used as the basis for aligning objects
-    val longestLengthToColon = this.getParentOfType(ObjJHasMethodSelector::class.java)?.getLongestLengthToColon() ?: return null
+    val tabSize = EditorUtil.tabSize(this)
+    val longestLengthToColon = selector.getLongestLengthToColon().add(tabSize) ?: return null
     val thisSelectorLength = this.selector?.text?.length ?: return null
 
     // If node is on same line, and not first selector, add a single space
@@ -479,7 +485,6 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing() : Int? {
 
     // Calculate offset between this selectors colon, and the longest length to colon
     return if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
-        ObjJIndentProcessor.LOGGER.info("MethodCallSelectorSpacing: ${longestLengthToColon - thisSelectorLength}; ThisSelLength: $thisSelectorLength; LongestLength: $longestLengthToColon")
         longestLengthToColon - thisSelectorLength - EditorUtil.tabSize(this).orElse(0)
     } else {
         0
@@ -489,16 +494,16 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing() : Int? {
 /**
  * Gets the longest length from start of line to colon in this selector set
  */
-fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int? {
+fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int {
     val indentSize = EditorUtil.tabSize(this).orElse(0)
-    val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize) - indentSize
+    val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize)
     val furthestColon = this.selectorList
             .filter { it.node?.isDirectlyPrecededByNewline().orFalse() }
-            .map { it.textLength }
+            .map { it.textLength + indentSize}
             .max()
     // Offset secondary colons by the indent size
     // Hopefully this stays true
-    return if (furthestColon != null && distanceToFirstColon != null)
+    return if (furthestColon != null)
         max(furthestColon, distanceToFirstColon)
     else furthestColon ?: distanceToFirstColon
 }
