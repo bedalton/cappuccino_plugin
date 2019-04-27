@@ -494,16 +494,17 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 
     // If node is on same line, and not first selector, add a single space
     if (!this.node.isDirectlyPrecededByNewline()) {
-        if (!indentFirstSelector) {
+        if (!indentFirstSelector || this.node.treeNext.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             return 1
         }
-        val prevNode = this.node.getPreviousNonEmptyNode(false)?.psi ?: return 1;
+        val prevNode = this.node.getPreviousNonEmptyNode(false)?.psi ?: return 1
         val distanceToPrevNode = prevNode.distanceFromStartOfLine().add(1) ?: 0
-        return if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
+        val out = if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
             longestLengthToColon - distanceToPrevNode - thisSelectorLength - EditorUtil.tabSize(this).orElse(0) + 1
         } else {
             1
         }
+        return if (out > 0) out else 1
     }
 
     // Calculate offset between this selectors colon, and the longest length to colon
@@ -521,13 +522,16 @@ fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int
     val indentSize = EditorUtil.tabSize(this).orElse(0)
     val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize) - indentSize
     LOGGER.info("Distance to first colon: $distanceToFirstColon")
-    val furthestColon = this.selectorList
+    val maxLengthOfSelector = this.selectorList
             .filter { it.node?.isDirectlyPrecededByNewline().orFalse() }
             .map { it.textLength + indentSize}
-            .max() ?: distanceToFirstColon
+            .max() ?: 0
+    if (this.selectorList.size < 2) {
+        return 0
+    }
     // Offset secondary colons by the indent size
     // Hopefully this stays true
-    return max(furthestColon, distanceToFirstColon)
+    return max(maxLengthOfSelector, distanceToFirstColon)
 }
 
 /**
