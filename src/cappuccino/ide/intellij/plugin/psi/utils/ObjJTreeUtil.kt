@@ -16,7 +16,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.TokenType
 
-import java.util.ArrayList
 import java.util.logging.Logger
 
 
@@ -26,7 +25,7 @@ internal val LOGGER:Logger by lazy {
 
 
 fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> {
-    val out = ArrayList<PsiElement>()
+    val out:MutableList<PsiElement> = mutableListOf()
     if (this == null) {
         return out
     }
@@ -218,11 +217,7 @@ fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
         if (node.elementType == TokenType.WHITE_SPACE) {
             if (node.text.contains("\n"))
                 return true
-            node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
-            continue
-        }
-        if (node.elementType == ObjJTypes.ObjJ_BLOCK_COMMENT) {
-            node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
+            node = node.treePrev ?: getPrevInTreeParent(node)
             continue
         }
         break
