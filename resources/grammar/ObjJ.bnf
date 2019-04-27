@@ -346,10 +346,9 @@ private bodyStatement
 	| 	emptyStatement
 	{
 		implements = [
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods=[block="statementOrBlock"]
 	}
     ;
 
@@ -388,7 +387,9 @@ statementOrBlock
 private singleBodyStatement
 	::= bodyStatement eos?
 	{
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"]
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
+		]
 	}
 	;
 
