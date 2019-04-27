@@ -218,14 +218,11 @@ fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
         if (node.elementType == TokenType.WHITE_SPACE) {
             if (node.text.contains("\n"))
                 return true
-            node = node.treePrev
+            node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
             continue
         }
         if (node.elementType == ObjJTypes.ObjJ_BLOCK_COMMENT) {
-            if (node.treePrev == null) {
-                return true
-            }
-            node = node.treePrev
+            node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
             continue
         }
         break
@@ -234,13 +231,13 @@ fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
 }
 
 fun ASTNode.getPrevSiblingOnTheSameLineSkipCommentsAndWhitespace(): ASTNode? {
-    var node: ASTNode? = this.treePrev
+    var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this)
     while (node != null) {
         return if (node.elementType == TokenType.WHITE_SPACE || ObjJTokenSets.COMMENTS.contains(node.elementType)) {
             if (node.text.contains("\n")) {
                 null
             } else {
-                node = node.treePrev
+                node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
                 continue
             }
         } else node

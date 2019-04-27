@@ -12,6 +12,8 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.Logger;
+
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.ObjJ_TERNARY_EXPR_PRIME;
 
 
@@ -40,7 +42,7 @@ public class ObjJAlignmentProcessor {
                 return myBaseAlignment;
             }
         }
-        if (objjSettings.getALIGN_SELECTORS_IN_METHOD_DECLARATION() || objjSettings.getALIGN_SELECTORS_IN_METHOD_CALL()) {
+        if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION || objjSettings.ALIGN_SELECTORS_IN_METHOD_CALL) {
             if (ObjJTokenSets.INSTANCE.getMETHOD_HEADER_DECLARATION_SELECTOR().contains(childType) ||
             childType == ObjJTypes.ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
                 return Alignment.createAlignment(true);
