@@ -160,10 +160,20 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (elementType == ObjJ_METHOD_DECLARATION) {
             return Indent.getNoneIndent()
         }
-        if (elementType == ObjJ_METHOD_DECLARATION_SELECTOR) {
+
+
+        if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
+            if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION) {
+                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
+                LOGGER.info("Get Method Dec Selector Indent Spacing: $selectorSpacing")
+                if (selectorSpacing != null && selectorSpacing > 0) {
+                    return Indent.getSpaceIndent(selectorSpacing)
+                } else {
+                    LOGGER.info("Failed to get selector spacing for: ${node.text}")
+                }
+            }
             return Indent.getContinuationIndent()
         }
-
 
         if (parentType == ObjJ_ENCLOSED_EXPR) {
             return if (elementType == ObjJ_OPEN_PAREN || elementType == ObjJ_CLOSE_PAREN || elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
@@ -244,20 +254,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
                 Indent.getNormalIndent()
         }
 
-        if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
-            if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION) {
-                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
-                if (selectorSpacing != null && selectorSpacing > 0) {
-                    return Indent.getSpaceIndent(selectorSpacing)
-                }
-            }
-            return Indent.getNormalIndent()
-        }
 
 
         if (elementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             if (objjSettings.ALIGN_SELECTORS_IN_METHOD_CALL) {
-                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java)?.getSelectorAlignmentSpacing()
+                val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings.ALIGN_FIRST_SELECTOR_IN_METHOD_CALL)
                 if (selectorSpacing != null && selectorSpacing >= 4) {
                     return Indent.getSpaceIndent(selectorSpacing)
                 }

@@ -149,6 +149,7 @@
     <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
     <lang.smartEnterProcessor implementationClass="cappuccino.ide.intellij.plugin.fixes.ObjJSmartEnterProcessor" language="ObjectiveJ"/>
     <codeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJLanguageCodeStyleSettingsProvider"/>
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
     <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
     <!-- Completion and Rename -->
