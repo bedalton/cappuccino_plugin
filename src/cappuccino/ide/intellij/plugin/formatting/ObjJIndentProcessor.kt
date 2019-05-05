@@ -53,6 +53,8 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
 
 
         if (parentType == ObjJ_FOR_STATEMENT || parentType == ObjJ_WHILE_STATEMENT || parentType == ObjJ_DO_WHILE_STATEMENT) {
+            if (elementType == ObjJ_STATEMENT_OR_BLOCK)
+                return Indent.getNoneIndent()
             if (elementType == ObjJ_STATEMENT_OR_BLOCK && node.firstChildNode?.elementType !in ObjJTokenSets.INDENT_CHILDREN) {
                 return Indent.getNormalIndent()
             }
@@ -181,11 +183,13 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             } else Indent.getContinuationIndent()
         }
 
-        if (parentType == ObjJ_FOR_STATEMENT && prevSiblingType == ObjJ_FOR_LOOP_PARTS_IN_BRACES && elementType !in ObjJTokenSets.INDENT_CHILDREN) {
-            return Indent.getNormalIndent()
+        if (parentType == ObjJ_FOR_STATEMENT && (prevSiblingType == ObjJ_FOR_LOOP_PARTS_IN_BRACES || prevSiblingType == ObjJ_FOR_LOOP_HEADER)) {
+            if (elementType !in ObjJTokenSets.INDENT_CHILDREN)
+                return Indent.getNormalIndent()
+            return Indent.getNoneIndent()
         }
 
-        if (elementType == ObjJ_FOR_LOOP_PARTS_IN_BRACES) {
+        if (elementType == ObjJ_FOR_LOOP_PARTS_IN_BRACES || elementType == ObjJ_FOR_LOOP_HEADER) {
             return Indent.getNoneIndent()
         }
 
@@ -213,7 +217,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if (parentType == ObjJ_DO_WHILE_STATEMENT && prevSiblingType == ObjJ_DO && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
-            return Indent.getNormalIndent()
+            return Indent.getNoneIndent()
         }
 
         if (parentType == ObjJ_RETURN_STATEMENT &&
