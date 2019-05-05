@@ -108,7 +108,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         if (objJSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION && type2 in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             val selectorSpacing = node2.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objJSettings)
             if (selectorSpacing != null) {
-                LOGGER.info("Creating method dec selector spacing: $selectorSpacing for selector ${node2.text}")
+                //LOGGER.info("Creating method dec selector spacing: $selectorSpacing for selector ${node2.text}")
                 return Spacing.createSpacing(selectorSpacing, selectorSpacing, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
             } else {
                 LOGGER.warning("Failed to get selector spacing.")
@@ -467,12 +467,12 @@ fun ObjJMethodDeclarationSelector.getSelectorAlignmentSpacing(objJSettings: ObjJ
 
     // If node is on same line, and not first selector, add a single space
     if (!this.node.isDirectlyPrecededByNewline()) {
-        LOGGER.info("Method Dec Selector: ${this.selector?.text ?: this.text} is not directly preceded by new line.")
+        //LOGGER.info("Method Dec Selector: ${this.selector?.text ?: this.text} is not directly preceded by new line.")
         return 1
     }
 
     return if (longestLengthToColon > 0 && thisSelectorLength <= longestLengthToColon) {
-        LOGGER.info("Method Declaration selector spacing = ${longestLengthToColon - thisSelectorLength}; longest length to colon: $longestLengthToColon")
+        //LOGGER.info("Method Declaration selector spacing = ${longestLengthToColon - thisSelectorLength}; longest length to colon: $longestLengthToColon")
         longestLengthToColon - thisSelectorLength
     } else {
         null
@@ -521,7 +521,7 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int {
     val indentSize = EditorUtil.tabSize(this).orElse(0)
     val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize) - indentSize
-    LOGGER.info("Distance to first colon: $distanceToFirstColon")
+    //LOGGER.info("Distance to first colon: $distanceToFirstColon")
     val maxLengthOfSelector = this.selectorList
             .filter { it?.node?.isDirectlyPrecededByNewline().orFalse() }
             .map { it.textLength + indentSize}
