@@ -25,6 +25,7 @@ object ObjJFunctionNameCompletionProvider {
         val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
         addAllGlobalJSFunctionNames(resultSet, (functionNamePattern.length - 5) > 8)
         addAllLocalFunctionNames(resultSet, element)
+        addIndexBasedCompletions(resultSet, element);
 
         if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
             globalJSClassNames.forEach {
