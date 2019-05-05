@@ -8,7 +8,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
@@ -48,7 +47,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
         val selectorBuilder = StringBuilder()
         for (subSelector in methodHeaderStub.selectorStrings) {
-            selectorBuilder.append(subSelector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
+            selectorBuilder.append(subSelector).append(SELECTOR_SYMBOL)
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
         }
 
@@ -76,11 +75,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJInstanceVariablesByNameIndex.instance.key, variableDeclarationStub.variableName)
 
         // Index Getter accessors
-        if (variableDeclarationStub.getter != null && !variableDeclarationStub.getter!!.isEmpty()) {
+        if (variableDeclarationStub.getter != null && variableDeclarationStub.getter!!.isNotEmpty()) {
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.getter!!)
         }
         // Index setters
-        if (variableDeclarationStub.setter != null && !variableDeclarationStub.setter!!.isEmpty()) {
+        if (variableDeclarationStub.setter != null && variableDeclarationStub.setter!!.isNotEmpty()) {
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.setter!!)
         }
     }
@@ -147,7 +146,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         indexSink.occurrence<ObjJSelectorLiteral, String>(ObjJSelectorInferredMethodIndex.instance.key, selectorLiteral.selectorString)
         val stringBuilder = StringBuilder()
         for (selector in selectorLiteral.selectorStrings) {
-            stringBuilder.append(selector).append(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
+            stringBuilder.append(selector).append(SELECTOR_SYMBOL)
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, stringBuilder.toString())
         }
     }
@@ -227,7 +226,9 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     companion object {
-        const val INDEX_VERSION = 5
+        private const val MAJOR_VERSION = 6
+        private const val MINOR_VERSION = 0
+        val INDEX_VERSION:Int get() { return (MAJOR_VERSION + MINOR_VERSION) }
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)
         }
