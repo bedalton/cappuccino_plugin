@@ -523,7 +523,7 @@ fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int
     val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize) - indentSize
     LOGGER.info("Distance to first colon: $distanceToFirstColon")
     val maxLengthOfSelector = this.selectorList
-            .filter { it.node?.isDirectlyPrecededByNewline().orFalse() }
+            .filter { it?.node?.isDirectlyPrecededByNewline().orFalse() }
             .map { it.textLength + indentSize}
             .max() ?: 0
     if (this.selectorList.size < 2) {
