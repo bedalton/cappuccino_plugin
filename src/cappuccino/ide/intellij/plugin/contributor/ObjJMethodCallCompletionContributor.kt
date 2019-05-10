@@ -129,7 +129,12 @@ object ObjJMethodCallCompletionContributor {
         }
         out.sortByDescending { it.priority }
         out.forEach {
-            ObjJSelectorLookupUtil.addSelectorLookupElement(result, it.selector, selectorIndex, it.priority)
+            ObjJSelectorLookupUtil.addSelectorLookupElement(
+                    resultSet = result,
+                    selector = it.selector,
+                    selectorIndex = selectorIndex,
+                    priority = it.priority,
+                    addSpaceAfterColon = true)
         }
     }
 
@@ -238,6 +243,7 @@ object ObjJMethodCallCompletionContributor {
                 tailText = "<$variableType>",
                 priority = priority,
                 addSuffix = false,
+                addSpaceAfterColon = true,
                 icon = ObjJIcons.VARIABLE_ICON)
     }
 
@@ -267,6 +273,7 @@ object ObjJMethodCallCompletionContributor {
                     tailText = "<" + instanceVariable.formalVariableType.text + ">",
                     priority = priority,
                     addSuffix = false,
+                    addSpaceAfterColon = true,
                     icon = ObjJIcons.ACCESSOR_ICON
             )
         }
@@ -280,6 +287,7 @@ object ObjJMethodCallCompletionContributor {
                     tailText = "<" + instanceVariable.formalVariableType.text + ">",
                     priority = priority,
                     addSuffix = false,
+                    addSpaceAfterColon = true,
                     icon = ObjJIcons.ACCESSOR_ICON)
         }
     }

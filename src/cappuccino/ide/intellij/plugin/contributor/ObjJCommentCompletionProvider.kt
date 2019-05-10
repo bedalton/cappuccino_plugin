@@ -30,7 +30,6 @@ object ObjJCommentCompletionProvider {
         val text = element.text?.substringBefore(ObjJBlanketCompletionProvider.CARET_INDICATOR, "") ?: return
         // Divide text by line, and add completion results for it
         for (commentLine in text.split("\\n".toRegex())) {
-            LOGGER.info("Checking comment line with text: $commentLine")
             addCommentCompletionsForLine(resultSet, element, text)
         }
     }
@@ -46,7 +45,6 @@ object ObjJCommentCompletionProvider {
         // Divide comment line into tokens
         val commentTokenParts:List<String> = splitCommentIntoTokenParts(text)
 
-        LOGGER.info("Split comment tokens into: $commentTokenParts")
         // Add completion results for a given statement type
         when {
             // @var completions
@@ -75,8 +73,6 @@ object ObjJCommentCompletionProvider {
      * Append @var completion items
      */
     private fun appendVarCompletions(resultSet:CompletionResultSet, element: PsiElement, commentTokenParts: List<String>) {
-
-        LOGGER.info("Appending @var completions")
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
@@ -86,14 +82,12 @@ object ObjJCommentCompletionProvider {
 
             // Check if is @var keyword
             if (!afterVar && part == "@var") {
-                LOGGER.info("Found @var at index: $currentIndex")
                 afterVar = true
                 indexAfter = currentIndex
                 continue
             }
             // Skip anything before @var
             if (!afterVar) {
-                LOGGER.info("Ignoring @var comment part: $part")
                 continue
             }
             // Find place within comment tokens after @var start
@@ -101,12 +95,10 @@ object ObjJCommentCompletionProvider {
             when (place) {
                 // Add class names if first token after @var
                 0,1 -> {
-                    LOGGER.info("Found @var class names")
                     ObjJBlanketCompletionProvider.getClassNameCompletions(resultSet, element)
                 }
                 // Add variable name completions if second token
                 2 -> {
-                    LOGGER.info("Found @var variable names")
                     val variableNames = ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
                         it.text
                     }
@@ -114,7 +106,6 @@ object ObjJCommentCompletionProvider {
                 }
                 // index too far out, quit
                 else -> {
-                    LOGGER.info("@Var token $part is out of token range. Expected<0-2>; Found Index: <$place>")
                     return
                 }
             }
@@ -125,7 +116,6 @@ object ObjJCommentCompletionProvider {
      * Add @ignore completion parameters
      */
     private fun getIgnoreCompletions(resultSet:CompletionResultSet, commentTokenParts:List<String>) {
-        LOGGER.info("Appending @ignore completions")
         var afterIgnoreKeyword = false
         var indexAfter = -1
         var currentIndex = 0
@@ -136,14 +126,12 @@ object ObjJCommentCompletionProvider {
 
             // Check if current token is @ignore keyword
             if (part == "@ignore") {
-                LOGGER.info("Found @ignore at index: $currentIndex")
                 afterIgnoreKeyword = true
                 indexAfter = currentIndex
                 continue
             }
             // If not after @ignore keyword, continue
             if (!afterIgnoreKeyword) {
-                LOGGER.info("Ignoring @ignore comment part: $part")
                 continue
             }
             // store if previous token was comma
@@ -155,7 +143,6 @@ object ObjJCommentCompletionProvider {
             val place = commentTokenParts.size - indexAfter
             when {
                 place <= 1 || precededByComma -> {
-                    LOGGER.info("Found @ignore keywords")
                     addCompletionElementsSimple(resultSet, ObjJSuppressInspectionFlags.values().map { it.flag })
                 }
                 else -> break@loop
@@ -170,8 +157,6 @@ object ObjJCommentCompletionProvider {
      * Adds default completions to result set
      */
     private fun addDefaults(resultSet:CompletionResultSet, commentTokenParts:List<String>) {
-
-        LOGGER.info("Adding default comment completions")
         // Add DO_NOT_RESOLVE completion if there is no other text
         if (commentTokenParts.isEmpty()) {
             addCompletionElementsSimple(resultSet, listOf(
@@ -180,7 +165,6 @@ object ObjJCommentCompletionProvider {
         }
         // Add @var and @ignore keywords to completion, if first character is @
         if (commentTokenParts.firstOrNull { it.startsWith("@")} != null) {
-            LOGGER.info("Adding default comment @keyword completions")
             resultSet.addElement(LookupElementBuilder.create("ignore").withPresentableText("@ignore").withInsertHandler { insertionContext: InsertionContext, _: LookupElement ->
                 insertionContext.document.insertString(insertionContext.selectionEndOffset, " ")
             })

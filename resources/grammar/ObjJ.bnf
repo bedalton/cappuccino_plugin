@@ -215,8 +215,7 @@ private sourceElement
 	| 	protocolDeclaration
 	| 	preprocessorStatement
 	| 	functionDeclaration
-	|	importFile
-    | 	importFramework
+	|	importBlock
 	|	globalVariableDeclaration eos?
 	|	expr eos?
     | 	bodyVariableAssignment eos?
@@ -229,8 +228,7 @@ private sourceElement
 	| 	global
 	| 	classDependencyStatement
 	|   comment
-	|	includeFile
-	|	includeFramework
+	|	includeBlock
 	| 	emptyStatement
 	|	fragment eos?
 	;
@@ -260,6 +258,15 @@ blockCommentBody
 	| BLOCK_COMMENT_LINE
 	;
 
+importBlock
+	::= importStatementElement+
+	;
+
+importStatementElement
+	::= importFile
+	|	importFramework
+	;
+
 importFile
 	::= '@import' stringLiteral
 	{
@@ -278,6 +285,16 @@ importFramework
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
 		methods=[getFrameworkName getFileName getImportAsUnifiedString]
 	}
+	;
+
+
+includeBlock
+	::= includeStatementElement+
+	;
+
+includeStatementElement
+	::= includeFile
+	|	includeFramework
 	;
 
 includeFile
@@ -329,10 +346,9 @@ private bodyStatement
 	| 	emptyStatement
 	{
 		implements = [
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods=[block="statementOrBlock"]
 	}
     ;
 
@@ -340,7 +356,7 @@ private preprocessorBodyStatement
 	::= <<inMode "inImplementation" >> methodDeclaration
     |	<<inMode "inProtocol" >> protocolScopedMethodBlock
     |	<<inMode "inProtocol" >> protocolHeader
-    |  	<<inMode "implementationInstanceVariables">> instanceVariableDeclaration eos?
+    |  	<<inMode "implementationInstanceVariables">> instanceVariableDeclaration
     |	<<notInMode "inProtocol">> <<notInMode "inImplementation">> sourceElement
     |	elseIfStatement
     |	elseStatement
@@ -371,7 +387,9 @@ statementOrBlock
 private singleBodyStatement
 	::= bodyStatement eos?
 	{
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"]
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
+		]
 	}
 	;
 
@@ -384,10 +402,12 @@ blockElement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[
 			getBlockList
 			getIterationStatementList
+			getCloseBrace
 		]
 	}
 	;
@@ -401,9 +421,11 @@ methodBlock
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[
 			getIterationStatements
+			getCloseBrace
 		]
 	}
 	;
@@ -481,7 +503,7 @@ variableDeclaration
 	;
 
 instanceVariableDeclaration
-	::= ('@outlet')? formalVariableType variableName accessor?
+	::= ('@outlet')? formalVariableType variableName accessor? eos
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub"
@@ -489,7 +511,6 @@ instanceVariableDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
 		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement getAccessorPropertyList]
 		pin=2
@@ -711,7 +732,10 @@ switchStatement
 	::= 'switch' '(' expr ')' '{' switchBody '}'
 	{
 		pin=1
-		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
+		]
 		methods=[getBlockList]
 	}
 	;
@@ -737,7 +761,7 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
-		methods= [block="statementOrBlock" getBlockList getIterationStatementList]
+		methods= [getBlockList getIterationStatementList]
 	}
 	;
 
@@ -1005,13 +1029,14 @@ instanceVariableList
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
 		methods=[createFoldingDescriptor]
 	}
 	;
 
 private instanceVariableListList
-	::= ( comment | preprocessorInstanceVariableListIfStatement | instanceVariableDeclaration eos? )+
+	::= ( comment | preprocessorInstanceVariableListIfStatement | instanceVariableDeclaration)+
 	{
 		recoverWhile=recover_instanceVariableList
 	}
@@ -1125,7 +1150,7 @@ private recover_preprocessorIfCondition
 	;
 
 private preprocessorInstanceVariableList
-	::= (comment|instanceVariableDeclaration eos?|LINE_TERMINATOR)+
+	::= (comment|instanceVariableDeclaration|LINE_TERMINATOR)+
 	{
 		recoverWhile=recover_preprocessorIfCondition
 	}
@@ -1325,6 +1350,10 @@ objectLiteral
 	{
 		pin(".*")=2
 	 	//recoverWhile=recoverExprSequence
+	 	implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
+	 	]
 	}
 	;
 
@@ -1336,7 +1365,7 @@ private objectLiteralPropertiesList
 	;
 
 private recover_objectLiteralPropertiesList
-	::= !'}'
+	::= !('}')
 	;
 
 propertyAssignment
@@ -1347,7 +1376,7 @@ propertyAssignment
 	}
 	;
 
-private propertyName
+propertyName
 	::= ID
 	|	stringLiteral
     | 	integer

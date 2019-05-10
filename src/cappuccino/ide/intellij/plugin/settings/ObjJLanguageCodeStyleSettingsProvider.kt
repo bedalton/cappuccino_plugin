@@ -11,53 +11,81 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
         return ObjJLanguage.instance
     }
 
-    override fun customizeSettings(consumer: CodeStyleSettingsCustomizable, settingsType: LanguageCodeStyleSettingsProvider.SettingsType) {
-        if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.SPACING_SETTINGS) {
-            consumer.showStandardOptions("SPACE_AROUND_ASSIGNMENT_OPERATORS")
-            consumer.renameStandardOption("SPACE_AROUND_ASSIGNMENT_OPERATORS", "Separator")
-        } else if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.BLANK_LINES_SETTINGS) {
+    override fun customizeSettings(consumer: CodeStyleSettingsCustomizable, settingsType: SettingsType) {
+        if (settingsType == SettingsType.SPACING_SETTINGS) {
+            consumer.showStandardOptions("SPACE_AFTER_COMMA")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_SELECTOR_AND_VARIABLE_TYPE", "Space Between Selector and Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_VARIABLE_TYPE_AND_NAME", "Space After Variable Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_RETURN_TYPE_AND_FIRST_SELECTOR", "Space After Return Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_METHOD_TYPE_AND_RETURN_TYPE", "Space Between Method Type and Return Type", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_SELECTORS_IN_METHOD_DECLARATION", "Align Method Declaration Selector Colons", "Method Declaration")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BETWEEN_SELECTOR_AND_VALUE_IN_METHOD_CALL", "Space Between Selector and Value", "Method Call")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_SELECTORS_IN_METHOD_CALL", "Align Method Call Selector Colons", "Method Call")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_FIRST_SELECTOR_IN_METHOD_CALL", "Align First Method Call Selector", "Method Call")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BEFORE_PAREN_STATEMENT", "Space Between control keyword and paren statement", "General")
+        } else if (settingsType == SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
-        } else if (settingsType == LanguageCodeStyleSettingsProvider.SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
+        } else if (settingsType == SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
             consumer.showStandardOptions("FORCE_BRACE_ON_NEW_LINE")
+            consumer.showStandardOptions("SPACE_BEFORE_LBRACE")
+        } else if (settingsType == SettingsType.INDENT_SETTINGS) {
+            consumer.showAllStandardOptions()
         }
     }
 
-    override fun getCodeSample(settingsType: LanguageCodeStyleSettingsProvider.SettingsType): String? {
+    override fun getCodeSample(settingsType: SettingsType): String? {
     return """
 @import <Foundation/Foundation.j>
+
 #include "SomeClass.j"
+
 
 /*
     A Block Comment
 */
-@implementation MyClass : <HasProtocol>
+@implementation MyClass : SuperClass <HasProtocol>
 {
     id _reference;
-    int _varInt;
-    CPString _string  @accessors(property=string);
-    CPColor _backgroundColor;
+int _varInt;
+CPString _string  @accessors(property=string);
+CPColor _backgroundColor;
 }
 
 -(void) setBackgroundColor:(CPColor)aColor
 {
     //A Line Comment
-    var i = 0;
+var i = 0;
 
-    i++
-    _backgroundColor = aColor;
+i++;
+_backgroundColor = aColor;
 }
 
--(CPString) colorHex
+-(void) setBackgroundColor:(CPColor)aColor
+forType:(DomType)clazz
+withFilter:(Function)type
 {
-    if (_backgroundColor)
-    {
-        return [_backgroundColor hexString];
-    }
-    else
-    {
-        return Nil
-    }
+    //A Line Comment
+var i = 0;
+i++;
+_backgroundColor = aColor;
 }
+
+-(CPString)colorHex{
+    if(_backgroundColor){
+    return [_backgroundColor hexString];
+}
+else{
+return Nil
+}
+}
+
+-(void)method2
+{
+    [self setBackgroundColor:_backgroundColor
+forType:[DomType anchor]
+withFilter: _domFilterFunction];
+}
+
 
 @end
 
@@ -71,8 +99,7 @@ var element = document.getElementById("tagName");
 
 element.innerHTML= @"21";
 
-var isValidName = function(aName)
-{
+var isValidName = function(aName){
     if (aName)
     {
         return YES;
@@ -83,15 +110,13 @@ var isValidName = function(aName)
     }
 }
 
-function sayHello(aName, var2)
-{
-    if (isValidName(aName, var2))
-    {
+function sayHello(aName, var2){
+    if (isValidName(aName, var2)){
         return [CPString stringWithFormat:globalGreeting, aName, var2];
     }
     return null;
 }
 
-        """
+""".trimIndent()
     }
 }

@@ -1,11 +1,13 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -23,6 +25,13 @@ object ObjJFunctionNameCompletionProvider {
         val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
         addAllGlobalJSFunctionNames(resultSet, (functionNamePattern.length - 5) > 8)
         addAllLocalFunctionNames(resultSet, element)
+        addIndexBasedCompletions(resultSet, element);
+
+        if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
+            globalJSClassNames.forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+            }
+        }
     }
 
     private fun addIndexBasedCompletions(resultSet: CompletionResultSet, element: PsiElement) {

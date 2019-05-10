@@ -6,21 +6,26 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
-import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.document
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.TokenType
 
-import java.util.ArrayList
+import java.util.logging.Logger
+
+
+internal val LOGGER:Logger by lazy {
+    Logger.getLogger("#ObjJTreeUtil")
+}
 
 
 fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> {
-    val out = ArrayList<PsiElement>()
+    val out:MutableList<PsiElement> = mutableListOf()
     if (this == null) {
         return out
     }
@@ -104,10 +109,10 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     return node
 }
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.treePrev ?: this?.treeParent?.treePrev ?: return null
+    var out: ASTNode? = this?.treePrev ?: getPrevInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
         out = if (out.treePrev == null) {
-            out.treeParent?.treePrev
+            getPrevInTreeParent(out)
         } else {
             out.treePrev
         }
@@ -117,6 +122,14 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
         //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
+}
+
+private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
+    var temp:ASTNode? = out?.treeParent ?: return null
+    while (temp != null && temp.treePrev == null && temp.treeParent != null) {
+        temp = temp.treeParent
+    }
+    return temp?.treePrev
 }
 
 
@@ -135,19 +148,26 @@ fun ASTNode.getNextNonEmptyNodeIgnoringComments(): ASTNode? {
     return node
 }
 fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
-    var out: ASTNode? = this?.treeNext ?: this?.treeParent?.treeNext ?: return null
+    var out: ASTNode? = this?.treeNext ?: getNextInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
         out = if (out.treeNext == null) {
-            out.treeParent?.treeNext
+            getNextInTreeParent(out)
         } else {
             out.treeNext
         }
         if (out == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
+}
+
+private fun getNextInTreeParent(out:ASTNode?): ASTNode? {
+    var temp:ASTNode? = out?.treeParent ?: return null
+    while (temp != null && temp.treeNext == null && temp.treeParent != null) {
+        temp = temp.treeParent
+    }
+    return temp?.treeNext
 }
 
 fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
@@ -171,6 +191,10 @@ fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
+fun PsiElement.distanceFromStartOfLine() : Int? {
+    val document = this.document?: return null
+    return distanceFromStartOfLine(document)
+}
 
 fun PsiElement.distanceFromStartOfLine(editor:Editor) : Int {
     return this.distanceFromStartOfLine(editor.document)
@@ -186,18 +210,14 @@ fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
 
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
-    var node:ASTNode? = this.treePrev
+    var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return false
     while (node != null) {
+        if (node.elementType == ObjJTypes.ObjJ_LINE_TERMINATOR)
+            return true
         if (node.elementType == TokenType.WHITE_SPACE) {
-            if (node.text.contains("\n")) return true
-            node = node.treePrev
-            continue
-        }
-        if (node.elementType == ObjJTypes.ObjJ_BLOCK_COMMENT) {
-            if (node.treePrev == null) {
+            if (node.text.contains("\n"))
                 return true
-            }
-            node = node.treePrev
+            node = node.treePrev ?: getPrevInTreeParent(node)
             continue
         }
         break
@@ -206,13 +226,13 @@ fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
 }
 
 fun ASTNode.getPrevSiblingOnTheSameLineSkipCommentsAndWhitespace(): ASTNode? {
-    var node: ASTNode? = this.treePrev
+    var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this)
     while (node != null) {
         return if (node.elementType == TokenType.WHITE_SPACE || ObjJTokenSets.COMMENTS.contains(node.elementType)) {
             if (node.text.contains("\n")) {
                 null
             } else {
-                node = node.treePrev
+                node = if (node.treePrev != null) node.treePrev else getPrevInTreeParent(node)
                 continue
             }
         } else node
@@ -254,7 +274,7 @@ fun <PsiT : PsiElement> PsiElement?.siblingOfTypeOccursAtLeastOnceBefore(sibling
     return false
 }
 
-fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<com.intellij.psi.PsiElement>?, stubClass: Class<StubT>): List<StubT> {
+fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<PsiElement>?, stubClass: Class<StubT>): List<StubT> {
     return if (parent == null) {
         emptyList()
     } else filterStubChildren(parent.childrenStubs, stubClass)
@@ -268,5 +288,14 @@ fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?,
 
 
 internal fun shouldSkipNode(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean {
-    return out != null && ((ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR) || out.elementType === com.intellij.psi.TokenType.WHITE_SPACE || out.psi is PsiErrorElement)
+    if (out == null) {
+        return false
+    }
+    return if (ignoreLineTerminator && out.elementType === ObjJTypes.ObjJ_LINE_TERMINATOR)
+        true
+    else if (!ignoreLineTerminator && out.text.contains("\n")) {
+        false
+    } else {
+        out.elementType === TokenType.WHITE_SPACE || out.psi is PsiErrorElement
+    }
 }

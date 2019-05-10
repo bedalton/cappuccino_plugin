@@ -13,7 +13,7 @@ object ObjJStubTypes {
     val IMPORT_FRAMEWORK = ObjJImportFrameworkStubType("ObjJ_IMPORT_FRAMEWORK")
     val INCLUDE_FILE = ObjJIncludeFileStubType("OBjJ_INCLUDE_FILE")
     val INCLUDE_FRAMEWORK = ObjJIncludeFrameworkStubType("ObjJ_INCLUDE_FRAMEWORK")
-    val INSTANCE_VAR = ObjJInstanceVariableDeclarationStubType("ObjJ_INSTANCE_VAR")
+    val INSTANCE_VAR = ObjJInstanceVariableDeclarationStubType("ObjJ_INSTANCE_VARIABLE_DECLARATION")
     val METHOD_CALL = ObjJMethodCallStubType("ObjJ_METHOD_CALL")
     val METHOD_HEADER = ObjJMethodHeaderStubType("ObjJ_METHOD_HEADER")
     val PREPROCESSOR_FUNCTION = ObjJPreprocessorDefineFunctionStubType("ObjJ_PREPROCESSOR_DEFINE_FUNCTION")

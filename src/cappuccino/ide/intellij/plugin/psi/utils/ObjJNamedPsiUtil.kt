@@ -20,14 +20,12 @@ object ObjJNamedPsiUtil {
 
     fun setName(variableName: ObjJVariableName, newName: String): PsiElement {
         val newElement = ObjJElementFactory.createVariableName(variableName.project, newName)
-        variableName.replace(newElement)
-        return newElement
+        return variableName.replace(newElement)
     }
 
     fun setName(instanceVariableDeclaration: ObjJInstanceVariableDeclaration, newName: String): PsiElement {
         val newElement = ObjJElementFactory.createVariableName(instanceVariableDeclaration.project, newName)
-        instanceVariableDeclaration.variableName?.replace(newElement)
-        return instanceVariableDeclaration
+        return instanceVariableDeclaration.variableName?.replace(newElement)!!
     }
 
     fun getName(className: ObjJClassName): String {
@@ -39,7 +37,6 @@ object ObjJNamedPsiUtil {
             return className
         }
         val newElement: ObjJClassName = ObjJElementFactory.createClassName(className.project, newClassName) ?: return className
-        className.replace(newElement)
-        return newElement
+        return className.replace(newElement)
     }
 }

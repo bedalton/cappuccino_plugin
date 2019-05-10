@@ -5,7 +5,6 @@ package cappuccino.ide.intellij.plugin.formatting
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.psi.ObjJArguments
 import cappuccino.ide.intellij.plugin.psi.ObjJIfStatement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
@@ -50,12 +49,13 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         }
 
     init {
-        @Suppress("DEPRECATION") val objjStyleSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(ObjJCodeStyleSettings::class.java)
-        myIndentProcessor = ObjJIndentProcessor(myContext.objJSettings)
-        mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjStyleSettings)
+        @Suppress("DEPRECATION")
+        val objjSettings = CodeStyleSettingsManager.getSettings(node.psi.project).getCustomSettings(ObjJCodeStyleSettings::class.java)
+        myIndentProcessor = ObjJIndentProcessor(myContext.objJSettings, objjSettings)
+        mySpacingProcessor = ObjJSpacingProcessor(node, myContext.objJSettings, objjSettings)
         myWrappingProcessor = ObjJWrappingProcessor(node, myContext.objJSettings)
-        myAlignmentProcessor = ObjJAlignmentProcessor(node, myContext.objJSettings)
-        myIndent = myIndentProcessor.getChildIndent(myNode, myContext.mode)
+        myAlignmentProcessor = ObjJAlignmentProcessor(node, myContext.objJSettings, objjSettings)
+        myIndent = myIndentProcessor.getChildIndent(myNode)
     }
 
     override fun getIndent(): Indent? {
@@ -96,10 +96,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
     }
 
     private fun createChildAlignment(child: ASTNode): Alignment? {
-        val type = child.elementType
-        return if (type !== ObjJ_OPEN_PAREN && !ObjJTokenSets.BLOCKS.contains(type)) {
-            myAlignmentProcessor.createChildAlignment()
-        } else null
+        return myAlignmentProcessor.createChildAlignment(child)
     }
 
     override fun isIncomplete(): Boolean {
@@ -112,24 +109,84 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
 
     override fun getChildAttributes(newIndex: Int): ChildAttributes {
         val elementType = myNode.elementType
+        val parentType = myNode.treeParent?.elementType
         val previousBlock = if (newIndex == 0) null else subObjJFormattedBlocks!![newIndex - 1]
         val previousType = previousBlock?.node?.elementType
+
+        //return ChildAttributes(myIndentProcessor.getChildIndent(myNode), null)
+
+        //LOGGER.info("Child Attribute for: $elementType in $parentType")
 
         if (previousType === ObjJ_OPEN_BRACE || previousType === ObjJ_OPEN_BRACKET) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
-
-        if (node.treeParent?.elementType == ObjJStubTypes.FILE) {
-            return ChildAttributes(Indent.getNoneIndent(), null)
+        if (previousType == TokenType.ERROR_ELEMENT) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
         }
 
-        if (myNode.treeParent?.psi is ObjJClassDeclarationElement<*>) {
-            return ChildAttributes(Indent.getNoneIndent(), null)
-        }
-
-        if (myNode.treeParent?.elementType == ObjJ_INSTANCE_VARIABLE_LIST) {
+        if (previousType == ObjJ_FOR_LOOP_HEADER || previousType == ObjJ_CONDITION_EXPRESSION) {
             return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType == ObjJStubTypes.FILE) {
+            return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
+        if (previousType == ObjJ_OPEN_BRACE) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType == ObjJ_INSTANCE_VARIABLE_DECLARATION) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType == ObjJ_QUALIFIED_REFERENCE || parentType == ObjJ_QUALIFIED_REFERENCE || previousType == ObjJ_BODY_VARIABLE_ASSIGNMENT) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+
+        if (parentType == ObjJ_INHERITED_PROTOCOL_LIST || elementType == ObjJ_INHERITED_PROTOCOL_LIST) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType == ObjJTokenSets.CLASS_DECLARATIONS) {
+            if (previousType == ObjJ_COMMA || previousType == ObjJ_CLASS_NAME || previousType == ObjJ_LESS_THAN) {
+                return ChildAttributes(Indent.getNormalIndent(), null)
+            }
+            return ChildAttributes(Indent.getNoneIndent(), null)
+        }
+
+        if (parentType == ObjJ_METHOD_HEADER) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType == ObjJ_INSTANCE_VARIABLE_LIST) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType == ObjJ_INSTANCE_VARIABLE_DECLARATION) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+        if (parentType == ObjJ_ARGUMENTS ||
+                parentType == ObjJ_ACCESSOR || elementType == ObjJ_ACCESSOR ||
+                elementType == ObjJ_ACCESSOR_PROPERTY || parentType == ObjJ_ACCESSOR_PROPERTY) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+        if (parentType == ObjJ_QUALIFIED_REFERENCE || parentType == ObjJ_QUALIFIED_REFERENCE) {
+            if (myNode.treePrev != null) {
+                return ChildAttributes(Indent.getContinuationIndent(), null)
+            }
+        }
+
+        if (parentType == ObjJ_RIGHT_EXPR) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
         }
 
         if (elementType == ObjJ_METHOD_CALL) {
@@ -145,6 +202,20 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         }
 
         if (previousType === ObjJ_COLON && (elementType === ObjJ_CASE_CLAUSE || elementType === ObjJ_DEFAULT_CLAUSE)) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (parentType == ObjJ_METHOD_CALL) {
+            return if (elementType == ObjJ_COLON) {
+                ChildAttributes(Indent.getContinuationIndent(), null)
+            } else if (elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
+                ChildAttributes(Indent.getNoneIndent(), null)
+            } else {
+                ChildAttributes(Indent.getNormalIndent(), null)
+            }
+        }
+
+        if (previousType == ObjJ_CALL_TARGET || previousType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             return ChildAttributes(Indent.getNormalIndent(), null)
         }
 
@@ -168,15 +239,46 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
             return ChildAttributes(Indent.getNoneIndent(), null)
         }
 
+        if (previousType == ObjJ_OPEN_BRACE || previousType == ObjJ_OPEN_PAREN || previousType == ObjJ_OPEN_BRACKET) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (elementType == ObjJ_ACCESSOR_PROPERTY) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+        if (elementType == ObjJ_ACCESSOR_PROPERTY_TYPE) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+        if (elementType == ObjJ_EQUALS) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
+        if (elementType == ObjJ_IN && parentType == ObjJ_IN_EXPR) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+
+        if (previousType == ObjJ_COMMA) {
+            return ChildAttributes(previousBlock.indent, previousBlock.alignment)
+        }
+
+
         if (!previousBlock.isIncomplete && newIndex < subObjJFormattedBlocks!!.size && previousType !== TokenType.ERROR_ELEMENT) {
             return ChildAttributes(previousBlock.indent, previousBlock.alignment)
         }
+
+        if (previousType in ObjJTokenSets.ALL_OPERATORS) {
+            return ChildAttributes(Indent.getContinuationIndent(), null)
+        }
+
         if (myParent is ObjJFormattedBlock && (myParent as ObjJFormattedBlock).isIncomplete) {
             val child = myNode.firstChildNode
             if (child == null || !((child.elementType === ObjJ_DOUBLE_QUO || child.elementType === ObjJ_SINGLE_QUO) && child.textLength == 3)) {
                 return ChildAttributes(Indent.getContinuationIndent(), null)
             }
         }
+
         return if (myParent == null && isIncomplete) {
             ChildAttributes(Indent.getContinuationIndent(), null)
         } else ChildAttributes(previousBlock.indent, previousBlock.alignment)
