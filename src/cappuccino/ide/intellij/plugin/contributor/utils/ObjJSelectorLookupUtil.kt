@@ -28,23 +28,30 @@ object ObjJSelectorLookupUtil {
     /**
      * Adds a selector lookup element to the completion contributor result set.
      */
-    fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double) {
+    fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, selectorIndex: Int, priority: Double, addSpaceAfterColon: Boolean) {
         if (addAccessors(resultSet, selector, selectorIndex, priority)) {
             return
         }
-        addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
+        addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority, addSpaceAfterColon = addSpaceAfterColon)
 
     }
 
     /**
      * Adds a selector lookup element while specifying if it is a getter or not
      */
-    private fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int, priority: Double) {
+    private fun addSelectorLookupElement(resultSet: CompletionResultSet, selector: ObjJSelector, isGetter:Boolean, selectorIndex: Int, priority: Double, addSpaceAfterColon: Boolean) {
         val tailText = getSelectorLookupElementTailText(selector, isGetter, selectorIndex)
         val addColonSuffix = !isGetter && (tailText != null || selectorIndex > 0)
         val containingFileOrClassName = getContainingClassOrFileName(selector)
-        addSelectorLookupElement(resultSet, selector.text, containingFileOrClassName, tailText
-                ?: "", priority, addColonSuffix, ObjJPsiImplUtil.getIcon(selector))
+        addSelectorLookupElement(
+                resultSet = resultSet,
+                suggestedText = selector.text,
+                className = containingFileOrClassName,
+                tailText = tailText ?: "",
+                priority = priority,
+                addSuffix = addColonSuffix,
+                addSpaceAfterColon = addSpaceAfterColon,
+                icon = ObjJPsiImplUtil.getIcon(selector))
     }
 
     /**
@@ -54,11 +61,11 @@ object ObjJSelectorLookupUtil {
         if (selectorIndex != 0) return false
         val isGetter = isGetterAccessor(selector)
         if (isGetter) {
-            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = true, selectorIndex = selectorIndex, priority = priority)
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = true, selectorIndex = selectorIndex, priority = priority, addSpaceAfterColon = false)
         }
         val isSetter = isSetterAccessor(selector)
         if (isSetter) {
-            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority)
+            addSelectorLookupElement(resultSet = resultSet, selector = selector, isGetter = false, selectorIndex = selectorIndex, priority = priority, addSpaceAfterColon = false)
         }
         return isGetter || isSetter
     }
@@ -152,7 +159,7 @@ object ObjJSelectorLookupUtil {
      * @param icon icon to use in completion list
      */
     @JvmOverloads
-    fun addSelectorLookupElement(resultSet: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, icon: Icon? = null) {
+    fun addSelectorLookupElement(resultSet: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, addSpaceAfterColon: Boolean, icon: Icon? = null) {
         val selectorLookupElement = when (priority) {
             TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY, TARGETTED_METHOD_SUGGESTION_PRIORITY ->
                 createSelectorLookupElement(
@@ -160,12 +167,14 @@ object ObjJSelectorLookupUtil {
                         className = className,
                         tailText = tailText,
                         useInsertHandler = addSuffix,
+                        addSpaceAfterColon = addSpaceAfterColon,
                         icon = icon).bold()
             else -> createSelectorLookupElement(
                     suggestedText = suggestedText,
                     className = className,
                     tailText = tailText,
                     useInsertHandler = addSuffix,
+                    addSpaceAfterColon = addSpaceAfterColon,
                     icon = icon)
         }
         val prioritizedLookupElement = PrioritizedLookupElement.withPriority(selectorLookupElement, priority)
@@ -175,7 +184,7 @@ object ObjJSelectorLookupUtil {
     /**
      * Creates a lookup element builder base for a selector
      */
-    private fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, icon: Icon?): LookupElementBuilder {
+    private fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, addSpaceAfterColon:Boolean, icon: Icon?): LookupElementBuilder {
         var elementBuilder = LookupElementBuilder
                 .create(suggestedText)
         if (tailText != null) {
@@ -188,7 +197,7 @@ object ObjJSelectorLookupUtil {
             elementBuilder = elementBuilder.withIcon(icon)
         }
         if (useInsertHandler) {
-            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler)
+            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler(addSpaceAfterColon))
         }
         return elementBuilder
     }

@@ -5,15 +5,16 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
 import java.util.ArrayList
-import kotlin.math.min
 
 object ObjJFunctionDeclarationPsiUtil {
 
@@ -36,7 +37,7 @@ object ObjJFunctionDeclarationPsiUtil {
     fun setName(
             functionDeclaration: ObjJFunctionDeclaration,
             name: String): ObjJFunctionName {
-        val oldFunctionName = functionDeclaration.functionName
+        val oldFunctionName: ObjJFunctionName? = functionDeclaration.functionName
         val newFunctionName = ObjJElementFactory.createFunctionName(functionDeclaration.project, name)
         Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
         if (oldFunctionName == null) {
@@ -64,16 +65,14 @@ object ObjJFunctionDeclarationPsiUtil {
             functionLiteral: ObjJFunctionLiteral,
             name: String): ObjJFunctionLiteral {
         //Get existing name node.
-        val oldFunctionName = functionLiteral.functionNameNode
+        val oldFunctionName = functionLiteral.functionNameNode ?: return functionLiteral
+
         //Create new name node
         val newFunctionName = ObjJElementFactory.createFunctionName(functionLiteral.project, name)
         Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(newFunctionName != null)
 
-        //Name node is not part of function literal, so name node may not be present.
-        //If name node is not present, must exit early.
-        Logger.getInstance(ObjJPsiImplUtil::class.java).assertTrue(oldFunctionName != null)
         //Replace node
-        oldFunctionName!!.parent.node.replaceChild(oldFunctionName.node, newFunctionName!!.node)
+        oldFunctionName.parent.node.replaceChild(oldFunctionName.node, newFunctionName!!.node)
         return functionLiteral
     }
 
@@ -158,7 +157,7 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         for (reference in variableDeclaration.qualifiedReferenceList) {
             val name = ObjJPsiImplUtil.getPartsAsString(reference)
-            if (!name.isEmpty()) {
+            if (name.isNotEmpty()) {
                 out.add(name)
             }
         }
@@ -171,7 +170,7 @@ object ObjJFunctionDeclarationPsiUtil {
         if (functionDeclaration.stub != null) {
             return functionDeclaration.stub.functionName
         }
-        return if (functionDeclaration.functionName != null) functionDeclaration.functionName!!.text else ""
+        return functionDeclaration.functionName.text
     }
 
     /**
@@ -250,11 +249,12 @@ object ObjJFunctionDeclarationPsiUtil {
                 return stubScope
             }
         }
-        if (functionDeclaration.parent is ObjJFile) {
-            return ObjJFunctionScope.GLOBAL_SCOPE;
+
+        if (functionDeclaration.parent is ObjJFile || functionDeclaration.parent is PsiFile) {
+            return ObjJFunctionScope.GLOBAL_SCOPE
         }
 
-        if (functionDeclaration.parent is ObjJBlockElement) {
+        if (functionDeclaration.parent is ObjJBlock) {
             return ObjJFunctionScope.PRIVATE
         }
 

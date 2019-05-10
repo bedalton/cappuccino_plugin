@@ -2,14 +2,19 @@
 
 package cappuccino.ide.intellij.plugin.utils
 
+import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 
 object EditorUtil {
 
@@ -85,4 +90,44 @@ object EditorUtil {
         editor.caretModel.moveToOffset(editor.caretModel.offset + offset)
     }
 
+    fun document(element: PsiElement) : Document? {
+        val containingFile = element.containingFile ?: return null
+        val psiDocumentManager = PsiDocumentManager.getInstance(element.project)
+        return psiDocumentManager.getDocument(containingFile)
+    }
+
+    fun editor(element:PsiElement) : Editor?  {
+        val document = document(element) ?: return null
+        return EditorFactory.getInstance().getEditors(document, element.project)[0]
+    }
+
+    fun tabSize(psiElement: PsiElement) : Int? {
+        val editor = psiElement.editor ?: return null
+        return tabSize(editor)
+    }
+
+    fun tabSize(editor:Editor) : Int? {
+        var tabSize: Int? = null
+        val commonCodeStyleSettings = CommonCodeStyleSettings(ObjJLanguage.instance)
+        val indentOptions = commonCodeStyleSettings.indentOptions
+
+        if (indentOptions != null) {
+            tabSize = indentOptions.TAB_SIZE
+        }
+
+        if (tabSize == null || tabSize == 0) {
+            tabSize = editor.settings.getTabSize(editor.project)
+        }
+        return tabSize
+    }
+
 }
+
+val PsiElement.document : Document? get() {
+    return EditorUtil.document(this)
+}
+
+val PsiElement.editor : Editor? get() {
+    return EditorUtil.editor(this)
+}
+

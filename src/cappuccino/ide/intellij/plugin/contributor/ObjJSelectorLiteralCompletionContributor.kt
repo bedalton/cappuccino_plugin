@@ -2,21 +2,17 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.CARET_INDICATOR
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.GENERIC_METHOD_SUGGESTION_PRIORITY
-import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.references.getClassConstraints
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -26,9 +22,9 @@ import icons.ObjJIcons
 import java.util.logging.Level
 import java.util.logging.Logger
 
-object ObjJMethodCallCompletionContributor {
+object ObjJSelectorLiteralCompletionContributor {
 
-    private val LOGGER = Logger.getLogger(ObjJMethodCallCompletionContributor::class.java.name)
+    private val LOGGER = Logger.getLogger(ObjJSelectorLiteralCompletionContributor::class.java.name)
 
     /**
      * Method to manage adding selector lookup elements to result set
@@ -42,49 +38,79 @@ object ObjJMethodCallCompletionContributor {
             LOGGER.log(Level.SEVERE, "Cannot add selector lookup elements. Selector element is null")
             return
         }
-        val methodCall = psiElement.getParentOfType(ObjJMethodCall::class.java)
-                ?: //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method call is null.");
+        val selectorLiteral = psiElement.getSelfOrParentOfType(ObjJSelectorLiteral::class.java)
+                ?: //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method selector is null.");
                 return
-        addMethodCallCompletions(result, psiElement, methodCall)
+        addSelectorLiteralCompletions(result, psiElement, selectorLiteral)
     }
 
-    private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?) {
+    private fun addSelectorLiteralCompletions(result: CompletionResultSet, psiElement: PsiElement, parentSelectorLiteral: ObjJSelectorLiteral?) {
 
-        //LOGGER.log(Level.INFO, "Add method call completions");
-        if (elementsParentMethodCall == null) {
-            LOGGER.log(Level.SEVERE, "Cannot add method call completions. Method call parent element is null")
+        //LOGGER.log(Level.INFO, "Add method literal completions");
+        if (parentSelectorLiteral == null) {
+            LOGGER.log(Level.SEVERE, "Cannot add selector literal completions. Selector literal parent element is null")
             return
         }
         if (DumbService.isDumb(psiElement.project)) {
             return
         }
 
-        val selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
+        val selectors: List<ObjJSelector> = getSelectorsFromIncompleteSelectorLiteral(psiElement, parentSelectorLiteral)
         val selectorString: String = getSelectorStringFromSelectorList(selectors)
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
-        val selector: ObjJSelector? = if (selectorIndex >= 0 && selectorIndex < selectors.size) selectors[selectorIndex] else null
 
-        //Determine target scope
-        val scope: TargetScope = getTargetScope(elementsParentMethodCall)
-        //LOGGER.log(Level.INFO, String.format("Call target: <%s> has scope of <%s> with selector: <%s>", elementsParentMethodCall.callTargetText, scope.toString(), selectorString))
-        //Determine possible containing class names
-        val possibleContainingClassNames: List<String> = when {
-            scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
-            selector != null -> getClassConstraints(selector)
-            else -> emptyList()
-        }
-        //Add actual method call completions
-        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex)
+        //Add actual selector literal completions
+        addSelectorLiteralLookupElements(psiElement.project, psiElement.containingFile?.name, result, selectorString, selectorIndex)
 
-        val hasLocalScope: Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
         // Accessors methods only apply to single element selectors
-        if (hasLocalScope && selectors.size == 1) {
-            addAccessorLookupElements(result, psiElement.project, possibleContainingClassNames, selectorString)
+        if (selectors.size == 1) {
+            addAccessorLookupElements(result, psiElement.project, selectorString)
         }
     }
 
-    private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int) {
+    /**
+     * Gets selectors from incomplete selector literal
+     * Used while building completion results
+     * @param psiElement currently editing psi element
+     * @return array of selectors in this editing psi element
+     */
+    private fun getSelectorsFromIncompleteSelectorLiteral(psiElement: PsiElement, selectorLiteralParent: ObjJSelectorLiteral?): List<ObjJSelector> {
+        val project = psiElement.project
+
+        //Check to ensure this element is part of a method
+        if (selectorLiteralParent == null) {
+            //LOGGER.log(Level.INFO, "PsiElement is not a selector in a selector element");
+            return listOf()
+        }
+
+        // If element is selector or direct parent is a selector,
+        // then element is well formed, and can return the basic selector list
+        // which will hold selectors up to self, which is what is needed for completion
+        val selectors = selectorLiteralParent.selectorList as MutableList
+        if (psiElement is ObjJSelector || psiElement.parent is ObjJSelector) {
+            return selectors
+        }
+
+        // If psi parent is a qualified method call,
+        // find it's index in selector array for autocompletion
+        val selectorElement = psiElement.thisOrParentAs(ObjJSelector::class.java)
+        var selectorIndex = selectorElement?.selectorIndex ?: -1
+
+        // Find orphaned elements in method call
+        // and create selector elements for later use.
+        val orphanedSelectors = psiElement.parent.getChildrenOfType(ObjJTypes.ObjJ_ID)
+        for (subSelector in orphanedSelectors) {
+            val selector = ObjJElementFactory.createSelector(project, subSelector.text) ?: return selectors
+            selectors.add(++selectorIndex, selector)
+        }
+        //Finally add the current psi element as a selector
+        val selector = ObjJElementFactory.createSelector(project, psiElement.text) ?: return selectors
+        selectors.add(selector)
+        return selectors
+    }
+
+    private fun addSelectorLiteralLookupElements(project: Project, fileName: String?, result: CompletionResultSet, selectorString: String, selectorIndex: Int) {
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
                 .filter {
@@ -99,29 +125,16 @@ object ObjJMethodCallCompletionContributor {
         if (methodHeaders.isEmpty()) {
             return
         }
-        val filterIfStrict = ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown
         var out = mutableListOf<SelectorCompletionPriorityTupple>()
         val filteredOut = mutableListOf<SelectorCompletionPriorityTupple>()
         //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
         for (methodHeader: ObjJMethodHeaderDeclaration<*> in methodHeaders) {
             ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, String.format("Scope for target is <%s>; Method scope is <%s>;",targetScope.toString(),if(methodHeader.isStatic)"static" else "instance"))
-            //Determine if method call matches scope, continue loop if it does not
-            if (!inScope(targetScope, methodHeader)) {
-                continue
-            }
+
             //Get the selector at index, or continue loop
             val selector: ObjJSelector = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
             //Determine the priority
-            val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
-
-
-            if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
-                if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames)) {
-                    filteredOut.add(SelectorCompletionPriorityTupple(selector, GENERIC_METHOD_SUGGESTION_PRIORITY))
-                    continue
-                }
-            }//Add the lookup element
+            val priority: Double = GENERIC_METHOD_SUGGESTION_PRIORITY
             out.add(SelectorCompletionPriorityTupple(selector, priority))
         }
         if (out.isEmpty()) {
@@ -134,15 +147,8 @@ object ObjJMethodCallCompletionContributor {
                     selector = it.selector,
                     selectorIndex = selectorIndex,
                     priority = it.priority,
-                    addSpaceAfterColon = true)
-        }
-    }
-
-    private fun inScope(scope: TargetScope, methodHeader: ObjJMethodHeaderDeclaration<*>): Boolean {
-        return when (scope) {
-            TargetScope.STATIC -> methodHeader.isStatic
-            TargetScope.INSTANCE -> !methodHeader.isStatic
-            else -> true
+                    addSpaceAfterColon = false
+                    )
         }
     }
 
@@ -158,10 +164,9 @@ object ObjJMethodCallCompletionContributor {
      * adds instance variables as lookup elements to result set
      * @param result completion result set
      * @param project containing project
-     * @param possibleContainingClassNames possible class names to determine completion priority
      * @param selectorStringIn selector string to match
      */
-    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, possibleContainingClassNames: List<String>, selectorStringIn: String?) {
+    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, selectorStringIn: String?) {
         // Determines if string contains caret indicator
         // If it does, it changes the index fetch method
         val hasCaretIndicator: Boolean = selectorStringIn != null && selectorStringIn.indexOf(CARET_INDICATOR) > -1
@@ -171,13 +176,13 @@ object ObjJMethodCallCompletionContributor {
         val declarations: List<ObjJInstanceVariableDeclaration> = getInstanceVariableDeclarationsForSelector(selectorString, hasCaretIndicator, project)
         for (instanceVariableDeclaration in declarations) {
             ProgressIndicatorProvider.checkCanceled()
-            addInstanceVariableDeclarationCompletion(result, possibleContainingClassNames, instanceVariableDeclaration)
+            addInstanceVariableDeclarationCompletion(result, instanceVariableDeclaration)
         }
         //Add Accessors
         val accessors: List<ObjJInstanceVariableDeclaration> = getAccessorsForSelector(selectorString, hasCaretIndicator, project)
         for (instanceVariable in accessors) {
             ProgressIndicatorProvider.checkCanceled()
-            addInstanceVariableAccessorMethods(result, possibleContainingClassNames, instanceVariable)
+            addInstanceVariableAccessorMethods(result, instanceVariable)
         }
     }
 
@@ -220,19 +225,13 @@ object ObjJMethodCallCompletionContributor {
      * These can be called simply by their name without alteration
      * Variables can still have accessors and be accessed by name
      */
-    private fun addInstanceVariableDeclarationCompletion(result: CompletionResultSet, possibleContainingClassNames: List<String>, instanceVariableDeclaration: ObjJInstanceVariableDeclaration) {
+    private fun addInstanceVariableDeclarationCompletion(result: CompletionResultSet, instanceVariableDeclaration: ObjJInstanceVariableDeclaration) {
         if (instanceVariableDeclaration.variableName == null) {
             return
         }
         val containingClass = instanceVariableDeclaration.containingClassName
-        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && containingClass !in possibleContainingClassNames) {
-            return
-        }
         //ProgressIndicatorProvider.checkCanceled();
-        val priority = if (possibleContainingClassNames.contains(containingClass))
-            ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY
-        else
-            ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY
+        val priority = ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY
 
         val variableName = instanceVariableDeclaration.variableName?.name ?: return
         val variableType = instanceVariableDeclaration.formalVariableType.text
@@ -243,8 +242,8 @@ object ObjJMethodCallCompletionContributor {
                 tailText = "<$variableType>",
                 priority = priority,
                 addSuffix = false,
-                addSpaceAfterColon = true,
-                icon = ObjJIcons.VARIABLE_ICON)
+                icon = ObjJIcons.VARIABLE_ICON,
+                addSpaceAfterColon = false)
     }
 
 
@@ -252,16 +251,12 @@ object ObjJMethodCallCompletionContributor {
      * Adds an instance variable accessor method
      * Instance variable can have both getters and setters, and this covers both
      */
-    private fun addInstanceVariableAccessorMethods(result: CompletionResultSet, possibleContainingClassNames: List<String>, instanceVariable: ObjJInstanceVariableDeclaration) {
+    private fun addInstanceVariableAccessorMethods(result: CompletionResultSet, instanceVariable: ObjJInstanceVariableDeclaration) {
         //Get className
         val className = instanceVariable.containingClassName
 
-        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames && ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown) {
-            return
-        }
-
         //Find completion contribution list priority
-        val priority: Double = getPriority(possibleContainingClassNames, className, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
+        val priority: Double = GENERIC_METHOD_SUGGESTION_PRIORITY
 
         //Add Getter
         val getter = instanceVariable.getter
@@ -273,8 +268,8 @@ object ObjJMethodCallCompletionContributor {
                     tailText = "<" + instanceVariable.formalVariableType.text + ">",
                     priority = priority,
                     addSuffix = false,
-                    addSpaceAfterColon = true,
-                    icon = ObjJIcons.ACCESSOR_ICON
+                    icon = ObjJIcons.ACCESSOR_ICON,
+                    addSpaceAfterColon = false
             )
         }
         //Add Setter
@@ -287,19 +282,8 @@ object ObjJMethodCallCompletionContributor {
                     tailText = "<" + instanceVariable.formalVariableType.text + ">",
                     priority = priority,
                     addSuffix = false,
-                    addSpaceAfterColon = true,
-                    icon = ObjJIcons.ACCESSOR_ICON)
-        }
-    }
-
-
-    /**
-     * Gets the scope for the suggested methods we should have
-     */
-    private fun getTargetScope(methodCall: ObjJMethodCall): TargetScope {
-        return when {
-            ObjJImplementationDeclarationsIndex.instance[methodCall.callTargetText, methodCall.project].isNotEmpty() -> TargetScope.STATIC
-            else -> TargetScope.ANY
+                    icon = ObjJIcons.ACCESSOR_ICON,
+                    addSpaceAfterColon = false)
         }
     }
 
@@ -313,20 +297,6 @@ object ObjJMethodCallCompletionContributor {
             }
         }
         return selectors.size - 1
-    }
-
-    private fun getPriority(possibleContainingClassNames: List<String>, className: String, priorityIfTarget: Double, priorityIfNotTarget: Double): Double {
-        return if (possibleContainingClassNames.contains(className)) {
-            priorityIfTarget
-        } else {
-            priorityIfNotTarget
-        }
-    }
-
-    private enum class TargetScope {
-        STATIC,
-        INSTANCE,
-        ANY;
     }
 
     internal data class SelectorCompletionPriorityTupple (val selector:ObjJSelector, val priority:Double)

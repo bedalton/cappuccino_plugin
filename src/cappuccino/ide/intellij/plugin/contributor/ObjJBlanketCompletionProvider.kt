@@ -67,7 +67,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             "class",
             "implementation",
             "protocol",
-            "end"
+            "end",
+            "selector",
+            "global"
     )
 
 
@@ -84,6 +86,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.getPreviousNonEmptySibling(false)?.elementType in ObjJTokenSets.IMPORT_BLOCKS -> {
+                resultSet.stopHere()
+                return
+            }
             // Comment
             element.elementType in ObjJTokenSets.COMMENTS || element is PsiCommentImpl ->
                 ObjJCommentCompletionProvider.addCommentCompletions(resultSet, element)
@@ -93,12 +99,17 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             // Method call
             isMethodCallSelector(element) ->
                 ObjJMethodCallCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
+            element.hasParentOfType(ObjJSelectorLiteral::class.java) ->
+                ObjJSelectorLiteralCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             // Inherited protocol list
             element.hasParentOfType(ObjJInheritedProtocolList::class.java) ->
                 addProtocolNameCompletionElements(resultSet, element, queryString)
             // Formal Variable type
             element.isOrHasParentOfType(ObjJFormalVariableType::class.java) ->
                 formalVariableTypeCompletion(element, resultSet)
+            // Function Name
+            element.isOrHasParentOfType(ObjJFunctionName::class.java) ->
+                ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
             // Instance variable list
             element.hasParentOfType(ObjJInstanceVariableList::class.java) ->
                 instanceVariableListCompletion(element, resultSet)
@@ -239,6 +250,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
+        }
+
+        if (shouldAddJsClassNames(element)) {
             globalJSClassNames.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
@@ -249,6 +263,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addImplementationClassNameElements(element, resultSet)
             addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
         }
+    }
+
+    private fun shouldAddJsClassNames(element:PsiElement) : Boolean {
+        return false
     }
 
     private fun isFirstItemInArray(element:PsiElement): Boolean {

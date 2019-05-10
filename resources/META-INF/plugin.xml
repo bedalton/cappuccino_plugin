@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.3.03</version>
+  <version>0.3.05</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -50,6 +50,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+    <h4>Version: 0.3.05</h4>
+    <ul>
+      <li>Improved indentation and spacing issues</li>
+    </ul>
     <h4>Version: 0.3.03</h4>
     <h5>Improvements</h5>
     <ul>
@@ -149,6 +153,7 @@
     <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
     <lang.smartEnterProcessor implementationClass="cappuccino.ide.intellij.plugin.fixes.ObjJSmartEnterProcessor" language="ObjectiveJ"/>
     <codeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJLanguageCodeStyleSettingsProvider"/>
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
     <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
     <!-- Completion and Rename -->
