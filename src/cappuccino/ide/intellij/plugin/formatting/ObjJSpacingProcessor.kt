@@ -521,9 +521,10 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int {
     val indentSize = EditorUtil.tabSize(this).orElse(0)
     val distanceToFirstColon = distanceToFirstColon(offsetFromStart).orElse(indentSize) - indentSize
+    val selectorList:List<ObjJSelector?>? = this.selectorList
     //LOGGER.info("Distance to first colon: $distanceToFirstColon")
-    val maxLengthOfSelector = this.selectorList
-            .filter { it?.node?.isDirectlyPrecededByNewline().orFalse() }
+    val maxLengthOfSelector = (selectorList?:listOf()).filterNotNull()
+            .filter { it.node?.isDirectlyPrecededByNewline().orFalse() }
             .map { it.textLength + indentSize}
             .max() ?: 0
     if (this.selectorList.size < 2) {
