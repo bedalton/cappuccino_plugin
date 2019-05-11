@@ -347,4 +347,15 @@ object ObjJFunctionDeclarationPsiUtil {
         return null
     }
 
+    fun getParameterType(parameterArg:ObjJFormalParameterArg) : String? {
+        val previousCommentNode = parameterArg.getPreviousNonEmptyNode(true)
+        if (previousCommentNode != null) {
+            val commentTokens = previousCommentNode.text.trim().split(" ".toRegex())
+            if (commentTokens.size == 1) {
+                return commentTokens[0]
+            }
+        }
+        return null
+    }
+
 }

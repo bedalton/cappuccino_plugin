@@ -1506,7 +1506,7 @@ private incrementExpr
 	;
 
 functionCall
-	::= (functionName|methodCall) arrayIndexSelector* arguments (arguments|arrayIndexSelector)*
+	::= (functionName|methodCall) arrayIndexSelector* arguments
 	{
 		pin=3
 		implements=[
@@ -1533,6 +1533,7 @@ rightExpr
 	|	comparisonExprPrime
 	|	arguments
 	|	enclosedExpr
+	|   arrayIndexSelector
 	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
 	;
