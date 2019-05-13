@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.hints.description
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -1066,18 +1067,18 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getExprList(functionCall: ObjJFunctionCall): List<ObjJExpr> {
-        return functionCall.argumentsList[0].exprList
+        return functionCall.arguments.exprList
     }
 
 
     @JvmStatic
     fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement {
-        return functionCall.argumentsList[0].closeParen
+        return functionCall.arguments.closeParen
     }
 
     @JvmStatic
     fun getOpenParen(functionCall: ObjJFunctionCall): PsiElement {
-        return functionCall.argumentsList[0].openParen
+        return functionCall.arguments.openParen
     }
 
     @JvmStatic
@@ -1094,6 +1095,26 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun <PsiT : PsiElement> PsiElement.isIn(parentClass: Class<PsiT>): Boolean {
         return getParentOfType(parentClass) != null
+    }
+
+
+    @JvmStatic
+    fun getPresentation(selector:ObjJSelector) : ItemPresentation {
+        val description = selector.description
+
+        return object : ItemPresentation {
+            override fun getPresentableText(): String {
+                return description?.presentableText ?: selector.text
+            }
+
+            override fun getLocationString(): String {
+                return description?.containingClass ?: selector.containingClassName
+            }
+
+            override fun getIcon(b: Boolean): Icon? {
+                return selector.getIcon(0)
+            }
+        }
     }
 
 }
