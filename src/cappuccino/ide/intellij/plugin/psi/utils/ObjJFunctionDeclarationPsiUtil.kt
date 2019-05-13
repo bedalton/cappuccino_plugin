@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import com.intellij.psi.PsiFile
@@ -348,14 +349,52 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
     fun getParameterType(parameterArg:ObjJFormalParameterArg) : String? {
-        val previousCommentNode = parameterArg.getPreviousNonEmptyNode(true)
-        if (previousCommentNode != null) {
-            val commentTokens = previousCommentNode.text.trim().split(" ".toRegex())
-            if (commentTokens.size == 1) {
-                return commentTokens[0]
-            }
+        val previousNode = parameterArg.getPreviousNonEmptyNode(true) ?: return null
+        if (previousNode.elementType !in ObjJTokenSets.COMMENTS) {
+            return null
+        }
+        val commentTokens = previousNode.text.trim().split(" ".toRegex())
+        if (commentTokens.size == 1) {
+            return commentTokens[0]
         }
         return null
     }
 
+    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
+        if (element == null) return null
+        val parentFunctionDeclaration = element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+        if (parentFunctionDeclaration != null)
+            return parentFunctionDeclaration
+        val variableDeclaration:ObjJVariableDeclaration? = element.getParentOfType(ObjJVariableDeclaration::class.java)
+        val expr:ObjJExpr = if (variableDeclaration != null) {
+            variableDeclaration.expr
+        } else {
+            val globalFunctionDeclaration = element.getParentOfType(ObjJGlobalVariableDeclaration::class.java)
+            globalFunctionDeclaration?.expr
+        } ?: return null
+        return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
+    }
+
+    fun isNullableParameter(it:ObjJFormalParameterArg) : Boolean {
+        return false
+    }
+
+}
+
+fun ObjJFunctionName.resolve() : PsiElement? {
+    return this.reference.resolve()
+}
+
+val ObjJFunctionCall.functionDeclarationReference:ObjJFunctionDeclarationElement<*>? get() {
+    val functionName = this.functionName?: return null
+    val resolved = functionName.resolve() ?: return null
+    return ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(resolved)
+}
+
+val ObjJFormalParameterArg.nullable : Boolean get() {
+    return ObjJFunctionDeclarationPsiUtil.isNullableParameter(this)
+}
+
+val ObjJFormalParameterArg.parameterType : String? get() {
+    return ObjJFunctionDeclarationPsiUtil.getParameterType(this)
 }
