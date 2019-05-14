@@ -7,21 +7,23 @@ data class GlobalJSClass(
         val staticFunctions: List<GlobalJSClassFunction> = listOf(),
         val properties: List<JsProperty> = listOf(),
         val staticProperties: List<JsProperty> = listOf(),
-        val extends: String? = null,
+        val extends: List<String> = listOf(),
         val comment: String? = null,
-        val static:Boolean = false,
-        val isStruct:Boolean = false,
-        val isObjJ:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
+        val static: Boolean = false,
+        val isStruct: Boolean = false,
+        val isObjJ: Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
 data class JsProperty(
         val name: String,
         val type: String = "?",
         val isPublic: Boolean = true,
         val nullable: Boolean = true,
-        val readonly:Boolean = false,
+        val readonly: Boolean = false,
         val comment: String? = null,
-        val default:String? = null,
-        val ignore:Boolean = false)
+        val default: String? = null,
+        val ignore: Boolean = false,
+        val callback: AnonymousJsFunction? = null,
+        val deprecated: Boolean = false)
 
 interface JsFunction {
     val name: String
@@ -30,6 +32,12 @@ interface JsFunction {
     val comment: String?
 }
 
+data class AnonymousJsFunction(
+        val parameters: List<JsProperty> = emptyList(),
+        val returns: String? = null,
+        val comment: String? = null
+)
+
 data class GlobalJSClassFunction(override val name: String, override val parameters: List<JsProperty> = listOf(), override val returns: String? = null, val isPublic: Boolean = true, override val comment: String? = null) : JsFunction
 data class GlobalJSConstructor(val parameters: List<JsProperty> = listOf())
 
@@ -37,354 +45,355 @@ typealias c = GlobalJSClass
 typealias ctor = GlobalJSConstructor
 typealias f = GlobalJSClassFunction
 typealias p = JsProperty
+typealias callback = AnonymousJsFunction
 
-val Window:GlobalJSClass = c(
+val Window: GlobalJSClass = c(
         className = "Window",
         properties = listOf(
                 p("sessionStorage", "Storage", readonly = true),
                 p("localStorage", "Storage", readonly = true),
-                p ("console", "Console", nullable = true, readonly = true),
-                p ("onabort", "Function", comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
-                p ("onanimationcancel", type = "Function(this: Window, ev: AnimationEvent)=>void", nullable = true, ignore = true),
-                p ("onanimationend", "Function(this: Window, ev: AnimationEvent) => any", nullable = true, ignore = true),
-                p ("onanimationiteration", "Function(this: Window, ev: AnimationEvent) => any", nullable = true, ignore = true),
-                p ("onanimationstart", "Function(this: Window, ev: AnimationEvent) => any", nullable = true, ignore = true),
-                p ("onauxclick", "Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("onafterprint", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onblur", "Function(this: Window, ev: FocusEvent) => any", nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
-                p ("oncancel", "Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("oncanplay", "Function(this: Window, ev: Event) => any", nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
-                p ("oncanplaythrough", "Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("onchange", "Function(this: Window, ev: Event) => any", nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
-                p ("onclick", "Function(this: Window, ev: MouseEvent) => any", nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
-                p ("onclose", "Function(this:Window, ev:Event)=>any", nullable = true, ignore = true),
-                p ("oncontextmenu","Function(this: Window, ev: MouseEvent) => any", nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
-                p ("oncuechange","Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("ondblclick", "Function(this: Window, ev: MouseEvent) => any", nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
-                p ("ondrag", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
-                p ("ondragend", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
-                p ("ondragenter", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p ("ondragexit", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p ("ondragleave", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
-                p ("ondragover", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
-                p ("ondragstart", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
-                p ("ondrop", "Function(this: Window, ev: DragEvent) => any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p ("ondurationchange", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
-                p ("onemptied", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
-                p ("onended", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
-                p ("onerror", "OnErrorEventHandler", nullable = true, comment = "Fires when an error occurs during object loading.", ignore = true),
-                p ("onfocus", "Function(this:Window, ev: FocusEvent) => any", nullable = true, comment = "Fires when the object receives focus.", ignore = true),
-                p ("ongotpointercapture", "Function(this:Window, ev: PointerEvent) => any", nullable = true, ignore = true),
-                p ("oninput", "Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("oninvalid", "Function(this: Window, ev: Event) => any", nullable = true, ignore = true),
-                p ("onkeydown", "Function(this: Window, ev: KeyboardEvent) => any", nullable = true, comment = "Fires when the user presses a key.", ignore = true),
-                p ("onkeypress", "Function(this: Window, ev: KeyboardEvent) => any", nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
-                p ("onkeyup", "Function(this: Window, ev: KeyboardEvent) => any", nullable = true, comment = "Fires when the user releases a key", ignore = true),
-                p ("onload", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
-                p ("onloadeddata", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
-                p ("onloadmetadata", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
-                p ("onloadend", "Function(this:Window, ev:ProgressEvent) => any", nullable = true, ignore = true),
-                p ("onloadstart", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
-                p ("onlostpointercapture", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onmousedown","Function(this: Window, ev: MouseEvent) => any)", nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
-                p ("onmouseenter","Function(this: Window, ev: MouseEvent) => any)", nullable = true, ignore = true),
-                p ("onmouseenterleave","Function(this: Window, ev: MouseEvent) => any)", nullable = true, ignore = true),
-                p ("onmousemove","Function(this: Window, ev: MouseEvent) => any)", nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
-                p ("onmouseout","Function(this: Window, ev: MouseEvent) => any)", nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
-                p ("onmouseover","Function(this: Window, ev: MouseEvent) => any)", nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
-                p ("onmouseup","Function(this: Window, ev: MouseEvent) => any)", nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
-                p ("onmousedown","Function(this: Window, ev: MouseEvent) => any)", nullable = true, ignore = true),
-                p ("onpause", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when playback is paused.", ignore = true),
-                p ("onplay", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
-                p ("onplaying", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
-                p ("onpointercancel", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerdown", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerenter", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerleave", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointermove", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerout", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerover", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onpointerup", "Function(this:Window, ev:PointerEvent) => any", nullable = true, ignore = true),
-                p ("onprogress", "Function(this:Window, ev:ProgressEvent) => any", nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
-                p ("onratechange", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
-                p ("onreset", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Fires when the user resets a form.", ignore = true),
-                p ("onresize", "Function(this:Window, ev:UIEvent) => any", nullable = true, ignore = true),
-                p ("onscroll", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
-                p ("onsecuritypolicyviolation", "Function(this:Window, ev:SecurityPolicyViolationEvent) => any", nullable = true, ignore = true),
-                p ("onseeked", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
-                p ("onseeking", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
-                p ("onselect", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Fires when the current selection changes.", ignore = true),
-                p ("onselectionchange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onselectstart", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onstalled", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
-                p ("onsubmit", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onsuspend", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
-                p ("ontimeupdate", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
-                p ("ontoggle", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("ontouchcancel", "Function(this:Window, ev:TouchEvent) => any", nullable = true, ignore = true),
-                p ("ontouchend", "Function(this:Window, ev:TouchEvent) => any", nullable = true, ignore = true),
-                p ("ontouchmove", "Function(this:Window, ev:TouchEvent) => any", nullable = true, ignore = true),
-                p ("ontouchstart", "Function(this:Window, ev:TouchEvent) => any", nullable = true, ignore = true),
-                p ("ontransitioncancel", "Function(this:Window, ev:TransitionEvent) => any", nullable = true, ignore = true),
-                p ("ontransitionend", "Function(this:Window, ev:TransitionEvent) => any", nullable = true, ignore = true),
-                p ("ontransitionrun", "Function(this:Window, ev:TransitionEvent) => any", nullable = true, ignore = true),
-                p ("ontransitionstart", "Function(this:Window, ev:TransitionEvent) => any", nullable = true, ignore = true),
-                p ("ontouchcancel", "Function(this:Window, ev:TouchEvent) => any", nullable = true, ignore = true),
-                p ("onvolumechange", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
-                p ("onwaiting", "Function(this:Window, ev:Event) => any", nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
-                p ("onbeforeprint", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onbeforeunload", "Function(this:Window, ev:BeforeUnloadEvent) => any", nullable = true, ignore = true),
-                p ("onhashchange", "Function(this:Window, ev:HashChangeEvent) => any", nullable = true, ignore = true),
-                p ("onlanguagechange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmessage", "Function(this:Window, ev:MessageEvent) => any", nullable = true, ignore = true),
-                p ("onmessageerror", "Function(this:Window, ev:MessageEvent) => any", nullable = true, ignore = true),
-                p ("onoffline", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("ononline", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onpagehide", "Function(this:Window, ev:PageTransitionEvent) => any", nullable = true, ignore = true),
-                p ("onpageshow", "Function(this:Window, ev:PageTransitionEvent) => any", nullable = true, ignore = true),
-                p ("onpopstate", "Function(this:Window, ev:PopStateEvent) => any", nullable = true, ignore = true),
-                p ("onrejectionhandled", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onstorage", "Function(this:Window, ev:StorageEvent) => any", nullable = true, ignore = true),
-                p ("onunhandledrejection", "Function(this:Window, ev:PromiseRejectionEvent) => any", nullable = true, ignore = true),
-                p ("onunload", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onwheel", "Function(this:Window, ev:WheelEvent) => any", nullable = true, ignore = true),
-                p ("oncompassneedscalibration", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("ondevicelight", "Function(this:Window, ev:DeviceLightEvent) => any", nullable = true, ignore = true),
-                p ("ondevicemotion", "Function(this:Window, ev:DeviceMotionEvent) => any", nullable = true, ignore = true),
-                p ("ondeviceorientation", "Function(this:Window, ev:DeviceOrientationEvent) => any", nullable = true, ignore = true),
-                p ("onmousewheel", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgesturechange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgesturedoubletap", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgestureend", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgesturehold", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgesturestart", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsgesturetap", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmsinertiastart", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointercancel", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerdown", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerenter", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerleave", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointermove", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerout", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerover", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onmspointerup", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onorientationchange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onreadystatechange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplayactivate", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplayblur", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplayconnect", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplaydeactivate", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplaydisconnect", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplayfocus", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplaypointerrestricted", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplaypointerunrestricted", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("onvrdisplaypresentchange", "Function(this:Window, ev:Event) => any", nullable = true, ignore = true),
-                p ("indexedDB", "IDBFactory", nullable = true, readonly = true),
-                p ("caches","CacheStorage", readonly = true),
-                p ("crypto", "Crypto", readonly = true),
-                p ("indexedDB", "IDBFactory", readonly = true),
-                p ("origin", "string"),
-                p ("performance", "Performance"),
-                p ("customElements", "CustomElementsRegistry"),
-                p ("defaultStatus", "string"),
-                p ("devicePixelRatio", "number"),
-                p ("doNotTrack", "string"),
-                p ("document", "Document"),
-                p ("event", "Event", nullable = true),
-                p ("external", "External"),
-                p ("frameElement", "DOMElement"),
-                p ("frames", "Window"),
-                p ("history", "History"),
-                p ("innerHeight", "number"),
-                p ("innerWidth", "number"),
-                p ("isSecureContext", "BOOL"),
-                p ("length", "number"),
-                p ("location", "Location"),
-                p ("locationbar", "BarProp"),
-                p ("menubar", "BarProp"),
-                p ("msContentScript", "ExtensionScriptApis"),
-                p ("name", "never"),
-                p ("navigator", "Navigator"),
-                p ("offscreenBuffering", "string|BOOL"),
-                p ("opener", "?"),
-                p ("orientation", "string|number", readonly = true),
-                p ("outerHeight", "number"),
-                p ("outerWidth", "number"),
-                p ("pageXOffset", "number"),
-                p ("pageYOffset", "number"),
-                p ("parent", "Window"),
-                p ("performance", "Performance"),
+                p("console", "Console", nullable = true, readonly = true),
+                p("onabort", "Function", comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
+                p("onanimationcancel", type = "Function(this: Window, ev:Event)=>void", nullable = true, ignore = true),
+                p("onanimationend", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onanimationiteration", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onanimationstart", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onauxclick", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onafterprint", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onblur", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
+                p("oncancel", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("oncanplay", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
+                p("oncanplaythrough", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onchange", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
+                p("onclick", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
+                p("onclose", "Function(this:Window, ev:Event)=>any", nullable = true, ignore = true),
+                p("oncontextmenu", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
+                p("oncuechange", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("ondblclick", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
+                p("ondrag", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
+                p("ondragend", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
+                p("ondragenter", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragexit", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragleave", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
+                p("ondragover", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
+                p("ondragstart", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
+                p("ondrop", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondurationchange", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
+                p("onemptied", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
+                p("onended", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
+                p("onerror", "OnErrorEventHandler", nullable = true, comment = "Fires when an error occurs during object loading.", ignore = true),
+                p("onfocus", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the object receives focus.", ignore = true),
+                p("ongotpointercapture", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("oninput", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("oninvalid", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onkeydown", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user presses a key.", ignore = true),
+                p("onkeypress", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
+                p("onkeyup", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user releases a key", ignore = true),
+                p("onload", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
+                p("onloadeddata", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
+                p("onloadmetadata", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
+                p("onloadend", "Function(this:Window, ev:ProgressEvent)=>Any", nullable = true, ignore = true),
+                p("onloadstart", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
+                p("onlostpointercapture", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onmousedown", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
+                p("onmouseenter", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
+                p("onmouseenterleave", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
+                p("onmousemove", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
+                p("onmouseout", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
+                p("onmouseover", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
+                p("onmouseup", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
+                p("onmousedown", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
+                p("onpause", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback is paused.", ignore = true),
+                p("onplay", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
+                p("onplaying", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
+                p("onpointercancel", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerdown", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerenter", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerleave", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointermove", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerout", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerover", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onpointerup", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
+                p("onprogress", "Function(this:Window, ev:ProgressEvent)=>Any", nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
+                p("onratechange", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
+                p("onreset", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user resets a form.", ignore = true),
+                p("onresize", "Function(this:Window, ev:UIEvent)=>Any", nullable = true, ignore = true),
+                p("onscroll", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
+                p("onsecuritypolicyviolation", "Function(this:Window, ev:SecurityPolicyViolationEvent)=>Any", nullable = true, ignore = true),
+                p("onseeked", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
+                p("onseeking", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
+                p("onselect", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the current selection changes.", ignore = true),
+                p("onselectionchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onselectstart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onstalled", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
+                p("onsubmit", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onsuspend", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
+                p("ontimeupdate", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
+                p("ontoggle", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("ontouchcancel", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
+                p("ontouchend", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
+                p("ontouchmove", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
+                p("ontouchstart", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
+                p("ontransitioncancel", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
+                p("ontransitionend", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
+                p("ontransitionrun", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
+                p("ontransitionstart", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
+                p("ontouchcancel", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
+                p("onvolumechange", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
+                p("onwaiting", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
+                p("onbeforeprint", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onbeforeunload", "Function(this:Window, ev:BeforeUnloadEvent)=>Any", nullable = true, ignore = true),
+                p("onhashchange", "Function(this:Window, ev:HashChangeEvent)=>Any", nullable = true, ignore = true),
+                p("onlanguagechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmessage", "Function(this:Window, ev:MessageEvent)=>Any", nullable = true, ignore = true),
+                p("onmessageerror", "Function(this:Window, ev:MessageEvent)=>Any", nullable = true, ignore = true),
+                p("onoffline", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("ononline", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onpagehide", "Function(this:Window, ev:PageTransitionEvent)=>Any", nullable = true, ignore = true),
+                p("onpageshow", "Function(this:Window, ev:PageTransitionEvent)=>Any", nullable = true, ignore = true),
+                p("onpopstate", "Function(this:Window, ev:PopStateEvent)=>Any", nullable = true, ignore = true),
+                p("onrejectionhandled", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onstorage", "Function(this:Window, ev:StorageEvent)=>Any", nullable = true, ignore = true),
+                p("onunhandledrejection", "Function(this:Window, ev:PromiseRejectionEvent)=>Any", nullable = true, ignore = true),
+                p("onunload", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onwheel", "Function(this:Window, ev:WheelEvent)=>Any", nullable = true, ignore = true),
+                p("oncompassneedscalibration", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("ondevicelight", "Function(this:Window, ev:DeviceLightEvent)=>Any", nullable = true, ignore = true),
+                p("ondevicemotion", "Function(this:Window, ev:DeviceMotionEvent)=>Any", nullable = true, ignore = true),
+                p("ondeviceorientation", "Function(this:Window, ev:DeviceOrientationEvent)=>Any", nullable = true, ignore = true),
+                p("onmousewheel", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgesturechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgesturedoubletap", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgestureend", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgesturehold", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgesturestart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsgesturetap", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmsinertiastart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointercancel", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerdown", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerenter", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerleave", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointermove", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerout", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerover", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onmspointerup", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onorientationchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onreadystatechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplayactivate", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplayblur", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplayconnect", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplaydeactivate", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplaydisconnect", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplayfocus", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplaypointerrestricted", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplaypointerunrestricted", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onvrdisplaypresentchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("indexedDB", "IDBFactory", nullable = true, readonly = true),
+                p("caches", "CacheStorage", readonly = true),
+                p("crypto", "Crypto", readonly = true),
+                p("indexedDB", "IDBFactory", readonly = true),
+                p("origin", "string"),
+                p("performance", "Performance"),
+                p("customElements", "CustomElementsRegistry"),
+                p("defaultStatus", "string"),
+                p("devicePixelRatio", "number"),
+                p("doNotTrack", "string"),
+                p("document", "Document"),
+                p("event", "Event", nullable = true),
+                p("external", "External"),
+                p("frameElement", "DOMElement"),
+                p("frames", "Window"),
+                p("history", "History"),
+                p("innerHeight", "number"),
+                p("innerWidth", "number"),
+                p("isSecureContext", "BOOL"),
+                p("length", "number"),
+                p("location", "Location"),
+                p("locationbar", "BarProp"),
+                p("menubar", "BarProp"),
+                p("msContentScript", "ExtensionScriptApis"),
+                p("name", "never"),
+                p("navigator", "Navigator"),
+                p("offscreenBuffering", "string|BOOL"),
+                p("opener", "?"),
+                p("orientation", "string|number", readonly = true),
+                p("outerHeight", "number"),
+                p("outerWidth", "number"),
+                p("pageXOffset", "number"),
+                p("pageYOffset", "number"),
+                p("parent", "Window"),
+                p("performance", "Performance"),
                 p("personalbar", "BarProp"),
-                p ("screen", "Screen"),
-                p ("screenLeft", "number"),
-                p ("screenTop", "number"),
-                p ("screenX", "number"),
-                p ("screenY", "number"),
-                p ("scrollX", "number"),
-                p ("scrollY", "number"),
-                p ("scrollbars", "BarProp"),
-                p ("self", "Windows"),
-                p ("speechSynthesis", "SpeechSynthesis"),
-                p ("status", "string"),
-                p ("statusbar", "BarProp"),
-                p ("styleMedia", "StyleMedia"),
-                p ("toolbar", "BarProp"),
-                p ("top", "Window"),
-                p ("window", "Window")
+                p("screen", "Screen"),
+                p("screenLeft", "number"),
+                p("screenTop", "number"),
+                p("screenX", "number"),
+                p("screenY", "number"),
+                p("scrollX", "number"),
+                p("scrollY", "number"),
+                p("scrollbars", "BarProp"),
+                p("self", "Windows"),
+                p("speechSynthesis", "SpeechSynthesis"),
+                p("status", "string"),
+                p("statusbar", "BarProp"),
+                p("styleMedia", "StyleMedia"),
+                p("toolbar", "BarProp"),
+                p("top", "Window"),
+                p("window", "Window")
         ),
         functions = listOf(
-                f (name = "alert", parameters = listOf(p("message"))),
-                f (name = "blur"),
-                f (name = "cancelAnimationFrame", parameters = listOf(p("handler", "number"))),
-                f (name = "captureEvents"),
-                f ("close"),
-                f (name = "confirm", parameters = listOf(p (name = "message", type= "string", nullable = true)), returns = "BOOL"),
+                f(name = "alert", parameters = listOf(p("message"))),
+                f(name = "blur"),
+                f(name = "cancelAnimationFrame", parameters = listOf(p("handler", "number"))),
+                f(name = "captureEvents"),
+                f("close"),
+                f(name = "confirm", parameters = listOf(p(name = "message", type = "string", nullable = true)), returns = "BOOL"),
                 //departFocus(navigationReason: NavigationReason, origin: FocusNavigationOrigin): void
-                f (
+                f(
                         name = "departFocus",
-                        parameters = listOf (
-                                p ("navigationReason", "NavigationReason"),
-                                p ("origin", "FocusNavigationOrigin"))
+                        parameters = listOf(
+                                p("navigationReason", "NavigationReason"),
+                                p("origin", "FocusNavigationOrigin"))
                 ),
-                f ("focus"),
-                f (
+                f("focus"),
+                f(
                         name = "getComputedStyle",
                         parameters = listOf(
-                                p ("elt", "DOMElement"),
-                                p (name = "psuedoElt", type = "string", nullable = true)),
+                                p("elt", "DOMElement"),
+                                p(name = "psuedoElt", type = "string", nullable = true)),
                         returns = "CSSStyleDeclaration"
-                ),f (
-                        name = "getMatchedCSSRules",
-                        parameters = listOf(
-                                p ("elt", "DOMElement"),
-                                p (name = "psuedoElt", type = "string", nullable = true)),
-                        returns = "CSSRuleList"
-                ),//
-                f (
+                ), f(
+                name = "getMatchedCSSRules",
+                parameters = listOf(
+                        p("elt", "DOMElement"),
+                        p(name = "psuedoElt", type = "string", nullable = true)),
+                returns = "CSSRuleList"
+        ),//
+                f(
                         name = "getSelection",
                         returns = "Selection"
                 ),
-                f (
+                f(
                         name = "matchMedia",
                         parameters = listOf(
-                                p ("query", "string")),
+                                p("query", "string")),
                         returns = "MediaQueryList"
                 ),
-                f (
+                f(
                         name = "moveBy",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         name = "moveTo",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         name = "msWriteProfilerMark",
                         parameters = listOf(
-                                p ("profilerMarkName", "string"))
+                                p("profilerMarkName", "string"))
                 ),
-                f (
+                f(
                         name = "open",
                         parameters = listOf(
-                                p (name = "url", type = "string", nullable = true),
-                                p ("target", "string", nullable = true),
-                                p ("features", "string", nullable = true),
-                                p ("replace", "BOOL", nullable = true)),
+                                p(name = "url", type = "string", nullable = true),
+                                p("target", "string", nullable = true),
+                                p("features", "string", nullable = true),
+                                p("replace", "BOOL", nullable = true)),
                         returns = "Window|null"
                 ),
-                f (
+                f(
                         name = "postMessage",
                         parameters = listOf(
-                                p ("message", "string"),
-                                p ("target", "string"),
-                                p ("transfer","Transferable[]", nullable = true))
+                                p("message", "string"),
+                                p("target", "string"),
+                                p("transfer", "Transferable[]", nullable = true))
                 ),
-                f ("print"),
-                f (
+                f("print"),
+                f(
                         name = "prompt",
                         parameters = listOf(
-                                p ("message", "string", nullable = true),
-                                p ("_default", "string", nullable = true)),
+                                p("message", "string", nullable = true),
+                                p("_default", "string", nullable = true)),
                         returns = "string|null"
                 ),
-                f ("releaseEvents"),
-                f (
+                f("releaseEvents"),
+                f(
                         "requestAnimationFrame",
                         parameters = listOf(
-                                p ("callback", "FrameRequestCallback")
+                                p("callback", "FrameRequestCallback")
                         )
                 ),
-                f (
+                f(
                         name = "resizeBy",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         name = "resizeTo",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         "scroll",
                         parameters = listOf(
                                 p("options", "ScrollToOptions", nullable = true)
                         )
                 ),
-                f (
+                f(
                         name = "scroll",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         "scrollBy",
                         parameters = listOf(
                                 p("options", "ScrollToOptions", nullable = true)
                         )
                 ),
-                f (
+                f(
                         name = "scrollBy",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f (
+                f(
                         "scrollTo",
                         parameters = listOf(
                                 p("options", "ScrollToOptions", nullable = true)
                         )
                 ),
-                f (
+                f(
                         name = "scrollTo",
                         parameters = listOf(
-                                p ("x", "number"),
-                                p ("y", "number"))
+                                p("x", "number"),
+                                p("y", "number"))
                 ),
-                f ("webkitCancelAnimationFrame", parameters = listOf(p ("handle", "int"))),
-                f (
+                f("webkitCancelAnimationFrame", parameters = listOf(p("handle", "int"))),
+                f(
                         name = "webkitConvertPointFromNodeToPage",
                         parameters = listOf(
                                 p("node", "Node"),
-                                p ("pt", "WebKitPoint")),
+                                p("pt", "WebKitPoint")),
                         returns = "WebKitPoint"
                 ),
-                f (
+                f(
                         name = "webkitConvertPointFromPageToNode",
                         parameters = listOf(
                                 p("node", "Node"),
-                                p ("pt", "WebKitPoint")),
+                                p("pt", "WebKitPoint")),
                         returns = "WebKitPoint"
                 ),
-                f ("webkitRequestAnimationFrame", parameters = listOf(p ("callback", "FrameRequestCallback"))),
-                f ("webkitCancelAnimationFrame", parameters = listOf(p ("handle", "int"))),
-                f ("toString", returns = "string"),
-                f ("dispatchEvent", parameters = listOf(p("event", "Event")))
+                f("webkitRequestAnimationFrame", parameters = listOf(p("callback", "FrameRequestCallback"))),
+                f("webkitCancelAnimationFrame", parameters = listOf(p("handle", "int"))),
+                f("toString", returns = "string"),
+                f("dispatchEvent", parameters = listOf(p("event", "Event")))
         )
 )
 
@@ -465,7 +474,7 @@ val globalJSClasses = listOf(
         c(
                 className = "CFData",
                 properties = listOf(
-                        p ("isa", "CPData")
+                        p("isa", "CPData")
                 ),
                 functions = listOf(
                         f(name = "propertyList", returns = "CFPropertyList"),
@@ -508,9 +517,9 @@ val globalJSClasses = listOf(
         ),
         c(
                 className = "CFMutableData",
-                extends = "CFData",
+                extends = listOf("CFData"),
                 properties = listOf(
-                        p ("isa", "CPMutableData")
+                        p("isa", "CPMutableData")
                 ),
                 functions = listOf(
                         f(
@@ -570,7 +579,7 @@ val globalJSClasses = listOf(
                 className = "CFDictionary",
                 constructor = ctor(listOf(p("aDictionary", "CFDictionary"))),
                 properties = listOf(
-                        p ("isa", "CPDictionary")
+                        p("isa", "CPDictionary")
                 ),
                 functions = listOf(
                         f(name = "copy", returns = "CFDictionary"),
@@ -595,9 +604,9 @@ val globalJSClasses = listOf(
         ),
         c(
                 className = "CFMutableDictionary",
-                extends = "CFDictionary",
+                extends = listOf("CFDictionary"),
                 properties = listOf(
-                        p ("isa", "CPMutableDictionary")
+                        p("isa", "CPMutableDictionary")
                 ),
                 functions = listOf(
                         f(
@@ -630,7 +639,7 @@ val globalJSClasses = listOf(
         c(
                 className = "CFError",
                 properties = listOf(
-                        p ("isa", "CPError")
+                        p("isa", "CPError")
                 ),
                 constructor = ctor(listOf(
                         p("domain", "string"),
@@ -892,241 +901,241 @@ val globalJSClasses = listOf(
                 constructor = ctor(listOf(p("aName", "string")))
         ),
         Window,
-        c (
+        c(
                 className = "Event",
-                constructor = ctor (
+                constructor = ctor(
                         parameters = listOf(
-                                p ("type", "string"),
-                                p ("eventInitDict", "EventInit", nullable = true)
+                                p("type", "string"),
+                                p("eventInitDict", "EventInit", nullable = true)
                         )
                 ),
                 properties = listOf(
                         p("bubbles", "BOOL", readonly = true, comment = "Returns true or false depending on how event was initialized. True if event goes through its target's ancestors in reverse tree order, and false otherwise."),
                         p("cancelBubble", "BOOL"),
-                        p ("cancelable", "BOOL", readonly = true),
+                        p("cancelable", "BOOL", readonly = true),
                         p("composed", "BOOL", readonly = true, comment = "Returns true or false depending on how event was initialized. True if event invokes listeners past a ShadowRoot node that is the root of its target, and false otherwise."),
-                        p ("currentTarget", "EventTarget", readonly = true, nullable = true, comment = "Returns the object whose event listener's callback is currently being invoked"),
-                        p ("defaultPrevented", "BOOL", readonly = true),
-                        p ("eventPhase", "number", readonly = true),
-                        p ("isTrusted", "BOOL", readonly = true, comment = "Returns true if event was dispatched by the user agent, and false otherwise"),
-                        p ("returnValue", "BOOL"),
+                        p("currentTarget", "EventTarget", readonly = true, nullable = true, comment = "Returns the object whose event listener's callback is currently being invoked"),
+                        p("defaultPrevented", "BOOL", readonly = true),
+                        p("eventPhase", "number", readonly = true),
+                        p("isTrusted", "BOOL", readonly = true, comment = "Returns true if event was dispatched by the user agent, and false otherwise"),
+                        p("returnValue", "BOOL"),
                         p("srcElement", "EventTarget", readonly = true, nullable = true),
-                        p ("target", "EventTarget", readonly = true, comment = "Returns the object to which event is dispatched (its target).", nullable = true),
-                        p ("timeStamp", "number", readonly = true, comment = "Returns the event's timestamp as the number of milliseconds measured relative to the time origin"),
-                        p ("type", "string", readonly = true, comment = "Returns the type of event, e.g. \"click\", \"hashchange\", or \"submit\"."),
-                        p ("AT_TARGET", "number", readonly = true),
-                        p ("BUBBLING_PHASE", "number", readonly = true),
-                        p ("CAPTURING_PHASE", "number", readonly = true),
-                        p ("NONE", "number", readonly = true)
+                        p("target", "EventTarget", readonly = true, comment = "Returns the object to which event is dispatched (its target).", nullable = true),
+                        p("timeStamp", "number", readonly = true, comment = "Returns the event's timestamp as the number of milliseconds measured relative to the time origin"),
+                        p("type", "string", readonly = true, comment = "Returns the type of event, e.g. \"click\", \"hashchange\", or \"submit\"."),
+                        p("AT_TARGET", "number", readonly = true),
+                        p("BUBBLING_PHASE", "number", readonly = true),
+                        p("CAPTURING_PHASE", "number", readonly = true),
+                        p("NONE", "number", readonly = true)
                 ),
                 staticProperties = listOf(
-                        p ("AT_TARGET", "number", readonly = true),
-                        p ("BUBBLING_PHASE", "number", readonly = true),
-                        p ("CAPTURING_PHASE", "number", readonly = true),
-                        p ("NONE", "number", readonly = true)
+                        p("AT_TARGET", "number", readonly = true),
+                        p("BUBBLING_PHASE", "number", readonly = true),
+                        p("CAPTURING_PHASE", "number", readonly = true),
+                        p("NONE", "number", readonly = true)
                 ),
                 functions = listOf(
-                        f ("composedPath", returns = "EventTarget[]"),
-                        f (
+                        f("composedPath", returns = "EventTarget[]"),
+                        f(
                                 name = "initEvent",
                                 parameters = listOf(
-                                        p ("type", "string"),
-                                        p ("bubbles", "BOOL", nullable = true),
-                                        p ("cancelable", "BOOL", nullable = true)
+                                        p("type", "string"),
+                                        p("bubbles", "BOOL", nullable = true),
+                                        p("cancelable", "BOOL", nullable = true)
                                 )),
-                        f ("preventDefault"),
-                        f ("stopImmediatePropagation",
+                        f("preventDefault"),
+                        f("stopImmediatePropagation",
                                 comment = "Invoking this method prevents event from reaching any registered event listeners after the current one finishes running and, when dispatched in a tree, also prevents event from reaching any other objects."),
-                        f ("stopPropagation", comment = "When dispatched in a tree, invoking this method prevents event from reaching any objects other than the current object.")
+                        f("stopPropagation", comment = "When dispatched in a tree, invoking this method prevents event from reaching any objects other than the current object.")
                 )
         ),
-        c (
+        c(
                 className = "EventTarget",
                 constructor = ctor(),
                 functions = listOf(
-                        f ("addEventListener", listOf(
-                                p ("type", "string"),
-                                p ("listener", "EventListenerOrEventListenerObject", nullable = true),
-                                p ("options", "BOOL|AddEventListenerOptions", nullable = true)
+                        f("addEventListener", listOf(
+                                p("type", "string"),
+                                p("listener", "EventListenerOrEventListenerObject", nullable = true),
+                                p("options", "BOOL|AddEventListenerOptions", nullable = true)
                         )),
-                        f ("dispatchEvent", listOf(
-                                p ("event", "Event")),
+                        f("dispatchEvent", listOf(
+                                p("event", "Event")),
                                 returns = "BOOL"
                         ),
-                        f ("removeEventListener",listOf(
-                                p ("type", "string"),
-                                p ("listener", "EventListenerOrEventListenerObject", nullable = true),
-                                p ("options", "BOOL|AddEventListenerOptions", nullable = true))
+                        f("removeEventListener", listOf(
+                                p("type", "string"),
+                                p("listener", "EventListenerOrEventListenerObject", nullable = true),
+                                p("options", "BOOL|AddEventListenerOptions", nullable = true))
 
                         )
                 )
         ),
-        c (
+        c(
                 className = "ThemeState",
                 functions = listOf(
-                        f ("toString", returns = "string"),
-                        f ("hasThemeState", parameters = listOf(p("aState", "?")), returns = "BOOL"),
-                        f ("isSubsetOf", parameters = listOf(p("aState", "?")), returns = "BOOL"),
-                        f ("without", parameters = listOf(p("aState", "?")), returns = "ThemeState"),
-                        f ("and", parameters = listOf(p("aState", "?")), returns = "ThemeState")
+                        f("toString", returns = "string"),
+                        f("hasThemeState", parameters = listOf(p("aState", "?")), returns = "BOOL"),
+                        f("isSubsetOf", parameters = listOf(p("aState", "?")), returns = "BOOL"),
+                        f("without", parameters = listOf(p("aState", "?")), returns = "ThemeState"),
+                        f("and", parameters = listOf(p("aState", "?")), returns = "ThemeState")
                 )
         ),
-        c (
+        c(
                 className = "String",
                 constructor = ctor(listOf(p("aString", "string"))),
                 properties = listOf(
                         p("isa", "CPString")
                 ),
                 functions = listOf(
-                        f ("escapeForRegExp", returns = "string"),
-                        f ("stripDiacritics", returns = "string")
+                        f("escapeForRegExp", returns = "string"),
+                        f("stripDiacritics", returns = "string")
                 )
         ),
-        c (
+        c(
                 className = "Boolean",
                 constructor = ctor(listOf(p("aBool", "BOOL"))),
                 properties = listOf(
                         p("isa", "CPNumber")
                 )
         ),
-        c (
+        c(
                 className = "BlendTask",
                 functions = listOf(
-                        f ("packageType", returns = "string"),
-                        f ("infoPlist", returns = "?"),
-                        f ("themeDescriptors", returns = "?"),
-                        f ("setThemeDescriptors", parameters = listOf(p("themeDescriptors", "?[]|FileList[]"))),
-                        f ("defineTasks", parameters = listOf(p("...args", "?"))),
-                        f ("defineSourceTasks"),
-                        f ("defineThemeDescriptorTasks")
+                        f("packageType", returns = "string"),
+                        f("infoPlist", returns = "?"),
+                        f("themeDescriptors", returns = "?"),
+                        f("setThemeDescriptors", parameters = listOf(p("themeDescriptors", "?[]|FileList[]"))),
+                        f("defineTasks", parameters = listOf(p("...args", "?"))),
+                        f("defineSourceTasks"),
+                        f("defineThemeDescriptorTasks")
                 )
         ),
-        c (
+        c(
                 className = "CompletionHandlerAgent",
-                constructor = ctor (listOf(p ("aCompletionHandler", "?"))),
+                constructor = ctor(listOf(p("aCompletionHandler", "?"))),
                 properties = listOf(
                         p("total", "number"),
-                        p ("valid", "BOOL"),
-                        p ("id", "number")
+                        p("valid", "BOOL"),
+                        p("id", "number")
                 ),
                 functions = listOf(
-                        f ("fire"),
-                        f ("increment", listOf(p("inc"))),
-                        f ("decrement"),
-                        f ("invalidate")
+                        f("fire"),
+                        f("increment", listOf(p("inc"))),
+                        f("decrement"),
+                        f("invalidate")
                 )
         ),
-        c (
+        c(
                 className = "FrameUpdater",
-                constructor = ctor (listOf(p("anIdentifier"))),
+                constructor = ctor(listOf(p("anIdentifier"))),
                 functions = listOf(
                         f("start"),
-                        f ("stop"),
-                        f ("updateFunction", returns = "?"),
-                        f ("identifier", returns = "?"),
-                        f ("description", returns = "string"),
-                        f (
+                        f("stop"),
+                        f("updateFunction", returns = "?"),
+                        f("identifier", returns = "?"),
+                        f("description", returns = "string"),
+                        f(
                                 name = "addTarget",
                                 parameters = listOf(
-                                        p ("target"),
+                                        p("target"),
                                         p("keypath"),
-                                        p ("duration"))
+                                        p("duration"))
                         )
                 )
         ),
-        c (
+        c(
                 className = "CSSAnimation",
-                constructor = ctor (listOf(
+                constructor = ctor(listOf(
                         p("aTarget", "DOMElement"),
-                        p ("anIdentifier", "string"),
-                        p ("aTargetName", "string")
+                        p("anIdentifier", "string"),
+                        p("aTargetName", "string")
                 )),
                 properties = listOf(
-                        p ("target", "DOMElement"),
-                        p ("identifier", "string"),
-                        p ("targetName", "string"),
-                        p ("animationName", "string"),
-                        p ("listener", nullable = true),
-                        p ("styleElement", nullable = true),
-                        p ("propertyanimations", "?[]"),
-                        p ("animationsnames", "?[]"),
-                        p ("animationstimingfunctions", "?[]"),
-                        p ("animationsdurations", "?[]"),
-                        p ("islive", "BOOL"),
-                        p ("didBuildDOMElements", "BOOL")
+                        p("target", "DOMElement"),
+                        p("identifier", "string"),
+                        p("targetName", "string"),
+                        p("animationName", "string"),
+                        p("listener", nullable = true),
+                        p("styleElement", nullable = true),
+                        p("propertyanimations", "?[]"),
+                        p("animationsnames", "?[]"),
+                        p("animationstimingfunctions", "?[]"),
+                        p("animationsdurations", "?[]"),
+                        p("islive", "BOOL"),
+                        p("didBuildDOMElements", "BOOL")
                 ),
                 functions = listOf(
                         f("description", returns = "string"),
-                        f (
+                        f(
                                 name = "addPropertyAnimation",
                                 parameters = listOf(
                                         p("propertyName", "string"),
-                                        p ("valueFunction", "Function"),
-                                        p ("aDuration", "number"),
-                                        p ("aKeyTimes", "d|d[]"),
-                                        p ("aValues", "?[]"),
-                                        p ("aTimingFunctions", "d[]|d[][]", comment = "[d,d,d,d] | [[d,d,d,d]]"),
-                                        p ("aCompletionfunction", "Function")
+                                        p("valueFunction", "Function"),
+                                        p("aDuration", "number"),
+                                        p("aKeyTimes", "d|d[]"),
+                                        p("aValues", "?[]"),
+                                        p("aTimingFunctions", "d[]|d[][]", comment = "[d,d,d,d] | [[d,d,d,d]]"),
+                                        p("aCompletionfunction", "Function")
                                 ),
                                 returns = "BOOL"
                         ),
-                        f ("keyFrames", returns = "string"),
-                        f ("appendKeyFramesRule"),
-                        f ("createKeyFramesStyleElement"),
-                        f ("endEventListener", returns = "AnimationEndListener"),
-                        f ("completionFunctionForAnimationName", parameters = listOf(p("aName", "string")), returns = "Function"),
-                        f ("addAnimationEndEventListener"),
-                        f ("setTargetStyleProperties"),
-                        f ("buildDOMElements"),
-                        f ("start", returns = "BOOL")
+                        f("keyFrames", returns = "string"),
+                        f("appendKeyFramesRule"),
+                        f("createKeyFramesStyleElement"),
+                        f("endEventListener", returns = "AnimationEndListener"),
+                        f("completionFunctionForAnimationName", parameters = listOf(p("aName", "string")), returns = "Function"),
+                        f("addAnimationEndEventListener"),
+                        f("setTargetStyleProperties"),
+                        f("buildDOMElements"),
+                        f("start", returns = "BOOL")
 
                 )
         ),
-        c (
+        c(
                 className = "Date",
                 properties = listOf(
-                        p ("isa", "CPDate")
+                        p("isa", "CPDate")
                 ),
                 staticFunctions = listOf(
                         f("parseISO8601", listOf(p("aData", "Date")), returns = "number")
                 )
         ),
-        c (
+        c(
                 className = "Error",
                 properties = listOf(
                         p("isa", "CPException")
                 )
         ),
-        c (
+        c(
                 className = "Number",
                 properties = listOf(
                         p("isa", "CPNumber")
                 )
         ),
-        c (
+        c(
                 className = "Math",
                 static = true
         ),
-        c (
+        c(
                 className = "Document"
         ),
-        c (
+        c(
                 className = "Array"
         ),
-        c (
+        c(
                 className = "RegExp",
-                constructor = ctor (listOf(
-                        p ("pattern", "string|RegExp"),
-                        p ("flags", "string", nullable = true)
+                constructor = ctor(listOf(
+                        p("pattern", "string|RegExp"),
+                        p("flags", "string", nullable = true)
                 )),
                 functions = listOf(
-                        f (
+                        f(
                                 name = "exec",
                                 parameters = listOf(p("string", "string", comment = "The String object or string literal on which to perform the search.")),
                                 returns = "string[]|null",
                                 comment = "Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search."
                         ),
-                        f (
+                        f(
                                 name = "test",
                                 parameters = listOf(
                                         p("string", "string", comment = "String on which to perform the search")),
@@ -1134,17 +1143,17 @@ val globalJSClasses = listOf(
                                 comment = "Returns a Boolean value that indicates whether or not a pattern exists in a searched string.")
                 ),
                 properties = listOf(
-                        p ("source", "string", readonly = true, comment = "Returns a copy of the text of the regular expression pattern"),
-                        p ("global", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the global flag (g) used with a regular expression.", default = "false"),
-                        p ("ignoreCase", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the ignoreCase flag (i) used with a regular expression.", default = "false"),
-                        p ("multiline", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the multiline flag (m) used with a regular expression.", default = "false")
+                        p("source", "string", readonly = true, comment = "Returns a copy of the text of the regular expression pattern"),
+                        p("global", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the global flag (g) used with a regular expression.", default = "false"),
+                        p("ignoreCase", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the ignoreCase flag (i) used with a regular expression.", default = "false"),
+                        p("multiline", "BOOL", readonly = true, comment = "Returns a Boolean value indicating the state of the multiline flag (m) used with a regular expression.", default = "false")
 
                 )
         ),
-        c (
+        c(
                 className = "Image"
         ),
-        c (
+        c(
                 className = "CPLog",
                 staticFunctions = listOf(
                         f("fatal"),
@@ -1154,7 +1163,21 @@ val globalJSClasses = listOf(
                         f("debug"),
                         f("trace")
                 )
-        )
+        ),
+        c (
+                className = "Slotable",
+                properties = listOf(
+                        p(name = "assignedSlot", type = "HTMLSlotElement | null", readonly = true)
+                )
+        ),
+        JsClassHTMLElement,
+        JsClassGlobalEventHandlers,
+        JsClassCSSStyleDeclaration,
+        JsClassAnimatable,
+        JsClassChildNode,
+        JsClassElementCSSInlineStyle,
+        JsClassEventTarget
+
 )
 
-val globalJSClassNames = globalJSClasses.filter{ !it.isStruct }.map { it.className }
+val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }
