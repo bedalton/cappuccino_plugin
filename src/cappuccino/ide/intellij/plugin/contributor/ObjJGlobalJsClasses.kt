@@ -11,7 +11,8 @@ data class GlobalJSClass(
         val comment: String? = null,
         val static: Boolean = false,
         val isStruct: Boolean = false,
-        val isObjJ: Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
+        val isObjJ: Boolean = false,
+        interface:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
 data class JsProperty(
         val name: String,
@@ -1176,7 +1177,14 @@ val globalJSClasses = listOf(
         JsClassAnimatable,
         JsClassChildNode,
         JsClassElementCSSInlineStyle,
-        JsClassEventTarget
+        JsClassEventTarget,
+        JsClassNode,
+        JsClassParentNode,
+        JsClassNonDocumentTypeChildNode,
+        JsClassDocumentAndElementEventHandlers,
+        JsClassElementContentEditable,
+        JsElementClass,
+        JsClassHTMLOrSVGElement
 
 )
 
