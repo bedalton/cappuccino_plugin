@@ -887,7 +887,24 @@ methodHeader
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub>"
 		]
-		methods = [getSelectorList getSelectorStrings getParamTypes getParamTypesAsStrings getSelectorString getName setName getReturnType getContainingClass getContainingClassName getMethodScope isStatic shouldResolve  getContainingSuperClass isRequired createTreeStructureElement]
+		methods = [
+			getSelectorList
+			getSelectorStrings
+			getParamTypes
+			getParamTypesAsStrings
+			getSelectorString
+			getName
+			setName
+			getReturnType
+			getContainingClass
+			getContainingClassName
+			getMethodScope
+			isStatic
+			shouldResolve
+			getContainingSuperClass
+			isRequired
+			createTreeStructureElement
+		]
 	}
 	;
 
