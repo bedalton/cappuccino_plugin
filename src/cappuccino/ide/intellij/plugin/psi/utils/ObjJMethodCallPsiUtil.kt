@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import java.util.ArrayList
 
@@ -9,7 +10,9 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.isPrimitive
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import com.intellij.psi.PsiElement
+import com.intellij.psi.ResolveResult
 
 fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
     val singleSelector = methodCall.selector
@@ -82,4 +85,21 @@ fun getCallTargetText(methodCall:ObjJMethodCall): String =
 
 fun isUniversalMethodCaller(className: String): Boolean {
     return !isPrimitive(className) && (UNDETERMINED == className || UNDEF_CLASS_NAME == className) || ID == className
+}
+
+val ObjJMethodCall.referencedHeaders:List<ObjJMethodHeaderDeclaration<*>> get() {
+    return this.multiResolve.mapNotNull {
+        it.element.thisOrParentAs(ObjJMethodHeaderDeclaration::class.java)
+    }
+}
+
+val ObjJMethodCall.multiResolve:Array<ResolveResult> get() {
+    val selector = this.selectorList.firstOrNull() ?: return emptyArray()
+    val reference = ObjJSelectorReference(selector)
+    return reference.multiResolve(false)
+}
+
+val ObjJQualifiedMethodCallSelector.index:Int get() {
+    val methodCall = this.parent as? ObjJMethodCall ?: this.parent.parent as? ObjJMethodCall ?: return -1
+    return methodCall.qualifiedMethodCallSelectorList.indexOf(this)
 }

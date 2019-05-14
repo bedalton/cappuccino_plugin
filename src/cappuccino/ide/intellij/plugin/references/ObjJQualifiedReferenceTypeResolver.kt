@@ -42,6 +42,19 @@ fun getPossibleClassTypesForQualifiedReference(qualifiedReference:ObjJQualifiedR
             }.toSet()
 }
 
+fun ObjJQualifiedReference.getPossibleClassTypes() : Set<String> {
+    return getPossibleClassTypesForQualifiedReference(this)
+}
+
+fun ObjJVariableName.getPossibleClassTypes() : Set<String> {
+    return getPossibleTypesIfVariableName(this)
+            .flatMap {
+                val out = mutableListOf(it)
+                out.addAll(ObjJInheritanceUtil.getAllInheritedClasses(it, project, true))
+                out
+            }.toSet()
+}
+
 /**
  * Attempt to get call call target type if variable name
  */

@@ -204,5 +204,8 @@ object ObjJSelectorReferenceResolveUtil {
 
         val isEmpty: Boolean
             get() = result.isEmpty()
+
+        val isNotEmpty: Boolean
+            get() = result.isNotEmpty()
     }
 }

@@ -1097,24 +1097,9 @@ object ObjJPsiImplUtil {
         return getParentOfType(parentClass) != null
     }
 
-
     @JvmStatic
-    fun getPresentation(selector:ObjJSelector) : ItemPresentation {
-        val description = selector.description
-
-        return object : ItemPresentation {
-            override fun getPresentableText(): String {
-                return description?.presentableText ?: selector.text
-            }
-
-            override fun getLocationString(): String {
-                return description?.containingClass ?: selector.containingClassName
-            }
-
-            override fun getIcon(b: Boolean): Icon? {
-                return selector.getIcon(0)
-            }
-        }
+    fun getContainingClassNameOrNull(element:ObjJHasContainingClass) : String? {
+        return element.containingClass?.classType?.className
     }
 
 }
