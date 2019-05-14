@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
 import cappuccino.ide.intellij.plugin.psi.utils.parameterType
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.util.TextRange
 
@@ -81,7 +82,7 @@ class ObjJFunctionParameterDescription(val name:String, val type:String?, val nu
 
     val presentableText:String get() {
         val stringBuilder = StringBuilder(name)
-        if (!type.isNullOrBlank()) {
+        if (type.isNotNullOrBlank()) {
             stringBuilder.append(":").append(type)
         }
         if (nullable.orFalse()) {
