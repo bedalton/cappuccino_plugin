@@ -166,14 +166,15 @@
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
     <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
-
+    <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJFunctionParameterInfoHandler" />
+    <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJMethodParameterInfoHandler" />
+    <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider" />
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJSyntaxHighlighterAnnotator" />
     <!--codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.handlers.ObjJParameterInfo" / -->
     <problemFileHighlightFilter implementation="cappuccino.ide.intellij.plugin.lang.ObjJProblemFileHighlighterFilter" />
-
 
     <!-- Inspections -->
     <localInspection language="ObjectiveJ"
