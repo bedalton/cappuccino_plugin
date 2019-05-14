@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
 
 import java.util.ArrayList
 
@@ -81,7 +82,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         val constraints = callTargetClassTypesIfMethodCall
-        if (!out.isEmpty()) {
+        if (out.isNotEmpty()) {
             if (constraints.isNotEmpty() && !constraints.contains(ObjJClassType.UNDETERMINED) && constraints.contains(ObjJClassType.ID)) {
                 val tempOut = out.filter { element -> element is ObjJCompositeElement && constraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
@@ -90,8 +91,8 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             }
             return PsiElementResolveResult.createResults(out)
         }
-        val result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
-        if (!result.isEmpty) {
+        val result: SelectorResolveResult<PsiElement> = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
+        if (result.isNotEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         return PsiElementResolveResult.EMPTY_ARRAY

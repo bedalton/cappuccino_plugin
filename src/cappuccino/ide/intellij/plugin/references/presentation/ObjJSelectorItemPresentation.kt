@@ -1,8 +1,10 @@
 package cappuccino.ide.intellij.plugin.references.presentation
 
+import cappuccino.ide.intellij.plugin.hints.description
 import com.intellij.navigation.ItemPresentation
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
@@ -12,7 +14,9 @@ class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPre
 
     override fun getPresentableText(): String? {
         ProgressIndicatorProvider.checkCanceled()
-        return ObjJPsiImplUtil.getDescriptiveText(selector)
+        val presentableText = selector.description?.presentableText ?: return ObjJPsiImplUtil.getDescriptiveText(selector)
+        LOGGER.info("Getting PresentableText: $presentableText")
+        return presentableText
     }
 
     override fun getLocationString(): String? {
