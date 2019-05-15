@@ -2,7 +2,8 @@ package cappuccino.ide.intellij.plugin.contributor
 
 
 internal val JsClassHTMLElement = c(
-        className = "HTMLElement",
+        className = "DOMElement",
+        isStruct = true,
         extends = listOf("Element", "JsClassGlobalEventHandlers", "DocumentAndElementEventHandlers", "ElementContentEditable", "HTMLOrSVGElement", "ElementCSSInlineStyle"),
         properties = listOf(
                 p(name = "accessKey", type = "string"),
@@ -36,6 +37,7 @@ internal val JsClassHTMLElement = c(
 
 internal val JsClassGlobalEventHandlers = c(
         className = "GlobalEventHandlers",
+        isStruct = true,
         properties = listOf(
                 p("onabort", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "UIEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the user aborts the download."),
                 p("onanimationcancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = "?"), nullable = true),
@@ -228,6 +230,7 @@ internal val JsElementClass = c(
 /** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties. */
 val JsClassCSSStyleDeclaration = c(
         className = "CSSStyleDeclaration ",
+        isStruct = true,
         comment = "The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties.",
         properties = listOf(
                 p(name = "alignContent", type = "string", nullable = true),
@@ -632,6 +635,7 @@ val JsClassCSSStyleDeclaration = c(
 
 val JsClassAnimatable = c(
         className = "Animatable",
+        isStruct = true,
         functions = listOf(
                 f("animate", listOf(p("keyframes", "Array<Keyframe> | PropertyIndexedKeyframes", nullable = true), p(name = "options", type = "number | KeyframeAnimationOptions", nullable = true)), returns = "Animation"),
                 f("getAnimations", returns = "Animation[]")
@@ -640,6 +644,7 @@ val JsClassAnimatable = c(
 
 internal val JsClassChildNode = c(
         className = "ChildNode",
+        isStruct = true,
         functions = listOf(
                 f("after", listOf(p("...nodes", "Array<Node | string>")), returns = "void", comment =
                 "Inserts nodes just after node, while replacing strings in nodes with equivalent Text nodes.\n" +
@@ -664,6 +669,7 @@ internal val JsClassChildNode = c(
 
 internal val JsClassElementCSSInlineStyle = c(
         className = "ElementCSSInlineStyle",
+        isStruct = true,
         properties = listOf(p(name = "style", type = "CSSStyleDeclaration", readonly = true))
 )
 
@@ -744,6 +750,7 @@ internal val JsClassNode = c(
 
 internal val JsClassParentNode = c(
         className = "ParentNode",
+        isStruct = true,
         properties = listOf(
                 p(name = "childElementCount", type = "number", readonly = true),
                 /**
@@ -782,6 +789,7 @@ internal val JsClassParentNode = c(
 
 internal val JsClassNonDocumentTypeChildNode = c(
         className = "NonDocumentTypeChildNode",
+        isStruct = true,
         properties = listOf(
                 p(name = "nextElementSibling", type = "Element | null", readonly = true, comment = "Returns the first following sibling that is an element, and null otherwise."),
                 p(name = "previousElementSibling", type = "Element | null", readonly = true, comment = "Returns the first preceding sibling that is an element, and null otherwise.")
@@ -790,6 +798,7 @@ internal val JsClassNonDocumentTypeChildNode = c(
 
 internal val JsClassDocumentAndElementEventHandlers = c(
         className = "DocumentAndElementEventHandlers",
+        isStruct = true,
         functions = listOf(
                 f("oncopy", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = "?"), nullable = true))),
                 f("oncut", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = "?"), nullable = true))),
@@ -804,6 +813,7 @@ internal val JsClassDocumentAndElementEventHandlers = c(
 
 internal val JsClassElementContentEditable = c(
         className = "ElementContentEditable",
+        isStruct = true,
         properties = listOf(
                 p(name = "contentEditable", type = "string"),
                 p(name = "inputMode", type = "string"),
@@ -813,6 +823,7 @@ internal val JsClassElementContentEditable = c(
 
 internal val JsClassHTMLOrSVGElement = c(
         className = "HTMLOrSVGElement",
+        isStruct = true,
         properties = listOf(
                 p(name = "dataset", type = "DOMStringMap", readonly = true),
                 p("nonce", "string", nullable = true),

@@ -3,11 +3,13 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 
@@ -52,7 +54,7 @@ object ObjJVariableTypeResolver {
 
         // Get call target from formal variable types
         val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames != null && !classNames.isEmpty()) {
+        if (classNames != null && classNames.isNotEmpty()) {
             return classNames
         }
 
@@ -61,8 +63,11 @@ object ObjJVariableTypeResolver {
         }
         val out = mutableSetOf<String>()
         val varNameResults = getVariableTypeFromAssignments(variableName, recurse)?.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }?.toSet()
-        if (varNameResults != null) {
+        if (varNameResults != null && varNameResults.isNotEmpty()) {
             out.addAll(varNameResults)
+        }
+        if (varNameResults == null) {
+            out.addAll(resolveQualifiedReference(variableName.getParentOfType(ObjJQualifiedReference::class.java)))
         }
         return if (out.isNotEmpty()) out else setOf()
     }
@@ -207,4 +212,69 @@ object ObjJVariableTypeResolver {
         }
         return callTarget.text
     }*/
+}
+
+
+private fun resolveExpressionType(expr:ObjJExpr) : List<String> {
+    return listOf()
+}
+
+private fun resolveQualifiedReference(qualifiedReference:ObjJQualifiedReference?) : List<String> {
+    if (qualifiedReference == null) return listOf()
+    val parts = qualifiedReference.qualifiedNameParts
+    if (parts.isEmpty())
+        return emptyList()
+    var currentClasses = listOf<String>()
+    var skipNext = false
+    for (index in 0 until parts.size) {
+        if (skipNext) {
+            skipNext = false
+            continue
+        }
+        val currentClass = getJsClassUnion(currentClasses, qualifiedReference.project)
+        if (currentClass == null) {
+
+        }
+        var rawClassList:List<String> = listOf()
+        val part = parts[index]
+        val variableName = if (part is ObjJVariableName) part.text else if (part is ObjJFunctionCall) part.functionName?.text else null
+
+        if (part is ObjJVariableName) {
+            if (currentClass?.properties?.isEmpty().orTrue()) {
+                rawClassList = ObjJVariableTypeResolver.resolveVariableType(part).toList()
+            }
+        } else if (part is ObjJFunctionCall) {
+            val functionName = part.functionName ?: ""
+            rawClassList = (currentClass?.functions ?: allJSClassesFunctions).filter { it.name == functionName }.mapNotNull { it.returns }
+            if (rawClassList.isEmpty()) {
+                val callbacks = currentClass?.properties?.mapNotNull { it.callback } ?: listOf()
+                if (callbacks.isNotEmpty())
+                    rawClassList = callbacks.mapNotNull { it.returns }
+            }
+        } else if (part is ObjJArrayIndexSelector) {
+            if (currentClasses.contains("String") || currentClasses.contains("string") || currentClasses.contains("CPString")) {
+                rawClassList = listOf("CPString")
+            } else
+                rawClassList = listOf("?")
+        }
+
+        if (rawClassList.isEmpty() && variableName != null) {
+            rawClassList = allJSClassesProperties.filter { it.name == part.text }.map { it.type }
+        }
+
+        currentClasses = rawClassList
+                .flatMap {
+                    it.split("Array|\\s*\\|\\s*".toRegex())
+                }
+                .map { it.trim() }
+        val arrayTypes = currentClasses.filter { it.startsWith("<")}.flatMap {
+            it.substring(1, it.length - 2).split("\\s*|\\s*".toRegex())
+        }.map { it.trim() }
+
+        if (arrayTypes.isNotEmpty() && parts.getOrNull(index + 1) is ObjJArrayIndexSelector) {
+            skipNext = true
+            currentClasses = arrayTypes
+        }
+    }
+    return currentClasses
 }

@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
+import com.intellij.openapi.project.Project
+
 data class GlobalJSClass(
         val className: String,
         val constructor: GlobalJSConstructor = GlobalJSConstructor(),
@@ -12,7 +15,7 @@ data class GlobalJSClass(
         val static: Boolean = false,
         val isStruct: Boolean = false,
         val isObjJ: Boolean = false,
-        interface:Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
+        val isInterface: Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
 data class JsProperty(
         val name: String,
@@ -311,7 +314,7 @@ val Window: GlobalJSClass = c(
                         parameters = listOf(
                                 p("message", "string"),
                                 p("target", "string"),
-                                p("transfer", "Transferable[]", nullable = true))
+                                p("transfer", "Array<Transferable>", nullable = true))
                 ),
                 f("print"),
                 f(
@@ -481,7 +484,7 @@ val globalJSClasses = listOf(
                         f(name = "propertyList", returns = "CFPropertyList"),
                         f(name = "JSONObject", returns = "object"),
                         f(name = "rawString", returns = "string"),
-                        f(name = "bytes", returns = "byte[]"),
+                        f(name = "bytes", returns = "Array<byte>"),
                         f(name = "base64", returns = "string")
                 ),
                 staticFunctions = listOf(
@@ -491,7 +494,7 @@ val globalJSClasses = listOf(
                                         p("input", "string"),
                                         p("strip", "BOOL")
                                 ),
-                                returns = "byte[]"
+                                returns = "Array<byte>"
                         ),
                         f(
                                 name = "decodeBase64ToString",
@@ -511,7 +514,7 @@ val globalJSClasses = listOf(
                         ),
                         f(
                                 name = "encodeBase64Array",
-                                parameters = listOf(p("input", "string[]")), // @todo check if this is correct
+                                parameters = listOf(p("input", "Array<String>")), // @todo check if this is correct
                                 returns = "string"
                         )
                 )
@@ -542,7 +545,7 @@ val globalJSClasses = listOf(
                         f(
                                 name = "setBytes",
                                 parameters = listOf(
-                                        p("bytes", "byte[]"))
+                                        p("bytes", "Array<byte>"))
                         ),
                         f(
                                 name = "setBase64String",
@@ -551,13 +554,13 @@ val globalJSClasses = listOf(
                         ),
                         f(
                                 name = "bytesToString",
-                                parameters = listOf(p("bytes", "byte[]")),
+                                parameters = listOf(p("bytes", "Array<byte>")),
                                 returns = "string"
                         ),
                         f(
                                 name = "stringToBytes",
                                 parameters = listOf(p("input", "string")),
-                                returns = "byte[]"
+                                returns = "Array<byte>"
                         ),
                         f(
                                 name = "encodeBase64String",
@@ -566,7 +569,7 @@ val globalJSClasses = listOf(
                         ),
                         f(
                                 name = "bytesToUtf16String",
-                                parameters = listOf(p("bytes", "byte[]")),
+                                parameters = listOf(p("bytes", "Array<byte>")),
                                 returns = "string"
                         ),
                         f(
@@ -598,7 +601,7 @@ val globalJSClasses = listOf(
                         f(name = "count", parameters = listOf(), returns = "int"),
                         f(name = "countOfKey", parameters = listOf(p("aKey", "string")), returns = "int"),
                         f(name = "countOfValue", parameters = listOf(p("anObject", "id")), returns = "int"),
-                        f(name = "keys", returns = "string[]"),
+                        f(name = "keys", returns = "Array<string>"),
                         f(name = "valueForKey", parameters = listOf(p("aKey", "string")), returns = "id"),
                         f(name = "toString", returns = "string")
                 )
@@ -843,13 +846,13 @@ val globalJSClasses = listOf(
                         p("super_class", "int"),
                         p("name", "string"),
                         p("info"),
-                        p("ivar_list", "objj_ivar[]"),
+                        p("ivar_list", "Array<objj_ivar>"),
                         p("ivar_store"),
                         p("ivar_dtable"),
-                        p("method_list", "?[]"),
+                        p("method_list", "Array<?>"),
                         p("method_store"),
                         p("method_dtable"),
-                        p("protocol_list", "?[]"),
+                        p("protocol_list", "Array<?>"),
                         p("allocator")
                 ),
                 functions = listOf(
@@ -888,13 +891,13 @@ val globalJSClasses = listOf(
                 constructor = ctor(parameters = listOf(
                         p("aName", "string"),
                         p("anImplementation", "IMP"),
-                        p("types", "string[]")
+                        p("types", "Array<string>")
                 )
                 ),
                 properties = listOf(
                         p("method_name", "string"),
                         p("method_imp", "IMP"),
-                        p("method_types", "string[]")
+                        p("method_types", "Array<string>")
                 )
         ),
         c(
@@ -936,7 +939,7 @@ val globalJSClasses = listOf(
                         p("NONE", "number", readonly = true)
                 ),
                 functions = listOf(
-                        f("composedPath", returns = "EventTarget[]"),
+                        f("composedPath", returns = "Array<EventTarget>"),
                         f(
                                 name = "initEvent",
                                 parameters = listOf(
@@ -1005,7 +1008,7 @@ val globalJSClasses = listOf(
                         f("packageType", returns = "string"),
                         f("infoPlist", returns = "?"),
                         f("themeDescriptors", returns = "?"),
-                        f("setThemeDescriptors", parameters = listOf(p("themeDescriptors", "?[]|FileList[]"))),
+                        f("setThemeDescriptors", parameters = listOf(p("themeDescriptors", "Array<?|FileList>"))),
                         f("defineTasks", parameters = listOf(p("...args", "?"))),
                         f("defineSourceTasks"),
                         f("defineThemeDescriptorTasks")
@@ -1058,10 +1061,10 @@ val globalJSClasses = listOf(
                         p("animationName", "string"),
                         p("listener", nullable = true),
                         p("styleElement", nullable = true),
-                        p("propertyanimations", "?[]"),
-                        p("animationsnames", "?[]"),
-                        p("animationstimingfunctions", "?[]"),
-                        p("animationsdurations", "?[]"),
+                        p("propertyanimations", "Array<?>"),
+                        p("animationsnames", "Array<?>"),
+                        p("animationstimingfunctions", "Array<?>"),
+                        p("animationsdurations", "Array<?>"),
                         p("islive", "BOOL"),
                         p("didBuildDOMElements", "BOOL")
                 ),
@@ -1073,9 +1076,9 @@ val globalJSClasses = listOf(
                                         p("propertyName", "string"),
                                         p("valueFunction", "Function"),
                                         p("aDuration", "number"),
-                                        p("aKeyTimes", "d|d[]"),
-                                        p("aValues", "?[]"),
-                                        p("aTimingFunctions", "d[]|d[][]", comment = "[d,d,d,d] | [[d,d,d,d]]"),
+                                        p("aKeyTimes", "d|Array<d>"),
+                                        p("aValues", "Array<?>"),
+                                        p("aTimingFunctions", "Array<d>", comment = "[d,d,d,d] | [[d,d,d,d]]"),
                                         p("aCompletionfunction", "Function")
                                 ),
                                 returns = "BOOL"
@@ -1133,7 +1136,7 @@ val globalJSClasses = listOf(
                         f(
                                 name = "exec",
                                 parameters = listOf(p("string", "string", comment = "The String object or string literal on which to perform the search.")),
-                                returns = "string[]|null",
+                                returns = "Array<string>|null",
                                 comment = "Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search."
                         ),
                         f(
@@ -1165,7 +1168,7 @@ val globalJSClasses = listOf(
                         f("trace")
                 )
         ),
-        c (
+        c(
                 className = "Slotable",
                 properties = listOf(
                         p(name = "assignedSlot", type = "HTMLSlotElement | null", readonly = true)
@@ -1185,7 +1188,125 @@ val globalJSClasses = listOf(
         JsClassElementContentEditable,
         JsElementClass,
         JsClassHTMLOrSVGElement
-
 )
 
+fun getJsClassUnion(classNames:List<String>, project:Project) : GlobalJSClass? {
+    if (classNames.contains("?")) {
+        return GlobalJSClass(
+                className = "Any",
+                properties = allJSClassesProperties,
+                functions = allJSClassesFunctions
+        )
+    }
+    val allClasses = classNames.flatMap { it.split("&".toRegex()) }.mapNotNull { getJsClass(it.trim()) }.toMutableList()
+    allClasses.addAll(getObjJAsJsClasses(project).filter { it.className in classNames })
+    if (allClasses.isEmpty())
+        return null
+    val properties = allClasses.flatMap { it.properties }.toSet()
+    val functions = allClasses.flatMap { it.functions }.toSet()
+    val staticFunctions = allClasses.flatMap { it.staticFunctions }.toSet()
+    val staticProperties = allClasses.flatMap {it.staticProperties }.toSet()
+    return GlobalJSClass(
+            className = classNames.joinToString("|"),
+            properties = properties.toList(),
+            functions = functions.toList(),
+            staticFunctions = staticFunctions.toList(),
+            staticProperties = staticProperties.toList()
+}
+
+fun getJsClassUnion(classNames:List<String>) : GlobalJSClass? {
+    if (classNames.contains("?")) {
+        return GlobalJSClass(
+                className = "Any",
+                properties = allJSClassesProperties,
+                functions = allJSClassesFunctions
+        )
+    }
+    val allClasses = classNames.flatMap { it.split("&".toRegex()) }.mapNotNull { getJsClass(it.trim()) }
+    if (allClasses.isEmpty())
+        return null
+    val properties = allClasses.flatMap { it.properties }.toSet()
+    val functions = allClasses.flatMap { it.functions }.toSet()
+    val staticFunctions = allClasses.flatMap { it.staticFunctions }.toSet()
+    val staticProperties = allClasses.flatMap {it.staticProperties }.toSet()
+    return GlobalJSClass(
+            className = classNames.joinToString("|"),
+            properties = properties.toList(),
+            functions = functions.toList(),
+            staticFunctions = staticFunctions.toList(),
+            staticProperties = staticProperties.toList()
+    )
+}
+
+fun getJsClass(className: String): GlobalJSClass? {
+    val baseClass = globalJSClasses.firstOrNull { it.className == className } ?: return null
+    val allClasses = baseClass.allClasses
+    val properties = allClasses.flatMap { it.properties }
+    val functions = allClasses.flatMap { it.functions }
+    val staticFunctions = allClasses.flatMap { it.staticFunctions }
+    val staticProperties = allClasses.flatMap {it.staticProperties }
+    return baseClass.copy (
+            properties = properties,
+            functions = functions,
+            staticFunctions = staticFunctions,
+            staticProperties = staticProperties
+    )
+}
+
+private val GlobalJSClass.allClasses : List<GlobalJSClass> get() {
+    val allClasses = mutableListOf<GlobalJSClass>()
+    appendClasses(allClasses)
+    return allClasses
+}
+
+private fun GlobalJSClass.appendClasses(allClasses:MutableList<GlobalJSClass>, allClassNames:MutableList<String> = mutableListOf()) {
+    allClassNames.add(this.className)
+    allClasses.add(this)
+    for (parentClassName in extends) {
+        if (parentClassName in allClassNames) continue
+        allClassNames.add(parentClassName)
+        val parentClass = getJsClass(parentClassName) ?: continue
+        parentClass.appendClasses(allClasses, allClassNames)
+    }
+}
+
+private var objJAsJsClasses: List<GlobalJSClass>? = null
+
+fun getObjJAsJsClasses(project:Project) : List<GlobalJSClass> {
+    var out = objJAsJsClasses
+    if (out != null)
+        return out
+    out = ObjJImplementationDeclarationsIndex.instance.getAllKeys(project).map {
+        val declarations = ObjJImplementationDeclarationsIndex.instance[it, project]
+        val properties = declarations.flatMap {
+            it.instanceVariableList?.instanceVariableDeclarationList ?: emptyList()
+        }.mapNotNull instanceVar@{
+           val variableName = it.variableName?.text ?: return@instanceVar null
+            val type = if (it.formalVariableType?.varTypeId != null) {
+                it.formalVariableType?.varTypeId?.idType ?: "?"
+            } else {
+                var text = it.text
+                if (text.endsWith("Ref")) {
+                    text.substring(0, text.length - ("Ref".length + 1))
+                } else if (text.endsWith("Reference")) {
+                    text.substring(0, text.length - ("Reference".length + 1))
+                }
+                text
+            }
+            JsProperty(
+                    name = variableName,
+                    type = type
+            )
+        }
+        GlobalJSClass(
+                className = it,
+                properties = properties
+        )
+    }
+    return out
+}
+
 val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }
+
+val allJSClassesFunctions = globalJSClasses.flatMap { it.functions }
+val allJSClassesProperties = globalJSClasses.flatMap { it.properties }

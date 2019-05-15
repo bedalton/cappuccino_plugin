@@ -1787,7 +1787,7 @@ private qualifiedReferencePrimary
 arrayIndexSelector
 	::= '[' expr ']'
 	{
-		//pin = 1
+		implements = ["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"]
 	}
 	;
 
