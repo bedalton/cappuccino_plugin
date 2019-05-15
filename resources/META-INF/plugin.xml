@@ -318,6 +318,32 @@
     <lang.syntaxHighlighterFactory key="ObjJPlist"
                                    implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
                                    -->
+
+    <!-- =============================== -->
+    <!-- ========= JsTypeDef =========== -->
+    <!-- =============================== -->
+    <lang.parserDefinition language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParserDefinition"/>
+
+    <!-- Highlighting -->
+    <lang.syntaxHighlighterFactory key="JsTypeDef"
+                                   implementationClass="cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefSyntaxHighlighterFactory"/>
+    <lang.findUsagesProvider language="JsTypeDef"
+                             implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFindUsagesProvider"/>
+
+    <lang.braceMatcher language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefBraceMatcher"/>
+
+    <!-- STUBS AND INDICES -->
+    <applicationService serviceInterface="cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService"
+                        serviceImplementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefIndexService" />
+    <internalFileTemplate name="jstypedef.file" />
+
+    <!-- Annotators -->
+    <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefAnnotator" />
+    <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefSyntaxHighlighterAnnotator" />
+
+
+
+
   </extensions>
 
   <actions>

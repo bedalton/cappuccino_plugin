@@ -102,7 +102,7 @@ class ObjJFileUtil {
         }
 
         @JvmOverloads
-        fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String? = null, includePath: Boolean = false): String? {
+        fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String = "???", includePath: Boolean = false): String {
             if (psiFile == null) {
                 return defaultValue
             }
@@ -112,7 +112,7 @@ class ObjJFileUtil {
                 } else psiFile.virtualFile.name
             }
             val fileName = psiFile.originalFile.name
-            return if (!fileName.isEmpty()) fileName else defaultValue
+            return if (fileName.isNotEmpty()) fileName else defaultValue
         }
 
         fun getFilePath(psiFile: PsiFile?, defaultValue: String?): String? {
