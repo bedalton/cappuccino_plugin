@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsInde
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
@@ -216,8 +217,59 @@ object ObjJVariableTypeResolver {
 
 
 private fun resolveExpressionType(expr:ObjJExpr) : List<String> {
+
+    if (expr.leftExpr.qualifiedReference != null)
     return listOf()
 }
+
+private fun getIfExprHasRight(expr:ObjJExpr) : List<String>? {
+    val left = expr.leftExpr ?: return null
+    val rightExpressions = expr.rightExprList
+    if (rightExpressions.isEmpty())
+        return null
+    val out = mutableListOf<String>()
+    if (expr.isString)
+        out.add(ObjJClassType.STRING)
+    if (expr.isBool)
+        out.add(ObjJClassType.BOOL)
+    out.addAll(expr.numberTypes)
+    return out
+}
+
+private val ObjJExpr.isString get() {
+    if (this.leftExpr?.primary?.stringLiteral != null)
+        return true
+    val rightExpressions = this.rightExprList
+    if (rightExpressions.isEmpty())
+        return false
+    for(rightExpr in rightExpressions) {
+        if (rightExpr.mathExprPrime?.expr?.leftExpr?.primary?.stringLiteral != null)
+            return true
+    }
+    return false
+}
+
+private val ObjJExpr.hasMath:Boolean get() {
+    val rightExpressions = this.rightExprList
+    if (rightExpressions.isEmpty())
+        return false
+    for(rightExpr in rightExpressions) {
+        if (rightExpr.mathExprPrime != null)
+            return true
+    }
+    return false
+}
+
+private val ObjJExpr.isBool get() {
+    val rightExpressions = this.rightExprList
+    if (rightExpressions.isEmpty())
+        return false
+    for(rightExpr in rightExpressions) {
+        if (rightExpr?.logicExprPrime)
+            return true
+    }
+}
+
 
 private fun resolveQualifiedReference(qualifiedReference:ObjJQualifiedReference?) : List<String> {
     if (qualifiedReference == null) return listOf()

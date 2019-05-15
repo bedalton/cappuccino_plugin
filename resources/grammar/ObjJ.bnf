@@ -1509,6 +1509,11 @@ newExpression::= 'new' (functionCall|expr arguments?) ;
 enclosedExpr
 	::= arrayIndexSelector
 	| 	parenEnclosedExpr
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+	}
 	;
 
 private parenEnclosedExpr
