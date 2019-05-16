@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.impl
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsModule
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeInterface
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
@@ -10,6 +10,7 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
 import com.intellij.psi.scope.PsiScopeProcessor
+import com.intellij.psi.tree.IElementType
 import com.intellij.usageView.UsageViewUtil
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -17,17 +18,19 @@ import javax.swing.*
 
 open class JsTypeDefElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), JsTypeDefElement {
 
+    val elementType:IElementType get () = node.elementType
+
     override val containerName: String?
         get() {
-            val parentClass = getParentOfType(JsTypeInterface::class.java)
+            val parentClass = getParentOfType(JsTypeDefInterfaceElement::class.java)
             if (parentClass != null) {
                 val typeName = parentClass.typeName?.id?.text
                 if (typeName != null)
                     return typeName
             }
-            val moduleName = getParentOfType(JsModule::class.java)
-            if (moduleName != null) {
-                return moduleName.qualifiedModuleName.text
+            val module = getParentOfType(JsTypeDefModule::class.java)
+            if (module != null) {
+                return module.fullyNamespacedName
             }
             return containingFile?.name ?: "???"
         }

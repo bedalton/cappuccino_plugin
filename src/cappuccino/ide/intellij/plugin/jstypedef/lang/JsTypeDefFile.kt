@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.jstypedef.lang
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsFunctionDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsModule
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeInterface
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsVariableDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.jstypedef.structure.JsTypeDefStructureViewElement
@@ -22,21 +22,21 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
 
     override val containerName get() = ObjJFileUtil.getFileNameSafe(this)
 
-    val interfaces: List<JsTypeInterface>
-        get() = getChildrenOfType(JsTypeInterface::class.java)
+    val interfaces: List<JsTypeDefInterfaceElement>
+        get() = getChildrenOfType(JsTypeDefInterfaceElement::class.java)
 
-    val globalVariables : List<JsVariableDeclaration>
-        get() = getChildrenOfType(JsVariableDeclaration::class.java)
+    val globalVariables : List<JsTypeDefVariableDeclaration>
+        get() = getChildrenOfType(JsTypeDefVariableDeclaration::class.java)
 
-    val globalFunctions : List<JsFunctionDeclaration>
-        get () = getChildrenOfType(JsFunctionDeclaration::class.java)
+    val globalFunctions : List<JsTypeDefFunctionDeclaration>
+        get () = getChildrenOfType(JsTypeDefFunctionDeclaration::class.java)
 
     override fun toString(): String {
         return "JsTypeDef Language file"
     }
 
     override fun getIcon(flags: Int): Icon? {
-        return ObjJIcons.JSDEF_DOCUMENT_ICON
+        return ObjJIcons.JsTypeDefDEF_DOCUMENT_ICON
     }
 
     override fun getFileType(): FileType {
@@ -50,7 +50,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
     override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> =
             PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
 
-    fun getModuleByNameAndNamespace(name:String) : JsModule? {
+    fun getModuleByNameAndNamespace(name:String) : JsTypeDefModule? {
         for(module in getAllModulesFlat()) {
             if (module.namespacedModuleName == name)
                 return module
@@ -58,8 +58,8 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
         return null
     }
 
-    fun getModulesWithNamespace(nameSpace:String): List<JsModule> {
-        val out = mutableListOf<JsModule>()
+    fun getModulesWithNamespace(nameSpace:String): List<JsTypeDefModule> {
+        val out = mutableListOf<JsTypeDefModule>()
         for(module in getAllModulesFlat()) {
             if (module.namespacedModuleName.startsWith(nameSpace))
                 out.add(module)
@@ -67,9 +67,9 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
         return out
     }
 
-    fun getAllModulesFlat() : List<JsModule> {
-        val out = mutableListOf<JsModule>()
-        val rootModules = getChildrenOfType(JsModule::class.java)
+    fun getAllModulesFlat() : List<JsTypeDefModule> {
+        val out = mutableListOf<JsTypeDefModule>()
+        val rootModules = getChildrenOfType(JsTypeDefModule::class.java)
         for (module in rootModules) {
             out.add(module)
             out.addAll(module.moduleList)

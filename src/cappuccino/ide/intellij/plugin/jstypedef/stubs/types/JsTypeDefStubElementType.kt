@@ -1,19 +1,19 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.ReflectionUtil
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import org.jetbrains.annotations.NonNls
 
 import java.lang.reflect.Constructor
 
 
-abstract class JsTypeDefStubElementType<StubT : StubElement<*>, PsiT : ObjJStubBasedElement<*>>(@NonNls debugName: String, psiClass: Class<PsiT>) : IStubElementType<StubT, PsiT>(debugName, ObjJLanguage.instance) {
+abstract class JsTypeDefStubElementType<StubT : StubElement<*>, PsiT : JsTypeDefStubBasedElement<*>>(@NonNls debugName: String, psiClass: Class<PsiT>) : IStubElementType<StubT, PsiT>(debugName, JsTypeDefLanguage.instance) {
 
     private val byNodeConstructor: Constructor<PsiT>
 
@@ -30,7 +30,7 @@ abstract class JsTypeDefStubElementType<StubT : StubElement<*>, PsiT : ObjJStubB
     }
 
     override fun getExternalId(): String {
-        return "objj." + toString()
+        return "JsTypeDef." + toString()
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
@@ -39,11 +39,5 @@ abstract class JsTypeDefStubElementType<StubT : StubElement<*>, PsiT : ObjJStubB
 
     override fun indexStub(stub: StubT, sink: IndexSink) {
         // do not force inheritors to implement this method
-    }
-
-    protected fun shouldResolve(node: ASTNode): Boolean {
-        val psiElement = node.psi
-        val classDeclarationElement = ObjJPsiImplUtil.getContainingClass(psiElement) ?: return false
-        return ObjJPsiImplUtil.shouldResolve(classDeclarationElement)
     }
 }

@@ -6,16 +6,16 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
+import com.intellij.psi.PsiElement
 
 import java.util.*
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
-abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : StringStubIndexExtension<ObjJElemT>() {
+abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndexExtension<ObjJElemT>() {
 
     protected abstract val indexedElementClass: Class<ObjJElemT>
 

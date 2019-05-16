@@ -1,13 +1,13 @@
 package cappuccino.ide.intellij.plugin.jstypedef.references
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsModule
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsModuleName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 
-class JsTypeDefModuleNameReference(element:JsModuleName)  : PsiReferenceBase<JsModuleName>(element, TextRange(0, element.text.length - 1)) {
+class JsTypeDefModuleNameReference(element:JsTypeDefModuleName)  : PsiReferenceBase<JsTypeDefModuleName>(element, TextRange(0, element.text.length - 1)) {
 
     private val moduleName:String = myElement.text
     private val namespaceComponents:List<String> by lazy {
@@ -18,7 +18,7 @@ class JsTypeDefModuleNameReference(element:JsModuleName)  : PsiReferenceBase<JsM
     }
 
         override fun isReferenceTo(elementToCheck: PsiElement): Boolean {
-            if (elementToCheck !is JsModuleName)
+            if (elementToCheck !is JsTypeDefModuleName)
                 return false
             if (elementToCheck.text != moduleName)
                 return false

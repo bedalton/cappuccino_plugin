@@ -7,9 +7,9 @@ import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
 import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsFunctionName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsPropertyName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
@@ -32,9 +32,9 @@ class JsTypeDefFindUsagesProvider : FindUsagesProvider {
 
     override fun canFindUsagesFor(
             psiElement: PsiElement): Boolean {
-        return psiElement is JsFunctionName ||
-                psiElement is JsPropertyName ||
-                psiElement is JsTypeName
+        return psiElement is JsTypeDefFunctionName ||
+                psiElement is JsTypeDefPropertyName ||
+                psiElement is JsTypeDefTypeName
     }
 
     override fun getHelpId(
@@ -45,9 +45,9 @@ class JsTypeDefFindUsagesProvider : FindUsagesProvider {
     override fun getType(
             psiElement: PsiElement): String {
         return when (psiElement) {
-            is JsFunctionName -> "function"
-            is JsPropertyName -> "property"
-            is JsTypeName -> "class"
+            is JsTypeDefFunctionName -> "function"
+            is JsTypeDefPropertyName -> "property"
+            is JsTypeDefTypeName -> "class"
             else -> ""
         }
     }

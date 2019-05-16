@@ -16,15 +16,15 @@ object JsTypeDefElementFactory {
 
     private const val PlaceholderClassName = "_XXX__"
 
-    fun createFunctionName(project: Project, functionName: String): JsFunctionName? {
+    fun createFunctionName(project: Project, functionName: String): JsTypeDefFunctionName? {
         val file = """
             declare function $functionName ();
         """.trimIndent().toFile(project)
-        val functionDeclaration = file.getChildOfType(JsFunctionDeclaration::class.java)
+        val functionDeclaration = file.getChildOfType(JsTypeDefFunctionDeclaration::class.java)
         return functionDeclaration?.function?.functionName
     }
 
-    fun createProperty(project: Project, propertyName:String, propertyTypes:String = "null"): JsProperty? {
+    fun createProperty(project: Project, propertyName:String, propertyTypes:String = "null"): JsTypeDefProperty? {
         val file ="""
                 interface $PlaceholderClassName {
                     $propertyName : $propertyTypes
@@ -33,18 +33,18 @@ object JsTypeDefElementFactory {
         return file.interfaces.getOrNull(0)?.interfaceBody?.propertyList?.getOrNull(0)
     }
 
-    fun createTypeName(project:Project, typeName: String) : JsTypeName? {
+    fun createTypeName(project:Project, typeName: String) : JsTypeDefTypeName? {
         val file = """
             interface $typeName { }
         """.trimIndent().toFile(project)
         return file.interfaces.getOrNull(0)?.typeName
     }
 
-    fun createModuleName(project:Project, moduleName:String) : JsModuleName? {
+    fun createModuleName(project:Project, moduleName:String) : JsTypeDefModuleName? {
         val file = """
             module $moduleName {}
         """.trimIndent().toFile(project)
-        return file.getChildOfType(JsModule::class.java)?.qualifiedModuleName?.moduleNameList?.first()
+        return file.getChildOfType(JsTypeDefModule::class.java)?.qualifiedModuleName?.moduleNameList?.first()
     }
 
     fun createSpace(project: Project): PsiElement {

@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsFunctionName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsPropertyName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*
@@ -27,9 +27,9 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
         if (psiElement !is JsTypeDefElement)
             return
         when (psiElement) {
-            is JsTypeName -> highlightTypeName(psiElement, annotationHolder)
-            is JsPropertyName -> highlightPropertyName(psiElement, annotationHolder)
-            is JsFunctionName -> highlightFunctionName(psiElement, annotationHolder)
+            is JsTypeDefTypeName -> highlightTypeName(psiElement, annotationHolder)
+            is JsTypeDefPropertyName -> highlightPropertyName(psiElement, annotationHolder)
+            is JsTypeDefFunctionName -> highlightFunctionName(psiElement, annotationHolder)
         }
     }
 
@@ -37,7 +37,7 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
      * Highlights variable name elements
      * Differentiates between static class name references, and variable names
      */
-    private fun highlightTypeName(variableNameElement:JsTypeName, annotationHolder: AnnotationHolder) {
+    private fun highlightTypeName(variableNameElement:JsTypeDefTypeName, annotationHolder: AnnotationHolder) {
         val project = variableNameElement.project
         // Ensure indices are ready
         if (DumbService.isDumb(project)) {
@@ -50,7 +50,7 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
     /**
      * Highlights function name elements
      */
-    private fun highlightFunctionName(functionName:JsFunctionName, annotationHolder: AnnotationHolder) {
+    private fun highlightFunctionName(functionName:JsTypeDefFunctionName, annotationHolder: AnnotationHolder) {
         val project = functionName.project
         // Ensure indices are ready
         if (DumbService.isDumb(project)) {
@@ -64,7 +64,7 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
     /**
      * Highlights property names
      */
-    private fun highlightPropertyName(propertyName:JsPropertyName, annotationHolder: AnnotationHolder) {
+    private fun highlightPropertyName(propertyName:JsTypeDefPropertyName, annotationHolder: AnnotationHolder) {
         val project = propertyName.project
         // Ensure indices are ready
         if (DumbService.isDumb(project)) {

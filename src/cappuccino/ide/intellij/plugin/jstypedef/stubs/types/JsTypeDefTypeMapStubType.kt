@@ -8,7 +8,7 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
-class JsTypeDefModuleStubType internal constructor(
+class JsTypeDefTypeMapStubType internal constructor(
         debugName: String) : JsTypeDefStubElementType<JsTypeDefModuleStub, JsTypeDefModuleImpl>(debugName, JsTypeDefModuleImpl::class.java) {
 
     override fun createPsi(
