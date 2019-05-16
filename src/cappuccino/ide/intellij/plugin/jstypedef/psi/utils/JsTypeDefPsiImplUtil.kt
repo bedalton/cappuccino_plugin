@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
-import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 
@@ -34,6 +34,11 @@ object JsTypeDefPsiImplUtil {
         return typeName?.text ?: ""
     }
 
+    @JvmStatic
+    fun getName(moduleName:JsModuleName) : String {
+        return moduleName.text ?: ""
+    }
+
     // ============================== //
     // ========== Set Name ========== //
     // ============================== //
@@ -54,18 +59,41 @@ object JsTypeDefPsiImplUtil {
         return oldTypeName.replace(newTypeName)
     }
 
+    @JvmStatic
+    fun setName(oldModuleName:JsModuleName, newName:String) : PsiElement {
+        val newModuleName = JsTypeDefElementFactory.createModuleName(oldModuleName.project, newName) ?: return oldModuleName
+        return oldModuleName.replace(newModuleName)
+    }
+
     // ============================== //
     // ========== Modules =========== //
     // ============================== //
     @JvmStatic
-    fun getNamespacedModuleName(module:JsModule) : String {
-        val out = mutableListOf<String>()
+    fun getFullyNamespacedName(module:JsModule) : String {
+        return getNamespaceComponents(module).joinToString(".")
+    }
+
+    @JvmStatic
+    fun getEnclosingNamespaceAsString(module:JsModule) : String {
+        return getEnclosingNamespaceComponents(module).joinToString(".")
+    }
+
+    @JvmStatic
+    fun getEnclosingNamespaceComponents(module:JsModule) : List<String> {
+        val components = getNamespaceComponents(module).toMutableList()
+        components.removeAt(components.lastIndex)
+        return components
+    }
+
+    @JvmStatic
+    fun getNamespaceComponents(module:JsModule) : List<String> {
+        val temp = mutableListOf<String>()
         var currentModule:JsModule? = module
         while (currentModule != null) {
-            out.add(0, currentModule.qualifiedModuleName.text)
+            temp.add(0, currentModule.namespacedModuleName.text)
             currentModule = currentModule.getParentOfType(JsModule::class.java)
         }
-        return out.joinToString(".")
+        return temp.joinToString(".").split("\\s*\\.\\s*".toRegex())
     }
 
     @JvmStatic
@@ -82,21 +110,109 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEnclosingNamespace(module:JsModule) : List<String> {
-        val temp = module.namespacedModuleName.split("\\s*\\.\\s*".toRegex()).toMutableList()
-        temp.removeAt(temp.lastIndex)
-        return temp
+    fun getCollapsedNamespaceComponents(module:JsModule) : List<JsModuleName> {
+        val out = module.namespacedModuleName.namespace.moduleNameList.toMutableList()
+        out.add(module.namespacedModuleName.moduleName)
+        return out
+    }
+
+
+    @JvmStatic
+    fun getEnclosingNamespace(element:JsTypeDefElement) : String {
+        val module = element.getParentOfType(JsModule::class.java) ?: return ""
+        return getFullyNamespacedName(module)
     }
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefElement) : List<String> {
-        if (element is JsModule) {
-            return getEnclosingNamespace(element)
-        }
-        val enclosingModule = element.getParentOfType(JsModule::class.java)
-        return enclosingModule?.namespacedModuleName?.split("\\s*\\.\\s*".toRegex()) ?: listOf()
+    fun getPrecedingNamespaceComponents(moduleName:JsModuleName) : List<String> {
+        val parentModule = getParentModule(moduleName) ?: return listOf()
+        val out = getEnclosingNamespaceComponents(parentModule).toMutableList()
+        val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
+        val moduleNameIndex = namespaceComponents.indexOf(moduleName)
+        if (moduleNameIndex < 0)
+            return listOf()
+        val directlyPrecedingComponents = namespaceComponents.subList(0, moduleNameIndex).map { it.text }
+        out.addAll(directlyPrecedingComponents)
+        return out
     }
 
+    @JvmStatic
+    fun getPrecedingNamespace(moduleName:JsModuleName) : String {
+        return getPrecedingNamespaceComponents(moduleName).joinToString(".")
+    }
+
+    @JvmStatic
+    fun getFullyNamespacedName(moduleName:JsModuleName) : String {
+        val components = getPrecedingNamespaceComponents(moduleName).toMutableList()
+        components.add(moduleName.text)
+        return components.joinToString(".")
+    }
+
+    @JvmStatic
+    fun getIndexInDirectNamespace(moduleName:JsModuleName) : Int {
+        val parentModule = getParentModule(moduleName) ?: return -1
+        val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
+        return namespaceComponents.indexOf(moduleName)
+    }
+
+    @JvmStatic
+    fun getIndexInFullNamespace(moduleName:JsModuleName) : Int {
+        val parentModule = getParentModule(moduleName) ?: return -1
+        val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
+        val moduleNameIndex = namespaceComponents.indexOf(moduleName)
+        if (moduleNameIndex < 0)
+            return -1
+        val numberOfPrecedingNamespaceComponents = getEnclosingNamespaceComponents(parentModule).size
+        return numberOfPrecedingNamespaceComponents + moduleNameIndex
+    }
+
+    @JvmStatic
+    fun getParentModule(moduleName:JsModuleName) : JsModule? {
+        return moduleName.getParentOfType(JsModule::class.java)
+    }
+
+
+    // ============================== //
+    // ========= Interfaces ========= //
+    // ============================== //
+
+    @JvmStatic
+    fun getConstructors(interfaceElement:JsTypeInterface) : List<JsFunction> {
+        val functions = interfaceElement.interfaceBody?.functionList ?: return listOf()
+        return functions.filter {
+            it.functionName.const != null
+        }
+    }
+
+
+    // ============================== //
+    // ========= Properties ========= //
+    // ============================== //
+
+    @JvmStatic
+    fun getPropertyTypes(property:JsProperty) : List<JsType> {
+        return property.propertyType.types.typeList
+    }
+
+    @JvmStatic
+    fun isNullable(property:JsProperty) : Boolean {
+        return isNullable(property.propertyType.types)
+    }
+
+    @JvmStatic
+    fun isNullableReturnType(function:JsFunction) : Boolean {
+        return isNullable(function.functionReturnType)
+    }
+
+    @JvmStatic
+    fun isNullable(returnType:JsFunctionReturnType?) : Boolean {
+        return returnType?.void != null || isNullable(returnType?.propertyType?.types)
+    }
+
+    @JvmStatic
+    fun isNullable(types:JsTypes?) : Boolean {
+        return types?.typeList?.firstOrNull { it.nullType != null } != null
+    }
 
     // ============================== //
     // ======== Descriptions ======== //
