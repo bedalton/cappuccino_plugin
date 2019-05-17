@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import com.intellij.openapi.util.MultiValuesMap
 import java.util.ArrayList
 
 typealias Filter<T> = (T) -> Boolean
@@ -108,3 +109,12 @@ fun <T> List<T>.minus(element:T) : List<T> {
     list.remove(element)
     return list
 }
+
+fun <Key, Type> MutableMap<Key, MutableList<Type>>.put(key:Key, item:Type) {
+    if (!this.containsKey(key)) {
+        this[key] = mutableListOf()
+    }
+    this[key]!!.add(item)
+}
+
+val m = MultiValuesMap

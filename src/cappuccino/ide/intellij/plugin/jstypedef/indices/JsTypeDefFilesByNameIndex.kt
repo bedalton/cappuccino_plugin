@@ -1,12 +1,10 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.indices.IndexKeyUtil
-import cappuccino.ide.intellij.plugin.indices.ObjJStringStubIndexBase
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import com.intellij.psi.stubs.StubIndexKey
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
 
-class JsTypeDefFilesByNameIndex private constructor() : ObjJStringStubIndexBase<JsTypeDefFile>() {
+class JsTypeDefFilesByNameIndex private constructor() : JsTypeDefStringStubIndexBase<JsTypeDefFile>() {
 
     override val indexedElementClass: Class<JsTypeDefFile>
         get() = JsTypeDefFile::class.java
@@ -25,7 +23,7 @@ class JsTypeDefFilesByNameIndex private constructor() : ObjJStringStubIndexBase<
 
         private val KEY = IndexKeyUtil.createIndexKey(JsTypeDefFilesByNameIndex::class.java)
 
-        private const val VERSION = 3
+        private const val VERSION = 1
     }
 
 

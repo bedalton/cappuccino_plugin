@@ -13,7 +13,7 @@
 	generateTokenAccessors=true
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
 	consumeTokenMethod("interfaceBody")="consumeTokenFast"
-	elementTypeFactory("function|variableDeclaration|property|module|typeMap|keyList")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
+	elementTypeFactory("function|variableDeclaration|property|module|moduleName|typeMap|keyList")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
 
 	name("eos") = "semi-colon"
 	name("stringLiteral") = "String"

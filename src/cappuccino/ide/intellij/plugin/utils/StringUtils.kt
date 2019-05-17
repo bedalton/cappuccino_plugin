@@ -72,3 +72,12 @@ fun String.trimFromBeginning(prefixes:List<String>, repeatedly:Boolean = true) :
     } while(changed && repeatedly)
     return out
 }
+
+fun String.afterLast(sequence:String, offset:Int = 0, ignoreCase:Boolean = false) : String {
+    if (endsWith(sequence))
+        return ""
+    val lastIndex = this.lastIndexOf(sequence, offset, ignoreCase)
+    if (lastIndex < 0)
+        return this
+    return this.substring(lastIndex + sequence.length)
+}

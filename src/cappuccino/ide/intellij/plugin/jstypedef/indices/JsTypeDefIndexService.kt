@@ -1,7 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFileStub
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub
 
@@ -15,7 +19,29 @@ class JsTypeDefIndexService : StubIndexService() {
             sink.occurrence<JsTypeDefFile, String>(JsTypeDefFilesByNameIndex.instance.key, stub.fileName)
     }
 
+
+    override fun indexFunction(stub: JsTypeDefFunctionStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefFunction, String>(JsTypeDefFunctionsByNameIndex.instance.key, stub.functionName)
+        sink.occurrence<JsTypeDefFunction, String>(JsTypeDefFunctionsByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+    }
+
+    override fun indexProperty(stub: JsTypeDefPropertyStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefProperty, String>(JsTypeDefPropertiesByNameIndex.instance.key, stub.propertyName)
+        sink.occurrence<JsTypeDefProperty, String>(JsTypeDefPropertiesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+    }
+
+    override fun indexModule(stub: JsTypeDefModuleStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefModule, String>(JsTypeDefModulesByNameIndex.instance.key, stub.moduleName)
+        sink.occurrence<JsTypeDefModule, String>(JsTypeDefModulesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+
+    }
+
+    override fun indexModuleName(stub: JsTypeDefModuleNameStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefModuleName, String>(JsTypeDefModuleNamesByNameIndex.instance.key, stub.moduleName)
+        sink.occurrence<JsTypeDefModuleName, String>(JsTypeDefModuleNamesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+    }
+
     companion object {
-        const val SOURCE_STUB_VERSION = 1
+        const val SOURCE_STUB_VERSION = 0
     }
 }

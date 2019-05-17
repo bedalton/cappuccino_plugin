@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFileStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFileStub
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
@@ -13,6 +13,23 @@ open class StubIndexService {
 
     open fun indexFile(stub:PsiFileStub<*>, sink: IndexSink) {
         LOGGER.warning("IndexFile should be overridden")
+    }
+
+    open fun indexFunction(stub:JsTypeDefFunctionStub, sink:IndexSink) {
+        throw NotImplementedError("index functions method must be overridden")
+    }
+
+
+    open fun indexProperty(stub:JsTypeDefPropertyStub, sink:IndexSink) {
+        throw NotImplementedError("index property method must be overridden")
+    }
+
+    open fun indexModule(stub:JsTypeDefModuleStub, sink:IndexSink) {
+        throw NotImplementedError("index module method must be overridden")
+    }
+
+    open fun indexModuleName(stub:JsTypeDefModuleNameStub, sink:IndexSink) {
+        throw NotImplementedError("index module name method must be overridden")
     }
 
     fun createFileStub(file:JsTypeDefFile) : JsTypeDefFileStub {

@@ -85,6 +85,9 @@ interface JsTypeDefNamespacedComponent {
     val namespaceComponents:List<String>
 }
 
+val JsTypeDefNamespacedComponent.fullyNamespacedName : String
+    get() = namespaceComponents.joinToString(".")
+
 
 interface JsTypeDefTypeMapStub : StubElement<JsTypeDefTypeMapImpl> {
     val fileName:String
