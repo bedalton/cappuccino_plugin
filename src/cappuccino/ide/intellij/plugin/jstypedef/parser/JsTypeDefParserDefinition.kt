@@ -31,7 +31,7 @@ class JsTypeDefParserDefinition : ParserDefinition {
     }
 
     override fun createParser(project: Project): PsiParser {
-        return ObjectiveJParser()
+        return JsTypeDefParser()
     }
 
     override fun getFileNodeType(): IFileElementType {

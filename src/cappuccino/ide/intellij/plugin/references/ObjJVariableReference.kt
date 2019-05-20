@@ -29,7 +29,7 @@ class ObjJVariableReference(
             val imports = file?.importStrings
             val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
             var namedElement:PsiElement? = null
-            if (!globalVariableDeclarations.isEmpty()) {
+            if (globalVariableDeclarations.isNotEmpty()) {
                 if (imports == null) {
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
@@ -41,7 +41,7 @@ class ObjJVariableReference(
                 }
             }
             val functionDeclarationElements = ObjJFunctionsIndex.instance[myElement.text, myElement.project]
-            if (namedElement == null && !functionDeclarationElements.isEmpty()) {
+            if (namedElement == null && functionDeclarationElements.isNotEmpty()) {
                 namedElement = functionDeclarationElements[0].functionNameNode
                 if (namedElement == null) {
                     for (declarationElement in functionDeclarationElements) {

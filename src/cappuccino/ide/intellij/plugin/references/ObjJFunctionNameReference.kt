@@ -6,6 +6,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -75,7 +76,15 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
                 return function.functionName
             }
         }
-        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+        if (allOut.isNotEmpty())
+            return allOut[0]
+        val fromVariableName = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+        if (fromVariableName != null)
+            return fromVariableName
+        val all = JsTypeDefFunctionsByNameIndex.instance[functionName, myElement.project]
+        if (all.size == 1)
+            return all[0]
+        return all.filter {it.enclosingNamespace.isEmpty()}.getOrNull(0) ?: all.getOrNull(0)
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {

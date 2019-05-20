@@ -36,7 +36,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
     }
 
     override fun getIcon(flags: Int): Icon? {
-        return ObjJIcons.JsTypeDefDEF_DOCUMENT_ICON
+        return ObjJIcons.JSDEF_DOCUMENT_ICON
     }
 
     override fun getFileType(): FileType {
@@ -52,7 +52,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
 
     fun getModuleByNameAndNamespace(name:String) : JsTypeDefModule? {
         for(module in getAllModulesFlat()) {
-            if (module.namespacedModuleName == name)
+            if (module.namespacedName == name)
                 return module
         }
         return null
@@ -61,7 +61,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
     fun getModulesWithNamespace(nameSpace:String): List<JsTypeDefModule> {
         val out = mutableListOf<JsTypeDefModule>()
         for(module in getAllModulesFlat()) {
-            if (module.namespacedModuleName.startsWith(nameSpace))
+            if (module.namespacedName.startsWith(nameSpace))
                 out.add(module)
         }
         return out

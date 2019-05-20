@@ -17,7 +17,7 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
-class JsTypeDefFunctionStubType internal constructor(
+class JsTypeDefVariableDeclarationStubType internal constructor(
         debugName: String) : JsTypeDefStubElementType<JsTypeDefFunctionStub, JsTypeDefFunctionImpl>(debugName, JsTypeDefFunctionImpl::class.java) {
 
     override fun createPsi(
@@ -27,22 +27,15 @@ class JsTypeDefFunctionStubType internal constructor(
 
     override fun createStub(function:JsTypeDefFunctionImpl, parent: StubElement<*>): JsTypeDefFunctionStub {
         val fileName = function.containingFile.name
-        val enclosingNamespace = function.enclosingNamespace
+        val moduleName = function.enclosingNamespace
         val functionName = function.functionName.text
         val parameters = function.propertiesList?.propertyList?.map { property ->
             property.toStubParameter()
-        }?.toList() ?: emptyList()
+        } ?: listOf()
         val returnTypes = function.functionReturnType?.typeList?.map { it.text }?.toSet() ?: emptySet()
         val returnType = JsTypeDefTypesList(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
-        return JsTypeDefFunctionStubImpl(
-                parent = parent,
-                fileName = fileName,
-                enclosingNamespace = enclosingNamespace,
-                functionName = functionName,
-                parameters = parameters,
-                returnType = returnType,
-                global = isGlobal)
+        return JsTypeDefFunctionStubImpl(parent, fileName, moduleName, functionName, parameters, returnType, isGlobal)
     }
 
     @Throws(IOException::class)
@@ -58,7 +51,7 @@ class JsTypeDefFunctionStubType internal constructor(
         for(i in 0 until numProperties) {
             val parameter = stub.parameters[i]
             stream.writeName(parameter.name)
-            stream.writeName(parameter.types.joinToString("|"))
+            stream.writeName(parameter.types.)
             stream.writeBoolean(parameter.nullable)
         }
         stream.writeName(stub.returnType.types.joinToString("|"))
@@ -71,28 +64,21 @@ class JsTypeDefFunctionStubType internal constructor(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefFunctionStub {
 
         val fileName = stream.readName()?.string ?: ""
-        val enclosingNamespaece = stream.readNameString() ?: ""
+        val moduleName = stream.readNameString() ?: ""
         val functionName = stream.readNameString() ?: ""
         val parameters = mutableListOf<JsTypeDefNamedProperty>()
         val numParameters = stream.readInt()
         for(i in 0 until numParameters) {
             val parameterName = stream.readNameString() ?: ""
-            val typeStrings = (stream.readNameString() ?: "").split(TYPE_SPLIT_REGEX).toSet()
-            val types = JsTypeDefTypesList(typeStrings, stream.readBoolean())
-            parameters.add(JsTypeDefNamedProperty(parameterName, types))
+            val types = (stream.readNameString() ?: "").split(TYPE_SPLIT_REGEX)
+            val nullable = stream.readBoolean()
+            parameters.add(JsTypeDefNamedProperty(parameterName, types, nullable))
         }
-        val returnTypeTypes = (stream.readNameString() ?: "").split(TYPE_SPLIT_REGEX).toSet()
+        val returnTypeTypes = (stream.readNameString() ?: "").split(TYPE_SPLIT_REGEX)
         val returnTypeIsNullable = stream.readBoolean()
-        val returnType = JsTypeDefTypesList(returnTypeTypes, returnTypeIsNullable)
+        val returnType = JsTypeDefFunctionStubReturnType(returnTypeTypes, returnTypeIsNullable)
         val global = stream.readBoolean()
-        return JsTypeDefFunctionStubImpl(
-                parent = parent,
-                fileName = fileName,
-                enclosingNamespace = enclosingNamespaece,
-                functionName = functionName,
-                parameters = parameters,
-                returnType = returnType,
-                global = global)
+        return JsTypeDefFunctionStubImpl(parent, fileName, moduleName, functionName, parameters, returnType, global)
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {

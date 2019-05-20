@@ -17,12 +17,6 @@ data class NamespaceKeySet(val keys:List<NSComponent>) {
 
 data class NamespaceKeySetNode internal constructor(val key:NSComponent = "", val children:List<NamespaceKeySetNode>)
 
-private fun NamespaceKeySet.collapse() : NamespaceKeySetNode {
-    val level = 0
-    val maxLevel = keys.map { it.split(NAMESPACE_SPLITTER_REGEX).size }.max() ?: return Name
-    for (level)
-}
-
 private typealias NSComponent = String
 
 private val NSComponent.enclosingNamespace:String

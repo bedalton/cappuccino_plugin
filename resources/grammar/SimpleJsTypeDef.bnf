@@ -1,5 +1,5 @@
 {
-	parserClass="cappuccino.ide.intellij.plugin.jstypedef.parser.ObjJJsTypeDefParser"
+	parserClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParser"
 	parserUtilClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParserUtil"
 	extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefElementImpl"
 	elementTypeHolderClass="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes"
@@ -480,8 +480,8 @@ property
 propertyName
 	::= ESCAPED_ID
 	|	ID
-	|	keyList
-	|	keyof
+	|	KEYOF
+	|	KEYS_KEYWORD
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"

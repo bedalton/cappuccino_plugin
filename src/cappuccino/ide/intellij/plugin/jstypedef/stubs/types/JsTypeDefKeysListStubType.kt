@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeysList
-import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefKeysListImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
+import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefKeyListImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefKeyListStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefKeysListStub
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -13,14 +13,14 @@ import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
 class JsTypeDefKeysListStubType internal constructor(
-        debugName: String) : JsTypeDefStubElementType<JsTypeDefKeysListStub, JsTypeDefKeysListImpl>(debugName, JsTypeDefKeysListImpl::class.java) {
+        debugName: String) : JsTypeDefStubElementType<JsTypeDefKeysListStub, JsTypeDefKeyListImpl>(debugName, JsTypeDefKeyListImpl::class.java) {
 
     override fun createPsi(
-            stub: JsTypeDefKeysListStub): JsTypeDefKeysListImpl {
-        return JsTypeDefKeysListImpl(stub, this)
+            stub: JsTypeDefKeysListStub): JsTypeDefKeyListImpl {
+        return JsTypeDefKeyListImpl(stub, this)
     }
 
-    override fun createStub(keysList:JsTypeDefKeysListImpl, parent: StubElement<*>): JsTypeDefKeysListStub {
+    override fun createStub(keysList:JsTypeDefKeyListImpl, parent: StubElement<*>): JsTypeDefKeysListStub {
         val fileName = keysList.containingFile.name
         val keyListName = keysList.keyName?.text ?: ""
         return JsTypeDefKeyListStubImpl(parent, fileName, keyListName, keysList.stringLiteralList.map { it.content })
@@ -54,6 +54,6 @@ class JsTypeDefKeysListStubType internal constructor(
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node?.psi as? JsTypeDefKeysList)?.keyName?.text?.isNotNullOrBlank().orFalse()
+        return (node?.psi as? JsTypeDefKeyList)?.keyName?.text?.isNotNullOrBlank().orFalse()
     }
 }

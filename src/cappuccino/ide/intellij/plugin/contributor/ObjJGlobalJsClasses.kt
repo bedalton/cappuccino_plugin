@@ -1211,7 +1211,7 @@ fun getJsClassUnion(classNames:List<String>, project:Project) : GlobalJSClass? {
             properties = properties.toList(),
             functions = functions.toList(),
             staticFunctions = staticFunctions.toList(),
-            staticProperties = staticProperties.toList()
+            staticProperties = staticProperties.toList())
 }
 
 fun getJsClassUnion(classNames:List<String>) : GlobalJSClass? {

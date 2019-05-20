@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
@@ -218,7 +217,7 @@ object ObjJVariableTypeResolver {
 
 private fun resolveExpressionType(expr:ObjJExpr) : List<String> {
 
-    if (expr.leftExpr.qualifiedReference != null)
+    //if (expr.leftExpr?.qualifiedReference != null)
     return listOf()
 }
 
@@ -232,11 +231,11 @@ private fun getIfExprHasRight(expr:ObjJExpr) : List<String>? {
         out.add(ObjJClassType.STRING)
     if (expr.isBool)
         out.add(ObjJClassType.BOOL)
-    out.addAll(expr.numberTypes)
+    //out.addAll(expr.numberTypes)
     return out
 }
 
-private val ObjJExpr.isString get() {
+private val ObjJExpr.isString:Boolean get() {
     if (this.leftExpr?.primary?.stringLiteral != null)
         return true
     val rightExpressions = this.rightExprList
@@ -260,14 +259,15 @@ private val ObjJExpr.hasMath:Boolean get() {
     return false
 }
 
-private val ObjJExpr.isBool get() {
+private val ObjJExpr.isBool:Boolean get() {
     val rightExpressions = this.rightExprList
     if (rightExpressions.isEmpty())
         return false
     for(rightExpr in rightExpressions) {
-        if (rightExpr?.logicExprPrime)
+        if (rightExpr?.logicExprPrime != null)
             return true
     }
+    return false
 }
 
 

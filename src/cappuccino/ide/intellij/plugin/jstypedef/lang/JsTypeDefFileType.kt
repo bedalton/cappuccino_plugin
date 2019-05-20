@@ -5,14 +5,14 @@ import icons.ObjJIcons
 
 import javax.swing.*
 
-class JsTypeDefFileType private constructor() : LanguageFileType(ObjJLanguage.instance) {
+class JsTypeDefFileType private constructor() : LanguageFileType(JsTypeDefLanguage.instance) {
 
     override fun getName(): String {
-        return "Objective-J Script"
+        return "JsTypeDef definitions file"
     }
 
     override fun getDescription(): String {
-        return "An Objective-J script file for the Cappuccino Web Framework"
+        return "A javascript definitions file for use with the Objective-J Plugin"
     }
 
     override fun getDefaultExtension(): String {
@@ -20,11 +20,11 @@ class JsTypeDefFileType private constructor() : LanguageFileType(ObjJLanguage.in
     }
 
     override fun getIcon(): Icon? {
-        return ObjJIcons.DOCUMENT_ICON
+        return ObjJIcons.JSDEF_DOCUMENT_ICON
     }
 
     companion object {
-        const val FILE_EXTENSION = "j"
+        const val FILE_EXTENSION = "jstypedef"
         val INSTANCE = JsTypeDefFileType()
     }
 }
