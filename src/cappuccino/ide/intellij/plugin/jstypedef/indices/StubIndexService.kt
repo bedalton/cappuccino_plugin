@@ -32,6 +32,10 @@ open class StubIndexService {
         throw NotImplementedError("index module name method must be overridden")
     }
 
+    open fun indexInterface(strub:JsTypeDefInterfaceStub, sink:IndexSink) {
+        throw NotImplementedError("index interface indexing method must be overridden")
+    }
+
     fun createFileStub(file:JsTypeDefFile) : JsTypeDefFileStub {
         val fileName = file.containerName
         return JsTypeDefFileStubImpl(file, fileName)

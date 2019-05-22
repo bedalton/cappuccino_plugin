@@ -3,7 +3,12 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
@@ -24,6 +29,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val enclosingNamespace = property.enclosingNamespace
         val propertyName = property.propertyName.text
         val typeList = property.typeList
+        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
     }
 
     @Throws(IOException::class)
@@ -41,14 +47,13 @@ class JsTypeDefPropertyStubType internal constructor(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefPropertyStub {
 
         val fileName = stream.readNameString() ?: ""
-        val enclosingNamespace =stream.readNameString() ?: ""
+        val enclosingNamespace = stream.readNameString() ?: ""
         val propertyName = stream.readNameString() ?: "???"
+        val types = stream.readTypes()
+        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX).plus(propertyName), propertyName, types)
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         return (node?.psi as? JsTypeDefProperty)?.propertyName?.text.isNotNullOrBlank()
     }
 }
-
-
-val List<JsTypeDefTypeName>.arrayTypes() : List<JsTypeDefClassName>

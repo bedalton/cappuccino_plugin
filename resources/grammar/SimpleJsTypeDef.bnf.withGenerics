@@ -59,7 +59,6 @@
 		KEYOF = 							'keyof'
 		KEYS_KEYWORD =						'keys'
 		ALIAS = 							'alias'
-		INTERNAL =							'internal'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -182,7 +181,7 @@ anonymousFunction
 	;
 
 interfaceElement
-	::= 'internal' 'interface' typeName extendsStatement? (interfaceBody | ';')
+	::= 'interface' typeName genericParameters? extendsStatement? (interfaceBody | ';')
 	{
 		pin = 1
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -201,6 +200,21 @@ interfaceElement
 	        getNamespacedName
 		]
 	}
+	;
+
+private genericParameters
+	::= '<' genericParameterType* '>'
+	;
+
+genericParameterType
+	::= (genericsKey ':')? types
+	{
+		recoverWhile = genericParameterType_recover
+	}
+	;
+
+private genericParameterType_recover
+	::= !('>')
 	;
 
 interfaceBody
@@ -258,10 +272,12 @@ private types
 
 type
 	::= keyOfType
-	|	valueOfKeyType
+	|	keyMapReturnType
 	|	arrayType
 	|	mapType
+	|	genericType
 	| 	typeName
+	|	interfaceBody
 	|	'null'
 	|  	anonymousFunction
 	|	'void'
@@ -276,19 +292,12 @@ type
 	;
 
 keyOfType
-	::= <<useMapOf>> genericsKey KEYOF typeMapName
-	{
-		pin=3
-	}
+	::= genericsKey KEYOF typeMapName
 	;
 
 mapType
-	::= MAP '<' keyTypes ',' valueTypes '>'
+	::= MAP '<' types ',' types '>'
 	;
-
-keyTypes ::= types
-
-valueTypes ::= types
 
 typeMap
 	::= TYPE_MAP_KEYWORD typeMapName '{' typeMapBody? '}'
@@ -331,6 +340,13 @@ typeMapKeyValuePair
 	}
 	;
 
+genericType
+	::= typeName genericTypeTypes
+	{
+		pin = 2
+	}
+	;
+
 genericTypeTypes
 	::= '<' types '>'
 	{
@@ -359,7 +375,7 @@ interfaceConstructor
 	;
 
 function
-	::= functionName '(' propertiesList? ')' (':' functionReturnType)?
+	::= functionName functionGenerics? '(' propertiesList? ')' (':' functionReturnType)?
 	{
 		pin = 3
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -379,6 +395,23 @@ function
 	  	recoverWhile = function_recover
 	}
 	;
+
+private functionGenerics
+	::= '<' functionGenericEntry+ '>'
+	{
+		pin = 1
+	}
+	;
+
+private functionGenericEntry
+	::= functionGeneric
+	;
+
+
+functionGeneric
+	::= genericsKey (':' types)?
+	;
+
 
 private function_recover
 	::= !(eos)
@@ -423,7 +456,7 @@ private propertiesList_recover
 	;
 
 property
-	::= READONLY? propertyName ':' (types|interfaceBody)
+	::= READONLY? propertyName ':' types
 	{
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	    methods = [
@@ -473,10 +506,10 @@ functionReturnType
 	}
 	;
 
-valueOfKeyType
-	::= <<useMapOf>> typeMapName '[' genericsKey ']'
+keyMapReturnType
+	::= typeMapName '[' genericsKey ']'
 	{
-		pin = 3
+		pin = 2
 	}
 	;
 

@@ -30,7 +30,7 @@ open class JsTypeDefElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), JsT
             }
             val module = getParentOfType(JsTypeDefModule::class.java)
             if (module != null) {
-                return module.fullyNamespacedName
+                return module.namespacedName
             }
             return containingFile?.name ?: "???"
         }

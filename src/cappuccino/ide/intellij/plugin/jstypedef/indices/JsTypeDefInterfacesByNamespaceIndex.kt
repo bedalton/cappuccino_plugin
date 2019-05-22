@@ -21,7 +21,7 @@ class JsTypeDefInterfacesByNamespaceIndex private constructor() : JsTypeDefStrin
 
         val instance = JsTypeDefInterfacesByNamespaceIndex()
 
-        private val KEY = IndexKeyUtil.createIndexKey(JsTypeDefInterfacesByNamespaceIndex::class.java)
+        val KEY = IndexKeyUtil.createIndexKey(JsTypeDefInterfacesByNamespaceIndex::class.java)
 
         private const val VERSION = 1
     }

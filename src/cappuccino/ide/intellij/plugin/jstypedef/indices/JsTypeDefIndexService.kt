@@ -1,10 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub
@@ -39,6 +36,14 @@ class JsTypeDefIndexService : StubIndexService() {
     override fun indexModuleName(stub: JsTypeDefModuleNameStub, sink:IndexSink) {
         sink.occurrence<JsTypeDefModuleName, String>(JsTypeDefModuleNamesByNameIndex.instance.key, stub.moduleName)
         sink.occurrence<JsTypeDefModuleName, String>(JsTypeDefModuleNamesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+    }
+
+    override fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNameIndex.KEY, stub.interfaceName)
+        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        for (superType in stub.superTypes) {
+            sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNamespaceIndex.KEY, superType)
+        }
     }
 
     companion object {
