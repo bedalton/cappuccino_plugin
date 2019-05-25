@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
@@ -28,7 +29,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val fileName = property.containingFile.name
         val enclosingNamespace = property.enclosingNamespace
         val propertyName = property.propertyName.text
-        val typeList = property.typeList
+        val typeList = JsTypeDefTypesList(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
     }
 

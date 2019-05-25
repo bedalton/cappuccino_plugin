@@ -44,7 +44,7 @@ object JsTypeDefElementFactory {
         val file = """
             module $moduleName {}
         """.trimIndent().toFile(project)
-        return file.getChildOfType(JsTypeDefModule::class.java)?.qualifiedModuleName?.moduleNameList?.first()
+        return file.getChildOfType(JsTypeDefModule::class.java)?.namespacedModuleName?.moduleName
     }
 
     fun createSpace(project: Project): PsiElement {

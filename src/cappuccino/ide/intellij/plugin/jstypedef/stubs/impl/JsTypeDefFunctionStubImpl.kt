@@ -14,7 +14,8 @@ class JsTypeDefFunctionStubImpl(
         override val functionName: String,
         override val parameters: List<JsTypeDefNamedProperty>,
         override val returnType: JsTypeDefTypesList,
-        override val global:Boolean
+        override val global:Boolean,
+        override val static: Boolean
 
 ) : JsTypeDefStubBaseImpl<JsTypeDefFunctionImpl>(parent, JsTypeDefStubTypes.JS_FUNCTION), JsTypeDefFunctionStub {
 

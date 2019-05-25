@@ -1,9 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeListType.*
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
@@ -31,6 +29,7 @@ private fun StubInputStream.readType(): JsTypeDefTypeListType? {
         TypeListType.KEYOF -> readKeyOfType()
         TypeListType.VALUEOF -> readValueOfKeyType()
         TypeListType.MAP -> readMapType()
+        TypeListType.ANONYMOUS_FUNCTION -> readAnonymousFunctionType()
         TypeListType.INTERFACE_BODY -> readInterfaceBodyType()
     }
 }
@@ -80,7 +79,7 @@ private fun StubInputStream.readAnonymousFunctionType() : JsTypeDefTypeListAnony
     return JsTypeDefTypeListAnonymousFunctionType(parameters, returnType)
 }
 
-private fun StubInputStream.readPropertiesList() : List<JsTypeDefNamedProperty> {
+fun StubInputStream.readPropertiesList() : List<JsTypeDefNamedProperty> {
     val numProperties = readInt()
     val properties = mutableListOf<JsTypeDefNamedProperty>()
     for (i in 0 until numProperties) {
@@ -130,6 +129,7 @@ private fun StubOutputStream.writeType(type:JsTypeDefTypeListType) {
         is JsTypeDefTypeListKeyOfType -> writeKeyOfType(type)
         is JsTypeDefTypeListValueOfKeyType -> writeValueOfKeyType(type)
         is JsTypeDefTypeListInterfaceBody -> writeInterfaceBody(type)
+        is JsTypeDefTypeListAnonymousFunctionType -> writeAnonymousFunctionType(type)
     }
 }
 
@@ -183,7 +183,7 @@ private fun StubOutputStream.writeFunction(function:JsTypeDefFunctionType) {
     writeBoolean(function.static)
 }
 
-private fun StubOutputStream.writePropertiesList(properties:List<JsTypeDefNamedProperty>) {
+fun StubOutputStream.writePropertiesList(properties:List<JsTypeDefNamedProperty>) {
     writeInt(properties.size)
     for (property in properties) {
         writeProperty(property)

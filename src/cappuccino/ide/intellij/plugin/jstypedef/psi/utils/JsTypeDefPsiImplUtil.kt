@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNames
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import com.intellij.psi.PsiElement
@@ -366,7 +367,7 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getTypesList(keyValuePair: JsTypeDefTypeMapKeyValuePair) : JsTypeDefTypesList {
         val nullable = isNullable(keyValuePair)
-        val types = keyValuePair.typeList.filter { it.nullType == null }.map { it.text }.toSet()
+        val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
         return JsTypeDefTypesList(types, nullable)
     }
 
@@ -452,6 +453,16 @@ object JsTypeDefPsiImplUtil {
             return ""
         return text.substring(1, textLength-2)
     }
+
+    @JvmStatic
+    fun isStatic(functionDeclaration:JsTypeDefFunctionDeclaration) : Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun isStatic(function:JsTypeDefFunction) : Boolean {
+        return function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
+    }
 }
 
 val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
@@ -462,7 +473,7 @@ typealias JsTypeDefClassName = String
 
 fun List<JsTypeDefTypesList>.combine() : JsTypeDefTypesList {
     val nullable = this.any { it.nullable }
-    val types = this.flatMap { it.types }.toSet()
+    val types = this.flatMap { it.types }
     return JsTypeDefTypesList(types, nullable)
 }
 

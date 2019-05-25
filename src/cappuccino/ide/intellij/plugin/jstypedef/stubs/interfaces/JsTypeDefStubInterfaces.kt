@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefClassName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeListType.JsTypeDefTypeListArrayType
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeListType.JsTypeDefTypeListMapType
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.psi.stubs.StubElement
 import sun.rmi.rmic.iiop.InterfaceType
@@ -41,7 +42,7 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
 fun JsTypeDefProperty.toStubParameter() : JsTypeDefNamedProperty {
     return JsTypeDefNamedProperty(
             name = propertyName.text,
-            types = JsTypeDefTypesList(propertyTypes.map { type -> type.text }.toSet(), nullable = isNullable)
+            types = JsTypeDefTypesList(propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)
     )
 }
 
@@ -171,7 +172,8 @@ enum class TypeListType(val id:Int) {
     KEYOF(2),
     VALUEOF(3),
     MAP(4),
-    INTERFACE_BODY(5);
+    INTERFACE_BODY(5),
+    ANONYMOUS_FUNCTION(6);
 
     companion object {
         fun forKey(key:Int):TypeListType {

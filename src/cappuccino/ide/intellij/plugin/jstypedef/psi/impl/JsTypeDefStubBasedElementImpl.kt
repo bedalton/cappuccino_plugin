@@ -41,7 +41,7 @@ open class JsTypeDefStubBasedElementImpl<StubT : StubElement<out PsiElement>> : 
             }
             val module = getParentOfType(JsTypeDefModule::class.java)
             if (module != null) {
-                return module.fullyNamespacedName
+                return module.namespacedName
             }
             return containingFile?.name ?: "???"
         }

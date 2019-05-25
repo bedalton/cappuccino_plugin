@@ -31,10 +31,8 @@ fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : List<JsTypeDefTypeListType>
         val asValueOfType = type.valueOfKeyType?.toTypeListType()
         if (asValueOfType != null)
             out.add(asValueOfType)
-
-        val asInterfaceElement
     }
-
+    return out
 }
 
 fun List<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {

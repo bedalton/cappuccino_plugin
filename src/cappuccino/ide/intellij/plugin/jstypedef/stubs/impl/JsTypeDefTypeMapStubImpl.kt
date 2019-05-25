@@ -21,7 +21,7 @@ class JsTypeDefTypeMapStubImpl(
         val types = values.filter { it.key == key }.map { it.types }
         val nullable = types.any { it.nullable }
         return JsTypeDefTypesList(
-                types = types.flatMap { it.types }.toSet(),
+                types = types.flatMap { it.types },
                 nullable = nullable
         )
     }
