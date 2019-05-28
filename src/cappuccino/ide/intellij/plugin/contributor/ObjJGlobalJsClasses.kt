@@ -399,6 +399,129 @@ val Window: GlobalJSClass = c(
         )
 )
 
+val JS_STRING:GlobalJSClass = c(
+        className = "string",
+        constructor = ctor(listOf(p("aString", "string"))),
+        properties = listOf(
+                p("isa", "CPString")
+        ),
+        functions = listOf(
+                f("escapeForRegExp", returns = "string"),
+                f("stripDiacritics", returns = "string"),
+                f("length", returns = "number", comment = "returns the length of a string"),
+                f(
+                        name = "indexOf",
+                        parameters = listOf(
+                                p("substring", type = "string", comment = "The string to find index for"),
+                                p("startIndex", type = "number", nullable = true)
+                        ),
+                        returns = "number",
+                        comment = "returns the index of the first occurrence of a specified text in a string"
+                ),
+                f(
+                        name = "lastIndexOf",
+                        parameters = listOf(
+                                p("substring", type = "string", comment = "The string to find index for"),
+                                p("endIndex", type = "number", nullable = true, comment = "Starts at this index and works backwards")
+                        ),
+                        returns = "number",
+                        comment = "returns the index of the last occurrence of a specified text in a string"
+                ),
+                f(
+                        name = "search",
+                        parameters = listOf(
+                                p("substring", type = "string", comment = "The string to find index for")
+                        ),
+                        returns = "number",
+                        comment = "returns the index of the last occurrence of a specified text in a string"
+                ),
+                f (
+                        name = "slice",
+                        parameters = listOf(
+                                p("start", "number"),
+                                p("end", "number", comment = "exclusive", nullable = true)
+                        ),
+                        returns = "string",
+                        comment = "extracts a part of a string and returns the extracted part in a new string\ncan use negative numbers to count from end"
+                ),
+                f (
+                        name = "substring",
+                        parameters = listOf (
+                                p ("start", "number"),
+                                p ("end", "number", nullable = true)
+                        ),
+                        returns = "string",
+                        comment = "extracts a part of a string and returns the extracted part in a new string\ncannot accept negative indexes"
+                ),
+                f (
+                        name = "substr",
+                        parameters = listOf (
+                                p ("start", "number", comment = "Starting index(Inclusive)"),
+                                p ("length", "number", nullable = true, comment = "length of the extracted part")
+                        ),
+                        returns = "string",
+                        comment = "Extracts a subset of a string given start index and length"
+
+                ),
+                f (
+                        name = "replace",
+                        parameters = listOf(
+                                p("search", "string|RegExp"),
+                                p ("replacementString", "string")
+                        ),
+                        returns = "string",
+                        comment = "Replaces first occurrence in a case sensitive manner.\nUse regex search parameter to replace all(/g) and do case insensitive(/i)"
+                ),
+                f (
+                        name = "toUpperCase",
+                        returns = "string",
+                        comment = "returns a string is converted to upper case"
+                ),
+
+                f (
+                        name = "toLowerCase",
+                        returns = "string",
+                        comment = "returns a string is converted to lower case"
+                ),
+                f (
+                        name = "concat",
+                        comment = "joins two or more strings",
+                        parameters =  listOf(p(
+                                name = "args",
+                                type = "...string"
+                        ))
+                ),
+                f (
+                        name = "trim",
+                        comment = "removes whitespace from both sides of a string",
+                        returns = "string"
+                ),
+                f (
+                        name = "charAt",
+                        parameters = listOf(
+                                p("index", "number")
+                        ),
+                        returns = "string"
+                ),
+
+                f (
+                        name = "charCodeAt",
+                        parameters = listOf(
+                                p("index", "number")
+                        ),
+                        returns = "number"
+                ),
+                f (
+                        name = "split",
+                        parameters = listOf(
+                                p("splitOn", "string")
+                        ),
+                        returns = "string[]"
+                )
+
+        )
+)
+
 val globalJSClasses = listOf(
         c(
                 className = "CFBundle",
@@ -904,6 +1027,14 @@ val globalJSClasses = listOf(
         ),
         Window,
         c(
+                className = "BOOL",
+                comment = "Boolean value of True or False"
+        ),
+        c (
+                className = "boolean", extends = listOf("BOOL"),
+                comment = "Boolean value of True or False"
+        ),
+        c(
                 className = "Event",
                 constructor = ctor(
                         parameters = listOf(
@@ -982,16 +1113,10 @@ val globalJSClasses = listOf(
                         f("and", parameters = listOf(p("aState", "?")), returns = "ThemeState")
                 )
         ),
+        JS_STRING,
         c(
-                className = "String",
-                constructor = ctor(listOf(p("aString", "string"))),
-                properties = listOf(
-                        p("isa", "CPString")
-                ),
-                functions = listOf(
-                        f("escapeForRegExp", returns = "string"),
-                        f("stripDiacritics", returns = "string")
-                )
+                className = "CPString",
+                extends = listOf("string")
         ),
         c(
                 className = "Boolean",
@@ -1182,10 +1307,5 @@ val globalJSClasses = listOf(
 
 )
 
-val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }
 
-fun getObjJAndJsClassObjects(project: Project, className: String? = null): List<GlobalJSClass> {
-    if (className == null)
-        return globalJSClasses + AllObjJClassesAsJsClasses(project)
-    return globalJSClasses.filter { it.className == className } + AllObjJClassesAsJsClasses(project).filter { it.className == className }
-}
+val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }

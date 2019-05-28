@@ -24,7 +24,6 @@ internal fun List<InferenceResult>.collapse() : InferenceResult {
     val isSelector = this.any { it.isSelector }
     val isRegex = this.any { it.isRegex }
     val functionTypes = this.flatMap { it.functionTypes ?: emptyList()  }
-    val arrayTypes = this.flatMap { it.arrayTypes ?: emptyList()  }
     val classes = this.flatMap { it.classes }
     val jsObjectKeys = this.flatMap { it.jsObjectKeys ?: emptyList()  }
     return InferenceResult(
@@ -35,7 +34,6 @@ internal fun List<InferenceResult>.collapse() : InferenceResult {
             isSelector = isSelector,
             isRegex = isRegex,
             functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null,
-            arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null,
             classes = classes,
             jsObjectKeys = if (jsObjectKeys.isNotEmpty()) jsObjectKeys else null
     )
@@ -101,16 +99,16 @@ private object IsBooleanUtil {
         if (expr.primary != null) {
             return expr.primary!!.booleanLiteral != null
         }
-        if (expr.enclosedExpr?.expr != null) {
-            return isBoolean(expr.enclosedExpr!!.expr, level)
+        if (expr.parenEnclosedExpr?.expr != null) {
+            return isBoolean(expr.parenEnclosedExpr!!.expr, level)
         }
         if (expr.functionCall != null) {
             return inferFunctionCallReturnType(expr.functionCall!!, level)?.isBoolean.orFalse()
         }
         if (expr.methodCall != null)
             return inferMethodCallType(expr.methodCall!!, level).isBoolean
-        if (expr.qualifiedReference)
-            return qualifiedR
+        if (expr.qualifiedReference != null)
+            return inferQualifiedReferenceType(expr.qualifiedReference!!, level - 1)?.isBoolean
         return false
     }
 

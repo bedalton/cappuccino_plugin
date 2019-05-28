@@ -13,6 +13,7 @@ data class InferenceResult (
         val isRegex:Boolean = false,
         val jsObjectKeys:List<String>? = null,
         val functionTypes:List<JsFunctionType>? = null,
+        val arrayTypes:List<String>? = null
         val classes:List<GlobalJSClass> = emptyList()
 ) {
     val isJsObject:Boolean by lazy {
