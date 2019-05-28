@@ -658,7 +658,7 @@ internal val JsClassChildNode = c(
              * Throws a "HierarchyRequestError" DOMException if the constraints of
              * the node tree are violated.
              */
-            f("replaceWith", listOf(p("...nodes", "Array<Node | string>")), returns = "void"),
+            f("replaceWith", listOf(p("...nodes", "Array<Node | string>")), returns = "void")
 )
 )
 
@@ -681,6 +681,6 @@ internal val JsClassEventTarget = c (
                     "The event listener is appended to target's event listener list and is not appended if it has the same type, callback, and capture."),
             f("dispatchEvent", listOf(p("event", "Event")), returns = "boolean", comment = "Dispatches a synthetic event event to target and returns true\n" +
                     "if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise."),
-            f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "callback", type = "EventListenerOrEventListenerObject | null"), p(name = "options", type = "EventListenerOptions | boolean", nullable = true)), returns = "void", comment = "Removes the event listener in target's event listener list with the same type, callback, and options."),
+            f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "callback", type = "EventListenerOrEventListenerObject | null"), p(name = "options", type = "EventListenerOptions | boolean", nullable = true)), returns = "void", comment = "Removes the event listener in target's event listener list with the same type, callback, and options.")
         )
 )
