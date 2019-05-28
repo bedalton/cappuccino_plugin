@@ -1,11 +1,13 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.contributor.getJsClassObject
 import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 import org.intellij.lang.annotations.RegExp
@@ -29,7 +31,7 @@ internal fun inferQualifiedReferenceType(qualifiedReference:ObjJQualifiedReferen
 
 val splitJsClassRegExp = "\\s*\\|\\s*".toRegex()
 
-internal fun getPartTypes(part:ObjJQualifiedReferenceComponent, parentTypes:InferenceResult?, level:Int) : InferenceResult {
+internal fun getPartTypes(part:ObjJQualifiedReferenceComponent, parentTypes:InferenceResult?, level:Int) : InferenceResult? {
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, level)
         is ObjJFunction ->
@@ -39,20 +41,30 @@ internal fun getPartTypes(part:ObjJQualifiedReferenceComponent, parentTypes:Infe
     }
 }
 
+private val booleanTypes = listOf("bool", "boolean")
+private val stringTypes = listOf("string", "cpstring")
+private val numberTypes = listOf("number", "int", "integer", "float", "long", "double")
+
 internal fun getVariableNameComponentTypes(variableName:ObjJVariableName, parentTypes:InferenceResult?, level:Int) : InferenceResult? {
     if (parentTypes == null) {
         return inferVariableNameType(variableName, level - 1)
     }
     val project = variableName.project
     val variableNameString = variableName.text
-    val classes = parentTypes.classes.flatMap { jsClass ->
+    val classNames = parentTypes.classes.flatMap { jsClass ->
         jsClass.properties.firstOrNull {
             it.name == variableNameString
-        }?.type?.split(splitJsClassRegExp)?.mapNotNull {
-            objJClassAsJsClass(project, it)
-        } ?: emptyList()
+        }?.type?.split(splitJsClassRegExp) ?: emptyList()
+    }.toSet()
+    val arrayClasses = classNames.filter { it.endsWith("[]")}.map { it.substringFromEnd(0, 2) }
+    val classes = classNames.mapNotNull {
+        getJsClassObject(project, it)
     }
     return InferenceResult(
+            isString = classNames.any{ it.toLowerCase() in stringTypes},
+            isBoolean = classNames.any{ it.toLowerCase() in booleanTypes},
+            isNumeric = classNames.any{ it.toLowerCase() in numberTypes},
+            arrayTypes = arrayClasses,
             classes = classes
     )
 }
