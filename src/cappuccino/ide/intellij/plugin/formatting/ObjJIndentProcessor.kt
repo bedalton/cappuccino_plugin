@@ -167,11 +167,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION) {
                 val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
-                LOGGER.info("Get Method Dec Selector Indent Spacing: $selectorSpacing")
+                //LOGGER.info("Get Method Dec Selector Indent Spacing: $selectorSpacing")
                 if (selectorSpacing != null && selectorSpacing > 0) {
                     return Indent.getSpaceIndent(selectorSpacing)
                 } else {
-                    LOGGER.info("Failed to get selector spacing for: ${node.text}")
+                    //LOGGER.info("Failed to get selector spacing for: ${node.text}")
                 }
             }
             return Indent.getContinuationIndent()

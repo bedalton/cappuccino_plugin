@@ -14,10 +14,6 @@ import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.lang.documentation.DocumentationMarkup
 
-
-
-
-
 class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
@@ -122,7 +118,8 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
-        return null //doc.toString()
+        LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
+        return comment.commentText
     }
 }
 
