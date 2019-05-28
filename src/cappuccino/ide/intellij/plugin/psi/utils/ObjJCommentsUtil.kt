@@ -21,15 +21,39 @@ fun PsiElement.getContainingComment() : PsiElement? {
     return null
 }
 
-val PsiElement.docComment:CommentWrapper? get() {
-    val commentText = getContainingComment()?.text?.trim()
-            ?.removePrefix("/*!")
-            ?.removePrefix("/*")
-            ?.removeSuffix("*/")
-            ?.trim()
-    if (commentText == null) {
-        return null
+fun PsiElement.getContainingComments() : List<String> {
+    val out:MutableList<String> = mutableListOf()
+    var parentNode:ASTNode? = this.node
+    LOGGER.info("Get Containing Comments")
+    // Loop through parent nodes checking if previous node is a comment node
+    while(parentNode != null) {
+        // Get previous node
+        val prevNode = parentNode.getPreviousNonEmptyNode(true)
+        // Check if prev node is comment
+        if (prevNode != null && prevNode.elementType in ObjJTokenSets.COMMENTS) {
+            var nextNode:ASTNode? = prevNode
+            while (nextNode != null && nextNode.elementType in ObjJTokenSets.COMMENTS) {
+                out.add(0, nextNode.text)
+                nextNode = prevNode.treePrev
+            }
+            return out
+        }
+        // Get parent element for checking prev node
+        parentNode = parentNode.treeParent
     }
+    return emptyList()
+}
+
+val PsiElement.docComment:CommentWrapper? get() {
+    val commentText = getContainingComments().joinToString("\n").trim()
+            .removePrefix("/*!")
+            .removePrefix("/*")
+            .removeSuffix("*/")
+            .removePrefix("//")
+            .removePrefix(" ")
+            .trim()
+    if (commentText.isBlank())
+        return null
     return CommentWrapper(commentText)
 }
 
