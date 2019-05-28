@@ -13,17 +13,20 @@ fun inferenceExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
 }
 
 internal fun getInferredTypeFromExpressionArray(assignments:List<ObjJExpr>, level:Int = 4) : InferenceResult {
-    val inferredTypes = assignments.mapNotNull { inferenceExpressionType(it, level - 1) }
-    val isNumeric = inferredTypes.any { it.isNumeric}
-    val isDictionary = inferredTypes.any { it.isDictionary }
-    val isBoolean = inferredTypes.any { it.isBoolean }
-    val isString = inferredTypes.any { it.isString }
-    val isSelector = inferredTypes.any { it.isSelector }
-    val isRegex = inferredTypes.any { it.isRegex }
-    val functionTypes = inferredTypes.flatMap { it.functionTypes ?: emptyList()  }
-    val arrayTypes = inferredTypes.flatMap { it.arrayTypes ?: emptyList()  }
-    val classes = inferredTypes.flatMap { it.classes }
-    val jsObjectKeys = inferredTypes.flatMap { it.jsObjectKeys ?: emptyList()  }
+    return assignments.mapNotNull { inferenceExpressionType(it, level - 1) }.collapse()
+}
+
+internal fun List<InferenceResult>.collapse() : InferenceResult {
+    val isNumeric = this.any { it.isNumeric}
+    val isDictionary = this.any { it.isDictionary }
+    val isBoolean = this.any { it.isBoolean }
+    val isString = this.any { it.isString }
+    val isSelector = this.any { it.isSelector }
+    val isRegex = this.any { it.isRegex }
+    val functionTypes = this.flatMap { it.functionTypes ?: emptyList()  }
+    val arrayTypes = this.flatMap { it.arrayTypes ?: emptyList()  }
+    val classes = this.flatMap { it.classes }
+    val jsObjectKeys = this.flatMap { it.jsObjectKeys ?: emptyList()  }
     return InferenceResult(
             isNumeric = isNumeric,
             isBoolean = isBoolean,

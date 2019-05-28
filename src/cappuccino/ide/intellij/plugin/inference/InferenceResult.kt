@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.contributor.GlobalJSClass
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
 
@@ -12,8 +13,7 @@ data class InferenceResult (
         val isRegex:Boolean = false,
         val jsObjectKeys:List<String>? = null,
         val functionTypes:List<JsFunctionType>? = null,
-        val arrayTypes:List<String>? = null,
-        val classes:List<String> = emptyList()
+        val classes:List<GlobalJSClass> = emptyList()
 ) {
     val isJsObject:Boolean by lazy {
         jsObjectKeys?.isNotEmpty().orFalse()

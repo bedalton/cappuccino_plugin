@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import com.intellij.openapi.project.Project
+
 data class GlobalJSClass(
         val className: String,
         val constructor: GlobalJSConstructor = GlobalJSConstructor(),
@@ -1164,7 +1166,7 @@ val globalJSClasses = listOf(
                         f("trace")
                 )
         ),
-        c (
+        c(
                 className = "Slotable",
                 properties = listOf(
                         p(name = "assignedSlot", type = "HTMLSlotElement | null", readonly = true)
@@ -1181,3 +1183,9 @@ val globalJSClasses = listOf(
 )
 
 val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }
+
+fun getObjJAndJsClassObjects(project: Project, className: String? = null): List<GlobalJSClass> {
+    if (className == null)
+        return globalJSClasses + AllObjJClassesAsJsClasses(project)
+    return globalJSClasses.filter { it.className == className } + AllObjJClassesAsJsClasses(project).filter { it.className == className }
+}
