@@ -1502,7 +1502,7 @@ leftExpr
     |	regularExpressionLiteral
 	;
 
-refExpression::='@ref' '(' variableName ')';
+refExpression::= '@ref' '(' variableName ')';
 derefExpression::='@deref' '(' variableName ')';
 newExpression::= 'new' (functionCall|expr arguments?) ;
 
@@ -1767,7 +1767,7 @@ callTarget
 	;
 
 qualifiedReference
-	::= (variableName|methodCall|enclosedExpr) qualifiedReferencePrimary*
+	::= (variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
 	{
 		methods = [
 			primaryVar ="/variableName[0]"
