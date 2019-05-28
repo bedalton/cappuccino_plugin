@@ -1408,6 +1408,7 @@ methodCall
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
@@ -1497,7 +1498,7 @@ leftExpr
     |	qualifiedReference
     |	objectLiterals
     |	primary
-	|	enclosedExpr
+	| 	parenEnclosedExpr
 	|	typeOfExprPrime
     |	regularExpressionLiteral
 	;
@@ -1507,14 +1508,21 @@ derefExpression::='@deref' '(' variableName ')';
 newExpression::= 'new' (functionCall|expr arguments?) ;
 
 enclosedExpr
-	::= arrayIndexSelector
-	| 	parenEnclosedExpr
+	::=
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+	}
 	;
 
-private parenEnclosedExpr
+parenEnclosedExpr
 	::= '(' expr? ')'
 	{
 		pin=1
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
 	}
 	;
 private incrementExpr
@@ -1549,7 +1557,7 @@ rightExpr
 	|	mathExprPrime
 	|	comparisonExprPrime
 	|	arguments
-	|	enclosedExpr
+	|	parenEnclosedExpr
 	|   arrayIndexSelector
 	//|	assignmentExprPrime
 	| 	'in' (qualifiedReference|objectLiteral)
@@ -1788,6 +1796,9 @@ arrayIndexSelector
 	::= '[' expr ']'
 	{
 		//pin = 1
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
 	}
 	;
 
