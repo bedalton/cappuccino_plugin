@@ -227,7 +227,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
     companion object {
         private const val MAJOR_VERSION = 6
-        private const val MINOR_VERSION = 0
+        private const val MINOR_VERSION = 2
         val INDEX_VERSION:Int get() { return (MAJOR_VERSION + MINOR_VERSION) }
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)
