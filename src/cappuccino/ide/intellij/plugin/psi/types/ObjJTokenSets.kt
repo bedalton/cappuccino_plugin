@@ -231,6 +231,15 @@ object ObjJTokenSets {
             ObjJ_VAR_TYPE_ID
     )
 
+    val NUMERIC_TYPES = create(
+            ObjJ_HEX_INTEGER_LITERAL,
+            ObjJ_OCTAL_INTEGER_LITERAL,
+            ObjJ_OCTAL_INTEGER_LITERAL2,
+            ObjJ_DECIMAL_LITERAL,
+            ObjJ_BINARY_INTEGER_LITERAL,
+            ObjJ_INTEGER_LITERAL
+    )
+
     val ITERATION_STATEMENT_KEYWORDS = create(
             ObjJ_IF,
             ObjJ_ELSE,

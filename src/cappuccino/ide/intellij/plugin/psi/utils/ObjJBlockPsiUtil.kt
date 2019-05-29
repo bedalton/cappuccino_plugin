@@ -1,12 +1,15 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.Filter
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -99,6 +102,11 @@ private fun getBlocksBlocks(block:ObjJBlock) : List<ObjJBlock> {
  * Gets the all children matching a type within a psi element's parent block
  */
 fun <T : PsiElement> PsiElement.getParentBlockChildrenOfType(aClass: Class<T>, recursive: Boolean): List<T> {
+    if (aClass == ObjJVariableName::class.java) {
+        @Suppress("UNCHECKED_CAST")
+        return getParentBlockVariableNameChildren(recursive) as List<T>
+    }
+
     var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return (this.containingFile as? ObjJFile)?.getFileChildrenOfType(aClass, recursive) ?: return listOf()
     val out = ArrayList<T>()
     do {
@@ -106,6 +114,42 @@ fun <T : PsiElement> PsiElement.getParentBlockChildrenOfType(aClass: Class<T>, r
             out.addAll(block.getChildrenOfType(aClass))
             block = block.getParentOfType(ObjJBlock::class.java)
         }
+    } while (block != null && recursive)
+    return out
+}
+
+private fun PsiElement.getParentBlockVariableNameChildren(recursive: Boolean): List<ObjJVariableName> {
+
+    val file = this.containingFile
+    val project = this.project
+    val fileName = file.name
+    val defaultSearchFunction:(block: ObjJBlock) -> List<ObjJVariableName> = { block ->
+        block.getChildrenOfType(ObjJVariableName::class.java)
+    }
+    val useIndex = !DumbService.isDumb(this.project) && fileName.isNotNullOrBlank()
+    val out = if (useIndex)
+        getParentBlockVariableNameChildren(recursive) { block ->
+            val range = block.textRange
+            ObjJVariableNameByScopeIndex.instance.getInRange(fileName, range, project)
+        }
+    else
+        getParentBlockVariableNameChildren(recursive, defaultSearchFunction)
+
+    // Check if Index search failed to find results
+    return if (useIndex && out.isEmpty())
+        getParentBlockVariableNameChildren(recursive, defaultSearchFunction)
+    else
+        out
+}
+
+private fun PsiElement.getParentBlockVariableNameChildren(recursive: Boolean, searchFunction:(block:ObjJBlock) -> List<ObjJVariableName>) : List<ObjJVariableName> {
+    var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return (this.containingFile as? ObjJFile)?.getFileChildrenOfType(ObjJVariableName::class.java, recursive) ?: return listOf()
+    val out = ArrayList<ObjJVariableName>()
+    do {
+        if (block == null)
+            break
+        out.addAll(searchFunction(block))
+        block = block.getParentOfType(ObjJBlock::class.java)
     } while (block != null && recursive)
     return out
 }

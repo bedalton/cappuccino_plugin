@@ -10,14 +10,14 @@ import com.intellij.openapi.project.Project
 
 fun AllObjJClassesAsJsClasses(project:Project) : List<GlobalJSClass> {
     val classNames = ObjJClassDeclarationsIndex.instance.getAllKeys(project)
-    return classNames.map {
+    return classNames.mapNotNull {
         objJClassAsJsClass(project, it)
     }
 }
 
-fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass {
+fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
     val implementations = ObjJImplementationDeclarationsIndex.instance[className, project]
-    val properties: MutableList<JsProperty> = mutableListOf()
+    val properties: MutableList<JsNamedProperty> = mutableListOf()
     val extends = mutableListOf<String>()
     for (objClass in implementations) {
         val superClassName = objClass.superClassName
@@ -37,6 +37,8 @@ fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass {
             properties.add(property)
         }
     }
+    if (protocols.isEmpty() && implementations.isEmpty())
+        return null
     return GlobalJSClass(
             className = className,
             properties = properties.toSet().toList(),
@@ -47,7 +49,7 @@ fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass {
     )
 }
 
-private fun ObjJInstanceVariableDeclaration.toJsProperty() : JsProperty? {
+private fun ObjJInstanceVariableDeclaration.toJsProperty() : JsNamedProperty? {
     val propertyName = this.variableName?.text ?: return null
     val formalVariableType = this.formalVariableType
     val type = if (this.formalVariableType.varTypeId?.className != null)
@@ -61,7 +63,7 @@ private fun ObjJInstanceVariableDeclaration.toJsProperty() : JsProperty? {
             else -> typeName
         }
     }
-    return JsProperty(
+    return JsNamedProperty(
             name = propertyName,
             type = type,
             isPublic = !(propertyName.startsWith("_") && ObjJPluginSettings.ignoreUnderscoredClasses),

@@ -1413,7 +1413,7 @@ methodCall
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve getCallTargetText]
+		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve getCallTargetText getQualifiedNameText getIndexInQualifiedReference]
 	}
 	;
 
@@ -1507,22 +1507,10 @@ refExpression::= '@ref' '(' variableName ')';
 derefExpression::='@deref' '(' variableName ')';
 newExpression::= 'new' (functionCall|expr arguments?) ;
 
-enclosedExpr
-	::=
-	{
-		implements = [
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
-		]
-	}
-	;
-
 parenEnclosedExpr
 	::= '(' expr? ')'
 	{
 		pin=1
-		implements = [
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
-		]
 	}
 	;
 private incrementExpr
@@ -1550,7 +1538,7 @@ arguments
 	;
 
 rightExpr
-	::= qualifiedReferencePrimary+
+	::= qualifiedReferencePrime
 	| 	ternaryExprPrime
 	| 	instanceOfExprPrime
 	| 	logicExprPrime
@@ -1560,7 +1548,7 @@ rightExpr
 	|	parenEnclosedExpr
 	|   arrayIndexSelector
 	//|	assignmentExprPrime
-	| 	'in' (qualifiedReference|objectLiteral)
+	| 	inExprPrime
 	;
 
 
@@ -1574,6 +1562,10 @@ typeOfExprPrime
 
 inExpr
 	::= varModifier? variableName 'in' expr
+	;
+
+inExprPrime
+	::= 'in' expr
 	;
 
 logicExprPrime
@@ -1787,6 +1779,10 @@ qualifiedReference
 	}
 	;
 
+qualifiedReferencePrime
+	::= '.' qualifiedReference
+	;
+
 private qualifiedReferencePrimary
 	::= '.' (functionCall|variableName)
 	|	arrayIndexSelector
@@ -1798,6 +1794,9 @@ arrayIndexSelector
 		//pin = 1
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+		methods = [
+			getIndexInQualifiedReference
 		]
 	}
 	;

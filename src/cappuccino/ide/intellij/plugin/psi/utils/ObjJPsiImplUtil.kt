@@ -729,12 +729,12 @@ object ObjJPsiImplUtil {
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
     }
-
+/*
     @JvmStatic
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral)
     }
-
+*/
     @JvmStatic
     fun getFunctionNameAsString(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
@@ -802,33 +802,13 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getPartsAsString(qualifiedReference: ObjJQualifiedReference): String {
-        return (if (qualifiedReference.methodCall != null) "{?}" else "") + getPartsAsString(qualifiedReference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
-    }
-
-    @JvmStatic
-    fun getPartsAsStringArray(qualifiedReference: ObjJQualifiedReference): List<String> {
-        return getPartsAsStringArray(qualifiedReference.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
-    }
-
-    private fun getPartsAsStringArray(qualifiedNameParts: List<ObjJQualifiedReferenceComponent>?): List<String> {
-        if (qualifiedNameParts == null) {
-            return emptyList()
-        }
-        val out = ArrayList<String>()
-        for (part in qualifiedNameParts) {
-            out.add(if (part.qualifiedNameText != null) part.qualifiedNameText!! else "")
-        }
-        return out
-    }
-
-    private fun getPartsAsString(qualifiedNameParts: List<ObjJQualifiedReferenceComponent>): String {
-        return ArrayUtils.join(getPartsAsStringArray(qualifiedNameParts), ".")
-    }
-
-    @JvmStatic
     fun getQualifiedNameText(variableName: ObjJVariableName): String {
         return variableName.text
+    }
+
+    @JvmStatic
+    fun getQualifiedNameText(methodCall: ObjJMethodCall): String {
+        return methodCall.text
     }
 
     @JvmStatic

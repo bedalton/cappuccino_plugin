@@ -80,7 +80,7 @@ data class CommentWrapper(val commentText:String) {
                 }
                 .map {
                     val tokens:List<String> = it.split("\\s+".toRegex(), 3)
-                    CommentParam(tokens.getOrElse(1) { "_" }, tokens.getOrNull(2))
+                    CommentParam(tokens.getOrElse(0) { "_" }, tokens.getOrElse(1){ "?" }, tokens.getOrNull(2))
                 }
         paramLines
     }
@@ -119,4 +119,4 @@ data class CommentWrapper(val commentText:String) {
     }
 }
 
-data class CommentParam(val paramName:String, val paramComment:String?)
+data class CommentParam(val paramName:String, val type:String?, val paramComment:String?)
