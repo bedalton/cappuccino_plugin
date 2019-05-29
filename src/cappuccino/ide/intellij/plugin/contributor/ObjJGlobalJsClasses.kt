@@ -1,53 +1,79 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import com.intellij.openapi.project.Project
-
 data class GlobalJSClass(
         val className: String,
         val constructor: GlobalJSConstructor = GlobalJSConstructor(),
         val functions: List<GlobalJSClassFunction> = listOf(),
         val staticFunctions: List<GlobalJSClassFunction> = listOf(),
-        val properties: List<JsProperty> = listOf(),
-        val staticProperties: List<JsProperty> = listOf(),
+        val properties: List<JsNamedProperty> = listOf(),
+        val staticProperties: List<JsNamedProperty> = listOf(),
         val extends: List<String> = listOf(),
         val comment: String? = null,
         val static: Boolean = false,
         val isStruct: Boolean = false,
         val isObjJ: Boolean = false) // Used to show that this is not a true object kind, but rather a descriptive object
 
-data class JsProperty(
+data class JsNamedProperty(
         val name: String,
-        val type: String = "?",
+        override val type: String = "Any",
         val isPublic: Boolean = true,
-        val nullable: Boolean = true,
-        val readonly: Boolean = false,
-        val comment: String? = null,
-        val default: String? = null,
+        override val nullable: Boolean = true,
+        override val readonly: Boolean = false,
+        override val comment: String? = null,
+        override val default: String? = null,
         val ignore: Boolean = false,
-        val callback: AnonymousJsFunction? = null,
-        val deprecated: Boolean = false)
+        override val callback: AnonymousJsFunction? = null,
+        val deprecated: Boolean = false,
+        val varArgs:Boolean = type.startsWith("...")
+        ) : JsProperty
+
+data class JsFunctionReturnType (
+        override val type: String = "Any",
+        override val nullable: Boolean = true,
+        override val readonly: Boolean = false,
+        override val comment: String? = null,
+        override val default: String? = null,
+        override val callback: AnonymousJsFunction? = null) : JsProperty
 
 interface JsFunction {
     val name: String
-    val parameters: List<JsProperty>
-    val returns: String?
+    val parameters: List<JsNamedProperty>
+    val returns:JsFunctionReturnType?
     val comment: String?
 }
 
+
+
+interface JsProperty {
+    val type: String
+    val nullable: Boolean
+    val readonly: Boolean
+    val comment: String?
+    val default: String?
+    val callback: AnonymousJsFunction?
+}
+
 data class AnonymousJsFunction(
-        val parameters: List<JsProperty> = emptyList(),
-        val returns: String? = null,
+        val parameters: List<JsNamedProperty> = emptyList(),
+        val returns: JsFunctionReturnType? = null,
         val comment: String? = null
 )
 
-data class GlobalJSClassFunction(override val name: String, override val parameters: List<JsProperty> = listOf(), override val returns: String? = null, val isPublic: Boolean = true, override val comment: String? = null) : JsFunction
-data class GlobalJSConstructor(val parameters: List<JsProperty> = listOf())
+data class GlobalJSClassFunction(override val name: String, override val parameters: List<JsNamedProperty> = listOf(), override val returns: JsFunctionReturnType? = null, val isPublic: Boolean = true, override val comment: String? = null) : JsFunction
+data class GlobalJSConstructor(val parameters: List<JsNamedProperty> = listOf())
 
 typealias c = GlobalJSClass
 typealias ctor = GlobalJSConstructor
 typealias f = GlobalJSClassFunction
-typealias p = JsProperty
+typealias p = JsNamedProperty
 typealias callback = AnonymousJsFunction
+typealias rt = JsFunctionReturnType
+
+val RT_STRING = rt("string")
+val RT_BOOL = rt("BOOL")
+val RT_ANY = rt("?", nullable = true)
+val RT_CFURL = rt("CFURL")
+val RT_NUMBER = rt("number")
 
 val Window: GlobalJSClass = c(
         className = "Window",
@@ -249,7 +275,7 @@ val Window: GlobalJSClass = c(
                 f(name = "cancelAnimationFrame", parameters = listOf(p("handler", "number"))),
                 f(name = "captureEvents"),
                 f("close"),
-                f(name = "confirm", parameters = listOf(p(name = "message", type = "string", nullable = true)), returns = "BOOL"),
+                f(name = "confirm", parameters = listOf(p(name = "message", type = "string", nullable = true)), returns = RT_BOOL),
                 //departFocus(navigationReason: NavigationReason, origin: FocusNavigationOrigin): void
                 f(
                         name = "departFocus",
@@ -263,23 +289,23 @@ val Window: GlobalJSClass = c(
                         parameters = listOf(
                                 p("elt", "DOMElement"),
                                 p(name = "psuedoElt", type = "string", nullable = true)),
-                        returns = "CSSStyleDeclaration"
+                        returns = rt("CSSStyleDeclaration")
                 ), f(
                 name = "getMatchedCSSRules",
                 parameters = listOf(
                         p("elt", "DOMElement"),
                         p(name = "psuedoElt", type = "string", nullable = true)),
-                returns = "CSSRuleList"
+                returns = rt("CSSRuleList")
         ),//
                 f(
                         name = "getSelection",
-                        returns = "Selection"
+                        returns = rt("Selection")
                 ),
                 f(
                         name = "matchMedia",
                         parameters = listOf(
                                 p("query", "string")),
-                        returns = "MediaQueryList"
+                        returns = rt("MediaQueryList")
                 ),
                 f(
                         name = "moveBy",
@@ -305,7 +331,7 @@ val Window: GlobalJSClass = c(
                                 p("target", "string", nullable = true),
                                 p("features", "string", nullable = true),
                                 p("replace", "BOOL", nullable = true)),
-                        returns = "Window|null"
+                        returns = rt("Window", nullable = true)
                 ),
                 f(
                         name = "postMessage",
@@ -320,7 +346,7 @@ val Window: GlobalJSClass = c(
                         parameters = listOf(
                                 p("message", "string", nullable = true),
                                 p("_default", "string", nullable = true)),
-                        returns = "string|null"
+                        returns = rt("string", nullable = true)
                 ),
                 f("releaseEvents"),
                 f(
@@ -383,39 +409,439 @@ val Window: GlobalJSClass = c(
                         parameters = listOf(
                                 p("node", "Node"),
                                 p("pt", "WebKitPoint")),
-                        returns = "WebKitPoint"
+                        returns = rt("WebKitPoint")
                 ),
                 f(
                         name = "webkitConvertPointFromPageToNode",
                         parameters = listOf(
                                 p("node", "Node"),
                                 p("pt", "WebKitPoint")),
-                        returns = "WebKitPoint"
+                        returns = rt("WebKitPoint")
                 ),
                 f("webkitRequestAnimationFrame", parameters = listOf(p("callback", "FrameRequestCallback"))),
                 f("webkitCancelAnimationFrame", parameters = listOf(p("handle", "int"))),
-                f("toString", returns = "string"),
+                f("toString", returns = RT_STRING),
                 f("dispatchEvent", parameters = listOf(p("event", "Event")))
         )
 )
 
-val JS_STRING:GlobalJSClass = c(
+val JS_SYMBOL = c (
+        "Symbol",
+        constructor = ctor(listOf(p("name", "string"))),
+        staticFunctions = listOf(
+                f("for", listOf(p("name", "string")))
+        )
+)
+
+val VOID = rt("void", nullable = true)
+
+val JS_ANY = c (
+        "?",
+        extends = listOf("object"),
+        comment = "Object"
+)
+
+val JS_NULL = c (
+        "null",
+        extends = listOf("null", "primitive"),
+        isStruct = true
+)
+
+val JS_UNDEFINED = c (
+        "undefined",
+        extends = listOf("primitive"),
+        isStruct = true
+)
+
+val JS_BOOL = c(
+        "BOOL",
+        extends = listOf("primitive"),
+        isStruct = true
+)
+
+val JS_BOOLEAN = c(
+        "boolean",
+        extends = listOf("BOOL", "primitive"),
+        isStruct = true
+)
+
+val JS_NUMBER = c(
+        "number",
+        extends = listOf("primitive"),
+        isStruct = true
+)
+
+val JS_INT = c(
+        "int",
+        extends = listOf("number", "primitive"),
+        isStruct = true
+)
+
+val JS_CHAR = c(
+        "char",
+        extends = listOf("int", "number", "primitive"),
+        isStruct = true
+)
+
+val JS_BYTE = c(
+        "byte",
+        extends = listOf("int", "number", "primitive"),
+        isStruct = true
+)
+
+val JS_SHORT = c(
+        "short",
+        extends = listOf("int", "number", "primitive"),
+        isStruct = true
+)
+
+val JS_INTEGER = c(
+        "integer",
+        extends = listOf("int", "number", "primitive"),
+        isStruct = true
+)
+
+val JS_LONG = c(
+        "long",
+        extends = listOf("number", "primitive"),
+        isStruct = true
+)
+
+val JS_LONG_LONG = c(
+        "long long",
+        extends = listOf("number", "long", "primitive"),
+        isStruct = true
+)
+
+val JS_FLOAT = c(
+        "float",
+        extends = listOf("number", "primitive"),
+        isStruct = true
+)
+
+val JS_DOUBLE = c(
+        "double",
+        extends = listOf("number", "primitive"),
+        isStruct = true
+)
+
+val JS_PROTOTYPE = c(
+        className = "prototype",
+        functions = listOf(
+                f(
+                        name = "isPrototypeOf",
+                        parameters = listOf(
+                                p("object", "object")
+                        ),
+                        returns = RT_BOOL,
+                        comment = "checks if an object exists in another object's prototype chain"
+                )
+        )
+)
+
+val JS_FUNCTION = c (
+        className = "Function",
+        isStruct = true
+)
+
+val JS_PROPERTY_DESCRIPTOR = c(
+        "PropertyDescriptor",
+        extends = listOf("DataDescriptor", "AccessorDescriptor"),
+        isStruct = true,
+        properties = listOf(
+                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p ("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
+                p ("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false"),
+                p ("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
+                p ("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
+        )
+)
+
+val JS_DATA_DESCRIPTOR = c (
+        className = "DataDescriptor",
+        isStruct = true,
+        properties = listOf(
+                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p ("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
+                p ("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false")
+        )
+)
+
+val JS_ACCESSOR_DESCRIPTOR = c(
+        className = "AccessorDescriptor",
+        isStruct = true,
+        properties = listOf(
+                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p ("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
+                p ("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
+
+        )
+)
+
+val JS_PROPERTIES_OBJECT = c (
+        className = "PropertiesObject",
+        isStruct = true
+)
+
+val JS_ITERABLE = c (
+        className = "iterable"
+)
+
+val JS_ARRAY = c(
+        className = "Array",
+        extends = listOf("iterable")
+)
+
+val JS_OBJECT = c(
+        "object",
+        functions = listOf(
+                f(
+                        name = "hasOwnProperty",
+                        parameters = listOf(p("propertyName", "string")),
+                        returns = RT_BOOL,
+                        comment = "Returns a boolean indicating whether the object has the specified property as its own property (as opposed to inheriting it)"
+                ),
+                f (
+                        name = "propertyIsEnumerable",
+                        parameters = listOf(p("prop", "string", comment = "The name of the property to test")),
+                        returns = RT_BOOL,
+                        comment = "returns a Boolean indicating whether the specified property is enumerable"
+                ),
+                f (
+                        name = "tolocalestring",
+                        returns = RT_STRING,
+                        comment = "Returns a string representing the object. This method is meant to be overridden by derived objects for locale-specific purposes"
+                ),
+                f (
+                        name = "toString",
+                        returns = RT_STRING,
+                        comment = "Returns a string representing the object"
+                ),
+                f (
+                        name = "valueOf",
+                        returns = RT_ANY,
+                        comment = "Returns the primitive value of the specified object"
+                )
+        ),
+        staticFunctions = listOf(
+                f(
+                        name = "assign",
+                        parameters = listOf(
+                                p("target", "object", comment = "The target object"),
+                                p("source", "object", comment = "The source object(s)", varArgs = true)
+                        ),
+                        returns = rt("object", comment = "The target object."),
+                        comment = "The Object.assign() method is used to copy the values of all enumerable own properties from one or more source objects to a target object. It will return the target object"
+                ),
+                f (
+                        name = "values",
+                        parameters = listOf(
+                                p("object", "object")
+                        ),
+                        returns = rt("?[]", comment = "An array containing the given object's own enumerable property values"),
+                        comment = "Returns an array of a given object's own enumerable property values, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well)."
+                ),
+                f (
+                        name = "create",
+                        parameters = listOf(
+                                p("proto", "prototype", comment = "The object which should be the prototype of the newly-created object."),
+                                p("propertiesObject", "object", comment = " If specified and not undefined, an object whose enumerable own properties (that is, those properties defined upon itself and not enumerable properties along its prototype chain) specify property descriptors to be added to the newly-created object, with the corresponding property names. These properties correspond to the second argument of Object.defineProperties().", nullable = true)
+                        ),
+                        returns = rt("object", comment = "A new object with the specified prototype object and properties."),
+                        comment = "Creates a new object, using an existing object as the prototype of the newly created object."
+                ),
+                f (
+                        name = "defineProperties",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object on which to define or modify properties"),
+                                p("props", "PropertiesObject", comment = "An object whose keys represent the names of properties to be defined or modified and whose values are objects describing those properties. Each value in props must be either a data descriptor or an accessor descriptor; it cannot be both (see Object.defineProperty() for more details).")
+                        ),
+                        returns = rt("object",comment = "The object that was passed to the function."),
+                        comment = "defines new or modifies existing properties directly on an object, returning the object."
+                ),
+                f (
+                        name = "defineProperty",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object on which to define the property"),
+                                p ("property", "string|Symbol", comment = "The name or Symbol of the property to be defined or modified"),
+                                p ("descriptor", "DataDescriptor|AccessorDescriptor", comment = "The descriptor for the property being defined or modified")
+                        ),
+                        returns = rt("object", comment = "The object that was passed to the function"),
+                        comment = "defines a new property directly on an object, or modifies an existing property on an object, and returns the object.\n@returns The object that was passed to the function"
+                ),
+                f (
+                        name = "entries",
+                        parameters = listOf(
+                                p ("obj", "object", comment = "The object whose own enumerable string-keyed property [key, value] pairs are to be returned.")
+                        ),
+                        returns = rt("[key, value][]", comment = "An array of the given object's own enumerable string-keyed property [key, value] pairs"),
+                        comment = "returns an array of a given object's own enumerable string-keyed property [key, value] pairs, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well). The order of the array returned by Object.entries() does not depend on how an object is defined. If there is a need for certain ordering then the array should be sorted first like Object.entries(obj).sort((a, b) => b[0].localeCompare(a[0]));"
+                ),
+                f (
+                        name = "freeze",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object to freeze")
+                        ),
+                        returns = rt("object", comment = "The object that was passed to the function"),
+                        comment = "freezes an object. A frozen object can no longer be changed; freezing an object prevents new properties from being added to it, existing properties from being removed, prevents changing the enumerability, configurability, or writability of existing properties, and prevents the values of existing properties from being changed. In addition, freezing an object also prevents its prototype from being changed. freeze() returns the same object that was passed in."
+                ),
+                f (
+                        name = "fromEntries",
+                        parameters = listOf(
+                                p ("iterable", "iterable", comment = "An iterable such as Array or Map or other objects implementing the iterable protocol.")
+                        ),
+                        returns = rt("object", comment = "A new object whose properties are given by the entries of the iterable")
+                ),
+                f (
+                        name = "getOwnPropertyDescriptor",
+                        parameters = listOf(
+                                p ("obj", "object", comment = "The object in which to look for the property"),
+                                p ("prop", "string|Symbol", comment = "The name or Symbol of the property whose description is to be retrieved")
+                        ),
+                        returns = rt("PropertyDescriptor", comment = "A property descriptor of the given property if it exists on the object, undefined otherwise.", nullable = true)
+                ),
+                f (
+                        name = "getOwnPropertyDescriptors",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object for which to get all own property descriptors")
+                        ),
+                        returns = rt("object", comment = "An object containing all own property descriptors of an object. Might be an empty object, if there are no properties."),
+                        comment = "Returns all own property descriptors of a given object."
+                ),
+                f (
+                        name = "getOwnPropertyNames",
+                        parameters = listOf(
+                                p ("obj", "object", comment = "The object whose enumerable and non-enumerable properties are to be returned")
+                        ),
+                        returns = rt("string[]"),
+                        comment = "Returns an array of all properties (including non-enumerable properties except for those which use Symbol) found directly in a given object."
+                ),
+                f (
+                        name = "getOwnPropertySymbols",
+                        parameters = listOf(
+                                p ("obj", "object", comment = "The object whose symbol properties are to be returned")
+                        ),
+                        returns = rt("Symbol[]", comment = "An array of all symbol properties found directly upon the given object"),
+                        comment = "Returns an array of all symbol properties found directly upon a given object."
+                ),
+                f (
+                        name = "getPrototypeOf",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object whose prototype is to be returned")
+                        ),
+                        returns = rt("prototype", comment = "The prototype of the given object. If there are no inherited properties, null is returned.", nullable = true)
+                ),
+                f (
+                        name = "is",
+                        parameters = listOf(
+                                p ("value1", "?", comment = "The first value to compare."),
+                                p ("value2", "?", comment = "The second value to compare.")
+                        ),
+                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the two arguments are the same value"),
+                        comment = "Object.is() determines whether two values are the same value. Two values are the same if one of the following holds:\n" +
+                                "\n" +
+                                "both undefined\n" +
+                                "both null\n" +
+                                "both true or both false\n" +
+                                "both strings of the same length with the same characters in the same order\n" +
+                                "both the same object (means both object have same reference)\n" +
+                                "both numbers and\n" +
+                                "both +0\n" +
+                                "both -0\n" +
+                                "both NaN\n" +
+                                "or both non-zero and both not NaN and both have the same value\n" +
+                                "This is not the same as being equal according to the == operator. The == operator applies various coercions to both sides (if they are not the same Type) before testing for equality (resulting in such behavior as \"\" == false being true), but Object.is doesn't coerce either value.\n" +
+                                "\n" +
+                                "This is also not the same as being equal according to the === operator. The === operator (and the == operator as well) treats the number values -0 and +0 as equal and treats Number.NaN as not equal to NaN."
+                ),
+                f (
+                        name = "isExtensible",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which should be checked")
+                        ),
+                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is extensible"),
+                        comment = "Determines if an object is extensible (whether it can have new properties added to it)."
+                ),
+                f (
+                        name = "isFrozen",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which should be checked")
+                        ),
+                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is frozen"),
+                        comment = "Determines if an object is frozen.\nAn object is frozen if and only if it is not extensible, all its properties are non-configurable, and all its data properties (that is, properties which are not accessor properties with getter or setter components) are non-writable."
+                ),
+                f (
+                        name = "isSealed",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which should be checked")
+                        ),
+                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is sealed"),
+                        comment = "Returns true if the object is sealed, otherwise false. An object is sealed if it is not extensible and if all its properties are non-configurable and therefore not removable (but not necessarily non-writable)."
+                ),
+                f (
+                        name = "keys",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object of which the enumerable's own properties are to be returned.")
+                        ),
+                        returns = rt("string[]", comment = "An array of strings that represent all the enumerable properties of the given object."),
+                        comment = "Returns an array of a given object's own property names, in the same order as we get with a normal loop."
+                ),
+                f (
+                        name = "preventExtensions",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which should be made non-extensible.")
+                        ),
+                        returns = rt("object", comment = "The object being made non-extensible."),
+                        comment = "Prevents new properties from ever being added to an object (i.e. prevents future extensions to the object).\nAn object is extensible if new properties can be added to it. Object.preventExtensions() marks an object as no longer extensible, so that it will never have properties beyond the ones it had at the time it was marked as non-extensible. Note that the properties of a non-extensible object, in general, may still be deleted. Attempting to add new properties to a non-extensible object will fail, either silently or by throwing a TypeError (most commonly, but not exclusively, when in strict mode)."
+                ),
+                f (
+                        name = "seal",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which should be sealed.")
+                        ),
+                        returns = rt("object", comment = "The object being sealed"),
+                        comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
+                ),
+                f (
+                        name = "setPrototypeOf",
+                        parameters = listOf(
+                                p("obj", "object", comment = "The object which is to have its prototype set."),
+                                p ("prototype", "object", comment = "The object's new prototype (an object or null).", nullable = true)
+                        ),
+                        returns = rt("object", comment = "The specified object."),
+                        comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
+                )
+
+
+        ),
+        properties = listOf(
+                p("constructor", "object")
+        ),
+        staticProperties = listOf(
+                p("prototype", "prototype")
+        )
+)
+
+val JS_STRING: GlobalJSClass = c(
         className = "string",
         constructor = ctor(listOf(p("aString", "string"))),
         properties = listOf(
                 p("isa", "CPString")
         ),
         functions = listOf(
-                f("escapeForRegExp", returns = "string"),
-                f("stripDiacritics", returns = "string"),
-                f("length", returns = "number", comment = "returns the length of a string"),
+                f("escapeForRegExp", returns = RT_STRING),
+                f("stripDiacritics", returns = RT_STRING),
+                f("length", returns = RT_NUMBER, comment = "returns the length of a string"),
                 f(
                         name = "indexOf",
                         parameters = listOf(
                                 p("substring", type = "string", comment = "The string to find index for"),
                                 p("startIndex", type = "number", nullable = true)
                         ),
-                        returns = "number",
+                        returns = RT_NUMBER,
                         comment = "returns the index of the first occurrence of a specified text in a string"
                 ),
                 f(
@@ -424,7 +850,7 @@ val JS_STRING:GlobalJSClass = c(
                                 p("substring", type = "string", comment = "The string to find index for"),
                                 p("endIndex", type = "number", nullable = true, comment = "Starts at this index and works backwards")
                         ),
-                        returns = "number",
+                        returns = RT_NUMBER,
                         comment = "returns the index of the last occurrence of a specified text in a string"
                 ),
                 f(
@@ -432,97 +858,146 @@ val JS_STRING:GlobalJSClass = c(
                         parameters = listOf(
                                 p("substring", type = "string", comment = "The string to find index for")
                         ),
-                        returns = "number",
+                        returns = RT_NUMBER,
                         comment = "returns the index of the last occurrence of a specified text in a string"
                 ),
-                f (
+                f(
                         name = "slice",
                         parameters = listOf(
                                 p("start", "number"),
                                 p("end", "number", comment = "exclusive", nullable = true)
                         ),
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "extracts a part of a string and returns the extracted part in a new string\ncan use negative numbers to count from end"
                 ),
-                f (
+                f(
                         name = "substring",
-                        parameters = listOf (
-                                p ("start", "number"),
-                                p ("end", "number", nullable = true)
+                        parameters = listOf(
+                                p("start", "number"),
+                                p("end", "number", nullable = true)
                         ),
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "extracts a part of a string and returns the extracted part in a new string\ncannot accept negative indexes"
                 ),
-                f (
+                f(
                         name = "substr",
-                        parameters = listOf (
-                                p ("start", "number", comment = "Starting index(Inclusive)"),
-                                p ("length", "number", nullable = true, comment = "length of the extracted part")
+                        parameters = listOf(
+                                p("start", "number", comment = "Starting index(Inclusive)"),
+                                p("length", "number", nullable = true, comment = "length of the extracted part")
                         ),
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "Extracts a subset of a string given start index and length"
 
                 ),
-                f (
+                f(
                         name = "replace",
                         parameters = listOf(
                                 p("search", "string|RegExp"),
-                                p ("replacementString", "string")
+                                p("replacementString", "string")
                         ),
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "Replaces first occurrence in a case sensitive manner.\nUse regex search parameter to replace all(/g) and do case insensitive(/i)"
                 ),
-                f (
+                f(
                         name = "toUpperCase",
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "returns a string is converted to upper case"
                 ),
 
-                f (
+                f(
                         name = "toLowerCase",
-                        returns = "string",
+                        returns = RT_STRING,
                         comment = "returns a string is converted to lower case"
                 ),
-                f (
+                f(
                         name = "concat",
                         comment = "joins two or more strings",
-                        parameters =  listOf(p(
+                        parameters = listOf(p(
                                 name = "args",
-                                type = "...string"
+                                type = "string",
+                                varArgs = true
                         ))
                 ),
-                f (
+                f(
                         name = "trim",
                         comment = "removes whitespace from both sides of a string",
-                        returns = "string"
+                        returns = RT_STRING
                 ),
-                f (
+                f(
                         name = "charAt",
                         parameters = listOf(
                                 p("index", "number")
                         ),
-                        returns = "string"
+                        returns = RT_STRING
                 ),
 
-                f (
+                f(
                         name = "charCodeAt",
                         parameters = listOf(
                                 p("index", "number")
                         ),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
-                f (
+                f(
                         name = "split",
                         parameters = listOf(
                                 p("splitOn", "string")
                         ),
-                        returns = "string[]"
+                        returns = rt("string[]")
                 )
 
         )
 )
 
+private val JS_BOXED_NUMBER = c(
+        "Number",
+        constructor = ctor (listOf(p("value", "number"))),
+        extends = listOf("number")
+)
+
+private val JS_BOXED_STRING = c(
+        "String",
+        constructor = ctor (listOf(p("value", "string"))),
+        extends = listOf("number")
+)
+
+private val JS_BOXED_BOOLEAN = c(
+        "Boolean",
+        constructor = ctor (listOf(p("value", "BOOL"))),
+        extends = listOf("number")
+)
+
 val globalJSClasses = listOf(
+        JS_BOOL,
+        JS_BOOLEAN,
+        JS_INT,
+        JS_BYTE,
+        JS_SHORT,
+        JS_LONG,
+        JS_LONG_LONG,
+        JS_FLOAT,
+        JS_DOUBLE,
+        JS_STRING,
+        JS_OBJECT,
+        JS_PROTOTYPE,
+        JS_INTEGER,
+        JS_CHAR,
+        JS_NUMBER,
+        JS_ITERABLE,
+        JS_ACCESSOR_DESCRIPTOR,
+        JS_DATA_DESCRIPTOR,
+        JS_FUNCTION,
+        JS_PROPERTIES_OBJECT,
+        JS_FUNCTION,
+        JS_SYMBOL,
+        JS_NULL,
+        JS_UNDEFINED,
+        JS_BOXED_STRING,
+        JS_BOXED_NUMBER,
+        JS_BOXED_BOOLEAN,
+        JS_PROPERTY_DESCRIPTOR,
+        JS_ANY,
+        JS_ARRAY,
         c(
                 className = "CFBundle",
                 constructor = ctor(listOf(p("aURL", "CPUrl|String"))),
@@ -534,39 +1009,39 @@ val globalJSClasses = listOf(
                         f("bundleContainingURL", listOf(
                                 p("aURL", "CPURL")
                         )),
-                        f(name = "mainBundle", returns = "CFBundle"),
+                        f(name = "mainBundle", returns = rt("CFBundle")),
                         f("bundleForClass", listOf(p("aClass", "objj_class"))),
                         f("bundleWithIdentifier", listOf(p("bundleID", "string")))
                 ),
                 functions = listOf(
-                        f(name = "bundleURL", returns = "CFURL"),
-                        f(name = "resourcesDirectoryURL", returns = "CFURL"),
+                        f(name = "bundleURL", returns = RT_CFURL),
+                        f(name = "resourcesDirectoryURL", returns = RT_CFURL),
                         f(name = "resourceURL", parameters = listOf(
                                 p("aResourceName", "string"),
                                 p("aType", "string"),
                                 p("aSubDirectory", "string"),
                                 p("localizationName", "string")
-                        ), returns = "CFURL"
+                        ), returns = RT_CFURL
                         ),
-                        f(name = "mostEligibleEnvironmentURL", returns = "CFURL"),
-                        f(name = "executableURL", returns = "CFURL"),
-                        f(name = "infoDictionary", returns = "?"),
-                        f(name = "loadedLanguage", returns = "?"),
+                        f(name = "mostEligibleEnvironmentURL", returns = RT_CFURL),
+                        f(name = "executableURL", returns = RT_CFURL),
+                        f(name = "infoDictionary", returns = RT_ANY),
+                        f(name = "loadedLanguage", returns = RT_ANY),
                         f(
                                 name = "valueForInfoDictionaryKey",
                                 parameters = listOf(p("aKey", "string")),
-                                returns = "?"
+                                returns = RT_ANY
                         ),
-                        f(name = "identifier", returns = "?"),
-                        f(name = "hasSpritedImages", returns = "BOOL"),
-                        f(name = "environments", returns = "?"),
+                        f(name = "identifier", returns = RT_ANY),
+                        f(name = "hasSpritedImages", returns = RT_BOOL),
+                        f(name = "environments", returns = RT_ANY),
                         f(
                                 name = "mostEligibleEnvironment",
                                 parameters = listOf(p("evironments", "array")),
-                                returns = "?"
+                                returns = RT_ANY
                         ),
-                        f(name = "isLoading", returns = "BOOL"),
-                        f(name = "isLoaded", returns = "BOOL"),
+                        f(name = "isLoading", returns = RT_BOOL),
+                        f(name = "isLoaded", returns = RT_BOOL),
                         f(
                                 name = "load",
                                 parameters = listOf(p("shouldExecute", "BOOL"))
@@ -583,7 +1058,7 @@ val globalJSClasses = listOf(
                                 name = "onerror",
                                 parameters = listOf(p("anEvent", "Event"))
                         ),
-                        f(name = "bundlePath", returns = "?"),
+                        f(name = "bundlePath", returns = RT_ANY),
                         f(
                                 name = "pathForResource",
                                 parameters = listOf(
@@ -592,7 +1067,7 @@ val globalJSClasses = listOf(
                                         p("aSubDirectory", "string"),
                                         p("localizationName", "string")
                                 ),
-                                returns = "CFURL"
+                                returns = RT_CFURL
                         )
                 )
         ),
@@ -602,11 +1077,11 @@ val globalJSClasses = listOf(
                         p("isa", "CPData")
                 ),
                 functions = listOf(
-                        f(name = "propertyList", returns = "CFPropertyList"),
-                        f(name = "JSONObject", returns = "object"),
-                        f(name = "rawString", returns = "string"),
-                        f(name = "bytes", returns = "byte[]"),
-                        f(name = "base64", returns = "string")
+                        f(name = "propertyList", returns = rt("CFPropertyList")),
+                        f(name = "JSONObject", returns = rt("object")),
+                        f(name = "rawString", returns = RT_STRING),
+                        f(name = "bytes", returns = rt("byte[]")),
+                        f(name = "base64", returns = RT_STRING)
                 ),
                 staticFunctions = listOf(
                         f(
@@ -615,7 +1090,7 @@ val globalJSClasses = listOf(
                                         p("input", "string"),
                                         p("strip", "BOOL")
                                 ),
-                                returns = "byte[]"
+                                returns = rt("byte[]")
                         ),
                         f(
                                 name = "decodeBase64ToString",
@@ -623,7 +1098,7 @@ val globalJSClasses = listOf(
                                         p("input", "string"),
                                         p("strip", "BOOL")
                                 ),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "decodeBase64ToUtf16String",
@@ -631,12 +1106,12 @@ val globalJSClasses = listOf(
                                         p("input", "string"),
                                         p("strip", "BOOL")
                                 ),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "encodeBase64Array",
                                 parameters = listOf(p("input", "string[]")), // @todo check if this is correct
-                                returns = "string"
+                                returns = RT_STRING
                         )
                 )
         ),
@@ -676,27 +1151,27 @@ val globalJSClasses = listOf(
                         f(
                                 name = "bytesToString",
                                 parameters = listOf(p("bytes", "byte[]")),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "stringToBytes",
                                 parameters = listOf(p("input", "string")),
-                                returns = "byte[]"
+                                returns = rt("byte[]")
                         ),
                         f(
                                 name = "encodeBase64String",
                                 parameters = listOf(p("input", "string")),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "bytesToUtf16String",
                                 parameters = listOf(p("bytes", "byte[]")),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "encodeBase64Utf16String",
                                 parameters = listOf(p("input", "string")),
-                                returns = "string"
+                                returns = RT_STRING
                         )
                 )
         ),
@@ -707,24 +1182,24 @@ val globalJSClasses = listOf(
                         p("isa", "CPDictionary")
                 ),
                 functions = listOf(
-                        f(name = "copy", returns = "CFDictionary"),
-                        f(name = "mutableCopy", returns = "CFMutableDictionary"),
+                        f(name = "copy", returns = rt("CFDictionary")),
+                        f(name = "mutableCopy", returns = rt("CFMutableDictionary")),
                         f(
                                 name = "containsKey",
                                 parameters = listOf(p("aKey", "string")),
-                                returns = "BOOL"
+                                returns = RT_BOOL
                         ),
                         f(
                                 name = "containsValue",
                                 parameters = listOf(p("anObject", "id")),
-                                returns = "BOOL"
+                                returns = RT_BOOL
                         ),
-                        f(name = "count", parameters = listOf(), returns = "int"),
-                        f(name = "countOfKey", parameters = listOf(p("aKey", "string")), returns = "int"),
-                        f(name = "countOfValue", parameters = listOf(p("anObject", "id")), returns = "int"),
-                        f(name = "keys", returns = "string[]"),
-                        f(name = "valueForKey", parameters = listOf(p("aKey", "string")), returns = "id"),
-                        f(name = "toString", returns = "string")
+                        f(name = "count", parameters = listOf(), returns = RT_NUMBER),
+                        f(name = "countOfKey", parameters = listOf(p("aKey", "string")), returns = RT_NUMBER),
+                        f(name = "countOfValue", parameters = listOf(p("anObject", "id")), returns = RT_NUMBER),
+                        f(name = "keys", returns = rt("string[]")),
+                        f(name = "valueForKey", parameters = listOf(p("aKey", "string")), returns = rt("?")),
+                        f(name = "toString", returns = RT_STRING)
                 )
         ),
         c(
@@ -772,22 +1247,22 @@ val globalJSClasses = listOf(
                         p("userInfo", "CFDictionary")
                 )),
                 functions = listOf(
-                        f(name = "domain", returns = "string"),
-                        f(name = "code", returns = "int"),
-                        f(name = "description", returns = "string"),
-                        f(name = "failureReason", returns = "string"),
-                        f(name = "recoverySuggestion", returns = "?"),
-                        f(name = "userInfo", returns = "CFDictionary")
+                        f(name = "domain", returns = RT_STRING),
+                        f(name = "code", returns = RT_NUMBER),
+                        f(name = "description", returns = RT_STRING),
+                        f(name = "failureReason", returns = RT_STRING),
+                        f(name = "recoverySuggestion", returns = RT_ANY),
+                        f(name = "userInfo", returns = rt("CFDictionary"))
                 )
         ),
         c(
-                className = "",
+                className = "___CHECK_ME___",
                 functions = listOf(
-                        f(name = "status", returns = "int"),
-                        f(name = "statusText", returns = "string"),
-                        f(name = "readyState", returns = "int"),
-                        f(name = "success", returns = "BOOL"),
-                        f(name = "responseText", returns = "?"),
+                        f(name = "status", returns = RT_NUMBER),
+                        f(name = "statusText", returns = RT_STRING),
+                        f(name = "readyState", returns = RT_NUMBER),
+                        f(name = "success", returns = RT_BOOL),
+                        f(name = "responseText", returns = RT_ANY),
                         f(
                                 name = "setRequestHeader",
                                 parameters = listOf(
@@ -795,11 +1270,11 @@ val globalJSClasses = listOf(
                                         p("aValue", "object")
                                 )
                         ),
-                        f(name = "responseXML", returns = "XMLNode"),
-                        f(name = "responsePropertyList", returns = "CFPropertyList"),
+                        f(name = "responseXML", returns = rt("XMLNode")),
+                        f(name = "responsePropertyList", returns = rt("CFPropertyList")),
                         f(name = "setTimeout", parameters = listOf(p("aTimeout", "int"))),
-                        f(name = "getTimeout", parameters = listOf(p("aTimeout", "int")), returns = "int"),
-                        f(name = "getAllResponseHeaders", returns = "?"),
+                        f(name = "getTimeout", parameters = listOf(p("aTimeout", "int")), returns = RT_NUMBER),
+                        f(name = "getAllResponseHeaders", returns = RT_ANY),
                         f(name = "overrideMimeType", parameters = listOf(p("aMimeType", "string"))),
                         f(
                                 name = "open",
@@ -813,7 +1288,7 @@ val globalJSClasses = listOf(
                                 )
                         ),
                         f(name = "send", parameters = listOf(p("aBody", "object"))),
-                        f(name = "abort", returns = "?"),
+                        f(name = "abort", returns = RT_ANY),
                         f(
                                 name = "addEventListener",
                                 parameters = listOf(
@@ -829,8 +1304,8 @@ val globalJSClasses = listOf(
                                 )
                         ),
                         f(name = "setWithCredentials", parameters = listOf(p("willSendWithCredentials", "BOOL"))),
-                        f(name = "withCredentials", returns = "BOOL"),
-                        f(name = "isTimeoutRequest", returns = "BOOL")
+                        f(name = "withCredentials", returns = RT_BOOL),
+                        f(name = "isTimeoutRequest", returns = RT_BOOL)
                 )
         ),
         c(
@@ -842,7 +1317,7 @@ val globalJSClasses = listOf(
                                         p("aData", "Data"),
                                         p("aFormat", "Format")
                                 ),
-                                returns = "CFPropertyList"
+                                returns = rt("CFPropertyList")
                         ),
                         f(
                                 name = "propertyListFromString",
@@ -850,23 +1325,23 @@ val globalJSClasses = listOf(
                                         p("aString", "string"),
                                         p("aFormat", "Format")
                                 ),
-                                returns = "CFPropertyList"
+                                returns = rt("CFPropertyList")
 
                         ),
                         f(
                                 name = "propertyListFromXML",
                                 parameters = listOf(
                                         p("aStringOrXMLNode", "string|XMLNode")),
-                                returns = "CFPropertyList"
+                                returns = rt("CFPropertyList")
                         ),
-                        f(name = "sniffedFormatOfString", parameters = listOf(p("aStrign", "string")), returns = "int"),
+                        f(name = "sniffedFormatOfString", parameters = listOf(p("aStrign", "string")), returns = rt("int")),
                         f(
                                 name = "dataFromPropertyList",
                                 parameters = listOf(
                                         p("aPropertyList", "CFPropertyList"),
                                         p("aFormat", "Format")
                                 ),
-                                returns = "CFMutableData"
+                                returns = rt("CFMutableData")
                         ),
                         f(
                                 name = "stringFromPropertyList",
@@ -874,7 +1349,7 @@ val globalJSClasses = listOf(
                                         p("aPropertyList", "CFPropertyList"),
                                         p("aFormat", "Format")
                                 ),
-                                returns = "string"
+                                returns = RT_STRING
                         ),
                         f(
                                 name = "readPropertyListFromFile",
@@ -909,8 +1384,8 @@ val globalJSClasses = listOf(
                         p("aBaseURL", "CFURL")
                 )),
                 functions = listOf(
-                        f("UID", returns = "int"),
-                        f("mappedURL", returns = "CFURL"),
+                        f("UID", returns = RT_NUMBER),
+                        f("mappedURL", returns = RT_CFURL),
                         f(
                                 name = "setMappedURLForURL",
                                 parameters = listOf(
@@ -918,29 +1393,29 @@ val globalJSClasses = listOf(
                                         p("toURL", "CFURL")
                                 )
                         ),
-                        f(name = "schemeAndAuthority", returns = "string"),
-                        f(name = "absoluteString", returns = "string"),
-                        f(name = "toString", returns = "string"),
-                        f(name = "absoluteURL", returns = "CFURL"),
-                        f(name = "standardizedURL", returns = "CFURL"),
-                        f(name = "string", returns = "string"),
-                        f(name = "authority", returns = "?"),
-                        f(name = "hasDirectoryPath", returns = "BOOL"),
-                        f(name = "hostName", returns = "?"),
-                        f(name = "fragment", returns = "?"),
-                        f(name = "lastPathComponent", returns = "?"),
-                        f(name = "createCopyDeletingLastPathComponent", returns = "CFURL"),
-                        f(name = "pathComponents", returns = "?"),
-                        f(name = "pathExtension", returns = "string"),
-                        f(name = "queryString", returns = "string"),
-                        f(name = "scheme", returns = "string"),
-                        f(name = "user", returns = "string"),
-                        f(name = "password", returns = "string"),
-                        f(name = "portNumber", returns = "int"),
-                        f(name = "domain", returns = "string"),
-                        f(name = "baseURL", returns = "?"),
-                        f(name = "asDirectoryPathURL", returns = "CFURL"),
-                        f(name = "resourcePropertyForKey", parameters = listOf(p("aKey", "string")), returns = "?"),
+                        f(name = "schemeAndAuthority", returns = RT_STRING),
+                        f(name = "absoluteString", returns = RT_STRING),
+                        f(name = "toString", returns = RT_STRING),
+                        f(name = "absoluteURL", returns = RT_CFURL),
+                        f(name = "standardizedURL", returns = RT_CFURL),
+                        f(name = "string", returns = RT_STRING),
+                        f(name = "authority", returns = RT_ANY),
+                        f(name = "hasDirectoryPath", returns = RT_BOOL),
+                        f(name = "hostName", returns = RT_ANY),
+                        f(name = "fragment", returns = RT_ANY),
+                        f(name = "lastPathComponent", returns = RT_ANY),
+                        f(name = "createCopyDeletingLastPathComponent", returns = RT_CFURL),
+                        f(name = "pathComponents", returns = RT_ANY),
+                        f(name = "pathExtension", returns = RT_STRING),
+                        f(name = "queryString", returns = RT_STRING),
+                        f(name = "scheme", returns = RT_STRING),
+                        f(name = "user", returns = RT_STRING),
+                        f(name = "password", returns = RT_STRING),
+                        f(name = "portNumber", returns = RT_NUMBER),
+                        f(name = "domain", returns = RT_STRING),
+                        f(name = "baseURL", returns = RT_ANY),
+                        f(name = "asDirectoryPathURL", returns = RT_CFURL),
+                        f(name = "resourcePropertyForKey", parameters = listOf(p("aKey", "string")), returns = RT_ANY),
                         f(
                                 name = "setResourcePropertyForKey",
                                 parameters = listOf(
@@ -948,7 +1423,7 @@ val globalJSClasses = listOf(
                                         p("aValue", "id")
                                 )
                         ),
-                        f(name = "staticResourceData", returns = "CFMutableData")
+                        f(name = "staticResourceData", returns = rt("CFMutableData"))
                 )
         ),
         c(
@@ -983,7 +1458,7 @@ val globalJSClasses = listOf(
                         f(name = "objj_msgSend2"),
                         f(name = "objj_msgSend3"),
                         f(name = "method_msgSend"),
-                        f(name = "toString", returns = "string")
+                        f(name = "toString", returns = RT_STRING)
                 )
         ),
         c(
@@ -1025,15 +1500,6 @@ val globalJSClasses = listOf(
                 className = "objj_typeDef",
                 constructor = ctor(listOf(p("aName", "string")))
         ),
-        Window,
-        c(
-                className = "BOOL",
-                comment = "Boolean value of True or False"
-        ),
-        c (
-                className = "boolean", extends = listOf("BOOL"),
-                comment = "Boolean value of True or False"
-        ),
         c(
                 className = "Event",
                 constructor = ctor(
@@ -1068,7 +1534,7 @@ val globalJSClasses = listOf(
                         p("NONE", "number", readonly = true)
                 ),
                 functions = listOf(
-                        f("composedPath", returns = "EventTarget[]"),
+                        f("composedPath", returns = rt("EventTarget[]")),
                         f(
                                 name = "initEvent",
                                 parameters = listOf(
@@ -1093,7 +1559,7 @@ val globalJSClasses = listOf(
                         )),
                         f("dispatchEvent", listOf(
                                 p("event", "Event")),
-                                returns = "BOOL"
+                                returns = RT_BOOL
                         ),
                         f("removeEventListener", listOf(
                                 p("type", "string"),
@@ -1106,14 +1572,13 @@ val globalJSClasses = listOf(
         c(
                 className = "ThemeState",
                 functions = listOf(
-                        f("toString", returns = "string"),
-                        f("hasThemeState", parameters = listOf(p("aState", "?")), returns = "BOOL"),
-                        f("isSubsetOf", parameters = listOf(p("aState", "?")), returns = "BOOL"),
-                        f("without", parameters = listOf(p("aState", "?")), returns = "ThemeState"),
-                        f("and", parameters = listOf(p("aState", "?")), returns = "ThemeState")
+                        f("toString", returns = RT_STRING),
+                        f("hasThemeState", parameters = listOf(p("aState", "?")), returns = RT_BOOL),
+                        f("isSubsetOf", parameters = listOf(p("aState", "?")), returns = RT_BOOL),
+                        f("without", parameters = listOf(p("aState", "?")), returns = rt("ThemeState")),
+                        f("and", parameters = listOf(p("aState", "?")), returns = rt("ThemeState"))
                 )
         ),
-        JS_STRING,
         c(
                 className = "CPString",
                 extends = listOf("string")
@@ -1128,11 +1593,11 @@ val globalJSClasses = listOf(
         c(
                 className = "BlendTask",
                 functions = listOf(
-                        f("packageType", returns = "string"),
-                        f("infoPlist", returns = "?"),
-                        f("themeDescriptors", returns = "?"),
+                        f("packageType", returns = RT_STRING),
+                        f("infoPlist", returns = RT_ANY),
+                        f("themeDescriptors", returns = RT_ANY),
                         f("setThemeDescriptors", parameters = listOf(p("themeDescriptors", "?[]|FileList[]"))),
-                        f("defineTasks", parameters = listOf(p("...args", "?"))),
+                        f("defineTasks", parameters = listOf(p("args", "?", varArgs = true))),
                         f("defineSourceTasks"),
                         f("defineThemeDescriptorTasks")
                 )
@@ -1158,9 +1623,9 @@ val globalJSClasses = listOf(
                 functions = listOf(
                         f("start"),
                         f("stop"),
-                        f("updateFunction", returns = "?"),
-                        f("identifier", returns = "?"),
-                        f("description", returns = "string"),
+                        f("updateFunction", returns = RT_ANY),
+                        f("identifier", returns = RT_ANY),
+                        f("description", returns = RT_STRING),
                         f(
                                 name = "addTarget",
                                 parameters = listOf(
@@ -1192,7 +1657,7 @@ val globalJSClasses = listOf(
                         p("didBuildDOMElements", "BOOL")
                 ),
                 functions = listOf(
-                        f("description", returns = "string"),
+                        f("description", returns = RT_STRING),
                         f(
                                 name = "addPropertyAnimation",
                                 parameters = listOf(
@@ -1204,17 +1669,17 @@ val globalJSClasses = listOf(
                                         p("aTimingFunctions", "d[]|d[][]", comment = "[d,d,d,d] | [[d,d,d,d]]"),
                                         p("aCompletionfunction", "Function")
                                 ),
-                                returns = "BOOL"
+                                returns = RT_BOOL
                         ),
-                        f("keyFrames", returns = "string"),
+                        f("keyFrames", returns = RT_STRING),
                         f("appendKeyFramesRule"),
                         f("createKeyFramesStyleElement"),
-                        f("endEventListener", returns = "AnimationEndListener"),
-                        f("completionFunctionForAnimationName", parameters = listOf(p("aName", "string")), returns = "Function"),
+                        f("endEventListener", returns = rt("AnimationEndListener")),
+                        f("completionFunctionForAnimationName", parameters = listOf(p("aName", "string")), returns = rt("Function")),
                         f("addAnimationEndEventListener"),
                         f("setTargetStyleProperties"),
                         f("buildDOMElements"),
-                        f("start", returns = "BOOL")
+                        f("start", returns = RT_BOOL)
 
                 )
         ),
@@ -1224,7 +1689,7 @@ val globalJSClasses = listOf(
                         p("isa", "CPDate")
                 ),
                 staticFunctions = listOf(
-                        f("parseISO8601", listOf(p("aData", "Date")), returns = "number")
+                        f("parseISO8601", listOf(p("aData", "Date")), returns = RT_NUMBER)
                 )
         ),
         c(
@@ -1247,9 +1712,6 @@ val globalJSClasses = listOf(
                 className = "Document"
         ),
         c(
-                className = "Array"
-        ),
-        c(
                 className = "RegExp",
                 constructor = ctor(listOf(
                         p("pattern", "string|RegExp"),
@@ -1259,14 +1721,14 @@ val globalJSClasses = listOf(
                         f(
                                 name = "exec",
                                 parameters = listOf(p("string", "string", comment = "The String object or string literal on which to perform the search.")),
-                                returns = "string[]|null",
+                                returns = rt("string[]|null"),
                                 comment = "Executes a search on a string using a regular expression pattern, and returns an array containing the results of that search."
                         ),
                         f(
                                 name = "test",
                                 parameters = listOf(
                                         p("string", "string", comment = "String on which to perform the search")),
-                                returns = "BOOL",
+                                returns = RT_BOOL,
                                 comment = "Returns a Boolean value that indicates whether or not a pattern exists in a searched string.")
                 ),
                 properties = listOf(
@@ -1297,13 +1759,15 @@ val globalJSClasses = listOf(
                         p(name = "assignedSlot", type = "HTMLSlotElement | null", readonly = true)
                 )
         ),
+        Window,
         JsClassHTMLElement,
         JsClassGlobalEventHandlers,
         JsClassCSSStyleDeclaration,
         JsClassAnimatable,
         JsClassChildNode,
         JsClassElementCSSInlineStyle,
-        JsClassEventTarget
+        JsClassEventTarget,
+        JsElementClass
 
 )
 

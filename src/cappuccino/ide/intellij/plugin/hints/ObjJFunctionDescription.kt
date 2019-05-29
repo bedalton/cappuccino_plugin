@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.contributor.JsFunction
-import cappuccino.ide.intellij.plugin.contributor.JsProperty
+import cappuccino.ide.intellij.plugin.contributor.JsNamedProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
@@ -114,7 +114,7 @@ val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
 
 
 val JsFunction.description:ObjJFunctionDescription get() {
-    val descriptionOut = ObjJFunctionDescription(name, returns)
+    val descriptionOut = ObjJFunctionDescription(name, returns?.type)
     parameters.forEach {
         descriptionOut.addParameter(it.description)
     }
@@ -122,7 +122,7 @@ val JsFunction.description:ObjJFunctionDescription get() {
     return descriptionOut
 }
 
-val JsProperty.description:ObjJFunctionParameterDescription get() {
+val JsNamedProperty.description:ObjJFunctionParameterDescription get() {
     val descriptionOut = ObjJFunctionParameterDescription(name, type, nullable)
     descriptionOut.description = comment
     return descriptionOut

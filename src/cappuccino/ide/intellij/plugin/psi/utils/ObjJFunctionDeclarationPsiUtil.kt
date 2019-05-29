@@ -149,7 +149,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
     /**
      * Gets a list of function names for a function literal
-     */
+     * /
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         val out = ArrayList<String>()
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
@@ -163,7 +163,7 @@ object ObjJFunctionDeclarationPsiUtil {
             }
         }
         return out
-    }
+    }*/
     /**
      * Gets the function definitions name as a string
      */
@@ -360,7 +360,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return null
     }
 
-    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
+    fun getParentFunctionDeclarationLoose(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
         if (element == null) return null
         val parentFunctionDeclaration = element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         if (parentFunctionDeclaration != null)
@@ -370,6 +370,22 @@ object ObjJFunctionDeclarationPsiUtil {
             variableDeclaration.expr
         } else {
             val globalFunctionDeclaration = element.getParentOfType(ObjJGlobalVariableDeclaration::class.java)
+            globalFunctionDeclaration?.expr
+        } ?: return null
+        return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
+    }
+
+    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
+        if (element == null) return null
+        val parentFunctionDeclaration = element.parent as? ObjJFunctionDeclarationElement<*>
+        if (parentFunctionDeclaration != null)
+            return parentFunctionDeclaration
+        val qualifiedReference = element.parent as? ObjJQualifiedReference ?: element as? ObjJQualifiedReference
+        val variableDeclaration = qualifiedReference?.parent as? ObjJVariableDeclaration
+        val expr:ObjJExpr = if (variableDeclaration != null) {
+            variableDeclaration.expr
+        } else {
+            val globalFunctionDeclaration = element.parent as? ObjJGlobalVariableDeclaration
             globalFunctionDeclaration?.expr
         } ?: return null
         return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral

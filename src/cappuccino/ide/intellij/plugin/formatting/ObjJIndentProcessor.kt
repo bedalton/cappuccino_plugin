@@ -177,7 +177,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getContinuationIndent()
         }
 
-        if (parentType == ObjJ_ENCLOSED_EXPR) {
+        if (parentType == ObjJ_PAREN_ENCLOSED_EXPR || parentType == ObjJ_ARRAY_INDEX_SELECTOR) {
             return if (elementType == ObjJ_OPEN_PAREN || elementType == ObjJ_CLOSE_PAREN || elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
                 Indent.getNoneIndent()
             } else Indent.getContinuationIndent()

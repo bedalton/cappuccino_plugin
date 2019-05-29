@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-val ObjJGlobalJSVariables:List<JsProperty> = {
+val ObjJGlobalJSVariables:List<JsNamedProperty> = {
     val out = mutableListOf(
             p("E", "number"),
             p("LN2", "number"),

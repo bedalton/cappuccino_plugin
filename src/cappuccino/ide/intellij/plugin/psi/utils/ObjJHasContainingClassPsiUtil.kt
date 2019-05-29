@@ -25,7 +25,7 @@ object ObjJHasContainingClassPsiUtil {
     }
 
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {
-        val classDeclarationElement = getContainingClass(compositeElement) ?: return ObjJClassType.UNDEF.className
+        val classDeclarationElement = getContainingClass(compositeElement) ?: return ObjJClassType.UNDEF_CLASS_NAME
         return classDeclarationElement.getClassNameString()
     }
 

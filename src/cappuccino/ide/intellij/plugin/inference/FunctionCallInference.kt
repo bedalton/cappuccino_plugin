@@ -14,8 +14,12 @@ internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, level:In
         resolve is ObjJFunctionName -> resolve.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         else -> null
     }) ?: return null
+    return inferFunctionDeclarationReturnType(function, level - 1)
+}
+
+internal fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, level:Int) : InferenceResult? {
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-    return getInferredTypeFromExpressionArray(returnStatementExpressions, level - 1)
+    return getInferredTypeFromExpressionArray(returnStatementExpressions, level)
 }
 
 internal fun getFunctionForVariableName(variableName:ObjJVariableName) : ObjJFunctionDeclarationElement<*>? {
