@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
@@ -23,17 +24,20 @@ internal fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclaration
 }
 
 internal fun getFunctionForVariableName(variableName:ObjJVariableName) : ObjJFunctionDeclarationElement<*>? {
+    ProgressManager.checkCanceled()
     if (variableName.parent is ObjJGlobalVariableDeclaration)
         return (variableName.parent as ObjJGlobalVariableDeclaration).expr?.leftExpr?.getChildOfType(ObjJFunctionDeclarationElement::class.java)
     val usages = ReferencesSearch.search(variableName)
             .findAll()
+            .map { it.element } + variableName
 
-    val assignments = usages.mapNotNull{ getAssignedExpressions(it.element)?.leftExpr?.getChildOfType(ObjJFunctionDeclarationElement::class.java)}
+    val assignments = usages.mapNotNull{ getAssignedExpressions(it)?.leftExpr?.getChildOfType(ObjJFunctionDeclarationElement::class.java)}
     return assignments.getOrNull(0)
 
 }
 
 private fun getAssignedExpressions(element: PsiElement?) : ObjJExpr? {
+    ProgressManager.checkCanceled()
     return if (element == null || element !is ObjJVariableName)
         null
     else if (element.parent is ObjJGlobalVariableDeclaration)

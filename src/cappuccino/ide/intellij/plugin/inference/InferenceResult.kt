@@ -1,10 +1,9 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.allObjJClassesAsJsClasses
-import cappuccino.ide.intellij.plugin.contributor.GlobalJSClass
-import cappuccino.ide.intellij.plugin.contributor.getJsClassObject
+import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 
 
@@ -20,15 +19,20 @@ data class InferenceResult (
         val functionTypes:List<JsFunctionType>? = null,
         val arrayTypes:Set<String>? = null
 ) {
-    val _classes:Set<GlobalJSClass>? = null
+    var _classes:Set<GlobalJSClass>? = null
     val isJsObject:Boolean by lazy {
         jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
     }
     fun jsClasses(project:Project):Iterable<GlobalJSClass> {
-        if (_classes != null)
-            return _classes
-        val objjClasses = allObjJClassesAsJsClasses(project)
-        return classes.mapNotNull { getJsClassObject(project, objjClasses, it) }
+        var out = _classes
+        if (out != null)
+            return out
+        if (classes.containsAnyType()) {
+            out = globalJSClasses.toSet()
+            _classes = out
+            return out
+        }
+        return toClassList().mapNotNull { getJsClassObject(project, it) }
     }
 }
 
@@ -112,6 +116,7 @@ internal fun combine (thisList:Map<String, InferenceResult>?, otherList:Map<Stri
     else {
         val out = otherList.toMutableMap()
         for ((key, value) in otherList) {
+            ProgressManager.checkCanceled()
             if (out.containsKey(key))
                 out[key] = value + out[key]!!
             else
@@ -187,3 +192,5 @@ private fun Iterable<String>.containsAnyType() : Boolean {
 internal val InferenceResult.anyType : Boolean get() {
     return classes.any { it in anyTypes}
 }
+
+const val INFERENCE_LEVELS_DEFAULT = 6

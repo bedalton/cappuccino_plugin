@@ -54,7 +54,7 @@ object ObjJDescriptionUtil {
             if (methodHeader != null) {
                 selectorString = if (methodHeader is ObjJMethodHeader) getFormattedSelector((methodHeader as ObjJMethodHeader?)!!) else methodHeader.selectorString
                 val methodScopeString = if (methodHeader.isStatic) "+" else "-"
-                return methodScopeString + " (" + methodHeader.returnType + ")" + selectorString
+                return methodScopeString + " (" + methodHeader.explicitReturnType + ")" + selectorString
             }
         }
         selectorString = selectorString ?: selector.getSelectorString(true)

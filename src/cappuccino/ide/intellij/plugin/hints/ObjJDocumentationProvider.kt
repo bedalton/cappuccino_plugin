@@ -1,11 +1,12 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
+import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.containingClassNameOrNull
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -21,7 +22,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
                     LOGGER.info("QuickInfo for variable name")
-                    it.quickInfo(comment)
+                    it.quickInfo(comment, originalElement)
                 }
                 .info(ObjJSelector::class.java) {
                     LOGGER.info("QuickInfo for method selector")
@@ -160,7 +161,7 @@ private val PsiElement.containerName:String? get () {
 }
 
 
-private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
+private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, originalElement: PsiElement?) : String? {
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].size > 0) {
         out.append("Class ").append(text)
@@ -177,14 +178,39 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             out.append(" - ").append(paramComment)
         }
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
+        return out.toString()
     } else {
-        out.append("Variable '").append(text).append("'")
-        val possibleClasses = this.getPossibleClassTypes().filterNot { it == "CPObject" }
-        if (possibleClasses.isNotEmpty()) {
-            out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
+        LOGGER.info("Check QNR")
+        val prevSiblings = previousSiblings
+        if (prevSiblings.isEmpty()) {
+            val inferredTypes = inferQualifiedReferenceType(listOf(this), false, INFERENCE_LEVELS_DEFAULT)?.toClassList() ?: emptySet()
+            val classNames = inferredTypes.flatMap { it.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
+            out.append("Variable ").append(name).append(" : ").append(classNames).append(" in ").append(getLocationString(this))
+            return out.toString()
         }
-        out.append(" in").append(getLocationString(this))
+        val inferredTypes = inferQualifiedReferenceType(prevSiblings, false, INFERENCE_LEVELS_DEFAULT)
+        val name = this.text
+        val classes = inferredTypes?.jsClasses(project)?.filter { jsClass -> jsClass.properties.any { it.name == name } }
+                ?: emptyList()
+        val classNames = when {
+            classes.size == 1 -> classes[0].className
+            classes.isEmpty() -> "???"
+            else -> classes.joinToString(" or ")
+        }
+        val infoProperties = classes.flatMap { it.properties }.filter { it.name == name }
+        if (infoProperties.isNotEmpty()) {
+            val propertyTypes = infoProperties.map { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
+            out.append("Variable ").append(name).append(" : ").append(propertyTypes).append(" in ").append(classNames)
+            return out.toString()
+        }
     }
+
+    out.append("Variable '").append(text).append("'")
+    val possibleClasses = this.getPossibleClassTypes().filterNot { it == "CPObject" }
+    if (possibleClasses.isNotEmpty()) {
+        out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
+    }
+    out.append(" in").append(getLocationString(this))
     return out.toString()
 }
 

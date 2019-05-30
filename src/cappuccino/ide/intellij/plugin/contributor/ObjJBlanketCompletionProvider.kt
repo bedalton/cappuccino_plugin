@@ -119,6 +119,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT -> getAtFragmentCompletions(resultSet, element)
             else -> genericCompletion(element, resultSet)
         }
+        LOGGER.info("Completions for ${element.tokenType()}(${element.text}) in ${element.parent.tokenType()}")
     }
 
     /**

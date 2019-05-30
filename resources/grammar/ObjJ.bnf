@@ -554,7 +554,8 @@ accessorProperty
 			getContainingSuperClassName
 			isStatic
 			getMethodScope
-			getReturnType
+			getReturnTypes
+			getExplicitReturnType
 			getGetter
 			getSetter
 			shouldResolve
@@ -895,7 +896,8 @@ methodHeader
 			getSelectorString
 			getName
 			setName
-			getReturnType
+			getReturnTypes
+			getExplicitReturnType
 			getContainingClass
 			getContainingClassName
 			getMethodScope
@@ -1728,7 +1730,19 @@ selectorLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub"
-		methods=[getReference getSelectorStrings getContainingClass getContainingClassName getSelectorString isStatic getMethodScope getReturnType shouldResolve getContainingSuperClass]
+		methods=[
+			getReference
+			getSelectorStrings
+			getContainingClass
+			getContainingClassName
+			getSelectorString
+			isStatic
+			getMethodScope
+			getReturnTypes
+			getExplicitReturnType
+			shouldResolve
+			getContainingSuperClass
+		]
 	}
 	;
 
@@ -1887,7 +1901,22 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
-		methods = [toString getReference getRangeInElement getRangeInElement getName setName hasText getContainingClass getContainingClassName getQualifiedNameText shouldResolve getContainingSuperClass getIndexInQualifiedReference]
+		methods = [
+			toString
+			getReference
+			getRangeInElement
+			getRangeInElement
+			getName
+			setName
+			hasText
+			getContainingClass
+			getContainingClassName
+			getQualifiedNameText
+			shouldResolve
+			getContainingSuperClass
+			getIndexInQualifiedReference
+			getTypes
+		]
 	}
 	;
 

@@ -30,7 +30,7 @@ data class JsNamedProperty(
         val varArgs:Boolean = type.startsWith("...")
         ) : JsProperty
 
-fun StubOutputStream.writeJsProperty(property:JsNamedProperty) {
+fun StubOutputStream.writeNamedProperty(property:JsNamedProperty) {
     writeName(property.name)
     writeName(property.type)
     writeBoolean(property.isPublic)
@@ -38,12 +38,13 @@ fun StubOutputStream.writeJsProperty(property:JsNamedProperty) {
     writeUTFFast(property.comment ?: "")
     writeUTFFast(property.default ?: "")
     writeBoolean(property.ignore)
+    writeBoolean(property.callback != null)
     writeAnonymousFunction(property.callback)
     writeBoolean(property.deprecated)
     writeBoolean(property.varArgs)
 }
 
-fun StubInputStream.readJsProperty(property:JsNamedProperty) {
+fun StubInputStream.readNamedProperty() : JsNamedProperty {
     val name = readNameString() ?: "?"
     val type = readNameString() ?: ""
     val isPublic = readBoolean()
@@ -51,11 +52,21 @@ fun StubInputStream.readJsProperty(property:JsNamedProperty) {
     val comment = readUTFFast()
     val default = readUTFFast()
     val ignore = readBoolean()
-    val callback = readAnonymousFunction
-    writeBoolean(property.ignore)
-    writeAnonymousFunction(property.callback)
-    writeBoolean(property.deprecated)
-    writeBoolean(property.varArgs)
+    val callback = readAnonymousFunction()
+    val deprecated = readBoolean()
+    val varArgs = readBoolean()
+    return JsNamedProperty(
+            name = name,
+            type = type,
+            isPublic = isPublic,
+            nullable = nullable,
+            comment = comment,
+            default = default,
+            ignore = ignore,
+            callback = callback,
+            deprecated = deprecated,
+            varArgs = varArgs
+    )
 }
 
 data class JsFunctionReturnType (
@@ -65,6 +76,38 @@ data class JsFunctionReturnType (
         override val comment: String? = null,
         override val default: String? = null,
         override val callback: AnonymousJsFunction? = null) : JsProperty
+
+fun StubOutputStream.writeFunctionReturnType(type:JsFunctionReturnType?) {
+    writeBoolean(type != null)
+    if (type == null)
+        return
+    writeName(type.type)
+    writeBoolean(type.nullable)
+    writeBoolean(type.readonly)
+    writeUTFFast(type.comment ?: "")
+    writeUTFFast(type.default ?: "")
+    writeAnonymousFunction(type.callback)
+}
+
+fun StubInputStream.readFunctionReturnType() : JsFunctionReturnType? {
+    if (!readBoolean())
+        return null
+    val type = readNameString() ?: "Any"
+    val nullable = readBoolean()
+    val readonly = readBoolean()
+    val comment = readUTFFast()
+    val default = readUTFFast()
+    val callback= readAnonymousFunction()
+    return JsFunctionReturnType(
+            type = type,
+            nullable = nullable,
+            readonly = readonly,
+            comment = if (comment.isNotBlank()) comment else null,
+            default = if (default.isNotBlank()) default else null,
+            callback = callback
+    )
+}
+
 
 interface JsFunction {
     val name: String
@@ -89,6 +132,46 @@ data class AnonymousJsFunction(
         val returns: JsFunctionReturnType? = null,
         val comment: String? = null
 )
+
+fun StubOutputStream.writeAnonymousFunction(function:AnonymousJsFunction?) {
+    writeBoolean(function != null)
+    if (function == null)
+        return
+    writeNamedPropertiesList(function.parameters)
+    writeFunctionReturnType(function.returns)
+    writeUTFFast(function.comment ?: "")
+}
+
+fun StubInputStream.readAnonymousFunction() : AnonymousJsFunction? {
+    if (!readBoolean())
+        return null
+    val parameters = readNamedPropertiesList()
+    val returnType = readFunctionReturnType()
+    val comment = readUTFFast()
+    return AnonymousJsFunction(
+            parameters = parameters,
+            returns = returnType,
+            comment = if (comment.isNotBlank()) comment else null
+    )
+}
+
+fun StubOutputStream.writeNamedPropertiesList(properties:List<JsNamedProperty>) {
+    writeInt(properties.size)
+    for (property in properties) {
+        writeNamedProperty(property)
+    }
+}
+
+fun StubInputStream.readNamedPropertiesList() : List<JsNamedProperty> {
+    val out = mutableListOf<JsNamedProperty>()
+    val numProperties = readInt()
+    for (i in 0 until numProperties) {
+        val item = readNamedProperty()
+        out.add(item)
+    }
+    return out
+}
+
 
 data class GlobalJSClassFunction(override val name: String, override val parameters: List<JsNamedProperty> = listOf(), override val returns: JsFunctionReturnType? = null, val isPublic: Boolean = true, override val comment: String? = null) : JsFunction
 data class GlobalJSConstructor(val parameters: List<JsNamedProperty> = listOf())

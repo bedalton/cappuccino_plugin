@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.hints.description
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -19,9 +18,7 @@ import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPr
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.openapi.editor.FoldingGroup
-import com.intellij.psi.tree.TokenSet
 
 import javax.swing.*
 import java.util.*
@@ -279,18 +276,33 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getReturnType(methodHeader: ObjJMethodHeader): String {
-        return ObjJMethodPsiUtils.getReturnType(methodHeader, true)
+    fun getReturnTypes(methodHeader: ObjJMethodHeader): Set<String> {
+        return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true)
     }
 
     @JvmStatic
-    fun getReturnType(methodHeader: ObjJSelectorLiteral): String {
-        return ObjJMethodPsiUtils.getReturnType(methodHeader)
+    fun getReturnTypes(methodHeader: ObjJSelectorLiteral): Set<String> {
+        return setOf(ObjJMethodPsiUtils.getExplicitReturnType(methodHeader))
     }
 
     @JvmStatic
-    fun getReturnType(accessorProperty: ObjJAccessorProperty): String {
-        return ObjJMethodPsiUtils.getReturnType(accessorProperty)
+    fun getReturnTypes(accessorProperty: ObjJAccessorProperty): Set<String> {
+        return setOf(ObjJMethodPsiUtils.getExplicitReturnType(accessorProperty))
+    }
+
+    @JvmStatic
+    fun getExplicitReturnType(methodHeader: ObjJMethodHeader): String {
+        return ObjJMethodPsiUtils.getExplicitReturnType(methodHeader, true)
+    }
+
+    @JvmStatic
+    fun getExplicitReturnType(methodHeader: ObjJSelectorLiteral): String {
+        return ObjJMethodPsiUtils.getExplicitReturnType(methodHeader)
+    }
+
+    @JvmStatic
+    fun getExplicitReturnType(accessorProperty: ObjJAccessorProperty): String {
+        return ObjJMethodPsiUtils.getExplicitReturnType(accessorProperty)
     }
 
     @JvmStatic
@@ -1085,6 +1097,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getContainingClassNameOrNull(element:ObjJHasContainingClass) : String? {
         return element.containingClass?.classType?.className
+    }
+
+    @JvmStatic
+    fun getTypes(variableName: ObjJVariableName) : Set<String> {
+        return ObjJVariablePsiUtil.types(variableName)
     }
 
 }

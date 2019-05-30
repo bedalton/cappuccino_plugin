@@ -96,7 +96,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithExpression: List<ObjJReturnStatement>,
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
-            val returnType = methodDeclaration.methodHeader.returnType
+            val returnType = methodDeclaration.methodHeader.explicitReturnType
             if (returnType == "@action" || returnType == "IBAction" || returnType == "void" /* Added to allow void annotation to be handled elsewhere */) {
                 return
             } else {
@@ -148,7 +148,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType != ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME !in call.returnTypes) {
                     return true
                 }
             }
@@ -160,7 +160,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME in call.returnTypes) {
                     return true
                 }
             }

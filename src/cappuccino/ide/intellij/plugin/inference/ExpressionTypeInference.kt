@@ -8,16 +8,21 @@ import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.progress.ProgressManager
 
 fun inferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
+    ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty())
         leftExpressionType(expr.leftExpr, level - 1)
     else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
+        LOGGER.info("Checking left expression with function name first")
         val components = mutableListOf<ObjJQualifiedReferenceComponent>(expr.leftExpr!!.functionCall!!)
         components.addAll(expr.rightExprList.first().qualifiedReferencePrime!!.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
         inferQualifiedReferenceType(components, false, level - 1)
-    } else
+    } else {
+        LOGGER.info("No match for expression parse")
         null
+    }
     val rightExpressionsType = if (leftExpressionType != null && expr.rightExprList.isNotEmpty())
         rightExpressionTypes(expr.leftExpr, expr.rightExprList, level - 1)
     else
@@ -44,13 +49,17 @@ fun inferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
             arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null,
             functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null
     )
-    LOGGER.info("Expr: $expr: Types: {${out.classes}")
+    LOGGER.info("Expr: <${expr.text}>: Types: {${out.classes}}")
     return out
 }
 
 fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int) : InferenceResult? {
-    if (leftExpression == null || level < 0)
+    ProgressManager.checkCanceled()
+    if (leftExpression == null || level < 0) {
+        LOGGER.info("Level is less than 0, returning")
         return null
+    }
+    LOGGER.info("Checking left expression type for Expression: ${leftExpression.text}")
     if (leftExpression.functionCall != null)
         return inferFunctionCallReturnType(leftExpression.functionCall!!, level)
     if (leftExpression.parenEnclosedExpr != null) {
@@ -59,7 +68,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int) : InferenceResu
         return inferExpressionType(leftExpression.parenEnclosedExpr!!.expr!!, level)
     }
     if (leftExpression.qualifiedReference != null)
-        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!, false, level)
+        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!.qualifiedNameParts, false, level)
     if (leftExpression.primary != null) {
         val primary = leftExpression.primary ?: return null
         if (primary.integer != null || primary.decimalLiteral != null) {
@@ -132,10 +141,12 @@ private fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(level:Int) : Infe
 }
 
 private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
+    ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
     val out = mutableMapOf<String, InferenceResult>()
     val commentWrapper = this.docComment
     for ((i, parameter) in parameters.withIndex()) {
+        ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
             val parameterType = commentWrapper?.parameterComments
@@ -151,11 +162,14 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
 }
 
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<ObjJRightExpr>, level: Int) : InferenceResult? {
+    ProgressManager.checkCanceled()
     if (leftExpression == null || level < 0)
         return null
     var current = InferenceResult()
     var didAdd = false
     for (rightExpr in rightExpressions) {
+        ProgressManager.checkCanceled()
+        LOGGER.info("Checking right expression type for Expression: ${rightExpr.text}")
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
             val ifTrue = inferExpressionType(ternaryExpr.ifTrue, level)
@@ -178,7 +192,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
         }
     }
     if (didAdd) {
-        if (!current.classes.contains(JS_STRING.className))
+        if (!current.classes.contains(JS_STRING.className) && current.classes.contains("number"))
             current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER.className))
         else if (!current.classes.contains(JS_ARRAY.className))
             current = InferenceResult(classes = setOf(JS_STRING.className))
@@ -244,6 +258,7 @@ private object IsNumericUtil {
         if (rightExpressions.isEmpty())
             return false
         for(rightExpr in rightExpressions) {
+            ProgressManager.checkCanceled()
             if (isNumeric(rightExpr))
                 return true
         }
@@ -286,6 +301,7 @@ private object IsBooleanUtil {
 
     private fun isBoolean(rightExpressions: List<ObjJRightExpr>) : Boolean {
         for (expr in rightExpressions) {
+            ProgressManager.checkCanceled()
             if (isBoolean(expr))
                 return true
         }

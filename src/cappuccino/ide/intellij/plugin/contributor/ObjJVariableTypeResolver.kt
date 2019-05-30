@@ -52,11 +52,11 @@ object ObjJVariableTypeResolver {
 
         // Get call target from formal variable types
         val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames != null && !classNames.isEmpty()) {
+        if (classNames != null && classNames.isNotEmpty()) {
             return classNames
         }
 
-        if (!DumbService.isDumb(project) && !ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isEmpty()) {
+        if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isNotEmpty()) {
             return ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
         }
         val out = mutableSetOf<String>()
@@ -136,20 +136,13 @@ object ObjJVariableTypeResolver {
     private fun getTypeFromMethodCall(leftExpression: ObjJLeftExpr) : Set<String>? {
         val methodCall = leftExpression.methodCall ?: return null
         val selector = methodCall.selectorString
-        val out = mutableSetOf<String>()
         val skipIf = listOf(
                 "null",
                 "nil"
         )
-        ObjJUnifiedMethodIndex.instance[selector, methodCall.project].forEach {
-            val returnType = it.returnType
-            if (returnType.toLowerCase() in skipIf)
-                return@forEach
-            if (returnType == "id" || returnType.contains("<")) {
-                return null
-            }
-            out.add(returnType)
-        }
+        val out = ObjJUnifiedMethodIndex.instance[selector, methodCall.project].flatMap { it.returnTypes }.toSet().filterNot{ returnType ->
+            returnType.toLowerCase() in skipIf ||returnType == "id" || returnType.contains("<")
+        }.toSet()
         return if (out.isNotEmpty()) out else null
     }
 

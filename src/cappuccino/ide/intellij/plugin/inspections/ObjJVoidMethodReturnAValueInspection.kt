@@ -29,7 +29,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             override fun visitMethodDeclaration(methodDeclaration: ObjJMethodDeclaration) {
                 super.visitMethodDeclaration(methodDeclaration)
-                if (methodDeclaration.methodHeader.returnType != "void")
+                if (methodDeclaration.methodHeader.explicitReturnType != "void")
                     return
                 val block = methodDeclaration.block ?: return
                 validateBlockReturnStatements(block, problemsHolder)
@@ -117,7 +117,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME in call.returnTypes) {
                     return true
                 }
             }
