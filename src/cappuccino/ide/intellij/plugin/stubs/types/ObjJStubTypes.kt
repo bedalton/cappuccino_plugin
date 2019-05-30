@@ -23,3 +23,5 @@ object ObjJStubTypes {
     val VAR_TYPE_ID = ObjJVarTypeIdStubType("ObjJ_VAR_TYPE_ID")
     val VARIABLE_NAME = ObjJVariableNameStubType("ObjJ_VARIABLE_NAME")
 }
+
+internal const val TYPES_DELIM = "|"

@@ -72,3 +72,13 @@ fun String.trimFromBeginning(prefixes:List<String>, repeatedly:Boolean = true) :
     } while(changed && repeatedly)
     return out
 }
+
+fun String.stripRefSuffixes() : String {
+    return when {
+        this.endsWith("Pointer") -> this.substringFromEnd(0, "Pointer".length)
+        this.endsWith("Reference") -> this.substringFromEnd(0, "Reference".length)
+        this.endsWith("Ptr") -> this.substringFromEnd(0, "Ptr".length)
+        this.endsWith("Ref") -> this.substringFromEnd(0, "Ref".length)
+        else -> this
+    }
+}

@@ -1,22 +1,17 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
-fun allObjJClassesAsJsClasses(project:Project) : List<GlobalJSClass> {
-    val classNames = ObjJClassDeclarationsIndex.instance.getAllKeys(project)
-    return classNames.mapNotNull {
-        objJClassAsJsClass(project, it)
-    }
-}
-
-fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
+internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
+    if (DumbService.isDumb(project))
+        return null
     val implementations = ObjJImplementationDeclarationsIndex.instance[className, project]
     val properties: MutableList<JsNamedProperty> = mutableListOf()
     val extends = mutableListOf<String>()

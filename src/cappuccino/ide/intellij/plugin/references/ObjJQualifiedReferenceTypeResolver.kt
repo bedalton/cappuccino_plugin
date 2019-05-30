@@ -42,10 +42,6 @@ fun getPossibleClassTypesForQualifiedReference(qualifiedReference:ObjJQualifiedR
             }.toSet()
 }
 
-fun ObjJQualifiedReference.getPossibleClassTypes() : Set<String> {
-    return getPossibleClassTypesForQualifiedReference(this)
-}
-
 fun ObjJVariableName.getPossibleClassTypes() : Set<String> {
     return getPossibleTypesIfVariableName(this)
             .flatMap {
@@ -59,8 +55,7 @@ fun ObjJVariableName.getPossibleClassTypes() : Set<String> {
  * Attempt to get call call target type if variable name
  */
 private fun getPossibleTypesIfVariableName(variableName: ObjJVariableName) : Set<String> {
-    val variableNameText = variableName.text
-    val className = when (variableNameText) {
+    val className = when (variableName.text) {
         "self" -> variableName.containingClassName
         "super" -> variableName.getContainingSuperClass(true)?.text
         else -> {
@@ -163,8 +158,8 @@ private fun getPossibleCallTargetTypesFromMultiSelectorCall(methodCall: ObjJMeth
         return setOf()
     val selector = methodCall.selectorString
     return ObjJUnifiedMethodIndex.instance[selector, methodCall.project]
-            .map {
-                it.returnType
+            .flatMap {
+                it.returnTypes
             }
             .filterNot {
                 it.startsWith("@") || it == "IBAction" || it == "IBAction" || it == "void"

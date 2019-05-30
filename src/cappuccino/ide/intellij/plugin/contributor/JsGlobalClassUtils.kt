@@ -3,18 +3,13 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
 import com.intellij.openapi.project.Project
 
-
-fun getAllObjJAndJsClassObjects(project: Project): List<GlobalJSClass> {
-    return globalJSClasses + allObjJClassesAsJsClasses(project)
-}
-
-fun getJsClassObject(project:Project, objjClasses:List<GlobalJSClass>, className: String) : GlobalJSClass? {
-    return _getJsClassObject(objjClasses, className)?.mergeWithSuperClasses(project)
+fun getJsClassObject(project:Project, className: String) : GlobalJSClass? {
+    return _getJsClassObject(project, className)?.mergeWithSuperClasses(project)
 }
 
 
-fun GlobalJSClass.flattenWithChildrenProperties(project:Project, objjClasses:List<GlobalJSClass>, className: String) : GlobalJSClass? {
-    val baseClass = _getJsClassObject(objjClasses, className)
+fun GlobalJSClass.flattenWithChildrenProperties(project:Project, className: String) : GlobalJSClass? {
+    val baseClass = _getJsClassObject(project, className)
     val jsClass = if (baseClass != null)
         baseClass + globalJSClasses.filter { className in this.extends }.flatten(className)
     else
@@ -29,8 +24,12 @@ fun GlobalJSClass.flattenWithChildrenProperties(project:Project, objjClasses:Lis
     return allClasses.flatten(className)
 }
 
-private fun _getJsClassObject(objjClasses:List<GlobalJSClass>, className: String) : GlobalJSClass? {
-    val out = (globalJSClasses.filter { it.className == className } + objjClasses.filter { it.className == className })
+private fun _getJsClassObject(project: Project, className: String) : GlobalJSClass? {
+    val objjClass = objJClassAsJsClass(project, className)
+    val out = if (objjClass == null)
+        globalJSClasses.filter { it.className == className }
+    else
+        globalJSClasses.filter { it.className == className } + objjClass
     if (out.isEmpty())
         return null
     return out.flatten(className)
@@ -61,9 +60,8 @@ fun Iterable<GlobalJSClass>.flatten(className:String) : GlobalJSClass {
 }
 
 fun GlobalJSClass.mergeWithSuperClasses(project:Project) : GlobalJSClass {
-    val objjClasses = allObjJClassesAsJsClasses(project)
     val superClassNames = extends.flattenNestedSuperClasses()
-    val superClasses = superClassNames.mapNotNull { _getJsClassObject(objjClasses, it) }
+    val superClasses = superClassNames.mapNotNull { _getJsClassObject(project, it) }
     return (superClasses + this).flatten(className)
 }
 

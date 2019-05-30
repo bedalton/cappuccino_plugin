@@ -34,11 +34,12 @@ class ObjJMethodHeaderStubType internal constructor(
         val containingClassName = methodHeader.containingClassName
         val selectors = methodHeader.selectorStrings
         val params = methodHeader.paramTypesAsStrings
-        val returnType: String? = null//methodHeader.getReturnType();
+        val returnType = methodHeader.explicitReturnType
+        val returnTypes: Set<String> = methodHeader.returnTypes
         val required = methodHeader.isRequired
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
         val ignored = ObjJIgnoreEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve, ignored)
+        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, returnTypes, required, shouldResolve, ignored)
     }
 
     @Throws(IOException::class)
@@ -58,7 +59,8 @@ class ObjJMethodHeaderStubType internal constructor(
         for (param in stub.paramTypes) {
             stubOutputStream.writeName(Strings.notNull(param))
         }
-        stubOutputStream.writeName(stub.returnType.className)
+        stubOutputStream.writeName(stub.explicitReturnType)
+        stubOutputStream.writeUTFFast(stub.returnTypes.joinToString(TYPES_DELIM))
         stubOutputStream.writeBoolean(stub.isRequired)
         stubOutputStream.writeBoolean(stub.shouldResolve())
         stubOutputStream.writeBoolean(stub.ignored)
@@ -80,11 +82,12 @@ class ObjJMethodHeaderStubType internal constructor(
         for (i in 0 until numParams) {
             params.add(StringRef.toString(stream.readName()))
         }
-        val returnType = StringRef.toString(stream.readName())
+        val explicitReturnType = stream.readNameString() ?: ""
+        val returnTypes = stream.readUTFFast().split(TYPES_DELIM).toSet()
         val required = stream.readBoolean()
         val shouldResolve = stream.readBoolean()
         val ignored = stream.readBoolean()
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, returnType, required, shouldResolve, ignored)
+        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, explicitReturnType, returnTypes, required, shouldResolve, ignored)
     }
 
 

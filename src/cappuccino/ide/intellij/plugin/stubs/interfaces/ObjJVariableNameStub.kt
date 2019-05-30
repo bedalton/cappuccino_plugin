@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameImpl
 
 interface ObjJVariableNameStub : StubElement<ObjJVariableNameImpl>, ObjJResolveableStub<ObjJVariableNameImpl> {
     val variableName: String
+    val types:Set<String>
     val containingBlockRanges: List<Pair<Int, Int>>
     val greatestContainingBlockRange: Pair<Int, Int>?
 }

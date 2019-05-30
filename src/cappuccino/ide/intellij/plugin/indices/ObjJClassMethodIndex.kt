@@ -13,7 +13,7 @@ class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJM
     }
 
     override fun getVersion(): Int {
-        return ObjJIndexService.INDEX_VERSION + VERSION
+        return super.getVersion() + VERSION
     }
 
     companion object {

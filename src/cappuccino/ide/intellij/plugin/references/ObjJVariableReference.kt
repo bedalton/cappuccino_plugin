@@ -82,7 +82,6 @@ class ObjJVariableReference(
             return false
         }
 
-
         val psiElementInZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
         val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference == 0
         if (!psiElementInZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
@@ -114,7 +113,7 @@ class ObjJVariableReference(
     }
 
     override fun resolve(): PsiElement? {
-        return resolve(true)
+        return resolve(false)
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {

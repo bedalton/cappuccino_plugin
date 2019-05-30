@@ -29,7 +29,8 @@ class ObjJVariableNameStubType internal constructor(
             variableName: ObjJVariableNameImpl, stubElement: StubElement<*>): ObjJVariableNameStub {
         val blockRanges = getBlockRanges(variableName)
         val greatestBlockRange = getGreatestBlockRange(blockRanges)
-        return ObjJVariableNameStubImpl(stubElement, variableName.name, blockRanges, greatestBlockRange, shouldResolve(variableName.node))
+        val types = variableName.types
+        return ObjJVariableNameStubImpl(stubElement, variableName.name, types, blockRanges, greatestBlockRange, shouldResolve(variableName.node))
     }
 
     private fun getBlockRanges(variableName: ObjJVariableName): List<Pair<Int, Int>> {
@@ -66,6 +67,8 @@ class ObjJVariableNameStubType internal constructor(
             stream.writeInt(pair.getFirst())
             stream.writeInt(pair.getSecond())
         }
+        val types = stub.types.joinToString(TYPES_DELIM)
+        stream.writeUTFFast(types)
         val greatestBlock = stub.greatestContainingBlockRange
         if (greatestBlock == null) {
             stream.writeBoolean(false)
@@ -81,6 +84,7 @@ class ObjJVariableNameStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): ObjJVariableNameStub {
         val name = StringRef.toString(stream.readName())!!
+        val types = stream.readUTFFast().split(TYPES_DELIM).toSet()
         val numBlocks = stream.readInt()
         val blockRanges = ArrayList<Pair<Int, Int>>()
         for (i in 0 until numBlocks) {
@@ -91,7 +95,7 @@ class ObjJVariableNameStubType internal constructor(
             greatestRange = Pair(stream.readInt(), stream.readInt())
         }
         val shouldResolve = stream.readBoolean()
-        return ObjJVariableNameStubImpl(parent, name, blockRanges, greatestRange, shouldResolve)
+        return ObjJVariableNameStubImpl(parent, name, types, blockRanges, greatestRange, shouldResolve)
     }
 
     override fun indexStub(stub: ObjJVariableNameStub, sink: IndexSink) {

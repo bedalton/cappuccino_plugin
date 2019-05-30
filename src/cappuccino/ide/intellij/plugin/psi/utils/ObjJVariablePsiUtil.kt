@@ -1,7 +1,11 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toClassList
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 
 object ObjJVariablePsiUtil {
 
@@ -25,4 +29,13 @@ object ObjJVariablePsiUtil {
         }
         return null
     }
+
+    fun types(variableName: ObjJVariableName) : Set<String> {
+        val stubTypes = variableName.stub?.types ?: emptySet()
+        if (stubTypes.isNotEmpty())
+            return stubTypes
+        return inferQualifiedReferenceType(variableName.previousSiblings + variableName, false, INFERENCE_LEVELS_DEFAULT)?.toClassList()
+                ?: emptySet()
+    }
+
 }

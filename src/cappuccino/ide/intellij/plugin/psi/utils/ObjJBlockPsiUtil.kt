@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import java.util.*
 import kotlin.collections.ArrayList
@@ -41,6 +42,7 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
 
     var tempElements: List<T>
     do {
+        ProgressManager.checkCanceled()
         val nextBlocks = ArrayList<ObjJBlock>()
         //Loop through current level of blocks
         for (block in currentBlocks) {

@@ -35,11 +35,11 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val isRequired: Boolean
         get() = false
 
-    override val returnType: ObjJClassTypeName
-        get() = if (getter != null) ObjJClassType.getClassType(varType) else ObjJClassType.VOID
-
-    override val returnTypeAsString: String
+    override val explicitReturnType: String
         get() = if (getter != null && varType != null) varType else ObjJClassType.VOID_CLASS_NAME
+
+    override val returnTypes: Set<String>
+        get() = setOf(explicitReturnType)
 
     override val isStatic: Boolean
         get() = false
