@@ -6,9 +6,10 @@ import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 
-fun AllObjJClassesAsJsClasses(project:Project) : List<GlobalJSClass> {
+fun allObjJClassesAsJsClasses(project:Project) : List<GlobalJSClass> {
     val classNames = ObjJClassDeclarationsIndex.instance.getAllKeys(project)
     return classNames.mapNotNull {
         objJClassAsJsClass(project, it)
@@ -20,6 +21,7 @@ fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
     val properties: MutableList<JsNamedProperty> = mutableListOf()
     val extends = mutableListOf<String>()
     for (objClass in implementations) {
+        ProgressManager.checkCanceled()
         val superClassName = objClass.superClassName
         if (superClassName != null)
             extends.add(superClassName)
@@ -31,6 +33,7 @@ fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
     }
     val protocols = ObjJProtocolDeclarationsIndex.instance[className, project]
     for (objClass in protocols) {
+        ProgressManager.checkCanceled()
         extends.addAll(objClass.getInheritedProtocols())
         for (instanceVar in objClass.instanceVariableDeclarationList) {
             val property = instanceVar.toJsProperty() ?: continue

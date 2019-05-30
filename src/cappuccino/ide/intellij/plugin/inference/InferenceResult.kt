@@ -1,13 +1,15 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.contributor.allObjJClassesAsJsClasses
 import cappuccino.ide.intellij.plugin.contributor.GlobalJSClass
-import cappuccino.ide.intellij.plugin.contributor.JS_ANY
-import cappuccino.ide.intellij.plugin.contributor.JS_OBJECT
+import cappuccino.ide.intellij.plugin.contributor.getJsClassObject
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import com.intellij.openapi.project.Project
 
 
 data class InferenceResult (
-        val classes:List<GlobalJSClass> = emptyList(),
+        val classes:Set<String> = emptySet(),
         val isNumeric:Boolean = isNumeric(classes),
         val isBoolean:Boolean = isBoolean(classes),
         val isString:Boolean = isString(classes),
@@ -16,35 +18,42 @@ data class InferenceResult (
         val isRegex:Boolean = isRegex(classes),
         val jsObjectKeys:Map<String, InferenceResult>? = null,
         val functionTypes:List<JsFunctionType>? = null,
-        val arrayTypes:List<String>? = null
+        val arrayTypes:Set<String>? = null
 ) {
+    val _classes:Set<GlobalJSClass>? = null
     val isJsObject:Boolean by lazy {
-        jsObjectKeys?.isNotEmpty().orFalse() || JS_OBJECT in classes || JS_ANY in classes
+        jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
+    }
+    fun jsClasses(project:Project):Iterable<GlobalJSClass> {
+        if (_classes != null)
+            return _classes
+        val objjClasses = allObjJClassesAsJsClasses(project)
+        return classes.mapNotNull { getJsClassObject(project, objjClasses, it) }
     }
 }
 
-private fun isNumeric(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() in numberTypes}
+private fun isNumeric(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() in numberTypes || it in anyTypes}
 }
 
-private fun isBoolean(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() in booleanTypes}
+private fun isBoolean(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() in booleanTypes || it in anyTypes}
 }
 
-private fun isString(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() == "string"}
+private fun isString(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() == "string" || it in anyTypes}
 }
 
-private fun isRegex(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() == "regex"}
+private fun isRegex(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() == "regex" || it in anyTypes}
 }
 
-private fun isDictionary(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() in dictionaryTypes}
+private fun isDictionary(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() in dictionaryTypes || it in anyTypes}
 }
 
-private fun isSelector(classes:List<GlobalJSClass>) : Boolean {
-    return classes.containsAnyType() || classes.any { it.className.toLowerCase() == "sel"}
+private fun isSelector(classes:Iterable<String>) : Boolean {
+    return classes.any { it.toLowerCase() == "sel" || it in anyTypes}
 }
 
 data class JsFunctionType (
@@ -66,7 +75,7 @@ operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
             arrayTypes = arrayTypes,
             jsObjectKeys = jsObjectKeys ,
             functionTypes = functionTypes,
-            classes = (classes + other.classes).toSet().toList()
+            classes = (classes + other.classes)
     )
 }
 
@@ -79,6 +88,18 @@ private fun <T> combine (thisList:List<T>?, otherList:List<T>?) : List<T>? {
         thisList
     else
         (otherList + thisList).toSet().toList()
+}
+
+
+private fun <T> combine (thisList:Set<T>?, otherList:Set<T>?) : Set<T>? {
+    return if (thisList.isNullOrEmpty() && otherList.isNullOrEmpty())
+        null
+    else if (thisList.isNullOrEmpty())
+        otherList
+    else if (otherList.isNullOrEmpty())
+        thisList
+    else
+        (otherList + thisList).toSet()
 }
 
 internal fun combine (thisList:Map<String, InferenceResult>?, otherList:Map<String, InferenceResult>?) : Map<String, InferenceResult>? {
@@ -107,8 +128,8 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
         isSelector = true,
         isDictionary = true,
         isNumeric = true,
-        classes = listOf(JS_OBJECT, JS_ANY),
-        arrayTypes = listOf("object", "?")
+        classes = setOf("object", "?"),
+        arrayTypes = setOf("object", "?")
 )
 
 internal fun InferenceResult.toClassList() : Set<String> {
@@ -131,9 +152,26 @@ internal fun InferenceResult.toClassList() : Set<String> {
         returnClasses.add("object")
     if (isAnyType || returnTypes.arrayTypes != null)
         returnClasses.add("Array")
-    returnClasses.addAll(classes.map{ it.className })
+    returnClasses.addAll(classes)
     return returnClasses.toSet()
 }
+
+
+internal fun Iterable<String>.toInferenceResult(): InferenceResult {
+    val classes = this.toSet()
+    val arrayClasses = this.filter { it.endsWith("[]") }.map { it.substringFromEnd(0, 2) }
+    return InferenceResult(
+            isString = this.any { it.toLowerCase() in stringTypes },
+            isBoolean = this.any { it.toLowerCase() in booleanTypes },
+            isNumeric = this.any { it.toLowerCase() in numberTypes },
+            isRegex = this.any { it.toLowerCase() == "regex"},
+            isDictionary = this.any { it.toLowerCase() in dictionaryTypes},
+            isSelector = this.any { it.toLowerCase() == "sel" },
+            arrayTypes = arrayClasses.toSet(),
+            classes = classes
+    )
+}
+
 
 
 internal val booleanTypes = listOf("bool", "boolean")
@@ -142,10 +180,10 @@ internal val numberTypes = listOf("number", "int", "integer", "float", "long", "
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
 internal val anyTypes = listOf("id", "?", "any", "undef")
 
-private fun List<GlobalJSClass>.containsAnyType() : Boolean {
-    return this.any { it.className in anyTypes}
+private fun Iterable<String>.containsAnyType() : Boolean {
+    return this.any { it in anyTypes}
 }
 
 internal val InferenceResult.anyType : Boolean get() {
-    return classes.any { it.className in anyTypes}
+    return classes.any { it in anyTypes}
 }

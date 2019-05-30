@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.AllObjJClassesAsJsClasses
-import cappuccino.ide.intellij.plugin.contributor.getJsClassObject
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
@@ -14,17 +12,16 @@ import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int) : InferenceResult? {
     val project = methodCall.project
     val selector = methodCall.selectorString
-    val objjClasses = AllObjJClassesAsJsClasses(project)
     if (selector == "alloc") {
         val classes = ObjJInheritanceUtil.getAllInheritedClasses(methodCall.callTarget.text, project)
         if (classes.isNotEmpty()) {
             return InferenceResult(
-                    classes = classes.mapNotNull { getJsClassObject(project, objjClasses, it) }
+                    classes = classes
             )
         }
     }
-    val callTargetTypes = inferCallTargetType(methodCall.callTarget, level)?.classes?.map { it.className }
-            ?: emptyList()
+    val callTargetTypes = inferCallTargetType(methodCall.callTarget, level)?.classes
+            ?: emptySet()
 
     val methods = if (callTargetTypes.isNotEmpty()) {
         val classes = callTargetTypes.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }
@@ -57,10 +54,10 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int) : Inferen
                 if (type != null)
                     out += type
             }
-            out.classes.map { it.className }
+            out.classes
         }
     }
-    return InferenceResult(classes = returnTypes.mapNotNull{ getJsClassObject(project, objjClasses, it)})
+    return InferenceResult(classes = returnTypes.toSet())
 }
 
 private fun inferCallTargetType(callTarget:ObjJCallTarget, level:Int) : InferenceResult? {
@@ -71,7 +68,7 @@ private fun inferCallTargetType(callTarget:ObjJCallTarget, level:Int) : Inferenc
         return inferFunctionCallReturnType(callTarget.functionCall!!, level - 1)
     }
     if (callTarget.qualifiedReference != null) {
-        return inferQualifiedReferenceType(callTarget.qualifiedReference!!, level - 1)
+        return inferQualifiedReferenceType(callTarget.qualifiedReference!!, false,level - 1)
     }
     return null
 }

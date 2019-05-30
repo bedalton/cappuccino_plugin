@@ -9,22 +9,63 @@ import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orElse
-import cappuccino.ide.intellij.plugin.utils.substringFromEnd
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
-internal fun inferQualifiedReferenceType(qualifiedReference: ObjJQualifiedReference, level: Int): InferenceResult? {
+internal fun inferQualifiedReferenceType(qualifiedReference: ObjJQualifiedReference, ignoreLastPart:Boolean = false, level: Int): InferenceResult? {
     val parts = qualifiedReference.qualifiedNameParts
     if (parts.isEmpty())
         return null
     if (parts.size == 0) {
         return null
     }
-    val objjClasses = AllObjJClassesAsJsClasses(qualifiedReference.project)
+    val objjClasses = allObjJClassesAsJsClasses(qualifiedReference.project)
     var parentTypes: InferenceResult? = null
     var isStatic = false
-    for (i in 0 until parts.size) {
+    val endIndex = if (ignoreLastPart)
+        parts.size - 1
+    else
+        parts.size
+    for (i in 0 until endIndex) {
+        val part = parts[i]
+        if (i == 0) {
+            parentTypes = getPartTypes(part, parentTypes, false, objjClasses,level - 1)
+            isStatic = part.text in globalJSClassNames
+        }
+        parentTypes = getPartTypes(part, parentTypes, isStatic, objjClasses, level - 1)
+        if (isStatic) {
+            isStatic = false
+        }
+    }
+    return parentTypes
+}
+
+internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, ignoreLastPart:Boolean = false, level: Int): InferenceResult? {
+    if (parts.isEmpty())
+        return null
+    val objjClasses = allObjJClassesAsJsClasses(parts[0].project)
+    if (parts.size == 1) {
+        val name = (parts[0] as ObjJVariableName).text ?: (parts[0] as ObjJFunctionName).text ?: (parts[0] as ObjJFunctionCall).functionName?.text
+        if (name == null && parts[0] is ObjJMethodCall) {
+            return inferMethodCallType(parts[0] as ObjJMethodCall, level - 1)
+        } else if (name == null)
+            return INFERRED_ANY_TYPE
+        val matches = mutableListOf(name)
+        val functions = globalJsFunctions.filter { it.name == name }.flatMap { it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList() }
+        matches.addAll(functions)
+        val properties = ObjJGlobalJSVariables.filter { it.name == name }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
+        matches.addAll(properties)
+        return InferenceResult(
+                classes = (matches + (functions + properties)).toSet()
+        )
+    }
+    var parentTypes: InferenceResult? = null
+    var isStatic = false
+    val endIndex = if (ignoreLastPart)
+        parts.size - 1
+    else
+        parts.size
+    for (i in 0 until endIndex) {
         val part = parts[i]
         if (i == 0) {
             parentTypes = getPartTypes(part, parentTypes, false, objjClasses,level - 1)
@@ -43,9 +84,9 @@ val SPLIT_JS_CLASS_TYPES_LIST_REGEX = "\\s*\\|\\s*".toRegex()
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, objjClasses:List<GlobalJSClass>, level: Int): InferenceResult? {
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, objjClasses, level)
-        is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, level)
-        is ObjJFunctionName -> getFunctionComponentTypes(part, parentTypes, static, level)
-        is ObjJArrayIndexSelector -> getArrayTypes(part.project, parentTypes)
+        is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, objjClasses, static, level)
+        is ObjJFunctionName -> getFunctionComponentTypes(part, parentTypes, objjClasses, static, level)
+        is ObjJArrayIndexSelector -> getArrayTypes(parentTypes)
         is ObjJMethodCall -> inferMethodCallType(part, level - 1)
         else -> return null
     }
@@ -64,30 +105,27 @@ internal fun getVariableNameComponentTypes(variableName: ObjJVariableName, paren
 
     val project = variableName.project
     val variableNameString = variableName.text
-    val containingClass = if (variableNameString == "self") {
-        variableName.containingClassName
-    } else if (variableNameString == "super") {
-        variableName.getContainingSuperClass()?.name
-    } else
-        null
+    val containingClass = when (variableNameString) {
+        "self" -> variableName.containingClassName
+        "super" -> variableName.getContainingSuperClass()?.name
+        else -> null
+    }
     if (containingClass != null && containingClass != ObjJClassType.UNDEF_CLASS_NAME) {
         return InferenceResult(
-                classes = ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).mapNotNull {
-                    getJsClassObject(project, objjClasses, it)
-                }
+                classes = ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project)
         )
     }
 
     val classes = if (parentTypes.anyType) {
         getAllObjJAndJsClassObjects(variableName.project)
     } else
-        parentTypes.classes
+        parentTypes.classes.mapNotNull { getJsClassObject(project, objjClasses, it) }
     val classNames = classes.flatMap { jsClass ->
         jsClass.properties.firstOrNull {
             it.name == variableNameString
         }?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
     }.toSet()
-    return classNames.toInferenceResult(project)
+    return classNames.toInferenceResult()
 }
 
 internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int): InferenceResult? {
@@ -105,14 +143,10 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int):
         variableName.getParentBlockChildrenOfType(ObjJVariableName::class.java, true)
                 .mapNotNull { getAssignedExpressions(it) }
     }
-    val project = variableName.project
     val variableNameString = variableName.text
-    val objjClasses = AllObjJClassesAsJsClasses(project)
     val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
         it.name == variableNameString
-    }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.mapNotNull {
-        getJsClassObject(project, objjClasses, it)
-    }
+    }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
 
     val out = getInferredTypeFromExpressionArray(assignedExpressions, levels)
     return if (staticVariableNameTypes.isNotEmpty())
@@ -134,7 +168,7 @@ private fun getAssignedExpressions(element: PsiElement?): ObjJExpr? {
         null
 }
 
-private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static:Boolean, level: Int): InferenceResult? {
+private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, objjClasses:List<GlobalJSClass>, static:Boolean, level: Int): InferenceResult? {
     if (functionName == null)
         return null
     if (functionName.indexInQualifiedReference == 0) {
@@ -147,7 +181,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     val classes = if (parentTypes.anyType) {
         globalJSClasses
     } else
-        parentTypes.classes
+        parentTypes.classes.mapNotNull{getJsClassObject(functionName.project, objjClasses, it)}
 
     return classes.flatMap { jsClass ->
         (if (static)
@@ -158,7 +192,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
             jsClass.functions.firstOrNull {
                 it.name == functionNameString
             })?.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
-    }.toInferenceResult(functionName.project)
+    }.toInferenceResult()
 }
 
 private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, level: Int): InferenceResult? {
@@ -176,33 +210,15 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, level
     }
     if (basicReturnTypes.isEmpty() && functionDeclaration != null) {
         val returnStatementExpressions = functionDeclaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-        getInferredTypeFromExpressionArray(returnStatementExpressions, level - 1) + returnTypes.toInferenceResult(functionName.project)
+        getInferredTypeFromExpressionArray(returnStatementExpressions, level - 1) + returnTypes.toInferenceResult()
     }
-    return (returnTypes + basicReturnTypes).toInferenceResult(functionName.project)
+    return (returnTypes + basicReturnTypes).toInferenceResult()
 }
 
 private val PsiElement.getParentFunctionDeclaration
     get() = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
 
-private fun Iterable<String>.toInferenceResult(project: Project): InferenceResult {
-    val objjClasses = AllObjJClassesAsJsClasses(project)
-    val classes = this.mapNotNull {
-        getJsClassObject(project, objjClasses, it)
-    }
-    val arrayClasses = this.filter { it.endsWith("[]") }.map { it.substringFromEnd(0, 2) }
-    return InferenceResult(
-            isString = this.any { it.toLowerCase() in stringTypes },
-            isBoolean = this.any { it.toLowerCase() in booleanTypes },
-            isNumeric = this.any { it.toLowerCase() in numberTypes },
-            isRegex = this.any { it.toLowerCase() == "regex"},
-            isDictionary = this.any { it.toLowerCase() in dictionaryTypes},
-            isSelector = this.any { it.toLowerCase() == "sel" },
-            arrayTypes = arrayClasses,
-            classes = classes
-    )
-}
-
-private fun getArrayTypes(project:Project, parentTypes: InferenceResult?): InferenceResult? {
+private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     if (parentTypes == null) {
         return INFERRED_ANY_TYPE
     }
@@ -212,16 +228,16 @@ private fun getArrayTypes(project:Project, parentTypes: InferenceResult?): Infer
     }
     if (parentTypes.arrayTypes?.size.orElse(0) < 1
             && parentTypes.classes.size == 1
-            && parentTypes.classes[0].className in stringTypes
+            && parentTypes.classes.iterator().next() in stringTypes
     ) {
         return InferenceResult(
                 isString = true,
-                classes = listOf(JS_STRING),
-                arrayTypes = listOf("string")
+                classes = setOf(JS_STRING.className),
+                arrayTypes = setOf(JS_STRING.className)
         )
     }
     if (types.isNotEmpty()) {
-        return types.toInferenceResult(project)
+        return types.toInferenceResult()
     }
     return INFERRED_ANY_TYPE
 }

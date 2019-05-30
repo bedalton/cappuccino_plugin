@@ -80,6 +80,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReferencePrime): List<ObjJQualifiedReferenceComponent> {
+        return ObjJQualifiedReferenceUtil.getQualifiedNameParts(qualifiedReference)
+    }
+
+    @JvmStatic
     fun getRangeInElement(selector: ObjJSelector): TextRange {
         return ObjJMethodPsiUtils.getRangeInElement(selector)
     }
