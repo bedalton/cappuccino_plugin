@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
+
 data class GlobalJSClass(
         val className: String,
         val constructor: GlobalJSConstructor = GlobalJSConstructor(),
@@ -26,6 +29,34 @@ data class JsNamedProperty(
         val deprecated: Boolean = false,
         val varArgs:Boolean = type.startsWith("...")
         ) : JsProperty
+
+fun StubOutputStream.writeJsProperty(property:JsNamedProperty) {
+    writeName(property.name)
+    writeName(property.type)
+    writeBoolean(property.isPublic)
+    writeBoolean(property.nullable)
+    writeUTFFast(property.comment ?: "")
+    writeUTFFast(property.default ?: "")
+    writeBoolean(property.ignore)
+    writeAnonymousFunction(property.callback)
+    writeBoolean(property.deprecated)
+    writeBoolean(property.varArgs)
+}
+
+fun StubInputStream.readJsProperty(property:JsNamedProperty) {
+    val name = readNameString() ?: "?"
+    val type = readNameString() ?: ""
+    val isPublic = readBoolean()
+    val nullable = readBoolean()
+    val comment = readUTFFast()
+    val default = readUTFFast()
+    val ignore = readBoolean()
+    val callback = readAnonymousFunction
+    writeBoolean(property.ignore)
+    writeAnonymousFunction(property.callback)
+    writeBoolean(property.deprecated)
+    writeBoolean(property.varArgs)
+}
 
 data class JsFunctionReturnType (
         override val type: String = "Any",
@@ -1709,7 +1740,16 @@ val globalJSClasses = listOf(
                 static = true
         ),
         c(
-                className = "Document"
+                className = "Document",
+                functions = listOf(
+                        f(
+                                name = "createElement",
+                                parameters = listOf(
+                                        p("tagName", "string")
+                                ),
+                                returns = rt("DOMElement", nullable = true)
+                        )
+                )
         ),
         c(
                 className = "RegExp",

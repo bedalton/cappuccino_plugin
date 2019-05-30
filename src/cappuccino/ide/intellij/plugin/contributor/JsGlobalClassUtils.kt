@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 
 
 fun getAllObjJAndJsClassObjects(project: Project): List<GlobalJSClass> {
-    return globalJSClasses + AllObjJClassesAsJsClasses(project)
+    return globalJSClasses + allObjJClassesAsJsClasses(project)
 }
 
 fun getJsClassObject(project:Project, objjClasses:List<GlobalJSClass>, className: String) : GlobalJSClass? {
@@ -61,7 +61,7 @@ fun Iterable<GlobalJSClass>.flatten(className:String) : GlobalJSClass {
 }
 
 fun GlobalJSClass.mergeWithSuperClasses(project:Project) : GlobalJSClass {
-    val objjClasses = AllObjJClassesAsJsClasses(project)
+    val objjClasses = allObjJClassesAsJsClasses(project)
     val superClassNames = extends.flattenNestedSuperClasses()
     val superClasses = superClassNames.mapNotNull { _getJsClassObject(objjClasses, it) }
     return (superClasses + this).flatten(className)

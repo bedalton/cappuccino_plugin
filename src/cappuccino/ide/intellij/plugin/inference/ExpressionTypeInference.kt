@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -11,7 +12,11 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 fun inferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty())
         leftExpressionType(expr.leftExpr, level - 1)
-    else
+    else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
+        val components = mutableListOf<ObjJQualifiedReferenceComponent>(expr.leftExpr!!.functionCall!!)
+        components.addAll(expr.rightExprList.first().qualifiedReferencePrime!!.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
+        inferQualifiedReferenceType(components, false, level - 1)
+    } else
         null
     val rightExpressionsType = if (leftExpressionType != null && expr.rightExprList.isNotEmpty())
         rightExpressionTypes(expr.leftExpr, expr.rightExprList, level - 1)
@@ -39,7 +44,7 @@ fun inferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
             arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null,
             functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null
     )
-    LOGGER.info("Expr: ${expr.toString()}: Types: {${out.classes.map{it.className}}")
+    LOGGER.info("Expr: $expr: Types: {${out.classes}")
     return out
 }
 
@@ -54,7 +59,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int) : InferenceResu
         return inferExpressionType(leftExpression.parenEnclosedExpr!!.expr!!, level)
     }
     if (leftExpression.qualifiedReference != null)
-        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!, level)
+        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!, false, level)
     if (leftExpression.primary != null) {
         val primary = leftExpression.primary ?: return null
         if (primary.integer != null || primary.decimalLiteral != null) {
@@ -79,10 +84,10 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int) : InferenceResu
     if (leftExpression.minusMinus != null || leftExpression.plusPlus != null)
         return InferenceResult(isNumeric = true)
     if (leftExpression.arrayLiteral != null) {
-        val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList).classes.map { it.className }
+        val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList).classes
         return InferenceResult(
-                classes = listOf(JS_ARRAY, JS_ITERABLE),
-                arrayTypes = if (types.isNotEmpty()) types else listOf("?")
+                classes = setOf("Array", "object"),
+                arrayTypes = if (types.isNotEmpty()) types else setOf("?")
         )
     }
     val objectLiteral = leftExpression.objectLiteral
@@ -96,7 +101,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int) : InferenceResu
             keys[property.propertyName.text] = types
         }
         return InferenceResult(
-                classes = listOf(JS_OBJECT),
+                classes = setOf("object"),
                 jsObjectKeys = keys
         )
     }
@@ -129,7 +134,6 @@ private fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(level:Int) : Infe
 private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
     val parameters = formalParameterArgList
     val out = mutableMapOf<String, InferenceResult>()
-    val objjClasses = AllObjJClassesAsJsClasses(project)
     val commentWrapper = this.docComment
     for ((i, parameter) in parameters.withIndex()) {
         val parameterName = parameter.variableName?.text ?: "$i"
@@ -138,8 +142,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
                     ?.get(i)
                     ?.type
                     ?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
-                    ?.mapNotNull {getJsClassObject(project, objjClasses, it)}
-            out[parameterName] = if (parameterType != null)InferenceResult(classes = parameterType)  else INFERRED_ANY_TYPE
+            out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
         } else {
             out[parameterName] = INFERRED_ANY_TYPE
         }
@@ -159,37 +162,32 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
             val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, level) else null
             val types = if (ifFalse != null && ifTrue != null)
                 ifFalse + ifTrue
-            else if (ifTrue != null)
-                ifTrue
-            else if (ifFalse != null)
-                ifFalse
-            else
-                null
+            else ifTrue ?: ifFalse
             if (types != null)
                 current += types
         }
         if (rightExpr.comparisonExprPrime != null || rightExpr.instanceOfExprPrime != null || rightExpr.logicExprPrime != null) {
-            current = current.copy(isBoolean = true, classes = current.classes.plus(JS_BOOL))
+            current = current.copy(isBoolean = true, classes = current.classes.plus(JS_BOOL.className))
         }
         if (rightExpr.mathExprPrime != null) {
-            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER))
+            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER.className))
             didAdd = didAdd || rightExpr.mathExprPrime!!.mathOp.plus != null
         }
         if (rightExpr.arrayIndexSelector != null) {
-            current = current.copy(classes = current.classes.plus(JS_ARRAY))
+            current = current.copy(classes = current.classes.plus(JS_ARRAY.className))
         }
     }
     if (didAdd) {
-        if (!current.classes.contains(JS_STRING))
-            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER))
-        else if (!current.classes.contains(JS_ARRAY))
-            current = InferenceResult(classes = listOf(JS_STRING))
+        if (!current.classes.contains(JS_STRING.className))
+            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER.className))
+        else if (!current.classes.contains(JS_ARRAY.className))
+            current = InferenceResult(classes = setOf(JS_STRING.className))
     }
     return current
 }
 
 internal fun getInferredTypeFromExpressionArray(assignments:List<ObjJExpr>, level:Int = 4) : InferenceResult {
-    return assignments.mapNotNull { inferExpressionType(it, level - 1) }.collapse()
+    return assignments.mapNotNull { inferExpressionType(it,  level - 1) }.collapse()
 }
 
 internal fun List<InferenceResult>.collapse() : InferenceResult {
@@ -200,7 +198,7 @@ internal fun List<InferenceResult>.collapse() : InferenceResult {
     val isSelector = this.any { it.isSelector }
     val isRegex = this.any { it.isRegex }
     val functionTypes = this.flatMap { it.functionTypes ?: emptyList()  }
-    val classes = this.flatMap { it.classes }
+    val classes = this.flatMap { it.classes }.toSet()
     var jsObjectKeys:Map<String, InferenceResult> = emptyMap()
     this.mapNotNull { it.jsObjectKeys }.forEach {
         jsObjectKeys = combine(jsObjectKeys, it) ?: jsObjectKeys
@@ -266,14 +264,12 @@ private object IsNumericUtil {
 private object IsBooleanUtil {
     internal fun isBoolean(expr:ObjJExpr?) : Boolean {
         if (expr == null) return false
-        return if (isPrefixExpressionBoolean(expr.prefixedExpr))
-            true
-        else if (expr.rightExprList.isNotEmpty())
-            isBoolean(expr.rightExprList)
-        else if (expr.leftExpr != null)
-            isBoolean(expr.leftExpr!!)
-        else
-            false
+        return when {
+            isPrefixExpressionBoolean(expr.prefixedExpr) -> true
+            expr.rightExprList.isNotEmpty() -> isBoolean(expr.rightExprList)
+            expr.leftExpr != null -> isBoolean(expr.leftExpr!!)
+            else -> false
+        }
     }
 
     private fun isBoolean(expr: ObjJLeftExpr?) : Boolean {

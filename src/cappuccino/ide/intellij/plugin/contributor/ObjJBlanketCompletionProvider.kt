@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
@@ -8,10 +9,10 @@ import com.intellij.util.ProcessingContext
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
@@ -127,6 +128,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (element.getPreviousNonEmptySibling(true)?.text?.endsWith(".") == true) {
+            appendQualifiedReferenceCompletions(element, resultSet)
             return
         }
         val text = element.text?.replace(CARET_INDICATOR.toRegex(), "")
@@ -136,7 +138,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
 
         val variableName = element.thisOrParentAs(ObjJVariableName::class.java)
-        val parentAsVariableDeclaration = variableName?.parent as? ObjJVariableDeclarationList ?: variableName?.parent?.parent?.parent as? ObjJVariableDeclarationList
+        val parentAsVariableDeclaration = variableName?.parent as? ObjJVariableDeclarationList
+                ?: variableName?.parent?.parent?.parent as? ObjJVariableDeclarationList
         if (parentAsVariableDeclaration?.getPreviousNonEmptySibling(true)?.text == "var") {
             return
         }
@@ -153,7 +156,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (element.text.startsWith("@") && element.hasParentOfType(ObjJClassDeclarationElement::class.java)) {
             resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
         }
-
 
         // Add variable name completions if applicable
         addVariableNameCompletionElements(resultSet, element)
@@ -265,11 +267,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
     }
 
-    private fun shouldAddJsClassNames(element:PsiElement) : Boolean {
+    private fun shouldAddJsClassNames(element: PsiElement): Boolean {
         return false
     }
 
-    private fun isFirstItemInArray(element:PsiElement): Boolean {
+    private fun isFirstItemInArray(element: PsiElement): Boolean {
         val expression = element.thisOrParentAs(ObjJExpr::class.java) ?: return false
         val arrayLiteralParent = expression.parent as? ObjJArrayLiteral ?: return false
         return arrayLiteralParent.getChildrenOfType(ObjJExpr::class.java).size == 1
@@ -307,12 +309,12 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Add implementation class names to result set
      */
     private fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
-        val thisParts = element.text.split("[A-Z]".toRegex()).filter{it.length < 2}
+        val thisParts = element.text.split("[A-Z]".toRegex()).filter { it.length < 2 }
         ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
             if (isIgnoredImplementationDeclaration(element, implementationDeclaration)) {
                 return@forEach
             }
-            val classParts = implementationDeclaration.getClassNameString().split("[A-Z]".toRegex()).filter{it.length < 2}
+            val classParts = implementationDeclaration.getClassNameString().split("[A-Z]".toRegex()).filter { it.length < 2 }
             if (!classParts.startsWithAny(thisParts)) {
                 return@forEach
             }
@@ -377,7 +379,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     /**
      * Creates a lookup element with a prefix such as @ or #
      */
-    private fun prefixedLookupElement(keyword:String, prefix:String) : LookupElementBuilder {
+    private fun prefixedLookupElement(keyword: String, prefix: String): LookupElementBuilder {
         return LookupElementBuilder.create(keyword)
                 .withPresentableText(prefix + keyword)
                 .withInsertHandler { context, _ ->
@@ -400,7 +402,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     /**
      * Determines whether or not to add block level keywords
      */
-    private fun canAddBlockLevelKeywords(element:PsiElement?, expression:ObjJExpr?) : Boolean {
+    private fun canAddBlockLevelKeywords(element: PsiElement?, expression: ObjJExpr?): Boolean {
         if (expression == null)
             return false
         // ""expression.text == element?.text"" means that expression is only made up of the keyword
@@ -427,7 +429,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     }
 
     private fun getAtFragmentCompletions(resultSet: CompletionResultSet, element: PsiElement) {
-        val parent = element.parent as? ObjJClassDeclarationElement<*> ?: element.parent?.parent as? ObjJClassDeclarationElement<*>
+        val parent = element.parent as? ObjJClassDeclarationElement<*>
+                ?: element.parent?.parent as? ObjJClassDeclarationElement<*>
         val toAdd = mutableListOf<String>()
         when (parent) {
             is ObjJProtocolDeclaration -> {
@@ -442,7 +445,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     toAdd.add("end")
                 }
             }
-            else -> toAdd.addAll(AT_KEYWORDS.filterNot {it == "end"})
+            else -> toAdd.addAll(AT_KEYWORDS.filterNot { it == "end" })
         }
         toAdd.forEach {
             val lookupElement = LookupElementBuilder.create(it)
@@ -461,5 +464,56 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      */
     private fun promptTextHasLength(variableName: PsiElement?): Boolean {
         return (variableName?.text?.replace(ObjJCompletionContributor.CARET_INDICATOR, "")?.trim()?.length ?: 0) > 0
+    }
+
+    private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
+        val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
+                ?: element.parent as? ObjJQualifiedReferenceComponent ?: return { LOGGER.info("Element is not a qualifiedReference component") }()
+        LOGGER.info("Appending Qualified reference completions")
+        val index = qualifiedNameComponent.indexInQualifiedReference
+        if (index <= 0) {
+            LOGGER.info("Qualified reference is zero indexed")
+            return
+        }
+        val previousComponents = qualifiedNameComponent.previousSiblings
+        val inferred = inferQualifiedReferenceType(previousComponents, false, 4) ?: return {
+            LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
+            Unit
+        }()
+        LOGGER.info("QNP(${previousComponents.joinToString(".")}.${element.text} -> Inferred -> $inferred")
+        val classes = inferred.classes
+        val firstItem = previousComponents[0].text.orEmpty()
+        val includeStatic = index == 1 && classes.any { it == firstItem}
+        val types = classes.toInferenceResult().jsClasses(element.project).flatten("???")
+        val functions = if (includeStatic) types.staticFunctions else types.functions
+        val properties = if (includeStatic) types.staticProperties else types.properties
+        functions.forEach {
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(it.name)
+                    .withTailText("(" + ArrayUtils.join(it.parameters.map { it.name }, ",") + ")")
+                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+        }
+
+        properties.forEach {
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(it.name)
+                    .withTailText(":" + it.type)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+        }
+        inferred.functionTypes?.forEach {
+            val lookupElementBuilder = LookupElementBuilder
+                    .create("()")
+                    .withTailText("("+ it.parameters.map{ it.key + ":" + it.value.classes.joinToString("|")}.joinToString(", ") + ")")
+                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+        }
+        inferred.jsObjectKeys?.forEach {
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(it.key)
+                    .withTailText(":" + it.value.classes.joinToString("|") )
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+
+        }
     }
 }
