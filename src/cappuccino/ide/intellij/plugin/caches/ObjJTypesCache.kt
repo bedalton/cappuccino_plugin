@@ -19,9 +19,9 @@ class ObjJExprTypesCache(expr:ObjJExpr) {
     val types:Set<String> get() = typesCache.value
 
     private fun createExprTypesCache(expr: ObjJExpr) : CachedValue<Set<String>> {
-        val types = inferExpressionType(expr, INFERENCE_LEVELS_DEFAULT)?.toClassList() ?: emptySet()
+        val types = inferExpressionType(expr, INFERENCE_LEVELS_DEFAULT, createTag())?.toClassList() ?: emptySet()
         val manager = CachedValuesManager.getManager(expr.project)
-        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, myTreeChangeTracker)
+        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, PsiModificationTracker.MODIFICATION_COUNT, myTreeChangeTracker)
 
         return manager.createCachedValue({ CachedValueProvider.Result.create(types, dependencies) }, false)
     }
@@ -33,9 +33,9 @@ class ObjJMethodCallTypesCache(methodCall:ObjJMethodCall) {
     val types:Set<String> get() = typesCache.value
 
     private fun createMethodCallTypesCacheValue(methodCall: ObjJMethodCall) : CachedValue<Set<String>> {
-        val types = inferMethodCallType(methodCall, INFERENCE_LEVELS_DEFAULT)?.toClassList() ?: emptySet()
+        val types = inferMethodCallType(methodCall, INFERENCE_LEVELS_DEFAULT, createTag())?.toClassList() ?: emptySet()
         val manager = CachedValuesManager.getManager(methodCall.project)
-        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, myTreeChangeTracker)
+        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, PsiModificationTracker.MODIFICATION_COUNT, myTreeChangeTracker)
         return manager.createCachedValue({ CachedValueProvider.Result.create(types, dependencies) }, false)
     }
 }
@@ -47,9 +47,9 @@ class ObjJQualifiedReferenceComponentTypesCache(component:ObjJQualifiedReference
     val types:Set<String> get() = typesCache.value
 
     private fun createQualifiedReferenceComponentTypesCacheValue(component: ObjJQualifiedReferenceComponent) : CachedValue<Set<String>> {
-        val types = inferQualifiedReferenceType(component.previousSiblings + component, false, INFERENCE_LEVELS_DEFAULT)?.toClassList() ?: emptySet()
+        val types = inferQualifiedReferenceType(component.previousSiblings + component, INFERENCE_LEVELS_DEFAULT, createTag())?.toClassList() ?: emptySet()
         val manager = CachedValuesManager.getManager(component.project)
-        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, myTreeChangeTracker)
+        val dependencies = arrayOf<Any>(PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT, PsiModificationTracker.MODIFICATION_COUNT, myTreeChangeTracker)
         return manager.createCachedValue({ CachedValueProvider.Result.create(types, dependencies) }, false)
     }
 }

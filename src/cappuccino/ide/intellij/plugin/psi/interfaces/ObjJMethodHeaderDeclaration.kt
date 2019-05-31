@@ -5,7 +5,9 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 
 interface ObjJMethodHeaderDeclaration<StubT : ObjJMethodHeaderDeclarationStub<*>> : ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJHasMethodSelector, ObjJHasContainingClass {
 
-    val returnTypes: Set<String>
+    //val returnType:Set<String>
+
+    fun getReturnTypes(level:Int, tag:Long): Set<String>
 
     val explicitReturnType:String;
 

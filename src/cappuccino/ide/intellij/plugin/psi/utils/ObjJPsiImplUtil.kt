@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
+import cappuccino.ide.intellij.plugin.inference.createTag
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -276,17 +278,17 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJMethodHeader): Set<String> {
-        return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true)
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, level:Int, tag:Long): Set<String> {
+        return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true, level, tag)
     }
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJSelectorLiteral): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJSelectorLiteral, level: Int = INFERENCE_LEVELS_DEFAULT, tag:Long = createTag()): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(methodHeader))
     }
 
     @JvmStatic
-    fun getReturnTypes(accessorProperty: ObjJAccessorProperty): Set<String> {
+    fun getReturnTypes(accessorProperty: ObjJAccessorProperty, level: Int = INFERENCE_LEVELS_DEFAULT, tag:Long = createTag()): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(accessorProperty))
     }
 
@@ -318,8 +320,8 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
 
     @JvmStatic
-    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget): List<String> {
-        return getPossibleClassTypesForCallTarget(callTarget).toList()
+    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget, tag:Long): List<String> {
+        return getPossibleClassTypesForCallTarget(callTarget, tag).toList()
     }
 
     @JvmStatic

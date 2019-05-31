@@ -15,9 +15,9 @@ fun GlobalJSClass.flattenWithChildrenProperties(project:Project, className: Stri
     else
         globalJSClasses.filter { className in this.extends }.flatten(className)
     val objjClass = objJClassAsJsClass(project, className)
-    val allClasses = ObjJClassInheritanceIndex.instance[className, project].mapNotNull {
+    val allClasses = mutableListOf<GlobalJSClass>()/*ObjJClassInheritanceIndex.instance[className, project].mapNotNull {
         objJClassAsJsClass(project, it.getClassNameString())
-    }.toMutableList()
+    }.toMutableList()*/
     allClasses.add(jsClass)
     if (objjClass != null)
         allClasses.add(objjClass)

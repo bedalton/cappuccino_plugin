@@ -147,13 +147,21 @@ object ObjJMethodPsiUtils {
         val stubHeaderType = methodHeader.stub?.explicitReturnType
         if (stubHeaderType != null)
             return stubHeaderType
-        return getReturnTypes(methodHeader, follow).firstOrNull() ?: UNDETERMINED
+        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
+                ?: methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.text
+                ?: UNDETERMINED
     }
 
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean): Set<String> {
-        val returnTypes=  methodHeader.getUserData(INFERENCE_TYPES_USER_DATA_KEY)?.toClassList()
-        if (returnTypes != null && returnTypes.isNotEmpty())
-            return returnTypes
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, level:Int, tag:Long): Set<String> {
+        return methodHeader.getCachedInferredTypes {
+            val returnTypes = internalGetReturnTypes(methodHeader, follow, level, tag)
+            if (returnTypes.isEmpty())
+                return@getCachedInferredTypes null
+            InferenceResult(classes = returnTypes)
+        }?.toClassList().orEmpty()
+    }
+
+    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, level:Int, tag:Long): Set<String> {
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return setOf(UNDETERMINED)
         if (returnTypeElement.formalVariableType.atAction != null) {
             return setOf(AT_ACTION)
@@ -164,16 +172,13 @@ object ObjJMethodPsiUtils {
         val formalVariableType = returnTypeElement.formalVariableType
         if (formalVariableType.varTypeId != null) {
             if (follow) {
-                val out = getReturnTypesFromStatements(methodHeader, 3)
-                if (out.isNotEmpty())
-                    methodHeader.putUserData(INFERENCE_TYPES_USER_DATA_KEY, InferenceResult(classes = out))
-                return out
+                return getReturnTypesFromStatements(methodHeader, min(level - 1, 3), tag)
             }
         }
         return setOf(formalVariableType.text.stripRefSuffixes())
     }
 
-    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, level:Int = INFERENCE_LEVELS_DEFAULT) : Set<String> {
+    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, level:Int = INFERENCE_LEVELS_DEFAULT, tag:Long) : Set<String> {
         val expressions = methodHeader
                 .getParentOfType(ObjJMethodDeclaration::class.java)
                 ?.methodBlock
@@ -188,7 +193,7 @@ object ObjJMethodPsiUtils {
         var out = InferenceResult()
         expressions.forEach {
             LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
-            val type = inferExpressionType(it, min(level - 1, 3))
+            val type = inferExpressionType(it, min(level - 1, 3), tag)
             if (type != null)
                 out += type
         }
@@ -215,7 +220,7 @@ object ObjJMethodPsiUtils {
             e.returnTypesList[0]
         }
 
-        if (returnType == ObjJClassType.UNDETERMINED) {
+        if (returnType == UNDETERMINED) {
             returnType = null
         }
         /*
@@ -273,7 +278,7 @@ object ObjJMethodPsiUtils {
     @Throws(IncorrectOperationException::class)
     fun setName(header: ObjJHasMethodSelector, name: String): PsiElement {
         val copy = header.copy() as ObjJHasMethodSelector
-        val newSelectors = name.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val newSelectors = name.split(SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val selectorElements = copy.selectorList
         if (newSelectors.size != selectorElements.size) {
             throw AssertionError("Selector lists invalid for rename")

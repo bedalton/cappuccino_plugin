@@ -1,30 +1,22 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferFunctionCallReturnType
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 
 
 /**
  * Attempts to get possible variable types from a selector
  */
-fun getClassConstraints(element: ObjJSelector): List<String> {
-    return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java))
+fun getClassConstraints(element: ObjJSelector, tag:Long): List<String> {
+    return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java), tag)
 }
 
 
-private fun getClassConstraints(element: ObjJHasMethodSelector?): List<String> {
+private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long): List<String> {
     if (element !is ObjJMethodCall) {
         return emptyList()
     }
@@ -32,22 +24,24 @@ private fun getClassConstraints(element: ObjJHasMethodSelector?): List<String> {
     val callTarget: ObjJCallTarget? = methodCall?.callTarget
     if (callTarget != null) {
 
-        val out = getPossibleClassTypesForCallTarget(callTarget)
+        val out = getPossibleClassTypesForCallTarget(callTarget, tag).flatMap {
+            ObjJInheritanceUtil.getAllInheritedClasses(it, element.project)
+        }
         if (out.isNotEmpty()) {
             return out.toList()
         }
     }
-    return methodCall?.callTarget?.possibleCallTargetTypes ?: mutableListOf()
+    return methodCall?.callTarget?.getPossibleCallTargetTypes(tag) ?: mutableListOf()
 }
 
 /**
  * Attempts to get possible class types for a call target
  */
-fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget) : Set<String> {
+fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag:Long) : Set<String> {
     val inference = when {
-        callTarget.expr != null -> inferExpressionType(callTarget.expr!!, INFERENCE_LEVELS_DEFAULT)
-        callTarget.functionCall != null -> inferFunctionCallReturnType(callTarget.functionCall!!, INFERENCE_LEVELS_DEFAULT)
-        callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, false, INFERENCE_LEVELS_DEFAULT)
+        callTarget.expr != null -> inferExpressionType(callTarget.expr!!, INFERENCE_LEVELS_DEFAULT, tag)
+        callTarget.functionCall != null -> inferFunctionCallReturnType(callTarget.functionCall!!, INFERENCE_LEVELS_DEFAULT, tag)
+        callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, INFERENCE_LEVELS_DEFAULT, tag)
         else -> null
     }
     val classList = inference?.toClassList().orEmpty()
@@ -55,5 +49,5 @@ fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget) : Set<String>
         return classList
     }
     val qualifiedReference = callTarget.qualifiedReference ?: return setOf()
-    return getPossibleClassTypesForQualifiedReference(qualifiedReference)
+    return inferQualifiedReferenceType(qualifiedReference.qualifiedNameParts, INFERENCE_LEVELS_DEFAULT, tag)?.toClassList() ?: emptySet()
 }

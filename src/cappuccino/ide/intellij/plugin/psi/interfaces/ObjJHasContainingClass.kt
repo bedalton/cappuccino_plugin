@@ -27,3 +27,7 @@ interface ObjJHasContainingClass : ObjJCompositeElement {
 val ObjJHasContainingClass.containingClassNameOrNull:String? get() {
     return containingClass?.classType?.className
 }
+
+val ObjJHasContainingClass.containingSuperClassName:String?
+    get() = cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(this, false)?.text
+

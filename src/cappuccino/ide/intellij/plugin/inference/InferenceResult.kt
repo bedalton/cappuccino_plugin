@@ -5,8 +5,6 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-
 
 data class InferenceResult (
         val classes:Set<String> = emptySet(),
@@ -20,17 +18,17 @@ data class InferenceResult (
         val functionTypes:List<JsFunctionType>? = null,
         val arrayTypes:Set<String>? = null
 ) {
-    var _classes:Set<GlobalJSClass>? = null
+    private var globalClasses:Set<GlobalJSClass>? = null
     val isJsObject:Boolean by lazy {
         jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
     }
     fun jsClasses(project:Project):Iterable<GlobalJSClass> {
-        var out = _classes
+        var out = globalClasses
         if (out != null)
             return out
         if (classes.containsAnyType()) {
             out = globalJSClasses.toSet()
-            _classes = out
+            globalClasses = out
             return out
         }
         return toClassList().mapNotNull { getJsClassObject(project, it) }
@@ -81,6 +79,32 @@ operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
             jsObjectKeys = jsObjectKeys ,
             functionTypes = functionTypes,
             classes = (classes + other.classes)
+    )
+}
+
+internal fun List<InferenceResult>.collapse() : InferenceResult {
+    val isNumeric = this.any { it.isNumeric}
+    val isDictionary = this.any { it.isDictionary }
+    val isBoolean = this.any { it.isBoolean }
+    val isString = this.any { it.isString }
+    val isSelector = this.any { it.isSelector }
+    val isRegex = this.any { it.isRegex }
+    val functionTypes = this.flatMap { it.functionTypes ?: emptyList()  }
+    val classes = this.flatMap { it.classes }.toSet()
+    var jsObjectKeys:Map<String, InferenceResult> = emptyMap()
+    this.mapNotNull { it.jsObjectKeys }.forEach {
+        jsObjectKeys = combine(jsObjectKeys, it) ?: jsObjectKeys
+    }
+    return InferenceResult(
+            isNumeric = isNumeric,
+            isBoolean = isBoolean,
+            isString = isString,
+            isDictionary = isDictionary,
+            isSelector = isSelector,
+            isRegex = isRegex,
+            functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null,
+            classes = classes,
+            jsObjectKeys = if (jsObjectKeys.isNotEmpty()) jsObjectKeys else null
     )
 }
 
@@ -142,16 +166,16 @@ internal fun InferenceResult.toClassList() : Set<String> {
     val returnTypes = this
     val returnClasses = mutableListOf<String>()
     val isAnyType = anyType
-    if (isAnyType || returnTypes.isNumeric)
+    if ((isAnyType || returnTypes.isNumeric) && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (isAnyType || returnTypes.isBoolean)
-        returnClasses.add("boolean")
+    if (isAnyType || returnTypes.isBoolean && booleanTypes.intersect(classes).isEmpty())
+        returnClasses.add("BOOL")
     if (isAnyType || returnTypes.isRegex)
         returnClasses.add("regex")
     if (isAnyType || returnTypes.isDictionary)
         returnClasses.add("CPDictionary")
-    if (isAnyType || returnTypes.isString)
-        returnClasses.add("String")
+    if (isAnyType || returnTypes.isString && stringTypes.intersect(classes).isEmpty())
+        returnClasses.add("string")
     if (isAnyType || returnTypes.isSelector)
         returnClasses.add("SEL")
     if (isAnyType || returnTypes.isJsObject)
@@ -178,11 +202,9 @@ internal fun Iterable<String>.toInferenceResult(): InferenceResult {
     )
 }
 
-
-
 internal val booleanTypes = listOf("bool", "boolean")
 internal val stringTypes = listOf("string", "cpstring")
-internal val numberTypes = listOf("number", "int", "integer", "float", "long", "double")
+internal val numberTypes = listOf("number", "int", "integer", "float", "long", "long long", "double")
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
 internal val anyTypes = listOf("id", "?", "any", "undef")
 
@@ -193,7 +215,3 @@ internal fun Iterable<String>.containsAnyType() : Boolean {
 internal val InferenceResult.anyType : Boolean get() {
     return classes.any { it in anyTypes}
 }
-
-const val INFERENCE_LEVELS_DEFAULT = 6
-
-internal val INFERENCE_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.keys.INFERRED_TYPES")

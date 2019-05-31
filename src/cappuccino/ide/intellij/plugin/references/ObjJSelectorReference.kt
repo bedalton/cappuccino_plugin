@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.inference.createTag
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
@@ -19,6 +20,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
     private var _classConstraints: List<String>? = null
     private val fullSelector: String?
     private val accessorMethods: Pair<String, String>?
+    private val tag = createTag()
 
     init {
         accessorMethods = getAccessorMethods()
@@ -37,7 +39,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (DumbService.isDumb(myElement.project)) {
             return emptyList()
         }
-        constraints = methodCall.callTarget.possibleCallTargetTypes
+        constraints = methodCall.callTarget.getPossibleCallTargetTypes(tag)
         _classConstraints = constraints
         return constraints
     }
@@ -55,7 +57,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             return false
         }
         val elementToCheckAsMethodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
-        val elementToCheckMethodCallTargetClasses = elementToCheckAsMethodCall?.callTarget?.possibleCallTargetTypes ?: listOf()
+        val elementToCheckMethodCallTargetClasses = elementToCheckAsMethodCall?.callTarget?.getPossibleCallTargetTypes(tag)?: listOf()
         val elementToCheckMethodCallSelector = elementToCheckAsMethodCall?.selectorString
         if (thisMethodHeaderParent != null) {
             return elementToCheckMethodCallSelector == fullSelector && (elementToCheckMethodCallTargetClasses.isEmpty() || ObjJClassType.UNDETERMINED in elementToCheckMethodCallTargetClasses || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
@@ -72,7 +74,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
         //Get Basic
-        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement)
+        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement, tag)
         var out: MutableList<PsiElement> = ArrayList()
         if (!selectorResult.isEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
@@ -91,7 +93,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             }
             return PsiElementResolveResult.createResults(out)
         }
-        val result: SelectorResolveResult<PsiElement> = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
+        val result: SelectorResolveResult<PsiElement> = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames, tag)
         if (result.isNotEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
