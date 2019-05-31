@@ -12,7 +12,6 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * Gets all block children of a type
@@ -216,7 +215,7 @@ fun getBlockList(hasBlockStatements:ObjJHasBlockStatement) : List<ObjJBlock> {
     return hasBlockStatements.getChildrenOfType(ObjJBlock::class.java) as MutableList
 }
 fun getBlockList(ifStatement: ObjJIfStatement): List<ObjJBlock> {
-    val out = java.util.ArrayList<ObjJBlock>()
+    val out = mutableListOf<ObjJBlock>()
     out.addAll(ifStatement.getChildrenOfType(ObjJBlock::class.java))
     for (elseIfBlock in ifStatement.elseIfStatementList) {
         ProgressIndicatorProvider.checkCanceled()
@@ -232,7 +231,7 @@ fun getBlockList(ifStatement: ObjJIfStatement): List<ObjJBlock> {
  * Gets a list of blocks given a switch statement
  */
 fun getBlockList(switchStatement: ObjJSwitchStatement): List<ObjJBlock> {
-    val out = java.util.ArrayList<ObjJBlock>()
+    val out = mutableListOf<ObjJBlock>()
     for (clause in switchStatement.caseClauseList) {
         ProgressIndicatorProvider.checkCanceled()
         val block = clause.block ?: continue

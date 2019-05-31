@@ -25,7 +25,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                 }
                 .info(ObjJSelector::class.java) {
                     LOGGER.info("QuickInfo for method selector")
-                    it.description?.presentableText
+                    it.getParentOfType(ObjJMethodHeaderDeclaration::class.java)?.text ?: it.description?.presentableText
                 }
                 .info(ObjJMethodHeaderDeclaration::class.java, orParent = true) {
                     LOGGER.info("QuickInfo for methodHeaderDeclaration")
@@ -183,7 +183,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
             LOGGER.info("No prev siblings")
-            val inferredTypes = inferQualifiedReferenceType(listOf(this), INFERENCE_LEVELS_DEFAULT, createTag())?.toClassList() ?: emptySet()
+            val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag())?.toClassList() ?: emptySet()
             LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
             val classNames = inferredTypes.flatMap { it.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
             out.append("Variable ").append(name)
@@ -193,7 +193,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
             out.append(" in ").append(getLocationString(this))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(prevSiblings, INFERENCE_LEVELS_DEFAULT, createTag())
+        val inferredTypes = inferQualifiedReferenceType(prevSiblings, createTag())
         val name = this.text
         /*val classes = inferredTypes?.jsClasses(project)?.filter { jsClass -> jsClass.properties.any { it.name == name } }
                 ?: emptyList()
@@ -214,7 +214,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
             return out.toString()
         }
         */
-        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, INFERENCE_LEVELS_DEFAULT, createTag())?.toClassList() ?: emptySet()
+        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassList() ?: emptySet()
         if (propertyTypes.isNotEmpty()) {
             out.append("Variable ").append(name)
             if (propertyTypes.isNotEmpty()) {
@@ -235,7 +235,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
     }
 
     out.append("Variable '").append(text).append("'")
-    val possibleClasses = this.getPossibleClassTypes(INFERENCE_LEVELS_DEFAULT, createTag()).filterNot { it == "CPObject" }
+    val possibleClasses = this.getPossibleClassTypes( createTag()).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }

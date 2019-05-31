@@ -10,29 +10,33 @@ import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressManager
 
-fun inferExpressionType(expr:ObjJExpr, level:Int, tag:Long) : InferenceResult? {
+fun inferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
     return expr.getCachedInferredTypes {
         if (expr.tagged(tag))
             return@getCachedInferredTypes null
-        internalInferExpressionType(expr, level - 1, tag)
+        internalInferExpressionType(expr, tag)
     }
 }
 
-private fun internalInferExpressionType(expr:ObjJExpr, level:Int, tag:Long) : InferenceResult? {
+fun internalInferVariableDeclarationType(variableDeclaration: ObjJVariableDeclaration, tag:Long) : InferenceResult? {
+    return inferExpressionType(variableDeclaration.expr, tag)
+}
+
+private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty())
-        leftExpressionType(expr.leftExpr, level, tag)
+        leftExpressionType(expr.leftExpr, tag)
     else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
         LOGGER.info("Checking left expression with function name first")
         val components = mutableListOf<ObjJQualifiedReferenceComponent>(expr.leftExpr!!.functionCall!!)
         components.addAll(expr.rightExprList.first().qualifiedReferencePrime!!.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
-        inferQualifiedReferenceType(components, level, tag)
+        inferQualifiedReferenceType(components, tag)
     } else {
         LOGGER.info("No match for expression parse")
         null
     }
     val rightExpressionsType = if (leftExpressionType != null && expr.rightExprList.isNotEmpty())
-        rightExpressionTypes(expr.leftExpr, expr.rightExprList, level, tag)
+        rightExpressionTypes(expr.leftExpr, expr.rightExprList, tag)
     else
         null
     val isNumeric:Boolean = IsNumericUtil.isNumeric(expr) || leftExpressionType?.isNumeric.orFalse() || rightExpressionsType?.isNumeric.orFalse()
@@ -61,7 +65,7 @@ private fun internalInferExpressionType(expr:ObjJExpr, level:Int, tag:Long) : In
     return out
 }
 
-fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : InferenceResult? {
+fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     if (leftExpression == null){// || level < 0) {
         LOGGER.info("Level is less than 0, returning")
@@ -69,14 +73,14 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : Inf
     }
     LOGGER.info("Checking left expression type for Expression: ${leftExpression.text}")
     if (leftExpression.functionCall != null)
-        return inferFunctionCallReturnType(leftExpression.functionCall!!, level, tag)
+        return inferFunctionCallReturnType(leftExpression.functionCall!!, tag)
     if (leftExpression.parenEnclosedExpr != null) {
         if (leftExpression.parenEnclosedExpr?.expr == null)
             return null
-        return inferExpressionType(leftExpression.parenEnclosedExpr!!.expr!!, level, tag)
+        return inferExpressionType(leftExpression.parenEnclosedExpr!!.expr!!, tag)
     }
     if (leftExpression.qualifiedReference != null)
-        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!.qualifiedNameParts, level, tag)
+        return inferQualifiedReferenceType(leftExpression.qualifiedReference!!.qualifiedNameParts, tag)
     if (leftExpression.primary != null) {
         val primary = leftExpression.primary ?: return null
         if (primary.integer != null || primary.decimalLiteral != null) {
@@ -91,9 +95,9 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : Inf
     if (leftExpression.regularExpressionLiteral != null)
         return InferenceResult(isRegex = true)
     if (leftExpression.methodCall != null)
-        return inferMethodCallType(leftExpression.methodCall!!, level, tag)
+        return inferMethodCallType(leftExpression.methodCall!!, tag)
     if (leftExpression.refExpression != null)
-        return inferVariableNameType(leftExpression.refExpression!!.variableName, level, tag)
+        return inferVariableNameType(leftExpression.refExpression!!.variableName, tag)
     if (leftExpression.variableAssignmentLogical != null)
         return InferenceResult(isNumeric = true)
     if (leftExpression.typeOfExprPrime != null)
@@ -101,7 +105,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : Inf
     if (leftExpression.minusMinus != null || leftExpression.plusPlus != null)
         return InferenceResult(isNumeric = true)
     if (leftExpression.arrayLiteral != null) {
-        val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, level, tag).classes
+        val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes
         return InferenceResult(
                 classes = setOf("Array", "object"),
                 arrayTypes = if (types.isNotEmpty()) types else setOf("?")
@@ -112,7 +116,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : Inf
         val keys:MutableMap<String, InferenceResult> = mutableMapOf()
         for (property in objectLiteral.propertyAssignmentList) {
             val types = if (property.expr != null)
-                inferExpressionType(property.expr!!, level, tag) ?: INFERRED_ANY_TYPE
+                inferExpressionType(property.expr!!, tag) ?: INFERRED_ANY_TYPE
             else
                 INFERRED_ANY_TYPE
             keys[property.propertyName.text] = types
@@ -124,23 +128,23 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, level:Int, tag:Long) : Inf
     }
     if (leftExpression.variableDeclaration != null) {
         val variableDeclaration = leftExpression.variableDeclaration!!
-        return inferExpressionType(variableDeclaration.expr, level, tag)
+        return inferExpressionType(variableDeclaration.expr, tag)
     }
 
     if (leftExpression.functionDeclaration != null) {
-        return leftExpression.functionDeclaration!!.toJsFunctionType(level, tag)
+        return leftExpression.functionDeclaration!!.toJsFunctionType(tag)
     }
     if (leftExpression.functionLiteral != null) {
-        return leftExpression.functionLiteral!!.toJsFunctionType(level, tag)
+        return leftExpression.functionLiteral!!.toJsFunctionType(tag)
     }
     if (leftExpression.derefExpression != null) {
-        return inferVariableNameType(leftExpression.derefExpression!!.variableName, level, tag)
+        return inferVariableNameType(leftExpression.derefExpression!!.variableName, tag)
     }
     return INFERRED_ANY_TYPE
 }
 
-private fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(level:Int, tag: Long) : InferenceResult {
-    val returnTypes = inferFunctionDeclarationReturnType(this, level - 1, tag) ?: INFERRED_ANY_TYPE
+private fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : InferenceResult {
+    val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
     return InferenceResult(
             functionTypes = listOf(
                     JsFunctionType(this.parameterTypes(), returnTypes)
@@ -169,7 +173,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
     return out
 }
 
-fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<ObjJRightExpr>, level: Int, tag:Long) : InferenceResult? {
+fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<ObjJRightExpr>, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     if (leftExpression == null)// || level < 0)
         return null
@@ -180,8 +184,8 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
         LOGGER.info("Checking right expression type for Expression: ${rightExpr.text}")
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
-            val ifTrue = inferExpressionType(ternaryExpr.ifTrue, level, tag)
-            val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, level, tag) else null
+            val ifTrue = inferExpressionType(ternaryExpr.ifTrue, tag)
+            val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, tag) else null
             val types = if (ifFalse != null && ifTrue != null)
                 ifFalse + ifTrue
             else ifTrue ?: ifFalse
@@ -208,8 +212,8 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
     return current
 }
 
-internal fun getInferredTypeFromExpressionArray(assignments:List<ObjJExpr>, level:Int, tag:Long) : InferenceResult {
-    return assignments.mapNotNull { inferExpressionType(it,  level - 1, tag) }.collapse()
+internal fun getInferredTypeFromExpressionArray(assignments:List<ObjJExpr>, tag:Long) : InferenceResult {
+    return assignments.mapNotNull { inferExpressionType(it,  tag) }.collapse()
 }
 
 private object IsNumericUtil {

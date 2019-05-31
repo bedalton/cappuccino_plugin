@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
 import cappuccino.ide.intellij.plugin.inference.createTag
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
@@ -278,17 +277,17 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, level:Int, tag:Long): Set<String> {
-        return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true, level, tag)
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, tag:Long): Set<String> {
+        return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true, tag)
     }
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJSelectorLiteral, level: Int = INFERENCE_LEVELS_DEFAULT, tag:Long = createTag()): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJSelectorLiteral, tag:Long = createTag()): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(methodHeader))
     }
 
     @JvmStatic
-    fun getReturnTypes(accessorProperty: ObjJAccessorProperty, level: Int = INFERENCE_LEVELS_DEFAULT, tag:Long = createTag()): Set<String> {
+    fun getReturnTypes(accessorProperty: ObjJAccessorProperty, tag:Long = createTag()): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(accessorProperty))
     }
 
@@ -801,6 +800,7 @@ object ObjJPsiImplUtil {
         return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
     }
 
+    @Suppress("unused")
     @JvmStatic
     fun getOpenBraceOrAtOpenBrace(element:PsiElement) : PsiElement? {
         return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE) ?: element.getChildByType(ObjJTypes.ObjJ_AT_OPEN_BRACE)
@@ -1094,11 +1094,6 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun <PsiT : PsiElement> PsiElement.isIn(parentClass: Class<PsiT>): Boolean {
         return getParentOfType(parentClass) != null
-    }
-
-    @JvmStatic
-    fun getContainingClassNameOrNull(element:ObjJHasContainingClass) : String? {
-        return element.containingClass?.classType?.className
     }
 
 }

@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.hints
 
-import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -83,7 +82,7 @@ data class ObjJMethodParameterDescription(internal val selector:String, val cont
 }
 
 val ObjJMethodHeader.description:ObjJMethodDescription get() {
-    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes(INFERENCE_LEVELS_DEFAULT, createTag()).joinToString("|"))
+    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes( createTag()).joinToString("|"))
     this.methodDeclarationSelectorList.forEach {
         description.addParameter(it.description)
     }
@@ -91,7 +90,7 @@ val ObjJMethodHeader.description:ObjJMethodDescription get() {
 }
 
 val ObjJMethodHeaderDeclaration<*>.genericDescription:ObjJMethodDescription get() {
-    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes(INFERENCE_LEVELS_DEFAULT, createTag()).joinToString("|"))
+    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes( createTag()).joinToString("|"))
     this.selectorStrings.forEach {
         val selectorDescription = ObjJMethodParameterDescription(it, this.containingClassName,null, "_")
         description.addParameter(selectorDescription)
