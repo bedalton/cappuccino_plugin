@@ -7,9 +7,9 @@ interface ObjJMethodHeaderDeclaration<StubT : ObjJMethodHeaderDeclarationStub<*>
 
     //val returnType:Set<String>
 
-    fun getReturnTypes(level:Int, tag:Long): Set<String>
+    fun getReturnTypes(tag:Long): Set<String>
 
-    val explicitReturnType:String;
+    val explicitReturnType:String
 
     val methodScope: MethodScope
 

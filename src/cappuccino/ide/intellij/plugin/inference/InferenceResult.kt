@@ -36,27 +36,27 @@ data class InferenceResult (
 }
 
 private fun isNumeric(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in numberTypes || it in anyTypes}
+    return classes.any { it.toLowerCase() in numberTypes}
 }
 
 private fun isBoolean(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in booleanTypes || it in anyTypes}
+    return classes.any { it.toLowerCase() in booleanTypes}
 }
 
 private fun isString(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "string" || it in anyTypes}
+    return classes.any { it.toLowerCase() == "string"}
 }
 
 private fun isRegex(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "regex" || it in anyTypes}
+    return classes.any { it.toLowerCase() == "regex"}
 }
 
 private fun isDictionary(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in dictionaryTypes || it in anyTypes}
+    return classes.any { it.toLowerCase() in dictionaryTypes}
 }
 
 private fun isSelector(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "sel" || it in anyTypes}
+    return classes.any { it.toLowerCase() == "sel"}
 }
 
 data class JsFunctionType (

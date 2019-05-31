@@ -14,18 +14,17 @@ import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
-import kotlin.math.min
 
-internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int, tag:Long) : InferenceResult? {
+internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     return methodCall.getCachedInferredTypes {
         if (methodCall.tagged(tag))
             return@getCachedInferredTypes null
         LOGGER.info("Method call <${methodCall.text}> inference type not cached")
-        internalInferMethodCallType(methodCall, level - 1, tag)
+        internalInferMethodCallType(methodCall, tag)
     }
 }
 
-private fun internalInferMethodCallType(methodCall:ObjJMethodCall, level:Int, tag:Long) : InferenceResult? {
+private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     /*if (level < 0)
         return null*/
@@ -35,7 +34,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, level:Int, ta
         LOGGER.info("Checking alloc statement for calltarget <${methodCall.callTargetText}>")
         return getAllocStatementType(methodCall)
     }
-    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, level, tag)
+    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag)
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             LOGGER.info("Gathering all matching methods by class name in [$callTargetTypes]")
@@ -50,7 +49,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, level:Int, ta
         emptyList()
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
-        getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, level, tag)
+        getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
     }.toSet()
     return InferenceResult(classes = returnTypes)
 }
@@ -74,30 +73,30 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     )
 }
 
-private fun getCallTargetTypes(callTarget: ObjJCallTarget, level:Int, tag:Long) : Set<String> {
+private fun getCallTargetTypes(callTarget: ObjJCallTarget, tag:Long) : Set<String> {
     /*if (level < 0)
         return emptySet()*/
     return callTarget.getCachedInferredTypes {
         LOGGER.info("Call target <${callTarget.text}>'s types were not cached")
-        inferCallTargetType(callTarget, level - 1, tag)
+        inferCallTargetType(callTarget, tag)
     }?.classes.orEmpty()
 }
 
-private fun inferCallTargetType(callTarget:ObjJCallTarget, level:Int, tag: Long) : InferenceResult? {
+private fun inferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     if (callTarget.expr != null)
-        return inferExpressionType(callTarget.expr!!, level, tag)
+        return inferExpressionType(callTarget.expr!!, tag)
 
     if (callTarget.functionCall != null) {
-        return inferFunctionCallReturnType(callTarget.functionCall!!, level, tag)
+        return inferFunctionCallReturnType(callTarget.functionCall!!, tag)
     }
     if (callTarget.qualifiedReference != null) {
-        return inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, level, tag)
+        return inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)
     }
     return null
 }
 
-private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, level:Int, tag: Long) : Iterable<String> {
+private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Iterable<String> {
     ProgressManager.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
@@ -114,7 +113,7 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         }
         expressions.forEach {
             //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodCall.text}>")
-            val type = inferExpressionType(it, min(level - 1, 3), tag)
+            val type = inferExpressionType(it, tag)
             if (type != null)
                 out += type
         }

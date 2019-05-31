@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.inference.INFERENCE_LEVELS_DEFAULT
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
@@ -150,7 +149,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (ObjJClassType.VOID_CLASS_NAME !in call.getReturnTypes(INFERENCE_LEVELS_DEFAULT, createTag())) {
+                if (ObjJClassType.VOID_CLASS_NAME !in call.getReturnTypes( createTag())) {
                     return true
                 }
             }
@@ -162,7 +161,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (ObjJClassType.VOID_CLASS_NAME in call.getReturnTypes(INFERENCE_LEVELS_DEFAULT, createTag())) {
+                if (ObjJClassType.VOID_CLASS_NAME in call.getReturnTypes( createTag())) {
                     return true
                 }
             }

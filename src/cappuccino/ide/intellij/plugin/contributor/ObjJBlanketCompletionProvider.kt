@@ -189,7 +189,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
 
         if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
-            return;
+            return
         }
         val variableName = element as? ObjJVariableName ?: element.parent as? ObjJVariableName
         val results = if (variableName != null) {
@@ -269,7 +269,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
     }
 
-    private fun shouldAddJsClassNames(element: PsiElement): Boolean {
+    private fun shouldAddJsClassNames(@Suppress("UNUSED_PARAMETER") element: PsiElement): Boolean {
         return false
     }
 
@@ -478,7 +478,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         val previousComponents = qualifiedNameComponent.previousSiblings
-        val inferred = inferQualifiedReferenceType(previousComponents, 4, createTag()) ?: return {
+        val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return {
             LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
             Unit
         }()
@@ -489,10 +489,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val types = classes.toInferenceResult().jsClasses(element.project).flatten("???")
         val functions = if (includeStatic) types.staticFunctions else types.functions
         val properties = if (includeStatic) types.staticProperties else types.properties
-        functions.forEach {
+        functions.forEach { classFunction ->
             val lookupElementBuilder = LookupElementBuilder
-                    .create(it.name)
-                    .withTailText("(" + ArrayUtils.join(it.parameters.map { it.name }, ",") + ")")
+                    .create(classFunction.name)
+                    .withTailText("(" + ArrayUtils.join(classFunction.parameters.map { it.name }, ",") + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }
@@ -503,10 +503,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .withTailText(":" + it.type)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }
-        inferred.functionTypes?.forEach {
+        inferred.functionTypes?.forEach { jsFunction ->
             val lookupElementBuilder = LookupElementBuilder
                     .create("()")
-                    .withTailText("("+ it.parameters.map{ it.key + ":" + it.value.classes.joinToString("|")}.joinToString(", ") + ")")
+                    .withTailText("("+ jsFunction.parameters.map{ it.key + ":" + it.value.classes.joinToString("|")}.joinToString(", ") + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }

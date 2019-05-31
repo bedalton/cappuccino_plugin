@@ -39,9 +39,9 @@ private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long): List
  */
 fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag:Long) : Set<String> {
     val inference = when {
-        callTarget.expr != null -> inferExpressionType(callTarget.expr!!, INFERENCE_LEVELS_DEFAULT, tag)
-        callTarget.functionCall != null -> inferFunctionCallReturnType(callTarget.functionCall!!, INFERENCE_LEVELS_DEFAULT, tag)
-        callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, INFERENCE_LEVELS_DEFAULT, tag)
+        callTarget.expr != null -> inferExpressionType(callTarget.expr!!, tag)
+        callTarget.functionCall != null -> inferFunctionCallReturnType(callTarget.functionCall!!, tag)
+        callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)
         else -> null
     }
     val classList = inference?.toClassList().orEmpty()
@@ -49,5 +49,5 @@ fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag:Long) : S
         return classList
     }
     val qualifiedReference = callTarget.qualifiedReference ?: return setOf()
-    return inferQualifiedReferenceType(qualifiedReference.qualifiedNameParts, INFERENCE_LEVELS_DEFAULT, tag)?.toClassList() ?: emptySet()
+    return inferQualifiedReferenceType(qualifiedReference.qualifiedNameParts, tag)?.toClassList() ?: emptySet()
 }

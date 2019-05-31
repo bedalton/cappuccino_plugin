@@ -7,18 +7,21 @@ import com.intellij.openapi.util.Key
 import java.util.*
 
 
-const val INFERENCE_LEVELS_DEFAULT = 6
-
 internal val INFERENCE_LOOP_TAG = Key<Long>("objj.userdata.keys.INFERENCE_LOOP_TAG")
 
 internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.keys.INFERRED_TYPES")
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private const val INFERRED_TYPES_VERSION = 5 + ObjJIndexService.INDEX_VERSION
+private val INFERRED_TYPES_MINOR_VERSION = Random().nextInt() * Random().nextInt() // 0
+
+private val INFERRED_TYPES_VERSION = 1 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
 
-
+/**
+ * Gets the cached types values for the given element
+ * This should save computation time, but results are uncertain
+ */
 internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     if (inferredVersionNumber == INFERRED_TYPES_VERSION) {

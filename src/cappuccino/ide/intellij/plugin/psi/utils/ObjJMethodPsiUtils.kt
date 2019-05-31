@@ -152,16 +152,16 @@ object ObjJMethodPsiUtils {
                 ?: UNDETERMINED
     }
 
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, level:Int, tag:Long): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         return methodHeader.getCachedInferredTypes {
-            val returnTypes = internalGetReturnTypes(methodHeader, follow, level, tag)
+            val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
             InferenceResult(classes = returnTypes)
         }?.toClassList().orEmpty()
     }
 
-    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, level:Int, tag:Long): Set<String> {
+    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return setOf(UNDETERMINED)
         if (returnTypeElement.formalVariableType.atAction != null) {
             return setOf(AT_ACTION)
@@ -172,13 +172,13 @@ object ObjJMethodPsiUtils {
         val formalVariableType = returnTypeElement.formalVariableType
         if (formalVariableType.varTypeId != null) {
             if (follow) {
-                return getReturnTypesFromStatements(methodHeader, min(level - 1, 3), tag)
+                return getReturnTypesFromStatements(methodHeader, tag)
             }
         }
         return setOf(formalVariableType.text.stripRefSuffixes())
     }
 
-    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, level:Int = INFERENCE_LEVELS_DEFAULT, tag:Long) : Set<String> {
+    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, tag:Long) : Set<String> {
         val expressions = methodHeader
                 .getParentOfType(ObjJMethodDeclaration::class.java)
                 ?.methodBlock
@@ -193,7 +193,7 @@ object ObjJMethodPsiUtils {
         var out = InferenceResult()
         expressions.forEach {
             LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
-            val type = inferExpressionType(it, min(level - 1, 3), tag)
+            val type = inferExpressionType(it, tag)
             if (type != null)
                 out += type
         }
