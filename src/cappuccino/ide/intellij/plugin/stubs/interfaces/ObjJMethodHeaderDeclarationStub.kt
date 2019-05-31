@@ -16,8 +16,6 @@ interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT>
 
     val isRequired: Boolean
 
-    val returnTypes: Set<String>
-
     val explicitReturnType:String
 
     val isStatic: Boolean

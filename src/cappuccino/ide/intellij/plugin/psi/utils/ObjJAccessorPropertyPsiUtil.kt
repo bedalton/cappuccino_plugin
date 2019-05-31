@@ -108,7 +108,7 @@ object ObjJAccessorPropertyPsiUtil {
         if (setter != null) {
             val selectorStrings = listOf(setter)
             val paramTypes = listOf(varType)
-            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, "void", emptySet(),true, variableDeclaration.shouldResolve(), false)
+            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, "void",true, variableDeclaration.shouldResolve(), false)
         }
         return null
     }
@@ -139,7 +139,6 @@ object ObjJAccessorPropertyPsiUtil {
                 selectorStrings = selectorStrings,
                 paramTypes = paramTypes,
                 explicitReturnType = varType,
-                returnTypes = setOf(varType),
                 isRequired = true,
                 shouldResolve = variableDeclaration.shouldResolve(),
                 ignored = false)

@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 
 
 data class InferenceResult (
@@ -185,7 +186,7 @@ internal val numberTypes = listOf("number", "int", "integer", "float", "long", "
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
 internal val anyTypes = listOf("id", "?", "any", "undef")
 
-private fun Iterable<String>.containsAnyType() : Boolean {
+internal fun Iterable<String>.containsAnyType() : Boolean {
     return this.any { it in anyTypes}
 }
 
@@ -194,3 +195,5 @@ internal val InferenceResult.anyType : Boolean get() {
 }
 
 const val INFERENCE_LEVELS_DEFAULT = 6
+
+internal val INFERENCE_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.keys.INFERRED_TYPES")
