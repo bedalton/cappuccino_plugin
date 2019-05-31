@@ -12,7 +12,14 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
-internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, ignoreLastPart:Boolean = false, level: Int): InferenceResult? {
+internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, level: Int, tag:Long): InferenceResult? {
+    val lastChild = parts.lastOrNull() ?: return null
+    return lastChild.getCachedInferredTypes {
+        internalInferQualifiedReferenceType(parts, level - 1, tag)
+    }
+}
+
+internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, level: Int, tag:Long): InferenceResult? {
     if (parts.isEmpty()) {
         LOGGER.info("Cannot infer qualified reference type without parts")
         return null
@@ -20,32 +27,26 @@ internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceCompon
     ProgressManager.checkCanceled()
     var parentTypes: InferenceResult? = null
     var isStatic = false
-    val endIndex = if (ignoreLastPart)
-        parts.size - 1
-    else
-        parts.size
-    for (i in 0 until endIndex) {
+    for (i in 0 until parts.size) {
         ProgressManager.checkCanceled()
         val part = parts[i]
-
-        val cachedValue = part.getUserData(INFERENCE_TYPES_USER_DATA_KEY)
-        if (cachedValue != null && cachedValue.classes.isNotEmpty()) {
-            parentTypes = cachedValue
-            continue
+        val thisParentTypes = parentTypes
+        parentTypes = part.getCachedInferredTypes {
+            LOGGER.info("QNC <${part.text}> was not cached")
+            if (i == 0)
+                getPartTypes(part, thisParentTypes, false, level, tag)
+            else
+                getPartTypes(part, thisParentTypes, isStatic, level, tag)
         }
-        LOGGER.info("Checking type for QNComponent: ${part.text}")
-        if (i == 0) {
-            parentTypes = getPartTypes(part, parentTypes, false,level - 1)
-            isStatic = part.text in globalJSClassNames
-        }
-        parentTypes = getPartTypes(part, parentTypes, isStatic, level - 1)
-        part.putUserData(INFERENCE_TYPES_USER_DATA_KEY, parentTypes)
         if (isStatic) {
             isStatic = false
         }
+        if (i == 0) {
+            isStatic = part.text in globalJSClassNames
+        }
     }
     if (parentTypes == null && parts.size == 1) {
-        return getFirstMatchesInGlobals(parts[0], level)
+        return getFirstMatchesInGlobals(parts[0], level, tag)
     }
     LOGGER.info("Qualified Name <${parts.joinToString(".")}> resolves to types: [${parentTypes?.classes?.joinToString("|")?:""}]")
     return parentTypes
@@ -53,27 +54,30 @@ internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceCompon
 
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = "\\s*\\|\\s*".toRegex()
 
-internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, level: Int): InferenceResult? {
+internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, level: Int, tag:Long): InferenceResult? {
     return when (part) {
-        is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, level)
-        is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, level)
-        is ObjJFunctionName -> getFunctionComponentTypes(part, parentTypes, static, level)
+        is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, level, tag)
+        is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, level, tag)
+        is ObjJFunctionName -> getFunctionComponentTypes(part, parentTypes, static, level, tag)
         is ObjJArrayIndexSelector -> getArrayTypes(parentTypes)
-        is ObjJMethodCall -> inferMethodCallType(part, level - 1)
+        is ObjJMethodCall -> inferMethodCallType(part, level - 1, tag)
         else -> return null
     }
 }
 
 
-internal fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, level: Int): InferenceResult? {
-    if (level < 0) {
+fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, level: Int, tag:Long): InferenceResult? {
+    /*if (level < 0) {
         LOGGER.info("Cannot get variable name part for variable <${variableName.text}> as level < 0")
+        return null
+    }*/
+    if (variableName.tagged(tag)) {
         return null
     }
     ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         LOGGER.info("Inferring type for variable <${variableName.text}> at index 0")
-        return inferVariableNameType(variableName, level)
+        return inferVariableNameType(variableName, level, tag)
     }
     if (parentTypes == null)
         return null
@@ -88,17 +92,22 @@ internal fun getVariableNameComponentTypes(variableName: ObjJVariableName, paren
             getJsClassObject(project, it)
         }
     val classNames = classes.flatMap { jsClass ->
-        jsClass.properties.firstOrNull {
+        val properties = jsClass.properties.firstOrNull {
             it.name == variableNameString
         }?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+
+        val functions = jsClass.functions.firstOrNull {
+            it.name == variableNameString
+        }?.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+        properties + functions
     }.toSet()
     return classNames.toInferenceResult()
 }
 
-internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int): InferenceResult? {
-    if (levels < 0) {
+internal fun inferVariableNameType(variableName: ObjJVariableName, level: Int, tag:Long): InferenceResult? {
+    /*if (level < 0) {
         return null
-    }
+    }*/
     if (variableName.indexInQualifiedReference != 0) {
         LOGGER.info("Inferring index 0 variable is not actually at index 0")
         return null
@@ -114,7 +123,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int):
     else
         null
     if (referencedVariable != null) {
-        val out = ObjJVariableTypeResolver.resolveVariableType(referencedVariable, false, false)
+        val out = ObjJVariableTypeResolver.resolveVariableType(variableName = referencedVariable, recurse = false, withInheritance = false, level = level - 1, tag = tag)
         if (out.isNotEmpty()) {
             return InferenceResult(classes = out)
         }
@@ -128,7 +137,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int):
     val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
         it.name == variableNameString
     }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
-    val out = getInferredTypeFromExpressionArray(assignedExpressions, levels)
+    val out = getInferredTypeFromExpressionArray(assignedExpressions, level, tag)
     return if (staticVariableNameTypes.isNotEmpty())
         out.copy(classes = out.classes + staticVariableNameTypes)
     else
@@ -168,11 +177,11 @@ private fun getAssignedExpressions(element: PsiElement?, variableName:String? = 
         null
 }
 
-private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static:Boolean, level: Int): InferenceResult? {
+private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static:Boolean, level: Int, tag:Long): InferenceResult? {
     if (functionName == null)
         return null
     if (functionName.indexInQualifiedReference == 0) {
-        return findFunctionReturnTypesIfFirst(functionName, level)
+        return findFunctionReturnTypesIfFirst(functionName, level, tag)
     }
     if (parentTypes == null) {
         return null
@@ -197,7 +206,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     }.toInferenceResult()
 }
 
-private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, level: Int): InferenceResult? {
+private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, level: Int, tag:Long): InferenceResult? {
     if (functionName.indexInQualifiedReference != 0) {
         return null
     }
@@ -214,7 +223,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, level
     }
     if (basicReturnTypes.isEmpty() && functionDeclaration != null) {
         val returnStatementExpressions = functionDeclaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-        getInferredTypeFromExpressionArray(returnStatementExpressions, level - 1) + returnTypes.toInferenceResult()
+        getInferredTypeFromExpressionArray(returnStatementExpressions, level - 1, tag) + returnTypes.toInferenceResult()
     }
     return (returnTypes + basicReturnTypes).toInferenceResult()
 }
@@ -246,13 +255,13 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     return INFERRED_ANY_TYPE
 }
 
-private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, level:Int) : InferenceResult? {
+private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, level:Int, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     LOGGER.info("Parts has length of one. Part is ${part.elementType}")
-    val name = (part as ObjJVariableName).text ?: (part as ObjJFunctionName).text ?: (part as ObjJFunctionCall).functionName?.text
+    val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text ?: (part as? ObjJFunctionCall)?.functionName?.text
     if (name == null && part is ObjJMethodCall) {
         LOGGER.info("Part is a method call")
-        return inferMethodCallType(part as ObjJMethodCall, level - 1)
+        return inferMethodCallType(part, level - 1, tag)
     } else if (name == null)
         return INFERRED_ANY_TYPE
     val firstMatches:MutableList<String> = mutableListOf()

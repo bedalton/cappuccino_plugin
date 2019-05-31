@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorM
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -70,7 +71,7 @@ object ObjJMethodCallCompletionContributor {
         //Determine possible containing class names
         val possibleContainingClassNames: List<String> = when {
             scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
-            selector != null -> getClassConstraints(selector)
+            selector != null -> getClassConstraints(selector, createTag())
             else -> emptyList()
         }
         //Add actual method call completions

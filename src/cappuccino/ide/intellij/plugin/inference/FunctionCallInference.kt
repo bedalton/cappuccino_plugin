@@ -7,7 +7,15 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
-internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, level:Int) : InferenceResult? {
+internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, level:Int, tag:Long) : InferenceResult? {
+    return functionCall.getCachedInferredTypes {
+        if (functionCall.tagged(tag))
+            return@getCachedInferredTypes null
+        null //internalInferFunctionCallReturnType(it, level, tag)
+    }
+}
+
+internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, level:Int, tag:Long) : InferenceResult? {
     val resolve = functionCall.reference?.resolve() ?: return null
     val functionAsVariableName = resolve as? ObjJVariableName
     val function = (when {
@@ -15,12 +23,12 @@ internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, level:In
         resolve is ObjJFunctionName -> resolve.getParentOfType(ObjJFunctionDeclarationElement::class.java)
         else -> null
     }) ?: return null
-    return inferFunctionDeclarationReturnType(function, level - 1)
+    return inferFunctionDeclarationReturnType(function, level - 1, tag)
 }
 
-internal fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, level:Int) : InferenceResult? {
+internal fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, level:Int, tag:Long) : InferenceResult? {
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-    return getInferredTypeFromExpressionArray(returnStatementExpressions, level)
+    return getInferredTypeFromExpressionArray(returnStatementExpressions, level, tag)
 }
 
 internal fun getFunctionForVariableName(variableName:ObjJVariableName) : ObjJFunctionDeclarationElement<*>? {

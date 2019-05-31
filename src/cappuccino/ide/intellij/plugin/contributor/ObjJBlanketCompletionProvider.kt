@@ -9,6 +9,7 @@ import com.intellij.util.ProcessingContext
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
@@ -477,7 +478,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         val previousComponents = qualifiedNameComponent.previousSiblings
-        val inferred = inferQualifiedReferenceType(previousComponents, false, 4) ?: return {
+        val inferred = inferQualifiedReferenceType(previousComponents, 4, createTag()) ?: return {
             LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
             Unit
         }()
