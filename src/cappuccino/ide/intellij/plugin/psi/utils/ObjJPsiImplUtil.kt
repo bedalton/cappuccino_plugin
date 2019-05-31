@@ -1099,9 +1099,4 @@ object ObjJPsiImplUtil {
         return element.containingClass?.classType?.className
     }
 
-    @JvmStatic
-    fun getTypes(variableName: ObjJVariableName) : Set<String> {
-        return ObjJVariablePsiUtil.types(variableName)
-    }
-
 }

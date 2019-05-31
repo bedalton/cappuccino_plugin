@@ -11,33 +11,42 @@ import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
-import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import kotlin.math.min
 
 internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int) : InferenceResult? {
+    val cachedTypes = methodCall.getUserData(INFERENCE_TYPES_USER_DATA_KEY)
+    if (cachedTypes != null && cachedTypes.toClassList().isNotEmpty())
+        return cachedTypes
+    val out = internalInferMethodCallType(methodCall, level)
+    if (out != null && out.toClassList().isNotEmpty())
+        methodCall.putUserData(INFERENCE_TYPES_USER_DATA_KEY, out)
+    return out
+}
+
+private fun internalInferMethodCallType(methodCall:ObjJMethodCall, level:Int) : InferenceResult? {
+
+
     ProgressManager.checkCanceled()
     val project = methodCall.project
     val selector = methodCall.selectorString
-    LOGGER.info("Inferring Method Call Type for method call : <${methodCall.text}>")
     if (selector == "alloc" || selector == "alloc:") {
-        LOGGER.info("Method Call is alloc statement for: <${methodCall.callTargetText}>")
+        //LOGGER.info("Method Call is alloc statement for: <${methodCall.callTargetText}>")
         val classes = setOf(methodCall.callTargetText)
         return if (classes.isNotEmpty()) {
-            LOGGER.info("Method Call is alloc statement is for types: <${classes}>")
+            //LOGGER.info("Method Call is alloc statement is for types: <${classes}>")
             InferenceResult(
                     classes = classes
             )
         } else {
-            LOGGER.info("Inheritance util failed to find class for name>")
+            //LOGGER.info("Inheritance util failed to find class for name>")
             InferenceResult(
                     classes = setOf(methodCall.callTargetText)
             )
         }
     }
-    val callTargetTypes = inferCallTargetType(methodCall.callTarget, level)?.classes
-            ?: emptySet()
+    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, level)
 
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
@@ -52,10 +61,12 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int) : Inferen
         emptyList()
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
-        /*val simpleReturnType = methodDeclaration.methodHeader.returnTypes
+
+        ProgressManager.checkCanceled()
+        val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
         if (simpleReturnType != "id") {
             val type = simpleReturnType.stripRefSuffixes()
-            listOf(type)
+            setOf(type)
         } else {
             var out = InferenceResult()
             val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
@@ -66,20 +77,32 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, level:Int) : Inferen
                 return InferenceResult(classes = simpleOut.toSet())
             }
             expressions.forEach {
-                LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodCall.text}>")
+                //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodCall.text}>")
                 val type = inferExpressionType(it, min(level - 1, 3))
                 if (type != null)
                     out += type
             }
             out.classes
-        }*/
-        ProgressManager.checkCanceled()
-        methodDeclaration.methodHeader.returnTypes
+        }
     }
     return InferenceResult(classes = returnTypes.toSet())
 }
 
+private fun getCallTargetTypes(callTarget: ObjJCallTarget, level:Int) : Set<String> {
+    val cachedCallTargetTypes = callTarget.getUserData(INFERENCE_TYPES_USER_DATA_KEY)
+    return if (cachedCallTargetTypes?.classes.orEmpty().isNotEmpty()) {
+        cachedCallTargetTypes!!.toClassList()
+    } else {
+        val inferredCallTargetTypes =  inferCallTargetType(callTarget, level)
+        if (inferredCallTargetTypes?.classes.orEmpty().isNotEmpty()) {
+            callTarget.putUserData(INFERENCE_TYPES_USER_DATA_KEY, inferredCallTargetTypes)
+        }
+        inferredCallTargetTypes?.toClassList() ?: emptySet()
+    }
+}
+
 private fun inferCallTargetType(callTarget:ObjJCallTarget, level:Int) : InferenceResult? {
+
     ProgressManager.checkCanceled()
     if (callTarget.expr != null)
         return inferExpressionType(callTarget.expr!!, level - 1)
@@ -88,7 +111,7 @@ private fun inferCallTargetType(callTarget:ObjJCallTarget, level:Int) : Inferenc
         return inferFunctionCallReturnType(callTarget.functionCall!!, level - 1)
     }
     if (callTarget.qualifiedReference != null) {
-        return inferQualifiedReferenceType(callTarget.qualifiedReference!!, false,level - 1)
+        return inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, false,level - 1)
     }
     return null
 }

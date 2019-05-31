@@ -151,10 +151,9 @@ object ObjJMethodPsiUtils {
     }
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean): Set<String> {
-        val stubReturnTypes = methodHeader.stub?.returnTypes.orEmpty()
-        if (stubReturnTypes.isEmpty() || !stubReturnTypes.contains("id")) {
-            return stubReturnTypes
-        }
+        val returnTypes=  methodHeader.getUserData(INFERENCE_TYPES_USER_DATA_KEY)?.toClassList()
+        if (returnTypes != null && returnTypes.isNotEmpty())
+            return returnTypes
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return setOf(UNDETERMINED)
         if (returnTypeElement.formalVariableType.atAction != null) {
             return setOf(AT_ACTION)
@@ -165,7 +164,10 @@ object ObjJMethodPsiUtils {
         val formalVariableType = returnTypeElement.formalVariableType
         if (formalVariableType.varTypeId != null) {
             if (follow) {
-                return getReturnTypesFromStatements(methodHeader, 3)
+                val out = getReturnTypesFromStatements(methodHeader, 3)
+                if (out.isNotEmpty())
+                    methodHeader.putUserData(INFERENCE_TYPES_USER_DATA_KEY, InferenceResult(classes = out))
+                return out
             }
         }
         return setOf(formalVariableType.text.stripRefSuffixes())

@@ -11,6 +11,17 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressManager
 
 fun inferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
+    val cachedData = expr.getUserData(INFERENCE_TYPES_USER_DATA_KEY)
+    if (cachedData != null && cachedData.toClassList().isNotEmpty())
+        return cachedData
+    val out = internalInferExpressionType(expr, level)
+    if (out != null && out.toClassList().isNotEmpty())
+        expr.putUserData(INFERENCE_TYPES_USER_DATA_KEY, out)
+    return out
+}
+
+private fun internalInferExpressionType(expr:ObjJExpr, level:Int) : InferenceResult? {
+
     ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty())
         leftExpressionType(expr.leftExpr, level - 1)

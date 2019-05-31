@@ -38,9 +38,6 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val explicitReturnType: String
         get() = if (getter != null && varType != null) varType else ObjJClassType.VOID_CLASS_NAME
 
-    override val returnTypes: Set<String>
-        get() = setOf(explicitReturnType)
-
     override val isStatic: Boolean
         get() = false
     override fun shouldResolve(): Boolean {

@@ -29,13 +29,4 @@ object ObjJVariablePsiUtil {
         }
         return null
     }
-
-    fun types(variableName: ObjJVariableName) : Set<String> {
-        val stubTypes = variableName.stub?.types ?: emptySet()
-        if (stubTypes.isNotEmpty())
-            return stubTypes
-        return inferQualifiedReferenceType(variableName.previousSiblings + variableName, false, INFERENCE_LEVELS_DEFAULT)?.toClassList()
-                ?: emptySet()
-    }
-
 }

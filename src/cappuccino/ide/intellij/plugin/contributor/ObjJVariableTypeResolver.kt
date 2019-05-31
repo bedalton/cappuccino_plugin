@@ -14,14 +14,14 @@ import com.intellij.psi.PsiElement
 
 object ObjJVariableTypeResolver {
 
-    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true): Set<String> {
+    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true, withInheritance:Boolean = true): Set<String> {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJIgnoreEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
-            return resolveVariableTypeWithoutMethodParse(variableName, recurse)
+            return resolveVariableTypeWithoutMethodParse(variableName, recurse, withInheritance)
         }
         return setOf()
     }
 
-    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true) : Set<String> {
+    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, withInheritance:Boolean = true) : Set<String> {
 
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
@@ -31,18 +31,24 @@ object ObjJVariableTypeResolver {
             "super" -> {
                 containingClass = ObjJHasContainingClassPsiUtil.getContainingSuperClassName(variableName)
                 if (containingClass != null && !DumbService.isDumb(project)) {
-                    return ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                    return if (withInheritance)
+                        ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                    else setOf(containingClass)
                 }
             }
             "this", "self" -> if (containingClass != null && !DumbService.isDumb(project)) {
-                return ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                return if (withInheritance)
+                    ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                else setOf(containingClass)
             }
         }
 
         // Get annotation based variable type
         val annotationBasedVariableType = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName)
         if (annotationBasedVariableType != null) {
-            return ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()
+            else setOf(annotationBasedVariableType)
         }
 
         // Ensure indexes are not dumb before querying them
@@ -57,12 +63,18 @@ object ObjJVariableTypeResolver {
         }
 
         if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isNotEmpty()) {
-            return ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
+            else
+                setOf(variableName.text)
         }
         val out = mutableSetOf<String>()
-        val varNameResults = getVariableTypeFromAssignments(variableName, recurse)?.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }?.toSet()
+        val varNameResults = getVariableTypeFromAssignments(variableName, recurse)//
         if (varNameResults != null) {
-            out.addAll(varNameResults)
+            if (withInheritance){
+                out.addAll(varNameResults.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) })
+            } else
+                out.addAll(varNameResults)
         }
         return if (out.isNotEmpty()) out else setOf()
     }

@@ -12,35 +12,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
-internal fun inferQualifiedReferenceType(qualifiedReference: ObjJQualifiedReference, ignoreLastPart:Boolean = false, level: Int): InferenceResult? {
-    ProgressManager.checkCanceled()
-    val parts = qualifiedReference.qualifiedNameParts
-    if (parts.isEmpty())
-        return null
-    if (parts.size == 0) {
-        return null
-    }
-    var parentTypes: InferenceResult? = null
-    var isStatic = false
-    val endIndex = if (ignoreLastPart)
-        parts.size - 1
-    else
-        parts.size
-    for (i in 0 until endIndex) {
-        ProgressManager.checkCanceled()
-        val part = parts[i]
-        if (i == 0) {
-            parentTypes = getPartTypes(part, parentTypes, false,level - 1)
-            isStatic = part.text in globalJSClassNames
-        }
-        parentTypes = getPartTypes(part, parentTypes, isStatic, level - 1)
-        if (isStatic) {
-            isStatic = false
-        }
-    }
-    return parentTypes
-}
-
 internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, ignoreLastPart:Boolean = false, level: Int): InferenceResult? {
     if (parts.isEmpty()) {
         LOGGER.info("Cannot infer qualified reference type without parts")
@@ -56,12 +27,19 @@ internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceCompon
     for (i in 0 until endIndex) {
         ProgressManager.checkCanceled()
         val part = parts[i]
+
+        val cachedValue = part.getUserData(INFERENCE_TYPES_USER_DATA_KEY)
+        if (cachedValue != null && cachedValue.classes.isNotEmpty()) {
+            parentTypes = cachedValue
+            continue
+        }
         LOGGER.info("Checking type for QNComponent: ${part.text}")
         if (i == 0) {
             parentTypes = getPartTypes(part, parentTypes, false,level - 1)
             isStatic = part.text in globalJSClassNames
         }
         parentTypes = getPartTypes(part, parentTypes, isStatic, level - 1)
+        part.putUserData(INFERENCE_TYPES_USER_DATA_KEY, parentTypes)
         if (isStatic) {
             isStatic = false
         }
@@ -131,13 +109,35 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int):
         "super" -> variableName.getContainingSuperClass()?.name
         else -> null
     }
+    val referencedVariable = if (!DumbService.isDumb(variableName.project))
+        variableName.reference.resolve()  as? ObjJVariableName
+    else
+        null
+    if (referencedVariable != null) {
+        val out = ObjJVariableTypeResolver.resolveVariableType(referencedVariable, false, false)
+        if (out.isNotEmpty()) {
+            return InferenceResult(classes = out)
+        }
+    }
     if (containingClass != null)
         return InferenceResult(
                 classes = setOf(containingClass)
         )
+    val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
+    LOGGER.info ("Found ${assignedExpressions.size} expressions possibly related to variable name: <$variableNameString>")
+    val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
+        it.name == variableNameString
+    }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
+    val out = getInferredTypeFromExpressionArray(assignedExpressions, levels)
+    return if (staticVariableNameTypes.isNotEmpty())
+        out.copy(classes = out.classes + staticVariableNameTypes)
+    else
+        out
+}
 
+fun getAllVariableNameAssignmentExpressions(variableName: ObjJVariableName) : List<ObjJExpr> {
     val referencedVariable = if (!DumbService.isDumb(variableName.project))
-            variableName.reference.resolve()
+        variableName.reference.resolve()
     else
         null
     val thisAssignedExpression = getAssignedExpressions(variableName)
@@ -149,19 +149,9 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, levels: Int):
     if (assignedExpressions.isEmpty()) {
         assignedExpressions = getAllVariableAssignmentsWithName(variableName)
     }
-    LOGGER.info ("Found ${assignedExpressions.size} expressions possibly related to variable name: <$variableNameString>")
-    val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
-        it.name == variableNameString
-    }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
-
-    val out = if (thisAssignedExpression != null)
-        getInferredTypeFromExpressionArray(assignedExpressions + thisAssignedExpression, levels)
-    else
-        getInferredTypeFromExpressionArray(assignedExpressions, levels)
-    return if (staticVariableNameTypes.isNotEmpty())
-        out.copy(classes = out.classes + staticVariableNameTypes)
-    else
-        out
+    if (thisAssignedExpression != null)
+        return assignedExpressions + thisAssignedExpression
+    return assignedExpressions
 }
 
 private fun getAssignedExpressions(element: PsiElement?, variableName:String? = null): ObjJExpr? {
