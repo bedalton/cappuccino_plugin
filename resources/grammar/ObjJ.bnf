@@ -12,7 +12,7 @@
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef|className")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef|className|variableDeclaration|qualifiedReference")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -463,7 +463,7 @@ bodyVariableAssignment
 variableAssignmentLogical
 	::= (qualifiedReference|derefExpression) assignmentExprPrime
 	{
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
+        implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 		methods=[getAssignedValue getQualifiedReferenceList]
 	}
 	;
@@ -497,8 +497,14 @@ globalVariableDeclaration
 variableDeclaration
 	::= (qualifiedReference|derefExpression) '=' ((qualifiedReference|derefExpression) '=')* expr
 	{
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
-		methods=[assignedValue="/expr"]
+
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableDeclarationStub"
+		implements= [
+		    "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+		]
+		methods=[assignedValue="/expr" getQualifiedNamePaths]
 	}
 	;
 
@@ -1513,6 +1519,13 @@ parenEnclosedExpr
 	::= '(' expr? ')'
 	{
 		pin=1
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+        ]
+        methods = [
+            getIndexInQualifiedReference
+        ]
 	}
 	;
 private incrementExpr
@@ -1783,12 +1796,19 @@ callTarget
 qualifiedReference
 	::= (variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
 	{
+
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceStub"
+		implements= [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+		]
 		methods = [
 			primaryVar ="/variableName[0]"
 			getLastVar
 			getPartsAsString
 			getPartsAsStringArray
 			getQualifiedNameParts
+			getQualifiedNamePath
 		]
 	}
 	;

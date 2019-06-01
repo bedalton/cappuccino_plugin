@@ -32,7 +32,7 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->I
         }
     }
     val inferredTypes = getIfNull?.invoke() ?: InferenceResult()
-    if (inferredTypes?.toClassList().isNullOrEmpty()) {
+    if (inferredTypes.toClassList().isNullOrEmpty()) {
         LOGGER.info("getCachedInferredTypes(): Failed to get types if null on element: <${this.text}>")
         return null
     }

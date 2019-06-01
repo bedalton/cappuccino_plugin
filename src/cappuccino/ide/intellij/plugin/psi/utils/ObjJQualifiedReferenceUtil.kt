@@ -82,7 +82,7 @@ object ObjJQualifiedReferenceUtil {
         // If qualified reference cannot be found, something has gone wrong.
         // THIS SHOULD NOT HAPPEN
         assert(variableName != null) {
-            "Qualified name component failed to find its own parent: ${variableNameIn.elementType}(${variableNameIn!!.text}) in ${components}"
+            "Qualified name component failed to find its own parent: ${variableNameIn.elementType}(${variableNameIn.text}) in ${components}"
         }
         if (variableName == null) {
             LOGGER.severe("Qualified name component failed to find its own parent")

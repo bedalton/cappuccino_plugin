@@ -19,6 +19,9 @@ import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPr
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
+import cappuccino.ide.intellij.plugin.stubs.types.toQualifiedNamePaths
+import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import com.intellij.openapi.editor.FoldingGroup
 
 import javax.swing.*
@@ -603,6 +606,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getIndexInQualifiedReference(enclosedExpression:ObjJParenEnclosedExpr) : Int {
+        return 0
+    }
+
+    @JvmStatic
     fun getVariableNameString(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String {
         return globalVariableDeclaration.variableName.text
     }
@@ -833,6 +841,15 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getDescriptiveText(psiElement: PsiElement): String? =
             ObjJDescriptionUtil.getDescriptiveText(psiElement)
+
+    @JvmStatic
+    fun getQualifiedNamePath(qualifiedReference:ObjJQualifiedReference) : QualifiedReferenceStubComponents {
+        return qualifiedReference.stub?.components ?: qualifiedReference.toStubParts()
+    }
+
+    @JvmStatic
+    fun getQualifiedNamePaths(declaration:ObjJVariableDeclaration) : List<QualifiedReferenceStubComponents>
+            = declaration.stub?.qualifiedNameParts ?: declaration.toQualifiedNamePaths()
 
     // ============================== //
     // ========== Imports =========== //
