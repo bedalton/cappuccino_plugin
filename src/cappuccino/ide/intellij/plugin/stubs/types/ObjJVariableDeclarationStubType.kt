@@ -12,7 +12,7 @@ import com.intellij.psi.stubs.StubOutputStream
 class ObjJVariableDeclarationStubType internal constructor(debugName:String):
         ObjJStubElementType<ObjJVariableDeclarationStub, ObjJVariableDeclarationImpl>(debugName, ObjJVariableDeclarationImpl::class.java) {
     override fun createPsi(stub: ObjJVariableDeclarationStub): ObjJVariableDeclarationImpl {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ObjJVariableDeclarationImpl(stub, this)
     }
 
     override fun serialize(stub: ObjJVariableDeclarationStub, stream: StubOutputStream) {
