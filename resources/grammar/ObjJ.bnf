@@ -273,17 +273,27 @@ importFile
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>"
-		methods=[getFrameworkName getFileName getImportAsUnifiedString]
+		methods=[
+			getFrameworkName
+			getFileName
+			getImportAsUnifiedString
+		]
+		pin=2
 	}
 	;
 
 importFramework
 	::= '@import' frameworkReference
 	{
+		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
-		methods=[getFrameworkName getFileName getImportAsUnifiedString]
+		methods=[
+			getFrameworkName
+			getFileName
+			getImportAsUnifiedString
+		]
 	}
 	;
 
@@ -303,7 +313,12 @@ includeFile
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>"
-		methods=[getFrameworkName getFileName getImportAsUnifiedString]
+		methods=[
+			getFrameworkName
+			getFileName
+			getImportAsUnifiedString
+		]
+		pin=2
 	}
 	;
 
@@ -313,14 +328,22 @@ includeFramework
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>"
-		methods=[getFrameworkName getFileName getImportAsUnifiedString]
+		methods=[
+			getFrameworkName
+			getFileName
+			getImportAsUnifiedString
+		]
+		pin=2
 	}
 	;
 
 frameworkReference
 	::= IMPORT_FRAMEWORK_LITERAL
 	{
-		methods=[getFrameworkName getFileName]
+		methods=[
+			getFrameworkName
+			getFileName
+		]
 	}
 	;
 
@@ -380,7 +403,10 @@ statementOrBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods=[getBlock getOpenBrace]
+		methods=[
+			getBlock
+			getOpenBrace
+		]
 	}
 	;
 
@@ -466,18 +492,29 @@ bodyVariableAssignment
 variableAssignmentLogical
 	::= (qualifiedReference|derefExpression) assignmentExprPrime
 	{
+		pin=2
         implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
-		methods=[getAssignedValue getQualifiedReferenceList]
+		methods=[
+			getAssignedValue
+			getQualifiedReferenceList
+		]
 	}
 	;
 
 private variableAssignmentSimple
 	::= varModifier variableDeclarationList
+	{
+		pin=1
+	}
 	;
 
 variableDeclarationList
 	::=  variableDeclarationListVariableDeclaration (',' variableDeclarationListVariableDeclaration)*
+	{
+		pin(".*")=1
+	}
 	;
+
 
 private variableDeclarationListVariableDeclaration
 	::= variableDeclaration
@@ -493,23 +530,35 @@ globalVariableDeclaration
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods=[getVariableNameString getVariableType getFileName]
+		methods=[
+			getVariableNameString
+			getVariableType
+			getFileName
+		]
 	}
 	;
 
 variableDeclaration
 	::= (qualifiedReference|derefExpression) '=' ((qualifiedReference|derefExpression) '=')* expr
 	{
-
+		pin(".*") = 2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableDeclarationStub"
 		implements= [
 		    "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableAssignment"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods=[assignedValue="/expr" getQualifiedNamePaths]
+		methods=[
+			assignedValue="/expr"
+			getQualifiedNamePaths
+		]
+		//recoverWhile=variableDeclaration_recover
 	}
 	;
+private variableDeclaration_recover
+	::= !(";"|',')
+	;
+
 
 instanceVariableDeclaration
 	::= ('@outlet')? formalVariableType variableName accessor? eos
@@ -547,15 +596,22 @@ private recover_instanceVariableDeclaration
 
 accessor
 	::= '@accessors' ('(' accessorPropertyList? ')')?
+	{
+		pin = 1
+	}
 	;
 
 private accessorPropertyList
 	::= accessorProperty (',' accessorProperty)*
+	{
+		pin=1
+	}
 	;
 
 accessorProperty
 	::= accessorPropertyType ('=' selector (':')?)?
 	{
+		pin(".*")=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub"
 		implements=[
@@ -602,7 +658,10 @@ ifStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList]
+		methods =[
+			conditionalExpression = "/conditionExpression/expr"
+			getBlockList
+		]
 	}
 	;
 
@@ -623,7 +682,11 @@ elseIfStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList block="statementOrBlock"]
+		methods =[
+			conditionalExpression = "/conditionExpression/expr"
+			getBlockList
+			block="statementOrBlock"
+		]
 	}
 	;
 
@@ -632,7 +695,9 @@ private elseStatement
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
 		pin=1
-		methods=[block="statementOrBlock"]
+		methods=[
+			block="statementOrBlock"
+		]
 	}
 	;
 
@@ -675,13 +740,18 @@ whileStatement
 
 		]
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
-		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="statementOrBlock"]
+		methods=[
+			getBlockList
+			conditionalExpression="/conditionExpression/expr"
+			block="statementOrBlock"
+		]
 	}
 	;
 
 private whileExpression
 	::= 'while' conditionExpression
 	{
+		pin=1
 		methods =[
 			getConditionalExpression = "/conditionExpression/expr"
 		]
@@ -695,6 +765,7 @@ conditionExpression
 forStatement
 	::= 'for' forLoopHeader  /*<<enterMode "inLoop">>*/ statementOrBlock /*<<exitMode "inLoop">>*/
 	{
+		pin=1
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
@@ -709,6 +780,9 @@ forStatement
 
 forLoopHeader
 	::= '(' forLoopPartsInBraces ')'
+	{
+		pin=1
+	}
 	;
 
 forLoopPartsInBraces
@@ -729,6 +803,9 @@ varModifier
 
 private continueStatement
 	::= 'continue' eos
+	{
+		pin=1
+	}
 	;
 
 breakStatement
@@ -760,7 +837,9 @@ switchStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
-		methods=[getBlockList]
+		methods=[
+			getBlockList
+		]
 	}
 	;
 
@@ -773,7 +852,10 @@ caseClause
 	{
 		pin=1
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
-		methods=[getBlock getBlockList]
+		methods=[
+			getBlock
+			getBlockList
+		]
 	}
 	;
 
@@ -785,7 +867,10 @@ bracketLessBlock
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockMixin"
-		methods= [getBlockList getIterationStatementList]
+		methods= [
+			getBlockList
+			getIterationStatementList
+		]
 	}
 	;
 
@@ -795,7 +880,10 @@ defaultClause
 		extends=caseClause
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 		pin=1
-		methods=[getBlock getBlockList]
+		methods=[
+			getBlock
+			getBlockList
+		]
 	}
 	;
 
@@ -813,7 +901,10 @@ tryStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 		]
-		methods = [getBlockList getBlock]
+		methods = [
+			getBlockList
+			getBlock
+		]
 		pin=1
 	}
 	;
@@ -823,7 +914,10 @@ catchProduction
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
-		methods=[ getBlockList getBlock]
+		methods=[
+			getBlockList
+			getBlock
+		]
 	}
 	;
 
@@ -832,16 +926,25 @@ finallyProduction
 	{
 		pin=1
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
-		methods=[ getBlockList getBlock]
+		methods=[
+			getBlockList
+			getBlock
+		]
 	}
 	;
 
 debuggerStatement
 	::= 'debugger' eos
+	{
+		pin=1
+	}
 	;
 
 deleteStatement
 	::= 'delete' (qualifiedReference|'('qualifiedReference ')')
+	{
+		pin=1
+	}
 	;
 
 functionDeclaration
@@ -943,6 +1046,9 @@ methodHeaderReturnTypeElement
 
 private methodHeaderMultipleVariableTail
 	::= "," "..."
+	{
+		pin=1
+	}
 	;
 
 methodScopeMarker
@@ -954,7 +1060,9 @@ firstMethodDeclarationSelector
 	{
 		pin=1
 		extends=methodDeclarationSelector
-		methods=[getVarType]
+		methods=[
+			getVarType
+		]
 	}
 	;
 
@@ -962,7 +1070,14 @@ methodDeclarationSelector
 	::= selector? ':' methodDeclarationSelectorVariable
 	{
 		pin=2;
-		methods = [getVarType getContainingClassName getContainingClass getVarType getFileName getFormalVariableType]
+		methods = [
+			getVarType
+			getContainingClassName
+			getContainingClass
+			getVarType
+			getFileName
+			getFormalVariableType
+		]
 	}
 	;
 
@@ -974,7 +1089,12 @@ private methodDeclarationSelectorVariable
 	;
 
 methodHeaderSelectorFormalVariableType
-	::= ('(' (formalVariableType) ')')?;
+	::= ('(' (formalVariableType) ')')?
+	{
+		pin(".*")=1
+	}
+	;
+
 
 implementationDeclaration
 	::= implementationHeader <<enterMode "inImplementation" >> instanceVariableList? implementationElements? <<exitMode "inImplementation" >>'@end'
@@ -1029,6 +1149,9 @@ private implementationHeader
 
 private implementationInheritanceDeclaration
 	::= (categoryName |':' superClass)? (inheritedProtocolList)?
+	{
+		pin=1
+	}
 	;
 
 superClass
@@ -1038,6 +1161,7 @@ superClass
 categoryName
 	::= '(' className ')'
 	{
+		pin=1
 		methods = [
 			categoryName="/className"
 		]
@@ -1056,6 +1180,7 @@ private protocolClassNamesList
 	::= className (',' className)*
 	{
 		recoverWhile=recover_protocolClassNamesList
+		pin(".*")=1
 	}
 	;
 
@@ -1073,7 +1198,9 @@ instanceVariableList
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces"
 		]
-		methods=[createFoldingDescriptor]
+		methods=[
+			createFoldingDescriptor
+		]
 	}
 	;
 
@@ -1133,7 +1260,11 @@ preprocessorDefineBody
 	::= preprocessorBodyStatementList|blockElement|expr ';'?
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock"]
-		methods=[getBlockList getIterationStatementList getOpenBrace]
+		methods=[
+			getBlockList
+			getIterationStatementList
+			getOpenBrace
+		]
 	}
 	;
 
@@ -1298,7 +1429,9 @@ protocolScopedMethodBlock
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
-		methods=[createTreeStructureElement]
+		methods=[
+			createTreeStructureElement
+		]
 	}
 	;
 
@@ -1327,24 +1460,35 @@ private implementationElement
 typeDef
 	::=	'@typedef' className
 	{
-
+		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJTypeDefStub"
-		methods = [getClassNameString getMethodHeaders]
+		methods = [
+			getClassNameString
+			getMethodHeaders
+		]
 	}
 	;
 
 global
 	::= '@global' variableName
+	{
+		pin=1
+	}
 	;
 
 formalParameterList
-	::= '(' formalParameterList_inner? ')';
+	::= '(' formalParameterList_inner? ')'
+	{
+		pin=1
+	}
+	;
 
 private formalParameterList_inner
 	::= formalParameterArg (',' formalParameterArg)* (',' lastFormalParameterArg)?
     | lastFormalParameterArg
     {
+    	pin(".*")=1
     	recoverWhile=recover_formalParameterList_inner
     }
 	;
@@ -1367,6 +1511,9 @@ private recover_formalParameterArg
 
 lastFormalParameterArg
 	::= '...' variableName
+	{
+		pin=1
+	}
 	;
 
 arrayLiteral
@@ -1378,6 +1525,7 @@ arrayLiteral
 private arrayLiteralExpressionList
 	::= (',')* (expr (',' expr?)*)?
 	{
+		pin(".*")=1
 		recoverWhile=recover_arrayLiteralExpressionList
 	}
 	;
@@ -1402,6 +1550,7 @@ objectLiteral
 private objectLiteralPropertiesList
 	::= propertyAssignment (',' propertyAssignment?)*
 	{
+		pin(".*")=1
 		recoverWhile=recover_objectLiteralPropertiesList
 	}
 	;
@@ -1438,7 +1587,21 @@ methodCall
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodCallStub"
 		//recoverWhile = recover_methodCall
-		methods = [getSelectorList getSelectorStrings getContainingClass getContainingClassName getContainingSuperClass getSelectorString getCallTargetText getPossibleCallTargetTypes singleSelector="/selector" shouldResolve getCallTargetText getQualifiedNameText getIndexInQualifiedReference]
+		methods = [
+			getSelectorList
+			getSelectorStrings
+			getContainingClass
+			getContainingClassName
+			getContainingSuperClass
+			getSelectorString
+			getCallTargetText
+			getPossibleCallTargetTypes
+			singleSelector="/selector"
+			shouldResolve
+			getCallTargetText
+			getQualifiedNameText
+			getIndexInQualifiedReference
+		]
 	}
 	;
 
@@ -1475,12 +1638,28 @@ selector
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"com.intellij.navigation.NavigationItem"
 		]
-		methods=[setName getName getSelectorString getRangeInElement getReferences getContainingClass getContainingClassName getPresentation shouldResolve getContainingSuperClass getSelectorIndex getNameIdentifier]
+		methods=[
+			setName
+			getName
+			getSelectorString
+			getRangeInElement
+			getReferences
+			getContainingClass
+			getContainingClassName
+			getPresentation
+			shouldResolve
+			getContainingSuperClass
+			getSelectorIndex
+			getNameIdentifier
+		]
 	}
 	;
 
 classDependencyStatement
 	::= '@class' className
+	{
+		pin=1
+	}
 	;
 
 private expressionSequence
@@ -1503,7 +1682,11 @@ expr
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
 		]
-		methods = [getBlock shouldResolve getBlockList]
+		methods = [
+			getBlock
+			shouldResolve
+			getBlockList
+		]
 		//recoverWhile=recover_statement
 	}
 	;
@@ -1528,9 +1711,24 @@ leftExpr
     |	regularExpressionLiteral
 	;
 
-refExpression::= '@ref' '(' variableName ')';
-derefExpression::='@deref' '(' variableName ')';
-newExpression::= 'new' (functionCall|expr arguments?) ;
+refExpression
+	::= '@ref' '(' variableName ')'
+	{
+		pin=1
+	}
+	;
+derefExpression
+	::='@deref' '(' variableName ')'
+	{
+		pin=1
+	}
+	;
+newExpression
+	::= 'new' (functionCall|expr arguments?)
+	{
+		pin=1
+	}
+	;
 
 parenEnclosedExpr
 	::= '(' expr? ')'
@@ -1560,13 +1758,22 @@ functionCall
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionCallElement"
 			//"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods=[getQualifiedNameText getIndexInQualifiedReference getExprList getCloseParen getOpenParen]
+		methods=[
+			getQualifiedNameText
+			getIndexInQualifiedReference
+			getExprList
+			getCloseParen
+			getOpenParen
+		]
 
 	}
 	;
 
 arguments
 	::= '(' expressionSequence? ')'
+	{
+		pin=2
+	}
 	;
 
 rightExpr
@@ -1586,18 +1793,30 @@ rightExpr
 
 instanceOfExprPrime
 	::= 'instanceof' qualifiedReference
+	{
+		pin=1
+	}
 	;
 
 typeOfExprPrime
 	::= 'typeof' ('('expr')'|expr)
+	{
+		pin=1
+	}
 	;
 
 inExpr
 	::= varModifier? variableName 'in' expr
+	{
+		pin=3
+	}
 	;
 
 inExprPrime
 	::= 'in' expr
+	{
+		pin=2
+	}
 	;
 
 logicExprPrime
@@ -1616,6 +1835,7 @@ comparisonExprPrime
 ternaryExprPrime
 	::= '?' expr ':' expr
 	{
+		pin=1
 		methods = [ifTrue="/expr[0]" ifFalse="/expr[1]"]
 	}
 	;
@@ -1688,13 +1908,17 @@ formalVariableType
 varTypeId
 	::= 'id' ('<' varTypeIdClassName '>')?
 	{
+		pin=1
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub>"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub"
-		methods=[getIdType shouldResolve]
+		methods=[
+			getIdType
+			shouldResolve
+		]
 	}
 	;
 private varTypeIdClassName
@@ -1753,6 +1977,7 @@ selectorLiteral
 	::= '@selector' '(' selectorLiteralSelectorList ')'
 	{
 
+		pin=1
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
@@ -1778,10 +2003,16 @@ selectorLiteral
 
 protocolLiteral
 	::= '@protocol' '(' className ')'
+	{
+		pin=1
+	}
 	;
 
 private selectorLiteralSelectorList
 	::= (selector ':')* selector?
+	{
+		pin(".*")=2
+	}
 	;
 
 private numericLiteral
@@ -1806,7 +2037,9 @@ callTarget
 	|	qualifiedReference
     | 	expr
     {
-    	methods=[getPossibleCallTargetTypes]
+    	methods=[
+    		getPossibleCallTargetTypes
+		]
 	}
 	;
 
@@ -1845,7 +2078,7 @@ private qualifiedReferencePrimary
 arrayIndexSelector
 	::= '[' expr ']'
 	{
-		//pin = 1
+		pin = 2
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 		]
@@ -1858,7 +2091,9 @@ arrayIndexSelector
 stringLiteral
 	::= doubleQuoteStringLiteral | singleQuoteStringLiteral
 	{
-		methods=[getStringValue]
+		methods=[
+			getStringValue
+		]
 	}
 	;
 
@@ -1905,7 +2140,13 @@ className
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods = [getReference getReferences getName setName getPresentation]
+		methods = [
+			getReference
+			getReferences
+			getName
+			setName
+			getPresentation
+		]
 	}
 	;
 
@@ -1961,7 +2202,13 @@ functionName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 		]
-		methods = [getName setName getReference shouldResolve getIndexInQualifiedReference]
+		methods = [
+			getName
+			setName
+			getReference
+			shouldResolve
+			getIndexInQualifiedReference
+		]
 	}
 	;
 

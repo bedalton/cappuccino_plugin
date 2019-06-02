@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.contributor.VOID
 import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
@@ -50,11 +51,13 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
     return inferFunctionDeclarationReturnType(function, tag)
 }
 
-internal fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
+fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
     val commentReturnValue = function.docComment?.returnParameterComment
     if (commentReturnValue != null)
         return InferenceResult(classes = commentReturnValue.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet())
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
+    if (returnStatementExpressions.isEmpty())
+        return InferenceResult(classes = setOf(VOID.type))
     return getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
 }
 

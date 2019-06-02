@@ -67,7 +67,7 @@ data class ObjJMethodDescription(val className:String, private val returnType:St
 
 data class ObjJMethodParameterDescription(internal val selector:String, val containingClass:String, private val type:String?, private val parameterName:String?) {
     val presentableText:String get() {
-        val stringBuilder:StringBuilder = java.lang.StringBuilder(selector);
+        val stringBuilder:StringBuilder = java.lang.StringBuilder(selector)
         if (parameterName.isNotNullOrBlank() || type.isNotNullOrBlank()) {
             stringBuilder.append(":")
         }
@@ -77,6 +77,11 @@ data class ObjJMethodParameterDescription(internal val selector:String, val cont
         if (parameterName.isNotNullOrBlank()) {
             stringBuilder.append(parameterName)
         }
+
+        if (containingClass.isNotBlank()) {
+            stringBuilder.append (" in class ").append(containingClass)
+        }
+
         return stringBuilder.toString()
     }
 }

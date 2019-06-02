@@ -29,6 +29,7 @@ class ObjJCompletionContributor : CompletionContributor() {
                 position !is ObjJBlock &&
                 !ObjJVariablePsiUtil.isNewVarDec(position) &&
                 !(position.text.contains("{") || position.text.contains("}")) &&
+                !position.text.matches("^[0-9]".toRegex()) &&
                 !position.text.contains(";") && position.prevSibling?.text?.endsWith(";")  == false
     }
 

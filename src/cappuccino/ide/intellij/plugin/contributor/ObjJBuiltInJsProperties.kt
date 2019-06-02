@@ -35,7 +35,7 @@ object ObjJBuiltInJsProperties {
 
         cfunc("eval") {
             desc = "evaluates JavaScript code represented as a string"
-            rtype = UNDETERMINED
+            rtype = "object"
         }
         cfunc("uneval") {
             rtype = STRING

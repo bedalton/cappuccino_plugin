@@ -82,6 +82,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             parameters: CompletionParameters, context: ProcessingContext,
             resultSet: CompletionResultSet) {
         val element = parameters.position
+        val prevSibling = element.getPreviousNonEmptySibling(true)
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
@@ -118,6 +119,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             // All others
             element.parent is ObjJClassDeclarationElement<*> -> getClassNameCompletions(resultSet, element)
             element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT -> getAtFragmentCompletions(resultSet, element)
+            prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
+                LOGGER.info("Cannot complete after ${prevSibling.elementType}")
+                resultSet.stopHere()
+            }
             else -> genericCompletion(element, resultSet)
         }
         LOGGER.info("Completions for ${element.tokenType()}(${element.text}) in ${element.parent.tokenType()}")
@@ -128,12 +133,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      */
     private fun genericCompletion(element: PsiElement, resultSet: CompletionResultSet) {
 
-
         if (element.getPreviousNonEmptySibling(true)?.text?.endsWith(".") == true) {
             appendQualifiedReferenceCompletions(element, resultSet)
             return
         }
-        val text = element.text?.replace(CARET_INDICATOR.toRegex(), "")
+        val text = element.textWithoutCaret
 
         // Prevent completion when keyword is used
         if (text in ObjJKeywordsList.keywords)
@@ -519,3 +523,5 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
     }
 }
+
+internal val PsiElement.textWithoutCaret:String get() = this.text?.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR.toRegex(), "") ?: ""

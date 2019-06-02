@@ -85,7 +85,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         }
         val constraints = callTargetClassTypesIfMethodCall
         if (out.isNotEmpty()) {
-            if (constraints.isNotEmpty() && !constraints.contains(ObjJClassType.UNDETERMINED) && constraints.contains(ObjJClassType.ID)) {
+            if (constraints.isNotEmpty() && ObjJClassType.UNDETERMINED !in constraints && ObjJClassType.ID !in constraints && constraints.contains(ObjJClassType.ID)) {
                 val tempOut = out.filter { element -> element is ObjJCompositeElement && constraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
                     out = tempOut as MutableList<PsiElement>

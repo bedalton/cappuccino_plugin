@@ -47,5 +47,5 @@ fun ObjJVariableDeclaration.toQualifiedNamePaths() : List<QualifiedReferenceStub
 }
 
 fun ObjJDerefExpression.toStubPart() : QualifiedReferenceStubComponents {
-    return listOf(ObjJQualifiedReferenceComponentPart(this.variableName.text, ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME))
+    return listOf(ObjJQualifiedReferenceComponentPart(this.variableName?.text, ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME))
 }

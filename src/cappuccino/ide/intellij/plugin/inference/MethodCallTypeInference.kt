@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
@@ -11,6 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
@@ -34,7 +36,9 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         LOGGER.info("Checking alloc statement for calltarget <${methodCall.callTargetText}>")
         return getAllocStatementType(methodCall)
     }
-    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag)
+    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag).flatMap {
+        ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+    }.toSet()
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             LOGGER.info("Gathering all matching methods by class name in [$callTargetTypes]")
@@ -50,8 +54,23 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
         getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
-    }.toSet()
-    return InferenceResult(classes = returnTypes)
+    }
+    val instanceVariableTypes = callTargetTypes.flatMap {className ->
+        ObjJInstanceVariablesByClassIndex.instance[className, project].filter{ it.variableName?.text == selector}.mapNotNull {
+            val type = it.variableType
+            if (type.isNotBlank())
+                type
+            else
+                null
+        }
+    }
+    val out = if (returnTypes.isNotEmpty() && instanceVariableTypes.isNotEmpty())
+        returnTypes + instanceVariableTypes
+    else if (returnTypes.isNotEmpty())
+        returnTypes
+    else
+        instanceVariableTypes
+    return InferenceResult(classes = out.toSet())
 }
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {

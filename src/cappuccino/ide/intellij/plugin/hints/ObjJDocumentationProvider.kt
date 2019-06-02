@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
+import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.lang.documentation.AbstractDocumentationProvider
@@ -67,8 +68,9 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                         out.append(it.description.presentableText)
                     }
                     out.append(")")
-                    if (function.returnType.isNotNullOrBlank()) {
-                        out.append(" : ").append(function.returnType)
+                    val returnType = function.getReturnType(createTag())
+                    if (returnType.isNotNullOrBlank()) {
+                        out.append(" : ").append(returnType)
                     }
                     out.toString() + getLocationString(element)
                 }
@@ -183,11 +185,16 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
             //LOGGER.info("No prev siblings")
-            val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag())?.toClassList() ?: emptySet()
+            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag())
+            val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
+            if (functionType != null) {
+                out.append(functionType.descriptionText)
+                return out.toString()
+            }
+            val classNames = inferenceResult?.toClassListString("<Any?>")
             //LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
-            val classNames = inferredTypes.flatMap { it.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
             out.append("Variable ").append(name)
-            if (classNames.isNotEmpty()) {
+            if (classNames.isNotNullOrEmpty()) {
                 out.append(" : ").append(classNames)
             }
             out.append(" in ").append(getLocationString(this))
@@ -195,47 +202,26 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
         }
         val inferredTypes = inferQualifiedReferenceType(prevSiblings, createTag())
         val name = this.text
-        /*val classes = inferredTypes?.jsClasses(project)?.filter { jsClass -> jsClass.properties.any { it.name == name } }
-                ?: emptyList()
-        val classNames = when {
-            classes.size == 1 -> classes[0].className
-            classes.isEmpty() -> "???"
-            else -> classes.joinToString(" or ")
-        }
-        val infoProperties = classes.flatMap { it.properties }.filter { it.name == name }
-        if (infoProperties.isNotEmpty()) {
-            val propertyTypes = infoProperties.map { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
-            out.append("Variable ").append(name)
-            if (propertyTypes.isNotEmpty()) {
-                out.append(" : ").append(propertyTypes)
-            }
-            if (classNames.isNotEmpty())
-                out.append(" in ").append(classNames)
-            return out.toString()
-        }
-        */
         val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassList() ?: emptySet()
         if (propertyTypes.isNotEmpty()) {
-            out.append("Variable ").append(name)
+
+            val classNames = inferredTypes?.toClassListString("<Any?>")
+            if (propertyTypes.isNotEmpty() || classNames.isNotNullOrBlank())
+                out.append("Variable ").append(name)
             if (propertyTypes.isNotEmpty()) {
                 out.append(" : ").append(propertyTypes)
             }
-            val classNames = inferredTypes?.toClassList().orEmpty().toMutableList()
-            if (classNames.contains("?")) {
-                classNames.remove("?")
-                classNames.add("...Any")
-            }
-            if (classNames.isNotEmpty())
+            if (classNames.isNotNullOrBlank())
                 out.append(" in ").append(classNames)
 
-            if (propertyTypes.isNotEmpty() && classNames.isNotEmpty()) {
+            if (propertyTypes.isNotEmpty() || classNames.isNotNullOrBlank()) {
                 return out.toString()
             }
         }
     }
 
     out.append("Variable '").append(text).append("'")
-    val possibleClasses = this.getPossibleClassTypes( createTag()).filterNot { it == "CPObject" }
+    val possibleClasses = this.getPossibleClassTypes(createTag()).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
@@ -263,5 +249,22 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
     }
     if (positionComment.isNotNullOrEmpty())
         out.append(" - ").append(positionComment)
+    return out.toString()
+}
+
+private val JsFunctionType.descriptionText:String get() {
+    val out = StringBuilder("(")
+    val functionString = this.parameters.map {
+        val parameterString = StringBuilder(it.key)
+        val types = it.value.toClassList().joinToString(TYPES_DELIM)
+        if (types.isNotNullOrBlank())
+            parameterString.append(":").append(types)
+        parameterString.toString()
+    }.joinToString(", ")
+    out.append(functionString)
+    out.append(")")
+    val returnTypes = this.returnType.toClassListString()
+    if (returnTypes.isNotNullOrBlank())
+        out.append(" => ").append(returnTypes)
     return out.toString()
 }
