@@ -165,8 +165,12 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
 )
 
 internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
-    if (this === INFERRED_ANY_TYPE)
-        return setOf()
+    if (this === INFERRED_ANY_TYPE) {
+        return if (simplifyAnyTypeTo != null)
+            setOf(simplifyAnyTypeTo)
+        else
+            emptySet()
+    }
     val returnTypes = this
     val returnClasses = mutableListOf<String>()
     if (returnTypes.isNumeric && numberTypes.intersect(classes).isEmpty())

@@ -58,7 +58,10 @@ fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     if (returnStatementExpressions.isEmpty())
         return InferenceResult(classes = setOf(VOID.type))
-    return getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
+    val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
+    if (types.toClassList().isEmpty())
+        return INFERRED_ANY_TYPE
+    return types
 }
 
 internal fun getFunctionForVariableName(variableName:ObjJVariableName) : ObjJFunctionDeclarationElement<*>? {
