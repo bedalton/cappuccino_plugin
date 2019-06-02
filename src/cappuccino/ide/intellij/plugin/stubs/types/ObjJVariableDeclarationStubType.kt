@@ -11,6 +11,7 @@ import com.intellij.psi.stubs.StubOutputStream
 
 class ObjJVariableDeclarationStubType internal constructor(debugName:String):
         ObjJStubElementType<ObjJVariableDeclarationStub, ObjJVariableDeclarationImpl>(debugName, ObjJVariableDeclarationImpl::class.java) {
+
     override fun createPsi(stub: ObjJVariableDeclarationStub): ObjJVariableDeclarationImpl {
         return ObjJVariableDeclarationImpl(stub, this)
     }
