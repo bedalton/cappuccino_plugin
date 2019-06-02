@@ -12,6 +12,9 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME
+import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -149,7 +152,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
     /**
      * Gets a list of function names for a function literal
-     * /
+     */
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         val out = ArrayList<String>()
         val variableDeclaration = functionLiteral.getParentOfType( ObjJVariableDeclaration::class.java)
@@ -157,13 +160,17 @@ object ObjJFunctionDeclarationPsiUtil {
             return emptyList()
         }
         for (reference in variableDeclaration.qualifiedReferenceList) {
-            val name = ObjJPsiImplUtil.getPartsAsString(reference)
-            if (name.isNotEmpty()) {
+            val nameParts = reference.toStubParts()
+            if (nameParts.size != 1 || nameParts[0].type != VARIABLE_NAME)
+                continue
+            val name = nameParts[0].name ?: continue
+            if (name.isNotBlank()) {
                 out.add(name)
             }
         }
         return out
-    }*/
+    }
+
     /**
      * Gets the function definitions name as a string
      */
@@ -305,6 +312,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return ObjJFunctionScope.PRIVATE
     }
 
+    @Suppress("unused")
     private fun isParameterScope(functionDeclaration:ObjJFunctionDeclarationElement<*>) : Boolean {
         return PsiTreeUtil.getParentOfType(functionDeclaration,
                 ObjJArguments::class.java,
@@ -360,21 +368,6 @@ object ObjJFunctionDeclarationPsiUtil {
         return null
     }
 
-    fun getParentFunctionDeclarationLoose(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
-        if (element == null) return null
-        val parentFunctionDeclaration = element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
-        if (parentFunctionDeclaration != null)
-            return parentFunctionDeclaration
-        val variableDeclaration:ObjJVariableDeclaration? = element.getParentOfType(ObjJVariableDeclaration::class.java)
-        val expr:ObjJExpr = if (variableDeclaration != null) {
-            variableDeclaration.expr
-        } else {
-            val globalFunctionDeclaration = element.getParentOfType(ObjJGlobalVariableDeclaration::class.java)
-            globalFunctionDeclaration?.expr
-        } ?: return null
-        return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
-    }
-
     fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
         if (element == null) return null
         val parentFunctionDeclaration = element.parent as? ObjJFunctionDeclarationElement<*>
@@ -391,7 +384,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
     }
 
-    fun isNullableParameter(it:ObjJFormalParameterArg) : Boolean {
+    fun isNullableParameter(@Suppress("UNUSED_PARAMETER") it:ObjJFormalParameterArg) : Boolean {
         return false
     }
 
