@@ -620,6 +620,10 @@ object ObjJPsiImplUtil {
         return ObjJQualifiedReferenceUtil.getLastVariableName(qualifiedReference)
     }
 
+    @JvmStatic
+    fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String
+        = ObjJVariablePsiUtil.getVariableType(variable)
+
 
     // ============================== //
     // =========== Blocks =========== //
