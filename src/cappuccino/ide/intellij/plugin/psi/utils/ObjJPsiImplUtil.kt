@@ -755,12 +755,12 @@ object ObjJPsiImplUtil {
     fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
     }
-/*
+
     @JvmStatic
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral)
     }
-*/
+
     @JvmStatic
     fun getFunctionNameAsString(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
