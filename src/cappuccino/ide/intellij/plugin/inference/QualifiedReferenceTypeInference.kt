@@ -57,7 +57,7 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
     if (parentTypes == null && parts.size == 1) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
-    LOGGER.info("Qualified Name <${parts.joinToString(".")}> resolves to types: [${parentTypes?.classes?.joinToString("|")?:""}]")
+    LOGGER.info("Qualified Name <${parts.joinToString(".")}> resolves to types: [${parentTypes?.toClassListString()?:""}]")
     return parentTypes
 }
 
