@@ -18,27 +18,25 @@ fun inferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
     }
 }
 
-fun internalInferVariableDeclarationType(variableDeclaration: ObjJVariableDeclaration, tag:Long) : InferenceResult? {
-    return inferExpressionType(variableDeclaration.expr, tag)
-}
-
 private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
-    val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty())
+    val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty()) {
         leftExpressionType(expr.leftExpr, tag)
-    else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
-        LOGGER.info("Checking left expression with function name first")
+    } else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
+        LOGGER.info("Checking left expression with function name first with function call: <${expr.leftExpr!!.functionCall}>")
         val components = mutableListOf<ObjJQualifiedReferenceComponent>(expr.leftExpr!!.functionCall!!)
         components.addAll(expr.rightExprList.first().qualifiedReferencePrime!!.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
         inferQualifiedReferenceType(components, tag)
     } else {
-        LOGGER.info("No match for expression parse")
+        LOGGER.info("No match for left expression parse for expr: <${expr.text}>")
         null
     }
-    val rightExpressionsType = if (leftExpressionType != null && expr.rightExprList.isNotEmpty())
+    val rightExpressionsType = if (expr.rightExprList.isNotEmpty())
         rightExpressionTypes(expr.leftExpr, expr.rightExprList, tag)
-    else
+    else {
+        LOGGER.info("Right expression list is empty for expr: <${expr.text}>")
         null
+    }
     val isNumeric:Boolean = IsNumericUtil.isNumeric(expr) || leftExpressionType?.isNumeric.orFalse() || rightExpressionsType?.isNumeric.orFalse()
     val isBoolean:Boolean = IsBooleanUtil.isBoolean(expr) || leftExpressionType?.isBoolean.orFalse() || rightExpressionsType?.isBoolean.orFalse()
     val isRegex:Boolean = isRegex(expr) || leftExpressionType?.isRegex.orFalse() || rightExpressionsType?.isRegex.orFalse()
@@ -72,6 +70,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
         return null
     }
     LOGGER.info("Checking left expression type for Expression: ${leftExpression.text}")
+
     if (leftExpression.functionCall != null)
         return inferFunctionCallReturnType(leftExpression.functionCall!!, tag)
     if (leftExpression.parenEnclosedExpr != null) {
@@ -96,8 +95,8 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
         return InferenceResult(isRegex = true)
     if (leftExpression.methodCall != null)
         return inferMethodCallType(leftExpression.methodCall!!, tag)
-    if (leftExpression.refExpression != null)
-        return inferVariableNameType(leftExpression.refExpression!!.variableName, tag)
+    if (leftExpression.refExpression?.variableName != null)
+        return inferVariableNameType(leftExpression.refExpression!!.variableName!!, tag)
     if (leftExpression.variableAssignmentLogical != null)
         return InferenceResult(isNumeric = true)
     if (leftExpression.typeOfExprPrime != null)
@@ -126,9 +125,9 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
                 jsObjectKeys = keys
         )
     }
-    if (leftExpression.variableDeclaration != null) {
+    if (leftExpression.variableDeclaration?.expr != null) {
         val variableDeclaration = leftExpression.variableDeclaration!!
-        return inferExpressionType(variableDeclaration.expr, tag)
+        return inferExpressionType(variableDeclaration.expr!!, tag)
     }
 
     if (leftExpression.functionDeclaration != null) {
@@ -137,8 +136,8 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     if (leftExpression.functionLiteral != null) {
         return leftExpression.functionLiteral!!.toJsFunctionType(tag)
     }
-    if (leftExpression.derefExpression != null) {
-        return inferVariableNameType(leftExpression.derefExpression!!.variableName, tag)
+    if (leftExpression.derefExpression?.variableName != null) {
+        return inferVariableNameType(leftExpression.derefExpression!!.variableName!!, tag)
     }
     return INFERRED_ANY_TYPE
 }
@@ -160,6 +159,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
     for ((i, parameter) in parameters.withIndex()) {
         ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
+        LOGGER.info("Parameter Name is $parameterName")
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
             val parameterType = commentWrapper?.parameterComments
                     ?.get(i)
@@ -174,17 +174,19 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
 }
 
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<ObjJRightExpr>, tag:Long) : InferenceResult? {
+    LOGGER.info("Checking right expression types")
     ProgressManager.checkCanceled()
     if (leftExpression == null)// || level < 0)
         return null
     var current = InferenceResult()
-    var didAdd = false
     for (rightExpr in rightExpressions) {
+        if (rightExpr.comparisonExprPrime != null)
+            return InferenceResult(classes = setOf(JS_BOOL.className), isBoolean = true)
         ProgressManager.checkCanceled()
         LOGGER.info("Checking right expression type for Expression: ${rightExpr.text}")
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
-            val ifTrue = inferExpressionType(ternaryExpr.ifTrue, tag)
+            val ifTrue = if (ternaryExpr.ifTrue?.expr != null) inferExpressionType(ternaryExpr.ifTrue!!.expr!!, tag) else null
             val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, tag) else null
             val types = if (ifFalse != null && ifTrue != null)
                 ifFalse + ifTrue
@@ -196,18 +198,17 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
             current = current.copy(isBoolean = true, classes = current.classes.plus(JS_BOOL.className))
         }
         if (rightExpr.mathExprPrime != null) {
-            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER.className))
-            didAdd = didAdd || rightExpr.mathExprPrime!!.mathOp.plus != null
+            val newTypes = inferExpressionType(rightExpr.mathExprPrime!!.expr, tag)?.classes.orEmpty() + current.classes
+            if (isNotNumber(newTypes))
+                return InferenceResult(
+                        classes = setOf(JS_STRING.className),
+                        isString = true
+                )
+            current = resolveToNumberType(newTypes)
         }
         if (rightExpr.arrayIndexSelector != null) {
             current = current.copy(classes = current.classes.plus(JS_ARRAY.className))
         }
-    }
-    if (didAdd) {
-        if (!current.classes.contains(JS_STRING.className) && current.classes.contains("number"))
-            current = current.copy(isNumeric = true, classes = current.classes.plus(JS_NUMBER.className))
-        else if (!current.classes.contains(JS_ARRAY.className))
-            current = InferenceResult(classes = setOf(JS_STRING.className))
     }
     return current
 }
@@ -327,4 +328,41 @@ private fun isSelector(expr:ObjJExpr) : Boolean {
 
 private fun isRegex(expr: ObjJExpr) : Boolean {
     return expr.leftExpr?.regularExpressionLiteral != null
+}
+
+val addsToNumberTypes = numberTypes.map {it.toLowerCase()} + "jsobject" + "object"
+
+private fun isNotNumber(classes:Set<String>) : Boolean {
+    return classes.any {
+        it !in anyTypes && it.toLowerCase() !in addsToNumberTypes
+    }
+}
+
+private fun resolveToNumberType(newTypes:Set<String>) : InferenceResult {
+    return if (JS_DOUBLE.className in newTypes && JS_NUMBER.className !in newTypes) {
+        InferenceResult(
+                classes = setOf(JS_DOUBLE.className),
+                isNumeric = true
+        )
+    } else if (JS_FLOAT.className in newTypes && JS_NUMBER.className !in newTypes) {
+        InferenceResult(
+                classes = setOf(JS_FLOAT.className),
+                isNumeric = true
+        )
+    } else if ((JS_LONG.className in newTypes || JS_LONG_LONG.className in newTypes) && JS_LONG.className !in newTypes) {
+        InferenceResult(
+                classes = setOf(JS_LONG.className),
+                isNumeric = true
+        )
+    } else if (JS_INT.className in newTypes && JS_NUMBER.className !in newTypes) {
+        InferenceResult(
+                classes = setOf(JS_INT.className),
+                isNumeric = true
+        )
+    } else {
+        InferenceResult(
+                classes = setOf(JS_NUMBER.className),
+                isNumeric = true
+        )
+    }
 }
