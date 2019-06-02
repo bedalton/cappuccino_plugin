@@ -24,7 +24,7 @@ fun PsiElement.getContainingComment() : PsiElement? {
 fun PsiElement.getContainingComments() : List<String> {
     val out:MutableList<String> = mutableListOf()
     var parentNode:ASTNode? = this.node
-    LOGGER.info("Get Containing Comments")
+    //LOGGER.info("Get Containing Comments")
     // Loop through parent nodes checking if previous node is a comment node
     while(parentNode != null) {
         // Get previous node

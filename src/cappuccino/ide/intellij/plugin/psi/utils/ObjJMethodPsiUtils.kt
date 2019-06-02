@@ -192,7 +192,7 @@ object ObjJMethodPsiUtils {
         }
         var out = InferenceResult()
         expressions.forEach {
-            LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
+            //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
             val type = inferExpressionType(it, tag)
             if (type != null)
                 out += type

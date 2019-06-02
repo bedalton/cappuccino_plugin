@@ -20,7 +20,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
-                    LOGGER.info("QuickInfo for variable name")
+                    //LOGGER.info("QuickInfo for variable name")
                     it.quickInfo(comment, originalElement)
                 }
                 .info(ObjJSelector::class.java) {
@@ -118,7 +118,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
-        LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
+        //LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
 }
@@ -179,12 +179,12 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
     } else {
-        LOGGER.info("Check QNR")
+        //LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
-            LOGGER.info("No prev siblings")
+            //LOGGER.info("No prev siblings")
             val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag())?.toClassList() ?: emptySet()
-            LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
+            //LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
             val classNames = inferredTypes.flatMap { it.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }.toSet().joinToString("|")
             out.append("Variable ").append(name)
             if (classNames.isNotEmpty()) {
