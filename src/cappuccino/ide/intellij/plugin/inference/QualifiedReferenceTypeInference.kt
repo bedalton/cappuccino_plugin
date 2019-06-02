@@ -33,12 +33,14 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
         val part = parts[i]
         val thisParentTypes = parentTypes
         parentTypes = part.getCachedInferredTypes {
-            LOGGER.info("QNC <${part.text}> was not cached")
-            if (i == 0)
-                getPartTypes(part, thisParentTypes, false, tag)
-            else if (i == parts.size - 1 && part.parent.parent is ObjJVariableDeclaration) {
+            //LOGGER.info("QNC <${part.text}> was not cached")
+            if (i == parts.size - 1 && part.parent.parent is ObjJVariableDeclaration) {
+                LOGGER.info("Parent is Variable Declaration")
                 inferExpressionType((part.parent.parent as ObjJVariableDeclaration).expr, tag)
-            } else
+            }
+            else if (i == 0)
+                getPartTypes(part, thisParentTypes, false, tag)
+            else
                 getPartTypes(part, thisParentTypes, isStatic, tag)
         }
         if (isStatic) {
@@ -79,7 +81,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
     ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
-        LOGGER.info("Inferring type for variable <${variableName.text}> at index 0")
+        //LOGGER.info("Inferring type for variable <${variableName.text}> at index 0")
         return inferVariableNameType(variableName, tag)
     }
     if (parentTypes == null)
@@ -112,7 +114,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         return null
     }*/
     if (variableName.indexInQualifiedReference != 0) {
-        LOGGER.info("Inferring index 0 variable is not actually at index 0")
+        LOGGER.info("Inferrernce failed. 0 indexed variable is not actually at index 0")
         return null
     }
     val variableNameString = variableName.text
@@ -266,10 +268,10 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
 
 private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
-    LOGGER.info("Parts has length of one. Part is ${part.elementType}")
+    //LOGGER.info("Parts has length of one. Part is ${part.elementType}")
     val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text ?: (part as? ObjJFunctionCall)?.functionName?.text
     if (name == null && part is ObjJMethodCall) {
-        LOGGER.info("Part is a method call")
+        //LOGGER.info("Part is a method call")
         return inferMethodCallType(part, tag)
     } else if (name == null)
         return INFERRED_ANY_TYPE
@@ -278,7 +280,7 @@ private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, tag:L
     firstMatches.addAll(functions)
     val properties = ObjJGlobalJSVariables.filter { it.name == name }.flatMap { it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) }
     firstMatches.addAll(properties)
-    LOGGER.info("First matches are of types: [${firstMatches.joinToString("|")}]")
+    //LOGGER.info("First matches are of types: [${firstMatches.joinToString("|")}]")
     if (firstMatches.isEmpty())
         return null
     return InferenceResult(
