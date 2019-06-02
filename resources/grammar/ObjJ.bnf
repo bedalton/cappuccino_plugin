@@ -521,7 +521,21 @@ instanceVariableDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDeclarationStub>"
 		]
-		methods = [getGetter getSetter getName setName hasContainingClass shouldResolve getContainingSuperClassName getContainingSuperClass getContainingClass getContainingClassName createTreeStructureElement getAccessorPropertyList]
+		methods = [
+			getGetter
+			getSetter
+			getName
+			setName
+			hasContainingClass
+			shouldResolve
+			getContainingSuperClassName
+			getContainingSuperClass
+			getContainingClass
+			getContainingClassName
+			createTreeStructureElement
+			getAccessorPropertyList
+			getVariableType
+		]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
 	}
@@ -609,7 +623,7 @@ elseIfStatement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJConditionalStatement"
 		]
-		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList]
+		methods =[conditionalExpression = "/conditionExpression/expr" getBlockList block="statementOrBlock"]
 	}
 	;
 
@@ -618,7 +632,7 @@ private elseStatement
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
 		pin=1
-		methods=[]
+		methods=[block="statementOrBlock"]
 	}
 	;
 
@@ -661,7 +675,7 @@ whileStatement
 
 		]
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatements"]
-		methods=[getBlockList conditionalExpression="/conditionExpression/expr"]
+		methods=[getBlockList conditionalExpression="/conditionExpression/expr" block="statementOrBlock"]
 	}
 	;
 
@@ -688,6 +702,7 @@ forStatement
 		]
 		methods = [
 			getBlockList
+			block="statementOrBlock"
 		]
 	}
 	;
