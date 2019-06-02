@@ -16,6 +16,7 @@ import com.intellij.psi.search.searches.ReferencesSearch
 internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, tag:Long): InferenceResult? {
     val lastChild = parts.lastOrNull() ?: return null
     return lastChild.getCachedInferredTypes {
+        addStatusFileChangeListener(parts[0].project)
         internalInferQualifiedReferenceType(parts, tag)
     }
 }
@@ -34,9 +35,12 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
         val thisParentTypes = parentTypes
         parentTypes = part.getCachedInferredTypes {
             //LOGGER.info("QNC <${part.text}> was not cached")
-            if (i == parts.size - 1 && part.parent.parent is ObjJVariableDeclaration) {
+            if (i == parts.size - 1 && (part.parent is ObjJVariableDeclaration ||part.parent.parent is ObjJVariableDeclaration)) {
+                val variableDeclarationExpr =
+                        (part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).expr
+                                ?: return@getCachedInferredTypes null
                 LOGGER.info("Parent is Variable Declaration")
-                inferExpressionType((part.parent.parent as ObjJVariableDeclaration).expr, tag)
+                inferExpressionType(variableDeclarationExpr, tag)
             }
             else if (i == 0)
                 getPartTypes(part, thisParentTypes, false, tag)
@@ -66,6 +70,7 @@ internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: In
         is ObjJFunctionName -> getFunctionComponentTypes(part, parentTypes, static, tag)
         is ObjJArrayIndexSelector -> getArrayTypes(parentTypes)
         is ObjJMethodCall -> inferMethodCallType(part, tag)
+        is ObjJParenEnclosedExpr -> if (part.expr != null) inferExpressionType(part.expr!!, tag) else null
         else -> return null
     }
 }
@@ -223,7 +228,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:L
     }
     val functionNameString = functionName.text
     val functionDeclaration = functionName.reference.resolve()?.parentFunctionDeclaration
-    val basicReturnTypes = functionDeclaration?.returnType?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+    val basicReturnTypes = functionDeclaration?.getReturnType(tag)?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
 
     val returnTypes = globalJsFunctions.filter {
         ProgressManager.checkCanceled()
@@ -233,8 +238,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:L
         it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
     }
     if (basicReturnTypes.isEmpty() && functionDeclaration != null) {
-        val returnStatementExpressions = functionDeclaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-        getInferredTypeFromExpressionArray(returnStatementExpressions, tag) + returnTypes.toInferenceResult()
+        inferFunctionDeclarationReturnType(functionDeclaration, tag)
     }
     return (returnTypes + basicReturnTypes).toInferenceResult()
 }

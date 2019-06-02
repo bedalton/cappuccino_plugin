@@ -19,7 +19,7 @@ object ObjJQualifiedReferenceUtil {
     fun getLastVariableName(qualifiedReference: ObjJQualifiedReference): ObjJVariableName? {
         val variableNames = qualifiedReference.variableNameList
         val lastIndex = variableNames.size - 1
-        return if (!variableNames.isEmpty()) variableNames[lastIndex] else null
+        return if (variableNames.isNotEmpty()) variableNames[lastIndex] else null
     }
 
     fun getQualifiedNameText(functionName:ObjJFunctionName) : String? {
@@ -57,24 +57,31 @@ object ObjJQualifiedReferenceUtil {
         }
     }
 
-    fun getIndexInQualifiedNameParent(variableNameIn: PsiElement?): Int {
+    fun getIndexInQualifiedNameParent(element: PsiElement?): Int {
 
-        if (variableNameIn == null)
+        if (element == null)
             return 0
-
-        val qualifiedReferencePrime = variableNameIn.getParentOfType(ObjJQualifiedReferencePrime::class.java)
-        val components = if (qualifiedReferencePrime != null)
-            qualifiedReferencePrime.qualifiedNameParts
-        else
-            variableNameIn.getParentOfType(ObjJQualifiedReference::class.java)?.qualifiedNameParts ?: return 0
-
+        var firstParent:PsiElement? = element.parent
+        while (firstParent != null
+                && firstParent !is ObjJQualifiedReferencePrime
+                && firstParent !is ObjJQualifiedReference
+                && firstParent !is ObjJExpr
+        ) {
+            firstParent = firstParent.parent
+        }
+        if (firstParent == null || firstParent is ObjJExpr) {
+            return 0
+        }
+        val components = (firstParent as? ObjJQualifiedReference)?.qualifiedNameParts
+                ?: (firstParent as? ObjJQualifiedReferencePrime)?.qualifiedNameParts
+                ?: emptyList()
         if (components.isEmpty()) {
             return 0
         }
 
         // Find if element who's parent is this qualified reference.
         // Good for elements like function name, who's direct parent is not qualified reference
-        var variableName:PsiElement? = variableNameIn
+        var variableName:PsiElement? = element
         while (variableName != null && variableName !in components) {
             variableName = variableName.parent
         }
@@ -82,7 +89,7 @@ object ObjJQualifiedReferenceUtil {
         // If qualified reference cannot be found, something has gone wrong.
         // THIS SHOULD NOT HAPPEN
         assert(variableName != null) {
-            "Qualified name component failed to find its own parent: ${variableNameIn.elementType}(${variableNameIn.text}) in ${components}"
+            "Qualified name component failed to find its own parent: ${element.elementType}(${element.text}) in $components"
         }
         if (variableName == null) {
             LOGGER.severe("Qualified name component failed to find its own parent")

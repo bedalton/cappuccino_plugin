@@ -117,7 +117,7 @@ object ObjJMethodCallCompletionContributor {
             val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
 
 
-            if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
+            if (ObjJClassType.ID !in possibleContainingClassNames && ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
                 if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames)) {
                     filteredOut.add(SelectorCompletionPriorityTupple(selector, GENERIC_METHOD_SUGGESTION_PRIORITY))
                     continue
@@ -226,7 +226,7 @@ object ObjJMethodCallCompletionContributor {
             return
         }
         val containingClass = instanceVariableDeclaration.containingClassName
-        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && containingClass !in possibleContainingClassNames) {
+        if (ObjJClassType.ID !in possibleContainingClassNames && ObjJClassType.UNDETERMINED !in possibleContainingClassNames && containingClass !in possibleContainingClassNames) {
             return
         }
         //ProgressIndicatorProvider.checkCanceled();
@@ -257,7 +257,7 @@ object ObjJMethodCallCompletionContributor {
         //Get className
         val className = instanceVariable.containingClassName
 
-        if (ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames && ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown) {
+        if (ObjJClassType.ID !in possibleContainingClassNames && ObjJClassType.UNDETERMINED !in possibleContainingClassNames && className !in possibleContainingClassNames && ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown) {
             return
         }
 

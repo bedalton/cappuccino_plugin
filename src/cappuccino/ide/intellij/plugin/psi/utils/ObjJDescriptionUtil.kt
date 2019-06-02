@@ -25,8 +25,8 @@ object ObjJDescriptionUtil {
             return className
         }
         if (classDeclarationElement is ObjJImplementationDeclaration) {
-            if (classDeclarationElement.categoryName != null) {
-                className += " (" + classDeclarationElement.categoryName!!.className.text + ")"
+            if (classDeclarationElement.categoryName?.className != null) {
+                className += " (" + classDeclarationElement.categoryName!!.className!!.text + ")"
             }
         }
         return className

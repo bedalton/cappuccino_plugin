@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.contributor.JsFunction
 import cappuccino.ide.intellij.plugin.contributor.JsNamedProperty
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
@@ -30,7 +31,7 @@ class ObjJFunctionDescription(val name:String, val returnType:String?) {
                 .append("(")
                 .append(parametersListPresentableText)
                 .append(")")
-        if (returnType != null) {
+        if (returnType.isNotNullOrBlank()) {
             stringBuilder
                     .append(" : ")
                     .append(returnType)
@@ -94,7 +95,7 @@ class ObjJFunctionParameterDescription(val name:String, val type:String?, val nu
 
 val ObjJFunctionDeclarationElement<*>.description:ObjJFunctionDescription get() {
     val name = this.functionNameAsString
-    val returnType = this.returnType
+    val returnType = this.getReturnType(createTag())
     val description = ObjJFunctionDescription(name, returnType)
     this.formalParameterArgList.forEach {
         description.addParameter(it.description)

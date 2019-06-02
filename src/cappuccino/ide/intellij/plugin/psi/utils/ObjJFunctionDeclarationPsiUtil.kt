@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.VOID
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
@@ -12,9 +14,11 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME
+import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
+import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -218,7 +222,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
     /**
      * Gets the return type if cached
-     */
+     * /
     fun getReturnType(
             functionDeclaration: ObjJFunctionDeclaration): String {
         if (functionDeclaration.stub != null) {
@@ -244,6 +248,14 @@ object ObjJFunctionDeclarationPsiUtil {
         return if (functionDefinition.stub != null) {
             functionDefinition.stub.returnType
         } else ObjJClassType.UNDETERMINED
+    }*/
+
+    fun getReturnType(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag:Long) : String? {
+        val stubReturnType = functionDeclaration.stub?.returnType
+        if (stubReturnType != null) {
+            return stubReturnType
+        }
+        return inferFunctionDeclarationReturnType(functionDeclaration, tag)?.toClassListString()
     }
 
     /**
@@ -258,7 +270,7 @@ object ObjJFunctionDeclarationPsiUtil {
             }
         }
 
-        if (functionDeclaration.parent is ObjJFile || functionDeclaration.parent is PsiFile) {
+        if (functionDeclaration.parent is ObjJFile || functionDeclaration.parent is PsiFile || functionIsEnclosedGlobal(functionDeclaration)) {
             return ObjJFunctionScope.GLOBAL_SCOPE
         }
 
@@ -311,6 +323,53 @@ object ObjJFunctionDeclarationPsiUtil {
 */
         return ObjJFunctionScope.PRIVATE
     }
+
+
+    private fun functionIsEnclosedGlobal(functionDeclaration:ObjJFunctionDeclarationElement<*>) : Boolean {
+        if(!DumbService.isDumb(functionDeclaration.project)) {
+            return functionIsEnclosedGlobalStrict(functionDeclaration)
+        }
+        val variableDeclaration = functionDeclaration.parent.parent.parent as? ObjJVariableDeclaration ?: return false
+        val isBodyVariableAssignmentLocal
+                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+        val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
+        if (isBodyVariableAssignmentLocal || isNested)
+            return false
+        val functionName = functionDeclaration.functionNameAsString
+        return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
+            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { varDec ->
+                varDec.qualifiedReferenceList.any {
+                    if (it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0]?.text == functionName)
+                        bodyVariableAssignment.varModifier != null
+                    else
+                        false
+                }
+            }.orFalse()
+        }
+    }
+
+    private fun functionIsEnclosedGlobalStrict(functionDeclaration: ObjJFunctionDeclarationElement<*>) : Boolean {
+        val variableDeclaration = functionDeclaration.parent.parent.parent as? ObjJVariableDeclaration ?: return false
+        val isBodyVariableAssignmentLocal
+                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+        val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
+        if (isBodyVariableAssignmentLocal || isNested)
+            return false
+        val functionName = functionDeclaration.functionNameAsString
+        return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
+            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any varDec@{ varDec ->
+                varDec.qualifiedReferenceList.any{
+                    if (it.qualifiedNameParts.size != 1 && it.qualifiedNameParts[0]?.text != functionName)
+                        return@varDec false
+                    val qualifiedReference = it.qualifiedNameParts[0].reference?.resolve()?.parent as? ObjJQualifiedReference ?: return@varDec false
+                    if (qualifiedReference.hasParentOfType(ObjJExpr::class.java))
+                        return false
+                    return qualifiedReference.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null
+                }
+            }.orFalse()
+        }
+    }
+
 
     @Suppress("unused")
     private fun isParameterScope(functionDeclaration:ObjJFunctionDeclarationElement<*>) : Boolean {

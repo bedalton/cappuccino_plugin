@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 object ObjJInheritanceUtil {
@@ -28,7 +29,7 @@ object ObjJInheritanceUtil {
 
     private fun appendAllInheritedProtocolsToSet(out: MutableSet<ObjJProtocolDeclaration>, className: String, project: Project) {
         ProgressIndicatorProvider.checkCanceled()
-        if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
+        if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
 
@@ -65,7 +66,7 @@ object ObjJInheritanceUtil {
     }
 
     private fun appendAllInheritedClassesToSet(classNames: MutableSet<String>, className: String, project: Project, withProtocols:Boolean = true) {
-        if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
+        if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
 
@@ -102,10 +103,10 @@ object ObjJInheritanceUtil {
         if (parentClass == subclassName) {
             return true
         }
-        if (parentClass == ObjJClassType.UNDEF_CLASS_NAME || subclassName == ObjJClassType.UNDEF_CLASS_NAME) {
+        if (parentClass == ObjJClassType.UNDEF_CLASS_NAME || subclassName == UNDETERMINED) {
             throw CannotDetermineException()
         }
-        return if (parentClass == UNDETERMINED || parentClass == UNDETERMINED) {
+        return if (parentClass == UNDETERMINED || parentClass == ID || subclassName == UNDETERMINED || subclassName == ID) {
             true
         } else getAllInheritedClasses(subclassName, project).contains(parentClass)
     }

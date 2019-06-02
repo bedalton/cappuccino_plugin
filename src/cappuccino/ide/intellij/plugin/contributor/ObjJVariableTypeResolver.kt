@@ -129,7 +129,7 @@ object ObjJVariableTypeResolver {
 
     private fun getVariableTypeFromAssignment(variableDeclaration:ObjJVariableDeclaration, recurse: Boolean, tag:Long) : Set<String>? {
         val expression = variableDeclaration.expr
-        val leftExpr = expression.leftExpr ?: return null
+        val leftExpr = expression?.leftExpr ?: return null
         var out:Set<String>? = getTypeFromMethodCall(leftExpr, tag)
         if (out != null) {
             return out

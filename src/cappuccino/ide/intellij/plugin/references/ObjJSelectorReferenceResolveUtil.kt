@@ -99,7 +99,7 @@ object ObjJSelectorReferenceResolveUtil {
      * returns true if an UNDETERMINED class identifier has been found
      */
     private fun sharesContainingClass(classConstraints: List<String>, hasContainingClass: ObjJHasContainingClass): Boolean {
-        return classConstraints.isEmpty() || classConstraints.contains(ObjJClassType.UNDETERMINED) || classConstraints.contains(hasContainingClass.containingClassName)
+        return classConstraints.isEmpty() || ObjJClassType.UNDETERMINED in classConstraints || ObjJClassType.ID in classConstraints || classConstraints.contains(hasContainingClass.containingClassName)
     }
 
     /**

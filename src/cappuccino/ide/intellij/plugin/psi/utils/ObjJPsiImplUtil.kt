@@ -161,7 +161,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getClassNameString(typedef: ObjJTypeDef): String {
-        return typedef.className.text ?: ""
+        return typedef.className?.text ?: ""
     }
 
     @JvmStatic
@@ -794,18 +794,18 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnType(functionDeclaration: ObjJFunctionDeclaration): String {
-        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDeclaration)
+    fun getReturnType(functionDeclaration: ObjJFunctionDeclaration, tag:Long): String? {
+        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDeclaration, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionLiteral: ObjJFunctionLiteral): String {
-        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionLiteral)
+    fun getReturnType(functionLiteral: ObjJFunctionLiteral, tag:Long): String? {
+        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionLiteral, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? =
-            ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition)
+    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction, tag:Long): String? =
+            ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition, tag)
 
     @JvmStatic
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
@@ -1092,7 +1092,7 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement {
+    fun getCloseParen(functionCall: ObjJFunctionCall): PsiElement? {
         return functionCall.arguments.closeParen
     }
 

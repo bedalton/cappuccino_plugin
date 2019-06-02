@@ -342,7 +342,8 @@ object ObjJVariableNameAggregatorUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         for (variableDeclaration in file.getChildrenOfType( ObjJGlobal::class.java)) {
-            result.add(variableDeclaration.variableName)
+            val variableName =variableDeclaration.variableName ?: continue
+            result.add(variableName)
         }
         return result
     }
@@ -444,11 +445,11 @@ object ObjJVariableNameAggregatorUtil {
 
             val variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
             if (iterationStatement is ObjJForStatement) {
-                variableDeclarationList.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableDeclarationList ?: listOf())
+                variableDeclarationList.addAll(iterationStatement.forLoopHeader?.forLoopPartsInBraces?.variableDeclarationList?.variableDeclarationList ?: listOf())
 
-                result.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableNameList ?: listOf())
-                if (iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr != null) {
-                    result.add(iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr!!.variableName)
+                result.addAll(iterationStatement.forLoopHeader?.forLoopPartsInBraces?.variableDeclarationList?.variableNameList ?: listOf())
+                if (iterationStatement.forLoopHeader?.forLoopPartsInBraces?.inExpr != null) {
+                    result.add(iterationStatement.forLoopHeader!!.forLoopPartsInBraces!!.inExpr!!.variableName)
                 }
             }
 

@@ -1,6 +1,8 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
@@ -162,28 +164,43 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
         arrayTypes = setOf("object", "?")
 )
 
-internal fun InferenceResult.toClassList() : Set<String> {
+internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
+    if (this === INFERRED_ANY_TYPE)
+        return setOf()
     val returnTypes = this
     val returnClasses = mutableListOf<String>()
-    val isAnyType = anyType
-    if ((isAnyType || returnTypes.isNumeric) && numberTypes.intersect(classes).isEmpty())
+    if (returnTypes.isNumeric && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (isAnyType || returnTypes.isBoolean && booleanTypes.intersect(classes).isEmpty())
+    if (returnTypes.isBoolean && booleanTypes.intersect(classes).isEmpty())
         returnClasses.add("BOOL")
-    if (isAnyType || returnTypes.isRegex)
+    if (returnTypes.isRegex)
         returnClasses.add("regex")
-    if (isAnyType || returnTypes.isDictionary)
+    if (returnTypes.isDictionary)
         returnClasses.add("CPDictionary")
-    if (isAnyType || returnTypes.isString && stringTypes.intersect(classes).isEmpty())
+    if (returnTypes.isString && stringTypes.intersect(classes).isEmpty())
         returnClasses.add("string")
-    if (isAnyType || returnTypes.isSelector)
+    if (returnTypes.isSelector)
         returnClasses.add("SEL")
-    if (isAnyType || returnTypes.isJsObject)
+    if (returnTypes.isJsObject)
         returnClasses.add("object")
-    if (isAnyType || returnTypes.arrayTypes != null)
+    if (returnTypes.arrayTypes != null)
         returnClasses.add("Array")
     returnClasses.addAll(classes)
-    return returnClasses.toSet()
+    return returnClasses.map {
+        if (it in anyTypes)
+            simplifyAnyTypeTo ?: it
+        else
+            it
+        }.toSet()
+}
+
+
+fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimiter:String = TYPES_DELIM) : String? {
+    val types = this.toClassList(simplifyAnyTypeTo).joinToString(delimiter)
+    return if (types.isNotBlank())
+        types
+    else
+        null
 }
 
 
@@ -206,7 +223,7 @@ internal val booleanTypes = listOf("bool", "boolean")
 internal val stringTypes = listOf("string", "cpstring")
 internal val numberTypes = listOf("number", "int", "integer", "float", "long", "long long", "double")
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
-internal val anyTypes = listOf("id", "?", "any", "undef")
+internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
 
 internal fun Iterable<String>.containsAnyType() : Boolean {
     return this.any { it in anyTypes}

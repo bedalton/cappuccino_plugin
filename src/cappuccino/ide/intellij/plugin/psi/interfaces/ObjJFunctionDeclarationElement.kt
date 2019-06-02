@@ -7,7 +7,8 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationEl
 
 interface ObjJFunctionDeclarationElement<StubT: ObjJFunctionDeclarationElementStub<*>> : ObjJHasFunctionName, ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJResolveableElement<StubT> {
     val paramNames: List<String>
-    val returnType: String?
+
+    fun getReturnType(tag:Long): String?
 
     val formalParameterArgList: List<ObjJFormalParameterArg>
 
