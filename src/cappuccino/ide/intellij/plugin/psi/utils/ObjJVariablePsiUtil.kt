@@ -28,4 +28,10 @@ object ObjJVariablePsiUtil {
         }
         return null
     }
+
+    fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String {
+        return variable.stub?.varType
+                ?: variable.formalVariableType.varTypeId?.className?.text
+                ?: variable.formalVariableType.text
+    }
 }
