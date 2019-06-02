@@ -15,7 +15,7 @@ class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPre
     override fun getPresentableText(): String? {
         ProgressIndicatorProvider.checkCanceled()
         val presentableText = selector.description?.presentableText ?: return ObjJPsiImplUtil.getDescriptiveText(selector)
-        LOGGER.info("Getting PresentableText: $presentableText")
+        //LOGGER.info("Getting PresentableText: $presentableText")
         return presentableText
     }
 

@@ -471,15 +471,15 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
         val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
                 ?: element.parent as? ObjJQualifiedReferenceComponent ?: return { LOGGER.info("Element is not a qualifiedReference component") }()
-        LOGGER.info("Appending Qualified reference completions")
+        //LOGGER.info("Appending Qualified reference completions")
         val index = qualifiedNameComponent.indexInQualifiedReference
         if (index <= 0) {
-            LOGGER.info("Qualified reference is zero indexed")
+            //LOGGER.info("Qualified reference is zero indexed")
             return
         }
         val previousComponents = qualifiedNameComponent.previousSiblings
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return {
-            LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
+            //LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
             Unit
         }()
         LOGGER.info("QNP(${previousComponents.joinToString(".")}.${element.text} -> Inferred -> $inferred")
