@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
@@ -21,9 +22,11 @@ data class InferenceResult (
         val arrayTypes:Set<String>? = null
 ) {
     private var globalClasses:Set<GlobalJSClass>? = null
+
     val isJsObject:Boolean by lazy {
         jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
     }
+
     fun jsClasses(project:Project):Iterable<GlobalJSClass> {
         var out = globalClasses
         if (out != null)
@@ -64,7 +67,35 @@ private fun isSelector(classes:Iterable<String>) : Boolean {
 data class JsFunctionType (
         val parameters:Map<String, InferenceResult>,
         val returnType:InferenceResult
-)
+) {
+
+    override fun toString(): String {
+        val out = StringBuilder("(")
+        val parametersString = parameters.joinToString(false)
+        out.append(parametersString)
+                .append(")")
+        val returnTypes = this.returnType.toClassListString()
+        if (returnTypes.isNotNullOrBlank())
+            out.append(" => ").append(returnTypes)
+        return out.toString()
+    }
+}
+
+typealias ParametersMap = Map<String, InferenceResult>
+
+fun ParametersMap.joinToString(enclose:Boolean = true) : String {
+    val parameters = this.map {
+        val parameterString = StringBuilder(it.key)
+        val types = it.value.toClassList().joinToString(TYPES_DELIM)
+        if (types.isNotNullOrBlank())
+            parameterString.append(":").append(types)
+        parameterString.toString()
+    }.joinToString(", ")
+    return if (enclose)
+        "($parameters)"
+    else
+        parameters
+}
 
 operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
     val arrayTypes= combine(arrayTypes, other.arrayTypes)
@@ -164,6 +195,10 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
         arrayTypes = setOf("object", "?")
 )
 
+internal val INFERRED_VOID_TYPE = InferenceResult(
+    classes = setOf(VOID.type)
+)
+
 internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
     if (this == INFERRED_ANY_TYPE) {
         return if (simplifyAnyTypeTo != null)
@@ -200,9 +235,16 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
 
 
 fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimiter:String = TYPES_DELIM) : String? {
-    val types = this.toClassList(simplifyAnyTypeTo).joinToString(delimiter)
-    return if (types.isNotBlank())
-        types
+    val functionTypes = this.functionTypes?.map {
+        it.toString()
+    }.orEmpty()
+    val arrayTypes = this.arrayTypes?.map {
+        "$it[]"
+    }.orEmpty()
+    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes
+    val typesString = types.joinToString(delimiter)
+    return if (typesString.isNotBlank())
+        typesString
     else
         null
 }
