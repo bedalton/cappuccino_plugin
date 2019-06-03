@@ -32,6 +32,7 @@ data class JsNamedProperty(
         val varArgs:Boolean = type.startsWith("...")
         ) : JsProperty
 
+
 val JsNamedProperty.types:Set<String> get() {
     return type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
 }
@@ -86,7 +87,6 @@ data class JsFunctionReturnType (
     val types:Set<String> by lazy {
         type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
                 .toSet()
-                .orEmpty()
     }
 }
 fun JsFunctionReturnType.toInferenceResult() : InferenceResult {
@@ -159,7 +159,6 @@ interface JsFunction {
 val JsFunction.returnTypes:Set<String> get() {
     return returns?.types ?: setOf(VOID.type)
 }
-
 
 interface JsProperty {
     val type: String

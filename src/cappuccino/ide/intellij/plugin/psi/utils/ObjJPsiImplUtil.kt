@@ -1117,4 +1117,18 @@ object ObjJPsiImplUtil {
         return getParentOfType(parentClass) != null
     }
 
+
+    // ============================== //
+    // ======= Object Literal ======= //
+    // ============================== //
+    @JvmStatic
+    fun toJsObjectTypeSimple(element:ObjJObjectLiteral) : JsObjectType {
+        return ObjJObjectPsiUtils.toJsObjectTypeSimple(element)
+    }
+
+    @JvmStatic
+    fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsObjectType {
+        return ObjJObjectPsiUtils.toJsObjectType(element, tag)
+    }
+
 }

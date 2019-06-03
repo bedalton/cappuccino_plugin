@@ -215,6 +215,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "yes", "NO", "no", "true", "false"), 30.0)
         }
+        val component = (element as? ObjJQualifiedReferenceComponent) ?: (element.parent as? ObjJQualifiedReferenceComponent)
+        if (!isFirstInQualifiedReference && component != null) {
+            // todo Implement
+        }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
         if (shouldIgnoreIgnoredGlobals) {

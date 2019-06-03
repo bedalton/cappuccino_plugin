@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.INCLUDE_FRAMEWOR
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.INSTANCE_VAR
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_CALL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_HEADER
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.OBJECT_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PREPROCESSOR_FUNCTION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROTOCOL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.QUALIFIED_REFERENCE
@@ -41,6 +42,7 @@ class ObjJElementTypeFactory {
                 "ObjJ_INSTANCE_VARIABLE_DECLARATION" -> INSTANCE_VAR
                 "ObjJ_METHOD_CALL" -> METHOD_CALL
                 "ObjJ_METHOD_HEADER" -> METHOD_HEADER
+                "ObjJ_OBJECT_LITERAL" -> OBJECT_LITERAL
                 "ObjJ_PREPROCESSOR_DEFINE_FUNCTION" -> PREPROCESSOR_FUNCTION
                 "ObjJ_PROTOCOL_DECLARATION" -> PROTOCOL
                 "ObjJ_QUALIFIED_REFERENCE" -> QUALIFIED_REFERENCE
