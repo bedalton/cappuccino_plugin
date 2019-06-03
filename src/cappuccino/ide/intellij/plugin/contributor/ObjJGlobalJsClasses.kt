@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
@@ -29,6 +31,10 @@ data class JsNamedProperty(
         val deprecated: Boolean = false,
         val varArgs:Boolean = type.startsWith("...")
         ) : JsProperty
+
+val JsNamedProperty.types:Set<String> get() {
+    return type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+}
 
 fun StubOutputStream.writeNamedProperty(property:JsNamedProperty) {
     writeName(property.name)
@@ -70,12 +76,46 @@ fun StubInputStream.readNamedProperty() : JsNamedProperty {
 }
 
 data class JsFunctionReturnType (
-        override val type: String = "Any",
+        override val type: String = "void",
         override val nullable: Boolean = true,
         override val readonly: Boolean = false,
         override val comment: String? = null,
         override val default: String? = null,
         override val callback: AnonymousJsFunction? = null) : JsProperty
+{
+    val types:Set<String> by lazy {
+        type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
+                .toSet()
+                .orEmpty()
+    }
+}
+fun JsFunctionReturnType.toInferenceResult() : InferenceResult {
+    val typesSplit = type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+    val classes = typesSplit.filterNot {
+        it == "Function" || it.contains("[]")
+    }.toSet()
+    val arrayTypes = typesSplit.filterNot {
+       it.endsWith("[]")
+    }.map {
+        it.removeSuffix("[]")
+    }
+    val functionTypes = if ("Function" in typesSplit) {
+        if (callback != null) {
+            listOf(callback.toJsFunctionType())
+        } else {
+            listOf(AnonymousJsFunction().toJsFunctionType())
+        }
+    } else if (callback != null) {
+        listOf(callback.toJsFunctionType())
+    } else {
+        null
+    }
+    return InferenceResult(
+            classes = classes,
+            arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes.toSet() else null,
+            functionTypes = functionTypes
+    )
+}
 
 fun StubOutputStream.writeFunctionReturnType(type:JsFunctionReturnType?) {
     writeBoolean(type != null)
@@ -116,6 +156,9 @@ interface JsFunction {
     val comment: String?
 }
 
+val JsFunction.returnTypes:Set<String> get() {
+    return returns?.types ?: setOf(VOID.type)
+}
 
 
 interface JsProperty {
@@ -132,6 +175,13 @@ data class AnonymousJsFunction(
         val returns: JsFunctionReturnType? = null,
         val comment: String? = null
 )
+
+fun AnonymousJsFunction.toJsFunctionType():JsFunctionType {
+    return JsFunctionType(
+            parameters = parameters.toMap(),
+            returnType = returns?.toInferenceResult() ?: INFERRED_VOID_TYPE
+    )
+}
 
 fun StubOutputStream.writeAnonymousFunction(function:AnonymousJsFunction?) {
     writeBoolean(function != null)
@@ -195,141 +245,669 @@ val Window: GlobalJSClass = c(
                 p("sessionStorage", "Storage", readonly = true),
                 p("localStorage", "Storage", readonly = true),
                 p("console", "Console", nullable = true, readonly = true),
-                p("onabort", "Function", comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
-                p("onanimationcancel", type = "Function(this: Window, ev:Event)=>void", nullable = true, ignore = true),
-                p("onanimationend", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onanimationiteration", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onanimationstart", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onauxclick", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onafterprint", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onblur", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
-                p("oncancel", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("oncanplay", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
-                p("oncanplaythrough", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onchange", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
-                p("onclick", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
-                p("onclose", "Function(this:Window, ev:Event)=>any", nullable = true, ignore = true),
-                p("oncontextmenu", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
-                p("oncuechange", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("ondblclick", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
-                p("ondrag", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
-                p("ondragend", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
-                p("ondragenter", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondragexit", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondragleave", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
-                p("ondragover", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
-                p("ondragstart", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
-                p("ondrop", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondurationchange", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
-                p("onemptied", "Function(this:Window, ev:Event)=>any", nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
-                p("onended", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
+                p("onabort", callback = callback(), comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
+                p("onanimationcancel", callback = callback(parameters = listOf(p("this", "Window"), p("ev", "Event")), returns = rt("void")), nullable = true, ignore = true),
+                p("onanimationend", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onanimationiteration", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onanimationstart", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onauxclick", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onafterprint", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onblur", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
+                p("oncancel", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("oncanplay", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
+                p("oncanplaythrough", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onchange", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
+                p("onclick", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
+                p("onclose", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("oncontextmenu", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
+                p("oncuechange", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ondblclick", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
+                p("ondrag", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
+                p("ondragend", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
+                p("ondragenter", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragexit", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragleave", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
+                p("ondragover", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
+                p("ondragstart", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
+                p("ondrop", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondurationchange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
+                p("onemptied", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
+                p("onended", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
                 p("onerror", "OnErrorEventHandler", nullable = true, comment = "Fires when an error occurs during object loading.", ignore = true),
-                p("onfocus", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the object receives focus.", ignore = true),
-                p("ongotpointercapture", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("oninput", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("oninvalid", "Function(this: Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onkeydown", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user presses a key.", ignore = true),
-                p("onkeypress", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
-                p("onkeyup", "Function(this: Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user releases a key", ignore = true),
-                p("onload", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
-                p("onloadeddata", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
-                p("onloadmetadata", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
-                p("onloadend", "Function(this:Window, ev:ProgressEvent)=>Any", nullable = true, ignore = true),
-                p("onloadstart", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
-                p("onlostpointercapture", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onmousedown", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
-                p("onmouseenter", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
-                p("onmouseenterleave", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
-                p("onmousemove", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
-                p("onmouseout", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
-                p("onmouseover", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
-                p("onmouseup", "Function(this: Window, ev:Event))=>Any", nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
-                p("onmousedown", "Function(this: Window, ev:Event))=>Any", nullable = true, ignore = true),
-                p("onpause", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback is paused.", ignore = true),
-                p("onplay", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
-                p("onplaying", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
-                p("onpointercancel", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerdown", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerenter", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerleave", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointermove", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerout", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerover", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onpointerup", "Function(this:Window, ev:PointerEvent)=>Any", nullable = true, ignore = true),
-                p("onprogress", "Function(this:Window, ev:ProgressEvent)=>Any", nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
-                p("onratechange", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
-                p("onreset", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user resets a form.", ignore = true),
-                p("onresize", "Function(this:Window, ev:UIEvent)=>Any", nullable = true, ignore = true),
-                p("onscroll", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
-                p("onsecuritypolicyviolation", "Function(this:Window, ev:SecurityPolicyViolationEvent)=>Any", nullable = true, ignore = true),
-                p("onseeked", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
-                p("onseeking", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
-                p("onselect", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Fires when the current selection changes.", ignore = true),
-                p("onselectionchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onselectstart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onstalled", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
-                p("onsubmit", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onsuspend", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
-                p("ontimeupdate", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
-                p("ontoggle", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("ontouchcancel", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
-                p("ontouchend", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
-                p("ontouchmove", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
-                p("ontouchstart", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
-                p("ontransitioncancel", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
-                p("ontransitionend", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
-                p("ontransitionrun", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
-                p("ontransitionstart", "Function(this:Window, ev:TransitionEvent)=>Any", nullable = true, ignore = true),
-                p("ontouchcancel", "Function(this:Window, ev:TouchEvent)=>Any", nullable = true, ignore = true),
-                p("onvolumechange", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
-                p("onwaiting", "Function(this:Window, ev:Event)=>Any", nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
-                p("onbeforeprint", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onbeforeunload", "Function(this:Window, ev:BeforeUnloadEvent)=>Any", nullable = true, ignore = true),
-                p("onhashchange", "Function(this:Window, ev:HashChangeEvent)=>Any", nullable = true, ignore = true),
-                p("onlanguagechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmessage", "Function(this:Window, ev:MessageEvent)=>Any", nullable = true, ignore = true),
-                p("onmessageerror", "Function(this:Window, ev:MessageEvent)=>Any", nullable = true, ignore = true),
-                p("onoffline", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("ononline", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onpagehide", "Function(this:Window, ev:PageTransitionEvent)=>Any", nullable = true, ignore = true),
-                p("onpageshow", "Function(this:Window, ev:PageTransitionEvent)=>Any", nullable = true, ignore = true),
-                p("onpopstate", "Function(this:Window, ev:PopStateEvent)=>Any", nullable = true, ignore = true),
-                p("onrejectionhandled", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onstorage", "Function(this:Window, ev:StorageEvent)=>Any", nullable = true, ignore = true),
-                p("onunhandledrejection", "Function(this:Window, ev:PromiseRejectionEvent)=>Any", nullable = true, ignore = true),
-                p("onunload", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onwheel", "Function(this:Window, ev:WheelEvent)=>Any", nullable = true, ignore = true),
-                p("oncompassneedscalibration", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("ondevicelight", "Function(this:Window, ev:DeviceLightEvent)=>Any", nullable = true, ignore = true),
-                p("ondevicemotion", "Function(this:Window, ev:DeviceMotionEvent)=>Any", nullable = true, ignore = true),
-                p("ondeviceorientation", "Function(this:Window, ev:DeviceOrientationEvent)=>Any", nullable = true, ignore = true),
-                p("onmousewheel", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgesturechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgesturedoubletap", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgestureend", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgesturehold", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgesturestart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsgesturetap", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmsinertiastart", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointercancel", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerdown", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerenter", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerleave", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointermove", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerout", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerover", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onmspointerup", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onorientationchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onreadystatechange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplayactivate", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplayblur", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplayconnect", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplaydeactivate", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplaydisconnect", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplayfocus", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplaypointerrestricted", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplaypointerunrestricted", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
-                p("onvrdisplaypresentchange", "Function(this:Window, ev:Event)=>Any", nullable = true, ignore = true),
+                p("onfocus", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the object receives focus.", ignore = true),
+                p("ongotpointercapture", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("oninput", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("oninvalid", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onkeydown", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user presses a key.", ignore = true),
+                p("onkeypress", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
+                p("onkeyup", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user releases a key", ignore = true),
+                p("onload", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
+                p("onloadeddata", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
+                p("onloadmetadata", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
+                p("onloadend", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","ProgressEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onloadstart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
+                p("onlostpointercapture", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousedown", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
+                p("onmouseenter", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmouseenterleave", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousemove", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
+                p("onmouseout", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
+                p("onmouseover", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
+                p("onmouseup", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
+                p("onmousedown", callback = callback(parameters=listOf(
+p("this: Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpause", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when playback is paused.", ignore = true),
+                p("onplay", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
+                p("onplaying", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
+                p("onpointercancel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerdown", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerenter", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerleave", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointermove", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerout", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerover", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerup", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PointerEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onprogress", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","ProgressEvent")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
+                p("onratechange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
+                p("onreset", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user resets a form.", ignore = true),
+                p("onresize", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","UIEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onscroll", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
+                p("onsecuritypolicyviolation", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","SecurityPolicyViolationEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onseeked", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
+                p("onseeking", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
+                p("onselect", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Fires when the current selection changes.", ignore = true),
+                p("onselectionchange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onselectstart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onstalled", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
+                p("onsubmit", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onsuspend", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
+                p("ontimeupdate", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
+                p("ontoggle", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchcancel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TouchEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchend", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TouchEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchmove", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TouchEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchstart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TouchEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitioncancel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionend", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionrun", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionstart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchcancel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","TouchEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvolumechange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
+                p("onwaiting", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
+                p("onbeforeprint", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onbeforeunload", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","BeforeUnloadEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onhashchange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","HashChangeEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onlanguagechange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmessage", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","MessageEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmessageerror", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","MessageEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onoffline", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ononline", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpagehide", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PageTransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpageshow", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PageTransitionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onpopstate", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PopStateEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onrejectionhandled", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onstorage", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","StorageEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onunhandledrejection", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","PromiseRejectionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onunload", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onwheel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","WheelEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("oncompassneedscalibration", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ondevicelight", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","DeviceLightEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ondevicemotion", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","DeviceMotionEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("ondeviceorientation", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","DeviceOrientationEvent")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousewheel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturechange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturedoubletap", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgestureend", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturehold", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturestart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturetap", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsinertiastart", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointercancel", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerdown", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerenter", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerleave", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointermove", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerout", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerover", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerup", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onorientationchange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onreadystatechange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayactivate", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayblur", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayconnect", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaydeactivate", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaydisconnect", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayfocus", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypointerrestricted", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypointerunrestricted", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypresentchange", callback = callback(parameters=listOf(
+p("this:Window"),
+p(" ev","Event")
+),
+returns = RT_ANY), nullable = true, ignore = true),
                 p("indexedDB", "IDBFactory", nullable = true, readonly = true),
                 p("caches", "CacheStorage", readonly = true),
                 p("crypto", "Crypto", readonly = true),
