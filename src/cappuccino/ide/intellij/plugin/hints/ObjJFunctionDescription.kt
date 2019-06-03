@@ -33,7 +33,7 @@ class ObjJFunctionDescription(val name:String, val returnType:String?) {
                 .append(")")
         if (returnType.isNotNullOrBlank()) {
             stringBuilder
-                    .append(" : ")
+                    .append(" => ")
                     .append(returnType)
         }
         return stringBuilder.toString()
