@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.VOID
 import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
+import cappuccino.ide.intellij.plugin.contributor.returnTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
@@ -9,6 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
@@ -32,7 +34,7 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
                     .filter {
                         it.name == functionName
                     }.flatMap {
-                        it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+                        it.returnTypes
                     }.toSet()
             if (out.isNotEmpty()) {
                 return InferenceResult(classes = out)
@@ -56,9 +58,9 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
 }
 
 fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
-    val commentReturnValue = function.docComment?.returnParameterComment
-    if (commentReturnValue.isNotNullOrBlank())
-        return InferenceResult(classes = commentReturnValue!!.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet())
+    val commentReturnTypes = function.docComment?.returnTypes
+    if (commentReturnTypes.isNotNullOrEmpty())
+        return InferenceResult(classes = commentReturnTypes!!)
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     if (returnStatementExpressions.isEmpty())
         return InferenceResult(classes = setOf(VOID.type))
@@ -121,8 +123,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
             val parameterType = commentWrapper?.parameterComments
                     ?.get(i)
-                    ?.type
-                    ?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
+                    ?.types
             out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
         } else {
             out[parameterName] = INFERRED_ANY_TYPE

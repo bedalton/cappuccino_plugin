@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
@@ -90,6 +91,10 @@ data class CommentWrapper(val commentText:String) {
         line?.trim()?.split("\\s+".toRegex(), 2)?.getOrNull(1)
     }
 
+    val returnTypes:Set<String>? by lazy {
+        returnParameterComment?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)?.toSet()
+    }
+
     val deprecated:Boolean by lazy {
         deprecationWarning.isNotNullOrBlank()
     }
@@ -119,4 +124,8 @@ data class CommentWrapper(val commentText:String) {
     }
 }
 
-data class CommentParam(val paramName:String, val type:String?, val paramComment:String?)
+data class CommentParam(val paramName:String, val type:String?, val paramComment:String?) {
+    val types:Set<String>? get() {
+        return type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)?.toSet()
+    }
+}
