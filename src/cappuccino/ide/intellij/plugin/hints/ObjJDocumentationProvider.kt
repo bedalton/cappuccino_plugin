@@ -3,12 +3,10 @@ package cappuccino.ide.intellij.plugin.hints
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
-import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
-import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.lang.documentation.AbstractDocumentationProvider
@@ -118,7 +116,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
      * for the given element
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        val doc = StringBuilder()
+        //val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         //LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
@@ -255,37 +253,9 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
     return out.toString()
 }
 
-private val JsFunctionType.descriptionText:String get() {
-    val out = StringBuilder("(")
-    val functionString = this.parameters.map {
-        val parameterString = StringBuilder(it.key)
-        val types = it.value.toClassList().joinToString(TYPES_DELIM)
-        if (types.isNotNullOrBlank())
-            parameterString.append(":").append(types)
-        parameterString.toString()
-    }.joinToString(", ")
-    out.append(functionString)
-    out.append(")")
-    val returnTypes = this.returnType.toClassListString()
-    if (returnTypes.isNotNullOrBlank())
-        out.append(" => ").append(returnTypes)
-    return out.toString()
-}
-
 private fun JsFunctionType.descriptionWithName(name:String):String {
-    val out = StringBuilder(name).append("(")
-    val functionString = this.parameters.map {
-        val parameterString = StringBuilder(it.key)
-        val types = it.value.toClassList().joinToString(TYPES_DELIM)
-        if (types.isNotNullOrBlank())
-            parameterString.append(":").append(types)
-        parameterString.toString()
-    }.joinToString(", ")
-    out.append(functionString)
-    out.append(")")
-    val returnTypes = this.returnType.toClassListString()
-    if (returnTypes.isNotNullOrBlank())
-        out.append(" : ").append(returnTypes)
+    val out = StringBuilder(name)
+    out.append(this.toString())
     return out.toString()
 }
 
