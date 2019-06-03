@@ -22,7 +22,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
                     //LOGGER.info("QuickInfo for variable name")
-                    it.quickInfo(comment, originalElement)
+                    it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
                     LOGGER.info("QuickInfo for method selector")
@@ -38,11 +38,11 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                 }
                 .info(ObjJFunctionCall::class.java, orParent = true) {
                     LOGGER.info("QuickInfo for function call")
-                    it.functionDeclarationReference?.description?.presentableText
+                    it.functionDescription
                 }
                 .info(ObjJFunctionName::class.java, orParent = true) {
                     LOGGER.info("QuickInfo for function name")
-                    (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText
+                    (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText ?: it.functionDescription
                 }
                 .info(ObjJQualifiedMethodCallSelector::class.java, orParent = true) {
                     LOGGER.info("QuickInfo for qualified method call selector")
@@ -162,7 +162,7 @@ private val PsiElement.containerName:String? get () {
 }
 
 
-private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, originalElement: PsiElement?) : String? {
+private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].size > 0) {
         out.append("Class ").append(text)
@@ -188,13 +188,13 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
             val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag())
             val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
             if (functionType != null) {
-                out.append(functionType.descriptionText)
+                out.append(functionType.descriptionWithName(text))
                 return out.toString()
             }
             val classNames = inferenceResult?.toClassListString("<Any?>")
             //LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
             out.append("Variable ").append(name)
-            if (classNames.isNotNullOrEmpty()) {
+            if (classNames.isNotNullOrBlank()) {
                 out.append(" : ").append(classNames)
             }
             out.append(" in ").append(getLocationString(this))
@@ -202,19 +202,19 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
         }
         val inferredTypes = inferQualifiedReferenceType(prevSiblings, createTag())
         val name = this.text
-        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassList() ?: emptySet()
-        if (propertyTypes.isNotEmpty()) {
+        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("?")
+        if (propertyTypes.isNotNullOrBlank()) {
 
-            val classNames = inferredTypes?.toClassListString("<Any?>")
-            if (propertyTypes.isNotEmpty() || classNames.isNotNullOrBlank())
+            val classNames = inferredTypes?.toClassListString("?")
+            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
                 out.append("Variable ").append(name)
-            if (propertyTypes.isNotEmpty()) {
+            if (propertyTypes.isNotNullOrBlank()) {
                 out.append(" : ").append(propertyTypes)
             }
             if (classNames.isNotNullOrBlank())
                 out.append(" in ").append(classNames)
 
-            if (propertyTypes.isNotEmpty() || classNames.isNotNullOrBlank()) {
+            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
                 return out.toString()
             }
         }
@@ -231,6 +231,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null, original
 
 private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = null) : String? {
     val out = StringBuilder()
+    if (comment?.commentText.isNotNullOrBlank()) {
+        out.append(comment?.commentText!!)
+    }
     val resolved = (parent as? ObjJMethodCall)?.referencedHeaders ?: emptyList()
     val resolvedComments = resolved.mapNotNull {
         it.docComment
@@ -267,4 +270,37 @@ private val JsFunctionType.descriptionText:String get() {
     if (returnTypes.isNotNullOrBlank())
         out.append(" => ").append(returnTypes)
     return out.toString()
+}
+
+private fun JsFunctionType.descriptionWithName(name:String):String {
+    val out = StringBuilder(name).append("(")
+    val functionString = this.parameters.map {
+        val parameterString = StringBuilder(it.key)
+        val types = it.value.toClassList().joinToString(TYPES_DELIM)
+        if (types.isNotNullOrBlank())
+            parameterString.append(":").append(types)
+        parameterString.toString()
+    }.joinToString(", ")
+    out.append(functionString)
+    out.append(")")
+    val returnTypes = this.returnType.toClassListString()
+    if (returnTypes.isNotNullOrBlank())
+        out.append(" : ").append(returnTypes)
+    return out.toString()
+}
+
+private val ObjJFunctionName.functionDescription:String? get() {
+    val basicDescription = (parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText
+    if (basicDescription.isNotNullOrBlank())
+        return basicDescription!!
+    return (parent as? ObjJFunctionCall)?.functionDescription
+}
+
+private val ObjJFunctionCall.functionDescription: String? get() {
+    val basicDescription = this.parentFunctionDeclaration?.description?.presentableText
+    if (basicDescription.isNotNullOrBlank())
+        return basicDescription!!
+    val functionNameText = functionName?.text ?: return null
+    val function = inferQualifiedReferenceType(this.previousSiblings + this, createTag())?.functionTypes?.firstOrNull() ?: return null
+    return function.descriptionWithName(functionNameText)
 }

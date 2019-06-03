@@ -165,7 +165,7 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
 )
 
 internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
-    if (this === INFERRED_ANY_TYPE) {
+    if (this == INFERRED_ANY_TYPE) {
         return if (simplifyAnyTypeTo != null)
             setOf(simplifyAnyTypeTo)
         else

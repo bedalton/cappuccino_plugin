@@ -5,8 +5,11 @@ import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -21,7 +24,7 @@ internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long
 
 internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
     LOGGER.info("Inferring Type for function call ${functionCall.functionName?.text}")
-    val resolve = functionCall.reference?.resolve()
+    val resolve = functionCall.functionName?.reference?.resolve()
     if (resolve == null) {
         val functionName = functionCall.functionName?.text
         if (functionName != null) {
@@ -40,27 +43,29 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
     }
     val functionAsVariableName = resolve as? ObjJVariableName
     val function = (when {
-        functionAsVariableName != null -> getFunctionForVariableName(functionAsVariableName)
-        resolve is ObjJFunctionName -> resolve.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+        functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
+        resolve is ObjJFunctionName -> resolve.parentFunctionDeclaration
         else -> null
     })
     if (function == null) {
         LOGGER.info("Failed to find function for function name element")
-        return null
+        val expression = functionAsVariableName?.getAssignmentExprOrNull() ?: return null
+        return inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
     }
     return inferFunctionDeclarationReturnType(function, tag)
 }
 
 fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
     val commentReturnValue = function.docComment?.returnParameterComment
-    if (commentReturnValue != null)
-        return InferenceResult(classes = commentReturnValue.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet())
+    if (commentReturnValue.isNotNullOrBlank())
+        return InferenceResult(classes = commentReturnValue!!.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet())
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     if (returnStatementExpressions.isEmpty())
         return InferenceResult(classes = setOf(VOID.type))
     val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
+    LOGGER.info("Got function dec types for function ${function.functionNameAsString} : ${types.toClassListString()}")
     return types
 }
 
@@ -90,3 +95,42 @@ private fun getAssignedExpressions(element: PsiElement?) : ObjJExpr? {
     else
         null
 }
+
+
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsFunctionType {
+    val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
+    return JsFunctionType(this.parameterTypes(), returnTypes)
+}
+
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : InferenceResult? {
+    val functionType = toJsFunctionType(tag)
+    return InferenceResult(
+            functionTypes = listOf(functionType)
+    )
+}
+
+private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
+    ProgressManager.checkCanceled()
+    val parameters = formalParameterArgList
+    val out = mutableMapOf<String, InferenceResult>()
+    val commentWrapper = this.docComment
+    for ((i, parameter) in parameters.withIndex()) {
+        ProgressManager.checkCanceled()
+        val parameterName = parameter.variableName?.text ?: "$i"
+        LOGGER.info("Parameter Name is $parameterName")
+        if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
+            val parameterType = commentWrapper?.parameterComments
+                    ?.get(i)
+                    ?.type
+                    ?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
+            out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
+        } else {
+            out[parameterName] = INFERRED_ANY_TYPE
+        }
+    }
+    return out
+}
+
+
+internal val PsiElement.parentFunctionDeclaration
+    get() = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)

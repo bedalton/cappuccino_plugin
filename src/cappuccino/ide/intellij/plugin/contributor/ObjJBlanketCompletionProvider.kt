@@ -2,15 +2,18 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
+import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -22,14 +25,12 @@ import cappuccino.ide.intellij.plugin.references.NoIndex
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.orTrue
-import cappuccino.ide.intellij.plugin.utils.startsWithAny
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
 
 /**
@@ -209,6 +210,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val hasLength = promptTextHasLength(variableName)
         if (notInMethodHeaderDeclaration && isFirstInQualifiedReference && hasLength) {
             ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
+            addGlobalVariableCompletions(resultSet, element)
             addCompletionElementsSimple(resultSet, getKeywordCompletions(variableName), 40.0)
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "yes", "NO", "no", "true", "false"), 30.0)
@@ -219,6 +221,18 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, ObjJGlobalVariableNamesWithoutIgnores, -200.0)
         } else {
             addCompletionElementsSimple(resultSet, ObjJGlobalJSVariablesNames, -200.0)
+        }
+    }
+
+    private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
+        ObjJGlobalVariableNamesIndex.instance.getStartingWith(variableName.textWithoutCaret, variableName.project).forEach {
+            ProgressIndicatorProvider.checkCanceled()
+            if (it.variableName.parentFunctionDeclaration != null || inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes.isNotNullOrEmpty()) {
+                ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString)
+            } else {
+                val lookupElement = LookupElementBuilder.create(it.variableNameString).withInsertHandler(ObjJVariableInsertHandler)
+                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY))
+            }
         }
     }
 

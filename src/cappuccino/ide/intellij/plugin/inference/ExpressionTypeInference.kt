@@ -131,46 +131,15 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     }
 
     if (leftExpression.functionDeclaration != null) {
-        return leftExpression.functionDeclaration!!.toJsFunctionType(tag)
+        return leftExpression.functionDeclaration!!.toJsFunctionTypeResult(tag)
     }
     if (leftExpression.functionLiteral != null) {
-        return leftExpression.functionLiteral!!.toJsFunctionType(tag)
+        return leftExpression.functionLiteral!!.toJsFunctionTypeResult(tag)
     }
     if (leftExpression.derefExpression?.variableName != null) {
         return inferVariableNameType(leftExpression.derefExpression!!.variableName!!, tag)
     }
     return INFERRED_ANY_TYPE
-}
-
-private fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : InferenceResult {
-    val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
-    return InferenceResult(
-            functionTypes = listOf(
-                    JsFunctionType(this.parameterTypes(), returnTypes)
-            )
-    )
-}
-
-private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
-    ProgressManager.checkCanceled()
-    val parameters = formalParameterArgList
-    val out = mutableMapOf<String, InferenceResult>()
-    val commentWrapper = this.docComment
-    for ((i, parameter) in parameters.withIndex()) {
-        ProgressManager.checkCanceled()
-        val parameterName = parameter.variableName?.text ?: "$i"
-        LOGGER.info("Parameter Name is $parameterName")
-        if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
-            val parameterType = commentWrapper?.parameterComments
-                    ?.get(i)
-                    ?.type
-                    ?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
-            out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
-        } else {
-            out[parameterName] = INFERRED_ANY_TYPE
-        }
-    }
-    return out
 }
 
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<ObjJRightExpr>, tag:Long) : InferenceResult? {

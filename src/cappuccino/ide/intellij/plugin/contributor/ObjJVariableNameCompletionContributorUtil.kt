@@ -15,7 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getQu
 object ObjJVariableNameCompletionContributorUtil {
 
     fun getVariableNameCompletions(variableName: ObjJVariableName?): List<String> {
-        if (variableName == null || variableName.text.isEmpty()) {
+        if (variableName?.text.isNullOrBlank()) {
             return emptyList()
         }
 
