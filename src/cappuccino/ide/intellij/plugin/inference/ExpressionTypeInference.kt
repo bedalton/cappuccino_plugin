@@ -296,7 +296,7 @@ private fun isRegex(expr: ObjJExpr) : Boolean {
     return expr.leftExpr?.regularExpressionLiteral != null
 }
 
-val addsToNumberTypes = numberTypes.map {it.toLowerCase()} + "jsobject" + "object"
+val addsToNumberTypes = numberTypes.map { it.toLowerCase() } + "jsobject" + "object"
 
 private fun isNotNumber(classes:Set<String>) : Boolean {
     return classes.any {
