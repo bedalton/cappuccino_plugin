@@ -88,7 +88,7 @@ object ObjJFunctionNameCompletionProvider {
         }
     }
 
-    private fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String, priority: Double = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY) {
+    internal fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String, priority: Double = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY) {
         val lookupElementBuilder = LookupElementBuilder
                 .create(functionName)
                 .withInsertHandler(ObjJFunctionNameInsertHandler)

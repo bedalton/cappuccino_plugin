@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
@@ -102,16 +101,30 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             getJsClassObject(project, it)
         }
     val classNames = classes.flatMap { jsClass ->
-        val properties = jsClass.properties.firstOrNull {
+        jsClass.properties.firstOrNull {
             it.name == variableNameString
         }?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
-
-        val functions = jsClass.functions.firstOrNull {
-            it.name == variableNameString
-        }?.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
-        properties + functions
     }.toSet()
+    val functions = classes.mapNotNull { jsClass ->
+        val function = jsClass.functions.firstOrNull {
+            it.name == variableNameString
+        } ?: return@mapNotNull null
+        JsFunctionType(function.parameters.toMap(), function.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)?.toInferenceResult() ?: INFERRED_ANY_TYPE)
+    }
+    if (functions.isNotEmpty()) {
+        classNames.toInferenceResult().copy(
+                functionTypes = functions
+        )
+    }
     return classNames.toInferenceResult()
+}
+
+private fun List<JsNamedProperty>.toMap() : Map<String, InferenceResult> {
+    val out = mutableMapOf<String, InferenceResult>()
+    this.forEach {
+        out[it.name] = it.type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toInferenceResult()
+    }
+    return out
 }
 
 internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): InferenceResult? {
@@ -133,10 +146,15 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
     else
         null
 
-    if (referencedVariable is ObjJFunctionName) {
-        val functionDeclaration:ObjJFunctionDeclarationElement<*> = referencedVariable.parentFunctionDeclaration ?: return null
-        return inferFunctionDeclarationReturnType(functionDeclaration, tag)
-    }
+    val functionDeclaration = if (referencedVariable is ObjJFunctionName) {
+        referencedVariable.parentFunctionDeclaration
+    } else if (referencedVariable is ObjJVariableDeclaration)
+        referencedVariable.parentFunctionDeclaration
+    else
+        null
+
+    if (functionDeclaration != null)
+        return functionDeclaration.toJsFunctionTypeResult(tag)
 
     if (referencedVariable is ObjJVariableName) {
         val out = ObjJVariableTypeResolver.resolveVariableType(variableName = referencedVariable, recurse = false, withInheritance = false, tag = tag)
@@ -209,7 +227,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     } else
         parentTypes.classes.mapNotNull{getJsClassObject(functionName.project, it)}
 
-    return classes.flatMap { jsClass ->
+    val functions = classes.mapNotNull { jsClass ->
         ProgressManager.checkCanceled()
         (if (static)
             jsClass.staticFunctions.firstOrNull {
@@ -218,8 +236,21 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
         else
             jsClass.functions.firstOrNull {
                 it.name == functionNameString
-            })?.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
-    }.toInferenceResult()
+            })
+    }
+    val returnTypes = functions.flatMap {
+        it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+    }
+    return InferenceResult (
+            classes = returnTypes.toSet(),
+            functionTypes = functions.map {
+                val returnType = InferenceResult (
+                        classes = it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).orEmpty().toSet()
+                )
+                JsFunctionType(it.parameters.toMap(), returnType)
+            }
+    )
+
 }
 
 private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:Long): InferenceResult? {
@@ -227,24 +258,53 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:L
         return null
     }
     val functionNameString = functionName.text
-    val functionDeclaration = functionName.reference.resolve()?.parentFunctionDeclaration
-    val basicReturnTypes = functionDeclaration?.getReturnType(tag)?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
+    val resolved =  functionName.reference.resolve()
+    val functionDeclaration = resolved?.parentFunctionDeclaration
+    if (functionDeclaration == null && resolved is ObjJVariableName) {
+        val expr = resolved.getAssignmentExprOrNull()
+        if (expr != null) {
+            val functionType = inferExpressionType(expr, tag)
+            if (functionType != null) {
+                val returnTypes = functionType.functionTypes?.map {
+                    it.returnType
+                }?.collapse()
+                if (returnTypes != null)
+                    return returnTypes
+                else
+                    return functionType
+            }
+        }
+    }
+    var basicReturnTypes = functionDeclaration?.getReturnType(tag)?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet() ?: emptySet()
 
-    val returnTypes = globalJsFunctions.filter {
+    val functions = globalJsFunctions.filter {
         ProgressManager.checkCanceled()
         it.name == functionNameString
-    }.flatMap {
-        ProgressManager.checkCanceled()
+    }
+    val functionTypes = functions.map {
+        val returnType = InferenceResult(
+                classes = it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).orEmpty().toSet()
+        )
+        JsFunctionType(it.parameters.toMap(), returnType)
+    }.toMutableSet()
+
+    val functionDeclarationAsJsFunctionType = functionDeclaration?.toJsFunctionType(tag)
+    if (functionDeclarationAsJsFunctionType != null) {
+        functionTypes.add(functionDeclarationAsJsFunctionType)
+    }
+
+    if (basicReturnTypes.isEmpty() && functionDeclaration != null) {
+        basicReturnTypes = inferFunctionDeclarationReturnType(functionDeclaration, tag)?.classes ?: emptySet()
+    }
+    val returnTypes = functions.flatMap {
         it.returns?.type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX) ?: emptyList()
     }
-    if (basicReturnTypes.isEmpty() && functionDeclaration != null) {
-        inferFunctionDeclarationReturnType(functionDeclaration, tag)
-    }
+    return InferenceResult (
+            classes = returnTypes.toSet(),
+            functionTypes = functionDeclarationAsJsFunctionTypes
+    )
     return (returnTypes + basicReturnTypes).toInferenceResult()
 }
-
-private val PsiElement.parentFunctionDeclaration
-    get() = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
 
 private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     if (parentTypes == null) {
@@ -323,4 +383,8 @@ private fun getAllVariableAssignmentsWithName(variableName:ObjJVariableName) : L
                     } ?: emptyList()
             }.mapNotNull { getAssignedExpressions(it, variableNameString) }
     return fromBodyAssignments + fromGlobals + fromVariableDeclarations
+}
+
+fun ObjJVariableName.getAssignmentExprOrNull() : ObjJExpr? {
+    return (this.parent as? ObjJGlobalVariableDeclaration)?.expr ?: (this.parent.parent as? ObjJVariableDeclaration)?.expr
 }

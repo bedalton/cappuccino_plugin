@@ -62,14 +62,16 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
 internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LOOP_TAG).orElse(-1)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 2000) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 10) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes?.classes.orEmpty().isNotEmpty()) {
             LOGGER.info("Got Cached Values: ${inferredTypes!!.toClassList()}")
         } else {
             LOGGER.info("Got Cached empty class list for <${this.text}>")
         }
-        return inferredTypes
+        if (inferredTypes != null) {
+            return inferredTypes
+        }
     }
     val inferredTypes = getIfNull?.invoke() ?: InferenceResult()
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
