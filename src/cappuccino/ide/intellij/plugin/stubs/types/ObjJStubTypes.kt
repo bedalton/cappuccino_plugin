@@ -16,6 +16,7 @@ object ObjJStubTypes {
     val INSTANCE_VAR = ObjJInstanceVariableDeclarationStubType("ObjJ_INSTANCE_VARIABLE_DECLARATION")
     val METHOD_CALL = ObjJMethodCallStubType("ObjJ_METHOD_CALL")
     val METHOD_HEADER = ObjJMethodHeaderStubType("ObjJ_METHOD_HEADER")
+    val OBJECT_LITERAL = ObjJObjectLiteralStubType("ObjJ_OBJECT_LITERAL")
     val PREPROCESSOR_FUNCTION = ObjJPreprocessorDefineFunctionStubType("ObjJ_PREPROCESSOR_DEFINE_FUNCTION")
     val PROTOCOL = ObjJProtocolStubType("ObjJ_PROTOCOL")
     val QUALIFIED_REFERENCE = ObjJQualifiedReferenceStubType("ObjJ_QUALIFIED_REFERENCE")

@@ -8,6 +8,8 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
 
 data class InferenceResult (
         val classes:Set<String> = emptySet(),
@@ -17,7 +19,7 @@ data class InferenceResult (
         val isDictionary:Boolean = isDictionary(classes),
         val isSelector:Boolean = isSelector(classes),
         val isRegex:Boolean = isRegex(classes),
-        val jsObjectKeys:Map<String, InferenceResult>? = null,
+        val jsObjectKeys:PropertiesMap? = null,
         val functionTypes:List<JsFunctionType>? = null,
         val arrayTypes:Set<String>? = null
 ) {
@@ -65,8 +67,9 @@ private fun isSelector(classes:Iterable<String>) : Boolean {
 }
 
 data class JsFunctionType (
-        val parameters:Map<String, InferenceResult>,
-        val returnType:InferenceResult
+        val parameters:Map<String, InferenceResult> = mutableMapOf(),
+        val returnType:InferenceResult = INFERRED_VOID_TYPE,
+        val comment: String? = null
 ) {
 
     override fun toString(): String {
@@ -81,9 +84,9 @@ data class JsFunctionType (
     }
 }
 
-typealias ParametersMap = Map<String, InferenceResult>
+typealias PropertiesMap = Map<String, InferenceResult>
 
-fun ParametersMap.joinToString(enclose:Boolean = true) : String {
+fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
     val parameters = this.map {
         val parameterString = StringBuilder(it.key)
         val types = it.value.toClassList().joinToString(TYPES_DELIM)
@@ -184,20 +187,6 @@ internal fun combine (thisList:Map<String, InferenceResult>?, otherList:Map<Stri
     }
 }
 
-internal val INFERRED_ANY_TYPE = InferenceResult(
-        isString = true,
-        isBoolean = true,
-        isRegex = true,
-        isSelector = true,
-        isDictionary = true,
-        isNumeric = true,
-        classes = setOf("object", "?"),
-        arrayTypes = setOf("object", "?")
-)
-
-internal val INFERRED_VOID_TYPE = InferenceResult(
-    classes = setOf(VOID.type)
-)
 
 internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
     if (this == INFERRED_ANY_TYPE) {
@@ -278,3 +267,93 @@ internal fun Iterable<String>.containsAnyType() : Boolean {
 internal val InferenceResult.anyType : Boolean get() {
     return classes.any { it in anyTypes}
 }
+
+internal val INFERRED_ANY_TYPE = InferenceResult(
+        isString = true,
+        isBoolean = true,
+        isRegex = true,
+        isSelector = true,
+        isDictionary = true,
+        isNumeric = true,
+        classes = setOf("object", "?"),
+        arrayTypes = setOf("object", "?")
+)
+
+internal val INFERRED_VOID_TYPE = InferenceResult(
+        classes = setOf("void")
+)
+
+fun StubOutputStream.writeJsFunctionType(function:JsFunctionType?) {
+    writeBoolean(function != null)
+    if (function == null)
+        return
+    writePropertiesMap(function.parameters)
+    writeInferenceResult(function.returnType)
+    writeUTFFast(function.comment ?: "")
+}
+
+fun StubInputStream.readJsFunctionType() : JsFunctionType? {
+    if (!readBoolean())
+        return null
+    val parameters = readPropertiesMap()
+    val returnType = readInferenceResult()
+    val comment = readUTFFast()
+    return JsFunctionType(
+            parameters = parameters,
+            returnType = returnType,
+            comment = if (comment.isNotBlank()) comment else null
+    )
+}
+
+fun StubOutputStream.writePropertiesMap(map:PropertiesMap) {
+    writeInt(map.size)
+    map.forEach { (key, value) ->
+        writeName(key)
+        writeInferenceResult(value)
+    }
+}
+
+fun StubInputStream.readPropertiesMap() : PropertiesMap {
+    val numProperties = readInt()
+    val out = mutableMapOf<String, InferenceResult>()
+    for (i in 0 until numProperties) {
+        val name = readNameString() ?: "?"
+        out[name] = readInferenceResult()
+    }
+    return out
+}
+
+
+fun StubOutputStream.writeInferenceResult(result:InferenceResult) {
+    writeName(result.toClassList("?").joinToString(TYPES_DELIM))
+    val functions = result.functionTypes ?: emptyList()
+    writeInt(functions.size)
+    functions.forEach {
+        writeJsFunctionType(it)
+    }
+    writeBoolean(result.jsObjectKeys != null && result.jsObjectKeys.isNotEmpty())
+    if (result.jsObjectKeys != null && result.jsObjectKeys.isNotEmpty())
+        writePropertiesMap(result.jsObjectKeys)
+    writeName(result.arrayTypes.orEmpty().joinToString(TYPES_DELIM))
+}
+
+fun StubInputStream.readInferenceResult() : InferenceResult {
+    val classes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+    val numFunctions = readInt()
+    val functions = (0 until numFunctions).mapNotNull {
+        readJsFunctionType()
+    }
+    val objectKeys = if (readBoolean())
+        readPropertiesMap()
+    else
+        null
+    val arrayTypes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+
+    return InferenceResult(
+            classes = classes,
+            functionTypes = if (functions.isNotEmpty()) functions else null,
+            jsObjectKeys = objectKeys,
+            arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null
+    )
+}
+

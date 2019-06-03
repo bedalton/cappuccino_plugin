@@ -7,7 +7,9 @@ import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressManager
 
-fun inferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
+fun inferExpressionType(expr:ObjJExpr?, tag:Long) : InferenceResult? {
+    if (expr == null)
+        return null
     return expr.getCachedInferredTypes {
         if (expr.tagged(tag))
             return@getCachedInferredTypes null
