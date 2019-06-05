@@ -47,7 +47,13 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         return resolved == element
     }
 
-    override fun resolve(): PsiElement? {
+    override fun resolve() : PsiElement? {
+        return myElement.resolveFromCache {
+            resolveInternal()
+        }
+    }
+
+    fun resolveInternal(): PsiElement? {
         if (DumbServiceImpl.isDumb(myElement.project)) {
             return null
         }
