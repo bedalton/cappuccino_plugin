@@ -228,10 +228,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
         }
-        val component = (element as? ObjJQualifiedReferenceComponent) ?: (element.parent as? ObjJQualifiedReferenceComponent)
-        if (!isFirstInQualifiedReference && component != null) {
-            // todo Implement
-        }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
         if (shouldIgnoreIgnoredGlobals) {
@@ -406,8 +402,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Add implementation class names to result set
      */
     private fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
+        /*
         val thisParts = element.text.split("[A-Z]".toRegex()).filter { it.length < 2 }
-        /*ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
+        ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
             val classParts = implementationDeclaration.getClassNameString().split("[A-Z]".toRegex()).filter { it.length < 2 }
             if (!classParts.startsWithAny(thisParts)) {
                 return@forEach
@@ -418,7 +415,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
             resultSet.addElement(LookupElementBuilder.create(implementationDeclaration.getClassNameString()).withInsertHandler(ObjJClassNameInsertHandler))
         }*/
-        val results = ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
+        ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
             ObjJPluginSettings.ignoreUnderscoredClasses && it.startsWith("_")
         }.toSet().forEach {
             resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
