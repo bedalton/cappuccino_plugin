@@ -12,9 +12,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiTreeAnyChangeAbstractAdapter
 import java.util.*
+import kotlin.math.abs
 
 
-internal val INFERENCE_LOOP_TAG = Key<Long>("objj.userdata.keys.INFERENCE_LOOP_TAG")
+internal val INFERENCE_LAST_RESOLVED = Key<Long>("objj.userdata.keys.INFERENCE_LAST_RESOLVED")
 
 internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.keys.INFERRED_TYPES")
 
@@ -42,7 +43,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
             return
-        internalTimeSinceLastFileChange = createTag()
+        internalTimeSinceLastFileChange = Date().time
     }
 
     internal fun addListenerToProject(project:Project) {
@@ -62,17 +63,18 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->I
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
-    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LOOP_TAG).orElse(-1)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 500) {
+    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LAST_RESOLVED).orElse(-1)
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 0 && timeSinceTag < 5000) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null) {
             return inferredTypes
         }
     }
-    val inferredTypes = getIfNull?.invoke() ?: InferenceResult()
+    val inferredTypes = getIfNull?.invoke() ?: INFERRED_EMPTY_TYPE
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
     this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, false)
+    this.putUserData(INFERENCE_LAST_RESOLVED, StatusFileChangeListener.timeSinceLastFileChange)
     return inferredTypes
 }
 
@@ -84,12 +86,12 @@ internal fun createTag():Long {
  * Returns true if this item has already been seen this loop
  */
 internal fun ObjJCompositeElement.tagged(tag:Long):Boolean {
-    val currentTag = this.getUserData(INFERENCE_LOOP_TAG)
+    val currentTag = this.getUserData(INFERENCE_LAST_RESOLVED)
     if (currentTag == tag) {
         //LOGGER.info("Element(${this.text})'s current tag matches loop tag <$tag>")
         return true
     }
     //LOGGER.info("Element(${this.text})'s CurrentTag($currentTag) != New Tag($tag)")
-    this.putUserData(INFERENCE_LOOP_TAG, tag)
+    this.putUserData(INFERENCE_LAST_RESOLVED, tag)
     return false
 }
