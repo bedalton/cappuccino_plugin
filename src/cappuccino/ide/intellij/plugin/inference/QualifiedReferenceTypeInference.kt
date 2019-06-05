@@ -4,11 +4,14 @@ import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.interfaces.getReturnTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
@@ -25,7 +28,6 @@ internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceCompon
 
 internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, tag:Long): InferenceResult? {
     if (parts.isEmpty()) {
-        LOGGER.info("Cannot infer qualified reference type without parts")
         return null
     }
     ProgressManager.checkCanceled()
@@ -36,12 +38,19 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
         val part = parts[i]
         val thisParentTypes = parentTypes
         parentTypes = part.getCachedInferredTypes {
+            if (parts.size == 1 && parts[0] is ObjJVariableName) {
+                val varDefTypeSimple = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(parts[0] as ObjJVariableName)
+                if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
+                    return@getCachedInferredTypes InferenceResult(
+                            classes = setOf(varDefTypeSimple!!)
+                    )
+                }
+            }
             //LOGGER.info("QNC <${part.text}> was not cached")
-            if (i == parts.size - 1 && (part.parent is ObjJVariableDeclaration ||part.parent.parent is ObjJVariableDeclaration)) {
+            if (i == parts.size - 1 && (part.parent is ObjJVariableDeclaration || part.parent.parent is ObjJVariableDeclaration)) {
                 val variableDeclarationExpr =
                         (part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).expr
                                 ?: return@getCachedInferredTypes null
-                LOGGER.info("Parent is Variable Declaration")
                 inferExpressionType(variableDeclarationExpr, tag)
             }
             else if (i == 0)
@@ -88,7 +97,6 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
     ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
-        //LOGGER.info("Inferring type for variable <${variableName.text}> at index 0")
         return inferVariableNameType(variableName, tag)
     }
     if (parentTypes == null)
@@ -135,7 +143,6 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         return null
     }*/
     if (variableName.indexInQualifiedReference != 0) {
-        LOGGER.info("Inferrernce failed. 0 indexed variable is not actually at index 0")
         return null
     }
     val variableNameString = variableName.text
@@ -148,7 +155,18 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         variableName.reference.resolve() as? ObjJCompositeElement
     else
         null
+
     return referencedVariable?.getCachedInferredTypes {
+        val varDefType = if (referencedVariable is ObjJNamedElement)
+            ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(referencedVariable)
+        else
+            null
+
+        if (varDefType.isNotNullOrBlank() && varDefType !in anyTypes) {
+            return@getCachedInferredTypes InferenceResult(
+                    classes = setOf(varDefType!!)
+            )
+        }
         val functionDeclaration = when (referencedVariable) {
             is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
             is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
@@ -174,7 +192,6 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
                     classes = setOf(containingClass)
             )
         val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
-        LOGGER.info("Found ${assignedExpressions.size} expressions possibly related to variable name: <$variableNameString>")
         val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
             it.name == variableNameString
         }.flatMap { it.types }
