@@ -15,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
@@ -75,7 +76,7 @@ class ObjJAnnotator : Annotator {
 
     private fun validateAndAnnotateExprIfPreviousExpressionIsNotClosed(element: ObjJExpr?, annotationHolder: AnnotationHolder) {
         val previousElement = element?.getPreviousNonEmptySibling(true) as? ObjJNeedsSemiColon ?: return
-        val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, ObjJBundle.message("objective-j.inspections.expr-use.previous-expression-is-not-closed"))
+        val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, TextRange.create(previousElement.textRange.endOffset - 1, previousElement.textRange.endOffset), ObjJBundle.message("objective-j.inspections.expr-use.previous-expression-is-not-closed"))
         annotation.registerFix(ObjJAddSemiColonIntention(previousElement))
     }
 
