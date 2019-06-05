@@ -494,7 +494,7 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 
     // If node is on same line, and not first selector, add a single space
     if (!this.node.isDirectlyPrecededByNewline()) {
-        if (!indentFirstSelector || this.node.treeNext.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+        if (!indentFirstSelector || this.node.treeNext?.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             return 1
         }
         val prevNode = this.node.getPreviousNonEmptyNode(false)?.psi ?: return 1
