@@ -5,6 +5,7 @@ import com.intellij.psi.stubs.IndexSink
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import com.intellij.psi.stubs.PsiFileStub
@@ -71,6 +72,10 @@ open class StubIndexService internal constructor() {
 
     open fun indexTypeDef(stub:ObjJTypeDefStub, indexSink: IndexSink) {
 
+    }
+
+    open fun indexPropertyName(propertyName: ObjJPropertyNameStub, indexSink: IndexSink) {
+        throw NotImplementedError("indexPropertyName should have been overridden")
     }
 
 

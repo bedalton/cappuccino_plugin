@@ -2472,4 +2472,4 @@ val globalJSClasses = listOf(
 )
 
 
-val globalJSClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }
+val globalJsClassNames = globalJSClasses.filter { !it.isStruct }.map { it.className }

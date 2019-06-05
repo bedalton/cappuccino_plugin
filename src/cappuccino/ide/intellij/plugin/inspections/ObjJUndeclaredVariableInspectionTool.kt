@@ -3,7 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
 import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
 import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
+import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -101,7 +101,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (variableNameString in globalJSClassNames) {
+            if (variableNameString in globalJsClassNames) {
                 return
             }
 
@@ -119,7 +119,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 }
             }*/
 
-            val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
+            val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project].toMutableList()
             if (declarations.isNotEmpty()) {
                 return
             }

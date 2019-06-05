@@ -1,8 +1,7 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
+import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.contributor.globalJsFunctionNames
-import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredFunctionNames
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
@@ -76,7 +75,7 @@ class ObjJInvalidFunctionNameInspection : LocalInspectionTool() {
 
     private fun functionWithNameExists(functionCall:ObjJFunctionCall) : Boolean {
         val functionName = functionCall.functionName ?: return true // Ignore function calls without a name
-        return functionName.reference.resolve() != null || functionName.text in globalJsFunctionNames || functionName.text in globalJSClassNames
+        return functionName.reference.resolve() != null || functionName.text in globalJsFunctionNames || functionName.text in globalJsClassNames
     }
 
     private fun annotateInvalidFunctionName(functionCall: ObjJFunctionCall, problemsHolder: ProblemsHolder) {

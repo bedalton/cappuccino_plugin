@@ -1,9 +1,12 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 fun PsiElement.getContainingComment() : PsiElement? {
@@ -81,18 +84,26 @@ data class CommentWrapper(val commentText:String) {
                 }
                 .map {
                     val tokens:List<String> = it.split("\\s+".toRegex(), 3)
-                    CommentParam(tokens.getOrElse(0) { "_" }, tokens.getOrElse(1){ "?" }, tokens.getOrNull(2))
+
+                    CommentParam(tokens.getOrElse(0) { "_" }, it)
                 }
         paramLines
     }
 
-    val returnParameterComment:String? by lazy {
-        val line = lines.filter { it.startsWith("@return") }.firstOrNull()
+    val returnParameterComment:CommentParam? by lazy {
+        val line = lines.firstOrNull { it.startsWith("@return") }
         line?.trim()?.split("\\s+".toRegex(), 2)?.getOrNull(1)
+        if (line.isNotNullOrBlank()) {
+            CommentParam("@return", line)
+        } else {
+            null
+        }
     }
 
-    val returnTypes:Set<String>? by lazy {
-        returnParameterComment?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)?.toSet()
+    private var returnTypes:Set<String>? = null
+
+    fun getReturnTypes(project: Project):Set<String>? {
+        return returnParameterComment?.getTypes(project)
     }
 
     val deprecated:Boolean by lazy {
@@ -124,8 +135,109 @@ data class CommentWrapper(val commentText:String) {
     }
 }
 
-data class CommentParam(val paramName:String, val type:String?, val paramComment:String?) {
-    val types:Set<String>? get() {
-        return type?.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)?.toSet()
+data class CommentParam(val paramName:String, private val paramCommentIn:String?) {
+
+    val paramCommentClean:String? by lazy {
+        paramCommentIn?.replace("""\s*\\c\s*""".toRegex(), " ")
     }
+
+    val paramCommentFormatted:String? by lazy {
+        val pattern = """\s*\\c\s+([^ \$]+)""".toRegex()
+        paramCommentIn?.replace(pattern) {
+            "<strong>$it</strong>"
+        }
+    }
+
+    private val possibleClassStrings:Set<String> by lazy {
+        if (paramCommentIn == null)
+            return@lazy emptySet<String>()
+        val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?\\s*".toRegex(), "").trim()
+        val out = mutableSetOf<String>()
+        listOf(SIMPLE_TYPE_REGEX_1, SIMPLE_TYPE_REGEX_2).forEach { pattern ->
+                val matcher = pattern.matcher(commentStringTrimmed)
+                while (matcher.find()) {
+                    if (matcher.groupCount() < 2) {
+                        continue
+                    }
+                    out.add(matcher.group(1).trim())
+                }
+        }
+        out
+    }
+
+    /**
+     * Gets the first class type found in comment
+     */
+    private fun getType(project:Project) : String? {
+        val classMatches = getTypes(project, ClassMatchType.OBJJ) ?: getTypes(project, ClassMatchType.JS) ?: return null
+        return classMatches.firstOrNull()
+    }
+
+    /**
+     * Gets class types if matching, null otherwise
+     */
+    fun getTypes(project:Project, matchTypeFilter:ClassMatchType? = null):Set<String>? {
+
+        if (paramCommentIn == null)
+            return null
+        val classes =  if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.OBJJ)
+            ObjJClassDeclarationsIndex.instance.getAllKeys(project).toSet()
+        else
+            emptySet()
+
+        val jsClasses = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.JS)
+            globalJsClassNames.toSet()
+        else
+            emptySet()
+
+
+        val firstIn = paramCommentIn.split("\\s+".toRegex(), 2).first().orEmpty()
+        if (matchType(firstIn, classes, jsClasses) != null)
+            return setOf(firstIn)
+
+        val jsMatches = mutableSetOf<String>()
+        val objJMatches = mutableSetOf<String>()
+        possibleClassStrings.forEach {
+            val matchType = matchType(it, classes, jsClasses) ?: return@forEach
+            if (matchTypeFilter != null && matchTypeFilter != matchType)
+                return@forEach
+            else if (matchType == ClassMatchType.OBJJ)
+                objJMatches.add(it)
+            if (matchType == ClassMatchType.JS)
+                jsMatches.add(it)
+        }
+
+        // Return correct set of matches
+        val out = when (matchTypeFilter) {
+            ClassMatchType.OBJJ -> objJMatches
+            ClassMatchType.JS -> jsMatches
+            else -> objJMatches + jsMatches
+        }
+
+        // Return matches if not empty, null otherwise
+        if (out.isNotEmpty())
+            return out
+        else
+            return null
+    }
+}
+
+val jsTypesMinusCPPrefix by lazy { globalJsClassNames.map { it.removePrefix("CP").removePrefix("CF")} }
+
+
+private val SIMPLE_TYPE_REGEX_1 = "the\\s+([^a-zA-Z0-9_|])".toPattern()
+private val SIMPLE_TYPE_REGEX_2 = "the\\s+[^ ]*\\s+([^a-zA-Z0-9_|]*?).*".toPattern()
+
+private fun matchType(className:String, objjClassNames:Set<String>, jsClassNames:Set<String>) : ClassMatchType? {
+    return when (className) {
+        in objjClassNames -> ClassMatchType.OBJJ
+        in jsClassNames -> ClassMatchType.JS
+        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix) ClassMatchType.JS else null
+    }
+
+}
+
+enum class ClassMatchType {
+    OBJJ,
+    JS
 }

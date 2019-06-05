@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orElse
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
@@ -23,6 +24,8 @@ private val INFERRED_TYPES_MINOR_VERSION = Random().nextInt() * Random().nextInt
 
 private val INFERRED_TYPES_VERSION = 1 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
+private val INFERRED_TYPES_IS_ACCESSING = Key<Boolean>("objj.userdata.keys.INFERRED_TYPES_IS_ACCESSING")
+
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -39,7 +42,6 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
             return
-        LOGGER.info("File did change")
         internalTimeSinceLastFileChange = createTag()
     }
 
@@ -56,15 +58,13 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
  * This should save computation time, but results are uncertain
  */
 internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
+    //if (this.getUserData(INFERRED_TYPES_IS_ACCESSING).orFalse())
+      //  return null;
+    this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LOOP_TAG).orElse(-1)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 10) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag > 500) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
-        if (inferredTypes?.classes.orEmpty().isNotEmpty()) {
-            LOGGER.info("Got Cached Values: ${inferredTypes!!.toClassList()}")
-        } else {
-            LOGGER.info("Got Cached empty class list for <${this.text}>")
-        }
         if (inferredTypes != null) {
             return inferredTypes
         }
@@ -72,11 +72,7 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->I
     val inferredTypes = getIfNull?.invoke() ?: InferenceResult()
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
     this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
-
-    if (inferredTypes.toClassList().isNullOrEmpty())
-        LOGGER.info("getCachedInferredTypes(): Failed to get types if null on element: <${this.text}>")
-    else
-        LOGGER.info("Got inferred types on null: ${inferredTypes.toClassList()} for <${this.text}>")
+    this.putUserData(INFERRED_TYPES_IS_ACCESSING, false)
     return inferredTypes
 }
 

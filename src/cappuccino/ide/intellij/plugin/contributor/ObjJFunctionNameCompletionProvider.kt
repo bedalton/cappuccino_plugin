@@ -28,7 +28,7 @@ object ObjJFunctionNameCompletionProvider {
         addIndexBasedCompletions(resultSet, element);
 
         if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
-            globalJSClassNames.forEach {
+            globalJsClassNames.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
@@ -76,10 +76,8 @@ object ObjJFunctionNameCompletionProvider {
 
     private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, showEvenSkipped:Boolean) {
         val functions = if (showEvenSkipped) {
-            Logger.getLogger("#ObjJFunctionNameCompletionProvider").info("Showing even skipped")
             globalJsFunctionNames
         } else {
-            Logger.getLogger("#ObjJFunctionNameCompletionProvider").info("Not showing skipped")
             globalJsFunctionNamesMinusSkips
         }
 

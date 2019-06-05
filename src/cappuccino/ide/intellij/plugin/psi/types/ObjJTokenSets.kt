@@ -303,7 +303,12 @@ object ObjJTokenSets {
             ObjJ_LESS_THAN,
             ObjJ_LESS_THAN_EQUALS,
             ObjJ_GREATER_THAN,
-            ObjJ_GREATER_THAN_EQUALS
+            ObjJ_GREATER_THAN_EQUALS,
+            ObjJ_COMMA,
+            ObjJ_NEW,
+            ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_WHILE_STATEMENT,
+            ObjJ_TRY_STATEMENT
 
 
     )

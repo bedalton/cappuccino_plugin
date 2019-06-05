@@ -13,6 +13,7 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
 class ObjJObjectLiteralStubType(debugName:String) : ObjJStubElementType<ObjJObjectLiteralStub, ObjJObjectLiteralImpl>(debugName, ObjJObjectLiteralImpl::class.java) {
+
     override fun createPsi(stub: ObjJObjectLiteralStub): ObjJObjectLiteralImpl {
         return ObjJObjectLiteralImpl(stub, this)
     }
@@ -22,7 +23,7 @@ class ObjJObjectLiteralStubType(debugName:String) : ObjJStubElementType<ObjJObje
     }
 
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>): ObjJObjectLiteralStub {
-        val objectDefinition = stream.readObject() ?: JsObjectType(mutableMapOf())
+        val objectDefinition = stream.readObject()
         return ObjJObjectLiteralStubImpl(parentStub, objectDefinition)
     }
 
@@ -45,7 +46,7 @@ fun StubOutputStream.writeObject(ob:JsObjectType?) {
 
 
 fun StubInputStream.readObject() : JsObjectType? {
-    if (readBoolean())
+    if (!readBoolean())
         return null
     val properties = readPropertiesMap()
     return JsObjectType(properties)

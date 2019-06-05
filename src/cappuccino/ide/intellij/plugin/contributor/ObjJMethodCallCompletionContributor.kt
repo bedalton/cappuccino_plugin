@@ -4,15 +4,13 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Comp
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.GENERIC_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
-import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.getClassConstraints
@@ -86,6 +84,12 @@ object ObjJMethodCallCompletionContributor {
     }
 
     private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int) {
+
+        if (selectorString.trim() == CARET_INDICATOR) {
+            addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
+            return
+        }
+
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
                 .filter {
@@ -117,12 +121,12 @@ object ObjJMethodCallCompletionContributor {
             val priority: Double = getPriority(possibleContainingClassNames, selector.containingClassName, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
 
 
-            if (ObjJClassType.ID !in possibleContainingClassNames && ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
+            //if (ObjJClassType.ID !in possibleContainingClassNames && ObjJClassType.UNDETERMINED !in possibleContainingClassNames && filterIfStrict) {
                 if ((possibleContainingClassNames.isNotEmpty() && methodHeader.containingClassName !in possibleContainingClassNames)) {
                     filteredOut.add(SelectorCompletionPriorityTupple(selector, GENERIC_METHOD_SUGGESTION_PRIORITY))
                     continue
                 }
-            }//Add the lookup element
+            //}//Add the lookup element
             out.add(SelectorCompletionPriorityTupple(selector, priority))
         }
         if (out.isEmpty()) {
@@ -135,6 +139,31 @@ object ObjJMethodCallCompletionContributor {
                     selector = it.selector,
                     selectorIndex = selectorIndex,
                     priority = it.priority,
+                    addSpaceAfterColon = true)
+        }
+    }
+
+    private fun collapseContainingClasses(project:Project, containingClasses:Collection<String>) : Set<String> {
+        return containingClasses.flatMap {
+            ObjJInheritanceUtil.getAllInheritedClasses(it, project, true)
+        }.toSet()
+    }
+
+    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope) {
+        collapseContainingClasses(project, possibleContainingClassNames).forEach {
+            addMethodDeclarationLookupElementsForClass(project, it, result, targetScope)
+        }
+    }
+    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: TargetScope) {
+        ObjJClassMethodIndex.instance[className, project].forEach {
+            if (targetScope.equals(it.methodScope))
+                return@forEach
+            val selector = it.selectorList.getOrNull(0) ?: return@forEach
+            ObjJSelectorLookupUtil.addSelectorLookupElement(
+                    resultSet = result,
+                    selector = selector,
+                    selectorIndex = 0,
+                    priority = TARGETTED_METHOD_SUGGESTION_PRIORITY,
                     addSpaceAfterColon = true)
         }
     }
@@ -324,12 +353,21 @@ object ObjJMethodCallCompletionContributor {
         }
     }
 
-    private enum class TargetScope {
+    internal enum class TargetScope {
         STATIC,
         INSTANCE,
         ANY;
+
+        fun equals(scope: MethodScope) : Boolean {
+            return when (this) {
+                ANY -> true
+                STATIC -> scope == MethodScope.STATIC
+                INSTANCE -> scope == MethodScope.INSTANCE
+            }
+        }
     }
 
     internal data class SelectorCompletionPriorityTupple (val selector:ObjJSelector, val priority:Double)
 
 }
+

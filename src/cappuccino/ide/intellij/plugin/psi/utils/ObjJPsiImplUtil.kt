@@ -51,6 +51,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getName(propertyName:ObjJPropertyName) : String {
+        return propertyName.key
+    }
+
+    @JvmStatic
     fun getName(defineFunction: ObjJPreprocessorDefineFunction): String {
         return defineFunction.functionNameAsString
     }
@@ -119,6 +124,11 @@ object ObjJPsiImplUtil {
     @Throws(IncorrectOperationException::class)
     fun setName(header: ObjJHasMethodSelector, name: String): PsiElement {
         return ObjJMethodPsiUtils.setName(header, name)
+    }
+
+    @JvmStatic
+    fun setName(propertyName:ObjJPropertyName, name:String) : ObjJPropertyName {
+        return propertyName
     }
 
     @JvmStatic
@@ -1129,6 +1139,26 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsObjectType {
         return ObjJObjectPsiUtils.toJsObjectType(element, tag)
+    }
+
+    @JvmStatic
+    fun getKey(assignment:ObjJPropertyAssignment) : String {
+        return ObjJObjectPsiUtils.getKey(assignment)
+    }
+
+    @JvmStatic
+    fun getKey(propertyName:ObjJPropertyName) : String {
+        return ObjJObjectPsiUtils.getKey(propertyName)
+    }
+
+    @JvmStatic
+    fun getNamespacedName(assignment:ObjJPropertyAssignment) : String {
+        return getNamespacedName(assignment.propertyName)
+    }
+
+    @JvmStatic
+    fun getNamespacedName(propertyName:ObjJPropertyName) : String {
+        return propertyName.stub?.namespacedName ?: ObjJObjectPsiUtils.getNamespacedName(propertyName)
     }
 
 }

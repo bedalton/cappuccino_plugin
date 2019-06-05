@@ -3,10 +3,12 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.interfaces.getReturnTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
@@ -51,7 +53,7 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
             isStatic = false
         }
         if (i == 0) {
-            isStatic = part.text in globalJSClassNames
+            isStatic = part.text in globalJsClassNames
         }
     }
     if (parentTypes == null && parts.size == 1) {
@@ -61,7 +63,7 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
     return parentTypes
 }
 
-val SPLIT_JS_CLASS_TYPES_LIST_REGEX = "\\s*\\|\\s*".toRegex()
+val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
 
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag:Long): InferenceResult? {
     return when (part) {
@@ -113,7 +115,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
         JsFunctionType(function.parameters.toMap(), function.returns?.types?.toInferenceResult() ?: INFERRED_ANY_TYPE)
     }
     if (functions.isNotEmpty()) {
-        classNames.toInferenceResult().copy(
+        return classNames.toInferenceResult().copy(
                 functionTypes = functions
         )
     }
@@ -143,44 +145,45 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         else -> null
     }
     val referencedVariable = if (!DumbService.isDumb(variableName.project))
-        variableName.reference.resolve()
+        variableName.reference.resolve() as? ObjJCompositeElement
     else
         null
-
-    val functionDeclaration = when (referencedVariable) {
-        is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
-        is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
-        else -> null
-    }
-
-    if (functionDeclaration != null)
-        return functionDeclaration.toJsFunctionTypeResult(tag)
-
-    if (referencedVariable is ObjJVariableName) {
-        val out = ObjJVariableTypeResolver.resolveVariableType(
-                variableName = referencedVariable,
-                recurse = false,
-                withInheritance = false,
-                tag = tag
-        )
-        if (out.isNotEmpty()) {
-            return InferenceResult(classes = out)
+    return referencedVariable?.getCachedInferredTypes {
+        val functionDeclaration = when (referencedVariable) {
+            is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
+            is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
+            else -> null
         }
+
+        if (functionDeclaration != null)
+            return@getCachedInferredTypes functionDeclaration.toJsFunctionTypeResult(tag)
+
+        if (referencedVariable is ObjJVariableName) {
+            val out = ObjJVariableTypeResolver.resolveVariableType(
+                    variableName = referencedVariable,
+                    recurse = false,
+                    withInheritance = false,
+                    tag = tag
+            )
+            if (out.isNotEmpty()) {
+                return@getCachedInferredTypes InferenceResult(classes = out)
+            }
+        }
+        if (containingClass != null)
+            return@getCachedInferredTypes InferenceResult(
+                    classes = setOf(containingClass)
+            )
+        val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
+        LOGGER.info("Found ${assignedExpressions.size} expressions possibly related to variable name: <$variableNameString>")
+        val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
+            it.name == variableNameString
+        }.flatMap { it.types }
+        val out = getInferredTypeFromExpressionArray(assignedExpressions, tag)
+        if (staticVariableNameTypes.isNotEmpty())
+            out.copy(classes = out.classes + staticVariableNameTypes)
+        else
+            out
     }
-    if (containingClass != null)
-        return InferenceResult(
-                classes = setOf(containingClass)
-        )
-    val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
-    LOGGER.info ("Found ${assignedExpressions.size} expressions possibly related to variable name: <$variableNameString>")
-    val staticVariableNameTypes = ObjJGlobalJSVariables.filter {
-        it.name == variableNameString
-    }.flatMap { it.types }
-    val out = getInferredTypeFromExpressionArray(assignedExpressions, tag)
-    return if (staticVariableNameTypes.isNotEmpty())
-        out.copy(classes = out.classes + staticVariableNameTypes)
-    else
-        out
 }
 
 fun getAllVariableNameAssignmentExpressions(variableName: ObjJVariableName) : List<ObjJExpr> {

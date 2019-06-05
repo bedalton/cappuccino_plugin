@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import com.intellij.psi.stubs.PsiFileStub
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -218,6 +219,15 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         }
     }
 
+    override fun indexPropertyName(propertyName:ObjJPropertyNameStub, indexSink: IndexSink) {
+        val namespaceComponents = propertyName.namespaceComponents
+        val lastIndex = namespaceComponents.size - 1
+        for (i in 0 .. lastIndex) {
+            val namespace = namespaceComponents.subList(i, lastIndex).joinToString(".")
+            indexSink.occurrence<ObjJPropertyName, String>(ObjJPropertyNamesIndex.KEY, namespace)
+        }
+    }
+
     /**
      * Index typedefs for completion and or validation
      */
@@ -227,7 +237,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
     companion object {
         private const val MAJOR_VERSION = 6
-        private const val MINOR_VERSION = 8
+        private const val MINOR_VERSION = 10
         const val INDEX_VERSION:Int = MAJOR_VERSION + MINOR_VERSION
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)

@@ -36,9 +36,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         LOGGER.info("Checking alloc statement for calltarget <${methodCall.callTargetText}>")
         return getAllocStatementType(methodCall)
     }
-    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag).flatMap {
-        ObjJInheritanceUtil.getAllInheritedClasses(it, project)
-    }.toSet()
+    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag)
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             LOGGER.info("Gathering all matching methods by class name in [$callTargetTypes]")
@@ -53,7 +51,15 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         emptyList()
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
-        getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
+        methodDeclaration.getCachedInferredTypes {
+            val thisClasses = getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
+            if (thisClasses.isNotEmpty()) {
+                InferenceResult(
+                        classes = thisClasses
+                )
+            } else
+                null
+        }?.classes.orEmpty()
     }
     val instanceVariableTypes = callTargetTypes.flatMap {className ->
         ObjJInstanceVariablesByClassIndex.instance[className, project].filter{ it.variableName?.text == selector}.mapNotNull {
@@ -115,12 +121,12 @@ private fun inferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : Inference
     return null
 }
 
-private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Iterable<String> {
+private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
     ProgressManager.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
-        return listOf(type)
+        return setOf(type)
     } else {
         var out = InferenceResult()
         val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
@@ -128,7 +134,7 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
         val simpleOut = selfExpressionTypes + superExpressionTypes
         if (simpleOut.isNotEmpty()) {
-            return simpleOut
+            return simpleOut.toSet()
         }
         expressions.forEach {
             //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodCall.text}>")
