@@ -155,7 +155,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (ObjJKeywordsList.keywords.contains(variableName.text)) {
                 return true
             }
-            val resolved = ObjJVariableReference(variableName).resolve()
+            val resolved = ObjJVariableReference(variableName).resolve(nullIfSelfReferencing = true)
             if (resolved != null) {
                 return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }

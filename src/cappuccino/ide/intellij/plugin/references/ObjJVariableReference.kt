@@ -22,7 +22,7 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.util.PsiTreeUtil
 
 class ObjJVariableReference(
-        element: ObjJVariableName, private val follow:Boolean = true) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
+        element: ObjJVariableName, private val follow:Boolean = true, private val nullIfSelfReferencing: Boolean? = null) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
     private val isGlobal: Boolean by lazy {
@@ -131,11 +131,11 @@ class ObjJVariableReference(
 
     override fun resolve(): PsiElement? {
         return myElement.resolveFromCache {
-            resolve(false)
+            resolve(nullIfSelfReferencing.orFalse())
         }
     }
 
-    private fun resolve(nullIfSelfReferencing:Boolean = false) : PsiElement? {
+    fun resolve(nullIfSelfReferencing: Boolean) : PsiElement? {
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
                 return null

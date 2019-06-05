@@ -512,8 +512,13 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(variableName: ObjJVariableName): PsiReference {
+    fun getReference(variableName: ObjJVariableName): ObjJVariableReference {
         return ObjJVariableReference(variableName)
+    }
+
+    @JvmStatic
+    fun getReferenceNoFollow(variableName: ObjJVariableName): PsiReference {
+        return ObjJVariableReference(variableName, false)
     }
 
     @JvmStatic
