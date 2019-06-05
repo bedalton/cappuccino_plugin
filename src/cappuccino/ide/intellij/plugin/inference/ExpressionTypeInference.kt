@@ -105,7 +105,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     }
     val objectLiteral = leftExpression.objectLiteral
     if (objectLiteral != null) {
-        val keys = objectLiteral.toJsObjectType(tag).properties
+        val keys = objectLiteral.toJsObjectTypeSimple().properties
         return InferenceResult(
                 classes = setOf("object"),
                 jsObjectKeys = keys
