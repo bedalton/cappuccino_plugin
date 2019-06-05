@@ -190,7 +190,7 @@ object ObjJMethodPsiUtils {
         if (simpleOut.isNotEmpty()) {
             return InferenceResult(classes = simpleOut.toSet()).toClassList()
         }
-        var out = InferenceResult()
+        var out = INFERRED_EMPTY_TYPE
         expressions.forEach {
             //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
             val type = inferExpressionType(it, tag)

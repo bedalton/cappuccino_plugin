@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressManager
 
@@ -83,6 +82,8 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
             return InferenceResult(isBoolean = true)
         else if (primary.stringLiteral != null)
             return InferenceResult(isString = true)
+        else if (primary.nullLiterals != null)
+            return null
     }
     if (leftExpression.regularExpressionLiteral != null)
         return InferenceResult(isRegex = true)
@@ -125,6 +126,8 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     if (leftExpression.derefExpression?.variableName != null) {
         return inferVariableNameType(leftExpression.derefExpression!!.variableName!!, tag)
     }
+
+
     return INFERRED_ANY_TYPE
 }
 
@@ -132,7 +135,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
     ProgressManager.checkCanceled()
     if (leftExpression == null)// || level < 0)
         return null
-    var current = InferenceResult()
+    var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {
         if (rightExpr.comparisonExprPrime != null)
             return InferenceResult(classes = setOf(JS_BOOL.className), isBoolean = true)

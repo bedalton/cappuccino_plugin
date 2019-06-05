@@ -90,7 +90,7 @@ typealias PropertiesMap = Map<String, InferenceResult>
 fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
     val parameters = this.map {
         val parameterString = StringBuilder(it.key)
-        val types = it.value.toClassList().joinToString(TYPES_DELIM)
+        val types = it.value.toClassList(null).joinToString(TYPES_DELIM)
         if (types.isNotNullOrBlank())
             parameterString.append(":").append(types)
         parameterString.toString()
@@ -215,9 +215,9 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
         returnClasses.addAll(arrayTypes!!.mapNotNull { if (it != "Array") "$it[]" else null })
     }
     returnClasses.addAll(classes)
-    return returnClasses.map {
+    return returnClasses.mapNotNull {
         if (it in anyTypes)
-            simplifyAnyTypeTo ?: it
+            simplifyAnyTypeTo
         else
             it
         }.toSet()
@@ -283,6 +283,13 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
 internal val INFERRED_VOID_TYPE = InferenceResult(
         classes = setOf("void")
 )
+
+
+internal val INFERRED_EMPTY_TYPE:InferenceResult by lazy {
+    InferenceResult(
+            classes = setOf()
+    )
+}
 
 fun StubOutputStream.writeJsFunctionType(function:JsFunctionType?) {
     writeBoolean(function != null)
