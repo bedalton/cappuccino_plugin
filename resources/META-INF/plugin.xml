@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.3.05</version>
+  <version>0.3.06</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -50,6 +50,25 @@
     ]]></description>
 
   <change-notes><![CDATA[
+
+    <h4>Version: 0.3.05</h4>
+    <ul>
+      <li>Added cmd+hover information for known types</li>
+      <li>Extended type inferences</li>
+      <ul>
+        <li>may be slow or cpu intensive</li>
+        <li>Can be disabled in settings</li>
+      </ul>
+      <li>Improved Autocomplete<br/>
+        <ul>
+            <li>Class names completions are now generated faster</li>
+            <li>Javascript and Objective-J keyword suggestions are more thoughtfully scoped</li>
+            <li>Method call completions are now faster to display</li>
+        </ul>
+
+      </li>
+    </ul>
+
     <h4>Version: 0.3.05</h4>
     <ul>
       <li>Improved indentation and spacing issues</li>
