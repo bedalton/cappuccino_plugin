@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.contributor.returnTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
@@ -25,7 +24,6 @@ internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
-    LOGGER.info("Inferring Type for function call ${functionCall.functionName?.text}")
     val resolve = functionCall.functionName?.reference?.resolve() as? ObjJCompositeElement
     if (resolve == null) {
         val functionName = functionCall.functionName?.text
@@ -44,7 +42,6 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
                 return InferenceResult(classes = out)
             }
         }
-        LOGGER.info("Failed to resolve function call reference")
         return null
     }
     return resolve.getCachedInferredTypes {
@@ -55,7 +52,6 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
             else -> null
         })
         if (function == null) {
-            LOGGER.info("Failed to find function for function name element")
             val expression = functionAsVariableName?.getAssignmentExprOrNull() ?: return@getCachedInferredTypes null
             return@getCachedInferredTypes inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
         }
@@ -73,7 +69,6 @@ fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*
     val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
-    LOGGER.info("Got function dec types for function ${function.functionNameAsString} : ${types.toClassListString()}")
     return types
 }
 
@@ -97,7 +92,6 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
     for ((i, parameter) in parameters.withIndex()) {
         ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
-        LOGGER.info("Parameter Name is $parameterName")
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
             val parameterType = commentWrapper?.parameterComments
                     ?.get(i)
