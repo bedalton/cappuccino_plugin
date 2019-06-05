@@ -8,9 +8,8 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.*
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
@@ -31,6 +30,7 @@ import java.util.logging.Logger
 
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
 
 /**
@@ -85,6 +85,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val element = parameters.position
         val prevSibling = element.getPreviousNonEmptySibling(true)
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
+
+        LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}")
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
                 resultSet.stopHere()
@@ -120,13 +122,20 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             // All others
             element.parent is ObjJClassDeclarationElement<*> -> getClassNameCompletions(resultSet, element)
             element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT -> getAtFragmentCompletions(resultSet, element)
+            prevSibling.elementType == ObjJTypes.ObjJ_TRY_STATEMENT -> {
+                if (prevSibling.getChildOfType(ObjJCatchProduction::class.java) == null) {
+                    resultSet.addElement(LookupElementBuilder.create("catch").withInsertHandler(ObjJFunctionNameInsertHandler))
+                }
+                if (prevSibling.getChildOfType(ObjJFinallyProduction::class.java) == null) {
+                    resultSet.addElement(LookupElementBuilder.create("finally"))
+                }
+            }
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
                 LOGGER.info("Cannot complete after ${prevSibling.elementType}")
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
         }
-        LOGGER.info("Completions for ${element.tokenType()}(${element.text}) in ${element.parent.tokenType()}")
     }
 
     /**
@@ -197,23 +206,23 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         val variableName = element as? ObjJVariableName ?: element.parent as? ObjJVariableName
-        val results = if (variableName != null) {
-            ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName) as MutableList<String>
+        val results:List<ObjJVariableName> = if (variableName != null) {
+            ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName)
         } else {
-            mutableListOf()
+            emptyList()
         }
-
-        addCompletionElementsSimple(resultSet, results, 110.0)
+        //val selectorTargets = getSelectorTargets(element)
+        addVariableNameCompletionElementsWithPriority(resultSet, results)
 
         val notInMethodHeaderDeclaration = variableName?.doesNotHaveParentOfType(ObjJMethodHeaderDeclaration::class.java).orTrue()
         val isFirstInQualifiedReference = (variableName?.indexInQualifiedReference ?: 0) < 1
         val hasLength = promptTextHasLength(variableName)
         if (notInMethodHeaderDeclaration && isFirstInQualifiedReference && hasLength) {
-            ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
-            addGlobalVariableCompletions(resultSet, element)
+            //ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
+            //addGlobalVariableCompletions(resultSet, element)
             addCompletionElementsSimple(resultSet, getKeywordCompletions(variableName), 40.0)
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
-            addCompletionElementsSimple(resultSet, listOf("YES", "yes", "NO", "no", "true", "false"), 30.0)
+            addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
         }
         val component = (element as? ObjJQualifiedReferenceComponent) ?: (element.parent as? ObjJQualifiedReferenceComponent)
         if (!isFirstInQualifiedReference && component != null) {
@@ -227,6 +236,66 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, ObjJGlobalJSVariablesNames, -200.0)
         }
     }
+
+    private fun getSelectorTargets(element: PsiElement) : Set<String> {
+        val out = mutableSetOf<String>()
+        val selector = element.getParentOfType(ObjJQualifiedMethodCallSelector::class.java) ?: return emptySet()
+        val index = selector.index
+        val selectorString = selector.getParentOfType(ObjJMethodCall::class.java)?.selectorStrings?.subList(0, index).orEmpty().joinToString(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
+        if (selectorString.isNotNullOrBlank()) {
+            ObjJMethodFragmentIndex.instance[selectorString, element.project].forEach {
+                val thisSelector = it.selectorList.getOrNull(index)?.getParentOfType(ObjJMethodDeclarationSelector::class.java) ?: return@forEach
+                val type = thisSelector.formalVariableType?.varTypeId?.getIdType(false) ?: thisSelector.formalVariableType?.text ?: return@forEach
+                if (type.toLowerCase() !in anyTypes)
+                    out.add(type)
+            }
+        }
+        return out
+
+    }
+
+    private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>) {
+        variables.forEach {
+            val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
+            val lookupElement = LookupElementBuilder.create(it.text)
+            if (type.isNotNullOrBlank())
+                lookupElement.withPresentableText("${it.text} : $type")
+            lookupElement.withInsertHandler(ObjJVariableInsertHandler)
+            lookupElement.withBoldness(true)
+            resultSet.addElement(lookupElement)
+        }
+
+    }
+
+    /*
+    private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>, classFilters:Set<String>) {
+        LOGGER.info("Adding completions for ${variables.size} variables")
+        variables.forEach {
+            addVariableNameCompletionElementWithPriority(resultSet, it, classFilters)
+        }
+    }
+
+    private fun addVariableNameCompletionElementWithPriority(resultSet:CompletionResultSet, variable:ObjJVariableName, classFilters: Set<String>) {
+        LOGGER.info("ADDING COMPLETION FOR: " + variable.text)
+        val inferredTypes = inferQualifiedReferenceType(variable.previousSiblings + variable, createTag())
+        val classList = inferredTypes?.toClassList("?").orEmpty().filterNot {it == "?"}.toSet()
+        val lookupElement = LookupElementBuilder.create(variable.text).withInsertHandler(ObjJVariableInsertHandler)
+        if (classList.isEmpty() || classFilters.isEmpty()) {
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY))
+            return
+        }
+        val targeted = classFilters.any {targetClass ->
+            targetClass in classList || classList.any {
+                ObjJInheritanceUtil.isInstanceOf(variable.project, it, targetClass)
+            }
+        }
+        if (targeted) {
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.TARGETTED_VARIABLE_SUGGESTION_PRIORITY))
+        } else {
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY))
+        }
+
+    }*/
 
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getStartingWith(variableName.textWithoutCaret, variableName.project).forEach {
@@ -279,7 +348,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
 
         if (shouldAddJsClassNames(element)) {
-            globalJSClassNames.forEach {
+            globalJsClassNames.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
@@ -334,15 +403,21 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      */
     private fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
         val thisParts = element.text.split("[A-Z]".toRegex()).filter { it.length < 2 }
-        ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
-            if (isIgnoredImplementationDeclaration(element, implementationDeclaration)) {
-                return@forEach
-            }
+        /*ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
             val classParts = implementationDeclaration.getClassNameString().split("[A-Z]".toRegex()).filter { it.length < 2 }
             if (!classParts.startsWithAny(thisParts)) {
                 return@forEach
             }
+            if (isIgnoredImplementationDeclaration(element, implementationDeclaration)) {
+                return@forEach
+            }
+
             resultSet.addElement(LookupElementBuilder.create(implementationDeclaration.getClassNameString()).withInsertHandler(ObjJClassNameInsertHandler))
+        }*/
+        val results = ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
+            ObjJPluginSettings.ignoreUnderscoredClasses && it.startsWith("_")
+        }.toSet().forEach {
+            resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
         }
     }
 
@@ -416,21 +491,51 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     /**
      * Gets misc keyword completions
      */
-    private fun getKeywordCompletions(element: PsiElement?): List<String> {
+    private fun getKeywordCompletions(resultSet: CompletionResultSet, element: PsiElement?){
+        if (element !is ObjJCompositeElement)
+            return
         val expression = element.getParentOfType(ObjJExpr::class.java)
-        return if (canAddBlockLevelKeywords(element, expression)) {
-            EMPTY_STRING_ARRAY
-        } else ObjJKeywordsList.keywords
+        if (expression != null && element?.text != expression.text)
+            return
+        if (element.hasParentOfType(ObjJIterationStatement::class.java)) {
+            resultSet.addElement(LookupElementBuilder.create("break"))
+            resultSet.addElement(LookupElementBuilder.create("continue"))
+        }
+        val prevSibling = element.getPreviousNonEmptySibling(true)
+        if (prevSibling?.text != "new")
+            resultSet.addElement(LookupElementBuilder.create("new"))
+        if (expression?.hasParentOfType(ObjJExpr::class.java).orFalse())
+            return
+        resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
+        if (element.hasParentOfType(ObjJBlock::class.java) || element.parent is PsiFile || element.parent.parent is PsiFile) {
+            listOf(
+                    "return",
+                    "try",
+                    "var",
+                    "throw",
+                    "do",
+            ).forEach {
+                resultSet.addElement(LookupElementBuilder.create(it))
+            }
+
+            listOf(
+                    "while",
+                    "if",
+                    "for",
+                    "switch"
+            ).forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJFunctionNameInsertHandler))
+            }
+        } else if (prevSibling is ObjJDoWhileStatement) {
+            resultSet.addElement(LookupElementBuilder.create("while").withInsertHandler(ObjJFunctionNameInsertHandler))
+        }
     }
 
     /**
      * Determines whether or not to add block level keywords
      */
-    private fun canAddBlockLevelKeywords(element: PsiElement?, expression: ObjJExpr?): Boolean {
-        if (expression == null)
-            return false
-        // ""expression.text == element?.text"" means that expression is only made up of the keyword
-        return expression.text == element?.text && expression.parent is ObjJBlock
+    private fun getKeywordCompletions(element: PsiElement?, expression: ObjJExpr?): Boolean {
+
     }
 
     /**
@@ -501,10 +606,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         val previousComponents = qualifiedNameComponent.previousSiblings
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return {
-            //LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
+            LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
             Unit
         }()
-        LOGGER.info("QNP(${previousComponents.joinToString(".")}.${element.text} -> Inferred -> $inferred")
         val classes = inferred.classes
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}

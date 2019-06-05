@@ -1100,6 +1100,10 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
 
 val globalJsFunctions = createGlobalJsFunctions()
 
+val allGlobalJsClassFunctions = globalJSClasses.flatMap {
+        it.functions
+}
+
 val globalJsFunctionNames = globalJsFunctions.names()
 
 val globalJsFunctionNamesMinusSkips = globalJsFunctions

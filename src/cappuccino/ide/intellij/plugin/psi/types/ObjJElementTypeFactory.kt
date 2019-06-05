@@ -16,6 +16,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_CALL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_HEADER
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.OBJECT_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PREPROCESSOR_FUNCTION
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROPERTY_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROTOCOL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.QUALIFIED_REFERENCE
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.SELECTOR_LITERAL
@@ -44,6 +45,7 @@ class ObjJElementTypeFactory {
                 "ObjJ_METHOD_HEADER" -> METHOD_HEADER
                 "ObjJ_OBJECT_LITERAL" -> OBJECT_LITERAL
                 "ObjJ_PREPROCESSOR_DEFINE_FUNCTION" -> PREPROCESSOR_FUNCTION
+                "ObjJ_PROPERTY_NAME" -> PROPERTY_NAME
                 "ObjJ_PROTOCOL_DECLARATION" -> PROTOCOL
                 "ObjJ_QUALIFIED_REFERENCE" -> QUALIFIED_REFERENCE
                 "ObjJ_SELECTOR_LITERAL" -> SELECTOR_LITERAL

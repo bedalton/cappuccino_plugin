@@ -326,7 +326,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
 
     private fun functionIsEnclosedGlobal(functionDeclaration:ObjJFunctionDeclarationElement<*>) : Boolean {
-        if(!DumbService.isDumb(functionDeclaration.project)) {
+        if(false && !DumbService.isDumb(functionDeclaration.project)) {
             return functionIsEnclosedGlobalStrict(functionDeclaration)
         }
         val variableDeclaration = functionDeclaration.parent.parent.parent as? ObjJVariableDeclaration ?: return false

@@ -20,6 +20,16 @@ object ObjJInheritanceUtil {
         return inheritedClasses
     }
 
+    fun isInstanceOf(project:Project, thisClassName:String, targetClass:String) : Boolean {
+        if (thisClassName == targetClass)
+            return true
+        return ObjJClassInheritanceIndex.instance[targetClass, project].any {
+            val otherClass = it.getClassNameString()
+            if (thisClassName == targetClass)
+                return true
+            return isInstanceOf(project, thisClassName, otherClass)
+        }
+    }
 
     fun appendAllInheritedProtocolsToSet(className: String, project: Project): MutableSet<ObjJProtocolDeclaration> {
         val out = mutableSetOf<ObjJProtocolDeclaration>()

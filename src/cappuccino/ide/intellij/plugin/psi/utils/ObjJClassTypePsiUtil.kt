@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
+import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
@@ -24,7 +24,7 @@ object ObjJClassTypePsiUtil {
         if (ObjJIgnoreEvaluatorUtil.isIgnored(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS))
             return true
         val project:Project = className.project
-        if (globalJSClassNames.contains(classNameString))
+        if (globalJsClassNames.contains(classNameString))
             return true
         if (DumbService.isDumb(project))
             return null
@@ -40,7 +40,7 @@ object ObjJClassTypePsiUtil {
         // Is primitive type, do not continue check
         if (classNameString in ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES || classNameString.contains("signed"))
             return true
-        if (globalJSClassNames.contains(classNameString))
+        if (globalJsClassNames.contains(classNameString))
             return true
         if (DumbService.isDumb(project))
             return null

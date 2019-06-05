@@ -51,8 +51,8 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
-                    if (parameterComment?.paramComment != null) {
-                        out.append(" - ").append(parameterComment.paramComment)
+                    if (parameterComment?.paramCommentFormatted != null) {
+                        out.append(" - ").append(parameterComment.paramCommentFormatted)
                     }
                     out.append("[in").append(containingClassName).append("]")
                     out.toString()
@@ -162,7 +162,7 @@ private val PsiElement.containerName:String? get () {
 
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
     val out = StringBuilder()
-    if (ObjJClassDeclarationsIndex.instance[text, project].size > 0) {
+    if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
         out.append("Class ").append(text)
         return out.toString()
     }
@@ -172,7 +172,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         if (type != null)
             out.append("(").append(type).append(")")
         out.append(text)
-        val paramComment = comment?.getParameterComment(text)?.paramComment
+        val paramComment = comment?.getParameterComment(text)?.paramCommentClean
         if (paramComment.isNotNullOrBlank()) {
             out.append(" - ").append(paramComment)
         }
@@ -240,7 +240,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
     val resolvedSelectors = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
-    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramComment }.joinToString("|")
+    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramCommentClean }.joinToString("|")
     out.append(selector?.text ?: "_").append(":")
     out.append("(").append(resolvedTypes.joinToString("|")).append(")")
     if (resolvedVariableNames.size > 1) {

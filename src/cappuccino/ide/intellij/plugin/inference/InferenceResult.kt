@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
@@ -111,7 +112,7 @@ operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
             isString = isString || other.isString,
             isDictionary = isDictionary || other.isDictionary,
             isRegex = isRegex || other.isRegex,
-            arrayTypes = arrayTypes,
+            arrayTypes = if (arrayTypes.isNotNullOrEmpty()) arrayTypes else null,
             jsObjectKeys = jsObjectKeys ,
             functionTypes = functionTypes,
             classes = (classes + other.classes)
@@ -195,24 +196,24 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
         else
             emptySet()
     }
-    val returnTypes = this
     val returnClasses = mutableListOf<String>()
-    if (returnTypes.isNumeric && numberTypes.intersect(classes).isEmpty())
+    if (isNumeric && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (returnTypes.isBoolean && booleanTypes.intersect(classes).isEmpty())
+    if (isBoolean && booleanTypes.intersect(classes).isEmpty())
         returnClasses.add("BOOL")
-    if (returnTypes.isRegex)
+    if (isRegex)
         returnClasses.add("regex")
-    if (returnTypes.isDictionary)
+    if (isDictionary)
         returnClasses.add("CPDictionary")
-    if (returnTypes.isString && stringTypes.intersect(classes).isEmpty())
+    if (isString && stringTypes.intersect(classes).isEmpty())
         returnClasses.add("string")
-    if (returnTypes.isSelector)
+    if (isSelector)
         returnClasses.add("SEL")
-    if (returnTypes.isJsObject)
+    if (isJsObject)
         returnClasses.add("object")
-    if (returnTypes.arrayTypes != null)
-        returnClasses.add("Array")
+    if (arrayTypes.isNotNullOrEmpty()) {
+        returnClasses.addAll(arrayTypes!!.mapNotNull { if (it != "Array") "$it[]" else null })
+    }
     returnClasses.addAll(classes)
     return returnClasses.map {
         if (it in anyTypes)
@@ -249,7 +250,7 @@ internal fun Iterable<String>.toInferenceResult(): InferenceResult {
             isRegex = this.any { it.toLowerCase() == "regex"},
             isDictionary = this.any { it.toLowerCase() in dictionaryTypes},
             isSelector = this.any { it.toLowerCase() == "sel" },
-            arrayTypes = arrayClasses.toSet(),
+            arrayTypes = if (arrayClasses.isNotEmpty()) arrayClasses.toSet() else null,
             classes = classes
     )
 }
@@ -275,8 +276,8 @@ internal val INFERRED_ANY_TYPE = InferenceResult(
         isSelector = true,
         isDictionary = true,
         isNumeric = true,
-        classes = setOf("object", "?"),
-        arrayTypes = setOf("object", "?")
+        classes = setOf("?"),
+        arrayTypes = null
 )
 
 internal val INFERRED_VOID_TYPE = InferenceResult(
@@ -325,35 +326,53 @@ fun StubInputStream.readPropertiesMap() : PropertiesMap {
 
 
 fun StubOutputStream.writeInferenceResult(result:InferenceResult) {
-    writeName(result.toClassList("?").joinToString(TYPES_DELIM))
-    val functions = result.functionTypes ?: emptyList()
-    writeInt(functions.size)
-    functions.forEach {
-        writeJsFunctionType(it)
-    }
-    writeBoolean(result.jsObjectKeys != null && result.jsObjectKeys.isNotEmpty())
-    if (result.jsObjectKeys != null && result.jsObjectKeys.isNotEmpty())
+    writeName(result.toClassListString(null))
+    writeJsFunctionList(result.functionTypes)
+    writeBoolean(result.jsObjectKeys != null)
+    if (result.jsObjectKeys != null)
         writePropertiesMap(result.jsObjectKeys)
-    writeName(result.arrayTypes.orEmpty().joinToString(TYPES_DELIM))
+    writeBoolean(result.arrayTypes != null)
+    if (result.arrayTypes != null)
+        writeName(result.arrayTypes.joinToString(TYPES_DELIM))
 }
 
 fun StubInputStream.readInferenceResult() : InferenceResult {
     val classes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    val numFunctions = readInt()
-    val functions = (0 until numFunctions).mapNotNull {
-        readJsFunctionType()
-    }
+    val functions = readJsFunctionList()
     val objectKeys = if (readBoolean())
         readPropertiesMap()
     else
         null
-    val arrayTypes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+
+    val arrayTypes = if (readBoolean()) {
+        readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+    } else
+        null
 
     return InferenceResult(
             classes = classes,
-            functionTypes = if (functions.isNotEmpty()) functions else null,
+            functionTypes = functions,
             jsObjectKeys = objectKeys,
-            arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null
+            arrayTypes = arrayTypes
     )
 }
 
+internal fun StubOutputStream.writeJsFunctionList(functions:List<JsFunctionType>?) {
+    writeBoolean(functions != null)
+    if (functions == null)
+        return
+    writeInt(functions.size)
+    functions.forEach {
+        writeJsFunctionType(it)
+    }
+}
+
+
+internal fun StubInputStream.readJsFunctionList() : List<JsFunctionType>? {
+    if (!readBoolean())
+        return null
+    val numFunctions = readInt()
+    return (0 until numFunctions).mapNotNull {
+        readJsFunctionType()
+    }
+}

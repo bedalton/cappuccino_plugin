@@ -18,6 +18,7 @@ object ObjJStubTypes {
     val METHOD_HEADER = ObjJMethodHeaderStubType("ObjJ_METHOD_HEADER")
     val OBJECT_LITERAL = ObjJObjectLiteralStubType("ObjJ_OBJECT_LITERAL")
     val PREPROCESSOR_FUNCTION = ObjJPreprocessorDefineFunctionStubType("ObjJ_PREPROCESSOR_DEFINE_FUNCTION")
+    val PROPERTY_NAME = ObjJPropertyNameStubType("ObjJ_PROPERTY_NAME")
     val PROTOCOL = ObjJProtocolStubType("ObjJ_PROTOCOL")
     val QUALIFIED_REFERENCE = ObjJQualifiedReferenceStubType("ObjJ_QUALIFIED_REFERENCE")
     val SELECTOR_LITERAL = ObjJSelectorLiteralStubType("ObjJ_SELETOR_LITERAL")
