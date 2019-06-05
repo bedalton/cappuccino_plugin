@@ -308,8 +308,10 @@ object ObjJTokenSets {
             ObjJ_NEW,
             ObjJ_DO_WHILE_STATEMENT,
             ObjJ_WHILE_STATEMENT,
-            ObjJ_TRY_STATEMENT
-
-
+            ObjJ_TRY_STATEMENT,
+            ObjJ_SWITCH_STATEMENT,
+            ObjJ_CASE_CLAUSE,
+            ObjJ_DEFAULT_CLAUSE,
+            ObjJ_CASE
     )
 }
