@@ -10,9 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
@@ -21,7 +19,6 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
     return methodCall.getCachedInferredTypes {
         if (methodCall.tagged(tag))
             return@getCachedInferredTypes null
-        LOGGER.info("Method call <${methodCall.text}> inference type not cached")
         internalInferMethodCallType(methodCall, tag)
     }
 }
@@ -33,18 +30,15 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val project = methodCall.project
     val selector = methodCall.selectorString
     if (selector == "alloc" || selector == "alloc:") {
-        LOGGER.info("Checking alloc statement for calltarget <${methodCall.callTargetText}>")
         return getAllocStatementType(methodCall)
     }
     val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag)
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
-            LOGGER.info("Gathering all matching methods by class name in [$callTargetTypes]")
             ObjJUnifiedMethodIndex.instance[selector, project].filter {
                 it.containingClassName in callTargetTypes
             }
         } else {
-            LOGGER.info("Gathering all matching methods without class constraints")
             ObjJUnifiedMethodIndex.instance[selector, project]
         }
     } else
@@ -92,7 +86,6 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     val isValidClass = className in ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project)
     if (!isValidClass)
         return null
-    LOGGER.info("Method Call is alloc statement for: <$className>")
     return InferenceResult(
             classes = setOf(className)
     )
@@ -102,7 +95,6 @@ private fun getCallTargetTypes(callTarget: ObjJCallTarget, tag:Long) : Set<Strin
     /*if (level < 0)
         return emptySet()*/
     return callTarget.getCachedInferredTypes {
-        LOGGER.info("Call target <${callTarget.text}>'s types were not cached")
         inferCallTargetType(callTarget, tag)
     }?.classes.orEmpty()
 }
@@ -128,7 +120,7 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         val type = simpleReturnType.stripRefSuffixes()
         return setOf(type)
     } else {
-        var out = InferenceResult()
+        var out = INFERRED_EMPTY_TYPE
         val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
         val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
