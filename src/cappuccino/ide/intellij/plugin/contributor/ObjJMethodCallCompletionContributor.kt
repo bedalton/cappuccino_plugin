@@ -73,7 +73,7 @@ object ObjJMethodCallCompletionContributor {
             else -> emptyList()
         }
         //Add actual method call completions
-        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex)
+        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall?.containingClassName)
 
         val hasLocalScope: Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
@@ -83,19 +83,19 @@ object ObjJMethodCallCompletionContributor {
         }
     }
 
-    private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int) {
+    private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int, containingClass:String?) {
 
         if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
             addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
             return
         }
-
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
                 .filter {
-                    val isIgnored = it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
-                            ObjJIgnoreEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
-                    if (isIgnored) {
+                    val allowUnderscore = it.containingClassName == containingClass
+                    //val isIgnored = it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
+                      //      ObjJIgnoreEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
+                    if (!allowUnderscore && it.selectorString.startsWith("_")) {
                         false
                     } else {
                         !ObjJPluginSettings.ignoreUnderscoredClasses || !it.containingClassName.startsWith("_") || it.containingFile?.name == fileName
