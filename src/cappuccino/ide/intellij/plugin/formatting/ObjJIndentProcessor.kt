@@ -41,6 +41,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
+        if (prevSibling == ObjJ_IF_STATEMENT || prevSibling == ObjJ_ELSE_IF_STATEMENT || prevSibling == ObjJ_STATEMENT_OR_BLOCK)
+            Indent.getNoneIndent()
+
         if (prevSibling == ObjJ_OPEN_BRACE || nextSiblingType == ObjJ_CLOSE_BRACE) {
             Indent.getNormalIndent()
         }
