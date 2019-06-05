@@ -130,7 +130,9 @@ class ObjJVariableReference(
     }
 
     override fun resolve(): PsiElement? {
-        return resolve(false)
+        return myElement.resolveFromCache {
+            resolve(false)
+        }
     }
 
     private fun resolve(nullIfSelfReferencing:Boolean = false) : PsiElement? {
