@@ -10,7 +10,11 @@ object ObjJSharedParserFunctions {
         if (compositeElement == null) {
             return false
         }
-        var ahead = compositeElement.getNextNode()
+        var ahead = try {
+            compositeElement.getNextNode()
+        } catch (_:Exception) {
+            null
+        }
         if (ahead == null && compositeElement.parent != null) {
             return eos(compositeElement.parent)
         }
