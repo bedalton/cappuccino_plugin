@@ -193,6 +193,16 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
+        if (type1 == ObjJ_BLOCK_ELEMENT && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+        if (type1 == ObjJ_CATCH_PRODUCTION && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+        if (type1 == ObjJ_FINALLY_PRODUCTION && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
         if (elementType == ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             if (type1 == ObjJ_COLON) {
                 val spacing = if (objJSettings.SPACE_BETWEEN_SELECTOR_AND_VALUE_IN_METHOD_CALL) {
