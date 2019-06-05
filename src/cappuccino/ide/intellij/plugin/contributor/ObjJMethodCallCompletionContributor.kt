@@ -85,7 +85,7 @@ object ObjJMethodCallCompletionContributor {
 
     private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int) {
 
-        if (selectorString.trim() == CARET_INDICATOR) {
+        if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
             addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
             return
         }
