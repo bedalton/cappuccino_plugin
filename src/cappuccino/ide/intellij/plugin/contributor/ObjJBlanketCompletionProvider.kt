@@ -86,7 +86,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val prevSibling = element.getPreviousNonEmptySibling(true)
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
-        LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}")
+        LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}; PrevSibling: ${prevSibling?.tokenType()}")
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
                 resultSet.stopHere()
@@ -148,7 +148,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         val text = element.textWithoutCaret
-
         // Prevent completion when keyword is used
         if (text in ObjJKeywordsList.keywords)
             return
@@ -159,6 +158,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (parentAsVariableDeclaration?.getPreviousNonEmptySibling(true)?.text == "var") {
             return
         }
+
+        ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
+
+        if (element.hasParentOfType(ObjJExpr::class.java))
+            resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
 
         if (element.getContainingScope() == ReferencedInScope.FILE) {
             addFileLevelCompletions(resultSet, element)
@@ -220,7 +224,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (notInMethodHeaderDeclaration && isFirstInQualifiedReference && hasLength) {
             //ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
             //addGlobalVariableCompletions(resultSet, element)
-            addCompletionElementsSimple(resultSet, getKeywordCompletions(variableName), 40.0)
+            getKeywordCompletions(resultSet, variableName)
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
         }
@@ -495,7 +499,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (element !is ObjJCompositeElement)
             return
         val expression = element.getParentOfType(ObjJExpr::class.java)
-        if (expression != null && element?.text != expression.text)
+        if (expression != null && element.text != expression.text)
             return
         if (element.hasParentOfType(ObjJIterationStatement::class.java)) {
             resultSet.addElement(LookupElementBuilder.create("break"))
@@ -506,14 +510,13 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             resultSet.addElement(LookupElementBuilder.create("new"))
         if (expression?.hasParentOfType(ObjJExpr::class.java).orFalse())
             return
-        resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
         if (element.hasParentOfType(ObjJBlock::class.java) || element.parent is PsiFile || element.parent.parent is PsiFile) {
             listOf(
                     "return",
                     "try",
                     "var",
                     "throw",
-                    "do",
+                    "do"
             ).forEach {
                 resultSet.addElement(LookupElementBuilder.create(it))
             }
@@ -529,13 +532,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         } else if (prevSibling is ObjJDoWhileStatement) {
             resultSet.addElement(LookupElementBuilder.create("while").withInsertHandler(ObjJFunctionNameInsertHandler))
         }
-    }
-
-    /**
-     * Determines whether or not to add block level keywords
-     */
-    private fun getKeywordCompletions(element: PsiElement?, expression: ObjJExpr?): Boolean {
-
+        if (element.hasParentOfType(ObjJSwitchStatement::class.java)) {
+            resultSet.addElement(LookupElementBuilder.create("case"))
+        }
     }
 
     /**
