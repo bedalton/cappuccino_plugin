@@ -19,6 +19,7 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 
 /**
  * Adds highlighting colors to Objective-J Fiels
@@ -87,7 +88,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
                 return
             }
         }
-        val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve() ?: return
+        val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve(nullIfSelfReferencing = true) ?: return
         if (referencedVariable equals variableNameElement) {
             return
         }
@@ -163,10 +164,13 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE)
             return
         }
-        if (resolved != null) {
+        if (resolved == null)
+            return
+
+        val inDifferentFiles = resolved.containingFile != functionCall.containingFile
+        val commonScope = PsiTreeUtil.findCommonContext(resolved, functionCall)?.getContainingScope()
+        if (commonScope == null || resolved.getContainingScope() == ReferencedInScope.FILE || commonScope == ReferencedInScope.FILE) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))
-        } else {
-            //colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME, "")
         }
 
     }
