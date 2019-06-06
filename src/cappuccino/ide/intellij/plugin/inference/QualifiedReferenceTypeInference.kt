@@ -68,7 +68,6 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
     if (parentTypes == null && parts.size == 1) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
-    LOGGER.info("Qualified Name <${parts.joinToString(".")}> resolves to types: [${parentTypes?.toClassListString()?:""}]")
     return parentTypes
 }
 
@@ -104,13 +103,10 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
 
     val project = variableName.project
     val variableNameString = variableName.text
-    val classes = if (parentTypes.anyType) {
-        globalJSClasses
-    } else
-        parentTypes.classes.mapNotNull {
-            ProgressManager.checkCanceled()
-            getJsClassObject(project, it)
-        }
+    val classes = parentTypes.classes.mapNotNull {
+        ProgressManager.checkCanceled()
+        getJsClassObject(project, it)
+    }
     val classNames = classes.flatMap { jsClass ->
         jsClass.properties.firstOrNull {
             it.name == variableNameString
@@ -122,12 +118,21 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
         } ?: return@mapNotNull null
         JsFunctionType(function.parameters.toMap(), function.returns?.types?.toInferenceResult() ?: INFERRED_ANY_TYPE)
     }
+    val child = parentTypes.jsObjectKeys?.entries?.firstOrNull { (key, _) ->
+        key == variableNameString
+    }?.value
+    val out = if (child != null) {
+        return classNames.toInferenceResult() + child
+    } else {
+        classNames.toInferenceResult()
+    }
+
     if (functions.isNotEmpty()) {
         return classNames.toInferenceResult().copy(
                 functionTypes = functions
-        )
+        ) + out
     }
-    return classNames.toInferenceResult()
+    return out
 }
 
 fun List<JsNamedProperty>.toMap() : Map<String, InferenceResult> {
