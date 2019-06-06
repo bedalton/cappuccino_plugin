@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.util.FileContentUtil
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
@@ -37,7 +38,8 @@ class ObjJAlterIgnoredSelector(private val keyword:String, private val addToIgno
             } else {
                 ObjJPluginSettings.doNotIgnoreSelector(keyword)
             }
-            FileContentUtilCore.reparseFiles()
+
+            FileContentUtil.reparseFiles(file.virtualFile)
         }
     }
 
