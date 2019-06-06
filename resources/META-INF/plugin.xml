@@ -51,22 +51,11 @@
 
   <change-notes><![CDATA[
 
-    <h4>Version: 0.3.05</h4>
+    <h4>Version: 0.3.06</h4>
     <ul>
-      <li>Added cmd+hover information for known types</li>
+      <li>Added cmd+hover information for known types and functions</li>
       <li>Extended type inferences</li>
-      <ul>
-        <li>may be slow or cpu intensive</li>
-        <li>Can be disabled in settings</li>
-      </ul>
-      <li>Improved Autocomplete<br/>
-        <ul>
-            <li>Class names completions are now generated faster</li>
-            <li>Javascript and Objective-J keyword suggestions are more thoughtfully scoped</li>
-            <li>Method call completions are now faster to display</li>
-        </ul>
-
-      </li>
+      <li>Improved Autocomplete suggestions</li>
     </ul>
 
     <h4>Version: 0.3.05</h4>
