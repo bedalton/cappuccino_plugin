@@ -19,35 +19,35 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
-                    //LOGGER.info("QuickInfo for variable name")
+                    //// LOGGER.info("QuickInfo for variable name")
                     it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
-                    LOGGER.info("QuickInfo for method selector")
+                    // LOGGER.info("QuickInfo for method selector")
                     it.getParentOfType(ObjJMethodHeaderDeclaration::class.java)?.text ?: it.description?.presentableText
                 }
                 .info(ObjJMethodHeaderDeclaration::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for methodHeaderDeclaration")
+                    // LOGGER.info("QuickInfo for methodHeaderDeclaration")
                     it.text
                 }
                 .info(ObjJMethodCall::class.java) { methodCall ->
-                    LOGGER.info("QuickInfo for method call")
+                    // LOGGER.info("QuickInfo for method call")
                     methodCall.referencedHeaders.mapNotNull { it.text }.joinToString { "\n" }
                 }
                 .info(ObjJFunctionCall::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for function call")
+                    // LOGGER.info("QuickInfo for function call")
                     it.functionDescription
                 }
                 .info(ObjJFunctionName::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for function name")
+                    // LOGGER.info("QuickInfo for function name")
                     (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText ?: it.functionDescription
                 }
                 .info(ObjJQualifiedMethodCallSelector::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for qualified method call selector")
+                    // LOGGER.info("QuickInfo for qualified method call selector")
                     it.quickInfo(comment)
                 }
                 .info(ObjJMethodDeclarationSelector::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for method declaration selector")
+                    // LOGGER.info("QuickInfo for method declaration selector")
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
@@ -118,7 +118,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         //val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
-        //LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
+        //// LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
 }
@@ -179,10 +179,10 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
     } else {
-        //LOGGER.info("Check QNR")
+        //// LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
-            //LOGGER.info("No prev siblings")
+            //// LOGGER.info("No prev siblings")
             val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag())
             val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
             if (functionType != null) {
@@ -190,7 +190,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
                 return out.toString()
             }
             val classNames = inferenceResult?.toClassListString("<Any?>")
-            //LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
+            //// LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
             out.append("Variable ").append(name)
             if (classNames.isNotNullOrBlank()) {
                 out.append(" : ").append(classNames)
