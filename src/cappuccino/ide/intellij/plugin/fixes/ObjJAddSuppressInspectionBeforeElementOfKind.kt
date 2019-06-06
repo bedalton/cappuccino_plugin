@@ -13,12 +13,14 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.util.FileContentUtil
 import com.intellij.util.IncorrectOperationException
 
 
@@ -48,8 +50,13 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElem
     private fun apply(project: Project, file: PsiFile) {
         val writeAbove = this.writeAbove ?: return
         val suppressInspectionComment = ObjJElementFactory.createIgnoreComment(project, flag, parameter)
-        writeAbove.parent.addBefore(suppressInspectionComment, writeAbove)
+        val newLine = writeAbove.parent.addBefore(ObjJElementFactory.createCRLF(project), writeAbove)
+        writeAbove.parent.addBefore(suppressInspectionComment, newLine)
+
         DaemonCodeAnalyzer.getInstance(project).restart(file)
+        ApplicationManager.getApplication().invokeLater {
+            FileContentUtil.reparseFiles (listOf(file.virtualFile))
+        }
     }
 
     override fun getFamilyName(): String {

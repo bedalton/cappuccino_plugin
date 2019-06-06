@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.util.FileContentUtil
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
@@ -19,7 +20,6 @@ import com.intellij.util.IncorrectOperationException
  * To ignore the function name in a given scope, it should use inspection suppression
  */
 class ObjJAlterIgnoredClassNames(private val className:String, val addToIgnored:Boolean) : BaseIntentionAction(), LocalQuickFix {
-
 
     override fun getText(): String {
         return if (addToIgnored)
@@ -33,22 +33,22 @@ class ObjJAlterIgnoredClassNames(private val className:String, val addToIgnored:
     }
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        invoke()
+        invoke(descriptor.psiElement.containingFile)
     }
 
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invoke()
+        invoke(file)
     }
 
-    private fun invoke() {
+    private fun invoke(file:PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             if (addToIgnored) {
                 ObjJPluginSettings.ignoreClassName(className)
             } else {
                 ObjJPluginSettings.removeIgnoredClassName(className)
             }
-            FileContentUtilCore.reparseFiles()
+            FileContentUtil.reparseFiles(listOf(file.virtualFile))
         }
     }
 

@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.util.FileContentUtil
 import com.intellij.util.IncorrectOperationException
 
 
@@ -48,8 +49,11 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
         val variableName = this.variableName ?: return
         val writeAbove = getOutermostParentInEnclosingBlock(variableName)
         val suppressInspectionComment = ObjJElementFactory.createIgnoreComment(project, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)
-        writeAbove.parent.addBefore(suppressInspectionComment, writeAbove)
+        val newline = writeAbove.parent.addBefore(ObjJElementFactory.createCRLF(project), writeAbove)
+        writeAbove.parent.addBefore(suppressInspectionComment, newline)
+        //writeAbove.parent.addBefore(suppressInspectionComment, writeAbove)
         DaemonCodeAnalyzer.getInstance(project).restart(file)
+        FileContentUtil.reparseFiles(file.virtualFile)
     }
 
     override fun getFamilyName(): String {

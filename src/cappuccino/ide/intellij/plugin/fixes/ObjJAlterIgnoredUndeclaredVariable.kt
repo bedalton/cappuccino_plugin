@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.util.FileContentUtil
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
@@ -35,22 +36,22 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
     }
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        invoke()
+        invoke(descriptor.psiElement.containingFile)
     }
 
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invoke()
+        invoke(file)
     }
 
-    private fun invoke() {
+    private fun invoke(file:PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             if (addToIgnored) {
                 ObjJPluginSettings.ignoreVariableName(keyword)
             } else {
                 ObjJPluginSettings.removeIgnoredVariableName(keyword)
             }
-            FileContentUtilCore.reparseFiles()
+            FileContentUtil.reparseFiles(file.virtualFile)
         }
     }
 
