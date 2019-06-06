@@ -72,6 +72,21 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
+
+        if ((type1 == ObjJ_BLOCK_ELEMENT || type2 == ObjJ_BLOCK_ELEMENT) && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+        if ((type1 == ObjJ_CATCH_PRODUCTION || type2 == ObjJ_CATCH_PRODUCTION) && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+        if ((type1 == ObjJ_FINALLY_PRODUCTION || type2 == ObjJ_FINALLY_PRODUCTION) && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if ((type1 == ObjJ_BLOCK_ELEMENT || type2 == ObjJ_BLOCK_ELEMENT) && objJSettings.BRACE_ON_NEW_LINE) {
+            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
         if (elementType == ObjJ_OBJECT_LITERAL) {
             if (type1 == ObjJ_OPEN_BRACE || type1 == ObjJ_AT_OPEN_BRACE || type2 == ObjJ_CLOSE_BRACE) {
                 return Spacing.createSpacing(0, Int.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -193,17 +208,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
-        if (type1 == ObjJ_BLOCK_ELEMENT && objJSettings.BRACE_ON_NEW_LINE) {
-            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-        }
-        if (type1 == ObjJ_CATCH_PRODUCTION && objJSettings.BRACE_ON_NEW_LINE) {
-            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-        }
-        if (type1 == ObjJ_FINALLY_PRODUCTION && objJSettings.BRACE_ON_NEW_LINE) {
-            return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-        }
-
-        if (type2 == ObjJ_BLOCK_ELEMENT && objJSettings.BRACE_ON_NEW_LINE) {
+        if (type1 == ObjJ_FINALLY && objJSettings.BRACE_ON_NEW_LINE) {
             return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
