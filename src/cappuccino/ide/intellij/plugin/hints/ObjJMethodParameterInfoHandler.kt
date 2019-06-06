@@ -25,14 +25,11 @@ class ObjJMethodParameterInfoHandler : ParameterInfoHandler<ObjJMethodCall, ObjJ
     override fun getParametersForLookup(lookupElement: LookupElement?, context: ParameterInfoContext?): Array<Any>? {
         val element = lookupElement?.`object` as? ObjJCompositeElement
         if (element == null) {
-            LOGGER.info("Lookup element did not return composite element")
             return emptyArray()
         }
         if (element is ObjJMethodHeaderDeclaration<*>) {
-            LOGGER.info("Element is a function declaration element")
             return arrayOf(element)
         }
-        LOGGER.info("Element is not a function declaration element")
         return emptyArray()
     }
 
@@ -52,21 +49,14 @@ class ObjJMethodParameterInfoHandler : ParameterInfoHandler<ObjJMethodCall, ObjJ
         if (element is ObjJMethodCall)
             return element
         val arguments = element.getSelfOrParentOfType(ObjJQualifiedMethodCallSelector::class.java) ?: element.getSelfOrParentOfType(ObjJCallTarget::class.java)
-        if (arguments == null) {
-            LOGGER.info("Failed to find parent or self of argument type")
-        }
         return arguments?.parent as? ObjJMethodCall
     }
 
     private fun getCallExpression(offset:Int, fileIn:PsiFile) : ObjJMethodCall? {
         val file = fileIn as? ObjJFile ?: return null
         val methodCallSelector =
-                PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJQualifiedMethodCallSelector::class.java, false) ?:
-                PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJCallTarget::class.java, false)
-        if (methodCallSelector == null) {
-            LOGGER.info("Failed to find function arguments at offset")
-            return null
-        }
+                PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJQualifiedMethodCallSelector::class.java, false) ?: PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJCallTarget::class.java, false)
+                ?: return null
         return methodCallSelector.parent as? ObjJMethodCall
     }
 
@@ -121,7 +111,6 @@ class ObjJMethodParameterInfoHandler : ParameterInfoHandler<ObjJMethodCall, ObjJ
     }
 
     override fun updateUI(description: ObjJMethodDescription?, context: ParameterInfoUIContext) {
-        LOGGER.info("Updating ui for ${description?.presentableText ?: "UNDEF"}")
         if (description == null) {
             context.isUIComponentEnabled = false
             return

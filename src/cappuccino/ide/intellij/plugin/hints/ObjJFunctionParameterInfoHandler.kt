@@ -110,7 +110,6 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
     }
 
     override fun updateUI(description: ObjJFunctionDescription?, context: ParameterInfoUIContext) {
-        LOGGER.info("Updating ui for ${description?.presentableText ?: "UNDEF"}")
         if (description == null) {
             context.isUIComponentEnabled = false
             return
