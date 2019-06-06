@@ -845,7 +845,14 @@ switchStatement
 
 private switchBody
 	::= caseClause* (defaultClause caseClause*)?
+	{
+	    recoverWhile=switchBody_recover
+	}
 	;
+
+private switchBody_recover
+    ::= !("}")
+    ;
 
 caseClause
 	::= 'case' expr ':' bracketLessBlock? 'break'?
@@ -2087,7 +2094,7 @@ qualifiedReference
 	;
 
 qualifiedReferencePrime
-	::= qualifiedReferencePrimary+
+	::= !(methodCall) qualifiedReferencePrimary+
 	{
 	    methods = [
 	        getQualifiedNameParts
@@ -2103,7 +2110,7 @@ private qualifiedReferencePrimary
 arrayIndexSelector
 	::= '[' expr ']'
 	{
-		pin = 2
+		pin = 3
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 		]
