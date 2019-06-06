@@ -1,10 +1,15 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveTrailingStringFormatParameter
+import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferMethodCallType
+import cappuccino.ide.intellij.plugin.inference.stringTypes
+import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
@@ -111,9 +116,13 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
          * @return true if method call is string formatting method call, false otherwise.
          */
         private fun isCPStringWithFormat(methodCall: ObjJMethodCall): Boolean {
-            if (methodCall.callTargetText == ObjJClassType.STRING && methodCall.selectorList.size == 1) {
+            if (methodCall.selectorList.size == 1) {
                 val selectorText = methodCall.selectorList[0].text
-                return selectorText == CPSTRING_INIT_WITH_FORMAT || selectorText == CPSTRING_STRING_WITH_FORMAT
+                if (selectorText != CPSTRING_INIT_WITH_FORMAT && selectorText != CPSTRING_STRING_WITH_FORMAT)
+                    return false
+                return methodCall.callTargetText == ObjJClassType.STRING || inferMethodCallType(methodCall, createTag())?.toClassList("?")?.any {
+                    it == "?" || it.toLowerCase() in stringTypes
+                }.orFalse()
             }
             return false
         }
