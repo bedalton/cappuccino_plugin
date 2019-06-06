@@ -34,12 +34,9 @@ data class InferenceResult (
         var out = globalClasses
         if (out != null)
             return out
-        if (classes.containsAnyType()) {
-            out = globalJSClasses.toSet()
-            globalClasses = out
-            return out
-        }
-        return toClassList().mapNotNull { getJsClassObject(project, it) }
+        out = toClassList().mapNotNull { getJsClassObject(project, it) }.toSet() ?: emptySet()
+        globalClasses = out
+        return out
     }
 }
 
@@ -86,6 +83,14 @@ data class JsFunctionType (
 }
 
 typealias PropertiesMap = Map<String, InferenceResult>
+
+fun Map<String, InferenceResult?>.toPropertiesMap() : PropertiesMap {
+    val out = mutableMapOf<String, InferenceResult>()
+    forEach { (key, value) ->
+        out[key] = value ?: INFERRED_ANY_TYPE
+    }
+    return out
+}
 
 fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
     val parameters = this.map {

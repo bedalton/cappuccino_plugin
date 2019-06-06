@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
@@ -16,14 +17,9 @@ import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.NoIndex
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.logging.Logger
@@ -86,7 +82,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val prevSibling = element.getPreviousNonEmptySibling(true)
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
-        LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}; PrevSibling: ${prevSibling?.tokenType()}")
+        //LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}; PrevSibling: ${prevSibling?.tokenType()}")
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
                 resultSet.stopHere()
@@ -109,7 +105,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 ObjJSelectorLiteralCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             // Inherited protocol list
             element.hasParentOfType(ObjJInheritedProtocolList::class.java) ->
-                addProtocolNameCompletionElements(resultSet, element, queryString)
+                ObjJClassNamesCompletionProvider.addProtocolNameCompletionElements(resultSet, element, queryString)
             // Formal Variable type
             element.isOrHasParentOfType(ObjJFormalVariableType::class.java) ->
                 formalVariableTypeCompletion(element, resultSet)
@@ -129,9 +125,15 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 if (prevSibling.getChildOfType(ObjJFinallyProduction::class.java) == null) {
                     resultSet.addElement(LookupElementBuilder.create("finally"))
                 }
+                genericCompletion(element, resultSet)
+            }
+            prevSibling is ObjJSwitchStatement && element.getNextNonEmptyNodeType(true) == ObjJTypes.ObjJ_CLOSE_BRACE -> {
+                resultSet.addElement(LookupElementBuilder.create("case"))
+                resultSet.stopHere()
+                return
             }
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
-                LOGGER.info("Cannot complete after ${prevSibling.elementType}")
+                //LOGGER.info("Cannot complete after ${prevSibling.elementType}")
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
@@ -142,7 +144,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Provides completions results for less specific elements or cases
      */
     private fun genericCompletion(element: PsiElement, resultSet: CompletionResultSet) {
-
         if (element.getPreviousNonEmptySibling(true)?.text?.endsWith(".") == true) {
             appendQualifiedReferenceCompletions(element, resultSet)
             return
@@ -177,11 +178,18 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
         }
 
+        // Add class name completions if applicable
+        getClassNameCompletions(resultSet, element)
+
         // Add variable name completions if applicable
         addVariableNameCompletionElements(resultSet, element)
 
-        // Add class name completions if applicable
-        getClassNameCompletions(resultSet, element)
+
+        if (shouldAddJsClassNames(element)) {
+            globalJsClassNames.forEach {
+                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+            }
+        }
     }
 
     /**
@@ -222,8 +230,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val isFirstInQualifiedReference = (variableName?.indexInQualifiedReference ?: 0) < 1
         val hasLength = promptTextHasLength(variableName)
         if (notInMethodHeaderDeclaration && isFirstInQualifiedReference && hasLength) {
-            //ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
-            //addGlobalVariableCompletions(resultSet, element)
+            ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
+            addGlobalVariableCompletions(resultSet, element)
             getKeywordCompletions(resultSet, variableName)
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
@@ -236,6 +244,29 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, ObjJGlobalJSVariablesNames, -200.0)
         }
     }
+
+
+    private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>) {
+        variables.forEach {
+            val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
+            var lookupElement = LookupElementBuilder.create(it.text)
+            if (type.isNotNullOrBlank())
+                lookupElement = lookupElement.withPresentableText("${it.text} : $type")
+            val asFunctionDeclaration = it.parentFunctionDeclaration
+            if (asFunctionDeclaration != null) {
+                lookupElement = lookupElement
+                        .withInsertHandler(ObjJFunctionNameInsertHandler)
+                        .withTailText("(" +asFunctionDeclaration.paramNames.joinToString(", ") +")")
+            } else {
+                lookupElement = lookupElement.withInsertHandler(ObjJVariableInsertHandler)
+            }
+            lookupElement = lookupElement.withBoldness(true)
+            resultSet.addElement(lookupElement)
+        }
+    }
+
+    /*
+
 
     private fun getSelectorTargets(element: PsiElement) : Set<String> {
         val out = mutableSetOf<String>()
@@ -254,20 +285,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     }
 
-    private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>) {
-        variables.forEach {
-            val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
-            val lookupElement = LookupElementBuilder.create(it.text)
-            if (type.isNotNullOrBlank())
-                lookupElement.withPresentableText("${it.text} : $type")
-            lookupElement.withInsertHandler(ObjJVariableInsertHandler)
-            lookupElement.withBoldness(true)
-            resultSet.addElement(lookupElement)
-        }
-
-    }
-
-    /*
     private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>, classFilters:Set<String>) {
         LOGGER.info("Adding completions for ${variables.size} variables")
         variables.forEach {
@@ -297,6 +314,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     }*/
 
+
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getStartingWith(variableName.textWithoutCaret, variableName.project).forEach {
             ProgressIndicatorProvider.checkCanceled()
@@ -309,128 +327,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
     }
 
-    /**
-     * Add protocol name completions
-     */
-    private fun addProtocolNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement, queryString: String) {
-        val results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
-        addCompletionElementsSimple(resultSet, results)
-
-    }
-
-    /**
-     * Get all defined class names as completions
-     */
-    internal fun getClassNameCompletions(resultSet: CompletionResultSet, element: PsiElement?) {
-        if (element == null) {
-            return
-        }
-
-        // If is first item in array, there is a chance that this array will truly
-        // become a method call, no way to be sure until a comma or selector is written
-        val isFirstItemInArray = isFirstItemInArray(element)
-
-        // If in method header, fill in with protocols and classes
-        val inMethodHeader = element.parent is ObjJClassDeclarationElement<*> && element.getPreviousNonEmptySibling(true).elementType in listOf(ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_OPEN_PAREN)
-
-        // Add protocols if allowed
-        if (shouldAddProtocolNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
-            ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
-            }
-        }
-
-        // Append primitive var types if necessary
-        if (shouldAddPrimitiveTypes(element) || inMethodHeader) {
-            ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
-            }
-        }
-
-        if (shouldAddJsClassNames(element)) {
-            globalJsClassNames.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
-            }
-        }
-
-        // Append implementation declaration names if in correct context
-        if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
-            addImplementationClassNameElements(element, resultSet)
-            addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
-        }
-    }
 
     private fun shouldAddJsClassNames(@Suppress("UNUSED_PARAMETER") element: PsiElement): Boolean {
         return false
-    }
-
-    private fun isFirstItemInArray(element: PsiElement): Boolean {
-        val expression = element.thisOrParentAs(ObjJExpr::class.java) ?: return false
-        val arrayLiteralParent = expression.parent as? ObjJArrayLiteral ?: return false
-        return arrayLiteralParent.getChildrenOfType(ObjJExpr::class.java).size == 1
-    }
-
-    /**
-     * Evaluates whether protocol name completions should be added to completion result
-     */
-    private fun shouldAddProtocolNameCompletions(element: PsiElement): Boolean {
-        return element.hasParentOfType(ObjJProtocolLiteral::class.java) ||
-                element.hasParentOfType(ObjJInheritedProtocolList::class.java) ||
-                element.hasParentOfType(ObjJFormalVariableType::class.java) ||
-                element.elementType in ObjJTokenSets.COMMENTS
-    }
-
-    /**
-     * Evaluates whether or not primitive var types should be added to completion result
-     */
-    private fun shouldAddPrimitiveTypes(element: PsiElement): Boolean {
-        return element.hasParentOfType(ObjJFormalVariableType::class.java)
-    }
-
-    /**
-     * Evaluates whether implementation class names should be added to completion result
-     */
-    private fun shouldAddImplementationClassNameCompletions(element: PsiElement): Boolean {
-        return element.hasParentOfType(ObjJCallTarget::class.java) ||
-                element.hasParentOfType(ObjJFormalVariableType::class.java) ||
-                element.elementType in ObjJTokenSets.COMMENTS ||
-                element.parent?.elementType in ObjJTokenSets.COMMENTS
-
-    }
-
-    /**
-     * Add implementation class names to result set
-     */
-    private fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
-        /*
-        val thisParts = element.text.split("[A-Z]".toRegex()).filter { it.length < 2 }
-        ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->
-            val classParts = implementationDeclaration.getClassNameString().split("[A-Z]".toRegex()).filter { it.length < 2 }
-            if (!classParts.startsWithAny(thisParts)) {
-                return@forEach
-            }
-            if (isIgnoredImplementationDeclaration(element, implementationDeclaration)) {
-                return@forEach
-            }
-
-            resultSet.addElement(LookupElementBuilder.create(implementationDeclaration.getClassNameString()).withInsertHandler(ObjJClassNameInsertHandler))
-        }*/
-        ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
-            ObjJPluginSettings.ignoreUnderscoredClasses && it.startsWith("_")
-        }.toSet().forEach {
-            resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
-        }
-    }
-
-    /**
-     * Determines whether or not an implementation declaration is ignored
-     */
-    private fun isIgnoredImplementationDeclaration(element: PsiElement, declaration: ObjJImplementationDeclaration): Boolean {
-        return ObjJIgnoreEvaluatorUtil.isIgnored(declaration) ||
-                ObjJIgnoreEvaluatorUtil.shouldIgnoreUnderscore(element) ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS) ||
-                ObjJIgnoreEvaluatorUtil.noIndex(declaration, NoIndex.CLASS) ||
-                ObjJIgnoreEvaluatorUtil.noIndex(declaration, NoIndex.ANY)
     }
 
     /**
@@ -445,6 +344,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         } else
             emptyList()
     }
+
 
     /**
      * Adds keywords only used at top level of file to resut set
@@ -593,7 +493,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
         val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
-                ?: element.parent as? ObjJQualifiedReferenceComponent ?: return { LOGGER.info("Element is not a qualifiedReference component") }()
+                ?: element.parent as? ObjJQualifiedReferenceComponent ?: return
         //LOGGER.info("Appending Qualified reference completions")
         val index = qualifiedNameComponent.indexInQualifiedReference
         if (index <= 0) {
@@ -601,10 +501,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         val previousComponents = qualifiedNameComponent.previousSiblings
-        val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return {
-            LOGGER.info("Failed to infer any type information for QNPart: ${element.text}")
-            Unit
-        }()
+        val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         val classes = inferred.classes
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
@@ -636,7 +533,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             val lookupElementBuilder = LookupElementBuilder
                     .create(it.key)
                     .withTailText(":" + it.value.classes.joinToString("|") )
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+                    .withBoldness(true)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY))
 
         }
     }

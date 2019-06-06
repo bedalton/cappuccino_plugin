@@ -128,5 +128,15 @@ object ObjJClassNamesCompletionProvider {
                 ObjJIgnoreEvaluatorUtil.noIndex(declaration, NoIndex.ANY)
     }
 
+    /**
+     * Add protocol name completions
+     */
+    internal fun addProtocolNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement, queryString: String) {
+        val results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
+        ObjJCompletionElementProviderUtil.addCompletionElementsSimple(resultSet, results)
+
+    }
+
+
 
 }
