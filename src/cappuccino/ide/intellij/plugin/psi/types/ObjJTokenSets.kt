@@ -260,6 +260,7 @@ object ObjJTokenSets {
             ObjJ_SEMI_COLON,
             ObjJ_DOT,
             ObjJ_OPEN_BRACE,
+            ObjJ_CLOSE_BRACE,
             ObjJ_OPEN_BRACKET,
             ObjJ_COLON,
             ObjJ_OPEN_PAREN,
