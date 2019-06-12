@@ -73,6 +73,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
+        if (elementType == ObjJ_RIGHT_EXPR)
+            return Indent.getContinuationWithoutFirstIndent()
+
         if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
                 return Indent.getNoneIndent()
