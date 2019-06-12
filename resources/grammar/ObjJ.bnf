@@ -1883,6 +1883,9 @@ assignmentExprPrime
 
 mathExprPrime
 	::= mathOp expr
+	{
+		pin=1
+	}
 	;
 
 mathOp
@@ -2071,6 +2074,7 @@ callTarget
     {
     	methods=[
     		getPossibleCallTargetTypes
+    		getSingleVariableNameElementOrNull
 		]
 	}
 	;
@@ -2223,6 +2227,9 @@ variableName
 			shouldResolve
 			getContainingSuperClass
 			getIndexInQualifiedReference
+			respondsToSelectors
+			respondsToSelector
+			respondsToSelectorStrings
 		]
 	}
 	;
