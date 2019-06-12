@@ -427,6 +427,18 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun respondsToSelectors(variableName: ObjJVariableName) : List<ObjJSelectorLiteral>
+        = ObjJVariablePsiUtil.respondsToSelectors(variableName)
+
+    @JvmStatic
+    fun respondsToSelector(variableName: ObjJVariableName, selector:String) : Boolean
+            = ObjJVariablePsiUtil.respondsToSelector(variableName, selector)
+
+    @JvmStatic
+    fun respondsToSelectorStrings(variableName: ObjJVariableName): Set<String>
+        = ObjJVariablePsiUtil.respondsToSelectorStrings(variableName)
+
+    @JvmStatic
     fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType?> {
         return ObjJMethodPsiUtils.getParamTypes(methodHeader.methodDeclarationSelectorList)
     }
@@ -453,6 +465,15 @@ object ObjJPsiImplUtil {
     fun isRequired(methodHeader: ObjJMethodHeader): Boolean =
             ObjJMethodPsiUtils.isRequired(methodHeader)
 
+    @JvmStatic
+    fun getSingleVariableNameElementOrNull(callTarget: ObjJCallTarget) : ObjJVariableName? {
+        val qualifiedReferenceComponents
+                = callTarget.qualifiedReference?.qualifiedNameParts
+                ?: return null
+        if (qualifiedReferenceComponents.size != 1 && qualifiedReferenceComponents[0] !is ObjJVariableName)
+            return null
+        return (qualifiedReferenceComponents[0] as ObjJVariableName).reference.resolve() as? ObjJVariableName
+    }
     // ============================== //
     // ====== Virtual Methods ======= //
     // ============================== //
