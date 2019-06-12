@@ -93,6 +93,10 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         return out
     }
 
+    fun containsKey(key:String, project: Project) : Boolean {
+        return getAllKeys(project).contains(key)
+    }
+
     fun getStartingWith(pattern: String, project: Project): List<ObjJElemT> {
         return getByPatternFlat("$pattern(.*)", project)
     }
