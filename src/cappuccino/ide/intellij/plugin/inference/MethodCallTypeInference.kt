@@ -10,6 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
@@ -32,7 +33,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     if (selector == "alloc" || selector == "alloc:") {
         return getAllocStatementType(methodCall)
     }
-    val callTargetTypes = getCallTargetTypes(methodCall.callTarget, tag)
+    val callTargetTypes = inferCallTargetType(methodCall.callTarget, tag)?.classes.orEmpty()
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             ObjJUnifiedMethodIndex.instance[selector, project].filter {
@@ -46,6 +47,10 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes {
+            val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
+            if (commentReturnTypes.isNotEmpty()) {
+                return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
+            }
             val thisClasses = getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
             if (thisClasses.isNotEmpty()) {
                 InferenceResult(
@@ -91,16 +96,15 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     )
 }
 
-private fun getCallTargetTypes(callTarget: ObjJCallTarget, tag:Long) : Set<String> {
+fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult? {
     /*if (level < 0)
         return emptySet()*/
     return callTarget.getCachedInferredTypes {
-        inferCallTargetType(callTarget, tag)
-    }?.classes.orEmpty()
+        internalInferCallTargetType(callTarget, tag)
+    }
 }
 
-private fun inferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
-    ProgressManager.checkCanceled()
+private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
     if (callTarget.expr != null)
         return inferExpressionType(callTarget.expr!!, tag)
 
