@@ -45,6 +45,8 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         } catch (e: Exception) {
             LOGGER.log(Level.SEVERE, "Failed to index selector with error: ${e.localizedMessage}")
         }
+        val className = methodHeaderStub.containingClassName
+        indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, selector))
 
         val selectorBuilder = StringBuilder()
         for (subSelector in methodHeaderStub.selectorStrings) {
@@ -52,15 +54,14 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
         }
 
-        val className = methodHeaderStub.containingClassName
         if (!isUniversalMethodCaller(className)) {
             try {
                 indexSink.occurrence<ObjJMethodHeader, String>(ObjJClassMethodIndex.instance.key, className)
             } catch (e: Exception) {
                 LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: ${e.localizedMessage}")
             }
-
         }
+
     }
 
     /**
@@ -69,6 +70,8 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * @param indexSink index sink
      */
     override fun indexInstanceVariable(variableDeclarationStub: ObjJInstanceVariableDeclarationStub, indexSink: IndexSink) {
+        val className = variableDeclarationStub.containingClass
+
         // Index Instance variables to class name
         indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJInstanceVariablesByClassIndex.instance.key, variableDeclarationStub.containingClass)
 
@@ -76,13 +79,18 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJInstanceVariablesByNameIndex.instance.key, variableDeclarationStub.variableName)
 
         // Index Getter accessors
-        if (variableDeclarationStub.getter != null && variableDeclarationStub.getter!!.isNotEmpty()) {
-            indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.getter!!)
+        val getter = variableDeclarationStub.getter
+        if (getter != null && getter.isNotBlank()) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
+            indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter)
         }
         // Index setters
-        if (variableDeclarationStub.setter != null && variableDeclarationStub.setter!!.isNotEmpty()) {
+        val setter = variableDeclarationStub.setter
+        if (setter != null && setter.isNotBlank()) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.setter!!)
         }
+
     }
 
     /**
