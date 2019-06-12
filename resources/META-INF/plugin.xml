@@ -262,16 +262,6 @@
     />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJNotAClassMethodInspection"
-                     level="WEAK WARNING"
-                     groupName="Objective-J"
-                     enabledByDefault="true"
-                     displayName="Method selector may be invalid for target"
-                     shortName="NotAClassMethod"
-                     order="last"
-    />
-
-    <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidMethodParameterClassTypeInspection"
                      level="ERROR"
                      groupName="Objective-J"
@@ -296,6 +286,16 @@
                       shortName="VoidMethodReturnsAValue"
                       groupName="Objective-J"
                       enabledByDefault="true"
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJNotAClassMethodInspection"
+                     level="WEAK WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Method selector may be invalid for target"
+                     shortName="NotAClassMethod"
+                     order="last"
     />
 
 
