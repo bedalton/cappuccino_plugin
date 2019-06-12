@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
@@ -29,15 +28,16 @@ data class JsNamedProperty(
         val ignore: Boolean = false,
         override val callback: AnonymousJsFunction? = null,
         val deprecated: Boolean = false,
-        val varArgs:Boolean = type.startsWith("...")
-        ) : JsProperty
+        val varArgs: Boolean = type.startsWith("...")
+) : JsProperty
 
 
-val JsNamedProperty.types:Set<String> get() {
-    return type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-}
+val JsNamedProperty.types: Set<String>
+    get() {
+        return type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
+    }
 
-fun StubOutputStream.writeNamedProperty(property:JsNamedProperty) {
+fun StubOutputStream.writeNamedProperty(property: JsNamedProperty) {
     writeName(property.name)
     writeName(property.type)
     writeBoolean(property.isPublic)
@@ -51,7 +51,7 @@ fun StubOutputStream.writeNamedProperty(property:JsNamedProperty) {
     writeBoolean(property.varArgs)
 }
 
-fun StubInputStream.readNamedProperty() : JsNamedProperty {
+fun StubInputStream.readNamedProperty(): JsNamedProperty {
     val name = readNameString() ?: "?"
     val type = readNameString() ?: ""
     val isPublic = readBoolean()
@@ -76,26 +76,26 @@ fun StubInputStream.readNamedProperty() : JsNamedProperty {
     )
 }
 
-data class JsFunctionReturnType (
+data class JsFunctionReturnType(
         override val type: String = "void",
         override val nullable: Boolean = true,
         override val readonly: Boolean = false,
         override val comment: String? = null,
         override val default: String? = null,
-        override val callback: AnonymousJsFunction? = null) : JsProperty
-{
-    val types:Set<String> by lazy {
+        override val callback: AnonymousJsFunction? = null) : JsProperty {
+    val types: Set<String> by lazy {
         type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX)
                 .toSet()
     }
 }
-fun JsFunctionReturnType.toInferenceResult() : InferenceResult {
+
+fun JsFunctionReturnType.toInferenceResult(): InferenceResult {
     val typesSplit = type.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
     val classes = typesSplit.filterNot {
         it == "Function" || it.contains("[]")
     }.toSet()
     val arrayTypes = typesSplit.filterNot {
-       it.endsWith("[]")
+        it.endsWith("[]")
     }.map {
         it.removeSuffix("[]")
     }
@@ -117,7 +117,7 @@ fun JsFunctionReturnType.toInferenceResult() : InferenceResult {
     )
 }
 
-fun StubOutputStream.writeFunctionReturnType(type:JsFunctionReturnType?) {
+fun StubOutputStream.writeFunctionReturnType(type: JsFunctionReturnType?) {
     writeBoolean(type != null)
     if (type == null)
         return
@@ -129,7 +129,7 @@ fun StubOutputStream.writeFunctionReturnType(type:JsFunctionReturnType?) {
     writeAnonymousFunction(type.callback)
 }
 
-fun StubInputStream.readFunctionReturnType() : JsFunctionReturnType? {
+fun StubInputStream.readFunctionReturnType(): JsFunctionReturnType? {
     if (!readBoolean())
         return null
     val type = readNameString() ?: "Any"
@@ -137,7 +137,7 @@ fun StubInputStream.readFunctionReturnType() : JsFunctionReturnType? {
     val readonly = readBoolean()
     val comment = readUTFFast()
     val default = readUTFFast()
-    val callback= readAnonymousFunction()
+    val callback = readAnonymousFunction()
     return JsFunctionReturnType(
             type = type,
             nullable = nullable,
@@ -152,13 +152,14 @@ fun StubInputStream.readFunctionReturnType() : JsFunctionReturnType? {
 interface JsFunction {
     val name: String
     val parameters: List<JsNamedProperty>
-    val returns:JsFunctionReturnType?
+    val returns: JsFunctionReturnType?
     val comment: String?
 }
 
-val JsFunction.returnTypes:Set<String> get() {
-    return returns?.types ?: setOf(VOID.type)
-}
+val JsFunction.returnTypes: Set<String>
+    get() {
+        return returns?.types ?: setOf(VOID.type)
+    }
 
 interface JsProperty {
     val type: String
@@ -175,14 +176,14 @@ data class AnonymousJsFunction(
         val comment: String? = null
 )
 
-fun AnonymousJsFunction.toJsFunctionType():JsFunctionType {
+fun AnonymousJsFunction.toJsFunctionType(): JsFunctionType {
     return JsFunctionType(
             parameters = parameters.toMap(),
             returnType = returns?.toInferenceResult() ?: INFERRED_VOID_TYPE
     )
 }
 
-fun StubOutputStream.writeAnonymousFunction(function:AnonymousJsFunction?) {
+fun StubOutputStream.writeAnonymousFunction(function: AnonymousJsFunction?) {
     writeBoolean(function != null)
     if (function == null)
         return
@@ -191,7 +192,7 @@ fun StubOutputStream.writeAnonymousFunction(function:AnonymousJsFunction?) {
     writeUTFFast(function.comment ?: "")
 }
 
-fun StubInputStream.readAnonymousFunction() : AnonymousJsFunction? {
+fun StubInputStream.readAnonymousFunction(): AnonymousJsFunction? {
     if (!readBoolean())
         return null
     val parameters = readNamedPropertiesList()
@@ -204,14 +205,14 @@ fun StubInputStream.readAnonymousFunction() : AnonymousJsFunction? {
     )
 }
 
-fun StubOutputStream.writeNamedPropertiesList(properties:List<JsNamedProperty>) {
+fun StubOutputStream.writeNamedPropertiesList(properties: List<JsNamedProperty>) {
     writeInt(properties.size)
     for (property in properties) {
         writeNamedProperty(property)
     }
 }
 
-fun StubInputStream.readNamedPropertiesList() : List<JsNamedProperty> {
+fun StubInputStream.readNamedPropertiesList(): List<JsNamedProperty> {
     val out = mutableListOf<JsNamedProperty>()
     val numProperties = readInt()
     for (i in 0 until numProperties) {
@@ -246,667 +247,667 @@ val Window: GlobalJSClass = c(
                 p("console", "Console", nullable = true, readonly = true),
                 p("onabort", callback = callback(), comment = "Fires when the user aborts the download.", nullable = true, ignore = true),
                 p("onanimationcancel", callback = callback(parameters = listOf(p("this", "Window"), p("ev", "Event")), returns = rt("void")), nullable = true, ignore = true),
-                p("onanimationend", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onanimationiteration", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onanimationstart", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onauxclick", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onafterprint", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onblur", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
-                p("oncancel", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("oncanplay", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
-                p("oncanplaythrough", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onchange", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
-                p("onclick", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
-                p("onclose", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("oncontextmenu", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
-                p("oncuechange", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ondblclick", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
-                p("ondrag", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
-                p("ondragend", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
-                p("ondragenter", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondragexit", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondragleave", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
-                p("ondragover", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
-                p("ondragstart", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
-                p("ondrop", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
-                p("ondurationchange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
-                p("onemptied", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
-                p("onended", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
+                p("onanimationend", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onanimationiteration", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onanimationstart", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onauxclick", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onafterprint", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onblur", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the object loses the input focus.", ignore = true),
+                p("oncancel", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("oncanplay", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when playback is possible, but would require further buffering.", ignore = true),
+                p("oncanplaythrough", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onchange", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the contents of the object or selection have changed.", ignore = true),
+                p("onclick", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the left mouse button on the object", ignore = true),
+                p("onclose", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("oncontextmenu", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the right mouse button in the client area, opening the context menu.", ignore = true),
+                p("oncuechange", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ondblclick", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user double-clicks the object.", ignore = true),
+                p("ondrag", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the source object continuously during a drag operation.", ignore = true),
+                p("ondragend", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation.", ignore = true),
+                p("ondragenter", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragexit", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondragleave", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation.", ignore = true),
+                p("ondragover", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target.", ignore = true),
+                p("ondragstart", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object.", ignore = true),
+                p("ondrop", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target.", ignore = true),
+                p("ondurationchange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the duration attribute is updated.", ignore = true),
+                p("onemptied", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the media element is reset to its initial state.", ignore = true),
+                p("onended", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the end of playback is reached.", ignore = true),
                 p("onerror", "OnErrorEventHandler", nullable = true, comment = "Fires when an error occurs during object loading.", ignore = true),
-                p("onfocus", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the object receives focus.", ignore = true),
-                p("ongotpointercapture", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("oninput", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("oninvalid", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onkeydown", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user presses a key.", ignore = true),
-                p("onkeypress", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
-                p("onkeyup", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user releases a key", ignore = true),
-                p("onload", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
-                p("onloadeddata", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
-                p("onloadmetadata", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
-                p("onloadend", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","ProgressEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onloadstart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
-                p("onlostpointercapture", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmousedown", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
-                p("onmouseenter", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmouseenterleave", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmousemove", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
-                p("onmouseout", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
-                p("onmouseover", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
-                p("onmouseup", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
-                p("onmousedown", callback = callback(parameters=listOf(
-p("this: Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpause", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when playback is paused.", ignore = true),
-                p("onplay", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
-                p("onplaying", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
-                p("onpointercancel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerdown", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerenter", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerleave", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointermove", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerout", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerover", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpointerup", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PointerEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onprogress", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","ProgressEvent")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
-                p("onratechange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
-                p("onreset", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user resets a form.", ignore = true),
-                p("onresize", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","UIEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onscroll", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
-                p("onsecuritypolicyviolation", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","SecurityPolicyViolationEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onseeked", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
-                p("onseeking", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
-                p("onselect", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Fires when the current selection changes.", ignore = true),
-                p("onselectionchange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onselectstart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onstalled", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
-                p("onsubmit", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onsuspend", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
-                p("ontimeupdate", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
-                p("ontoggle", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontouchcancel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TouchEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontouchend", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TouchEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontouchmove", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TouchEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontouchstart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TouchEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontransitioncancel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontransitionend", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontransitionrun", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontransitionstart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ontouchcancel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","TouchEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvolumechange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
-                p("onwaiting", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
-                p("onbeforeprint", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onbeforeunload", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","BeforeUnloadEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onhashchange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","HashChangeEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onlanguagechange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmessage", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","MessageEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmessageerror", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","MessageEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onoffline", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ononline", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpagehide", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PageTransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpageshow", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PageTransitionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onpopstate", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PopStateEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onrejectionhandled", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onstorage", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","StorageEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onunhandledrejection", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","PromiseRejectionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onunload", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onwheel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","WheelEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("oncompassneedscalibration", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ondevicelight", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","DeviceLightEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ondevicemotion", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","DeviceMotionEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("ondeviceorientation", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","DeviceOrientationEvent")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmousewheel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgesturechange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgesturedoubletap", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgestureend", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgesturehold", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgesturestart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsgesturetap", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmsinertiastart", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointercancel", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerdown", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerenter", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerleave", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointermove", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerout", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerover", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onmspointerup", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onorientationchange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onreadystatechange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplayactivate", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplayblur", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplayconnect", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplaydeactivate", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplaydisconnect", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplayfocus", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplaypointerrestricted", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplaypointerunrestricted", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
-                p("onvrdisplaypresentchange", callback = callback(parameters=listOf(
-p("this:Window"),
-p(" ev","Event")
-),
-returns = RT_ANY), nullable = true, ignore = true),
+                p("onfocus", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the object receives focus.", ignore = true),
+                p("ongotpointercapture", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("oninput", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("oninvalid", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onkeydown", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user presses a key.", ignore = true),
+                p("onkeypress", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user presses an alphanumeric key.", ignore = true),
+                p("onkeyup", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user releases a key", ignore = true),
+                p("onload", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires immediately after the browser loads the object.", ignore = true),
+                p("onloadeddata", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when media data is loaded at the current playback position.", ignore = true),
+                p("onloadmetadata", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined.", ignore = true),
+                p("onloadend", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "ProgressEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onloadstart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when Internet Explorer begins looking for media data.", ignore = true),
+                p("onlostpointercapture", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousedown", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user clicks the object with either mouse button.", ignore = true),
+                p("onmouseenter", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmouseenterleave", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousemove", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse over the object.", ignore = true),
+                p("onmouseout", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object.", ignore = true),
+                p("onmouseover", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user moves the mouse pointer into the object.", ignore = true),
+                p("onmouseup", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object.", ignore = true),
+                p("onmousedown", callback = callback(parameters = listOf(
+                        p("this: Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpause", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when playback is paused.", ignore = true),
+                p("onplay", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the play method is requested.", ignore = true),
+                p("onplaying", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the audio or video has started playing.", ignore = true),
+                p("onpointercancel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerdown", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerenter", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerleave", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointermove", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerout", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerover", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpointerup", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PointerEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onprogress", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "ProgressEvent")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs to indicate progress while downloading media data.", ignore = true),
+                p("onratechange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the playback rate is increased or decreased.", ignore = true),
+                p("onreset", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user resets a form.", ignore = true),
+                p("onresize", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "UIEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onscroll", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object.", ignore = true),
+                p("onsecuritypolicyviolation", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "SecurityPolicyViolationEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onseeked", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the seek operation ends.", ignore = true),
+                p("onseeking", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the current playback position is moved.", ignore = true),
+                p("onselect", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Fires when the current selection changes.", ignore = true),
+                p("onselectionchange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onselectstart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onstalled", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the download has stopped.", ignore = true),
+                p("onsubmit", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onsuspend", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs if the load operation has been intentionally halted.", ignore = true),
+                p("ontimeupdate", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs to indicate the current playback position.", ignore = true),
+                p("ontoggle", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchcancel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TouchEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchend", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TouchEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchmove", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TouchEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchstart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TouchEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitioncancel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionend", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionrun", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontransitionstart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ontouchcancel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "TouchEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvolumechange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted.", ignore = true),
+                p("onwaiting", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available.", ignore = true),
+                p("onbeforeprint", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onbeforeunload", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "BeforeUnloadEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onhashchange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "HashChangeEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onlanguagechange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmessage", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "MessageEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmessageerror", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "MessageEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onoffline", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ononline", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpagehide", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PageTransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpageshow", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PageTransitionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onpopstate", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PopStateEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onrejectionhandled", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onstorage", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "StorageEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onunhandledrejection", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "PromiseRejectionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onunload", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onwheel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "WheelEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("oncompassneedscalibration", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ondevicelight", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "DeviceLightEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ondevicemotion", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "DeviceMotionEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("ondeviceorientation", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "DeviceOrientationEvent")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmousewheel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturechange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturedoubletap", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgestureend", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturehold", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturestart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsgesturetap", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmsinertiastart", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointercancel", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerdown", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerenter", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerleave", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointermove", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerout", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerover", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onmspointerup", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onorientationchange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onreadystatechange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayactivate", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayblur", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayconnect", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaydeactivate", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaydisconnect", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplayfocus", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypointerrestricted", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypointerunrestricted", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
+                p("onvrdisplaypresentchange", callback = callback(parameters = listOf(
+                        p("this:Window"),
+                        p(" ev", "Event")
+                ),
+                        returns = RT_ANY), nullable = true, ignore = true),
                 p("indexedDB", "IDBFactory", nullable = true, readonly = true),
                 p("caches", "CacheStorage", readonly = true),
                 p("crypto", "Crypto", readonly = true),
@@ -1116,7 +1117,7 @@ returns = RT_ANY), nullable = true, ignore = true),
         )
 )
 
-val JS_SYMBOL = c (
+val JS_SYMBOL = c(
         "Symbol",
         constructor = ctor(listOf(p("name", "string"))),
         staticFunctions = listOf(
@@ -1126,19 +1127,19 @@ val JS_SYMBOL = c (
 
 val VOID = rt("void", nullable = true)
 
-val JS_ANY = c (
+val JS_ANY = c(
         "?",
         extends = listOf("object"),
         comment = "Object"
 )
 
-val JS_NULL = c (
+val JS_NULL = c(
         "null",
         extends = listOf("null", "primitive"),
         isStruct = true
 )
 
-val JS_UNDEFINED = c (
+val JS_UNDEFINED = c(
         "undefined",
         extends = listOf("primitive"),
         isStruct = true
@@ -1230,7 +1231,7 @@ val JS_PROTOTYPE = c(
         )
 )
 
-val JS_FUNCTION = c (
+val JS_FUNCTION = c(
         className = "Function",
         isStruct = true
 )
@@ -1240,23 +1241,23 @@ val JS_PROPERTY_DESCRIPTOR = c(
         extends = listOf("DataDescriptor", "AccessorDescriptor"),
         isStruct = true,
         properties = listOf(
-                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
-                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
-                p ("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
-                p ("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false"),
-                p ("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
-                p ("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
+                p("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
+                p("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false"),
+                p("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
+                p("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
         )
 )
 
-val JS_DATA_DESCRIPTOR = c (
+val JS_DATA_DESCRIPTOR = c(
         className = "DataDescriptor",
         isStruct = true,
         properties = listOf(
-                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
-                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
-                p ("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
-                p ("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false")
+                p("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p("value", "?", comment = "The value associated with the property. Can be any valid JavaScript value (number, object, function, etc).", default = "undefined"),
+                p("writable", "BOOL", comment = "true if and only if the value associated with the property may be changed with an assignment operator.", default = "false")
         )
 )
 
@@ -1264,20 +1265,20 @@ val JS_ACCESSOR_DESCRIPTOR = c(
         className = "AccessorDescriptor",
         isStruct = true,
         properties = listOf(
-                p ("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
-                p ("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
-                p ("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
-                p ("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
+                p("configurable", "BOOL", comment = "true if and only if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object.", default = "false"),
+                p("enumerable", "BOOL", comment = "true if and only if this property shows up during enumeration of the properties on the corresponding object.", default = "false"),
+                p("get", "Function", comment = "A function which serves as a getter for the property, or undefined if there is no getter. The function's return value will be used as the value of the property.", default = "undefined"),
+                p("set", "Function", comment = "A function which serves as a setter for the property, or undefined if there is no setter. The function will receive as its only argument the new value being assigned to the property.", default = "undefined")
 
         )
 )
 
-val JS_PROPERTIES_OBJECT = c (
+val JS_PROPERTIES_OBJECT = c(
         className = "PropertiesObject",
         isStruct = true
 )
 
-val JS_ITERABLE = c (
+val JS_ITERABLE = c(
         className = "iterable"
 )
 
@@ -1295,23 +1296,23 @@ val JS_OBJECT = c(
                         returns = RT_BOOL,
                         comment = "Returns a boolean indicating whether the object has the specified property as its own property (as opposed to inheriting it)"
                 ),
-                f (
+                f(
                         name = "propertyIsEnumerable",
                         parameters = listOf(p("prop", "string", comment = "The name of the property to test")),
                         returns = RT_BOOL,
                         comment = "returns a Boolean indicating whether the specified property is enumerable"
                 ),
-                f (
+                f(
                         name = "tolocalestring",
                         returns = RT_STRING,
                         comment = "Returns a string representing the object. This method is meant to be overridden by derived objects for locale-specific purposes"
                 ),
-                f (
+                f(
                         name = "toString",
                         returns = RT_STRING,
                         comment = "Returns a string representing the object"
                 ),
-                f (
+                f(
                         name = "valueOf",
                         returns = RT_ANY,
                         comment = "Returns the primitive value of the specified object"
@@ -1327,7 +1328,7 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "The target object."),
                         comment = "The Object.assign() method is used to copy the values of all enumerable own properties from one or more source objects to a target object. It will return the target object"
                 ),
-                f (
+                f(
                         name = "values",
                         parameters = listOf(
                                 p("object", "object")
@@ -1335,7 +1336,7 @@ val JS_OBJECT = c(
                         returns = rt("?[]", comment = "An array containing the given object's own enumerable property values"),
                         comment = "Returns an array of a given object's own enumerable property values, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well)."
                 ),
-                f (
+                f(
                         name = "create",
                         parameters = listOf(
                                 p("proto", "prototype", comment = "The object which should be the prototype of the newly-created object."),
@@ -1344,34 +1345,34 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "A new object with the specified prototype object and properties."),
                         comment = "Creates a new object, using an existing object as the prototype of the newly created object."
                 ),
-                f (
+                f(
                         name = "defineProperties",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object on which to define or modify properties"),
                                 p("props", "PropertiesObject", comment = "An object whose keys represent the names of properties to be defined or modified and whose values are objects describing those properties. Each value in props must be either a data descriptor or an accessor descriptor; it cannot be both (see Object.defineProperty() for more details).")
                         ),
-                        returns = rt("object",comment = "The object that was passed to the function."),
+                        returns = rt("object", comment = "The object that was passed to the function."),
                         comment = "defines new or modifies existing properties directly on an object, returning the object."
                 ),
-                f (
+                f(
                         name = "defineProperty",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object on which to define the property"),
-                                p ("property", "string|Symbol", comment = "The name or Symbol of the property to be defined or modified"),
-                                p ("descriptor", "DataDescriptor|AccessorDescriptor", comment = "The descriptor for the property being defined or modified")
+                                p("property", "string|Symbol", comment = "The name or Symbol of the property to be defined or modified"),
+                                p("descriptor", "DataDescriptor|AccessorDescriptor", comment = "The descriptor for the property being defined or modified")
                         ),
                         returns = rt("object", comment = "The object that was passed to the function"),
                         comment = "defines a new property directly on an object, or modifies an existing property on an object, and returns the object.\n@returns The object that was passed to the function"
                 ),
-                f (
+                f(
                         name = "entries",
                         parameters = listOf(
-                                p ("obj", "object", comment = "The object whose own enumerable string-keyed property [key, value] pairs are to be returned.")
+                                p("obj", "object", comment = "The object whose own enumerable string-keyed property [key, value] pairs are to be returned.")
                         ),
                         returns = rt("[key, value][]", comment = "An array of the given object's own enumerable string-keyed property [key, value] pairs"),
                         comment = "returns an array of a given object's own enumerable string-keyed property [key, value] pairs, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well). The order of the array returned by Object.entries() does not depend on how an object is defined. If there is a need for certain ordering then the array should be sorted first like Object.entries(obj).sort((a, b) => b[0].localeCompare(a[0]));"
                 ),
-                f (
+                f(
                         name = "freeze",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object to freeze")
@@ -1379,22 +1380,22 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "The object that was passed to the function"),
                         comment = "freezes an object. A frozen object can no longer be changed; freezing an object prevents new properties from being added to it, existing properties from being removed, prevents changing the enumerability, configurability, or writability of existing properties, and prevents the values of existing properties from being changed. In addition, freezing an object also prevents its prototype from being changed. freeze() returns the same object that was passed in."
                 ),
-                f (
+                f(
                         name = "fromEntries",
                         parameters = listOf(
-                                p ("iterable", "iterable", comment = "An iterable such as Array or Map or other objects implementing the iterable protocol.")
+                                p("iterable", "iterable", comment = "An iterable such as Array or Map or other objects implementing the iterable protocol.")
                         ),
                         returns = rt("object", comment = "A new object whose properties are given by the entries of the iterable")
                 ),
-                f (
+                f(
                         name = "getOwnPropertyDescriptor",
                         parameters = listOf(
-                                p ("obj", "object", comment = "The object in which to look for the property"),
-                                p ("prop", "string|Symbol", comment = "The name or Symbol of the property whose description is to be retrieved")
+                                p("obj", "object", comment = "The object in which to look for the property"),
+                                p("prop", "string|Symbol", comment = "The name or Symbol of the property whose description is to be retrieved")
                         ),
                         returns = rt("PropertyDescriptor", comment = "A property descriptor of the given property if it exists on the object, undefined otherwise.", nullable = true)
                 ),
-                f (
+                f(
                         name = "getOwnPropertyDescriptors",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object for which to get all own property descriptors")
@@ -1402,36 +1403,36 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "An object containing all own property descriptors of an object. Might be an empty object, if there are no properties."),
                         comment = "Returns all own property descriptors of a given object."
                 ),
-                f (
+                f(
                         name = "getOwnPropertyNames",
                         parameters = listOf(
-                                p ("obj", "object", comment = "The object whose enumerable and non-enumerable properties are to be returned")
+                                p("obj", "object", comment = "The object whose enumerable and non-enumerable properties are to be returned")
                         ),
                         returns = rt("string[]"),
                         comment = "Returns an array of all properties (including non-enumerable properties except for those which use Symbol) found directly in a given object."
                 ),
-                f (
+                f(
                         name = "getOwnPropertySymbols",
                         parameters = listOf(
-                                p ("obj", "object", comment = "The object whose symbol properties are to be returned")
+                                p("obj", "object", comment = "The object whose symbol properties are to be returned")
                         ),
                         returns = rt("Symbol[]", comment = "An array of all symbol properties found directly upon the given object"),
                         comment = "Returns an array of all symbol properties found directly upon a given object."
                 ),
-                f (
+                f(
                         name = "getPrototypeOf",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object whose prototype is to be returned")
                         ),
                         returns = rt("prototype", comment = "The prototype of the given object. If there are no inherited properties, null is returned.", nullable = true)
                 ),
-                f (
+                f(
                         name = "is",
                         parameters = listOf(
-                                p ("value1", "?", comment = "The first value to compare."),
-                                p ("value2", "?", comment = "The second value to compare.")
+                                p("value1", "?", comment = "The first value to compare."),
+                                p("value2", "?", comment = "The second value to compare.")
                         ),
-                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the two arguments are the same value"),
+                        returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the two arguments are the same value"),
                         comment = "Object.is() determines whether two values are the same value. Two values are the same if one of the following holds:\n" +
                                 "\n" +
                                 "both undefined\n" +
@@ -1448,31 +1449,31 @@ val JS_OBJECT = c(
                                 "\n" +
                                 "This is also not the same as being equal according to the === operator. The === operator (and the == operator as well) treats the number values -0 and +0 as equal and treats Number.NaN as not equal to NaN."
                 ),
-                f (
+                f(
                         name = "isExtensible",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which should be checked")
                         ),
-                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is extensible"),
+                        returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is extensible"),
                         comment = "Determines if an object is extensible (whether it can have new properties added to it)."
                 ),
-                f (
+                f(
                         name = "isFrozen",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which should be checked")
                         ),
-                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is frozen"),
+                        returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is frozen"),
                         comment = "Determines if an object is frozen.\nAn object is frozen if and only if it is not extensible, all its properties are non-configurable, and all its data properties (that is, properties which are not accessor properties with getter or setter components) are non-writable."
                 ),
-                f (
+                f(
                         name = "isSealed",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which should be checked")
                         ),
-                        returns = RT_BOOL.copy (comment = "A Boolean indicating whether or not the given object is sealed"),
+                        returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is sealed"),
                         comment = "Returns true if the object is sealed, otherwise false. An object is sealed if it is not extensible and if all its properties are non-configurable and therefore not removable (but not necessarily non-writable)."
                 ),
-                f (
+                f(
                         name = "keys",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object of which the enumerable's own properties are to be returned.")
@@ -1480,7 +1481,7 @@ val JS_OBJECT = c(
                         returns = rt("string[]", comment = "An array of strings that represent all the enumerable properties of the given object."),
                         comment = "Returns an array of a given object's own property names, in the same order as we get with a normal loop."
                 ),
-                f (
+                f(
                         name = "preventExtensions",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which should be made non-extensible.")
@@ -1488,7 +1489,7 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "The object being made non-extensible."),
                         comment = "Prevents new properties from ever being added to an object (i.e. prevents future extensions to the object).\nAn object is extensible if new properties can be added to it. Object.preventExtensions() marks an object as no longer extensible, so that it will never have properties beyond the ones it had at the time it was marked as non-extensible. Note that the properties of a non-extensible object, in general, may still be deleted. Attempting to add new properties to a non-extensible object will fail, either silently or by throwing a TypeError (most commonly, but not exclusively, when in strict mode)."
                 ),
-                f (
+                f(
                         name = "seal",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which should be sealed.")
@@ -1496,11 +1497,11 @@ val JS_OBJECT = c(
                         returns = rt("object", comment = "The object being sealed"),
                         comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
                 ),
-                f (
+                f(
                         name = "setPrototypeOf",
                         parameters = listOf(
                                 p("obj", "object", comment = "The object which is to have its prototype set."),
-                                p ("prototype", "object", comment = "The object's new prototype (an object or null).", nullable = true)
+                                p("prototype", "object", comment = "The object's new prototype (an object or null).", nullable = true)
                         ),
                         returns = rt("object", comment = "The specified object."),
                         comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
@@ -1636,25 +1637,24 @@ val JS_STRING: GlobalJSClass = c(
                         ),
                         returns = rt("string[]")
                 )
-
         )
 )
 
 private val JS_BOXED_NUMBER = c(
         "Number",
-        constructor = ctor (listOf(p("value", "number"))),
+        constructor = ctor(listOf(p("value", "number"))),
         extends = listOf("number")
 )
 
 private val JS_BOXED_STRING = c(
         "String",
-        constructor = ctor (listOf(p("value", "string"))),
+        constructor = ctor(listOf(p("value", "string"))),
         extends = listOf("number")
 )
 
 private val JS_BOXED_BOOLEAN = c(
         "Boolean",
-        constructor = ctor (listOf(p("value", "BOOL"))),
+        constructor = ctor(listOf(p("value", "BOOL"))),
         extends = listOf("number")
 )
 
@@ -2458,6 +2458,32 @@ val globalJSClasses = listOf(
                 properties = listOf(
                         p(name = "assignedSlot", type = "HTMLSlotElement | null", readonly = true)
                 )
+        ),
+        c(
+                className = "CGRect",
+                properties = listOf(
+                        p("x", "number"),
+                        p("y", "number"),
+                        p("width", "number"),
+                        p("height", "number")
+                ),
+                isStruct = true
+        ),
+        c(
+                className = "CGPoint",
+                properties = listOf(
+                        p("x", "number"),
+                        p("y", "number")
+                ),
+                isStruct = true
+        ),
+        c(
+                className = "CGSize",
+                properties = listOf(
+                        p("width", "number"),
+                        p("height", "number")
+                ),
+                isStruct = true
         ),
         Window,
         JsClassHTMLElement,
