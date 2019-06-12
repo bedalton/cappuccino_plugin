@@ -65,7 +65,7 @@ fun GlobalJSClass.mergeWithSuperClasses(project:Project) : GlobalJSClass {
     return (superClasses + this).flatten(className)
 }
 
-fun List<String>.flattenNestedSuperClasses() : Set<String> {
+fun Iterable<String>.flattenNestedSuperClasses() : Set<String> {
     val superClasses = mutableListOf<String>()
     for (jsClass in this) {
         if (superClasses.contains(jsClass))
