@@ -262,6 +262,16 @@
     />
 
     <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJNotAClassMethodInspection"
+                     level="WEAK WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Method selector may be invalid for target"
+                     shortName="NotAClassMethod"
+                     order="last"
+    />
+
+    <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJInvalidMethodParameterClassTypeInspection"
                      level="ERROR"
                      groupName="Objective-J"
@@ -298,6 +308,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJFilesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex"/>
