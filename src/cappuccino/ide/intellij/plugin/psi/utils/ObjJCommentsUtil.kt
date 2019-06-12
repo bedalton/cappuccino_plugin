@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
@@ -92,7 +91,6 @@ data class CommentWrapper(val commentText:String) {
 
     val returnParameterComment:CommentParam? by lazy {
         val line = lines.firstOrNull { it.startsWith("@return") }
-        line?.trim()?.split("\\s+".toRegex(), 2)?.getOrNull(1)
         if (line.isNotNullOrBlank()) {
             CommentParam("@return", line)
         } else {
@@ -151,9 +149,9 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
     private val possibleClassStrings:Set<String> by lazy {
         if (paramCommentIn == null)
             return@lazy emptySet<String>()
-        val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?\\s*".toRegex(), "").trim()
+        val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "").trim()
         val out = mutableSetOf<String>()
-        listOf(SIMPLE_TYPE_REGEX_1, SIMPLE_TYPE_REGEX_2).forEach { pattern ->
+        listOf(CLASS_NAME_REGEX).forEach { pattern ->
                 val matcher = pattern.matcher(commentStringTrimmed)
                 while (matcher.find()) {
                     if (matcher.groupCount() < 2) {
@@ -191,7 +189,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
             emptySet()
 
 
-        val firstIn = paramCommentIn.split("\\s+".toRegex(), 2).first().orEmpty()
+        val firstIn = paramCommentIn.split("\\s+".toRegex(), 2).first()
         if (matchType(firstIn, classes, jsClasses) != null)
             return setOf(firstIn)
 
@@ -225,8 +223,9 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
 val jsTypesMinusCPPrefix by lazy { globalJsClassNames.map { it.removePrefix("CP").removePrefix("CF")} }
 
 
-private val SIMPLE_TYPE_REGEX_1 = "the\\s+([^a-zA-Z0-9_|])".toPattern()
-private val SIMPLE_TYPE_REGEX_2 = "the\\s+[^ ]*\\s+([^a-zA-Z0-9_|]*?).*".toPattern()
+private val SIMPLE_TYPE_REGEX_1 = "([a-zA-Z0-9_|])".toPattern()
+private val CLASS_NAME_REGEX = "([a-zA-Z_$][a-zA-Z0-9_]*)".toPattern()
+private val SIMPLE_TYPE_REGEX_2 = "[^ ]*\\s+([a-zA-Z0-9_$|]*?).*".toPattern()
 
 private fun matchType(className:String, objjClassNames:Set<String>, jsClassNames:Set<String>) : ClassMatchType? {
     return when (className) {
