@@ -278,6 +278,7 @@ object ObjJTokenSets {
             ObjJ_DIVIDE_ASSIGN,
             ObjJ_MODULUS_ASSIGN,
             ObjJ_PLUS_ASSIGN,
+            ObjJ_MATH_OP,
             ObjJ_MINUS_ASSIGN,
             ObjJ_LEFT_SHIFT_ARITHMATIC_ASSIGN,
             ObjJ_RIGHT_SHIFT_ARITHMATIC_ASSIGN,
