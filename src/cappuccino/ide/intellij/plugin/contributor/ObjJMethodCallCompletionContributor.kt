@@ -11,8 +11,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.getClassConstraints
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -58,11 +56,13 @@ object ObjJMethodCallCompletionContributor {
             return
         }
 
+
         val selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
         val selectorString: String = getSelectorStringFromSelectorList(selectors)
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
         val selector: ObjJSelector? = if (selectorIndex >= 0 && selectorIndex < selectors.size) selectors[selectorIndex] else null
 
+        addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
         //Determine target scope
         val scope: TargetScope = getTargetScope(elementsParentMethodCall)
         //LOGGER.log(Level.INFO, String.format("Call target: <%s> has scope of <%s> with selector: <%s>", elementsParentMethodCall.callTargetText, scope.toString(), selectorString))
@@ -73,7 +73,7 @@ object ObjJMethodCallCompletionContributor {
             else -> emptyList()
         }
         //Add actual method call completions
-        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall?.containingClassName)
+        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
 
         val hasLocalScope: Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
@@ -81,6 +81,21 @@ object ObjJMethodCallCompletionContributor {
         if (hasLocalScope && selectors.size == 1) {
             addAccessorLookupElements(result, psiElement.project, possibleContainingClassNames, selectorString)
         }
+    }
+
+    private fun addRespondsToSelectors(result: CompletionResultSet, elementsParentMethodCall: ObjJMethodCall?, index:Int) {
+        val resolved = elementsParentMethodCall?.callTarget?.singleVariableNameElementOrNull
+                ?: return
+        val respondsToSelectors = resolved.respondsToSelectors().mapNotNull { it.selectorList.getOrNull(index)}
+        respondsToSelectors.forEach {
+            ObjJSelectorLookupUtil.addSelectorLookupElement(
+                    resultSet = result,
+                    selector = it,
+                    selectorIndex = index,
+                    priority = GENERIC_METHOD_SUGGESTION_PRIORITY,
+                    addSpaceAfterColon = false)
+        }
+
     }
 
     private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int, containingClass:String?) {
@@ -104,7 +119,6 @@ object ObjJMethodCallCompletionContributor {
         if (methodHeaders.isEmpty()) {
             return
         }
-        val filterIfStrict = ObjJPluginSettings.filterMethodCallsStrictIfTypeKnown
         var out = mutableListOf<SelectorCompletionPriorityTupple>()
         val filteredOut = mutableListOf<SelectorCompletionPriorityTupple>()
         //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
