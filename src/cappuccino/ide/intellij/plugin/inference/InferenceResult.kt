@@ -3,10 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.StubInputStream
@@ -25,16 +22,29 @@ data class InferenceResult (
         val arrayTypes:Set<String>? = null
 ) {
     private var globalClasses:Set<GlobalJSClass>? = null
+    private var allClassesExpanded:Set<String>? = null
 
     val isJsObject:Boolean by lazy {
         jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
+    }
+
+    fun allClassesExpanded(project:Project): Set<String> {
+        var classes = allClassesExpanded
+        if (classes != null)
+            return classes
+        val classList = toClassList(null).withoutAnyType()
+        classes = classList.flatMap {
+            ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+        }.toSet()// + classList.flattenNestedSuperClasses()
+        allClassesExpanded = classes
+        return classes
     }
 
     fun jsClasses(project:Project):Iterable<GlobalJSClass> {
         var out = globalClasses
         if (out != null)
             return out
-        out = toClassList().mapNotNull { getJsClassObject(project, it) }.toSet() ?: emptySet()
+        out = toClassList().mapNotNull { getJsClassObject(project, it) }.toSet()
         globalClasses = out
         return out
     }
@@ -49,7 +59,7 @@ private fun isBoolean(classes:Iterable<String>) : Boolean {
 }
 
 private fun isString(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "string"}
+    return classes.any { it.toLowerCase() in stringTypes }
 }
 
 private fun isRegex(classes:Iterable<String>) : Boolean {
@@ -147,6 +157,7 @@ internal fun List<InferenceResult>.collapse() : InferenceResult {
             functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null,
             classes = classes,
             jsObjectKeys = if (jsObjectKeys.isNotEmpty()) jsObjectKeys else null
+
     )
 }
 
@@ -211,7 +222,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
     if (isDictionary)
         returnClasses.add("CPDictionary")
     if (isString && stringTypes.intersect(classes).isEmpty())
-        returnClasses.add("string")
+        returnClasses.add("CPString")
     if (isSelector)
         returnClasses.add("SEL")
     if (isJsObject)
@@ -221,10 +232,11 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
     }
     returnClasses.addAll(classes)
     return returnClasses.mapNotNull {
-        if (it in anyTypes)
-            simplifyAnyTypeTo
-        else
-            it
+        when (it) {
+            in anyTypes -> simplifyAnyTypeTo
+            "string" -> "CPString"
+            else -> it
+        }
         }.toSet()
 }
 
@@ -269,6 +281,11 @@ internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.
 internal fun Iterable<String>.containsAnyType() : Boolean {
     return this.any { it in anyTypes}
 }
+
+internal fun Iterable<String>.withoutAnyType() : Set<String> {
+    return this.filterNot { it in anyTypes}.toSet()
+}
+
 
 internal val InferenceResult.anyType : Boolean get() {
     return classes.any { it in anyTypes}
