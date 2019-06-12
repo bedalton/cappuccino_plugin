@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -117,7 +118,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
          */
         private fun isCPStringWithFormat(methodCall: ObjJMethodCall): Boolean {
             if (methodCall.selectorList.size == 1) {
-                val selectorText = methodCall.selectorList[0].text
+                val selectorText = methodCall.selectorList.getOrNull(0)?.text ?: return false
                 if (selectorText != CPSTRING_INIT_WITH_FORMAT && selectorText != CPSTRING_STRING_WITH_FORMAT)
                     return false
                 return methodCall.callTargetText == ObjJClassType.STRING || inferMethodCallType(methodCall, createTag())?.toClassList("?")?.any {
