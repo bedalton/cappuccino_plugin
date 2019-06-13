@@ -46,7 +46,7 @@ class ObjJVariableReference(
             val imports = file?.importStrings
             val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
             var namedElement:PsiElement? = null
-            if (!globalVariableDeclarations.isEmpty()) {
+            if (globalVariableDeclarations.isNotEmpty()) {
                 if (imports == null) {
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
