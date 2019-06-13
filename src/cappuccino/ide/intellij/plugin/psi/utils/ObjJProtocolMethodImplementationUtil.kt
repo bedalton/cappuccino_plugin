@@ -16,7 +16,7 @@ import java.util.*
 /**
  * Gets method headers for a class declaration
  */
-fun getMethodHeaders(declaration: ObjJImplementationDeclaration): List<ObjJMethodHeader> {
+fun getAllMethodHeaders(declaration: ObjJImplementationDeclaration): List<ObjJMethodHeader> {
     val headers = ArrayList<ObjJMethodHeader>()
     for (methodHeaderDeclaration in declaration.methodDeclarationList) {
         headers.add(methodHeaderDeclaration.methodHeader)
@@ -27,7 +27,7 @@ fun getMethodHeaders(declaration: ObjJImplementationDeclaration): List<ObjJMetho
 /**
  * Gets method headers for a given protocol element
  */
-fun getMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHeader> {
+fun getAllMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHeader> {
     val headers = declaration.methodHeaderList.toMutableList()
     for (scopedBlock in declaration.protocolScopedMethodBlockList) {
         headers.addAll(scopedBlock.methodHeaderList)
@@ -39,7 +39,7 @@ fun getMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHeade
  * Determines whether a protocol contains a given method
  */
 fun hasMethod(declaration: ObjJProtocolDeclaration, selector: String): Boolean {
-    for (methodHeader in getMethodHeaders(declaration)) {
+    for (methodHeader in declaration.getMethodHeaders()) {
         if (methodHeader.selectorString == selector) {
             return true
         }

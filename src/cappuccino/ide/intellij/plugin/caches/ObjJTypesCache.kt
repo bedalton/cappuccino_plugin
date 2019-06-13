@@ -151,7 +151,7 @@ class ObjJVariableNameCache(variableName:ObjJVariableName) {
     private fun getAllMethods(variableName: ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
         val project = variableName.project
         val classes = (classTypesCache.value ?: inferredTypes)?.toClassList(null)?.withoutAnyType()?.flatMap {
-            ObjJInheritanceUtil.getAllInheritedClasses(it, project);
+            ObjJInheritanceUtil.getAllInheritedClasses(it, project)
         }.orEmpty()
         if (classes.isEmpty())
             return emptyList()
@@ -165,9 +165,9 @@ class ObjJVariableNameCache(variableName:ObjJVariableName) {
 
 
 
-private class MyModificationTracker:ModificationTracker {
-    internal var myCount: Long = 0;
+class MyModificationTracker:ModificationTracker {
+    internal var myCount: Long = 0
     override fun getModificationCount(): Long {
-        return myCount;
+        return myCount
     }
 }

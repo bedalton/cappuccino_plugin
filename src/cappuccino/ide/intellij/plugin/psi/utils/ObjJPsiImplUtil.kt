@@ -235,14 +235,6 @@ object ObjJPsiImplUtil {
     // ============================== //
     // ====== MethodHeaders ========= //
     // ============================== //
-    @JvmStatic
-    fun getMethodHeaders(declaration: ObjJImplementationDeclaration): List<ObjJMethodHeader> =
-            cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
-
-    @JvmStatic
-    fun getMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHeader> =
-            cappuccino.ide.intellij.plugin.psi.utils.getMethodHeaders(declaration)
-
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun getMethodHeaders(_typedef: ObjJTypeDef): List<ObjJMethodHeader> =
