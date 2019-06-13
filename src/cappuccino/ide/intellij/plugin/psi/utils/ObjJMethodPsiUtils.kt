@@ -154,6 +154,8 @@ object ObjJMethodPsiUtils {
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         return methodHeader.getCachedInferredTypes {
+            if (methodHeader.tagged(tag))
+                return@getCachedInferredTypes null
             val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
@@ -354,10 +356,10 @@ object ObjJMethodPsiUtils {
      * This is due to overlaps of static and instnace method selectors
      * And also with single selector methods where one has a parameter and the other does not
      */
-    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader) : Boolean
+    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader?) : Boolean
     {
         // If one method is static, while another is an instance method, ignore
-        if (thisHeader.methodScope != otherHeader.methodScope) {
+        if (thisHeader.methodScope != otherHeader?.methodScope) {
             return false
         }
         // If Selector lengths are greater than one, then they are indeed overriding duplicated

@@ -56,7 +56,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
         if (!isUniversalMethodCaller(className)) {
             try {
-                indexSink.occurrence<ObjJMethodHeader, String>(ObjJClassMethodIndex.instance.key, className)
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
             } catch (e: Exception) {
                 LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: ${e.localizedMessage}")
             }
@@ -81,13 +81,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         // Index Getter accessors
         val getter = variableDeclarationStub.getter
         if (getter != null && getter.isNotBlank()) {
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter)
         }
         // Index setters
         val setter = variableDeclarationStub.setter
         if (setter != null && setter.isNotBlank()) {
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.setter!!)
         }
 
@@ -99,10 +97,14 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * @param indexSink index sink
      */
     override fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
+        val className = property.containingClassName
+        indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
         if (property.getter != null) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, property.getter!!))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.getter!!)
         }
         if (property.setter != null) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, property.setter!!))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.setter!!)
         }
     }
