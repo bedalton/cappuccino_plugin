@@ -1,6 +1,8 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -13,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameMixin
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
@@ -472,7 +475,7 @@ object ObjJPsiImplUtil {
                 ?: return null
         if (qualifiedReferenceComponents.size != 1 && qualifiedReferenceComponents[0] !is ObjJVariableName)
             return null
-        return (qualifiedReferenceComponents[0] as ObjJVariableName).reference.resolve() as? ObjJVariableName
+        return (qualifiedReferenceComponents[0] as? ObjJVariableName)?.reference?.resolve() as? ObjJVariableName
     }
     // ============================== //
     // ====== Virtual Methods ======= //
@@ -660,6 +663,26 @@ object ObjJPsiImplUtil {
     fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String
         = ObjJVariablePsiUtil.getVariableType(variable)
 
+
+    @JvmStatic
+    fun getMethods(variableName:ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
+        return (variableName as? ObjJVariableNameMixin)?.cachedMethods.orEmpty()
+    }
+
+    @JvmStatic
+    fun getMethodSelectors(variableName:ObjJVariableName) : Set<String> {
+        return getMethods(variableName).map { it.selectorString }.toSet()
+    }
+
+    @JvmStatic
+    fun getVariableType(variableName: ObjJVariableName) : InferenceResult? {
+        return (variableName as? ObjJVariableNameMixin)?.classTypes
+    }
+
+    @JvmStatic
+    fun getVariableType(variableName: ObjJVariableName, tag:Long) : InferenceResult? {
+        return (variableName as? ObjJVariableNameMixin)?.classTypes ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
+    }
 
     // ============================== //
     // =========== Blocks =========== //
