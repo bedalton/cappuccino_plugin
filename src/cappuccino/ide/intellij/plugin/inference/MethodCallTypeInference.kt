@@ -33,7 +33,10 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     if (selector == "alloc" || selector == "alloc:") {
         return getAllocStatementType(methodCall)
     }
-    val callTargetTypes = inferCallTargetType(methodCall.callTarget, tag)?.classes.orEmpty()
+    val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
+    val callTargetTypes = callTargetType?.classes.orEmpty()
+    if (selector == "copy" || selector == "copy:")
+        return callTargetType
     val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             ObjJUnifiedMethodIndex.instance[selector, project].filter {
@@ -47,6 +50,8 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val methodDeclarations = methods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypes = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes {
+            if (methodDeclaration.tagged(tag))
+                return@getCachedInferredTypes null
             val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
@@ -100,6 +105,8 @@ fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult?
     /*if (level < 0)
         return emptySet()*/
     return callTarget.getCachedInferredTypes {
+        if (callTarget.tagged(tag))
+            return@getCachedInferredTypes null
         internalInferCallTargetType(callTarget, tag)
     }
 }
