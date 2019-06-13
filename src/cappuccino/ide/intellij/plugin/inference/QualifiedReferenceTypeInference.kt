@@ -161,6 +161,8 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         null
 
     return referencedVariable?.getCachedInferredTypes {
+        if (referencedVariable.tagged(tag))
+            return@getCachedInferredTypes null
         val varDefType = if (referencedVariable is ObjJNamedElement)
             ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(referencedVariable)
         else

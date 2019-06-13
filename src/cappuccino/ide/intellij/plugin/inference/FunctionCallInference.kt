@@ -45,6 +45,8 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
         return null
     }
     return resolve.getCachedInferredTypes {
+        if (resolve.tagged(tag))
+            return@getCachedInferredTypes null
         val functionAsVariableName = resolve as? ObjJVariableName
         val function = (when {
             functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
