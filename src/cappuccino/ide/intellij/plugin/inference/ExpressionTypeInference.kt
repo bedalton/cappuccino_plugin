@@ -100,7 +100,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     if (leftExpression.arrayLiteral != null) {
         val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes
         return InferenceResult(
-                classes = setOf("Array"),
+                classes = setOf("CPArray"),
                 arrayTypes = if (types.isNotEmpty()) types else setOf("?")
         )
     }
