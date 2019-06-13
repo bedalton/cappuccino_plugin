@@ -21,12 +21,22 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
 
         return object : ObjJVisitor() {
+            val tag = createTag()
             override fun visitMethodCall(methodCall: ObjJMethodCall) {
                 //super.visitMethodCall(methodCall)
-                val tag = createTag()
                 val selectorString = methodCall.selectorString
+
                 if (selectorString == "respondsToSelector:" || selectorString == "class:" || selectorString == "isa:")
                     return
+                val onlyVariable = methodCall.callTarget.singleVariableNameElementOrNull
+                if (onlyVariable != null) {
+                    if (selectorString !in onlyVariable.methodSelectors) {
+                        val classes = onlyVariable.variableType?.toClassList(null)?.withoutAnyType().orEmpty()
+                        if (classes.isNotEmpty())
+                            annotateMethodCall(methodCall, classes, holder)
+                    }
+                    return
+                }
                 val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
                         ?: return
                 val classes = callTargetType.toClassList(null).withoutAnyType()
@@ -42,14 +52,11 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
     private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>) : Boolean {
         val project = methodCall.project
         val selectorString = methodCall.selectorString
+        if (selectorString in methodCall.callTarget.singleVariableNameElementOrNull?.methodSelectors.orEmpty())
+            return true
         return classes.any {
             ObjJClassAndSelectorMethodIndex.instance.containsKey(it, selectorString, project)
-        } || respondsToSelector(methodCall, selectorString)
-    }
-
-    private fun respondsToSelector(methodCall: ObjJMethodCall, selectorString:String) : Boolean {
-        val resolved = methodCall.callTarget.singleVariableNameElementOrNull ?: return false
-        return resolved.respondsToSelector(selectorString)
+        }
     }
 
     private fun annotateMethodCall(methodCall: ObjJMethodCall, callTargetType:Set<String>, problemsHolder: ProblemsHolder) {

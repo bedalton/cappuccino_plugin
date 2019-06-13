@@ -44,6 +44,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
         if (file !is ObjJFile)
             return
         internalTimeSinceLastFileChange = Date().time
+        LOGGER.info("Changed: $internalTimeSinceLastFileChange")
     }
 
     internal fun addListenerToProject(project:Project) {
@@ -63,8 +64,9 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->I
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
-    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LAST_RESOLVED).orElse(Date().time)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag < 0 || timeSinceTag < 10000) {
+    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LAST_RESOLVED).orElse(0)
+    LOGGER.info("Time Since: $timeSinceTag")
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag < 60000) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null) {
             return inferredTypes
