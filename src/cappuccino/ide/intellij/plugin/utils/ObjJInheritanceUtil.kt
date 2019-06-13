@@ -20,6 +20,26 @@ object ObjJInheritanceUtil {
         return inheritedClasses
     }
 
+    fun getAllSuperClasses(classDeclarationElement: ObjJImplementationDeclaration) : List<ObjJImplementationDeclaration> {
+        val superClass = classDeclarationElement.superClassName ?: return emptyList()
+        val project = classDeclarationElement.project
+        val out = mutableListOf<ObjJImplementationDeclaration>()
+        ObjJImplementationDeclarationsIndex.instance[superClass, project].forEach {
+            out.add(it)
+            out.addAll(getAllSuperClasses(it))
+        }
+        return out
+    }
+
+    fun getAllProtocols(classDeclarationElement: ObjJClassDeclarationElement<*>) : List<ObjJProtocolDeclaration> {
+        val names = mutableSetOf<String>()
+        val project = classDeclarationElement.project
+        addProtocols(classDeclarationElement, names)
+        return names.flatMap {
+            ObjJProtocolDeclarationsIndex.instance[it, project]
+        }
+    }
+
     fun isInstanceOf(project:Project, thisClassName:String, targetClass:String) : Boolean {
         if (thisClassName == targetClass)
             return true
@@ -127,6 +147,7 @@ object ObjJInheritanceUtil {
     private fun addProtocols(
             classDeclarationElement: ObjJClassDeclarationElement<*>,
             protocols: MutableSet<String>) {
+        val project = classDeclarationElement.project
         val stub = classDeclarationElement.stub
         val newProtocols = stub?.inheritedProtocols ?: classDeclarationElement.getInheritedProtocols()
         for (protocol in newProtocols) {
@@ -134,6 +155,9 @@ object ObjJInheritanceUtil {
                 continue
             }
             protocols.add(protocol)
+            ObjJProtocolDeclarationsIndex.instance[protocol, project].forEach {
+                addProtocols(it, protocols)
+            }
         }
     }
 
