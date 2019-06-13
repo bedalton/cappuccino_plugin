@@ -226,7 +226,7 @@ object ObjJVariableNameAggregatorUtil {
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
         if (element is ObjJHasContainingClass)
-            getAllContainingClassInstanceVariables(element.containingClassName, element.project)
+            return getAllContainingClassInstanceVariables(element.containingClassName, element.project)
         val containingClass = element.getParentOfType(ObjJClassDeclarationElement::class.java)
                 ?: return emptyList()
         return getAllContainingClassInstanceVariables(containingClass.getClassNameString(), element.project)
