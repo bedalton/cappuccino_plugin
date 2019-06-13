@@ -2204,7 +2204,7 @@ variableName
 	| 	VAR_TYPE_SIGNED
 	{
 
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
@@ -2230,6 +2230,9 @@ variableName
 			respondsToSelectors
 			respondsToSelector
 			respondsToSelectorStrings
+			getMethods
+			getMethodSelectors
+			getVariableType
 		]
 	}
 	;
