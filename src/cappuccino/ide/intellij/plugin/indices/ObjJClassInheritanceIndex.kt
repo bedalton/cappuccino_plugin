@@ -31,7 +31,7 @@ class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<
             throw IndexNotReadyRuntimeException()
         }
         for (classDeclarationElement in get(className, project)) {
-            val currentClassName = classDeclarationElement.getClassNameString()
+            val currentClassName = classDeclarationElement.classNameString
             if (descendants.contains(currentClassName)) {
                 continue
             }

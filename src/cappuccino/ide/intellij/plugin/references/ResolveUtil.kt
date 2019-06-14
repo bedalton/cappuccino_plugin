@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -25,7 +25,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
             return
-        internalTimeSinceLastFileChange = createTag()
+        internalTimeSinceLastFileChange = now
     }
 
     internal fun addListenerToProject(project: Project) {

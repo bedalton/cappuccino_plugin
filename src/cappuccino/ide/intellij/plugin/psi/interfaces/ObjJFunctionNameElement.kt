@@ -4,5 +4,5 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 
 interface ObjJFunctionNameElement : ObjJCompositeElement {
     val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
-    val returnTypes:InferenceResult?
+    fun getCachedReturnType(tag:Long):InferenceResult?
 }

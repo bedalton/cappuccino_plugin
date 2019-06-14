@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
 import cappuccino.ide.intellij.plugin.caches.ObjJVariableNameCache
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
@@ -27,9 +28,9 @@ abstract class ObjJVariableNameMixin: ObjJStubBasedElementImpl<ObjJVariableNameS
     override val cachedParentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
         get() = cache.cachedParentFunctionDeclaration
 
-    override val cachedMethods get()
-            = cache.methods
+    override fun getCachedMethods(tag:Long)
+            = cache.getMethods(tag)
 
-    override val classTypes get()
-            = cache.classTypes
+    override fun getClassTypes(tag:Long): InferenceResult?
+        = cache.getClassTypes(tag)
 }

@@ -27,7 +27,7 @@ object ObjJMethodDeclarationAnnotator {
         val project = methodHeader.project
         val thisSelector = methodHeader.selectorString
         val containingClass = methodHeader.containingClass ?: return
-        val containingClassName = containingClass.getClassNameString()
+        val containingClassName = containingClass.classNameString
         Logger.getInstance(ObjJMethodDeclarationAnnotator::class.java).assertTrue(!DumbService.isDumb(project))
         for (classMethodHeader in ObjJClassMethodIndex.instance[containingClassName, project]) {
             // If containing class elements are not equivalent, they should not be tested

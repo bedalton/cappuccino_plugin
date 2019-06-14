@@ -194,7 +194,7 @@ internal fun combine (thisList:Map<String, InferenceResult>?, otherList:Map<Stri
     else {
         val out = otherList.toMutableMap()
         for ((key, value) in otherList) {
-            ProgressManager.checkCanceled()
+            //ProgressManager.checkCanceled()
             if (out.containsKey(key))
                 out[key] = value + out[key]!!
             else

@@ -229,7 +229,7 @@ object ObjJVariableNameAggregatorUtil {
             return getAllContainingClassInstanceVariables(element.containingClassName, element.project)
         val containingClass = element.getParentOfType(ObjJClassDeclarationElement::class.java)
                 ?: return emptyList()
-        return getAllContainingClassInstanceVariables(containingClass.getClassNameString(), element.project)
+        return getAllContainingClassInstanceVariables(containingClass.classNameString, element.project)
     }
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {

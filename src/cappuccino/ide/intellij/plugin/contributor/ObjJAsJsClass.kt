@@ -16,7 +16,7 @@ internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSCla
     val properties: MutableList<JsNamedProperty> = mutableListOf()
     val extends = mutableListOf<String>()
     for (objClass in implementations) {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         val superClassName = objClass.superClassName
         if (superClassName != null)
             extends.add(superClassName)
@@ -28,7 +28,7 @@ internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSCla
     }
     val protocols = ObjJProtocolDeclarationsIndex.instance[className, project]
     for (objClass in protocols) {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         extends.addAll(objClass.getInheritedProtocols())
         for (instanceVar in objClass.instanceVariableDeclarationList) {
             val property = instanceVar.toJsProperty() ?: continue

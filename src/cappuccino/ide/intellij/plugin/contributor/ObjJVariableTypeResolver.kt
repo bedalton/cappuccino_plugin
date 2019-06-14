@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -57,8 +58,8 @@ object ObjJVariableTypeResolver {
 
         // Get call target from formal variable types
         val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames != null && classNames.isNotEmpty()) {
-            return classNames
+        if (classNames.isNotNullOrEmpty()) {
+            return classNames!!
         }
 
         if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isNotEmpty()) {
@@ -165,7 +166,7 @@ object ObjJVariableTypeResolver {
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName): Set<String>? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        return if (formalVariableType.varTypeId != null && formalVariableType.varTypeId!!.className != null) {
+        return if (formalVariableType.varTypeId?.className != null) {
             setOf(formalVariableType.varTypeId!!.className!!.text)
         } else {
             setOf(formalVariableType.text)

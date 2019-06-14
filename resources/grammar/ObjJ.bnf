@@ -639,6 +639,7 @@ accessorProperty
 			getGetter
 			getSetter
 			shouldResolve
+			getMethodHeaderCache
 		]
 	}
 	;
@@ -1004,6 +1005,7 @@ methodDeclaration
 			getBlockList
 			createTreeStructureElement
 			createFoldingDescriptor
+			getMethodHeaderCache
 		]
 	}
 	;
@@ -1040,6 +1042,7 @@ methodHeader
 			getContainingSuperClass
 			isRequired
 			createTreeStructureElement
+			getMethodHeaderCache
 		]
 	}
 	;
@@ -1111,7 +1114,7 @@ implementationDeclaration
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImplementationDeclarationElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
 		]
@@ -1133,6 +1136,7 @@ implementationDeclaration
 			createFoldingDescriptor
 			createTreeStructureElement
 			getTreeStructureChildElements
+			getCache
 		]
 	}
 	;
@@ -1400,6 +1404,7 @@ protocolDeclaration
 			getClassType
 			createFoldingDescriptor
 			createTreeStructureElement
+			getCache
 		]
 	}
 	;
@@ -2036,6 +2041,7 @@ selectorLiteral
 			getExplicitReturnType
 			shouldResolve
 			getContainingSuperClass
+			getMethodHeaderCache
 		]
 	}
 	;

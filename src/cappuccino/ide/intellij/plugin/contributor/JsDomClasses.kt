@@ -225,10 +225,10 @@ internal val JsElementClass = c (
         )
 )
 
-/** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties. */
+/** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related getMethods and properties. */
 val JsClassCSSStyleDeclaration = c(
     className = "CSSStyleDeclaration ",
-    comment = "The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties.",
+    comment = "The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related getMethods and properties.",
     properties = listOf(
     p(name = "alignContent", type = "string", nullable = true),
     p(name = "alignItems", type = "string", nullable = true),

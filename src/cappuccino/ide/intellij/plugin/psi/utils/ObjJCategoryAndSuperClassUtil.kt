@@ -24,12 +24,12 @@ fun getContainingSuperClassName(psiElement: ObjJCompositeElement, returnDefault:
     val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement) ?: return null
     val project = psiElement.project
     if (containingClass !is ObjJImplementationDeclaration) {
-        return if (returnDefault) containingClass.getClassNameString() else null
+        return if (returnDefault) containingClass.classNameString else null
     }
     if (!containingClass.isCategory) {
         return containingClass.superClass?.text
     }
-    return getCategoryClassBaseDeclaration(containingClass.getClassNameString(), project)?.superClassName ?: if (returnDefault) containingClass.getClassNameString() else null
+    return getCategoryClassBaseDeclaration(containingClass.classNameString, project)?.superClassName ?: if (returnDefault) containingClass.classNameString else null
 
 }
 

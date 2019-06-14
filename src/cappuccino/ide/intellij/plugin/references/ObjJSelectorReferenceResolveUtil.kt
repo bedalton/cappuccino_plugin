@@ -22,8 +22,7 @@ object ObjJSelectorReferenceResolveUtil {
     private val EMPTY_RESULT = SelectorResolveResult(emptyList(), emptyList<PsiElement>(), emptyList())
     private val EMPTY_SELECTORS_RESULT = SelectorResolveResult(emptyList(), emptyList<ObjJSelector>(), emptyList())
 
-    fun getMethodCallReferences(element: ObjJSelector, tag:Long): SelectorResolveResult<ObjJSelector> {
-        val classConstraints = getClassConstraints(element, tag)
+    fun getMethodCallReferences(element: ObjJSelector, tag:Long, classConstraints: List<String> = getClassConstraints(element, tag)): SelectorResolveResult<ObjJSelector> {
         val selector = element.getSelectorString(false)
         val parent = element.getParentOfType( ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorStrings?.indexOf(selector) ?: -1
@@ -198,7 +197,7 @@ object ObjJSelectorReferenceResolveUtil {
     }
 
     class SelectorResolveResult<T> internal constructor(private val naturalResult: List<T>, private val otherResult: List<T>, val possibleContainingClassNames: List<String>) {
-        private val isNatural: Boolean = !naturalResult.isEmpty()
+        private val isNatural: Boolean = naturalResult.isNotEmpty()
 
         val result: List<T>
             get() = if (isNatural) naturalResult else otherResult

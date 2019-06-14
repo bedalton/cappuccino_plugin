@@ -1,9 +1,8 @@
 package cappuccino.ide.intellij.plugin.caches
 
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
@@ -14,26 +13,31 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 
 
 class ObjJVariableNameCache(variableName: ObjJVariableName) {
-    private val resolvedCache: CachedValue<ObjJVariableName?>
-    private val possibleMethodsCache: CachedValue<List<ObjJMethodHeaderDeclaration<*>>>
-    private val classTypesCache: CachedValue<InferenceResult?>
-    private val parentFunctionDeclarationCache: CachedValue<ObjJFunctionDeclarationElement<*>?>
+    private val manager: CachedValuesManager by lazy { CachedValuesManager.getManager(variableName.project) }
+    private val dependencies:Array<Any> by lazy { listOf(myTreeChangeTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray() }
 
-    init {
-        val manager: CachedValuesManager = CachedValuesManager.getManager(variableName.project)
-        val myTreeChangeTracker = MyModificationTracker()
-        val dependencies:Array<Any> = listOf(myTreeChangeTracker).toTypedArray()
-        resolvedCache = createResolvedVariableNameCache(variableName, manager, dependencies)
-        classTypesCache = createClassTypesCachedValue(manager, dependencies)
-        possibleMethodsCache = createPossibleMethodsCache(variableName, manager, dependencies)
-        parentFunctionDeclarationCache = createFunctionDeclarationsCache(variableName, manager, dependencies)
+    private val resolvedCache: CachedValue<ObjJVariableName?> by lazy {
+        createResolvedVariableNameCache(variableName, manager, dependencies)
     }
+    private val possibleMethodsCache: CachedValue<List<ObjJMethodHeaderDeclaration<*>>> by lazy {
+        createPossibleMethodsCache(variableName, manager, dependencies)
+    }
+    private val classTypesCache: CachedValue<InferenceResult?> by lazy {
+        createClassTypesCachedValue(manager, dependencies)
+    }
+    private val parentFunctionDeclarationCache: CachedValue<ObjJFunctionDeclarationElement<*>?> by lazy {
+        createFunctionDeclarationsCache(variableName, manager, dependencies)
+    }
+    private val myTreeChangeTracker = MyModificationTracker()
+
 
     private fun createResolvedVariableNameCache(variableName: ObjJVariableName, manager: CachedValuesManager, dependencies:Array<Any>)  : CachedValue<ObjJVariableName?> {
         val provider = CachedValueProvider<ObjJVariableName?> {
@@ -52,7 +56,7 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
 
     private val inferredTypes: InferenceResult? get() {
         val variableName = resolvedCache.value ?: return INFERRED_ANY_TYPE
-        return inferQualifiedReferenceType(variableName.previousSiblings + variableName, createTag())
+        return inferQualifiedReferenceType(variableName.previousSiblings + variableName, myTreeChangeTracker.tag)
     }
 
     private fun createPossibleMethodsCache(variableName: ObjJVariableName, manager: CachedValuesManager, dependencies: Array<Any>) : CachedValue<List<ObjJMethodHeaderDeclaration<*>>> {
@@ -62,27 +66,35 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
         return manager.createCachedValue(provider)
     }
 
-    val methods:List<ObjJMethodHeaderDeclaration<*>> get() {
+    fun getMethods(tag:Long):List<ObjJMethodHeaderDeclaration<*>> {
+        if (myTreeChangeTracker.tag == tag)
+            return emptyList()
+        myTreeChangeTracker.tag = tag
         return possibleMethodsCache.value ?: emptyList()
     }
 
-    val classTypes get()
-    = classTypesCache.value
+    fun getClassTypes(tag:Long) : InferenceResult? {
+        if (myTreeChangeTracker.tag == tag)
+            return null
+        myTreeChangeTracker.tag = tag
+        return classTypesCache.value
+    }
 
     val cachedParentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
         get() = parentFunctionDeclarationCache.value
 
     private fun getAllMethods(variableName: ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
         val project = variableName.project
-        val classes = (classTypesCache.value ?: inferredTypes)?.toClassList(null)?.withoutAnyType() ?: return emptyList()/*?.flatMap {
+        var classes:Set<String> = (classTypesCache.value ?: inferredTypes)?.toClassList(null)?.withoutAnyType() ?: return emptyList()/*?.flatMap {
             ObjJInheritanceUtil.getAllInheritedClasses(it, project)
         }.orEmpty()*/
         if (classes.isEmpty())
             return emptyList()
+        classes = classes.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }.toSet()
         val selectorLiterals:List<ObjJMethodHeaderDeclaration<*>> = ObjJPsiImplUtil.respondsToSelectors(variableName)
         return classes.flatMap {
-            ObjJClassDeclarationsIndex.instance[it, project]
-        }.flatMap { it.getMethodHeaders(true) } + selectorLiterals
+            ObjJClassMethodIndex.instance[it, project]
+        } + selectorLiterals
     }
 
     private fun createFunctionDeclarationsCache(

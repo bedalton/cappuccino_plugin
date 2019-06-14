@@ -103,8 +103,12 @@ private fun ObjJExpr.collectFunctionDeclarations() : List<ObjJFunctionDeclaratio
 
 
 class MyModificationTracker:ModificationTracker {
-    internal var myCount: Long = 0
+    private var myCount: Long = 0
+    internal var tag:Long = createTag()
     override fun getModificationCount(): Long {
-        return myCount
+        return myCount + tag
+    }
+    fun tick() {
+        myCount++
     }
 }

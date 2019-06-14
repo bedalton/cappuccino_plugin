@@ -1,18 +1,20 @@
 package cappuccino.ide.intellij.plugin.caches
 
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySibling
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 
-fun getMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJMethodHeaderDeclarationCache {
+fun createMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJMethodHeaderDeclarationCache {
     return when (methodHeader) {
         is ObjJAccessorProperty -> ObjJAccessorCache(methodHeader)
         is ObjJMethodHeader -> ObjJMethodHeaderCache(methodHeader)
@@ -22,14 +24,25 @@ fun getMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJMet
 }
 
 interface ObjJMethodHeaderDeclarationCache {
-    val returnTypes:InferenceResult?
+    fun getCachedReturnType(tag:Long):InferenceResult?
 }
 
 class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeaderDeclarationCache {
+    private val returnStatementsCache: CachedValue<Map<ObjJCompositeElement, InferenceResult?>> by lazy {
+        createReturnStatementsCache(methodHeader, manager, dependencies)
+    }
+    private val manager: CachedValuesManager by lazy {
+        CachedValuesManager.getManager(methodHeader.project)
+    }
+    private val dependencies: Array<Any> by lazy {
+        listOf(modificationTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray()
+    }
+    private var returnTypesInternal: InferenceResult? = null
+    private val modificationTracker = MyModificationTracker()
 
-    private val returnStatementsCache:CachedValue<Map<ObjJCompositeElement, InferenceResult?>>
-    private var returnTypesInternal:InferenceResult? = null
-    override val returnTypes:InferenceResult get() {
+
+    override fun getCachedReturnType(tag: Long): InferenceResult {
+        modificationTracker.tag = tag
         var types = returnTypesInternal
         if (types != null)
             return types
@@ -38,23 +51,13 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
         return types ?: INFERRED_ANY_TYPE
     }
 
-    init {
-        val manager = CachedValuesManager.getManager(methodHeader.project)
-        val modificationTracker = MyModificationTracker()
-        val dependencies:Array<Any> = listOf(modificationTracker).toTypedArray()
-        returnStatementsCache = createReturnStatementsCache(methodHeader.getParentOfType(ObjJMethodDeclaration::class.java), manager, dependencies)
-    }
-
     private fun createReturnStatementsCache(
-            declaration:ObjJMethodDeclaration?,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<Map<ObjJCompositeElement, InferenceResult?>> {
+            methodHeader: ObjJMethodHeader,
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<Map<ObjJCompositeElement, InferenceResult?>> {
         val provider = CachedValueProvider<Map<ObjJCompositeElement, InferenceResult?>> {
-            if (declaration == null) {
-                return@CachedValueProvider CachedValueProvider.Result.create(mapOf<ObjJCompositeElement, InferenceResult?>(), dependencies)
-            }
-            val methodReturnTypeElement = declaration.methodHeader.methodHeaderReturnTypeElement?.formalVariableType
+            val methodReturnTypeElement = methodHeader.methodHeaderReturnTypeElement?.formalVariableType
             val returnTypeElementType = methodReturnTypeElement?.varTypeId?.className?.text
                     ?: methodReturnTypeElement?.text
             val map: MutableMap<ObjJCompositeElement, InferenceResult?> = mutableMapOf()
@@ -62,14 +65,13 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
                 map[methodReturnTypeElement!!] = listOfNotNull(returnTypeElementType).toInferenceResult()
                 return@CachedValueProvider CachedValueProvider.Result.create(map, dependencies)
             }
-            val tag = createTag()
-            val returnStatements = declaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
+            val returnStatements = (methodHeader.getNextNonEmptySibling(true) as? ObjJBlock)?.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).orEmpty()
             returnStatements.forEach {
                 val type = if (it.expr != null) {
                     when (it.expr?.text.orEmpty()) {
                         "self" -> listOfNotNull(it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName).toInferenceResult()
                         "super" -> listOfNotNull(it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text).toInferenceResult()
-                        else -> inferExpressionType(it.expr, tag)
+                        else -> inferExpressionType(it.expr, modificationTracker.tag)
                     }
                 } else
                     null
@@ -82,11 +84,21 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
     }
 }
 
-
 class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDeclarationCache  {
-    private val variableTypeCache:CachedValue<Map<ObjJCompositeElement, InferenceResult?>>
+    private val manager by lazy {
+        CachedValuesManager.getManager(accessor.project)
+    }
+    private val modificationTracker = MyModificationTracker()
+    private val dependencies:Array<Any>  by lazy {
+        listOf(modificationTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray()
+    }
+
+    private val variableTypeCache:CachedValue<Map<ObjJCompositeElement, InferenceResult?>> by lazy {
+        createReturnStatementsCache(accessor, manager, dependencies)
+    }
     private var returnTypesInternal:InferenceResult? = null
-    override val returnTypes:InferenceResult get() {
+
+    override fun getCachedReturnType(tag:Long):InferenceResult {
         var types = returnTypesInternal
         if (types != null)
             return types
@@ -95,12 +107,6 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
         return types ?: INFERRED_ANY_TYPE
     }
 
-    init {
-        val manager = CachedValuesManager.getManager(accessor.project)
-        val modificationTracker = MyModificationTracker()
-        val dependencies:Array<Any> = listOf(modificationTracker).toTypedArray()
-        variableTypeCache = createReturnStatementsCache(accessor, manager, dependencies)
-    }
 
     private fun createReturnStatementsCache(
             accessor: ObjJAccessorProperty,
@@ -131,7 +137,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
 
 
 class ObjJSelectorLiteralCache(val selector: ObjJSelectorLiteral) : ObjJMethodHeaderDeclarationCache  {
-    override val returnTypes:InferenceResult get()
+    override fun getCachedReturnType(tag:Long):InferenceResult
             = INFERRED_ANY_TYPE
 
 }

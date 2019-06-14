@@ -21,7 +21,7 @@ object ObjJDescriptionUtil {
     private fun getClassDescriptiveText(classNameElement: ObjJClassName): String? {
         val classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement::class.java)
         var className = classNameElement.text
-        if (classDeclarationElement == null || classDeclarationElement.getClassNameString() != className) {
+        if (classDeclarationElement == null || classDeclarationElement.classNameString != className) {
             return className
         }
         if (classDeclarationElement is ObjJImplementationDeclaration) {

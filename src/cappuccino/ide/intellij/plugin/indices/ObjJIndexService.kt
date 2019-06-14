@@ -91,8 +91,8 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     /**
-     * Indexes virtual methods from accessor methods
-     * @param property accessor property potentially containing virtual methods
+     * Indexes virtual getMethods from accessor getMethods
+     * @param property accessor property potentially containing virtual getMethods
      * @param indexSink index sink
      */
     override fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {

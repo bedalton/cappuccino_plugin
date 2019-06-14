@@ -63,7 +63,7 @@ object ObjJSelectorLiteralCompletionContributor {
         addSelectorLiteralLookupElements(psiElement.project, psiElement.containingFile?.name, result, selectorString, selectorIndex)
 
         // Add accessor and instance variable elements if selector size is equal to one
-        // Accessors methods only apply to single element selectors
+        // Accessors getMethods only apply to single element selectors
         if (selectors.size == 1) {
             addAccessorLookupElements(result, psiElement.project, selectorString)
         }
@@ -221,7 +221,7 @@ object ObjJSelectorLiteralCompletionContributor {
     }
 
     /**
-     * Adds simple suggestions for instance variables, without accessor methods.
+     * Adds simple suggestions for instance variables, without accessor getMethods.
      * These can be called simply by their name without alteration
      * Variables can still have accessors and be accessed by name
      */

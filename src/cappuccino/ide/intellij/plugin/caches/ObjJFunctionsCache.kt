@@ -2,33 +2,31 @@ package cappuccino.ide.intellij.plugin.caches
 
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 
 class ObjJFunctionNameCache(functionName: ObjJFunctionNameElement) {
-    private val functionDeclarationsCache:CachedValue<ObjJFunctionDeclarationElement<*>?>
-    init {
-        val manager = CachedValuesManager.getManager(functionName.project)
-        val modificationTracker = MyModificationTracker()
-        val dependencies:Array<Any> = listOf(modificationTracker).toTypedArray()
-        functionDeclarationsCache = createFunctionDeclarationsCache(functionName, manager, dependencies)
+    private val manager by lazy { CachedValuesManager.getManager(functionName.project) }
+    private val modificationTracker by lazy { MyModificationTracker() }
+    private val dependencies:Array<Any> by lazy {listOf(modificationTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray()}
+    private val functionDeclarationsCache:CachedValue<ObjJFunctionDeclarationElement<*>?> by lazy {
+        createFunctionDeclarationsCache(functionName, manager, dependencies)
     }
-
     val parentFunctionDeclarationElement
         get() = functionDeclarationsCache.value
 
-    val returnTypes:InferenceResult?
-        get() = (parentFunctionDeclarationElement as ObjJFunctionDeclarationElement<*>).cachedReturnType
+    fun getReturnType(tag:Long):InferenceResult?
+            = parentFunctionDeclarationElement?.getCachedReturnType(tag)
 
     private fun createFunctionDeclarationsCache(
             functionName:ObjJFunctionNameElement,
@@ -45,22 +43,28 @@ class ObjJFunctionNameCache(functionName: ObjJFunctionNameElement) {
 }
 
 class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationElement<*>) {
+    val modificationTracker = MyModificationTracker()
     private val returnStatementsCache: CachedValue<Map<ObjJReturnStatement, InferenceResult?>>
     private var returnTypesInternal: InferenceResult? = null
-    val returnTypes: InferenceResult
-        get() {
-            var types = returnTypesInternal
-            if (types != null)
-                return types
-            types = returnStatementsCache.value?.values?.filterNotNull()?.collapse()
-            returnTypesInternal = types
-            return types ?: INFERRED_ANY_TYPE
-        }
+    fun returnTypes(tag:Long): InferenceResult {
+        if (modificationTracker.tag == tag)
+            return INFERRED_ANY_TYPE
+        modificationTracker.tag = tag
+        var types = returnTypesInternal
+        if (types != null)
+            return types
+        val temp = returnStatementsCache.value?.values?.filterNotNull()
+        if (temp.isNotNullOrEmpty()) {
+            types = temp!!.collapse()
+        } else
+            types = INFERRED_VOID_TYPE
+        returnTypesInternal = types
+        return types
+    }
 
     init {
         val manager = CachedValuesManager.getManager(functionDeclaration.project)
-        val modificationTracker = MyModificationTracker()
-        val dependencies:Array<Any> = listOf(modificationTracker).toTypedArray()
+        val dependencies:Array<Any> = listOf(modificationTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray()
         returnStatementsCache = createReturnStatementsCache(functionDeclaration, manager, dependencies)
     }
 
@@ -71,14 +75,13 @@ class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationEl
     ) : CachedValue<Map<ObjJReturnStatement, InferenceResult?>> {
         val provider = CachedValueProvider<Map<ObjJReturnStatement, InferenceResult?>> {
             val map:MutableMap<ObjJReturnStatement, InferenceResult?> = mutableMapOf()
-            val tag = createTag()
             val returnStatements = declaration.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
             returnStatements.forEach {
                 val type = if (it.expr != null) {
                     when (it.expr?.text.orEmpty()) {
                         "self" -> listOfNotNull(it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName).toInferenceResult()
                         "super" -> listOfNotNull(it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text).toInferenceResult()
-                        else -> inferExpressionType(it.expr, tag)
+                        else -> inferExpressionType(it.expr, modificationTracker.tag)
                     }
                 } else
                     null

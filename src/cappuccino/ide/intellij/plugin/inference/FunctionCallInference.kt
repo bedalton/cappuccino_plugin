@@ -16,9 +16,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 
 internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
-    return functionCall.getCachedInferredTypes {
-        if (functionCall.tagged(tag))
-            return@getCachedInferredTypes null
+    return functionCall.getCachedInferredTypes(tag) {
         internalInferFunctionCallReturnType(functionCall, tag)
     }
 }
@@ -44,14 +42,12 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
         }
         return null
     }
-    val cached = (resolved as? ObjJFunctionName)?.returnTypes
-            ?: (resolved as? ObjJVariableName)?.classTypes
-            ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.cachedReturnType
+    val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
+            ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)
+            ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
     if (cached != null)
         return cached
-    return resolved.getCachedInferredTypes {
-        if (resolved.tagged(tag))
-            return@getCachedInferredTypes null
+    return resolved.getCachedInferredTypes(tag) {
         val functionAsVariableName = resolved as? ObjJVariableName
         val function:ObjJFunctionDeclarationElement<*>? = (when {
             functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
@@ -92,12 +88,12 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : Inferen
 }
 
 private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
     val out = mutableMapOf<String, InferenceResult>()
     val commentWrapper = this.docComment
     for ((i, parameter) in parameters.withIndex()) {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
             val parameterType = commentWrapper?.parameterComments

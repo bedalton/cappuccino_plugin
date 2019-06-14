@@ -35,19 +35,13 @@ object ObjJInheritanceUtil {
         val names = mutableSetOf<String>()
         val project = classDeclarationElement.project
         addProtocols(classDeclarationElement, names)
+        if (classDeclarationElement is ObjJImplementationDeclaration) {
+            classDeclarationElement.superClassDeclarations.forEach {
+                addProtocols(it, names)
+            }
+        }
         return names.flatMap {
             ObjJProtocolDeclarationsIndex.instance[it, project]
-        }
-    }
-
-    fun isInstanceOf(project:Project, thisClassName:String, targetClass:String) : Boolean {
-        if (thisClassName == targetClass)
-            return true
-        return ObjJClassInheritanceIndex.instance[targetClass, project].any {
-            val otherClass = it.getClassNameString()
-            if (thisClassName == targetClass)
-                return true
-            return isInstanceOf(project, thisClassName, otherClass)
         }
     }
 
@@ -88,7 +82,7 @@ object ObjJInheritanceUtil {
     private fun isProtocolInArray(protocolDeclarations: Set<ObjJProtocolDeclaration>, className: String): Boolean {
         for (protocolDeclaration in protocolDeclarations) {
             ProgressIndicatorProvider.checkCanceled()
-            if (protocolDeclaration.getClassNameString() == className) {
+            if (protocolDeclaration.classNameString == className) {
                 return true
             }
         }

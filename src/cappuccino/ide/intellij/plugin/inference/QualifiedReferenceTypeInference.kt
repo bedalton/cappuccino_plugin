@@ -19,7 +19,7 @@ import com.intellij.psi.search.searches.ReferencesSearch
 
 internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, tag:Long): InferenceResult? {
     val lastChild = parts.lastOrNull() ?: return null
-    return lastChild.getCachedInferredTypes {
+    return lastChild.getCachedInferredTypes(null) {
         addStatusFileChangeListener(parts[0].project)
         internalInferQualifiedReferenceType(parts, tag)
     }
@@ -29,14 +29,14 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
     if (parts.isEmpty()) {
         return null
     }
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     var parentTypes: InferenceResult? = null
     var isStatic = false
     for (i in 0 until parts.size) {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
-        parentTypes = part.getCachedInferredTypes {
+        parentTypes = part.getCachedInferredTypes(null) {
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
                 val varDefTypeSimple = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(parts[0] as ObjJVariableName)
                 if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
@@ -93,7 +93,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     if (variableName.tagged(tag)) {
         return null
     }
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         return inferVariableNameType(variableName, tag)
     }
@@ -103,7 +103,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     val project = variableName.project
     val variableNameString = variableName.text
     val classes = parentTypes.classes.mapNotNull {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         getJsClassObject(project, it)
     }
     val classNames = classes.flatMap { jsClass ->
@@ -160,9 +160,8 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
     else
         null
 
-    return referencedVariable?.getCachedInferredTypes {
-        if (referencedVariable.tagged(tag))
-            return@getCachedInferredTypes null
+    LOGGER.info("Trying to resolve: $variableNameString")
+    return referencedVariable?.getCachedInferredTypes(tag) {
         val varDefType = if (referencedVariable is ObjJNamedElement)
             ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(referencedVariable)
         else
@@ -173,16 +172,9 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
                     classes = setOf(varDefType!!)
             )
         }
-        val functionDeclaration = when (referencedVariable) {
-            is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
-            is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
-            else -> null
-        }
-
-        if (functionDeclaration != null)
-            return@getCachedInferredTypes functionDeclaration.toJsFunctionTypeResult(tag)
 
         if (referencedVariable is ObjJVariableName) {
+            LOGGER.info("Did resolve variable: ${referencedVariable.text}")
             val out = ObjJVariableTypeResolver.resolveVariableType(
                     variableName = referencedVariable,
                     recurse = false,
@@ -193,6 +185,15 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
                 return@getCachedInferredTypes InferenceResult(classes = out)
             }
         }
+        val functionDeclaration = when (referencedVariable) {
+            is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
+            is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
+            else -> null
+        }
+
+        if (functionDeclaration != null)
+            return@getCachedInferredTypes functionDeclaration.toJsFunctionTypeResult(tag)
+
         if (containingClass != null)
             return@getCachedInferredTypes InferenceResult(
                     classes = setOf(containingClass)
@@ -229,7 +230,7 @@ fun getAllVariableNameAssignmentExpressions(variableName: ObjJVariableName) : Li
 }
 
 private fun getAssignedExpressions(element: PsiElement?, variableName:String? = null): ObjJExpr? {
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     return if (element == null || (variableName != null && element.text != variableName))
         null
     else if (element.parent is ObjJGlobalVariableDeclaration)
@@ -251,7 +252,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     if (parentTypes == null) {
         return null
     }
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     val functionNameString = functionName.text
     val classes = if (parentTypes.anyType) {
         globalJSClasses
@@ -259,7 +260,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
         parentTypes.classes.mapNotNull{getJsClassObject(functionName.project, it)}
 
     val functions = classes.mapNotNull { jsClass ->
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         (if (static)
             jsClass.staticFunctions.firstOrNull {
                 it.name == functionNameString
@@ -306,7 +307,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:L
             ?.getReturnTypes(tag)
 
     val functions = globalJsFunctions.filter {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         it.name == functionNameString
     }
     val functionTypes = functions.map {
@@ -359,7 +360,7 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
 }
 
 private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, tag:Long) : InferenceResult? {
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     //LOGGER.info("Parts has length of one. Part is ${part.elementType}")
     val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text ?: (part as? ObjJFunctionCall)?.functionName?.text
     if (name == null && part is ObjJMethodCall) {
@@ -381,11 +382,11 @@ private fun getFirstMatchesInGlobals(part:ObjJQualifiedReferenceComponent, tag:L
 }
 
 private fun getAllVariableAssignmentsWithName(variableName:ObjJVariableName) : List<ObjJExpr> {
-    ProgressManager.checkCanceled()
+    //ProgressManager.checkCanceled()
     val variableNameString = variableName.text
     val fromBodyAssignments = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
             .flatMap { assignment ->
-                ProgressManager.checkCanceled()
+                //ProgressManager.checkCanceled()
                 listOf(assignment.variableAssignmentLogical?.qualifiedReference?.qualifiedNameParts?.firstOrNull()) +
                     assignment.variableDeclarationList?.variableNameList.orEmpty() +
                     assignment.variableDeclarationList?.variableDeclarationList?.flatMap { objJVariableDeclaration ->
@@ -405,7 +406,7 @@ private fun getAllVariableAssignmentsWithName(variableName:ObjJVariableName) : L
     val fromVariableDeclarations =
             variableName.getParentBlockChildrenOfType(ObjJExpr::class.java, true)
                     .flatMap { expr ->
-                        ProgressManager.checkCanceled()
+                        //ProgressManager.checkCanceled()
                         expr.leftExpr?.variableDeclaration?.qualifiedReferenceList?.mapNotNull {
                         it.qualifiedNameParts.firstOrNull()
                     } ?: emptyList()

@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.caches.ObjJImplementationDeclarationCache
+import cappuccino.ide.intellij.plugin.caches.ObjJProtocolDeclarationCache
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
@@ -39,23 +41,15 @@ fun getAllMethodHeaders(declaration: ObjJProtocolDeclaration): List<ObjJMethodHe
  * Determines whether a protocol contains a given method
  */
 fun hasMethod(declaration: ObjJProtocolDeclaration, selector: String): Boolean {
-    for (methodHeader in declaration.getMethodHeaders()) {
-        if (methodHeader.selectorString == selector) {
-            return true
-        }
-    }
-
-    return false
+    return selector in declaration.getAllSelectors(true)
 }
 
 /**
  * Determines whether this implementation class has a given selector
  */
 fun hasMethod(implementationDeclaration: ObjJImplementationDeclaration, selector: String): Boolean {
-    for (methodHeader in implementationDeclaration.getMethodHeaders()) {
-        if (methodHeader.selectorString == selector) {
-            return true
-        }
+    if (selector in implementationDeclaration.getAllSelectors(true)) {
+        return true
     }
     val instanceVariableDeclarationList = implementationDeclaration.instanceVariableList?.instanceVariableDeclarationList
             ?: return false
@@ -81,7 +75,7 @@ fun hasMethod(implementationDeclaration: ObjJImplementationDeclaration, selector
 }
 
 /**
- * Gets all unimplemented protocol methods
+ * Gets all unimplemented protocol getMethods
  */
 fun getAllUnimplementedProtocolMethods(@Suppress("UNUSED_PARAMETER") declaration: ObjJImplementationDeclaration): Map<ObjJClassName, ObjJProtocolDeclarationPsiUtil.ProtocolMethods> {
     //todo
@@ -97,7 +91,7 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
         throw IndexNotReadyRuntimeException()
     }
 
-    val thisClassName = declaration.getClassNameString()
+    val thisClassName = declaration.classNameString
     val required = ArrayList<ObjJMethodHeader>()
     val optional = ArrayList<ObjJMethodHeader>()
     val inheritedProtocols = ObjJInheritanceUtil.appendAllInheritedProtocolsToSet(protocolName, project)
@@ -113,7 +107,7 @@ fun getUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, 
 }
 
 /**
- * Adds unimplemented protocol methods to a list of headers
+ * Adds unimplemented protocol getMethods to a list of headers
  */
 private fun addUnimplementedProtocolMethods(project: Project, className: String,
                                             requiredHeaders: List<ObjJMethodHeader>, listOfUnimplemented: MutableList<ObjJMethodHeader>) {

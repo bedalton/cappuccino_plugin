@@ -41,7 +41,7 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
 
     var tempElements: List<T>
     do {
-        ProgressManager.checkCanceled()
+        //ProgressManager.checkCanceled()
         val nextBlocks = ArrayList<ObjJBlock>()
         //Loop through current level of blocks
         for (block in currentBlocks) {

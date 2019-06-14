@@ -4,15 +4,14 @@ import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
-import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiTreeAnyChangeAbstractAdapter
 import java.util.*
-import kotlin.math.abs
 
 
 internal val INFERENCE_LAST_RESOLVED = Key<Long>("objj.userdata.keys.INFERENCE_LAST_RESOLVED")
@@ -35,7 +34,7 @@ fun addStatusFileChangeListener(project:Project)
 private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     internal var didAddListener = false
 
-    private var internalTimeSinceLastFileChange = Date().time
+    private var internalTimeSinceLastFileChange = now
 
     val timeSinceLastFileChange get() = internalTimeSinceLastFileChange
 
@@ -43,7 +42,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
             return
-        internalTimeSinceLastFileChange = Date().time
+        internalTimeSinceLastFileChange = now
         LOGGER.info("Changed: $internalTimeSinceLastFileChange")
     }
 
@@ -59,37 +58,47 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
  * Gets the cached types values for the given element
  * This should save computation time, but results are uncertain
  */
-internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
+internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
     //if (this.getUserData(INFERRED_TYPES_IS_ACCESSING).orFalse())
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
-    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - this.getUserData(INFERENCE_LAST_RESOLVED).orElse(0)
-    LOGGER.info("Time Since: $timeSinceTag")
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && timeSinceTag < 60000) {
+    val lastTagged = this.getUserData(INFERENCE_LAST_RESOLVED).orElse(Long.MIN_VALUE)
+    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - lastTagged
+    if (tag == null) {
+        val inferred = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
+        if (inferred != null)
+            return inferred
+    }
+    val tagged = tag != null && tagged(tag)
+    //LOGGER.info("Time Since: $timeSinceTag")
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (timeSinceTag < 6000 || tagged)) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
-        if (inferredTypes != null) {
+        if (inferredTypes != null || tagged) {
             return inferredTypes
         }
     }
+
     val inferredTypes = getIfNull?.invoke() ?: INFERRED_EMPTY_TYPE
+    LOGGER.info("Inferred type is not cached: ${this.text}: Type: ${inferredTypes.toClassList("?")}")
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
     this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, false)
-    this.putUserData(INFERENCE_LAST_RESOLVED, Date().time)
     return inferredTypes
 }
 
 internal fun createTag():Long {
-    return Date().time
+    return StatusFileChangeListener.timeSinceLastFileChange
 }
 
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun ObjJCompositeElement.tagged(tag:Long):Boolean {
-    val currentTag = this.getUserData(INFERENCE_LAST_RESOLVED)
-    if (currentTag == tag) {
+internal fun ObjJCompositeElement.tagged(tag:Long?):Boolean {
+    if (tag == null)
+        return false
+    val currentTag = this.getUserData(INFERENCE_LAST_RESOLVED).orElse(Long.MAX_VALUE)
+    if (currentTag <= tag) {
         //LOGGER.info("Element(${this.text})'s current tag matches loop tag <$tag>")
         return true
     }

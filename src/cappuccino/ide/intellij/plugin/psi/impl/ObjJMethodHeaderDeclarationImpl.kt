@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
-import cappuccino.ide.intellij.plugin.caches.getMethodHeaderCache
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderDeclarationStub
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
@@ -12,13 +13,11 @@ abstract class ObjJMethodHeaderDeclarationImpl<StubT : ObjJMethodHeaderDeclarati
     constructor(stub:StubT, type:ObjJStubElementType<*, *>) : super(stub, type)
     constructor(node:ASTNode) : super(node)
 
-
-    private val cache = getMethodHeaderCache(this)
     //val returnType:Set<String>
 
-    override val cachedTypes get() = cache.returnTypes
+    override fun getCachedReturnType(tag:Long): InferenceResult? = methodHeaderCache.getCachedReturnType(tag)
 
-    abstract override fun getReturnTypes(tag:Long): Set<String>
+    override fun getReturnTypes(tag:Long): Set<String> = getCachedReturnType(tag)?.toClassList("?").orEmpty()
 
     abstract override val explicitReturnType:String
 
