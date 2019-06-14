@@ -15,10 +15,10 @@ object ObjJTreeStructureUtil {
         val fileName = ObjJFileUtil.getContainingFileName(declaration)
         val presentation: ItemPresentation = when {
             declaration.isCategory -> PresentationData("@category ${declaration.getClassName()} (${declaration.categoryNameString})", fileName, ObjJIcons.CATEGORY_ICON, null)
-            declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("@implementation ${declaration.getClassNameString()} : ${declaration.superClassName}", fileName, ObjJIcons.CLASS_ICON, null)
-            else -> PresentationData("@implementation ${declaration.getClassNameString()}", fileName, ObjJIcons.CLASS_ICON, null)
+            declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("@implementation ${declaration.classNameString} : ${declaration.superClassName}", fileName, ObjJIcons.CLASS_ICON, null)
+            else -> PresentationData("@implementation ${declaration.classNameString}", fileName, ObjJIcons.CLASS_ICON, null)
         }
-        return ObjJStructureViewElement(declaration, presentation, declaration.getClassNameString())
+        return ObjJStructureViewElement(declaration, presentation, declaration.classNameString)
     }
 
     fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> {
@@ -44,8 +44,8 @@ object ObjJTreeStructureUtil {
 
     fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement {
         val fileName = ObjJFileUtil.getContainingFileName(declaration)
-        val presentation: ItemPresentation = PresentationData("@protocol ${declaration.getClassNameString()}", fileName, ObjJIcons.PROTOCOL_ICON, null)
-        return ObjJStructureViewElement(declaration, presentation, declaration.getClassNameString())
+        val presentation: ItemPresentation = PresentationData("@protocol ${declaration.classNameString}", fileName, ObjJIcons.PROTOCOL_ICON, null)
+        return ObjJStructureViewElement(declaration, presentation, declaration.classNameString)
     }
 
     fun createTreeStructureElement(header: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement {

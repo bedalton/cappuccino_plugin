@@ -32,7 +32,7 @@ object ObjJResolveableElementUtil {
     fun shouldResolve(psiElement: ObjJClassDeclarationElement<*>?): Boolean {
         return if (psiElement == null) {
             false
-        } else shouldResolve(psiElement, "Ignoring " + (if (psiElement is ObjJImplementationDeclaration) "class" else "protocol") + " " + psiElement.getClassNameString())
+        } else shouldResolve(psiElement, "Ignoring " + (if (psiElement is ObjJImplementationDeclaration) "class" else "protocol") + " " + psiElement.classNameString)
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -11,7 +11,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
@@ -22,7 +21,10 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.util.PsiTreeUtil
 
 class ObjJVariableReference(
-        element: ObjJVariableName, private val follow:Boolean = true, private val nullIfSelfReferencing: Boolean? = null) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
+        element: ObjJVariableName,
+        private val follow:Boolean = true,
+        private val nullIfSelfReferencing: Boolean? = null
+) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
     private val isGlobal: Boolean by lazy {
@@ -58,7 +60,7 @@ class ObjJVariableReference(
                 }
             }
             val functionDeclarationElements = ObjJFunctionsIndex.instance[myElement.text, myElement.project]
-            if (namedElement == null && !functionDeclarationElements.isEmpty()) {
+            if (namedElement == null && functionDeclarationElements.isNotEmpty()) {
                 namedElement = functionDeclarationElements[0].functionNameNode
                 if (namedElement == null) {
                     for (declarationElement in functionDeclarationElements) {
@@ -202,7 +204,7 @@ class ObjJVariableReference(
 }
 
 
-private fun variableDeclarationsEnclosedGlobal(variableName: ObjJVariableName, follow:Boolean = false) : Boolean {
+private fun variableDeclarationsEnclosedGlobal(variableName: ObjJVariableName, @Suppress("SameParameterValue") follow:Boolean = false) : Boolean {
     if(!DumbService.isDumb(variableName.project) && follow) {
         return variableDeclarationsEnclosedGlobalStrict(variableName)
     }

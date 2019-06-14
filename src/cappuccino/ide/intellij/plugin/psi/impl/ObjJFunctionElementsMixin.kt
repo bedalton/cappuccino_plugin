@@ -18,7 +18,7 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
 
     constructor(node: ASTNode) : super(node)
 
-    override val cachedReturnType:InferenceResult? get() = cache.returnTypes
+    override fun getCachedReturnType(tag:Long):InferenceResult? = cache.returnTypes(tag)
 }
 
 abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(node), ObjJFunctionNameElement {
@@ -31,6 +31,6 @@ abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(nod
     override val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
         get() = cache.parentFunctionDeclarationElement
 
-    override val returnTypes
-        get() = cache.returnTypes
+    override fun getCachedReturnType(tag:Long):InferenceResult?
+        = cache.getReturnType(tag)
 }

@@ -38,7 +38,7 @@ object ObjJAccessorPropertyPsiUtil {
 
 
     /**
-     * Gets selectors as strings for an accessor property's virtual methods
+     * Gets selectors as strings for an accessor property's virtual getMethods
      * @param accessorProperty accessor property
      * @return selector strings
      */

@@ -102,7 +102,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
         // Get protocol name as string
         val protocolName = protocolNameElement.text
-        // Find all unimplemented methods
+        // Find all unimplemented getMethods
         val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
         if (unimplementedMethods.required.isEmpty())
             return

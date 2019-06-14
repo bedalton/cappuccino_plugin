@@ -152,9 +152,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
-        return methodHeader.getCachedInferredTypes {
-            if (methodHeader.tagged(tag))
-                return@getCachedInferredTypes null
+        return methodHeader.getCachedInferredTypes(tag) {
             val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
@@ -351,9 +349,9 @@ object ObjJMethodPsiUtils {
         return null
     }
     /**
-     * Determines whether two methods in the same class are truly different.
+     * Determines whether two getMethods in the same class are truly different.
      * This is due to overlaps of static and instnace method selectors
-     * And also with single selector methods where one has a parameter and the other does not
+     * And also with single selector getMethods where one has a parameter and the other does not
      */
     fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader?) : Boolean
     {

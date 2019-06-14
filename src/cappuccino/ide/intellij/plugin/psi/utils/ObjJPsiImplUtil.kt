@@ -1,8 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.caches.ObjJFunctionDeclarationCache
+import cappuccino.ide.intellij.plugin.caches.*
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
@@ -153,7 +152,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getClassType(classDeclaration: ObjJClassDeclarationElement<*>): ObjJClassTypeName {
-        val classNameString = classDeclaration.getClassNameString()
+        val classNameString = classDeclaration.classNameString
         return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
     }
 
@@ -194,6 +193,16 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun isCategory(declaration: ObjJImplementationDeclaration): Boolean =
             cappuccino.ide.intellij.plugin.psi.utils.isCategory(declaration)
+
+    @JvmStatic
+    fun getCache(protocol:ObjJProtocolDeclaration) : ObjJProtocolDeclarationCache {
+        return ObjJProtocolDeclarationCache(protocol)
+    }
+
+    @JvmStatic
+    fun getCache(declaration:ObjJImplementationDeclaration): ObjJImplementationDeclarationCache {
+        return ObjJImplementationDeclarationCache(declaration)
+    }
 
     // ============================== //
     // ====== Navigation Items ====== //
@@ -281,6 +290,10 @@ object ObjJPsiImplUtil {
         return ObjJMethodPsiUtils.isStatic(hasMethodSelector)
     }
 
+    @JvmStatic
+    fun getMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJMethodHeaderDeclarationCache
+        = createMethodHeaderCache(methodHeader)
+
     // ============================== //
     // ======= Return Types ========= //
     // ============================== //
@@ -291,12 +304,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJSelectorLiteral, tag:Long = createTag()): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJSelectorLiteral): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(methodHeader))
     }
 
     @JvmStatic
-    fun getReturnTypes(accessorProperty: ObjJAccessorProperty, tag:Long = createTag()): Set<String> {
+    fun getReturnTypes(accessorProperty: ObjJAccessorProperty): Set<String> {
         return setOf(ObjJMethodPsiUtils.getExplicitReturnType(accessorProperty))
     }
 
@@ -534,11 +547,6 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReferenceNoFollow(variableName: ObjJVariableName): PsiReference {
-        return ObjJVariableReference(variableName, false)
-    }
-
-    @JvmStatic
     fun getReference(functionName: ObjJFunctionName): PsiReference {
         return ObjJFunctionNameReference(functionName)
     }
@@ -658,23 +666,18 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getMethods(variableName:ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
-        return (variableName as? ObjJVariableNameMixin)?.cachedMethods.orEmpty()
+    fun getMethods(variableName:ObjJVariableName, tag:Long) : List<ObjJMethodHeaderDeclaration<*>> {
+        return variableName.getCachedMethods(tag)
     }
 
     @JvmStatic
-    fun getMethodSelectors(variableName:ObjJVariableName) : Set<String> {
-        return getMethods(variableName).map { it.selectorString }.toSet()
-    }
-
-    @JvmStatic
-    fun getVariableType(variableName: ObjJVariableName) : InferenceResult? {
-        return (variableName as? ObjJVariableNameMixin)?.classTypes
+    fun getMethodSelectors(variableName:ObjJVariableName, tag:Long) : Set<String> {
+        return getMethods(variableName, tag).map { it.selectorString }.toSet()
     }
 
     @JvmStatic
     fun getVariableType(variableName: ObjJVariableName, tag:Long) : InferenceResult? {
-        return (variableName as? ObjJVariableNameMixin)?.classTypes ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
+        return variableName.getClassTypes(tag) ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
     }
 
     // ============================== //

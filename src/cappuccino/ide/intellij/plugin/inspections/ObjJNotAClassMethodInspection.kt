@@ -7,6 +7,8 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
@@ -30,32 +32,39 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                     return
                 val onlyVariable = methodCall.callTarget.singleVariableNameElementOrNull
                 if (onlyVariable != null) {
-                    if (selectorString !in onlyVariable.methodSelectors) {
-                        val classes = onlyVariable.variableType?.toClassList(null)?.withoutAnyType().orEmpty()
-                        if (classes.isNotEmpty())
+                    val classes = onlyVariable.getVariableType(tag)?.toClassList(null)?.withoutAnyType()
+                    if (classes.isNullOrEmpty() || classes.all { it in anyTypes })
+                        return
+                    val selectors = onlyVariable.getMethodSelectors(tag)
+                    LOGGER.info("$selectorString !in $selectors for classes: $classes")
+                    if (selectors.isNotEmpty()) {
+                        if (selectorString !in selectors && selectorString.substringFromEnd(0, 1) !in selectors) {
+
                             annotateMethodCall(methodCall, classes, holder)
+                        }
+                        return
                     }
-                    return
                 }
                 val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
                         ?: return
                 val classes = callTargetType.toClassList(null).withoutAnyType()
                 if (classes.isEmpty())
                     return
-                if (isValid(methodCall, classes))
+                if (isValid(methodCall, classes, tag))
                     return
                 annotateMethodCall(methodCall, classes, holder)
             }
         }
     }
 
-    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>) : Boolean {
+    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>, tag:Long) : Boolean {
         val project = methodCall.project
         val selectorString = methodCall.selectorString
-        if (selectorString in methodCall.callTarget.singleVariableNameElementOrNull?.methodSelectors.orEmpty())
+        if (selectorString in methodCall.callTarget.singleVariableNameElementOrNull?.getMethodSelectors(tag).orEmpty())
             return true
         return classes.any {
-            ObjJClassAndSelectorMethodIndex.instance.containsKey(it, selectorString, project)
+            ObjJClassAndSelectorMethodIndex.instance.containsKey(it, selectorString, project) ||
+            ObjJClassAndSelectorMethodIndex.instance.containsKey(it, selectorString.substringFromEnd(0,1), project)
         }
     }
 

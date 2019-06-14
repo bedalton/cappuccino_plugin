@@ -36,7 +36,7 @@ class ObjJVariableOvershadowsClassVariable : LocalInspectionTool() {
         private fun annotateVariableIfOvershadowInstanceVariable(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
             val classDeclarationElement = variableName.getParentOfType(ObjJClassDeclarationElement::class.java)
                     ?: return
-            val variableContainingClass = classDeclarationElement.getClassNameString()
+            val variableContainingClass = classDeclarationElement.classNameString
             val variableNameText = variableName.text
             for (instanceVariableName in ObjJVariableNameAggregatorUtil.getAllContainingClassInstanceVariables(variableContainingClass, variableName.project)) {
                 if (instanceVariableName.text == variableNameText) {

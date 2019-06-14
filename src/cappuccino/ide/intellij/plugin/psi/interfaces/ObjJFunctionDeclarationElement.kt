@@ -9,7 +9,7 @@ import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX 
 
 interface ObjJFunctionDeclarationElement<StubT: ObjJFunctionDeclarationElementStub<*>> : ObjJHasFunctionName, ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJResolveableElement<StubT> {
     val paramNames: List<String>
-    val cachedReturnType:InferenceResult?
+    fun getCachedReturnType(tag:Long):InferenceResult?
     fun getReturnType(tag:Long): String?
 
     val formalParameterArgList: List<ObjJFormalParameterArg>

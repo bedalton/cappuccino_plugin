@@ -438,7 +438,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "class_addMethods",
                         parameters = listOf(
                                 p("aClass", "objj_class"),
-                                p("methods", "objj_method[]")),
+                                p("getMethods", "objj_method[]")),
                         skipCompletion = true
                 ),
                 fn(
@@ -573,7 +573,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "protocol_addMethodDescriptions",
                         parameters = listOf(
                                 p("proto", "objj_protocol"),
-                                p("methods", "objj_method[]"),
+                                p("getMethods", "objj_method[]"),
                                 p("isRequired", "BOOL"),
                                 p("isInstanceMethod", "BOOL")),
                         skipCompletion = true

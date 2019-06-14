@@ -77,7 +77,7 @@ object ObjJMethodCallCompletionContributor {
 
         val hasLocalScope: Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
-        // Accessors methods only apply to single element selectors
+        // Accessors getMethods only apply to single element selectors
         if (hasLocalScope && selectors.size == 1) {
             addAccessorLookupElements(result, psiElement.project, possibleContainingClassNames, selectorString)
         }
@@ -260,7 +260,7 @@ object ObjJMethodCallCompletionContributor {
     }
 
     /**
-     * Adds simple suggestions for instance variables, without accessor methods.
+     * Adds simple suggestions for instance variables, without accessor getMethods.
      * These can be called simply by their name without alteration
      * Variables can still have accessors and be accessed by name
      */
@@ -338,7 +338,7 @@ object ObjJMethodCallCompletionContributor {
 
 
     /**
-     * Gets the scope for the suggested methods we should have
+     * Gets the scope for the suggested getMethods we should have
      */
     private fun getTargetScope(methodCall: ObjJMethodCall): TargetScope {
         return when {

@@ -175,7 +175,7 @@ object ObjJElementFactory {
             @end
         """.trimIndent()
         val file = createFileFromText(project, script)
-        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.classDeclarations.getOrNull(0)?.getMethodHeaders()?.getOrNull(0)?.methodHeaderReturnTypeElement
+        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.classDeclarations.getOrNull(0)?.internalMethodHeaders?.getOrNull(0)?.methodHeaderReturnTypeElement
         com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
         return returnTypeElement!!
     }

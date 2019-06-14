@@ -6,7 +6,7 @@ interface ObjJVariableNameElement {
 
     val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
 
-    val cachedMethods:List<ObjJMethodHeaderDeclaration<*>>
+    fun getCachedMethods(tag:Long):List<ObjJMethodHeaderDeclaration<*>>
 
-    val classTypes:InferenceResult?
+    fun getClassTypes(tag:Long):InferenceResult?
 }

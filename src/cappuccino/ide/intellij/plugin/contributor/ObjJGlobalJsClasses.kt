@@ -952,7 +952,6 @@ val Window: GlobalJSClass = c(
                 p("scrollX", "number"),
                 p("scrollY", "number"),
                 p("scrollbars", "BarProp"),
-                p("self", "Windows"),
                 p("speechSynthesis", "SpeechSynthesis"),
                 p("status", "string"),
                 p("statusbar", "BarProp"),

@@ -1,21 +1,18 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
-
-import cappuccino.ide.intellij.plugin.caches.ObjJImplementationDeclarationCache
-import cappuccino.ide.intellij.plugin.caches.ObjJProtocolDeclarationCache
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import com.intellij.lang.ASTNode
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImplementationDeclarationElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 
 abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProtocolDeclarationStub>, ObjJProtocolDeclaration {
-
-    val cache:ObjJProtocolDeclarationCache = ObjJProtocolDeclarationCache(this)
 
     constructor(
             stub: ObjJProtocolDeclarationStub) : super(stub, ObjJStubTypes.PROTOCOL)
@@ -34,14 +31,21 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
         return cache.getAllSelectors(internalOnly)
     }
 
-    override fun getMethodHeaders() : List<ObjJMethodHeader> {
-        return cache.getMethods(false)
+    override fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?
+        = cache.getMethodReturnType(selector, tag)
+
+    override val inheritedProtocolDeclarations: List<ObjJProtocolDeclaration>
+        get() = cache.inheritedProtocols
+
+    override fun isInstance(className: String): Boolean {
+        return inheritedProtocolDeclarations.any { it.classNameString == className}
     }
+    override val internalMethodHeaders : List<ObjJMethodHeader>
+        get() = getMethodHeaders(true)
+
 }
 
-abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<ObjJImplementationStub>, ObjJImplementationDeclaration {
-
-    val cache:ObjJImplementationDeclarationCache = ObjJImplementationDeclarationCache(this)
+abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<ObjJImplementationStub>, ObjJImplementationDeclarationElement, ObjJImplementationDeclaration {
 
     constructor(
             stub: ObjJImplementationStub) : super(stub, ObjJStubTypes.PROTOCOL)
@@ -56,12 +60,23 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
         return cache.getMethods(internalOnly)
     }
 
+    override fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?
+            = cache.getMethodReturnType(selector, tag)
+
     override fun getAllSelectors(internalOnly: Boolean): Set<String> {
         return cache.getAllSelectors(internalOnly)
     }
 
-    override fun getMethodHeaders() : List<ObjJMethodHeader> {
-        return cache.getMethods(false)
-    }
+    override val internalMethodHeaders : List<ObjJMethodHeader>
+        get() = getMethodHeaders(true)
 
+    override val superClassDeclarations: List<ObjJImplementationDeclaration>
+        get() = cache.superClassDeclarations
+
+    override val inheritedProtocolDeclarations: List<ObjJProtocolDeclaration>
+        get() = cache.inheritedProtocols
+
+    override fun isInstance(className: String): Boolean {
+        return superClassDeclarations.any { it.classNameString == className || it.superClassName == className } || inheritedProtocolDeclarations.any { it.classNameString == className}
+    }
 }
