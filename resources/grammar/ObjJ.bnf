@@ -1114,7 +1114,7 @@ implementationDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasIgnoreStatements"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub>"
 		]
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJImplementationDeclarationMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub"
 		methods = [
 			isCategory
