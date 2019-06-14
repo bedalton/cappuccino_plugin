@@ -42,7 +42,7 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                 val classes = callTargetType.toClassList(null).withoutAnyType()
                 if (classes.isEmpty())
                     return
-                if (isValid(methodCall, callTargetType.allClassesExpanded(methodCall.project)))
+                if (isValid(methodCall, classes))
                     return
                 annotateMethodCall(methodCall, classes, holder)
             }

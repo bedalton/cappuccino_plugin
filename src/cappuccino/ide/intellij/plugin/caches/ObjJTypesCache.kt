@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.caches
 
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferMethodCallType
@@ -150,14 +151,14 @@ class ObjJVariableNameCache(variableName:ObjJVariableName) {
 
     private fun getAllMethods(variableName: ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
         val project = variableName.project
-        val classes = (classTypesCache.value ?: inferredTypes)?.toClassList(null)?.withoutAnyType()?.flatMap {
+        val classes = (classTypesCache.value ?: inferredTypes)?.toClassList(null)?.withoutAnyType() ?: return emptyList()/*?.flatMap {
             ObjJInheritanceUtil.getAllInheritedClasses(it, project)
-        }.orEmpty()
+        }.orEmpty()*/
         if (classes.isEmpty())
             return emptyList()
         return classes.flatMap {
-            ObjJClassMethodIndex.instance[it, project]
-        } + ObjJPsiImplUtil.respondsToSelectors(variableName)
+            ObjJClassDeclarationsIndex.instance[it, project]
+        }.flatMap { it.getMethodsHeader(true) } + ObjJPsiImplUtil.respondsToSelectors(variableName)
     }
 
 
