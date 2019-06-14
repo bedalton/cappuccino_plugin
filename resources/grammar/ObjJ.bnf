@@ -612,11 +612,12 @@ accessorProperty
 	::= accessorPropertyType ('=' selector (':')?)?
 	{
 		pin(".*")=1
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderDeclarationImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub"
 		implements=[
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			]
 		methods=[
@@ -958,15 +959,14 @@ functionDeclaration
 	::= 'function' (<<notInMode "varDec">> functionName) formalParameterList blockElement
 	{
 		pin=2
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionDeclarationImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
-
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
 		methods=[
@@ -983,6 +983,7 @@ functionDeclaration
 			getLastFormalParameterArg
 			block="blockElement"
 			getFunctionScope
+			getCache
 		]
 
 	}
@@ -1011,7 +1012,7 @@ methodHeader
 	::= methodScopeMarker '(' (methodHeaderReturnTypeElement) ')' methodHeaderSelectorList
 	{
 		pin=1
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderDeclarationImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub"
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
@@ -1238,12 +1239,12 @@ preprocessorDefineFunction
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJPreprocessorStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 		]
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
 		methods=[
 			getName
@@ -1259,6 +1260,7 @@ preprocessorDefineFunction
 			getLastFormalParameterArg
 			getIterationStatementList
 			getFunctionScope
+			getCache
 		]
 	}
 	;
@@ -1981,13 +1983,13 @@ functionLiteral
 	::= 'function' formalParameterList blockElement
 	{
 		pin=1
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>>"
 		]
 		methods = [
 			getFunctionNameNode
@@ -2004,6 +2006,7 @@ functionLiteral
 			getLastFormalParameterArg
 			block="blockElement"
 			getFunctionScope
+			getCache
 		]
 	}
 	;
@@ -2013,11 +2016,12 @@ selectorLiteral
 	{
 
 		pin=1
-		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderDeclarationImpl<?>"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub"
 		methods=[
@@ -2211,6 +2215,7 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableNameElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
 		methods = [
@@ -2240,9 +2245,11 @@ variableName
 functionName
 	::= ID
 	{
+		extends = "cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionNameMixin"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement"
 		]
 		methods = [
 			getName

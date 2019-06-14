@@ -1,10 +1,13 @@
 package cappuccino.ide.intellij.plugin.caches
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.plus
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.getAllMethodHeaders
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -20,6 +23,7 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
     abstract val allAccessorProperties:CachedValue<List<ObjJAccessorProperty>>
     abstract val internalAccessorProperties:CachedValue<List<ObjJAccessorProperty>>
     abstract val classMethodsCache:CachedValue<List<ObjJMethodHeader>>
+    abstract val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>>
 
     init {
         val dependencies:Array<Any> = listOf(myTreeChangeTracker).toTypedArray()
@@ -67,8 +71,27 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
 
     fun getAllSelectors(internalOnly: Boolean) : Set<String> {
         return (getMethods(internalOnly).map { it.selectorString } +
-                getAccessorProperties(internalOnly).flatMap { listOf(it.setter, it.getter).filterNotNull() }).toSet()
+                getAccessorProperties(internalOnly).flatMap { listOfNotNull(it.setter, it.getter) }).toSet()
     }
+
+    protected fun createMethodReturnValuesMap(manager: CachedValuesManager, dependencies: Array<Any>) : CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> {
+        val provider = CachedValueProvider<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> {
+            val allMethodHeaders: List<ObjJMethodHeaderDeclaration<*>> = this.classMethodsCache.value + allAccessorProperties.value
+            val map:MutableMap<String,Pair<ObjJCompositeElement, InferenceResult?>> = mutableMapOf()
+            allMethodHeaders.forEach {
+                val parent = it.parent as? ObjJCompositeElement ?: return@forEach
+                val existing = map[it.selectorString]?.second
+                val thisType = it.cachedTypes ?: return@forEach
+                if (existing != null)
+                    map[it.selectorString] = Pair(parent, thisType + existing)
+                else
+                    map[it.selectorString] = Pair(parent, thisType)
+            }
+            CachedValueProvider.Result.create(map, dependencies)
+        }
+        return manager.createCachedValue(provider)
+    }
+
 }
 
 class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDeclaration) : ObjJClassDeclarationsCache(classDeclaration) {
@@ -78,6 +101,7 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
     override val classMethodsCache: CachedValue<List<ObjJMethodHeader>>
     override val allAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
     override val internalAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
+    override val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>>
 
     init {
         val dependencies:Array<Any> = listOf(myTreeChangeTracker).toTypedArray()
@@ -85,6 +109,7 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
         classMethodsCache = createClassMethodsCache(classDeclaration, manager, dependencies)
         allAccessorProperties = createAccessorPropertiesCache(classDeclaration, manager, dependencies)
         internalAccessorProperties = createInternalAccessorPropertiesCache(classDeclaration, manager, dependencies)
+        methodReturnValuesMap = createMethodReturnValuesMap(manager, dependencies)
     }
 
     private fun createSuperClassCachedValue(
@@ -151,12 +176,14 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
     override val classMethodsCache: CachedValue<List<ObjJMethodHeader>>
     override val allAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
     override val internalAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
+    override val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>>
 
     init {
         val dependencies:Array<Any> = listOf(myTreeChangeTracker).toTypedArray()
         classMethodsCache = createClassMethodsCache(classDeclaration, manager, dependencies)
         allAccessorProperties = createAccessorPropertiesCache(classDeclaration, manager, dependencies)
         internalAccessorProperties = createInternalAccessorPropertiesCache(classDeclaration, manager, dependencies)
+        methodReturnValuesMap = createMethodReturnValuesMap(manager, dependencies)
     }
 
     private fun createClassMethodsCache(

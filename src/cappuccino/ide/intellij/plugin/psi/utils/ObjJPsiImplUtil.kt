@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.caches.ObjJFunctionDeclarationCache
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
@@ -878,6 +879,10 @@ object ObjJPsiImplUtil {
     fun getCloseBrace(element:PsiElement) : PsiElement? {
         return element.getChildByType(ObjJTypes.ObjJ_CLOSE_BRACE)
     }
+
+    @JvmStatic
+    fun getCache(functionDeclaration:ObjJFunctionDeclarationElement<*>) : ObjJFunctionDeclarationCache
+        = ObjJFunctionDeclarationCache(functionDeclaration)
 
     // ============================== //
     // ===== QualifiedReference ===== //

@@ -22,7 +22,6 @@ import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
-import kotlin.math.min
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJMethodPsiUtils {
@@ -60,7 +59,7 @@ object ObjJMethodPsiUtils {
         return getSelectorIndex(method, selector) ?: 0
     }
 
-    private fun getSelectorIndex(methodHeader:ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
+    private fun getSelectorIndex(methodHeader: ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
         if (methodHeader == null) {
             return null
         }

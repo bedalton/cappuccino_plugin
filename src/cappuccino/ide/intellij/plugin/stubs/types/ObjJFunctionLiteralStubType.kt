@@ -1,11 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.psi.*
-import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFunctionLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope

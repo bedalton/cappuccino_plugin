@@ -26,7 +26,7 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
         return cache.getAccessorProperties(internalOnly)
     }
 
-    override fun getMethodsHeader(internalOnly: Boolean): List<ObjJMethodHeader> {
+    override fun getMethodHeaders(internalOnly: Boolean): List<ObjJMethodHeader> {
         return cache.getMethods(internalOnly)
     }
 
@@ -52,7 +52,7 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
         return cache.getAccessorProperties(internalOnly)
     }
 
-    override fun getMethodsHeader(internalOnly: Boolean): List<ObjJMethodHeader> {
+    override fun getMethodHeaders(internalOnly: Boolean): List<ObjJMethodHeader> {
         return cache.getMethods(internalOnly)
     }
 

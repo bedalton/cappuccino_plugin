@@ -70,7 +70,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * @param indexSink index sink
      */
     override fun indexInstanceVariable(variableDeclarationStub: ObjJInstanceVariableDeclarationStub, indexSink: IndexSink) {
-        val className = variableDeclarationStub.containingClass
 
         // Index Instance variables to class name
         indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJInstanceVariablesByClassIndex.instance.key, variableDeclarationStub.containingClass)

@@ -11,7 +11,7 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
 
     fun getMethodHeaders() : List<ObjJMethodHeader>
 
-    fun getMethodsHeader(internalOnly:Boolean) : List<ObjJMethodHeader>
+    fun getMethodHeaders(internalOnly:Boolean) : List<ObjJMethodHeader>
 
     fun getAccessors(internalOnly: Boolean) : List<ObjJAccessorProperty>
 
