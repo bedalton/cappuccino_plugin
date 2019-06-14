@@ -18,7 +18,7 @@ class ObjJImplementationStubType internal constructor(
 
     override fun createPsi(
             objJImplementationStub: ObjJImplementationStub): ObjJImplementationDeclarationImpl {
-        return ObjJImplementationDeclarationImpl(objJImplementationStub, this)
+        return ObjJImplementationDeclarationImpl(objJImplementationStub)
     }
 
     override fun createStub(

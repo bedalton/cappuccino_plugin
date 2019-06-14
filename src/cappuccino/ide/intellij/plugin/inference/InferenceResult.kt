@@ -134,7 +134,7 @@ operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
     )
 }
 
-internal fun List<InferenceResult>.collapse() : InferenceResult {
+fun List<InferenceResult>.collapse() : InferenceResult {
     val isNumeric = this.any { it.isNumeric}
     val isDictionary = this.any { it.isDictionary }
     val isBoolean = this.any { it.isBoolean }

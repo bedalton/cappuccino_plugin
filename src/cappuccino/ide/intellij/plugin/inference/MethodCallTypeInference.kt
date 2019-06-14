@@ -1,18 +1,12 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 
@@ -24,6 +18,41 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
     }
 }
 
+private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
+    ProgressManager.checkCanceled()
+    /*if (level < 0)
+        return null*/
+    val project = methodCall.project
+    val selector = methodCall.selectorString
+    if (selector == "alloc" || selector == "alloc:") {
+        return getAllocStatementType(methodCall)
+    }
+    if (selector == "respondsToSelector:" || selector == "respondsToSelector")
+        return listOf("BOOL").toInferenceResult()
+
+    val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
+    val callTargetTypes = callTargetType?.classes?.withoutAnyType().orEmpty()
+
+    if (selector == "copy" || selector == "copy:")
+        return callTargetType
+
+
+
+    val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
+        if (callTargetTypes.isNotEmpty()) {
+            ObjJUnifiedMethodIndex.instance[selector, project].filter {
+                it.containingClassName in callTargetTypes
+            }
+        } else {
+            ObjJUnifiedMethodIndex.instance[selector, project]
+        }
+    } else
+        emptyList()
+    return methods.mapNotNull {
+        it.cachedTypes
+    }.collapse()
+}
+/*
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     ProgressManager.checkCanceled()
     /*if (level < 0)
@@ -81,7 +110,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     else
         instanceVariableTypes
     return InferenceResult(classes = out.toSet())
-}
+}*/
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
     val callTargetText = methodCall.callTargetText
@@ -123,7 +152,7 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
     }
     return null
 }
-
+/*
 private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
     ProgressManager.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
@@ -131,7 +160,10 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         val type = simpleReturnType.stripRefSuffixes()
         return setOf(type)
     } else {
-        var out = INFERRED_EMPTY_TYPE
+        var out = methodDeclaration.methodHeader.cachedTypes
+        if (out != null)
+            return out.classes
+        out = INFERRED_EMPTY_TYPE
         val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
         val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
@@ -147,4 +179,4 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         }
         return out.classes
     }
-}
+}*/

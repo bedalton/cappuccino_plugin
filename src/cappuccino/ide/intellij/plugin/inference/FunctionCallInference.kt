@@ -24,8 +24,8 @@ internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
-    val resolve = functionCall.functionName?.reference?.resolve() as? ObjJCompositeElement
-    if (resolve == null) {
+    val resolved = functionCall.functionName?.reference?.resolve() as? ObjJCompositeElement
+    if (resolved == null) {
         val functionName = functionCall.functionName?.text
         if (functionName != null) {
             val functionSet = if (functionCall.indexInQualifiedReference == 0) {
@@ -44,13 +44,18 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
         }
         return null
     }
-    return resolve.getCachedInferredTypes {
-        if (resolve.tagged(tag))
+    val cached = (resolved as? ObjJFunctionName)?.returnTypes
+            ?: (resolved as? ObjJVariableName)?.classTypes
+            ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.cachedReturnType
+    if (cached != null)
+        return cached
+    return resolved.getCachedInferredTypes {
+        if (resolved.tagged(tag))
             return@getCachedInferredTypes null
-        val functionAsVariableName = resolve as? ObjJVariableName
-        val function = (when {
+        val functionAsVariableName = resolved as? ObjJVariableName
+        val function:ObjJFunctionDeclarationElement<*>? = (when {
             functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
-            resolve is ObjJFunctionName -> resolve.parentFunctionDeclaration
+            resolved is ObjJFunctionName -> resolved.parentFunctionDeclaration
             else -> null
         })
         if (function == null) {
@@ -107,5 +112,9 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, Inf
 }
 
 
-internal val PsiElement.parentFunctionDeclaration
-    get() = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
+internal val PsiElement.parentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
+    get() {
+        return (this as? ObjJFunctionName)?.cachedParentFunctionDeclaration
+                ?: (this as? ObjJVariableName)?.cachedParentFunctionDeclaration
+                ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
+    }

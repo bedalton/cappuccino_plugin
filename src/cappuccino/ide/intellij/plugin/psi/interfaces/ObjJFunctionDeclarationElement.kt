@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.ObjJLastFormalParameterArg
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
@@ -8,7 +9,7 @@ import cappuccino.ide.intellij.plugin.inference.SPLIT_JS_CLASS_TYPES_LIST_REGEX 
 
 interface ObjJFunctionDeclarationElement<StubT: ObjJFunctionDeclarationElementStub<*>> : ObjJHasFunctionName, ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJResolveableElement<StubT> {
     val paramNames: List<String>
-
+    val cachedReturnType:InferenceResult?
     fun getReturnType(tag:Long): String?
 
     val formalParameterArgList: List<ObjJFormalParameterArg>

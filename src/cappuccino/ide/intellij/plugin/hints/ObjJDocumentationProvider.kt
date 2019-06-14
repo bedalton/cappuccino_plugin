@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
@@ -237,7 +238,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
         it.docComment
     }
     val index = this.index
-    val resolvedSelectors = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
+    val resolvedSelectors:List<ObjJMethodDeclarationSelector> = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
     val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramCommentClean }.joinToString("|")
