@@ -64,8 +64,4 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
         return cache.getMethods(false)
     }
 
-    override fun getAllInheritedProtocols() {
-
-    }
-
 }
