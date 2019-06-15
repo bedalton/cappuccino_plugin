@@ -28,13 +28,13 @@ data class InferenceResult (
         jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
     }
 
-    fun allClassesExpanded(project:Project): Set<String> {
+    fun toClassListExtended(project:Project, objectToCPObject:Boolean = false): Set<String> {
         var classes = allClassesExpanded
         if (classes != null)
             return classes
-        val classList = toClassList(null).withoutAnyType()
+        val classList = toClassList(null).withoutAnyType().plus("CPObject")
         classes = classList.flatMap {
-            ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+                ObjJInheritanceUtil.getAllInheritedClasses(it, project)
         }.toSet()// + classList.flattenNestedSuperClasses()
         allClassesExpanded = classes
         return classes

@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
+import cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 
@@ -136,6 +137,11 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
                 .getParentOfType(ObjJHasContainingClass::class.java)
                 ?.containingSuperClassName
                 ?: callTargetText
+    } else if (callTargetText == "self") {
+        methodCall.callTarget
+                .getParentOfType(ObjJHasContainingClass::class.java)
+                ?.containingClassName
+                ?: callTargetText
     } else {
         callTargetText
     }
@@ -156,6 +162,9 @@ fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult?
 }
 
 private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
+    val callTargetText = callTarget.text
+    if (ObjJClassDeclarationsIndex.instance.containsKey(callTargetText, callTarget.project))
+        return setOf(callTargetText).toInferenceResult()
     if (callTarget.expr != null)
         return inferExpressionType(callTarget.expr!!, tag)
 
