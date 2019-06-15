@@ -62,7 +62,7 @@ object ObjJVariableTypeResolver {
             return classNames!!
         }
 
-        if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isNotEmpty()) {
+        if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.containsKey(variableName.text, project)) {
             return if (withInheritance)
                 ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
             else

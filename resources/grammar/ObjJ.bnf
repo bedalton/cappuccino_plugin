@@ -551,6 +551,7 @@ variableDeclaration
 		methods=[
 			assignedValue="/expr"
 			getQualifiedNamePaths
+			hasVarKeyword
 		]
 		//recoverWhile=variableDeclaration_recover
 	}
@@ -2227,6 +2228,7 @@ variableName
 		methods = [
 			toString
 			getReference
+			getReferences
 			getRangeInElement
 			getRangeInElement
 			getName

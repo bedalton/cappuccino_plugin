@@ -4,5 +4,6 @@ import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableDeclarationImpl
 import com.intellij.psi.stubs.StubElement
 
 interface ObjJVariableDeclarationStub : StubElement<ObjJVariableDeclarationImpl> {
-    val qualifiedNameParts:List<QualifiedReferenceStubComponents>
+    val qualifiedNamesList:List<QualifiedReferenceStubComponents>
+    val hasVarKeyword:Boolean
 }

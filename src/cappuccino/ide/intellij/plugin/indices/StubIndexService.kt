@@ -79,6 +79,10 @@ open class StubIndexService internal constructor() {
     }
 
 
+    open fun indexVariableDeclaration(stub:ObjJVariableDeclarationStub, indexSink: IndexSink) {
+        throw NotImplementedError("indexVariableDeclaration should have been overridden")
+    }
+
     // ============================== //
     // ========== File Stub ========= //
     // ============================== //

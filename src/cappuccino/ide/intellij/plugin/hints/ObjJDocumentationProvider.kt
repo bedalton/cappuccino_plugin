@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.lang.documentation.DocumentationMarkup
+import com.intellij.openapi.project.DumbService
 
 class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
@@ -162,6 +163,8 @@ private val PsiElement.containerName:String? get () {
 
 
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
+    if (DumbService.isDumb(project))
+        return null
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
         out.append("Class ").append(text)
@@ -201,10 +204,10 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         }
         val inferredTypes = inferQualifiedReferenceType(prevSiblings, createTag())
         val name = this.text
-        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("?")
+        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
 
-            val classNames = inferredTypes?.toClassListString("?")
+            val classNames = inferredTypes?.toClassListString(null)
             if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
                 out.append("Variable ").append(name)
             if (propertyTypes.isNotNullOrBlank()) {

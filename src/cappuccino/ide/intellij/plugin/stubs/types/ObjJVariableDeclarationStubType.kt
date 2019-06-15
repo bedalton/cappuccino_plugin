@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableDeclarationImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
+import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -17,10 +18,11 @@ class ObjJVariableDeclarationStubType internal constructor(debugName:String):
     }
 
     override fun serialize(stub: ObjJVariableDeclarationStub, stream: StubOutputStream) {
-        stream.writeInt(stub.qualifiedNameParts.size)
-        stub.qualifiedNameParts.forEach {
+        stream.writeInt(stub.qualifiedNamesList.size)
+        stub.qualifiedNamesList.forEach {
             stream.writeQNComponents(it)
         }
+        stream.writeBoolean(stub.hasVarKeyword)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJVariableDeclarationStub {
@@ -29,11 +31,16 @@ class ObjJVariableDeclarationStubType internal constructor(debugName:String):
         (0 until numParts).forEach { _ ->
             out.add(stream.readQNComponents())
         }
-        return ObjJVariableDeclarationStubImpl(parent, out)
+        val hasVarKeyword = stream.readBoolean()
+        return ObjJVariableDeclarationStubImpl(parent, out, hasVarKeyword)
     }
 
     override fun createStub(element: ObjJVariableDeclarationImpl, parent: StubElement<*>): ObjJVariableDeclarationStub {
-        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths())
+        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths(), element.hasVarKeyword())
+    }
+
+    override fun indexStub(stub: ObjJVariableDeclarationStub, sink: IndexSink) {
+        indexService.indexVariableDeclaration(stub, sink)
     }
 
 }

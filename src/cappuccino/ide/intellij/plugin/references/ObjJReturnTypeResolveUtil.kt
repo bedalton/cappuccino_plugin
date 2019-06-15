@@ -44,7 +44,7 @@ fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag:Long) : S
         callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)
         else -> null
     }
-    val classList = inference?.toClassList("?").orEmpty() - "?"
+    val classList = inference?.toClassList(null)?.withoutAnyType().orEmpty()
     if (classList.isNotEmpty()) {
         return classList
     }

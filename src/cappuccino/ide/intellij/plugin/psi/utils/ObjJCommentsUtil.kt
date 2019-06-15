@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
@@ -179,12 +180,12 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
         if (paramCommentIn == null)
             return null
         val classes =  if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.OBJJ)
-            ObjJClassDeclarationsIndex.instance.getAllKeys(project).toSet()
+            ObjJClassDeclarationsIndex.instance.getAllKeys(project).withoutAnyType().toSet()
         else
             emptySet()
 
         val jsClasses = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.JS)
-            globalJsClassNames.toSet()
+            globalJsClassNames.withoutAnyType().toSet()
         else
             emptySet()
 

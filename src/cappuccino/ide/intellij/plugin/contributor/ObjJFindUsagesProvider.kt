@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 class ObjJFindUsagesProvider : FindUsagesProvider {
 

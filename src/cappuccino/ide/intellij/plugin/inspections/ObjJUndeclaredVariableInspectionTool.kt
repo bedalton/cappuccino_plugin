@@ -159,6 +159,8 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (resolved != null) {
                 return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }
+            if (ObjJVariableReference(variableName).multiResolve(false).isNotEmpty())
+                return true
             val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return precedingVariableNameReferences.isNotEmpty() || ObjJFunctionsIndex.instance[variableName.text, variableName.project].isNotEmpty()
         }

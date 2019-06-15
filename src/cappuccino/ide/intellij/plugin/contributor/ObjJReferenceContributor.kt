@@ -112,7 +112,7 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
         override fun getReferencesByElement(
                 psiElement: PsiElement,
                 processingContext: ProcessingContext): Array<PsiReference> {
-            return if (psiElement is ObjJClassName) arrayOf(createReference(psiElement as ObjJVariableName)) else PsiReference.EMPTY_ARRAY
+            return if (psiElement is ObjJVariableName) arrayOf(createReference(psiElement)) else PsiReference.EMPTY_ARRAY
         }
 
         private fun createReference(variableName: ObjJVariableName): PsiReference {
@@ -120,7 +120,7 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
         }
 
         override fun acceptsTarget(target: PsiElement): Boolean {
-            return target is ObjJVariableName && target.getParentOfType( ObjJFunctionCall::class.java) == null
+            return target is ObjJVariableName
         }
     }
 

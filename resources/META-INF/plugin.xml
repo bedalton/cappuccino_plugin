@@ -326,6 +326,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJPropertyNamesIndex" />
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex" />
 
 
     <internalFileTemplate name="objective-j.file" />

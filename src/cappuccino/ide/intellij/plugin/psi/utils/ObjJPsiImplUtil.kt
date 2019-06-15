@@ -15,7 +15,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameMixin
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
@@ -547,6 +546,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getReferences(variableName: ObjJVariableName): Array<PsiReference> {
+        return ReferenceProvidersRegistry.getReferencesFromProviders(variableName, PsiReferenceService.Hints.NO_HINTS)
+    }
+
+    @JvmStatic
     fun getReference(functionName: ObjJFunctionName): PsiReference {
         return ObjJFunctionNameReference(functionName)
     }
@@ -912,7 +916,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getQualifiedNamePaths(declaration:ObjJVariableDeclaration) : List<QualifiedReferenceStubComponents>
-            = declaration.stub?.qualifiedNameParts ?: declaration.toQualifiedNamePaths()
+            = declaration.stub?.qualifiedNamesList ?: declaration.toQualifiedNamePaths()
+
+    @JvmStatic
+    fun hasVarKeyword(declaration:ObjJVariableDeclaration):Boolean {
+        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+    }
 
     // ============================== //
     // ========== Imports =========== //

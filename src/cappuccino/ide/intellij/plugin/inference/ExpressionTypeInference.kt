@@ -174,15 +174,16 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
         }
         if (rightExpr.logicExprPrime?.or != null) {
             if (rightExpr.logicExprPrime?.expr != null) {
-                if (orExpressionType == null)
+                if (orExpressionType == null) {
                     orExpressionType = leftExpressionType(leftExpression, tag)
+                }
                 orExpressionType = listOfNotNull(
                         orExpressionType,
                         inferExpressionType(rightExpr.logicExprPrime?.expr!!, tag)
                 ).collapse()
                 current = orExpressionType
-                continue
             }
+            continue
         }
 
         if (rightExpr.comparisonExprPrime != null || rightExpr.instanceOfExprPrime != null || rightExpr.logicExprPrime != null) {

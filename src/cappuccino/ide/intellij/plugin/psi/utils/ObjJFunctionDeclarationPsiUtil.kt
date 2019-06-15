@@ -303,7 +303,7 @@ object ObjJFunctionDeclarationPsiUtil {
         /*
         var largestScope = Int.MAX_VALUE
         variableDeclaration.qualifiedReferenceList.forEach {
-            val parts = it.qualifiedNameParts
+            val parts = it.qualifiedNamesList
             if (parts.size != 1)
                 return@forEach
             val part = parts.getOrNull(0) as? ObjJVariableName ?: return@forEach;
