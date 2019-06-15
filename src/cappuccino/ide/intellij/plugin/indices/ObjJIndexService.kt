@@ -54,12 +54,10 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
         }
 
-        if (!isUniversalMethodCaller(className)) {
-            try {
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
-            } catch (e: Exception) {
-                LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: ${e.localizedMessage}")
-            }
+        try {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
+        } catch (e: Exception) {
+            LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: ${e.localizedMessage}")
         }
 
     }
