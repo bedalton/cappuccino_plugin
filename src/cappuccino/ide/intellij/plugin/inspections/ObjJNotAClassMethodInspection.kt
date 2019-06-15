@@ -7,6 +7,8 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
@@ -21,17 +23,19 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
 
+        if (!inspect) {
+            return object : ObjJVisitor(){}
+        }
         return object : ObjJVisitor() {
             val tag = createTag()
             override fun visitMethodCall(methodCall: ObjJMethodCall) {
                 val project = methodCall.project
                 val selectorString = methodCall.selectorString
 
-                if (selectorString == "respondsToSelector:" || selectorString == "class:" || selectorString == "isa:")
+                if (selectorString in alwaysValid)
                     return
-
-                val selector = methodCall.selectorString ?: return
-                val classes = inferCallTargetType(methodCall.callTarget, tag)?.toClassList(null)?.withoutAnyType()?.map {
+                /*
+                val classes = inferCallTargetType(methodCall.callTarget, tag)?.toClassListExtended(project)?.withoutAnyType()?.map {
                     if (it == "object")
                         "CPObject"
                     else
@@ -48,9 +52,8 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                 annotateMethodCall(methodCall, classes, holder)
 
                 //super.visitMethodCall(methodCall)
-                /*
                 val selectorString = methodCall.selectorString
-
+                */
                 if (selectorString == "respondsToSelector:" || selectorString == "class:" || selectorString == "isa:")
                     return
                 val onlyVariable = methodCall.callTarget.singleVariableNameElementOrNull
@@ -76,7 +79,6 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                 if (isValid(methodCall, classes, tag))
                     return
                 annotateMethodCall(methodCall, classes, holder)
-                */
             }
         }
     }
@@ -109,5 +111,15 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
         private fun message(fullMethodSelector:String, callTarget:String):String {
             return ObjJBundle.message("objective-j.inspections.not-a-class-method.message", fullMethodSelector, callTarget)
         }
+
+        private val inspect:Boolean get() = ObjJPluginSettings.validateMethodCalls
+
+        private val alwaysValid:Set<String> = setOf(
+                "alloc:", "alloc",
+                "respondsToSelector:", "respondsToSelector",
+                "isa:", "isa",
+                "class:", "class"
+        )
+
     }
 }
