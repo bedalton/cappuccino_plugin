@@ -125,8 +125,11 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     val objectLiteral = leftExpression.objectLiteral
     if (objectLiteral != null) {
         val keys = objectLiteral.toJsObjectTypeSimple().properties
+        val objectClass = if (objectLiteral.atOpenBrace != null) {
+            "CPDictionary"
+        } else "object"
         return InferenceResult(
-                classes = setOf("object"),
+                classes = setOf(objectClass),
                 jsObjectKeys = keys
         )
     }
@@ -153,6 +156,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
     //ProgressManager.checkCanceled()
     if (leftExpression == null)// || level < 0)
         return null
+    var orExpressionType:InferenceResult? = null
     var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {
         if (rightExpr.comparisonExprPrime != null)
@@ -168,6 +172,19 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
             if (types != null)
                 current += types
         }
+        if (rightExpr.logicExprPrime?.or != null) {
+            if (rightExpr.logicExprPrime?.expr != null) {
+                if (orExpressionType == null)
+                    orExpressionType = leftExpressionType(leftExpression, tag)
+                orExpressionType = listOfNotNull(
+                        orExpressionType,
+                        inferExpressionType(rightExpr.logicExprPrime?.expr!!, tag)
+                ).collapse()
+                current = orExpressionType
+                continue
+            }
+        }
+
         if (rightExpr.comparisonExprPrime != null || rightExpr.instanceOfExprPrime != null || rightExpr.logicExprPrime != null) {
             current = current.copy(isBoolean = true, classes = current.classes.plus(JS_BOOL.className))
         }
