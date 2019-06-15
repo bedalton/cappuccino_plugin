@@ -71,7 +71,6 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
             return inferred
     }
     val tagged = tag != null && tagged(tag)
-    //LOGGER.info("Time Since: $timeSinceTag")
     if (inferredVersionNumber == INFERRED_TYPES_VERSION && (timeSinceTag < 6000 || tagged)) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
@@ -80,7 +79,6 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
     }
 
     val inferredTypes = getIfNull?.invoke() ?: INFERRED_EMPTY_TYPE
-    LOGGER.info("Inferred type is not cached: ${this.text}: Type: ${inferredTypes.toClassList("?")}")
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
     this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, false)
