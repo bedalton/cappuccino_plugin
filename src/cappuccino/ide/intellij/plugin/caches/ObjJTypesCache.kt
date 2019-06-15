@@ -81,7 +81,7 @@ private fun ObjJExpr.collectNameElements() : List<ObjJVariableName> {
     expressions.forEach { expr ->
         temp.add(expr.leftExpr?.derefExpression?.variableName)
         temp.add(expr.leftExpr?.refExpression?.variableName)
-        temp.addAll(expr.leftExpr?.qualifiedReference?.qualifiedNameParts?.mapNotNull { it as? ObjJVariableName }
+        temp.addAll(expr.leftExpr?.qualifiedReference?.qualifiedNamesList?.mapNotNull { it as? ObjJVariableName }
                 ?: listOf<ObjJVariableName>())
         for (rightExpr in rightExprList) {
             temp.addAll(rightExpr.qualifiedReferencePrime?.variableNameList.orEmpty())

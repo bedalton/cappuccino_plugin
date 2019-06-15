@@ -215,7 +215,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
     val returnClasses = mutableListOf<String>()
     if (isNumeric && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (isBoolean && booleanTypes.intersect(classes).isEmpty())
+    if (isBoolean && booleanTypes.intersect(classes).isEmpty() && classes.isEmpty())
         returnClasses.add("BOOL")
     if (isRegex)
         returnClasses.add("regex")
@@ -246,7 +246,10 @@ fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimite
         it.toString()
     }.orEmpty()
     val arrayTypes = this.arrayTypes?.map {
-        "$it[]"
+        if (it in anyTypes)
+            "Array<Any>"
+        else
+            "Array<$it>"
     }.orEmpty()
     val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes
     val typesString = types.joinToString(delimiter)
@@ -277,10 +280,6 @@ internal val stringTypes = listOf("string", "cpstring")
 internal val numberTypes = listOf("number", "int", "integer", "float", "long", "long long", "double")
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
 internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
-
-internal fun Iterable<String>.containsAnyType() : Boolean {
-    return this.any { it in anyTypes}
-}
 
 internal fun Iterable<String>.withoutAnyType() : Set<String> {
     return this.filterNot { it in anyTypes}.toSet()

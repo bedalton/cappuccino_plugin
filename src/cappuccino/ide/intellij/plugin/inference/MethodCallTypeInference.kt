@@ -145,7 +145,7 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     } else {
         callTargetText
     }
-    val isValidClass = className in ObjJImplementationDeclarationsIndex.instance.getAllKeys(methodCall.project)
+    val isValidClass = ObjJImplementationDeclarationsIndex.instance.containsKey(className, methodCall.project)
     if (!isValidClass)
         return null
     return InferenceResult(

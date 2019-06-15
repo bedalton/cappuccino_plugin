@@ -13,7 +13,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
-import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import com.intellij.psi.stubs.PsiFileStub
 import java.util.logging.Level
@@ -242,10 +242,24 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         indexSink.occurrence<ObjJTypeDef, String>(ObjJTypeDefIndex.KEY, stub.className)
     }
 
+    override fun indexVariableDeclaration(stub:ObjJVariableDeclarationStub, indexSink: IndexSink) {
+        stub.qualifiedNamesList.forEach { qualifiedName ->
+            if (qualifiedName.isEmpty())
+                return@forEach
+            val lastIndex = qualifiedName.size - 1
+            for (i in 0 .. lastIndex) {
+                val namespace = qualifiedName.subList(i, lastIndex).joinToString(".") { it.name ?: "{?}" }
+                indexSink.occurrence<ObjJVariableDeclaration, String>(ObjJVariableDeclarationsByNameIndex.KEY, namespace)
+            }
+            val last = qualifiedName.last().name ?: return@forEach
+            indexSink.occurrence<ObjJVariableDeclaration, String>(ObjJVariableDeclarationsByNameIndex.KEY, last)
+        }
+    }
+
     companion object {
         private const val MAJOR_VERSION = 6
         private const val MINOR_VERSION = 10
-        const val INDEX_VERSION:Int = MAJOR_VERSION + MINOR_VERSION
+        const val INDEX_VERSION:Int = ObjJStubVersions.SOURCE_STUB_VERSION + MAJOR_VERSION + MINOR_VERSION
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)
         }

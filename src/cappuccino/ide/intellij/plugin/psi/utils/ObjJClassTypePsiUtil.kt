@@ -28,8 +28,8 @@ object ObjJClassTypePsiUtil {
             return true
         if (DumbService.isDumb(project))
             return null
-        return classNameString in ObjJClassDeclarationsIndex.instance.getAllKeys(project) ||
-                classNameString in ObjJTypeDefIndex.instance.getAllKeys(project)
+        return ObjJClassDeclarationsIndex.instance.containsKey(classNameString, project) ||
+                ObjJTypeDefIndex.instance.containsKey(classNameString, project)
     }
 
     /**

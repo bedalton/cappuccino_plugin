@@ -6,4 +6,4 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubCom
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.stubs.StubElement
 
-class ObjJVariableDeclarationStubImpl(parent: StubElement<*>, override val qualifiedNameParts: List<QualifiedReferenceStubComponents>) : ObjJStubBaseImpl<ObjJVariableDeclarationImpl>(parent, ObjJStubTypes.VARIABLE_DECLARATION), ObjJVariableDeclarationStub
+class ObjJVariableDeclarationStubImpl(parent: StubElement<*>, override val qualifiedNamesList: List<QualifiedReferenceStubComponents>, override val hasVarKeyword: Boolean) : ObjJStubBaseImpl<ObjJVariableDeclarationImpl>(parent, ObjJStubTypes.VARIABLE_DECLARATION), ObjJVariableDeclarationStub
