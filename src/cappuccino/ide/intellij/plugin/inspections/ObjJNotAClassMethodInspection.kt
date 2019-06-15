@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
@@ -25,7 +24,31 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             val tag = createTag()
             override fun visitMethodCall(methodCall: ObjJMethodCall) {
+                val project = methodCall.project
+                val selectorString = methodCall.selectorString
+
+                if (selectorString == "respondsToSelector:" || selectorString == "class:" || selectorString == "isa:")
+                    return
+
+                val selector = methodCall.selectorString ?: return
+                val classes = inferCallTargetType(methodCall.callTarget, tag)?.toClassList(null)?.withoutAnyType()?.map {
+                    if (it == "object")
+                        "CPObject"
+                    else
+                        it
+                }?.toSet() ?: return
+                if (classes.isEmpty())
+                    return
+                // Get quick result from class constraints
+                val quickSelectorResult = classes.flatMap { className ->
+                    ObjJClassAndSelectorMethodIndex.instance.getByClassAndSelector(className, selector, project)
+                }
+                if (quickSelectorResult.isNotEmpty())
+                    return
+                annotateMethodCall(methodCall, classes, holder)
+
                 //super.visitMethodCall(methodCall)
+                /*
                 val selectorString = methodCall.selectorString
 
                 if (selectorString == "respondsToSelector:" || selectorString == "class:" || selectorString == "isa:")
@@ -53,6 +76,7 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                 if (isValid(methodCall, classes, tag))
                     return
                 annotateMethodCall(methodCall, classes, holder)
+                */
             }
         }
     }
