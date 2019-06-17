@@ -39,9 +39,13 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             return
         }
 
+        val startsWithUnderscore = selector.startsWith("_")
+
 
         try {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, selector)
+            if (startsWithUnderscore)
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, selector.substring(1))
         } catch (e: Exception) {
             LOGGER.log(Level.SEVERE, "Failed to index selector with error: ${e.localizedMessage}")
         }
@@ -51,7 +55,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         val selectorBuilder = StringBuilder()
         for (subSelector in methodHeaderStub.selectorStrings) {
             selectorBuilder.append(subSelector).append(SELECTOR_SYMBOL)
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, selectorBuilder.toString())
+            val currentSelector = selectorBuilder.toString()
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, currentSelector)
+            if (startsWithUnderscore) {
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, currentSelector.substring(1))
+            }
         }
 
         try {
@@ -79,11 +87,17 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         val getter = variableDeclarationStub.getter
         if (getter != null && getter.isNotBlank()) {
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter)
+            if (getter.startsWith("_")) {
+                indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter.substring(1))
+            }
         }
         // Index setters
         val setter = variableDeclarationStub.setter
         if (setter != null && setter.isNotBlank()) {
-            indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, variableDeclarationStub.setter!!)
+            indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, setter)
+            if (setter.startsWith("_")) {
+                indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, setter.substring(1))
+            }
         }
 
     }
@@ -96,13 +110,25 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     override fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
         val className = property.containingClassName
         indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
-        if (property.getter != null) {
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, property.getter!!))
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.getter!!)
+        var getter = property.getter
+        if (getter != null) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, getter)
+            if (getter.startsWith("_")) {
+                getter = getter.substring(1)
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, getter)
+            }
         }
-        if (property.setter != null) {
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, property.setter!!))
-            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, property.setter!!)
+        var setter = property.setter
+        if (setter != null) {
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
+            indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, setter)
+            if (setter.startsWith("_")) {
+                setter = setter.substring(1)
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
+                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, setter)
+            }
         }
     }
 
