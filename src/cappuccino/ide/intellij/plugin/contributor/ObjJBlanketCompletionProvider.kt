@@ -132,6 +132,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.parent is ObjJObjectLiteral && prevSibling?.text != ":" -> {
+                resultSet.stopHere()
+            }
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
                 //LOGGER.info("Cannot complete after ${prevSibling.elementType}")
                 resultSet.stopHere()
