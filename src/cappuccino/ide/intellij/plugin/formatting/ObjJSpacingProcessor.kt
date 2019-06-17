@@ -3,6 +3,7 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -43,6 +44,8 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         val node2 = child2.node
         val type2 = node2.elementType
 
+        if (myNode.psi.hasParentOfType(ObjJPreprocessorDefineFunction::class.java))
+            return null
 
         if (type1 == ObjJ_AT_IMPLEMENTATION) {
             return Spacing.createSpacing(1, Int.MAX_VALUE, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -296,6 +299,9 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
+        if (type1 == ObjJ_AND || type1 == ObjJ_OR) {
+            return Spacing.createSpacing(0,0,0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
 
         if (type1 in ObjJTokenSets.EXPRESSIONS && type2 == ObjJ_BODY_VARIABLE_ASSIGNMENT && objJSettings.GROUP_STATEMENTS) {
             return Spacing.createSpacing(0, 0, 2, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
