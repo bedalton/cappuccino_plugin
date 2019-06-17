@@ -300,7 +300,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (type1 == ObjJ_AND || type1 == ObjJ_OR) {
-            return Spacing.createSpacing(0,0,0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return Spacing.createSpacing(1,0,0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (type1 in ObjJTokenSets.EXPRESSIONS && type2 == ObjJ_BODY_VARIABLE_ASSIGNMENT && objJSettings.GROUP_STATEMENTS) {
@@ -515,17 +515,19 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
     // This is used as the basis for aligning objects
     val tabSize = EditorUtil.tabSize(this)
     val longestLengthToColon = selector.getLongestLengthToColon().add(tabSize) ?: return null
-    val thisSelectorLength = this.selector?.text?.length ?: return null
+    val thisSelectorLength = this.selector?.text?.length?.plus(1) ?: return null
 
+    val isFirst:Boolean = this.node.treePrev?.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR
     // If node is on same line, and not first selector, add a single space
-    if (!this.node.isDirectlyPrecededByNewline()) {
-        if (!indentFirstSelector || this.node.treeNext?.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
+    if (!this.node.isDirectlyPrecededByNewline() && isFirst) {
+        if (!indentFirstSelector && this.node.treePrev?.elementType != ObjJ_QUALIFIED_METHOD_CALL_SELECTOR) {
             return 1
         }
         val prevNode = this.node.getPreviousNonEmptyNode(false)?.psi ?: return 1
         val distanceToPrevNode = prevNode.distanceFromStartOfLine().add(1) ?: 0
         val out = if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
-            longestLengthToColon - distanceToPrevNode - thisSelectorLength - EditorUtil.tabSize(this).orElse(0) + 1
+            val offset = if (isFirst) -2 else 1
+            longestLengthToColon - distanceToPrevNode - thisSelectorLength - EditorUtil.tabSize(this).orElse(0) + offset
         } else {
             1
         }
@@ -557,7 +559,7 @@ fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int
     }
     // Offset secondary colons by the indent size
     // Hopefully this stays true
-    return max(maxLengthOfSelector, distanceToFirstColon)
+    return max(maxLengthOfSelector + 1, distanceToFirstColon - 2)
 }
 
 /**

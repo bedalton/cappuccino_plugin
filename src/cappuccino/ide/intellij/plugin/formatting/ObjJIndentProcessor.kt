@@ -111,6 +111,10 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             }
         }
 
+        if (parentType == ObjJ_LOGIC_EXPR_PRIME) {
+            return Indent.getContinuationIndent()
+        }
+
         if (ObjJTokenSets.COMMENTS.contains(elementType) && prevSiblingType == ObjJ_OPEN_BRACE && ObjJTokenSets.CLASS_DECLARATIONS.contains(parentType)) {
             return Indent.getNormalIndent()
         }
