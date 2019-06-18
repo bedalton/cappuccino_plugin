@@ -428,7 +428,9 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
     fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
-        if (element == null) return null
+        if (element == null)
+            return null
+
         val parentFunctionDeclaration = element.parent as? ObjJFunctionDeclarationElement<*>
         if (parentFunctionDeclaration != null)
             return parentFunctionDeclaration
