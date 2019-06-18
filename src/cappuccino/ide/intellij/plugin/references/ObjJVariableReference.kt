@@ -221,14 +221,11 @@ class ObjJVariableReference(
         val variableNameString = myElement.text
         val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
         if (allWithName.isNullOrEmpty()) {
-            LOGGER.info("Keys:\nt"+ObjJVariableDeclarationsByNameIndex.instance.getAllKeys(myElement.project).joinToString("\n\t"))
             return null
         }
-        LOGGER.info("Found ${allWithName.size} declarations in project for variables with name ${myElement.text}")
         val allBodyDeclarations = allWithName.filter {
             it.hasVarKeyword()
         }
-        LOGGER.info("Found ${allBodyDeclarations.size} body declarations")
         val allCandidates = allWithName.filterNot {variableDeclaration ->
             variableDeclaration in allBodyDeclarations && allBodyDeclarations.any {
                 variableDeclaration.commonScope(it) != UNDETERMINED
@@ -242,11 +239,9 @@ class ObjJVariableReference(
         if (nullIfSelfReferencing.orFalse() && allCandidatesInFile.size == 1) {
             val onlyCandidate = allCandidatesInFile.firstOrNull() ?: return null
             if(onlyCandidate.commonContext(myElement) == onlyCandidate) {
-                LOGGER.info("Found only one candidate, and it was self referencing")
                 return null
             }
         }
-        LOGGER.info("Found ${allCandidates.size} referenced variables for variable ${myElement.text}")
         if (allCandidatesInFile.isNotEmpty())
             return allCandidatesInFile
         return allCandidates
