@@ -124,6 +124,17 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
+
+val PsiElement.previous: PsiElement? get(){
+    val out: ASTNode? = this.node.treePrev ?: getPrevInTreeParent(this.node) ?: return null
+    return out?.psi
+}
+
+val PsiElement.next: PsiElement? get() {
+    val out: ASTNode? = this.node.treeNext ?: getNextInTreeParent(this.node) ?: return null
+    return out?.psi
+}
+
 private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
     var temp:ASTNode? = out?.treeParent ?: return null
     while (temp != null && temp.treePrev == null && temp.treeParent != null) {
