@@ -35,10 +35,10 @@ class ObjJBraceMatcher : PairedBraceMatcher {
                 BracePair(ObjJ_OPEN_PAREN, ObjJ_CLOSE_PAREN, false),
                 BracePair(ObjJ_OPEN_BRACKET, ObjJ_CLOSE_BRACKET, false),
                 BracePair(ObjJ_OPEN_BRACE, ObjJ_CLOSE_BRACE, false),
-                BracePair(ObjJ_AT_OPENBRACKET, ObjJ_CLOSE_BRACKET, false),
-                BracePair(ObjJ_AT_OPEN_BRACE, ObjJ_CLOSE_BRACE, false),
+                BracePair(ObjJ_AT_OPENBRACKET, ObjJ_CLOSE_BRACKET, true),
+                BracePair(ObjJ_AT_OPEN_BRACE, ObjJ_CLOSE_BRACE, true),
                 BracePair(ObjJ_LESS_THAN, ObjJ_GREATER_THAN, true),
-                BracePair(ObjJ_DOUBLE_QUO, ObjJ_DOUBLE_QUO, true),
+                BracePair(ObjJ_DOUBLE_QUO, ObjJ_DOUBLE_QUO, false),
                 BracePair(ObjJ_SINGLE_QUO, ObjJ_SINGLE_QUO, true),
                 BracePair(ObjJ_BLOCK_COMMENT_START, ObjJ_BLOCK_COMMENT_END, true)
         )
