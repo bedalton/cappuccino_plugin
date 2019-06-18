@@ -12,17 +12,17 @@ import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orElse
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
 internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, tag:Long): InferenceResult? {
-    val lastChild = parts.lastOrNull() ?: return null
+    /*val lastChild = parts.lastOrNull() ?: return null
     return lastChild.getCachedInferredTypes(null) {
         addStatusFileChangeListener(parts[0].project)
         internalInferQualifiedReferenceType(parts, tag)
-    }
+    }*/
+    return internalInferQualifiedReferenceType(parts, tag)
 }
 
 internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceComponent>, tag:Long): InferenceResult? {
@@ -90,9 +90,9 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
         LOGGER.info("Cannot get variable name part for variable <${variableName.text}> as level < 0")
         return null
     }*/
-    if (variableName.tagged(tag)) {
+    if (variableName.tagged(tag))
         return null
-    }
+    
     //ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         return inferVariableNameType(variableName, tag)
@@ -160,7 +160,6 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
     else
         null
 
-    LOGGER.info("Trying to resolve: $variableNameString")
     return referencedVariable?.getCachedInferredTypes(tag) {
         val varDefType = if (referencedVariable is ObjJNamedElement)
             ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(referencedVariable)
@@ -174,7 +173,6 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag:Long): In
         }
 
         if (referencedVariable is ObjJVariableName) {
-            LOGGER.info("Did resolve variable: ${referencedVariable.text}")
             val out = ObjJVariableTypeResolver.resolveVariableType(
                     variableName = referencedVariable,
                     recurse = false,
@@ -286,6 +284,70 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
 }
 
 private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag:Long): InferenceResult? {
+    if (functionName.indexInQualifiedReference != 0) {
+        return null
+    }
+    val functionCall = functionName.getParentOfType(ObjJFunctionCall::class.java)
+    if (functionCall != null) {
+        val returnType = inferFunctionCallReturnType(functionCall, tag)
+        if (returnType != null)
+            return returnType
+        else
+            LOGGER.info("Failed to find quick function call results")
+    }
+    val functionNameString = functionName.text
+    val resolved =  functionName.reference.resolve()
+    val functionDeclaration = resolved?.parentFunctionDeclaration
+    if (functionDeclaration == null && resolved is ObjJVariableName) {
+        val expr = resolved.getAssignmentExprOrNull()
+        if (expr != null) {
+            val functionType = inferExpressionType(expr, tag)
+            if (functionType != null) {
+                return functionType.functionTypes?.map {
+                    it.returnType
+                }?.collapse() ?: functionType
+            }
+        }
+    }
+    var basicReturnTypes = functionDeclaration
+            ?.getReturnTypes(tag)
+
+    val functions = globalJsFunctions.filter {
+        //ProgressManager.checkCanceled()
+        it.name == functionNameString
+    }
+    val functionTypes = functions.map {
+        val returnType = InferenceResult(
+                classes = it.returnTypes
+        )
+        JsFunctionType(it.parameters.toMap(), returnType)
+    }.toMutableSet()
+
+    val functionDeclarationAsJsFunctionType = functionDeclaration?.toJsFunctionType(tag)
+    if (functionDeclarationAsJsFunctionType != null) {
+        functionTypes.add(functionDeclarationAsJsFunctionType)
+    }
+
+    if (basicReturnTypes.isNullOrEmpty() && functionDeclaration != null) {
+        basicReturnTypes = inferFunctionDeclarationReturnType(functionDeclaration, tag)?.classes ?: emptySet()
+    }
+    val returnTypes = functions.flatMap {
+        it.returnTypes
+    } + basicReturnTypes.orEmpty()
+
+    return InferenceResult (
+            classes = returnTypes.toSet(),
+            functionTypes = functionTypes.toList()
+    )
+}
+
+private fun returnAsFunctionInfo(functionName: ObjJFunctionName) : Boolean{
+    val expr = functionName.getParentOfType(ObjJExpr::class.java) ?: return false
+    val assignment = functionName.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
+    return expr.textRange.startOffset > assignment.textRange.startOffset
+}
+
+private fun findFunctionReturnTypesIfFirstInVariableDeclaration(functionName: ObjJFunctionName, tag:Long): InferenceResult? {
     if (functionName.indexInQualifiedReference != 0) {
         return null
     }

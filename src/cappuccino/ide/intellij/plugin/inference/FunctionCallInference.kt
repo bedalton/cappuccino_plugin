@@ -7,9 +7,8 @@ import cappuccino.ide.intellij.plugin.contributor.returnTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressManager
@@ -112,5 +111,6 @@ internal val PsiElement.parentFunctionDeclaration:ObjJFunctionDeclarationElement
     get() {
         return (this as? ObjJFunctionName)?.cachedParentFunctionDeclaration
                 ?: (this as? ObjJVariableName)?.cachedParentFunctionDeclaration
-                ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
+                ?: (this as? ObjJFunctionCall)?.functionName?.resolve()?.parentFunctionDeclaration
+                ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this.reference?.resolve())
     }

@@ -271,10 +271,15 @@ private val ObjJFunctionName.functionDescription:String? get() {
 }
 
 private val ObjJFunctionCall.functionDescription: String? get() {
-    val basicDescription = this.parentFunctionDeclaration?.description?.presentableText
+    val resolve = this.functionName?.reference?.resolve()
+    val parentFunction = resolve?.parentFunctionDeclaration
+    val basicDescription = parentFunction?.description?.presentableText
     if (basicDescription.isNotNullOrBlank())
         return basicDescription!!
+    if (parentFunction == null) {
+        return "Function ${functionName?.text}"
+    }
     val functionNameText = functionName?.text ?: return null
-    val function = inferQualifiedReferenceType(this.previousSiblings + this, createTag())?.functionTypes?.firstOrNull() ?: return null
-    return function.descriptionWithName(functionNameText)
+    val function = inferQualifiedReferenceType(this.previousSiblings + this, createTag())?.functionTypes?.firstOrNull()
+    return function?.descriptionWithName(functionNameText) ?: "Function ${functionName?.text} defined in ${parentFunction.containingFile?.name}"
 }
