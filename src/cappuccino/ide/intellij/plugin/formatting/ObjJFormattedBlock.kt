@@ -23,6 +23,7 @@ import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.formatting.Spacing
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
+import com.intellij.psi.impl.source.tree.ElementType
 import java.util.logging.Logger
 
 class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {
@@ -73,7 +74,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         val children = ArrayList<Block>()
         var childNode: ASTNode? = node.firstChildNode
         while (childNode != null) {
-            if (FormatterUtil.containsWhiteSpacesOnly(childNode)) {
+            if (childNode.text.isBlank() && FormatterUtil.containsWhiteSpacesOnly(childNode)) {
                 childNode = childNode.treeNext
                 continue
             }
@@ -103,6 +104,7 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         return when (node.elementType) {
             ObjJ_IF_STATEMENT -> (node.psi as? ObjJIfStatement)?.blockList?.isEmpty() ?: return false
             ObjJ_ARGUMENTS -> (node.psi as? ObjJArguments)?.closeParen == null
+            ElementType.ERROR_ELEMENT -> true
             else -> super.isIncomplete()
         }
     }

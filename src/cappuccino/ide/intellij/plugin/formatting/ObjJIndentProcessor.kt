@@ -140,9 +140,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             }
 
             // Be careful to preserve typing behavior.
-            if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_EXPR || elementType == ObjJ_COMMA) {
+            if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_COMMA) {
                 return Indent.getNormalIndent()
             }
+            if (elementType == ObjJ_EXPR)
+                return Indent.getContinuationIndent()
             return if (ObjJTokenSets.COMMENTS.contains(elementType)) {
                 Indent.getNormalIndent()
             } else Indent.getNoneIndent()
