@@ -172,6 +172,7 @@
     <lang.braceMatcher language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJBraceMatcher"/>
     <quoteHandler fileType="ObjectiveJ" className="cappuccino.ide.intellij.plugin.formatting.ObjJQuoteHandler"/>
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
+    <typedHandler implementation="cappuccino.ide.intellij.plugin.formatting.ObjJTypedHandlerDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
     <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJFunctionParameterInfoHandler" />
