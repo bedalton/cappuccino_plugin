@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 %type IElementType
 %unicode
 
-PREPROCESSOR_CONTINUE_ON_NEXT_LINE=\\[ ]*\r?\n
+PREPROCESSOR_CONTINUE_ON_NEXT_LINE=\\\n
 LINE_TERMINATOR=[\r\n\u2028\u2029]
 VAR_TYPE_BYTE=((unsigned|signed)[ ]+)?byte
 VAR_TYPE_CHAR=((unsigned|signed)[ ]+)?char
@@ -220,7 +220,7 @@ WHITE_SPACE=\p{Blank}+
 	"null"|"NULL"                        { canRegex(false); return ObjJ_NULL_LITERAL; }
 	"nil"|"Nil"                          { canRegex(false); return ObjJ_NIL; }
 	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
-	{PP_DEFINE}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
+	{PP_DEFINE}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
 	{PP_UNDEF}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
 	{PP_IF_DEF}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
 	{PP_IFNDEF}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
@@ -313,5 +313,6 @@ WHITE_SPACE=\p{Blank}+
 "@"{ID}						 			 { canRegex(false); return ObjJ_AT_FRAGMENT; }
 <YYINITIAL> {
 	{WHITE_SPACE}+                       { return WHITE_SPACE; }
+  	"\\"								 { return ObjJ_FORWARD_SLASH; }
 }
 [^] { return BAD_CHARACTER; }

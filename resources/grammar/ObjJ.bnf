@@ -80,6 +80,7 @@
 		BLOCK_COMMENT_END =				 	"*/"
 		BLOCK_COMMENT_LEADING_ASTERISK =     "*"
 		BLOCK_COMMENT_LINE =				'regexp:\*[^\n]*?'
+		FORWARD_SLASH =						"\\"
 
 		// At Statements
 		AT_FRAGMENT =						'@fragment'
