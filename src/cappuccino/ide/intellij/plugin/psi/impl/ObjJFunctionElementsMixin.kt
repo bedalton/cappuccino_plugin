@@ -3,8 +3,10 @@ package cappuccino.ide.intellij.plugin.psi.impl
 import cappuccino.ide.intellij.plugin.caches.ObjJFunctionDeclarationCache
 import cappuccino.ide.intellij.plugin.caches.ObjJFunctionNameCache
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.inferFunctionDeclarationReturnType
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubElementType
 import com.intellij.lang.ASTNode
@@ -18,19 +20,38 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
 
     constructor(node: ASTNode) : super(node)
 
-    override fun getCachedReturnType(tag:Long):InferenceResult? = cache.returnTypes(tag)
+    override fun getCachedReturnType(tag:Long):InferenceResult? {
+        return inferFunctionDeclarationReturnType(this, tag)
+    }
 }
 
+
+/**
+ * A mixin class for function name elements to utilize caching
+ */
 abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(node), ObjJFunctionNameElement {
 
-
+    /**
+     * Cache for this function name
+     */
     private val cache:ObjJFunctionNameCache by lazy {
         ObjJFunctionNameCache(this)
     }
 
+    /**
+     * Attempts to get parent function declaration from cache
+     */
     override val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
-        get() = cache.parentFunctionDeclarationElement
+        get() = cache.parentFunctionDeclarationElement ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
 
-    override fun getCachedReturnType(tag:Long):InferenceResult?
-        = cache.getReturnType(tag)
+    /**
+     * Gets cached value for return type
+     */
+    override fun getCachedReturnType(tag:Long):InferenceResult? {
+        val returnType = cache.getReturnType(tag)
+        if (returnType != null)
+            return returnType
+        val cachedParent = cachedParentFunctionDeclaration ?: return null
+        return inferFunctionDeclarationReturnType(cachedParent, tag)
+    }
 }

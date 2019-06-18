@@ -46,20 +46,16 @@ class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationEl
     val modificationTracker = MyModificationTracker()
     private val returnStatementsCache: CachedValue<Map<ObjJReturnStatement, InferenceResult?>>
     private var returnTypesInternal: InferenceResult? = null
+
     fun returnTypes(tag:Long): InferenceResult {
         if (modificationTracker.tag == tag)
             return INFERRED_ANY_TYPE
         modificationTracker.tag = tag
-        var types = returnTypesInternal
-        if (types != null)
-            return types
-        val temp = returnStatementsCache.value?.values?.filterNotNull()
-        if (temp.isNotNullOrEmpty()) {
-            types = temp!!.collapse()
+        val types = returnStatementsCache.value?.values?.filterNotNull()
+        return if (types.isNotNullOrEmpty()) {
+            types!!.collapse()
         } else
-            types = INFERRED_VOID_TYPE
-        returnTypesInternal = types
-        return types
+            INFERRED_VOID_TYPE
     }
 
     init {

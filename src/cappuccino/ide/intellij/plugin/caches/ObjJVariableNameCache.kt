@@ -22,7 +22,7 @@ import com.intellij.psi.util.PsiModificationTracker
 
 class ObjJVariableNameCache(variableName: ObjJVariableName) {
     private val manager: CachedValuesManager by lazy { CachedValuesManager.getManager(variableName.project) }
-    private val dependencies:Array<Any> by lazy { listOf(myTreeChangeTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray() }
+    private val dependencies:Array<Any> by lazy { listOf(PsiModificationTracker.MODIFICATION_COUNT).toTypedArray<Any>() }
 
     private val resolvedCache: CachedValue<ObjJVariableName?> by lazy {
         createResolvedVariableNameCache(variableName, manager, dependencies)
@@ -36,7 +36,7 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
     private val parentFunctionDeclarationCache: CachedValue<ObjJFunctionDeclarationElement<*>?> by lazy {
         createFunctionDeclarationsCache(variableName, manager, dependencies)
     }
-    private val myTreeChangeTracker = MyModificationTracker()
+    val myTreeChangeTracker = MyModificationTracker()
 
 
     private fun createResolvedVariableNameCache(variableName: ObjJVariableName, manager: CachedValuesManager, dependencies:Array<Any>)  : CachedValue<ObjJVariableName?> {
