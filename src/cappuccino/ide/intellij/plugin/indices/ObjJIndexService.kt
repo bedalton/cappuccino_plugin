@@ -39,13 +39,8 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             return
         }
 
-        val startsWithUnderscore = selector.startsWith("_")
-
-
         try {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, selector)
-            if (startsWithUnderscore)
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, selector.substring(1))
         } catch (e: Exception) {
             LOGGER.log(Level.SEVERE, "Failed to index selector with error: ${e.localizedMessage}")
         }
@@ -57,9 +52,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             selectorBuilder.append(subSelector).append(SELECTOR_SYMBOL)
             val currentSelector = selectorBuilder.toString()
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, currentSelector)
-            if (startsWithUnderscore) {
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJMethodFragmentIndex.KEY, currentSelector.substring(1))
-            }
         }
 
         try {
@@ -87,17 +79,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         val getter = variableDeclarationStub.getter
         if (getter != null && getter.isNotBlank()) {
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter)
-            if (getter.startsWith("_")) {
-                indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, getter.substring(1))
-            }
         }
         // Index setters
         val setter = variableDeclarationStub.setter
         if (setter != null && setter.isNotBlank()) {
             indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, setter)
-            if (setter.startsWith("_")) {
-                indexSink.occurrence<ObjJInstanceVariableDeclaration, String>(ObjJClassInstanceVariableAccessorMethodIndex.instance.key, setter.substring(1))
-            }
         }
 
     }
@@ -114,21 +100,11 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         if (getter != null) {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, getter)
-            if (getter.startsWith("_")) {
-                getter = getter.substring(1)
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, getter)
-            }
         }
         var setter = property.setter
         if (setter != null) {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, setter)
-            if (setter.startsWith("_")) {
-                setter = setter.substring(1)
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
-                indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, setter)
-            }
         }
     }
 
@@ -284,7 +260,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
     companion object {
         private const val MAJOR_VERSION = 6
-        private const val MINOR_VERSION = 10
+        private const val MINOR_VERSION = 11
         const val INDEX_VERSION:Int = ObjJStubVersions.SOURCE_STUB_VERSION + MAJOR_VERSION + MINOR_VERSION
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)
