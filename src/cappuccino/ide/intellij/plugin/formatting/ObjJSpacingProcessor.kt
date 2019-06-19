@@ -521,8 +521,8 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
         return 1
     // Find the longest length to a colon in this call
     // This is used as the basis for aligning objects
-    val tabSize = EditorUtil.tabSize(this)
-    val longestLengthToColon = methodCall.getLongestLengthToColon() ?: return null
+    val tabSize = EditorUtil.tabSize(this).orElse(0)
+    val longestLengthToColon = methodCall.getLongestLengthToColon(tabSize)
     val thisSelectorLength = this.selector?.text?.length?.plus(1) ?: return null
     // Determine values for first in line or first selector
     val isFirstSelectorInCall:Boolean = this.node.getPreviousNonEmptyNode(true)?.elementType == ObjJ_CALL_TARGET
@@ -531,23 +531,27 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
     // Return single space if not first in line and not first selector
     if (!isFirstInLine && !isFirstSelectorInCall)
         return 1
+
+    val distanceToFirstColon = methodCall.distanceToFirstColon().orElse(0)
     // If node is on same line, and not first selector, add a single space
     if (!isFirstInLine && isFirstSelectorInCall) {
         if (!indentFirstSelector) {
             return 1
         }
-        val distanceToFirstColon = methodCall.distanceToFirstColon().orElse(0)
         val out = if (longestLengthToColon > 0 && distanceToFirstColon < longestLengthToColon) {
-            longestLengthToColon - distanceToFirstColon + tabSize.orElse(4) + 1
+            (longestLengthToColon - distanceToFirstColon) + tabSize
         } else {
+            LOGGER.info("Distance to first colon for selector: <${this.text}> is 1. DistanceToFirst:<$distanceToFirstColon>; LongestLengthToColon:<$longestLengthToColon>")
             1
         }
+
         return if (out > 0) out else 1
     }
-
     // Calculate offset between this selectors colon, and the longest length to colon
+    val offset = if (longestLengthToColon == distanceToFirstColon) -2 else 1
     return if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
-        longestLengthToColon - thisSelectorLength + 1
+        LOGGER.info("Distance to first colon for selector: <${this.text}> is 1. DistanceToFirst:<$distanceToFirstColon>; LongestLengthToColon:<$longestLengthToColon>; thisLength: <$thisSelectorLength>; ThisOffset: <${(longestLengthToColon - thisSelectorLength) + offset + tabSize}>")
+        (longestLengthToColon - thisSelectorLength) + offset + tabSize
     } else {
         0
     }
@@ -556,10 +560,10 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 /**
  * Gets the longest length from start of line to colon in this selector set
  */
-fun ObjJHasMethodSelector.getLongestLengthToColon(offsetFromStart:Int = 0) : Int {
+fun ObjJHasMethodSelector.getLongestLengthToColon(tabSize: Int, offsetFromStart:Int = 0) : Int {
     val distanceToFirstColon = when (this) {
-        is ObjJMethodCall -> this.distanceToFirstColon(offsetFromStart).orElse(0)
-        is ObjJMethodHeaderDeclaration<*> -> this.distanceToFirstColon(offsetFromStart)
+        is ObjJMethodCall -> this.distanceToFirstColon(offsetFromStart)
+        is ObjJMethodHeaderDeclaration<*> -> this.distanceToFirstColon(tabSize, offsetFromStart)
         else -> null
     }
     val selectorList: List<ObjJSelector?>? = this.selectorList
@@ -585,21 +589,20 @@ fun ObjJMethodCall.distanceToFirstColon(offsetFromStart:Int = 0) : Int? {
     val firstSelector = selectorList.firstOrNull() ?: return null
     if (firstSelector.getPreviousNonEmptyNode(false) == null)
         return null
-    val offsetCallTarget = callTarget.distanceFromStartOfLine().orElse(0) + callTarget.text.length
+    val offsetCallTarget = ((this.distanceFromStartOfLine().orElse(0) + 1) - callTarget.distanceFromStartOfLine().orElse(0)) + callTarget.text.length
     return offsetCallTarget + 1 + firstSelector.text.length
 }
 
 /**
  * Gets distance to first colon in this selector set
  */
-fun ObjJMethodHeaderDeclaration<*>.distanceToFirstColon(offsetFromStart:Int = 0) : Int? {
+fun ObjJMethodHeaderDeclaration<*>.distanceToFirstColon(tabSize:Int, offsetFromStart:Int = 0) : Int? {
     val selectors = this.selectorList
-    val indentSize = EditorUtil.tabSize(this).orElse(0)
     val firstSelector = selectors.firstOrNull() ?: return null
     if (firstSelector.node.isDirectlyPrecededByNewline()) {
-        return firstSelector.textLength + indentSize
+        return firstSelector.textLength + tabSize
     }
-    val prevSibling = firstSelector.getPreviousNonEmptySibling(false) ?: return firstSelector.textLength + indentSize
+    val prevSibling = firstSelector.getPreviousNonEmptySibling(false) ?: return firstSelector.textLength + tabSize
     val distance = prevSibling.distanceFromStartOfLine() ?: return null
     return distance + prevSibling.textLength + firstSelector.textLength + 1
 }
