@@ -36,7 +36,7 @@ object ObjJVariableNameCompletionContributorUtil {
             return emptyList()
         }
         //Get variable name regex pattern
-        val variableNamePattern = getQualifiedNameAsString(variableName).replace(CARET_INDICATOR, "(.*)")
+        val variableNamePattern = getQualifiedNameAsString(variableName).toIndexPatternString()
         val pattern = Pattern.compile(variableNamePattern)
 
         //Get Qualified name reference for completion

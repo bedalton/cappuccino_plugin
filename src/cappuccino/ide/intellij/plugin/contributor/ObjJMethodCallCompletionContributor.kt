@@ -105,7 +105,7 @@ object ObjJMethodCallCompletionContributor {
             return
         }
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
-                .getByPatternFlat(selectorString.replace(CARET_INDICATOR, "(.*)"), project)
+                .getByPatternFlat(selectorString.toIndexPatternString(), project)
                 .filter {
                     val allowUnderscore = it.containingClassName == containingClass
                     //val isIgnored = it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
@@ -210,7 +210,7 @@ object ObjJMethodCallCompletionContributor {
         // If it does, it changes the index fetch method
         val hasCaretIndicator: Boolean = selectorStringIn != null && selectorStringIn.indexOf(CARET_INDICATOR) > -1
         //Gets the selector string with wildcard as necessary
-        val selectorString = getWildCardSelectorStringOrNull(selectorStringIn) ?: return
+        val selectorString = selectorStringIn?.toIndexPatternString() ?: return
         //Add Declaration Selectors
         val declarations: List<ObjJInstanceVariableDeclaration> = getInstanceVariableDeclarationsForSelector(selectorString, hasCaretIndicator, project)
         for (instanceVariableDeclaration in declarations) {

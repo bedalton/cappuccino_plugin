@@ -17,15 +17,14 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import java.util.logging.Logger
 
 object ObjJFunctionNameCompletionProvider {
 
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
-        val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
+        val functionNamePattern = element.text.toIndexPatternString()
         addAllGlobalJSFunctionNames(resultSet, (functionNamePattern.length - 5) > 8)
         addAllLocalFunctionNames(resultSet, element)
-        addIndexBasedCompletions(resultSet, element);
+        addIndexBasedCompletions(resultSet, element)
 
         if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
             globalJsClassNames.forEach {
@@ -36,21 +35,20 @@ object ObjJFunctionNameCompletionProvider {
 
     private fun addIndexBasedCompletions(resultSet: CompletionResultSet, element: PsiElement) {
         val ignoreFunctionPrefixedWithUnderscore = ObjJPluginSettings.ignoreUnderscoredClasses
-        val functionNamePattern = element.text.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR, "(.*)")
-        val functionsRaw = ObjJFunctionsIndex.instance.getByPattern(functionNamePattern, element.project)
-        val functions = functionsRaw.flatMap { it.value }
-                .filter {
-                    when (it.functionScope) {
-                        ObjJFunctionScope.GLOBAL_SCOPE -> true
-                        ObjJFunctionScope.FILE_SCOPE -> element.parent.isEquivalentTo(it.containingFile)
-                        else -> false
-                    }
-                }
+        val functionNamePattern = element.text.toIndexPatternString()
+        val functionsRaw = ObjJFunctionsIndex.instance.getByPatternFlat(functionNamePattern, element.project)
+        val functions = functionsRaw.filter {
+            when (it.functionScope) {
+                ObjJFunctionScope.GLOBAL_SCOPE -> true
+                ObjJFunctionScope.FILE_SCOPE -> element.parent.isEquivalentTo(it.containingFile)
+                else -> false
+            }
+        }
         for (function in functions) {
             ProgressIndicatorProvider.checkCanceled()
             val functionName = function.functionNameAsString
             val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
-            if (shouldPossiblyIgnore && !element.containingFile.isEquivalentTo(function.containingFile))
+            if (shouldPossiblyIgnore && element.containingFile != function.containingFile)
                 continue
             val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
             val lookupElementBuilder = LookupElementBuilder

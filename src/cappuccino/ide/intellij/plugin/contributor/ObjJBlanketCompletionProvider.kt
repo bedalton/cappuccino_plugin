@@ -319,7 +319,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
-        ObjJGlobalVariableNamesIndex.instance.getStartingWith(variableName.textWithoutCaret, variableName.project).forEach {
+        ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
             ProgressIndicatorProvider.checkCanceled()
             if (it.variableName.parentFunctionDeclaration != null || inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes.isNotNullOrEmpty()) {
                 ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString)
@@ -544,3 +544,12 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 }
 
 internal val PsiElement.textWithoutCaret:String get() = this.text?.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR.toRegex(), "") ?: ""
+
+internal fun String.toIndexPatternString():String  {
+    val queryBody = "([^A-Z]*?)"
+    val stringBuilder = StringBuilder(queryBody)
+    this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("[A-Z]".toRegex()).forEach {
+        stringBuilder.append(it).append(queryBody)
+    }
+    return stringBuilder.toString()
+}
