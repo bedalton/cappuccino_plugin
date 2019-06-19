@@ -314,6 +314,7 @@ object ObjJTokenSets {
             ObjJ_SWITCH_STATEMENT,
             ObjJ_CASE_CLAUSE,
             ObjJ_DEFAULT_CLAUSE,
-            ObjJ_CASE
+            ObjJ_CASE,
+            ObjJ_AT_END
     )
 }
