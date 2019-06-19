@@ -541,7 +541,6 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
         val out = if (longestLengthToColon > 0 && distanceToFirstColon < longestLengthToColon) {
             (longestLengthToColon - distanceToFirstColon) + tabSize
         } else {
-            LOGGER.info("Distance to first colon for selector: <${this.text}> is 1. DistanceToFirst:<$distanceToFirstColon>; LongestLengthToColon:<$longestLengthToColon>")
             1
         }
 
@@ -550,7 +549,6 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
     // Calculate offset between this selectors colon, and the longest length to colon
     val offset = if (longestLengthToColon == distanceToFirstColon) -2 else 1
     return if (longestLengthToColon > 0 && thisSelectorLength < longestLengthToColon) {
-        LOGGER.info("Distance to first colon for selector: <${this.text}> is 1. DistanceToFirst:<$distanceToFirstColon>; LongestLengthToColon:<$longestLengthToColon>; thisLength: <$thisSelectorLength>; ThisOffset: <${(longestLengthToColon - thisSelectorLength) + offset + tabSize}>")
         (longestLengthToColon - thisSelectorLength) + offset + tabSize
     } else {
         0
