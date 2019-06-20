@@ -200,7 +200,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      */
     private fun instanceVariableListCompletion(element: PsiElement, resultSet: CompletionResultSet) {
         if (element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT) {
-            addCompletionElementsSimple(resultSet, listOf("accessors"))
+            addCompletionElementsSimple(resultSet, listOf("accessors", "outlet"))
         }
         resultSet.stopHere()
     }
