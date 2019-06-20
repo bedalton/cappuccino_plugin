@@ -15,6 +15,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.impl.ObjJFileNameAsImportStringImpl
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
@@ -560,6 +561,18 @@ object ObjJPsiImplUtil {
         return ReferenceProvidersRegistry.getReferencesFromProviders(className, PsiReferenceService.Hints.NO_HINTS)
     }
 
+
+    @JvmStatic
+    fun getReference(fileName:ObjJFrameworkFileName) : PsiReference {
+        return ObjJImportFileNameReference(fileName)
+    }
+
+    @JvmStatic
+    fun getReference(fileName:ObjJFileNameAsImportStringImpl) : PsiReference {
+        return ObjJFileNameAsStringLiteralReference(fileName)
+    }
+
+
     @JvmStatic
     fun getSelectorLiteralReference(hasSelectorElement: ObjJHasMethodSelector): ObjJSelectorLiteral? {
         return ObjJMethodPsiUtils.getSelectorLiteralReference(hasSelectorElement)
@@ -928,59 +941,83 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getFileName(reference: ObjJFrameworkReference): String {
-        return ObjJImportPsiUtils.getFileName(reference)
+    fun getFileNameString(reference: ObjJFrameworkReference): String {
+        return ObjJImportPsiUtils.getFileNameString(reference)
     }
 
     @JvmStatic
-    fun getFileName(framework: ObjJImportFramework): String {
-        return ObjJImportPsiUtils.getFileName(framework)
+    fun getFileNameString(framework: ObjJImportFramework): String {
+        return ObjJImportPsiUtils.getFileNameString(framework)
     }
 
     @JvmStatic
-    fun getFileName(framework: ObjJIncludeFramework): String {
-        return ObjJImportPsiUtils.getFileName(framework)
+    fun getFileNameString(framework: ObjJIncludeFramework): String {
+        return ObjJImportPsiUtils.getFileNameString(framework)
     }
 
     @JvmStatic
-    fun getFileName(framework: ObjJImportFile): String {
-        return ObjJImportPsiUtils.getFileName(framework)
+    fun getFileNameString(framework: ObjJImportFile): String {
+        return ObjJImportPsiUtils.getFileNameString(framework)
     }
 
     @JvmStatic
-    fun getFileName(framework: ObjJIncludeFile): String {
-        return ObjJImportPsiUtils.getFileName(framework)
+    fun getFileNameString(framework: ObjJIncludeFile): String {
+        return ObjJImportPsiUtils.getFileNameString(framework)
     }
 
     @JvmStatic
-    fun getFrameworkName(reference: ObjJFrameworkReference): String? {
-        return ObjJImportPsiUtils.getFrameworkName(reference)
+    fun getFrameworkNameString(reference: ObjJFrameworkReference): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(reference)
     }
 
 
     @JvmStatic
-    fun getFrameworkName(framework: ObjJImportFramework): String? {
-        return ObjJImportPsiUtils.getFrameworkName(framework)
+    fun getFrameworkNameString(framework: ObjJImportFramework): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(framework)
     }
 
     @JvmStatic
-    fun getFrameworkName(framework: ObjJIncludeFile): String? {
-        return ObjJImportPsiUtils.getFrameworkName(framework)
+    fun getFrameworkNameString(framework: ObjJIncludeFile): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(framework)
     }
 
     @JvmStatic
-    fun getFrameworkName(framework: ObjJImportFile): String? {
-        return ObjJImportPsiUtils.getFrameworkName(framework)
+    fun getFrameworkNameString(framework: ObjJImportFile): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(framework)
     }
 
     @JvmStatic
-    fun getFrameworkName(framework: ObjJIncludeFramework): String? {
-        return ObjJImportPsiUtils.getFrameworkName(framework)
+    fun getFrameworkNameString(framework: ObjJIncludeFramework): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(framework)
     }
 
     @JvmStatic
     fun getImportAsUnifiedString(importStatement: ObjJImportStatement<*>) =
-            (importStatement.frameworkName ?: "") + ObjJImportStatement.DELIMITER + importStatement.fileName
+            (importStatement.frameworkNameString ?: "") + ObjJImportStatement.DELIMITER + importStatement.fileNameString
+
+    @JvmStatic
+    fun getName(fileName:ObjJFileNameAsImportString) : String
+    {
+        return fileName.stringLiteral.stringValue
+    }
+
+    @JvmStatic
+    fun setName(fileName:ObjJFileNameAsImportString, newName:String) : PsiElement {
+        return fileName
+    }
+
+    @JvmStatic
+    fun getName(fileName:ObjJFrameworkFileName, newName:String) : String
+    {
+        return fileName.text
+    }
+
+    @JvmStatic
+    fun setName(fileName:ObjJFrameworkFileName, newName:String) : PsiElement {
+        return fileName
+    }
+
+
 
     // ============================== //
     // ===== VariableAssignments ==== //

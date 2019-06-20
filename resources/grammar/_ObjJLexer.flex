@@ -99,8 +99,23 @@ PP_WARNING = #\s*warning
 PP_INCLUDE = #\s*include
 PP_FRAGMENT = #\s+{ID}
 WHITE_SPACE=\p{Blank}+
-%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP
+FILE_NAME_LITERAL = [^.]\.[j]?;
+%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP IN_IMPORT IN_INCLUDE
 %%
+
+<IN_INCLUDE> {
+    {LINE_TERMINATOR}					{ yybegin(YYINITIAL); return ObjJ_LINE_TERMINATOR; }
+}
+<IN_IMPORT> {
+    {LINE_TERMINATOR}					{ yybegin(YYINITIAL); return WHITE_SPACE; }
+}
+<IN_IMPORT, IN_INCLUDE> {
+	{FILE_NAME_LITERAL}					{ yybegin(YYINITIAL); return ObjJ_FILE_NAME_LITERAL; }
+	'<'									{ return ObjJ_LESS_THAN; }
+	'>'									{ return ObjJ_GREATER_THAN; }
+    {SINGLE_QUOTE_TEXT} 				{ yybegin(YYINITIAL); return ObjJ_SINGLE_QUOTE_STRING_LITERAL; }
+    {DOUBLE_QUOTE_TEXT}					{ yybegin(YYINITIAL); return ObjJ_DOUBLE_QUOTE_STRING_LITERAL; }
+}
 
 
 <PRAGMA> {
@@ -200,7 +215,7 @@ WHITE_SPACE=\p{Blank}+
 	"^="                                 { canRegex(true); return ObjJ_BIT_XOR_ASSIGN; }
 	"|="                                 { canRegex(true); return ObjJ_BIT_OR_ASSIGN; }
 	"=>"                                 { canRegex(false); return ObjJ_ARROW; }
-	"@import"                            { canRegex(false); return ObjJ_AT_IMPORT; }
+	"@import"                            { canRegex(false); yybegin(IN_IMPORT); return ObjJ_AT_IMPORT; }
 	"@accessors"                         { canRegex(false); return ObjJ_AT_ACCESSORS; }
 	"@end"                               { canRegex(false); return ObjJ_AT_END; }
 	"@action"                            { canRegex(false); return ObjJ_AT_ACTION; }
@@ -232,7 +247,7 @@ WHITE_SPACE=\p{Blank}+
 	{PP_DEFINED}                         { canRegex(false); return ObjJ_PP_DEFINED; }
 	{PP_ERROR}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
 	{PP_WARNING}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
-	{PP_INCLUDE}                         { canRegex(false);	yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_INCLUDE; }
+	{PP_INCLUDE}                         { canRegex(false);	yybegin(IN_INCLUDE); inPreProc = true;return ObjJ_PP_INCLUDE; }
 	"signed"                             { canRegex(false);  return ObjJ_VAR_TYPE_SIGNED; }
 	"unsigned"                           { canRegex(false);  return ObjJ_VAR_TYPE_UNSIGNED; }
 	"IBAction"                           { canRegex(false); return ObjJ_VAR_TYPE_IBACTION; }

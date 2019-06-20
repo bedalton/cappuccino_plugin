@@ -193,6 +193,7 @@
 		PREPROCESSOR_CONTINUE_ON_NEXT_LINE = 	'regexp:\\[ ]*\r?\n'
 		PREPROCESSOR_DIRECTIVE =					'regexp:#.+\s+(\\[ ]*\r?\n .+)*[\r\n\u2028\u2029]'
 		REGULAR_EXPRESSION_LITERAL_TOKEN =	'regexp:/(([^\r\n\u2028\u2029\\/\[]|\\\\[^\r\n\u2028\u2029]) | \[ ([^\r\n\u2028\u2029\]\\] | \\\\[^\r\n\u2028\u2029])* \] )* / [a-zA-Z]*'
+		FILE_NAME_LITERAL = 				"FILE_NAME_LITERAL.j"
 	]
 	name (".*expr|.+Expr(Prime)?") ='expression'
 	consumeTokenMethod("block|.+Block")="consumeTokenFast"
@@ -269,19 +270,33 @@ importStatementElement
 	;
 
 importFile
-	::= '@import' stringLiteral
+	::= '@import' fileNameAsImportString
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>"
 		methods=[
-			getFrameworkName
-			getFileName
+			getFrameworkNameString
+			getFileNameString
 			getImportAsUnifiedString
 		]
 		pin=2
 	}
 	;
+
+fileNameAsImportString
+	::= stringLiteral
+	{
+		pin=1;
+		implements = [ "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement" ]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	}
+	;
+
 
 importFramework
 	::= '@import' frameworkReference
@@ -291,8 +306,8 @@ importFramework
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
 		methods=[
-			getFrameworkName
-			getFileName
+			getFrameworkNameString
+			getFileNameString
 			getImportAsUnifiedString
 		]
 	}
@@ -309,14 +324,16 @@ includeStatementElement
 	;
 
 includeFile
-	::= PP_INCLUDE stringLiteral LINE_TERMINATOR
+	::= PP_INCLUDE fileNameAsImportString LINE_TERMINATOR
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
+		implements=[
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
+		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>"
 		methods=[
-			getFrameworkName
-			getFileName
+			getFrameworkNameString
+			getFileNameString
 			getImportAsUnifiedString
 		]
 		pin=2
@@ -330,8 +347,8 @@ includeFramework
 		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>"
 		methods=[
-			getFrameworkName
-			getFileName
+			getFrameworkNameString
+			getFileNameString
 			getImportAsUnifiedString
 		]
 		pin=2
@@ -339,13 +356,31 @@ includeFramework
 	;
 
 frameworkReference
-	::= IMPORT_FRAMEWORK_LITERAL
+	::= "<" frameworkName "/" frameworkFileName ">"
 	{
+		pin = 1;
 		methods=[
-			getFrameworkName
-			getFileName
+			getFrameworkNameString
+			getFileNameString
 		]
 	}
+	;
+
+frameworkFileName
+	::= FILE_NAME_LITERAL
+	{
+		pin=1;
+		implements = [ "cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement" ]
+		methods = [
+			getName
+			setName
+			getReference
+		]
+	}
+	;
+
+frameworkName
+	::= ID FILE_NAME_LITERAL
 	;
 
 private bodyStatement

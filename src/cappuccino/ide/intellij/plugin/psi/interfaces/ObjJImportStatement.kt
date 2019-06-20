@@ -4,11 +4,11 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
 
 interface ObjJImportStatement<StubT : ObjJImportStub<*>> : ObjJStubBasedElement<StubT>, ObjJCompositeElement {
 
-    val frameworkName: String?
-    val fileName: String
+    val frameworkNameString: String?
+    val fileNameString: String
 
     val importAsUnifiedString: String
-        get() = (if (frameworkName != null) frameworkName else "") + DELIMITER + fileName
+        get() = (if (frameworkNameString != null) frameworkNameString else "") + DELIMITER + fileNameString
 
     companion object {
 
