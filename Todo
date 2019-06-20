@@ -1,2 +1,1 @@
-add @outlet completion when in instance variables list
-use only preceeding method call selectors in method call search
+Clear methods to allow for assumed global variables. Keep nesting only one level from root. Ignore resolved variables.
