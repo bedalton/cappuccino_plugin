@@ -1007,7 +1007,7 @@ methodDeclaration
 			getBlockList
 			createTreeStructureElement
 			createFoldingDescriptor
-			getMethodHeaderCache
+			//getMethodHeaderCache
 		]
 	}
 	;
@@ -1133,7 +1133,7 @@ implementationDeclaration
 			shouldResolve
 			getUnimplementedProtocolMethods
 			getAllUnimplementedProtocolMethods
-			getMethodHeaders
+			//getMethodHeaders
 			getInheritedProtocols
 			createFoldingDescriptor
 			createTreeStructureElement
@@ -1397,7 +1397,7 @@ protocolDeclaration
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub"
 		methods=[
-			getMethodHeaders
+			//getMethodHeaders
 			hasMethod
 			getPresentation
 			shouldResolve
