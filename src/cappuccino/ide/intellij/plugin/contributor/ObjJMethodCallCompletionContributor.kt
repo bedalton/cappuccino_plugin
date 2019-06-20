@@ -45,7 +45,7 @@ object ObjJMethodCallCompletionContributor {
         addMethodCallCompletions(result, psiElement, methodCall)
     }
 
-    private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?) {
+    private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?, useAllSelectors:Boolean = true) {
 
         //LOGGER.log(Level.INFO, "Add method call completions");
         if (elementsParentMethodCall == null) {
@@ -57,9 +57,20 @@ object ObjJMethodCallCompletionContributor {
         }
 
 
-        val selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
-        val selectorString: String = getSelectorStringFromSelectorList(selectors)
+        var selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
+        if (!useAllSelectors && selectorIndex >= 0) {
+            selectors =  selectors.subList(0, selectorIndex+1)
+        }
+
+        val selectorStrings = selectors.map {
+            val selector = it.getSelectorString(false)
+            if (selector.contains(CARET_INDICATOR))
+                selector.toIndexPatternString()
+            else
+                selector
+        }
+        val selectorString: String = getSelectorStringFromSelectorStrings(selectorStrings)
         val selector: ObjJSelector? = if (selectorIndex >= 0 && selectorIndex < selectors.size) selectors[selectorIndex] else null
 
         addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
@@ -73,13 +84,16 @@ object ObjJMethodCallCompletionContributor {
             else -> emptyList()
         }
         //Add actual method call completions
-        addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
+        var didAdd = addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
 
         val hasLocalScope: Boolean = (scope == TargetScope.INSTANCE || scope == TargetScope.ANY)
         // Add accessor and instance variable elements if selector size is equal to one
         // Accessors getMethods only apply to single element selectors
         if (hasLocalScope && selectors.size == 1) {
-            addAccessorLookupElements(result, psiElement.project, possibleContainingClassNames, selectorString)
+            didAdd = addAccessorLookupElements(result, psiElement.project, possibleContainingClassNames, selectorString) || didAdd
+        }
+        if (!didAdd && useAllSelectors) {
+            addMethodCallCompletions(result, psiElement, elementsParentMethodCall, false)
         }
     }
 
@@ -98,11 +112,10 @@ object ObjJMethodCallCompletionContributor {
 
     }
 
-    private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int, containingClass:String?) {
+    private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int, containingClass:String?) : Boolean {
 
         if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
-            addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
-            return
+            return addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
         }
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.toIndexPatternString(), project)
@@ -117,7 +130,7 @@ object ObjJMethodCallCompletionContributor {
                     }
                 }
         if (methodHeaders.isEmpty()) {
-            return
+            return false
         }
         var out = mutableListOf<SelectorCompletionPriorityTupple>()
         val filteredOut = mutableListOf<SelectorCompletionPriorityTupple>()
@@ -155,6 +168,7 @@ object ObjJMethodCallCompletionContributor {
                     priority = it.priority,
                     addSpaceAfterColon = true)
         }
+        return out.isNotEmpty()
     }
 
     private fun collapseContainingClasses(project:Project, containingClasses:Collection<String>) : Set<String> {
@@ -163,15 +177,19 @@ object ObjJMethodCallCompletionContributor {
         }.toSet()
     }
 
-    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope) {
+    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope) : Boolean {
+        var didAdd = false
         collapseContainingClasses(project, possibleContainingClassNames).forEach {
-            addMethodDeclarationLookupElementsForClass(project, it, result, targetScope)
+            didAdd = addMethodDeclarationLookupElementsForClass(project, it, result, targetScope) || didAdd
         }
+        return didAdd
     }
-    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: TargetScope) {
+    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: TargetScope) : Boolean {
+        var didAdd = false
         ObjJClassMethodIndex.instance[className, project].forEach {
-            if (targetScope.equals(it.methodScope))
+            if (!targetScope.equals(it.methodScope))
                 return@forEach
+            didAdd = true
             val selector = it.selectorList.getOrNull(0) ?: return@forEach
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
@@ -180,6 +198,7 @@ object ObjJMethodCallCompletionContributor {
                     priority = TARGETTED_METHOD_SUGGESTION_PRIORITY,
                     addSpaceAfterColon = true)
         }
+        return didAdd
     }
 
     private fun inScope(scope: TargetScope, methodHeader: ObjJMethodHeaderDeclaration<*>): Boolean {
@@ -205,36 +224,28 @@ object ObjJMethodCallCompletionContributor {
      * @param possibleContainingClassNames possible class names to determine completion priority
      * @param selectorStringIn selector string to match
      */
-    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, possibleContainingClassNames: List<String>, selectorStringIn: String?) {
+    private fun addAccessorLookupElements(result: CompletionResultSet, project: Project, possibleContainingClassNames: List<String>, selectorStringIn: String?) : Boolean {
         // Determines if string contains caret indicator
         // If it does, it changes the index fetch method
         val hasCaretIndicator: Boolean = selectorStringIn != null && selectorStringIn.indexOf(CARET_INDICATOR) > -1
         //Gets the selector string with wildcard as necessary
-        val selectorString = selectorStringIn?.toIndexPatternString() ?: return
+        val selectorString = selectorStringIn?.toIndexPatternString() ?: return false
         //Add Declaration Selectors
+        var didAdd = false
         val declarations: List<ObjJInstanceVariableDeclaration> = getInstanceVariableDeclarationsForSelector(selectorString, hasCaretIndicator, project)
         for (instanceVariableDeclaration in declarations) {
             ProgressIndicatorProvider.checkCanceled()
+            didAdd = true
             addInstanceVariableDeclarationCompletion(result, possibleContainingClassNames, instanceVariableDeclaration)
         }
         //Add Accessors
         val accessors: List<ObjJInstanceVariableDeclaration> = getAccessorsForSelector(selectorString, hasCaretIndicator, project)
         for (instanceVariable in accessors) {
             ProgressIndicatorProvider.checkCanceled()
+            didAdd = true
             addInstanceVariableAccessorMethods(result, possibleContainingClassNames, instanceVariable)
         }
-    }
-
-    /**
-     * Inserts a wildcard regex placeholder in place of the caret indicator
-     * @return null if string is null, which is a possibility
-     */
-    private fun getWildCardSelectorStringOrNull(selectorStringIn: String?): String? {
-        if (selectorStringIn == null || selectorStringIn.isEmpty()) {
-            return null
-        }
-        val caretIndicatorIndex = selectorStringIn.indexOf(CARET_INDICATOR)
-        return if (caretIndicatorIndex >= 0) selectorStringIn.replace(CARET_INDICATOR, "(.*)") else selectorStringIn
+        return didAdd
     }
 
     /**
@@ -351,8 +362,9 @@ object ObjJMethodCallCompletionContributor {
      * Gets the index of the selector that we are looking for suggestions on
      */
     private fun getSelectorIndex(selectors: List<ObjJSelector>, psiElement: PsiElement): Int {
+        val elementAsSelector = psiElement.getSelfOrParentOfType(ObjJSelector::class.java)
         for (i in selectors.indices) {
-            if (selectors[i] equals psiElement) {
+            if (selectors[i] equals elementAsSelector) {
                 return i
             }
         }

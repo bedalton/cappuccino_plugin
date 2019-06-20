@@ -9,10 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.elementType
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.thisOrParentAs
+import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.NoIndex
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
@@ -34,6 +31,9 @@ object ObjJClassNamesCompletionProvider {
         // If is first item in array, there is a chance that this array will truly
         // become a method call, no way to be sure until a comma or selector is written
         val isFirstItemInArray = isFirstItemInArray(element)
+        val isParentClassDeclaration = element.parent is ObjJClassDeclarationElement<*>
+        val previousSibling = element.getPreviousNonEmptySibling(true)
+        val shouldAddClassCompletionsInHead = isParentClassDeclaration && previousSibling.elementType in listOf(ObjJTypes.ObjJ_COLON)
 
         // If in method header, fill in with protocols and classes
         val inMethodHeader = element.parent is ObjJClassDeclarationElement<*> && element.getPreviousNonEmptySibling(true).elementType in listOf(ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_OPEN_PAREN)
@@ -53,7 +53,7 @@ object ObjJClassNamesCompletionProvider {
         }
 
         // Append implementation declaration names if in correct context
-        if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
+        if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader || isFirstItemInArray || shouldAddClassCompletionsInHead) {
             addImplementationClassNameElements(element, resultSet)
             ObjJCompletionElementProviderUtil.addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
         }
@@ -96,7 +96,7 @@ object ObjJClassNamesCompletionProvider {
     /**
      * Add implementation class names to result set
      */
-    private fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
+    internal fun addImplementationClassNameElements(element: PsiElement, resultSet: CompletionResultSet) {
         /*
         val thisParts = element.text.split("[A-Z]".toRegex()).filter { it.length < 2 }
         ObjJImplementationDeclarationsIndex.instance.getAll(element.project).forEach { implementationDeclaration ->

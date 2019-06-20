@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvid
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
+import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
@@ -20,6 +21,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.*
 
 import java.util.logging.Logger
@@ -99,6 +101,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.isOrHasParentOfType(ObjJAccessorPropertyType::class.java) ->
                 addCompletionElementsSimple(resultSet, ArrayUtils.search(ACCESSOR_PROPERTY_TYPES, queryString))
             // Method call
+            element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT || element.parent.elementType == ObjJTypes.ObjJ_AT_FRAGMENT -> {
+                getAtFragmentCompletions(resultSet, element)
+                resultSet.stopHere()
+                return
+            }
             isMethodCallSelector(element) ->
                 ObjJMethodCallCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             element.hasParentOfType(ObjJSelectorLiteral::class.java) ->
@@ -116,8 +123,17 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.hasParentOfType(ObjJInstanceVariableList::class.java) ->
                 instanceVariableListCompletion(element, resultSet)
             // All others
-            element.parent is ObjJClassDeclarationElement<*> -> getClassNameCompletions(resultSet, element)
-            element.elementType == ObjJTypes.ObjJ_AT_FRAGMENT -> getAtFragmentCompletions(resultSet, element)
+            element.parent is ObjJClassDeclarationElement<*> -> {
+                getClassNameCompletions(resultSet, element)
+                resultSet.stopHere()
+                return
+            }
+            element.hasParentOfType(ObjJSuperClass::class.java) -> {
+                ObjJClassNamesCompletionProvider.addImplementationClassNameElements(element, resultSet)
+                addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
+                resultSet.stopHere()
+                return
+            }
             prevSibling.elementType == ObjJTypes.ObjJ_TRY_STATEMENT -> {
                 if (prevSibling.getChildOfType(ObjJCatchProduction::class.java) == null) {
                     resultSet.addElement(LookupElementBuilder.create("catch").withInsertHandler(ObjJFunctionNameInsertHandler))
@@ -141,6 +157,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             }
             else -> genericCompletion(element, resultSet)
         }
+        resultSet.stopHere()
     }
 
     /**
@@ -165,8 +182,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
         ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
 
-        if (element.hasParentOfType(ObjJExpr::class.java))
+        if (element.hasParentOfType(ObjJExpr::class.java)) {
             resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
+
+        }
 
         if (element.getContainingScope() == ReferencedInScope.FILE) {
             addFileLevelCompletions(resultSet, element)
@@ -177,8 +196,14 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
         // If @ and in class declartion
-        if (element.text.startsWith("@") && element.hasParentOfType(ObjJClassDeclarationElement::class.java)) {
-            resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
+        if (element.text.startsWith("@")) {
+            if (element is ObjJClassDeclarationElement<*> || element.parent is ObjJClassDeclarationElement<*>) {
+                resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
+            }
+            if (element.parent is ObjJExpr || element.parent.parent is ObjJExpr) {
+                resultSet.addElement(LookupElementBuilder.create("selector").withPresentableText("@selector"))
+                resultSet.addElement(LookupElementBuilder.create("protocol").withPresentableText("@protocol"))
+            }
         }
 
         // Add class name completions if applicable
@@ -547,8 +572,8 @@ internal val PsiElement.textWithoutCaret:String get() = this.text?.replace(ObjJB
 
 internal fun String.toIndexPatternString():String  {
     val queryBody = "([^A-Z_]*?)"
-    val stringBuilder = StringBuilder(queryBody)
-    this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("(?<=[A-Z])".toRegex()).forEach {
+    val stringBuilder = StringBuilder("[_]?$queryBody")
+    this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("(?<=[A-Z_])".toRegex()).forEach {
         stringBuilder.append(it).append(queryBody)
     }
     return stringBuilder.toString()

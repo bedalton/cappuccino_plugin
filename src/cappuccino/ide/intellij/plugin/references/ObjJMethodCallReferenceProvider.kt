@@ -21,7 +21,7 @@ class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPo
             return ResolveResult.EMPTY_ARRAY
         }
         val result = ObjJUnifiedMethodIndex.instance[selector, myElement.project].toSet()
-        return if (result.size > 0) {
+        return if (result.isNotEmpty()) {
             PsiElementResolveResult.createResults(result)
         } else if (myElement != null) {
             val selectorLiteral = ObjJPsiImplUtil.getSelectorLiteralReference(myElement) ?: return arrayOf()

@@ -106,7 +106,7 @@ object ObjJMethodPsiUtils {
         if (hasMethodSelector == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileName(hasMethodSelector)+">");
+        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
         val selectorList = hasMethodSelector.selectorList
         //LOGGER.log(Level.INFO, "Got selector list.");
         if (selectorList.isEmpty()) {

@@ -91,16 +91,17 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         val quickSelectorResult = classConstraints.flatMap { className ->
             ObjJClassAndSelectorMethodIndex.instance.getByClassAndSelector(className, selector, project)
         }.mapNotNull { it.selectorList.getOrNull(index) }
-        if (quickSelectorResult.isNotEmpty())
+        if (quickSelectorResult.isNotEmpty()) {
             return PsiElementResolveResult.createResults(quickSelectorResult)
+        }
 
         var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement, tag, classConstraints)
         var out: MutableList<PsiElement> = ArrayList()
-        if (!selectorResult.isEmpty) {
+        if (selectorResult.isNotEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement)
-        if (!selectorResult.isEmpty) {
+        if (selectorResult.isNotEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         if (out.isNotEmpty()) {
