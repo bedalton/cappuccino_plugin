@@ -26,10 +26,6 @@ open class StubIndexService internal constructor() {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexImplementationClassDeclaration()> method")
     }
 
-    open fun indexFile(stub: PsiFileStub<*>, sink: IndexSink) {
-
-    }
-
     open fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexAccessorProperty()> method")
     }

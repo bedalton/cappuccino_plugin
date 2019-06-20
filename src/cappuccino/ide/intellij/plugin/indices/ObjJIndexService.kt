@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.indices
 
 import com.intellij.psi.stubs.IndexSink
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
@@ -15,7 +14,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTO
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
-import com.intellij.psi.stubs.PsiFileStub
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -96,12 +94,12 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     override fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
         val className = property.containingClassName
         indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
-        var getter = property.getter
+        val getter = property.getter
         if (getter != null) {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, getter))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, getter)
         }
-        var setter = property.setter
+        val setter = property.setter
         if (setter != null) {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, setter))
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJUnifiedMethodIndex.KEY, setter)
@@ -198,17 +196,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     /**
-     * Indexes a file
-     */
-    override fun indexFile(stub: PsiFileStub<*>, sink: IndexSink) {
-        if (stub !is ObjJFileStub) {
-            return
-        }
-        // Index file by name
-        sink.occurrence<ObjJFile, String>(ObjJFilesByNameIndex.instance.key, stub.fileName)
-    }
-
-    /**
      * Index variable names by scope
      */
     override fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {
@@ -259,8 +246,8 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     companion object {
-        private const val MAJOR_VERSION = 6
-        private const val MINOR_VERSION = 11
+        private const val MAJOR_VERSION = 7
+        private const val MINOR_VERSION = 0
         const val INDEX_VERSION:Int = ObjJStubVersions.SOURCE_STUB_VERSION + MAJOR_VERSION + MINOR_VERSION
         val LOGGER:Logger by lazy {
             Logger.getLogger(ObjJIndexService::class.java.simpleName)
