@@ -8,13 +8,13 @@ object ObjJImportPsiUtils {
     fun getFileNameString(importStatement: ObjJImportFile): String {
         return if (importStatement.stub != null) {
             importStatement.stub.fileName
-        } else importStatement.fileNameString
+        } else importStatement.fileNameAsImportString.stringLiteral.stringValue
     }
 
     fun getFileNameString(includeFile: ObjJIncludeFile): String {
         return if (includeFile.stub != null) {
             includeFile.stub.fileName
-        } else includeFile.fileNameString
+        } else includeFile.fileNameAsImportString.stringLiteral.stringValue
     }
 
     fun getFileNameString(statement: ObjJImportFramework): String {

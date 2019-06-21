@@ -1,9 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.psi.ObjJFileNameAsImportString
 import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkFileName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
-import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.search.FilenameIndex
@@ -33,7 +31,7 @@ class ObjJImportFileNameReference(element:ObjJFrameworkFileName)
         val project = myElement.project
         var directory = file.parent
         var plist:PsiFile? = null
-        val frameworkRegex = frameworkSearchRegext(frameworkName)
+        val frameworkRegex = frameworkSearchRegex(frameworkName)
         while (directory != null) {
             plist = directory.findFile("info.plist")
             if (plist != null && plist.isForFramework(frameworkRegex)) {
@@ -52,6 +50,4 @@ private fun PsiFile.isForFramework(regex:Regex) : Boolean {
     return regex.containsMatchIn(text)
 }
 
-private fun frameworkSearchRegext(frameworkName:String) = """<key>CPBundleName</key>\s*<string>\s*$frameworkName\s*</string>""".toRegex()
-
-private val bundleRegex = """<key>CPBundleName</key>\s*<string>([^<]+?)</string>""".toRegex()
+fun frameworkSearchRegex(frameworkName:String) = """<key>CPBundleName</key>\s*<string>\s*$frameworkName\s*</string>""".toRegex()

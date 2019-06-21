@@ -106,6 +106,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.hasParentOfType(ObjJImportStatement::class.java) -> {
+                ObjJImportContributor.addImportCompletions(resultSet, element)
+                resultSet.stopHere()
+                return
+            }
             isMethodCallSelector(element) ->
                 ObjJMethodCallCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             element.hasParentOfType(ObjJSelectorLiteral::class.java) ->
@@ -498,11 +503,14 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     toAdd.add("end")
                 }
             }
-            else -> toAdd.addAll(AT_KEYWORDS.filterNot { it == "end" })
+            else -> toAdd.addAll(AT_KEYWORDS.filterNot { it == "end"  })
         }
         toAdd.forEach {
-            val lookupElement = LookupElementBuilder.create(it)
+            var lookupElement = LookupElementBuilder.create(it)
                     .withPresentableText("@$it")
+            if (it == "selector") {
+                lookupElement = lookupElement.withInsertHandler(ObjJFunctionNameInsertHandler)
+            }
             resultSet.addElement(lookupElement)
         }
     }
