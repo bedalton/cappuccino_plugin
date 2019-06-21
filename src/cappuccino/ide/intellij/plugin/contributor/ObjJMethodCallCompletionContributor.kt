@@ -39,6 +39,11 @@ object ObjJMethodCallCompletionContributor {
             LOGGER.log(Level.SEVERE, "Cannot add selector lookup elements. Selector element is null")
             return
         }
+        val selectorLiteral = psiElement.getSelfOrParentOfType(ObjJSelectorLiteral::class.java)
+        if (selectorLiteral != null) {
+            addSelectorLiteralCompletions(result, psiElement, selectorLiteral);
+            return
+        }
         val methodCall = psiElement.getParentOfType(ObjJMethodCall::class.java)
                 ?: //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method call is null.");
                 return
@@ -50,9 +55,11 @@ object ObjJMethodCallCompletionContributor {
         //LOGGER.log(Level.INFO, "Add method call completions");
         if (elementsParentMethodCall == null) {
             LOGGER.log(Level.SEVERE, "Cannot add method call completions. Method call parent element is null")
+            result.stopHere()
             return
         }
         if (DumbService.isDumb(psiElement.project)) {
+            result.stopHere()
             return
         }
 
@@ -115,11 +122,13 @@ object ObjJMethodCallCompletionContributor {
     private fun addMethodDeclarationLookupElements(project: Project, fileName: String?, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorString: String, selectorIndex: Int, containingClass:String?) : Boolean {
 
         if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
+            LOGGER.info("Adding all possible class methods. Classes: $possibleContainingClassNames")
             return addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, targetScope)
         }
         val methodHeaders: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.toIndexPatternString(), project)
                 .filter {
+                    ProgressIndicatorProvider.checkCanceled()
                     val allowUnderscore = it.containingClassName == containingClass
                     //val isIgnored = it.stub?.ignored ?: ObjJIgnoreEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
                       //      ObjJIgnoreEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
@@ -345,6 +354,40 @@ object ObjJMethodCallCompletionContributor {
                     addSpaceAfterColon = true,
                     icon = ObjJIcons.ACCESSOR_ICON)
         }
+    }
+
+    private fun addSelectorLiteralCompletions(resultSet:CompletionResultSet, psiElement: PsiElement, selectorLiteral:ObjJSelectorLiteral, useAllSelectors: Boolean = true) {
+        var selectors = selectorLiteral.selectorList
+        val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
+        if (!useAllSelectors && selectorIndex >= 0) {
+            selectors =  selectors.subList(0, selectorIndex+1)
+        }
+
+        val selectorStrings = selectors.map {
+            val selector = it.getSelectorString(false)
+            if (selector.contains(CARET_INDICATOR))
+                selector.toIndexPatternString()
+            else
+                selector
+        }
+        val project = psiElement.project
+        val selectorString: String = getSelectorStringFromSelectorStrings(selectorStrings)
+        var didAddOne = false
+        ObjJUnifiedMethodIndex.instance
+                .getByPatternFlat(selectorString.toIndexPatternString(), project).mapNotNull { it.selectorList.getOrNull(selectorIndex) }.toSet().forEach {
+                    if (!didAddOne)
+                        didAddOne = true
+                    ObjJSelectorLookupUtil.addSelectorLookupElement(
+                            resultSet = resultSet,
+                            selector = it,
+                            selectorIndex = selectorIndex,
+                            priority = TARGETTED_METHOD_SUGGESTION_PRIORITY,
+                            addSpaceAfterColon = false)
+                }
+        if (!didAddOne && useAllSelectors) {
+            addSelectorLiteralCompletions(resultSet, psiElement, selectorLiteral, false)
+        }
+
     }
 
 
