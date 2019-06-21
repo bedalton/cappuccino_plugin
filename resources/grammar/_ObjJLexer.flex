@@ -99,22 +99,22 @@ PP_WARNING = #\s*warning
 PP_INCLUDE = #\s*include
 PP_FRAGMENT = #\s+{ID}
 WHITE_SPACE=\p{Blank}+
-FILE_NAME_LITERAL = [^.]\.[j]?;
-%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP IN_IMPORT IN_INCLUDE
+FILE_NAME_LITERAL = [^.]\.[j]
+FRAMEWORK_NAME = [^/ \n]+
+%state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP IN_IMPORT IN_FILENAME
 %%
 
-<IN_INCLUDE> {
-    {LINE_TERMINATOR}					{ yybegin(YYINITIAL); return ObjJ_LINE_TERMINATOR; }
+<IN_FILENAME> {
+	{FILE_NAME_LITERAL}					{ canRegex(false);  yybegin(IN_IMPORT); return ObjJ_FILE_NAME_LITERAL; }
 }
-<IN_IMPORT> {
-    {LINE_TERMINATOR}					{ yybegin(YYINITIAL); return WHITE_SPACE; }
-}
-<IN_IMPORT, IN_INCLUDE> {
-	{FILE_NAME_LITERAL}					{ yybegin(YYINITIAL); return ObjJ_FILE_NAME_LITERAL; }
-	'<'									{ return ObjJ_LESS_THAN; }
-	'>'									{ return ObjJ_GREATER_THAN; }
-    {SINGLE_QUOTE_TEXT} 				{ yybegin(YYINITIAL); return ObjJ_SINGLE_QUOTE_STRING_LITERAL; }
-    {DOUBLE_QUOTE_TEXT}					{ yybegin(YYINITIAL); return ObjJ_DOUBLE_QUOTE_STRING_LITERAL; }
+
+<IN_FILENAME, IN_IMPORT> {
+    {LINE_TERMINATOR}					{ canRegex(true);   yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return WHITE_SPACE; }
+    "<"                                 { canRegex(false);  yybegin(IN_FILENAME); return ObjJ_LESS_THAN; }
+    ">"                                 { canRegex(false);  return ObjJ_GREATER_THAN; }
+	"'"									{ canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
+	"\""						        { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
+    {FRAMEWORK_NAME}                    { canRegex(false);  return ObjJ_FRAMEWORK_NAME; }
 }
 
 
@@ -247,7 +247,7 @@ FILE_NAME_LITERAL = [^.]\.[j]?;
 	{PP_DEFINED}                         { canRegex(false); return ObjJ_PP_DEFINED; }
 	{PP_ERROR}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
 	{PP_WARNING}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
-	{PP_INCLUDE}                         { canRegex(false);	yybegin(IN_INCLUDE); inPreProc = true;return ObjJ_PP_INCLUDE; }
+	{PP_INCLUDE}                         { canRegex(false);	yybegin(IN_IMPORT); inPreProc = true;return ObjJ_PP_INCLUDE; }
 	"signed"                             { canRegex(false);  return ObjJ_VAR_TYPE_SIGNED; }
 	"unsigned"                           { canRegex(false);  return ObjJ_VAR_TYPE_UNSIGNED; }
 	"IBAction"                           { canRegex(false); return ObjJ_VAR_TYPE_IBACTION; }
@@ -294,7 +294,6 @@ FILE_NAME_LITERAL = [^.]\.[j]?;
 	{VAR_TYPE_INT}                       { canRegex(false);  return ObjJ_VAR_TYPE_INT; }
 	{VAR_TYPE_LONG_LONG}                 { canRegex(false);  return ObjJ_VAR_TYPE_LONG_LONG; }
 	{VAR_TYPE_LONG}                      { canRegex(false);  return ObjJ_VAR_TYPE_LONG; }
-	{IMPORT_FRAMEWORK_LITERAL}           { canRegex(false);  return ObjJ_IMPORT_FRAMEWORK_LITERAL; }
 	//{SINGLE_QUOTE_STRING_LITERAL}        { canRegex(false);  return ObjJ_SINGLE_QUOTE_STRING_LITERAL; }
 	//{DOUBLE_QUOTE_STRING_LITERAL}        { canRegex(false);  return ObjJ_DOUBLE_QUOTE_STRING_LITERAL; }
 	{BOOLEAN_LITERAL}                    { canRegex(false);  return ObjJ_BOOLEAN_LITERAL; }
@@ -326,7 +325,7 @@ FILE_NAME_LITERAL = [^.]\.[j]?;
 }
 {PP_FRAGMENT}				             { canRegex(false); return ObjJ_PP_FRAGMENT; }
 "@"{ID}						 			 { canRegex(false); return ObjJ_AT_FRAGMENT; }
-<YYINITIAL> {
+<YYINITIAL, IN_FILENAME, IN_IMPORT> {
 	{WHITE_SPACE}+                       { return WHITE_SPACE; }
   	"\\"								 { return ObjJ_FORWARD_SLASH; }
 }
