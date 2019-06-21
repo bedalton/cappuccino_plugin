@@ -29,7 +29,7 @@ class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFun
     companion object {
         private val KEY = IndexKeyUtil.createIndexKey<String, ObjJFunctionDeclarationElement<*>>(ObjJFunctionsIndex::class.java)
         val instance = ObjJFunctionsIndex()
-        private const val VERSION = 3
         private const val MINOR_VERSION = 0
+        private const val VERSION = 4
     }
 }

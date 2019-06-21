@@ -246,7 +246,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     }
 
     companion object {
-        private const val MAJOR_VERSION = 7
+        private const val MAJOR_VERSION = 8
         private const val MINOR_VERSION = 0
         const val INDEX_VERSION:Int = ObjJStubVersions.SOURCE_STUB_VERSION + MAJOR_VERSION + MINOR_VERSION
         val LOGGER:Logger by lazy {
