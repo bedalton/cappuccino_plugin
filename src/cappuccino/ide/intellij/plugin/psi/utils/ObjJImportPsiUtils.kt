@@ -1,69 +1,57 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
-import java.util.regex.Pattern
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJImportPsiUtils {
-    private val FRAMEWORK_REGEX = Pattern.compile("<(.*)/(.*)>")
 
-    fun getFileName(importStatement: ObjJImportFile): String {
+    fun getFileNameString(importStatement: ObjJImportFile): String {
         return if (importStatement.stub != null) {
             importStatement.stub.fileName
-        } else importStatement.stringLiteral.stringValue
+        } else importStatement.fileNameAsImportString.stringLiteral.stringValue
     }
 
-    fun getFileName(includeFile: ObjJIncludeFile): String {
+    fun getFileNameString(includeFile: ObjJIncludeFile): String {
         return if (includeFile.stub != null) {
             includeFile.stub.fileName
-        } else includeFile.stringLiteral.stringValue
+        } else includeFile.fileNameAsImportString.stringLiteral.stringValue
     }
 
-    fun getFileName(statement: ObjJImportFramework): String {
+    fun getFileNameString(statement: ObjJImportFramework): String {
         return if (statement.stub != null) {
             statement.stub.fileName
-        } else statement.frameworkReference.fileName
+        } else statement.frameworkReference.fileNameString
     }
 
-    fun getFileName(statement: ObjJIncludeFramework): String {
+    fun getFileNameString(statement: ObjJIncludeFramework): String {
         return if (statement.stub != null) {
             statement.stub.fileName
-        } else statement.frameworkReference.fileName
+        } else statement.frameworkReference.fileNameString
     }
 
-    fun getFileName(reference: ObjJFrameworkReference): String {
-        val matchResult = FRAMEWORK_REGEX.matcher(reference.importFrameworkLiteral.text)
-        return if (matchResult.groupCount() < 3) {
-            ""
-        } else matchResult.group(2)
+    fun getFileNameString(reference: ObjJFrameworkReference): String {
+        return reference.frameworkFileName?.text ?: ""
     }
 
 
-    fun getFrameworkName(ignored: ObjJIncludeFile): String? {
+    fun getFrameworkNameString(ignored: ObjJIncludeFile): String? {
         return null
     }
 
-    fun getFrameworkName(ignored: ObjJImportFile): String? {
+    fun getFrameworkNameString(ignored: ObjJImportFile): String? {
         return null
     }
 
-    fun getFrameworkName(framework: ObjJImportFramework): String? {
-        return if (framework.stub != null) {
-            framework.stub.framework
-        } else getFrameworkName(framework.frameworkReference)
+    fun getFrameworkNameString(framework: ObjJImportFramework): String? {
+        return framework.stub?.framework ?: framework.frameworkReference.frameworkNameString
     }
 
-    fun getFrameworkName(framework: ObjJIncludeFramework): String? {
-        return if (framework.stub != null) {
-            framework.stub.framework
-        } else getFrameworkName(framework.frameworkReference)
+    fun getFrameworkNameString(framework: ObjJIncludeFramework): String? {
+        return framework.stub?.framework ?: framework.frameworkReference.frameworkNameString
     }
 
-    fun getFrameworkName(reference: ObjJFrameworkReference): String? {
-        val matchResult = FRAMEWORK_REGEX.matcher(reference.importFrameworkLiteral.text)
-        return if (matchResult.groupCount() < 3) {
-            null
-        } else matchResult.group(1)
+    fun getFrameworkNameString(reference: ObjJFrameworkReference): String? {
+       return reference.frameworkName?.text
     }
 
 

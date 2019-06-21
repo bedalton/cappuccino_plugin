@@ -5,7 +5,7 @@ private val ABS = fn(
         name = "ABS",
         parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression for which the absolute value is needed.")),
         comment = "Returns the absolute value of a number (the value without regard to whether it is positive or negative).\nFor example, the absolute value of -5 is the same as the absolute value of 5.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val ACOS = fn(
@@ -13,7 +13,7 @@ private val ACOS = fn(
         parameters = listOf(
                 p(name = "x", type = "number", comment = "A numeric")),
         comment = "Returns the arc cosine (or inverse cosine) of a number.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val ASIN = fn(
@@ -21,7 +21,7 @@ private val ASIN = fn(
         parameters = listOf(
                 p(name = "x", type = "number", comment = "A numeric expression")),
         comment = "Returns the arc sine of a number.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val ATAN = fn(
@@ -29,7 +29,7 @@ private val ATAN = fn(
         parameters = listOf(
                 p(name = "x", type = "number", comment = "A numeric expression for which the arctangent is needed.")),
         comment = "Returns the arc tangent of a number",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val ATAN2 = fn(
@@ -39,14 +39,14 @@ private val ATAN2 = fn(
                 p(name = "x", type = "number", comment = "A numeric expression representing the cartesian x-coordinate.")
         ),
         comment = "Returns the angle (in radians) from the X axis to a point.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val SIN = fn(
         name = "SIN",
         parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the sine of a number",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val COS = fn(
@@ -54,21 +54,21 @@ private val COS = fn(
         parameters = listOf(
                 p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the cosine of a number",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val TAN = fn(
         name = "TAN",
         parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression that contains an angle measured in radians.")),
         comment = "Returns the tangent of a number",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val EXP = fn(
         name = "EXP",
         parameters = listOf(p(name = "x", type = "number", comment = "A numeric expression representing the power of e.")),
         comment = "Returns e (the base of natural logarithms) raised to a power.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val POW = fn(
@@ -77,21 +77,21 @@ private val POW = fn(
                 p(name = "x", type = "number", comment = "The base value of the expression."),
                 p(name = "y", type = "number", comment = "The exponent value of the expression.")),
         comment = "Returns the value of a base expression taken to a specified power.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val CEIL = fn(
         name = "CEIL",
         parameters = listOf(p("x", "number")),
         comment = "",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val FLOOR = fn(
         name = "FLOOR",
         parameters = listOf(p("x", "number")),
         comment = "",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 
@@ -99,35 +99,35 @@ private val ROUND = fn(
         name = "ROUND",
         parameters = listOf(p("x", "number")),
         comment = "",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val MIN = fn(
         name = "MIN",
         parameters = listOf(p("...values", "number")),
         comment = "Returns the smaller of a set of supplied numeric expressions.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val MAX = fn(
         name = "MAX",
         parameters = listOf(p("...values", "number")),
         comment = "Returns the larger of a set of supplied numeric expressions.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val RAND = fn(
         name = "RAND",
         parameters = listOf(p("x", "number")),
         comment = "Returns a pseudorandom number between 0 and 1.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 private val SQRT = fn(
         name = "SQRT",
         parameters = listOf(p("x", "number")),
         comment = "Returns the square root of a number.",
-        returns = "number"
+        returns = RT_NUMBER
 )
 
 
@@ -239,7 +239,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 fn(
                         name = "eval",
                         parameters = listOf(p(name = "x", type = "string", comment = "A String value that contains valid JavaScript code.")),
-                        returns = "?",
+                        returns = RT_ANY,
                         comment = "Evaluates JavaScript code and executes it."
                 ),
                 fn(
@@ -248,22 +248,22 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p(name = "string", type = "string", comment = "A string to convert into a number."),
                                 p(name = "radix", type = "number", comment = "A value between 2 and 36 that specifies the base of the number in numString.")),
                         comment = "Converts A string to an integer.",
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn(
                         name = "parseFloat",
                         parameters = listOf(p(name = "string", type = "string")),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn(
                         name = "isNaN",
                         parameters = listOf(p(name = "number", type = "number")),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn(
                         name = "isFinite",
                         parameters = listOf(p(name = "string", type = "string")),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn(
                         name = "decodeURI",
@@ -379,17 +379,17 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 ),
                 fn(
                         name = "objj_generateObjectUID",
-                        returns = "int",
+                        returns = RT_NUMBER,
                         skipCompletion = true
                 ),
                 fn(
                         name = "CFPropertyListCreate",
-                        returns = "CFPropertyList"
+                        returns = rt("CFPropertyList")
                 ),
                 fn(
                         name = "CFPropertyListCreateFromXMLData",
                         parameters = listOf(p("data")),
-                        returns = "CFPropertyList"
+                        returns = rt("CFPropertyList")
                 ),
                 fn(
                         name = "CFPropertyListCreateXMLData",
@@ -409,10 +409,10 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("object")),
                         skipCompletion = true
                 ),
-                fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = "?", skipCompletion = true),
-                fn(name = "class_getName", parameters = listOf(p("aClass", "objj_class")), returns = "string", skipCompletion = true),
-                fn(name = "class_isMetaClass", parameters = listOf(p("aClass")), returns = "BOOL", skipCompletion = true),
-                fn(name = "class_getSuperclass", parameters = listOf(p("aClass")), returns = "objj_class", skipCompletion = true),
+                fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = RT_ANY, skipCompletion = true),
+                fn(name = "class_getName", parameters = listOf(p("aClass", "objj_class")), returns = rt("string"), skipCompletion = true),
+                fn(name = "class_isMetaClass", parameters = listOf(p("aClass")), returns = RT_BOOL, skipCompletion = true),
+                fn(name = "class_getSuperclass", parameters = listOf(p("aClass")), returns = rt("objj_class"), skipCompletion = true),
                 fn(name = "class_setSuperclass", parameters = listOf(p("aClass", "objj_class"), p("aSuperClass", "objj_class")), skipCompletion = true),
                 fn(
                         name = "class_addIvar",
@@ -424,7 +424,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         skipCompletion = true
                 ),
                 fn(name = "class_addIvars", parameters = listOf(p("aClass", "objj_class"), p("ivars", "objj_ivar[]")), skipCompletion = true),
-                fn(name = "class_copyIvarList", parameters = listOf(p("aClass", "objj_class")), returns = "objj_ivar[]", skipCompletion = true),
+                fn(name = "class_copyIvarList", parameters = listOf(p("aClass", "objj_class")), returns = rt("objj_ivar[]"), skipCompletion = true),
                 fn(
                         name = "class_addMethod",
                         parameters = listOf(
@@ -438,7 +438,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "class_addMethods",
                         parameters = listOf(
                                 p("aClass", "objj_class"),
-                                p("methods", "objj_method[]")),
+                                p("getMethods", "objj_method[]")),
                         skipCompletion = true
                 ),
                 fn(
@@ -446,7 +446,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aClass", "objj_class"),
                                 p("aSelector", "SEL")),
-                        returns = "objj_method",
+                        returns = rt("objj_method"),
                         skipCompletion = true
                 ),
                 fn(
@@ -454,7 +454,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aClass", "objj_class"),
                                 p("aName", "string")),
-                        returns = "objj_ivar",
+                        returns = rt("objj_ivar"),
                         skipCompletion = true
                 ),
                 fn(
@@ -462,7 +462,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aClass", "objj_class"),
                                 p("aSelector", "SEL")),
-                        returns = "objj_method",
+                        returns = rt("objj_method"),
                         skipCompletion = true
                 ),
                 fn(
@@ -470,21 +470,21 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aClass", "objj_class"),
                                 p("aSelector", "SEL")),
-                        returns = "objj_method",
+                        returns = rt("objj_method"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "class_copyMethodList",
                         parameters = listOf(
                                 p("aClass", "objj_class")),
-                        returns = "Method[]",
+                        returns = rt("Method[]"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "class_getVersion",
                         parameters = listOf(
                                 p("aClass", "objj_class")),
-                        returns = "number",
+                        returns = RT_NUMBER,
                         skipCompletion = true
                 ),
                 fn(
@@ -515,7 +515,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("aClass", "objj_class"),
                                 p("aProtocol", "objj_protocol")
                         ),
-                        returns = "BOOL",
+                        returns = RT_BOOL,
                         skipCompletion = true
                 ),
                 fn(
@@ -543,7 +543,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 fn(
                         name = "objj_allocateProtocol",
                         parameters = listOf(p("aName", "string")),
-                        returns = "objj_protocol",
+                        returns = rt("objj_protocol"),
                         skipCompletion = true
                 ),
                 fn(
@@ -556,7 +556,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "protocol_getName",
                         parameters = listOf(
                                 p("proto", "objj_protocol")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
@@ -573,7 +573,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "protocol_addMethodDescriptions",
                         parameters = listOf(
                                 p("proto", "objj_protocol"),
-                                p("methods", "objj_method[]"),
+                                p("getMethods", "objj_method[]"),
                                 p("isRequired", "BOOL"),
                                 p("isInstanceMethod", "BOOL")),
                         skipCompletion = true
@@ -584,7 +584,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("proto", "objj_protocol"),
                                 p("isRequired", "BOOL"),
                                 p("isInstanceMethod", "BOOL")),
-                        returns = "objj_method[]",
+                        returns = rt("objj_method[]"),
                         skipCompletion = true
                 ),
                 fn(
@@ -599,7 +599,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aName", "string")
                         ),
-                        returns = "objj_typeDef",
+                        returns = rt("objj_typeDef"),
                         skipCompletion = true
                 ),
                 fn(
@@ -643,7 +643,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("superClass", "objj_class"),
                                 p("aName", "string")
                         ),
-                        returns = "objj_class",
+                        returns = rt("objj_class"),
                         skipCompletion = true
                 ),
                 fn(
@@ -657,20 +657,20 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "class_createInstance",
                         parameters = listOf(
                                 p("aClass", "objj_class")),
-                        returns = "object",
+                        returns = rt("object"),
                         skipCompletion = true),
                 fn(
                         name = "object_getClassName",
                         parameters = listOf(
                                 p("anObject", "object")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true),
                 fn(
                         name = "objj_lookUpClass",
                         parameters = listOf(
                                 p("aName", "string")
                         ),
-                        returns = "objj_class",
+                        returns = rt("objj_class"),
                         skipCompletion = true
                 ),
                 fn(
@@ -678,7 +678,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aName", "string")
                         ),
-                        returns = "objj_class",
+                        returns = rt("objj_class"),
                         skipCompletion = true
                 ),
                 fn(
@@ -686,42 +686,42 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("buffer", "CPArray"),
                                 p("bufferLength", "int")),
-                        returns = "int",
+                        returns = RT_NUMBER,
                         skipCompletion = true
                 ),
                 fn(
                         name = "objj_getMetaClass",
                         parameters = listOf(
                                 p("aName", "string")),
-                        returns = "?",
+                        returns = RT_ANY,
                         skipCompletion = true
                 ),
                 fn(
                         name = "objj_getProtocol",
                         parameters = listOf(
                                 p("aName", "string")),
-                        returns = "objj_protocol",
+                        returns = rt("objj_protocol"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "objj_getTypeDef",
                         parameters = listOf(
                                 p("aName", "string")),
-                        returns = "objj_typeDef",
+                        returns = rt("objj_typeDef"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "ivar_getName",
                         parameters = listOf(
                                 p("anIvar", "objj_ivar")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "ivar_getTypeEncoding",
                         parameters = listOf(
                                 p("anIvar", "objj_ivar")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
@@ -828,14 +828,14 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aMethod", "objj_method")
                         ),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "method_copyReturnType",
                         parameters = listOf(
                                 p("aMethod", "objj_method")),
-                        returns = "?",
+                        returns = RT_ANY,
                         comment = "This will not return correct values if the compiler does not have the option 'IncludeTypeSignatures'",
                         skipCompletion = true
                 ),
@@ -844,7 +844,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aMethod", "objj_method"),
                                 p("anIndex", "int")),
-                        returns = "?",
+                        returns = RT_ANY,
                         comment = "This will not return correct values for index > 1 if the compiler does not have the option 'IncludeTypeSignatures'",
                         skipCompletion = true
                 ),
@@ -852,7 +852,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "method_getNumberOfArguments",
                         parameters = listOf(
                                 p("aMethod", "objj_method")),
-                        returns = "int",
+                        returns = RT_NUMBER,
                         comment = "Returns number of arguments for a method. The first argument is 'self' and the second is the selector.\n" +
                                 "Those are followed by the method arguments. So for example it will return 2 for a method with no arguments.",
                         skipCompletion = true
@@ -861,7 +861,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "method_getImplementation",
                         parameters = listOf(
                                 p("aMethod", "objj_method")),
-                        returns = "IMP",
+                        returns = rt("IMP"),
                         skipCompletion = true
                 ),
                 fn(
@@ -869,7 +869,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         parameters = listOf(
                                 p("aMethod", "objj_method"),
                                 p("anImplementation", "IMP")),
-                        returns = "IMP",
+                        returns = rt("IMP"),
                         comment = "returns old implementation",
                         skipCompletion = true
                 ),
@@ -884,13 +884,13 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 fn(
                         name = "sel_getName",
                         parameters = listOf(p("aSelector", "SEL")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
                         name = "sel_getUid",
                         parameters = listOf(p("aName", "string")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
                 fn(
@@ -899,23 +899,23 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("lhs", "SEL"),
                                 p("rhs", "SEL")
                         ),
-                        returns = "BOOL",
+                        returns = RT_BOOL,
                         skipCompletion = true
                 ),
                 fn(
                         name = "sel_registerName",
                         parameters = listOf(p("aName", "string")),
-                        returns = "string",
+                        returns = rt("string"),
                         skipCompletion = true
                 ),
-                fn("atob", listOf(p("encodedString", "string")), returns = "string"),
-                fn("btoa", listOf(p("rawString", "string")), returns = "string"),
+                fn("atob", listOf(p("encodedString", "string")), returns = rt("string")),
+                fn("btoa", listOf(p("rawString", "string")), returns = rt("string")),
                 fn(
                         name = "fetch",
                         parameters = listOf(
                                 p("input", "RequestInfo"),
                                 p("init", "RequestInit", nullable = true)),
-                        returns = "Promise<Response>"
+                        returns = rt("Promise<Response>")
                 ),
 
                 fn(
@@ -929,7 +929,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                 fn(
                         name = "createImageBitmap",
                         parameters = listOf(p("image", "ImageBitmapSource")),
-                        returns = "Promise<ImageBitmap>"
+                        returns = rt("Promise<ImageBitmap>")
                 ),
                 fn(
                         name = "createImageBitmap(image: ImageBitmapSource, sx: number, sy: number, sw: number, sh: number): ",
@@ -939,7 +939,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("sy", "number"),
                                 p("sw", "number"),
                                 p("sh", "number")),
-                        returns = "Promise<ImageBitmap>"
+                        returns = rt("Promise<ImageBitmap>")
                 ),
                 fn("queueMicrotask", listOf(p("callback", "Function")),
                         skipCompletion = true),
@@ -949,7 +949,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("handler", "TimerHandler"),
                                 p("timeout", "number"),
                                 p("...arguments", "any[]")),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn(
                         name = "setTimeout",
@@ -957,17 +957,17 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                                 p("handler", "TimerHandler"),
                                 p("timeout", "number"),
                                 p("...arguments", "any[]")),
-                        returns = "number"
+                        returns = RT_NUMBER
                 ),
                 fn (
                         name = "CPThemeState",
                         parameters = listOf(p("...values", "string|ThemeState")),
-                        returns = "ThemeState"
+                        returns = rt("ThemeState")
                 ),
                 fn (
                         name = "require",
                         parameters = listOf(p("x", "string")),
-                        returns = "?"
+                        returns = RT_ANY
                 ),
                 fn (
                         name = "CPDOMDisplayServerSetStyleLeftTop",
@@ -1100,6 +1100,10 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
 
 val globalJsFunctions = createGlobalJsFunctions()
 
+val allGlobalJsClassFunctions = globalJSClasses.flatMap {
+        it.functions
+}
+
 val globalJsFunctionNames = globalJsFunctions.names()
 
 val globalJsFunctionNamesMinusSkips = globalJsFunctions
@@ -1108,7 +1112,7 @@ val globalJsFunctionNamesMinusSkips = globalJsFunctions
         }
         .map { it.name }
 
-data class GlobalJsFunction(override val name: String, override val parameters: List<JsProperty> = listOf(), override val returns: String? = null, override val comment: String? = null, val skipCompletion: Boolean = false, val fileName: String? = null) : JsFunction
+data class GlobalJsFunction(override val name: String, override val parameters: List<JsNamedProperty> = listOf(), override val returns: JsFunctionReturnType? = null, override val comment: String? = null, val skipCompletion: Boolean = false, val fileName: String? = null) : JsFunction
 
 typealias fn = GlobalJsFunction
 

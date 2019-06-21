@@ -40,8 +40,8 @@ class ObjJFileUtil {
         val project = file.project
         val searchScope = GlobalSearchScope.everythingScope(project)
         for (importStatement in importStatements) {
-            val framework = importStatement.frameworkName
-            val fileName = importStatement.fileName
+            val framework = importStatement.frameworkNameString
+            val fileName = importStatement.fileNameString
             if (!addImport(imports, framework, fileName)) {
                 continue
             }

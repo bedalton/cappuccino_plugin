@@ -1,14 +1,21 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferCallTargetType
+import cappuccino.ide.intellij.plugin.inference.toClassList
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
+import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
 import java.util.ArrayList
 
@@ -18,6 +25,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
     private var _classConstraints: List<String>? = null
     private val fullSelector: String?
     private val accessorMethods: Pair<String, String>?
+    private val tag:Long = createTag()
 
     init {
         accessorMethods = getAccessorMethods()
@@ -27,7 +35,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
     }
 
     private val callTargetClassTypesIfMethodCall: List<String> get() {
-        var constraints = _classConstraints
+        var constraints:MutableList<String>? = _classConstraints?.toMutableList()
         if (constraints != null) {
             return constraints
         }
@@ -36,7 +44,11 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         if (DumbService.isDumb(myElement.project)) {
             return emptyList()
         }
-        constraints = methodCall.callTarget.possibleCallTargetTypes
+        val project = myElement.project
+        constraints = inferCallTargetType(methodCall.callTarget, tag)?.toClassList(null).orEmpty().toMutableList()
+        constraints.addAll(constraints.flatMap{
+            ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+        })
         _classConstraints = constraints
         return constraints
     }
@@ -54,7 +66,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
             return false
         }
         val elementToCheckAsMethodCall = elementToCheck.getParentOfType( ObjJMethodCall::class.java)
-        val elementToCheckMethodCallTargetClasses = elementToCheckAsMethodCall?.callTarget?.possibleCallTargetTypes ?: listOf()
+        val elementToCheckMethodCallTargetClasses = elementToCheckAsMethodCall?.callTarget?.getPossibleCallTargetTypes(tag)?: listOf()
         val elementToCheckMethodCallSelector = elementToCheckAsMethodCall?.selectorString
         if (thisMethodHeaderParent != null) {
             return elementToCheckMethodCallSelector == fullSelector && (elementToCheckMethodCallTargetClasses.isEmpty() || ObjJClassType.UNDETERMINED in elementToCheckMethodCallTargetClasses || myElement.containingClassName in elementToCheckMethodCallTargetClasses)
@@ -70,28 +82,39 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
     }
 
     override fun multiResolve(b: Boolean): Array<ResolveResult> {
-        //Get Basic
-        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement)
+        val project = myElement.project
+        val index = myElement.selectorIndex
+        val selector = myElement.getParentOfType(ObjJHasMethodSelector::class.java)?.selectorString ?: return emptyArray()
+        val classConstraints = callTargetClassTypesIfMethodCall
+
+        // Get quick result from class constraints
+        val quickSelectorResult = classConstraints.flatMap { className ->
+            ObjJClassAndSelectorMethodIndex.instance.getByClassAndSelector(className, selector, project)
+        }.mapNotNull { it.selectorList.getOrNull(index) }
+        if (quickSelectorResult.isNotEmpty()) {
+            return PsiElementResolveResult.createResults(quickSelectorResult)
+        }
+
+        var selectorResult = ObjJSelectorReferenceResolveUtil.getMethodCallReferences(myElement, tag, classConstraints)
         var out: MutableList<PsiElement> = ArrayList()
-        if (!selectorResult.isEmpty) {
+        if (selectorResult.isNotEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement)
-        if (!selectorResult.isEmpty) {
+        if (selectorResult.isNotEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
-        val constraints = callTargetClassTypesIfMethodCall
-        if (!out.isEmpty()) {
-            if (constraints.isNotEmpty() && !constraints.contains(ObjJClassType.UNDETERMINED) && constraints.contains(ObjJClassType.ID)) {
-                val tempOut = out.filter { element -> element is ObjJCompositeElement && constraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
+        if (out.isNotEmpty()) {
+            if (classConstraints.isNotEmpty() && ObjJClassType.UNDETERMINED !in classConstraints && ObjJClassType.ID !in classConstraints && classConstraints.contains(ObjJClassType.ID)) {
+                val tempOut = out.filter { element -> element is ObjJCompositeElement && classConstraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
                     out = tempOut as MutableList<PsiElement>
                 }
             }
             return PsiElementResolveResult.createResults(out)
         }
-        val result = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames)
-        if (!result.isEmpty) {
+        val result: SelectorResolveResult<PsiElement> = ObjJSelectorReferenceResolveUtil.getInstanceVariableSimpleAccessorMethods(myElement, selectorResult.possibleContainingClassNames, tag)
+        if (result.isNotEmpty) {
             return PsiElementResolveResult.createResults(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
         }
         return PsiElementResolveResult.EMPTY_ARRAY

@@ -21,11 +21,8 @@ class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containin
     override val isRequired: Boolean
         get() = false
 
-    override val returnType: ObjJClassTypeName
-        get() = ObjJClassType.UNDEF
-
-    override val returnTypeAsString: String
-        get() = returnType.className
+    override val explicitReturnType: String
+        get() = ObjJClassType.UNDEF_CLASS_NAME
 
     override val isStatic: Boolean
         get() = false

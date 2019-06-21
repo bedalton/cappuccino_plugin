@@ -6,7 +6,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -16,6 +18,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
+import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -56,7 +59,7 @@ object ObjJMethodPsiUtils {
         return getSelectorIndex(method, selector) ?: 0
     }
 
-    private fun getSelectorIndex(methodHeader:ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
+    private fun getSelectorIndex(methodHeader: ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
         if (methodHeader == null) {
             return null
         }
@@ -103,7 +106,7 @@ object ObjJMethodPsiUtils {
         if (hasMethodSelector == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileName(hasMethodSelector)+">");
+        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
         val selectorList = hasMethodSelector.selectorList
         //LOGGER.log(Level.INFO, "Got selector list.");
         if (selectorList.isEmpty()) {
@@ -139,26 +142,61 @@ object ObjJMethodPsiUtils {
     // ======== Return Type ========= //
     // ============================== //
 
+    fun getExplicitReturnType(methodHeader: ObjJMethodHeader, follow:Boolean) : String {
+        val stubHeaderType = methodHeader.stub?.explicitReturnType
+        if (stubHeaderType != null)
+            return stubHeaderType
+        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
+                ?: methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.text
+                ?: UNDETERMINED
+    }
 
-    fun getReturnType(methodHeader: ObjJMethodHeader, follow: Boolean): String {
-        if (methodHeader.stub != null) {
-            return methodHeader.stub!!.returnTypeAsString
-        }
-        val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return ObjJClassType.UNDETERMINED
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
+        return methodHeader.getCachedInferredTypes(tag) {
+            val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
+            if (returnTypes.isEmpty())
+                return@getCachedInferredTypes null
+            InferenceResult(classes = returnTypes)
+        }?.toClassList().orEmpty()
+    }
+
+    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
+        val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return setOf(UNDETERMINED)
         if (returnTypeElement.formalVariableType.atAction != null) {
-            return AT_ACTION
+            return setOf(AT_ACTION)
         }
         if (returnTypeElement.formalVariableType.void != null) {
-            return VOID_CLASS_NAME
+            return setOf(VOID_CLASS_NAME)
         }
         val formalVariableType = returnTypeElement.formalVariableType
         if (formalVariableType.varTypeId != null) {
             if (follow) {
-            //LOGGER.log(Level.INFO, "Found return type id to be: <"+returnType+">");
-                return formalVariableType.varTypeId!!.getIdType(false)
+                return getReturnTypesFromStatements(methodHeader, tag)
             }
         }
-        return formalVariableType.text
+        return setOf(formalVariableType.text.stripRefSuffixes())
+    }
+
+    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, tag:Long) : Set<String> {
+        val expressions = methodHeader
+                .getParentOfType(ObjJMethodDeclaration::class.java)
+                ?.methodBlock
+                ?.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
+                ?.mapNotNull { it.expr } ?: emptyList()
+        val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
+        val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
+        val simpleOut = selfExpressionTypes + superExpressionTypes
+        if (simpleOut.isNotEmpty()) {
+            return InferenceResult(classes = simpleOut.toSet()).toClassList()
+        }
+        var out = INFERRED_EMPTY_TYPE
+        expressions.forEach {
+            //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
+            val type = inferExpressionType(it, tag)
+            if (type != null)
+                out += type
+        }
+        return out.toClassList()
     }
 
     @JvmOverloads
@@ -181,7 +219,7 @@ object ObjJMethodPsiUtils {
             e.returnTypesList[0]
         }
 
-        if (returnType == ObjJClassType.UNDETERMINED) {
+        if (returnType == UNDETERMINED) {
             returnType = null
         }
         /*
@@ -194,15 +232,16 @@ object ObjJMethodPsiUtils {
     }
 
 
-    fun getReturnType(accessorProperty: ObjJAccessorProperty): String {
-        if (accessorProperty.stub != null) {
-            return accessorProperty.stub!!.returnTypeAsString
+    fun getExplicitReturnType(accessorProperty: ObjJAccessorProperty): String {
+        val stubReturnType = accessorProperty.stub?.varType
+        if (stubReturnType != null) {
+            return stubReturnType
         }
         val variableType = accessorProperty.varType
         return variableType ?: UNDETERMINED
     }
 
-    fun getReturnType(
+    fun getExplicitReturnType(
             methodHeader: ObjJSelectorLiteral): String {
         return UNDETERMINED
     }
@@ -238,7 +277,7 @@ object ObjJMethodPsiUtils {
     @Throws(IncorrectOperationException::class)
     fun setName(header: ObjJHasMethodSelector, name: String): PsiElement {
         val copy = header.copy() as ObjJHasMethodSelector
-        val newSelectors = name.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val newSelectors = name.split(SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val selectorElements = copy.selectorList
         if (newSelectors.size != selectorElements.size) {
             throw AssertionError("Selector lists invalid for rename")
@@ -310,14 +349,14 @@ object ObjJMethodPsiUtils {
         return null
     }
     /**
-     * Determines whether two methods in the same class are truly different.
+     * Determines whether two getMethods in the same class are truly different.
      * This is due to overlaps of static and instnace method selectors
-     * And also with single selector methods where one has a parameter and the other does not
+     * And also with single selector getMethods where one has a parameter and the other does not
      */
-    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader) : Boolean
+    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader?) : Boolean
     {
         // If one method is static, while another is an instance method, ignore
-        if (thisHeader.methodScope != otherHeader.methodScope) {
+        if (thisHeader.methodScope != otherHeader?.methodScope) {
             return false
         }
         // If Selector lengths are greater than one, then they are indeed overriding duplicated

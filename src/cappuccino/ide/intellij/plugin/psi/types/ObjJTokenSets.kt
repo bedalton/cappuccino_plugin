@@ -231,6 +231,15 @@ object ObjJTokenSets {
             ObjJ_VAR_TYPE_ID
     )
 
+    val NUMERIC_TYPES = create(
+            ObjJ_HEX_INTEGER_LITERAL,
+            ObjJ_OCTAL_INTEGER_LITERAL,
+            ObjJ_OCTAL_INTEGER_LITERAL2,
+            ObjJ_DECIMAL_LITERAL,
+            ObjJ_BINARY_INTEGER_LITERAL,
+            ObjJ_INTEGER_LITERAL
+    )
+
     val ITERATION_STATEMENT_KEYWORDS = create(
             ObjJ_IF,
             ObjJ_ELSE,
@@ -245,5 +254,67 @@ object ObjJTokenSets {
             ObjJ_WHILE_STATEMENT,
             ObjJ_IF_STATEMENT,
             ObjJ_FOR_STATEMENT
+    )
+
+    val CAN_COMPLETE_AFTER = listOf(
+            ObjJ_SEMI_COLON,
+            ObjJ_DOT,
+            ObjJ_OPEN_BRACE,
+            ObjJ_CLOSE_BRACE,
+            ObjJ_OPEN_BRACKET,
+            ObjJ_COLON,
+            ObjJ_OPEN_PAREN,
+            ObjJ_CALL_TARGET,
+            ObjJ_QUALIFIED_METHOD_CALL_SELECTOR,
+            ObjJ_ID,
+            ObjJ_NOT,
+            ObjJ_RETURN,
+            ObjJ_IN,
+            ObjJ_AT_CLASS,
+            ObjJ_AT_IMPLEMENTATION,
+            ObjJ_QUESTION_MARK,
+            ObjJ_ASSIGN,
+            ObjJ_MULTIPLY_ASSIGN,
+            ObjJ_DIVIDE_ASSIGN,
+            ObjJ_MODULUS_ASSIGN,
+            ObjJ_PLUS_ASSIGN,
+            ObjJ_MATH_OP,
+            ObjJ_MINUS_ASSIGN,
+            ObjJ_LEFT_SHIFT_ARITHMATIC_ASSIGN,
+            ObjJ_RIGHT_SHIFT_ARITHMATIC_ASSIGN,
+            ObjJ_LEFT_SHIFT_LOGICAL_ASSIGN,
+            ObjJ_RIGHT_SHIFT_LOGICAL_ASSIGN,
+            ObjJ_BIT_AND_ASSIGN,
+            ObjJ_BIT_XOR_ASSIGN,
+            ObjJ_BIT_OR_ASSIGN,
+            ObjJ_EQUALS,
+            ObjJ_PLUS,
+            ObjJ_MINUS,
+            ObjJ_BIT_NOT,
+            ObjJ_NOT,
+            ObjJ_MULTIPLY,
+            ObjJ_DIVIDE,
+            ObjJ_MODULUS,
+            ObjJ_BIT_AND,
+            ObjJ_BIT_OR,
+            ObjJ_BIT_XOR,
+            ObjJ_EQUALS,
+            ObjJ_IDENTITY_EQUALS,
+            ObjJ_NOT_EQUALS,
+            ObjJ_IDENTITY_NOT_EQUALS,
+            ObjJ_LESS_THAN,
+            ObjJ_LESS_THAN_EQUALS,
+            ObjJ_GREATER_THAN,
+            ObjJ_GREATER_THAN_EQUALS,
+            ObjJ_COMMA,
+            ObjJ_NEW,
+            ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_WHILE_STATEMENT,
+            ObjJ_TRY_STATEMENT,
+            ObjJ_SWITCH_STATEMENT,
+            ObjJ_CASE_CLAUSE,
+            ObjJ_DEFAULT_CLAUSE,
+            ObjJ_CASE,
+            ObjJ_AT_END
     )
 }

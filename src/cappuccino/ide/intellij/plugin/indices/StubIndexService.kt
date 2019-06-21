@@ -5,6 +5,7 @@ import com.intellij.psi.stubs.IndexSink
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import com.intellij.psi.stubs.PsiFileStub
@@ -23,10 +24,6 @@ open class StubIndexService internal constructor() {
 
     open fun indexClassDeclaration(stub: ObjJClassDeclarationStub<*>, indexSink: IndexSink) {
         LOGGER.log(Level.WARNING, "Using empty stub indexes <indexImplementationClassDeclaration()> method")
-    }
-
-    open fun indexFile(stub: PsiFileStub<*>, sink: IndexSink) {
-
     }
 
     open fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
@@ -73,6 +70,14 @@ open class StubIndexService internal constructor() {
 
     }
 
+    open fun indexPropertyName(propertyName: ObjJPropertyNameStub, indexSink: IndexSink) {
+        throw NotImplementedError("indexPropertyName should have been overridden")
+    }
+
+
+    open fun indexVariableDeclaration(stub:ObjJVariableDeclarationStub, indexSink: IndexSink) {
+        throw NotImplementedError("indexVariableDeclaration should have been overridden")
+    }
 
     // ============================== //
     // ========== File Stub ========= //

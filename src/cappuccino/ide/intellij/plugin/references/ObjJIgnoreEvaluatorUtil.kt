@@ -194,7 +194,8 @@ enum class ObjJSuppressInspectionFlags(val title:String, val flag:String) {
     IGNORE_UNDECLARED_FUNCTION("possibly undeclared function", "undeclaredFunction"),
     IGNORE_UNDECLARED_VAR("possibly undeclared variable", "undeclaredVar"),
     IGNORE_CLASS("class in completions", "ignoreClass"),
-    IGNORE_UNDECLARED_CLASS("possibly undeclared class", "undeclaredClass");
+    IGNORE_UNDECLARED_CLASS("possibly undeclared class", "undeclaredClass"),
+    IGNORE_UNINTENDED_GLOBAL_VARIABLE("possibly unintended global variable", "unintendedGlobal");
 }
 
 enum class NoIndex(val title:String, val flag:String) {

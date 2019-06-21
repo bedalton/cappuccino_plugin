@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
+import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.IndexSink
@@ -8,6 +9,7 @@ import com.intellij.util.ReflectionUtil
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import com.intellij.openapi.components.ServiceManager
 import org.jetbrains.annotations.NonNls
 
 import java.lang.reflect.Constructor
@@ -39,6 +41,10 @@ abstract class ObjJStubElementType<StubT : StubElement<*>, PsiT : ObjJStubBasedE
 
     override fun indexStub(stub: StubT, sink: IndexSink) {
         // do not force inheritors to implement this method
+    }
+
+    protected val indexService by lazy {
+        ServiceManager.getService(StubIndexService::class.java)
     }
 
     protected fun shouldResolve(node: ASTNode): Boolean {

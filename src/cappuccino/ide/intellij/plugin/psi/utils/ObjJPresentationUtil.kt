@@ -14,7 +14,7 @@ import javax.swing.Icon
  * Gets the presentation object for an @implementation declaration
  */
 fun getPresentation(declaration: ObjJImplementationDeclaration): ItemPresentation {
-    val text = declaration.getClassNameString() + if (declaration.isCategory) " (${declaration.categoryName?.className?.text})" else ""
+    val text = declaration.classNameString + if (declaration.isCategory) " (${declaration.categoryName?.className?.text})" else ""
     val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
@@ -39,7 +39,7 @@ fun getPresentation(declaration: ObjJProtocolDeclaration): ItemPresentation {
     val fileName = ObjJFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
         override fun getPresentableText(): String {
-            return declaration.getClassNameString()
+            return declaration.classNameString
         }
 
         override fun getLocationString(): String {

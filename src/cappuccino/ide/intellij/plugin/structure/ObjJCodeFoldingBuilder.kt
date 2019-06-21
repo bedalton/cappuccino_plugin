@@ -54,7 +54,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             val numMethods = declaration.methodDeclarationList.size
             var placeholderText = "..."
             if (numMethods > 0) {
-                placeholderText += "$numMethods methods"
+                placeholderText += "$numMethods getMethods"
             }
             val numInstanceVariables:Int = declaration.instanceVariableList?.instanceVariableDeclarationList?.size ?: 0
             if (numInstanceVariables > 0) {
@@ -73,7 +73,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
             if (startOffset >= endOffset) {
                 return null
             }
-            val numMethods = protocol.getMethodHeaders().size
+            val numMethods = protocol.internalMethodHeaders.size
             val placeholderString = if (numMethods > 0) "...$numMethods hidden" else null
             return ObjJFoldingDescriptor.create(protocol, startOffset, endOffset, group, placeholderString)
         }

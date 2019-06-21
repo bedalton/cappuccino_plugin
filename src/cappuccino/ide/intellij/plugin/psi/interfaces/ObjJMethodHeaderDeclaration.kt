@@ -1,16 +1,23 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
+import cappuccino.ide.intellij.plugin.caches.ObjJMethodHeaderCache
+import cappuccino.ide.intellij.plugin.caches.ObjJMethodHeaderDeclarationCache
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderDeclarationStub
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 
-interface ObjJMethodHeaderDeclaration<StubT : ObjJMethodHeaderDeclarationStub<*>> : ObjJStubBasedElement<StubT>, ObjJCompositeElement, ObjJHasMethodSelector, ObjJHasContainingClass {
+interface ObjJMethodHeaderDeclaration<StubT:ObjJMethodHeaderDeclarationStub<*>>:ObjJStubBasedElement<StubT>, ObjJHasMethodSelector {
 
-    val returnType: String
+    fun getCachedReturnType(tag:Long):InferenceResult?
 
-    val methodScope: MethodScope
+    fun getReturnTypes(tag:Long): Set<String>
+
+    val explicitReturnType:String
+
+    val methodScope: ObjJMethodPsiUtils.MethodScope
 
     val isStatic: Boolean
-        get() = methodScope == MethodScope.STATIC
+        get() = methodScope == ObjJMethodPsiUtils.MethodScope.STATIC
 
-    override fun getStub(): StubT?
+    val methodHeaderCache:ObjJMethodHeaderDeclarationCache
 }

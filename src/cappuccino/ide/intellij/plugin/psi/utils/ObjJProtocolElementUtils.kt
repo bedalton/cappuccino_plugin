@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import java.util.*
 

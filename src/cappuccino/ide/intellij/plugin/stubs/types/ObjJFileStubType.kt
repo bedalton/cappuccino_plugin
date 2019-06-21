@@ -49,9 +49,6 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
         return ObjJFileStubImpl(null, fileName, imports)
     }
 
-    override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {
-        StubIndexService.instance.indexFile(stub, sink)
-    }
 
     companion object {
 

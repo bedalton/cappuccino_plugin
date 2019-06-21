@@ -94,3 +94,6 @@ fun List<String>.startsWithAny(prefixes:List<String>) : Boolean {
 fun <T> getFirstMatchOrNull(variableNameElements: List<T>, filter: Filter<T>): T? {
     return variableNameElements.firstOrNull(filter)
 }
+
+fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean
+    = this != null && this.isNotEmpty()

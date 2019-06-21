@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import kotlin.contracts.contract
 
 
 fun Boolean?.orDefault(defaultValue:Boolean) : Boolean {
@@ -50,4 +51,19 @@ fun Double?.add(other:Double?) : Double? {
         return null
     }
     return this + other
+}
+
+
+/**
+ * Returns `true` if this nullable char sequence is either `null` or empty or consists solely of whitespace characters.
+ */
+fun CharSequence?.isNotNullOrBlank(): Boolean {
+    return this != null && this.isNotBlank()
+}
+
+/**
+ * Returns `true` if this nullable char sequence is either `null` or empty or consists solely of whitespace characters.
+ */
+fun CharSequence?.isNotNullOrEmpty(): Boolean {
+    return this != null && this.isNotEmpty()
 }

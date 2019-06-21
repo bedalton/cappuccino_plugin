@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.util.FileContentUtil
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
@@ -20,11 +21,11 @@ import com.intellij.util.IncorrectOperationException
  * Variables with this name are ignored thoughout the whole project, not just the current file
  * To ignore the variable name in a given scope, it should use inspection suppression
  */
-class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction(), LocalQuickFix {
+class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIgnored:Boolean, private val message:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
 
     override fun getText(): String {
-        return if (addToIgnored)
+        return message ?: if (addToIgnored)
             ObjJBundle.message("objective-j.intentions.alter-ignored-variable.add-ignore-var.prompt", keyword)
          else
             ObjJBundle.message("objective-j.intentions.alter-ignored-variable.remove-ignored-var.text", keyword)
@@ -35,22 +36,22 @@ class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIg
     }
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        invoke()
+        invoke(descriptor.psiElement.containingFile)
     }
 
     @Throws(IncorrectOperationException::class)
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invoke()
+        invoke(file)
     }
 
-    private fun invoke() {
+    private fun invoke(file:PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             if (addToIgnored) {
                 ObjJPluginSettings.ignoreVariableName(keyword)
             } else {
                 ObjJPluginSettings.removeIgnoredVariableName(keyword)
             }
-            FileContentUtilCore.reparseFiles()
+            FileContentUtil.reparseFiles(file.virtualFile)
         }
     }
 

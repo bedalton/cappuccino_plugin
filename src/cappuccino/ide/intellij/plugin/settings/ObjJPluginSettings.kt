@@ -108,6 +108,15 @@ object ObjJPluginSettings {
         unqualifiedIgnore_methodReturnErrorsSetting.value = value
     }
 
+    private const val VALIDATE_METHOD_CALLS_KEY = "objj.inspections.validateMethodCalls"
+    private const val VALIDATE_METHOD_CALLS_KEY_DEFAULT = false
+    private val validateMethodCallsSetting = BooleanSetting(UNQ_IGNORE_METHOD_RETURN_ERRORS_KEY, UNQ_IGNORE_METHOD_RETURN_ERRORS_DEFAULT)
+    var validateMethodCalls:Boolean get() {
+        return validateMethodCallsSetting.value!!
+    } set(value) {
+        validateMethodCallsSetting.value = value
+    }
+
     private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY = "objj.annotator.unq_ignore.ignoreInvalidSelectorErrors"
     private const val UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT = false
     private val unqualifiedIgnore_invalidSelectorErrorsSetting = BooleanSetting(UNQ_IGNORE_INVALID_SELECTOR_ERRORS_KEY, UNQ_IGNORE_INVALID_SELECTOR_ERRORS_DEFAULT)

@@ -14,7 +14,7 @@ fun getIcon(element: PsiElement): Icon? {
         val classDeclarationElement = element.getParentOfType(ObjJClassDeclarationElement::class.java)
 
         val className = element.getText()
-        if (classDeclarationElement == null || classDeclarationElement.getClassNameString() != className) {
+        if (classDeclarationElement == null || classDeclarationElement.classNameString != className) {
             return null
         }
         if (classDeclarationElement is ObjJImplementationDeclaration) {

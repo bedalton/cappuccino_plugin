@@ -30,7 +30,7 @@ object ObjJCommentCompletionProvider {
         val text = element.text?.substringBefore(ObjJBlanketCompletionProvider.CARET_INDICATOR, "") ?: return
         // Divide text by line, and add completion results for it
         for (commentLine in text.split("\\n".toRegex())) {
-            addCommentCompletionsForLine(resultSet, element, text)
+            addCommentCompletionsForLine(resultSet, element, commentLine)
         }
     }
 
@@ -95,7 +95,7 @@ object ObjJCommentCompletionProvider {
             when (place) {
                 // Add class names if first token after @var
                 0,1 -> {
-                    ObjJBlanketCompletionProvider.getClassNameCompletions(resultSet, element)
+                    ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
                 }
                 // Add variable name completions if second token
                 2 -> {

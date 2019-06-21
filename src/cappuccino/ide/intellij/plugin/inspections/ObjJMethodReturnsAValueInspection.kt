@@ -46,7 +46,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
             if (ObjJIgnoreEvaluatorUtil.isIgnored(methodDeclaration, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
-            val returnType = methodDeclaration.methodHeader.returnType
+            val returnType = methodDeclaration.methodHeader.explicitReturnType
             if (returnType == ObjJClassType.VOID_CLASS_NAME || returnType == "@action" || returnType == "IBAction") {
                 return
             }

@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.VOID
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
@@ -37,7 +38,7 @@ object ObjJAccessorPropertyPsiUtil {
 
 
     /**
-     * Gets selectors as strings for an accessor property's virtual methods
+     * Gets selectors as strings for an accessor property's virtual getMethods
      * @param accessorProperty accessor property
      * @return selector strings
      */
@@ -107,7 +108,7 @@ object ObjJAccessorPropertyPsiUtil {
         if (setter != null) {
             val selectorStrings = listOf(setter)
             val paramTypes = listOf(varType)
-            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, null, true, variableDeclaration.shouldResolve(), false)
+            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, "void",true, variableDeclaration.shouldResolve(), false)
         }
         return null
     }
@@ -137,7 +138,7 @@ object ObjJAccessorPropertyPsiUtil {
                 isStatic = false,
                 selectorStrings = selectorStrings,
                 paramTypes = paramTypes,
-                returnType = varType,
+                explicitReturnType = varType,
                 isRequired = true,
                 shouldResolve = variableDeclaration.shouldResolve(),
                 ignored = false)

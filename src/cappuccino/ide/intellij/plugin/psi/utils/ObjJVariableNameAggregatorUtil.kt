@@ -226,10 +226,10 @@ object ObjJVariableNameAggregatorUtil {
 
     private fun getAllContainingClassInstanceVariables(element: PsiElement): List<ObjJVariableName> {
         if (element is ObjJHasContainingClass)
-            getAllContainingClassInstanceVariables(element.containingClassName, element.project)
+            return getAllContainingClassInstanceVariables(element.containingClassName, element.project)
         val containingClass = element.getParentOfType(ObjJClassDeclarationElement::class.java)
                 ?: return emptyList()
-        return getAllContainingClassInstanceVariables(containingClass.getClassNameString(), element.project)
+        return getAllContainingClassInstanceVariables(containingClass.classNameString, element.project)
     }
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
@@ -342,7 +342,8 @@ object ObjJVariableNameAggregatorUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         for (variableDeclaration in file.getChildrenOfType( ObjJGlobal::class.java)) {
-            result.add(variableDeclaration.variableName)
+            val variableName =variableDeclaration.variableName ?: continue
+            result.add(variableName)
         }
         return result
     }
@@ -444,11 +445,11 @@ object ObjJVariableNameAggregatorUtil {
 
             val variableDeclarationList:MutableList<ObjJVariableDeclaration> = mutableListOf()
             if (iterationStatement is ObjJForStatement) {
-                variableDeclarationList.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableDeclarationList ?: listOf())
+                variableDeclarationList.addAll(iterationStatement.forLoopHeader?.forLoopPartsInBraces?.variableDeclarationList?.variableDeclarationList ?: listOf())
 
-                result.addAll(iterationStatement.forLoopHeader.forLoopPartsInBraces.variableDeclarationList?.variableNameList ?: listOf())
-                if (iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr != null) {
-                    result.add(iterationStatement.forLoopHeader.forLoopPartsInBraces.inExpr!!.variableName)
+                result.addAll(iterationStatement.forLoopHeader?.forLoopPartsInBraces?.variableDeclarationList?.variableNameList ?: listOf())
+                if (iterationStatement.forLoopHeader?.forLoopPartsInBraces?.inExpr != null) {
+                    result.add(iterationStatement.forLoopHeader!!.forLoopPartsInBraces!!.inExpr!!.variableName)
                 }
             }
 

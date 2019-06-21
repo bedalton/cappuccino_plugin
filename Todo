@@ -1,0 +1,1 @@
+Clear methods to allow for assumed global variables. Keep nesting only one level from root. Ignore resolved variables.

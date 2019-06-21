@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -14,15 +15,14 @@ import com.intellij.psi.PsiElement
 
 object ObjJVariableTypeResolver {
 
-    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true): Set<String> {
+    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJIgnoreEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
-            return resolveVariableTypeWithoutMethodParse(variableName, recurse)
+            return resolveVariableTypeWithoutMethodParse(variableName, recurse, tag, withInheritance)
         }
         return setOf()
     }
 
-    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true) : Set<String> {
-
+    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
 
@@ -31,18 +31,24 @@ object ObjJVariableTypeResolver {
             "super" -> {
                 containingClass = ObjJHasContainingClassPsiUtil.getContainingSuperClassName(variableName)
                 if (containingClass != null && !DumbService.isDumb(project)) {
-                    return ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                    return if (withInheritance)
+                        ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                    else setOf(containingClass)
                 }
             }
             "this", "self" -> if (containingClass != null && !DumbService.isDumb(project)) {
-                return ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                return if (withInheritance)
+                    ObjJInheritanceUtil.getAllInheritedClasses(containingClass, project).toSet()
+                else setOf(containingClass)
             }
         }
 
         // Get annotation based variable type
         val annotationBasedVariableType = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName)
         if (annotationBasedVariableType != null) {
-            return ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()
+            else setOf(annotationBasedVariableType)
         }
 
         // Ensure indexes are not dumb before querying them
@@ -52,54 +58,57 @@ object ObjJVariableTypeResolver {
 
         // Get call target from formal variable types
         val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames != null && !classNames.isEmpty()) {
-            return classNames
+        if (classNames.isNotNullOrEmpty()) {
+            return classNames!!
         }
 
-        if (!DumbService.isDumb(project) && !ObjJImplementationDeclarationsIndex.instance.getKeysByPattern(variableName.text, project).isEmpty()) {
-            return ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
+        if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.containsKey(variableName.text, project)) {
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(variableName.text, project).toSet()
+            else
+                setOf(variableName.text)
         }
         val out = mutableSetOf<String>()
-        val varNameResults = getVariableTypeFromAssignments(variableName, recurse)?.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) }?.toSet()
+        val varNameResults = getVariableTypeFromAssignments(variableName, recurse, tag)//
         if (varNameResults != null) {
-            out.addAll(varNameResults)
+            if (withInheritance){
+                out.addAll(varNameResults.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) })
+            } else
+                out.addAll(varNameResults)
         }
         return if (out.isNotEmpty()) out else setOf()
     }
 
-    private fun getVariableTypeFromAssignments(variableName:ObjJVariableName, recurse: Boolean) : Set<String>? {
-        val fromBodyVariableAssignments = getVariableTypeFromBodyVariableAssignments(variableName, recurse)
+    private fun getVariableTypeFromAssignments(variableName:ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
+        val fromBodyVariableAssignments = getVariableTypeFromBodyVariableAssignments(variableName, recurse, tag)
         if (fromBodyVariableAssignments?.isNotEmpty().orFalse()) {
             return fromBodyVariableAssignments
         }
-        val fromExpressionAssignments = getVariableTypeFromExpressionAssignments(variableName, recurse)
+        val fromExpressionAssignments = getVariableTypeFromExpressionAssignments(variableName, recurse, tag)
         if (fromExpressionAssignments?.isNotEmpty().orFalse()) {
             return fromExpressionAssignments
         }
         return null
     }
 
-    private fun getVariableTypeFromBodyVariableAssignments(variableName: ObjJVariableName, recurse: Boolean) : Set<String>? {
+    private fun getVariableTypeFromBodyVariableAssignments(variableName: ObjJVariableName, recurse: Boolean, tag: Long) : Set<String>? {
         if (variableName.indexInQualifiedReference != 0) {
             return null
         }
         val variableNameText = variableName.text
-        val assignmentsRaw =variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
+        val assignmentsRaw = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
                 .flatMap { it.variableDeclarationList?.variableDeclarationList ?: emptyList() }
                 .filter { it.qualifiedReferenceList.any { q -> q.text == variableNameText } }
 
         val out = mutableSetOf<String>()
         for (variableDeclaration in assignmentsRaw) {
-            val set = getVariableTypeFromAssignment(variableDeclaration, recurse) ?: continue
+            val set = getVariableTypeFromAssignment(variableDeclaration, recurse, tag) ?: continue
             out.addAll(set)
         }
-        val project = variableName.project
-        return out.flatMap {
-            ObjJInheritanceUtil.getAllInheritedClasses(it, project)
-        }.toSet()
+        return out.toSet()
     }
 
-    private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean) : Set<String>? {
+    private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
         val assignmentsRaw:List<ObjJVariableDeclaration> = variableName
                 .getParentBlockChildrenOfType(ObjJExpr::class.java, true)
                 .mapNotNull {expr ->  expr.leftExpr?.variableDeclaration }
@@ -113,62 +122,54 @@ object ObjJVariableTypeResolver {
 
         val out = mutableSetOf<String>()
         assignmentsRaw.forEach {
-            val set = getVariableTypeFromAssignment(it, recurse) ?: return@forEach
+            val set = getVariableTypeFromAssignment(it, recurse, tag) ?: return@forEach
             out.addAll(set)
         }
         return out
     }
 
-    private fun getVariableTypeFromAssignment(variableDeclaration:ObjJVariableDeclaration, recurse: Boolean) : Set<String>? {
+    private fun getVariableTypeFromAssignment(variableDeclaration:ObjJVariableDeclaration, recurse: Boolean, tag:Long) : Set<String>? {
         val expression = variableDeclaration.expr
-        val leftExpr = expression.leftExpr ?: return null
-        var out:Set<String>? = getTypeFromMethodCall(leftExpr)
+        val leftExpr = expression?.leftExpr ?: return null
+        var out:Set<String>? = getTypeFromMethodCall(leftExpr, tag)
         if (out != null) {
             return out
         }
-        out = getTypeFromQualifiedReferenceAssignment(leftExpr, recurse)
+        out = getTypeFromQualifiedReferenceAssignment(leftExpr, recurse, tag)
         if (out != null) {
             return out
         }
         return null
     }
 
-    private fun getTypeFromMethodCall(leftExpression: ObjJLeftExpr) : Set<String>? {
+    private fun getTypeFromMethodCall(leftExpression: ObjJLeftExpr, tag:Long) : Set<String>? {
         val methodCall = leftExpression.methodCall ?: return null
         val selector = methodCall.selectorString
-        val out = mutableSetOf<String>()
         val skipIf = listOf(
                 "null",
                 "nil"
         )
-        ObjJUnifiedMethodIndex.instance[selector, methodCall.project].forEach {
-            val returnType = it.returnType
-            if (returnType.toLowerCase() in skipIf)
-                return@forEach
-            if (returnType == "id" || returnType.contains("<")) {
-                return null
-            }
-            out.add(returnType)
-        }
+        val out = ObjJUnifiedMethodIndex.instance[selector, methodCall.project].flatMap { it.getReturnTypes(tag) }.toSet().filterNot{ returnType ->
+            returnType.toLowerCase() in skipIf ||returnType == "id" || returnType.contains("<")
+        }.toSet()
         return if (out.isNotEmpty()) out else null
     }
 
-    private fun getTypeFromQualifiedReferenceAssignment(leftExpression: ObjJLeftExpr, recurse:Boolean) : Set<String>? {
+    private fun getTypeFromQualifiedReferenceAssignment(leftExpression: ObjJLeftExpr, recurse:Boolean, tag:Long) : Set<String>? {
         if (!recurse) {
             return null
         }
         val qualifiedAssignment = leftExpression.qualifiedReference ?: return null
         val lastVar = qualifiedAssignment.lastVar ?: return null
-        return resolveVariableType(lastVar, false)
+        return resolveVariableType(lastVar, false, tag)
     }
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName): Set<String>? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        val project = callTargetVariableName.project
-        return if (formalVariableType.varTypeId != null && formalVariableType.varTypeId!!.className != null) {
-            ObjJInheritanceUtil.getAllInheritedClasses(formalVariableType.varTypeId!!.className!!.text, project).toSet()
+        return if (formalVariableType.varTypeId?.className != null) {
+            setOf(formalVariableType.varTypeId!!.className!!.text)
         } else {
-            ObjJInheritanceUtil.getAllInheritedClasses(formalVariableType.text, project).toSet()
+            setOf(formalVariableType.text)
         }
     }
 

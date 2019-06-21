@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -96,7 +97,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                                                   returnsWithExpression: List<ObjJReturnStatement>,
                                                   returnsWithoutExpression: List<ObjJReturnStatement>,
                                                   problemsHolder: ProblemsHolder) {
-            val returnType = methodDeclaration.methodHeader.returnType
+            val returnType = methodDeclaration.methodHeader.explicitReturnType
             if (returnType == "@action" || returnType == "IBAction" || returnType == "void" /* Added to allow void annotation to be handled elsewhere */) {
                 return
             } else {
@@ -148,7 +149,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType != ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME !in call.getReturnTypes( createTag())) {
                     return true
                 }
             }
@@ -160,7 +161,7 @@ class ObjJReturnStatementDisagreementInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME in call.getReturnTypes( createTag())) {
                     return true
                 }
             }

@@ -21,12 +21,12 @@ object ObjJDescriptionUtil {
     private fun getClassDescriptiveText(classNameElement: ObjJClassName): String? {
         val classDeclarationElement = classNameElement.getParentOfType(ObjJClassDeclarationElement::class.java)
         var className = classNameElement.text
-        if (classDeclarationElement == null || classDeclarationElement.getClassNameString() != className) {
+        if (classDeclarationElement == null || classDeclarationElement.classNameString != className) {
             return className
         }
         if (classDeclarationElement is ObjJImplementationDeclaration) {
-            if (classDeclarationElement.categoryName != null) {
-                className += " (" + classDeclarationElement.categoryName!!.className.text + ")"
+            if (classDeclarationElement.categoryName?.className != null) {
+                className += " (" + classDeclarationElement.categoryName!!.className!!.text + ")"
             }
         }
         return className
@@ -54,7 +54,7 @@ object ObjJDescriptionUtil {
             if (methodHeader != null) {
                 selectorString = if (methodHeader is ObjJMethodHeader) getFormattedSelector((methodHeader as ObjJMethodHeader?)!!) else methodHeader.selectorString
                 val methodScopeString = if (methodHeader.isStatic) "+" else "-"
-                return methodScopeString + " (" + methodHeader.returnType + ")" + selectorString
+                return methodScopeString + " (" + methodHeader.explicitReturnType + ")" + selectorString
             }
         }
         selectorString = selectorString ?: selector.getSelectorString(true)

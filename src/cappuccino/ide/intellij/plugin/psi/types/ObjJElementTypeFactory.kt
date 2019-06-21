@@ -14,10 +14,14 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.INCLUDE_FRAMEWOR
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.INSTANCE_VAR
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_CALL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.METHOD_HEADER
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.OBJECT_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PREPROCESSOR_FUNCTION
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROPERTY_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.PROTOCOL
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.QUALIFIED_REFERENCE
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.SELECTOR_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.TYPE_DEF
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_DECLARATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VAR_TYPE_ID
 
@@ -25,26 +29,30 @@ class ObjJElementTypeFactory {
     companion object {
         @JvmStatic
         fun factory(name: String): IElementType {
-            when (name) {
-                "ObjJ_ACCESSOR_PROPERTY" -> return ACCESSOR_PROPERTY
-                "ObjJ_CLASS_NAME" -> return CLASS_NAME
-                "ObjJ_FUNCTION_DECLARATION" -> return FUNCTION_DECLARATION
-                "ObjJ_FUNCTION_LITERAL" -> return FUNCTION_LITERAL
-                "ObjJ_GLOBAL_VARIABLE_DECLARATION" -> return GLOBAL_VARIABLE
-                "ObjJ_IMPLEMENTATION_DECLARATION" -> return IMPLEMENTATION
-                "ObjJ_IMPORT_FILE" -> return IMPORT_FILE
-                "ObjJ_IMPORT_FRAMEWORK" -> return IMPORT_FRAMEWORK
-                "ObjJ_INCLUDE_FILE" -> return INCLUDE_FILE
-                "ObjJ_INCLUDE_FRAMEWORK" -> return INCLUDE_FRAMEWORK
-                "ObjJ_INSTANCE_VARIABLE_DECLARATION" -> return INSTANCE_VAR
-                "ObjJ_METHOD_CALL" -> return METHOD_CALL
-                "ObjJ_METHOD_HEADER" -> return METHOD_HEADER
-                "ObjJ_PREPROCESSOR_DEFINE_FUNCTION" -> return PREPROCESSOR_FUNCTION
-                "ObjJ_PROTOCOL_DECLARATION" -> return PROTOCOL
-                "ObjJ_SELECTOR_LITERAL" -> return SELECTOR_LITERAL
-                "ObjJ_TYPE_DEF" -> return TYPE_DEF
-                "ObjJ_VAR_TYPE_ID" -> return VAR_TYPE_ID
-                "ObjJ_VARIABLE_NAME" -> return VARIABLE_NAME
+            return when (name) {
+                "ObjJ_ACCESSOR_PROPERTY" -> ACCESSOR_PROPERTY
+                "ObjJ_CLASS_NAME" -> CLASS_NAME
+                "ObjJ_FUNCTION_DECLARATION" -> FUNCTION_DECLARATION
+                "ObjJ_FUNCTION_LITERAL" -> FUNCTION_LITERAL
+                "ObjJ_GLOBAL_VARIABLE_DECLARATION" -> GLOBAL_VARIABLE
+                "ObjJ_IMPLEMENTATION_DECLARATION" -> IMPLEMENTATION
+                "ObjJ_IMPORT_FILE" -> IMPORT_FILE
+                "ObjJ_IMPORT_FRAMEWORK" -> IMPORT_FRAMEWORK
+                "ObjJ_INCLUDE_FILE" -> INCLUDE_FILE
+                "ObjJ_INCLUDE_FRAMEWORK" -> INCLUDE_FRAMEWORK
+                "ObjJ_INSTANCE_VARIABLE_DECLARATION" -> INSTANCE_VAR
+                "ObjJ_METHOD_CALL" -> METHOD_CALL
+                "ObjJ_METHOD_HEADER" -> METHOD_HEADER
+                "ObjJ_OBJECT_LITERAL" -> OBJECT_LITERAL
+                "ObjJ_PREPROCESSOR_DEFINE_FUNCTION" -> PREPROCESSOR_FUNCTION
+                "ObjJ_PROPERTY_NAME" -> PROPERTY_NAME
+                "ObjJ_PROTOCOL_DECLARATION" -> PROTOCOL
+                "ObjJ_QUALIFIED_REFERENCE" -> QUALIFIED_REFERENCE
+                "ObjJ_SELECTOR_LITERAL" -> SELECTOR_LITERAL
+                "ObjJ_TYPE_DEF" -> TYPE_DEF
+                "ObjJ_VAR_TYPE_ID" -> VAR_TYPE_ID
+                "ObjJ_VARIABLE_DECLARATION" -> VARIABLE_DECLARATION
+                "ObjJ_VARIABLE_NAME" -> VARIABLE_NAME
                 else -> throw RuntimeException("Failed to find element type in factory for type <$name>")
             }
         }
