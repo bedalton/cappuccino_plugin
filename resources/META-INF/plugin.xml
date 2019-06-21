@@ -290,9 +290,19 @@
                       enabledByDefault="true"
     />
 
-    <localInspection language="ObjectiveJ"
+    <!--localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJNotAClassMethodInspection"
                      level="WEAK WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Method selector may be invalid for target"
+                     shortName="NotAClassMethod"
+                     order="last"
+    / -->
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJPossiblyUnintendedGlobalVariableInspectionTool"
+                     level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
                      displayName="Method selector may be invalid for target"
