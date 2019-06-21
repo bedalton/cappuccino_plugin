@@ -21,7 +21,7 @@ import com.intellij.util.IncorrectOperationException
 /**
  * Creates a suppress inspection comment targeting an undeclared variable by name
  */
-class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariableName) : BaseIntentionAction(), LocalQuickFix {
+class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariableName, private val message:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
     private val variableNamePointer:SmartPsiElementPointer<ObjJVariableName> = SmartPointerManager.createPointer(variableName)
     private val variableName:ObjJVariableName? get() {
@@ -29,7 +29,7 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
     }
 
     override fun getText(): String {
-        return ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection.prompt", variableName?.text ?: "#")
+        return message ?: ObjJBundle.message("objective-j.intentions.suppress-undeclared-variable-inspection.prompt", variableName?.text ?: "#")
     }
 
     override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {

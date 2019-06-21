@@ -21,11 +21,11 @@ import com.intellij.util.IncorrectOperationException
  * Variables with this name are ignored thoughout the whole project, not just the current file
  * To ignore the variable name in a given scope, it should use inspection suppression
  */
-class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIgnored:Boolean) : BaseIntentionAction(), LocalQuickFix {
+class ObjJAlterIgnoredUndeclaredVariable(private val keyword:String, val addToIgnored:Boolean, private val message:String? = null) : BaseIntentionAction(), LocalQuickFix {
 
 
     override fun getText(): String {
-        return if (addToIgnored)
+        return message ?: if (addToIgnored)
             ObjJBundle.message("objective-j.intentions.alter-ignored-variable.add-ignore-var.prompt", keyword)
          else
             ObjJBundle.message("objective-j.intentions.alter-ignored-variable.remove-ignored-var.text", keyword)
