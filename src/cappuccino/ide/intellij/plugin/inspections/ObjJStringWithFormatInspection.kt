@@ -9,8 +9,10 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
@@ -121,9 +123,12 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 val selectorText = methodCall.selectorList.getOrNull(0)?.text ?: return false
                 if (selectorText != CPSTRING_INIT_WITH_FORMAT && selectorText != CPSTRING_STRING_WITH_FORMAT)
                     return false
-                return methodCall.callTargetText == ObjJClassType.STRING || inferMethodCallType(methodCall, createTag())?.toClassList("?")?.any {
+                if (methodCall.callTargetText == ObjJClassType.STRING)
+                    return true
+                val inferredTypes = inferMethodCallType(methodCall, createTag())?.toClassList("?") ?: return true
+                return inferredTypes.isEmpty() || inferredTypes.any {
                     it == "?" || it.toLowerCase() in stringTypes
-                }.orFalse()
+                }
             }
             return false
         }
