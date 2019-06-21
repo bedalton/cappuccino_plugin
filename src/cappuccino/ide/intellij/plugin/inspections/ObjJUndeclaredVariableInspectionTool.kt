@@ -45,6 +45,14 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return
             }
+            // Check if is global variable assignment
+            if (variableNameIn.parent is ObjJGlobalVariableDeclaration)
+                return
+
+            // if is variable assignment target
+            // Have unintended global variable inspection handle it
+            if(variableNameIn.parent.parent is ObjJVariableDeclaration)
+                return
 
             if (variableName?.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
                 return
