@@ -7,19 +7,21 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.FileContentUtil
 import com.intellij.util.IncorrectOperationException
 
@@ -27,14 +29,14 @@ import com.intellij.util.IncorrectOperationException
 /**
  * Abstract class to add a suppress inspection statement to a block scope
  */
-abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter:String? = null) : BaseIntentionAction(), LocalQuickFix {
+abstract class ObjJAddSuppressInspectionBeforeElementOfKind(psiElement: PsiElement, protected val flag: ObjJSuppressInspectionFlags, private val parameter: String? = null) : BaseIntentionAction(), LocalQuickFix {
 
-    protected val pointer:SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
+    protected val pointer: SmartPsiElementPointer<*> = SmartPointerManager.createPointer(psiElement)
     // val writeAbove, Should be overwritten by accessor method,
     // not by actually holding a reference to an element
-    protected abstract val writeAbove:PsiElement?
+    protected abstract val writeAbove: PsiElement?
 
-    override fun isAvailable(project:Project, editor:Editor, file:PsiFile) : Boolean {
+    override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         return writeAbove != null
     }
 
@@ -52,10 +54,13 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElem
         val suppressInspectionComment = ObjJElementFactory.createIgnoreComment(project, flag, parameter)
         val newLine = writeAbove.parent.addBefore(ObjJElementFactory.createCRLF(project), writeAbove)
         writeAbove.parent.addBefore(suppressInspectionComment, newLine)
-
         DaemonCodeAnalyzer.getInstance(project).restart(file)
         ApplicationManager.getApplication().invokeLater {
-            FileContentUtil.reparseFiles (listOf(file.virtualFile))
+            FileContentUtil.reparseFiles(listOf(file.virtualFile))
+        }
+        WriteCommandAction.runWriteCommandAction(project) {
+            val parentBlock = this.writeAbove?.getParentOfType(ObjJBlock::class.java) ?: return@runWriteCommandAction
+            CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(parentBlock.textRange))
         }
     }
 
@@ -68,27 +73,28 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind (psiElement: PsiElem
 /**
  * Concrete implementation to add a inspection suppression for a ignore flag within a given scope
  */
-class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppressInspectionFlags, private val scope:ObjJSuppressInspectionScope, private val parameter:String? = null) : ObjJAddSuppressInspectionBeforeElementOfKind(psiElement, flag, parameter) {
+class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppressInspectionFlags, private val scope: ObjJSuppressInspectionScope, private val parameter: String? = null) : ObjJAddSuppressInspectionBeforeElementOfKind(psiElement, flag, parameter) {
     // Holds pointer to the kind of element that should be annotated
-    private var _writeAbove:SmartPsiElementPointer<PsiElement>? = null
+    private var _writeAbove: SmartPsiElementPointer<PsiElement>? = null
 
     // Gets the element to write above.
-    override val writeAbove:PsiElement? get () {
-        var writeAbove = this._writeAbove?.element
-        if (writeAbove != null) {
+    override val writeAbove: PsiElement?
+        get () {
+            var writeAbove = this._writeAbove?.element
+            if (writeAbove != null) {
+                return writeAbove
+            }
+            val element = pointer.element ?: return null
+            writeAbove = when (scope) {
+                ObjJSuppressInspectionScope.STATEMENT -> getOutermostParentInEnclosingBlock(element)
+                ObjJSuppressInspectionScope.CLASS -> element.getParentOfType(ObjJClassDeclarationElement::class.java)
+                ObjJSuppressInspectionScope.METHOD -> element.getParentOfType(ObjJMethodDeclaration::class.java)
+                ObjJSuppressInspectionScope.FUNCTION -> element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+                ObjJSuppressInspectionScope.FILE -> element.containingFile.firstChild
+            } ?: return null
+            _writeAbove = SmartPointerManager.createPointer(writeAbove)
             return writeAbove
         }
-        val element = pointer.element ?: return null
-        writeAbove = when (scope) {
-            ObjJSuppressInspectionScope.STATEMENT -> getOutermostParentInEnclosingBlock(element)
-            ObjJSuppressInspectionScope.CLASS -> element.getParentOfType(ObjJClassDeclarationElement::class.java)
-            ObjJSuppressInspectionScope.METHOD -> element.getParentOfType(ObjJMethodDeclaration::class.java)
-            ObjJSuppressInspectionScope.FUNCTION -> element.getParentOfType(ObjJFunctionDeclarationElement::class.java)
-            ObjJSuppressInspectionScope.FILE -> element.containingFile.firstChild
-        } ?: return null
-        _writeAbove = SmartPointerManager.createPointer(writeAbove)
-        return writeAbove
-    }
 
     override fun getText(): String {
         val forParameter = if (parameter != null && parameter.trim().isNotEmpty()) {
@@ -99,7 +105,7 @@ class ObjJAddSuppressInspectionForScope(psiElement: PsiElement, flag: ObjJSuppre
 }
 
 
-enum class ObjJSuppressInspectionScope(val scope:String) {
+enum class ObjJSuppressInspectionScope(val scope: String) {
     STATEMENT("for statement"),
     METHOD("for method"),
     FUNCTION("for function"),
@@ -107,9 +113,9 @@ enum class ObjJSuppressInspectionScope(val scope:String) {
     FILE("in file")
 }
 
-fun getOutermostParentInEnclosingBlock(childElement:PsiElement) : PsiElement {
-    var writeAbove:PsiElement? = null
-    var currentParent:PsiElement? = childElement.parent
+fun getOutermostParentInEnclosingBlock(childElement: PsiElement): PsiElement {
+    var writeAbove: PsiElement? = null
+    var currentParent: PsiElement? = childElement.parent
     while (currentParent != null) {
         if (currentParent.parent is ObjJBlock) {
             writeAbove = currentParent
