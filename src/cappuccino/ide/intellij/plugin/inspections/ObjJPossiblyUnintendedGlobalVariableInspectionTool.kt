@@ -48,7 +48,8 @@ class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool()
             val parentDeclaration = variableNameIn.parent.parent as? ObjJVariableDeclaration ?: return
             if (variableNameIn.reference.resolve(true) != null)
                 return
-
+            if ((parentDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null)
+                return
             // Is Global keyword, ignore even if it should not be assigned to
             if (variableNameIn.hasText("self") || variableNameIn.hasText("super") || variableNameIn.hasText("this")) {
                 return
