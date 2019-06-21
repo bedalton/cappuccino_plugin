@@ -2,9 +2,7 @@ package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -13,14 +11,11 @@ import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DataKeys
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.actionSystem.EditorActionHandler
-import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
-import com.intellij.psi.codeStyle.ChangedRangesInfo
 import com.intellij.psi.codeStyle.CodeStyleManager
 import java.util.logging.Logger
 import kotlin.math.min
@@ -102,7 +97,6 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 
         private val handlers:List<OnEnterHandler> = listOf(
                 //MethodCallHandler,
-                BlockEnterHandler,
                 ClassEnterHandler,
                 MethodCallEnterHandler
         )
@@ -196,25 +190,6 @@ object MethodCallHandler : OnEnterHandler {
         return true
     }
 }*/
-
-/**
- * A block enter handler to complete the block if open
- */
-object BlockEnterHandler : OnEnterHandler {
-    override fun doIf(editor: Editor, psiElementIn: PsiElement): TextRange? {
-        val block = psiElementIn.thisOrParentAs(ObjJBlock::class.java) ?: return null
-        if (block.openBrace != null && block.closeBrace == null) {
-            val lastChild = block.lastChild ?: block.node.treeNext.psi ?: return null
-            editor.document.insertString(lastChild.textRange.endOffset, "\n}")
-            return block.textRange
-        }
-        if (psiElementIn.elementType == ObjJTypes.ObjJ_CLOSE_BRACE) {
-            block.textRange
-        }
-        return null
-    }
-
-}
 
 /**
  * Should autocomplete implementation and protocol class statements
