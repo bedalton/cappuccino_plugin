@@ -58,7 +58,6 @@ VAR_TYPE_SHORT=((unsigned|signed)[ ]+)?short
 VAR_TYPE_INT=((unsigned|signed)[ ]+)?int
 VAR_TYPE_LONG_LONG=((unsigned|signed)[ ]+)?long[ ]+long
 VAR_TYPE_LONG=((unsigned|signed)[ ]+)?long
-IMPORT_FRAMEWORK_LITERAL=<[a-zA-Z0-9\-_]+"/"[a-zA-Z0-9\-_]+(\.j)?>
 //BAD_SINGLE_QUOTE_STRING_LITERAL=\' SINGLE_QUOTE_STRING
 SINGLE_QUOTE_TEXT = ([^\\\'\r\n]|\\ [\\\'brfntvuU0])+
 //SINGLE_QUOTE_STRING_LITERAL = {BAD_SINGLE_QUOTE_STRING_LITERAL}\'
@@ -99,24 +98,25 @@ PP_WARNING = #\s*warning
 PP_INCLUDE = #\s*include
 PP_FRAGMENT = #\s+{ID}
 WHITE_SPACE=\p{Blank}+
-FILE_NAME_LITERAL = [^.]\.[j]
-FRAMEWORK_NAME = [^/ \n]+
+FILE_NAME_LITERAL = [^.>\n]+([.][j]?)?
+FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 %state PREPROCESSOR PRAGMA DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT IN_REGEXP IN_IMPORT IN_FILENAME
 %%
+
+
+<IN_FILENAME, IN_IMPORT> {
+    {LINE_TERMINATOR}					{ canRegex(true);   yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return WHITE_SPACE; }
+    "<"                                 { canRegex(false);  return ObjJ_LESS_THAN; }
+    ">"                                 { canRegex(false);  return ObjJ_GREATER_THAN; }
+	"'"									{ canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
+	"\""						        { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
+	"/"						        	{ canRegex(false);  yybegin(IN_FILENAME); return ObjJ_DIVIDE; }
+    {FRAMEWORK_NAME}                    { canRegex(false);  return ObjJ_FRAMEWORK_NAME; }
+}
 
 <IN_FILENAME> {
 	{FILE_NAME_LITERAL}					{ canRegex(false);  yybegin(IN_IMPORT); return ObjJ_FILE_NAME_LITERAL; }
 }
-
-<IN_FILENAME, IN_IMPORT> {
-    {LINE_TERMINATOR}					{ canRegex(true);   yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return WHITE_SPACE; }
-    "<"                                 { canRegex(false);  yybegin(IN_FILENAME); return ObjJ_LESS_THAN; }
-    ">"                                 { canRegex(false);  return ObjJ_GREATER_THAN; }
-	"'"									{ canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
-	"\""						        { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-    {FRAMEWORK_NAME}                    { canRegex(false);  return ObjJ_FRAMEWORK_NAME; }
-}
-
 
 <PRAGMA> {
 	'mark'								{ if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
