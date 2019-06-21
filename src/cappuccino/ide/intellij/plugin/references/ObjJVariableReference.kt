@@ -148,7 +148,7 @@ class ObjJVariableReference(
         }
         val out = mutableListOf<ObjJCompositeElement>()
         if (myElement.indexInQualifiedReference == 0) {
-            out.addAll(getGlobalAssignments(myElement).orEmpty())
+            out.addAll(getGlobalAssignments(myElement, true).orEmpty())
         } else {
             LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
         }
@@ -217,7 +217,7 @@ class ObjJVariableReference(
         return arrayOf()
     }
 
-    private fun getGlobalAssignments(variableName: ObjJVariableName) : List<ObjJCompositeElement>? {
+    private fun getGlobalAssignments(variableName: ObjJVariableName, nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
         val variableNameString = myElement.text
         val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
         if (allWithName.isNullOrEmpty()) {
@@ -232,7 +232,7 @@ class ObjJVariableReference(
             }
         }
         val allCandidatesInFile = allCandidates.filter {
-            myElement.commonScope(it) != UNDETERMINED
+            myElement.commonScope(it) != UNDETERMINED && (nullIfSelfReferencing && !myElement.isEquivalentTo(it))
         }.sortedByDescending {
             it.textRange.startOffset
         }
