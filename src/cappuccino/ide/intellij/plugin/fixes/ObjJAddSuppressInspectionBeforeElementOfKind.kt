@@ -54,13 +54,14 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind(psiElement: PsiEleme
         val suppressInspectionComment = ObjJElementFactory.createIgnoreComment(project, flag, parameter)
         val newLine = writeAbove.parent.addBefore(ObjJElementFactory.createCRLF(project), writeAbove)
         writeAbove.parent.addBefore(suppressInspectionComment, newLine)
+        val parentBlock = this.writeAbove?.getParentOfType(ObjJBlock::class.java)
+        if (parentBlock != null) {
+            CodeStyleManager.getInstance(file.project).reformatText(file, listOf(parentBlock.textRange))
+        }
+
         DaemonCodeAnalyzer.getInstance(project).restart(file)
         ApplicationManager.getApplication().invokeLater {
             FileContentUtil.reparseFiles(listOf(file.virtualFile))
-        }
-        WriteCommandAction.runWriteCommandAction(project) {
-            val parentBlock = this.writeAbove?.getParentOfType(ObjJBlock::class.java) ?: return@runWriteCommandAction
-            CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(parentBlock.textRange))
         }
     }
 
