@@ -385,14 +385,15 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun addFileLevelCompletions(resultSet: CompletionResultSet, element: PsiElement) {
         val prefix: String
         val resultsTemp: List<String>
+        val previousSiblingText = element.getPreviousNonEmptySibling(false)?.text
         when {
             // At @ fragment keywords
-            element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) -> {
+            element.isType(ObjJTypes.ObjJ_AT_FRAGMENT) || previousSiblingText == "@" -> {
                 resultsTemp = AT_KEYWORDS
                 prefix = "@"
             }
             // Add #(preproc) fragments
-            element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) -> {
+            element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) || previousSiblingText == "#" -> {
                 resultsTemp = PRE_PROC_KEYWORDS
                 prefix = "#"
             }
