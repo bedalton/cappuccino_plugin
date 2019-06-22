@@ -2,4 +2,4 @@ package cappuccino.ide.intellij.plugin.utils
 
 import java.util.*
 
-val now:Long = Date().time
+val now:Long get() = Date().time

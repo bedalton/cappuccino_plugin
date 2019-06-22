@@ -3,15 +3,17 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiTreeAnyChangeAbstractAdapter
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 
 internal val INFERENCE_LAST_RESOLVED = Key<Long>("objj.userdata.keys.INFERENCE_LAST_RESOLVED")
@@ -28,6 +30,7 @@ private val INFERRED_TYPES_IS_ACCESSING = Key<Boolean>("objj.userdata.keys.INFER
 
 private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
 
+private const val CACHE_EXPIRY = 2000
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -64,14 +67,13 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
-    val lastTagged = this.getUserData(INFERENCE_LAST_RESOLVED).orElse(Long.MIN_VALUE)
-    val timeSinceTag = StatusFileChangeListener.timeSinceLastFileChange - lastTagged
+    val lastTagged:Long = lastTagged
+    val timeSinceTag = max(StatusFileChangeListener.timeSinceLastFileChange,lastTagged) - min(StatusFileChangeListener.timeSinceLastFileChange,lastTagged)
 
     // Establish and store last text
     val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("")
     this.putUserData(INFERRED_TYPES_LAST_TEXT, this.text)
     val textMatches = lastText == this.text
-
     // Check cache without tagging
     if (tag == null && textMatches) {
         val inferred = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
@@ -79,7 +81,7 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
             return inferred
     }
     val tagged = tag != null && tagged(tag)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (timeSinceTag < 6000 || tagged) && textMatches) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (timeSinceTag < CACHE_EXPIRY || tagged) && textMatches) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
             return inferredTypes
@@ -90,11 +92,16 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
     this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, false)
+    this.putUserData(INFERENCE_LAST_RESOLVED, now)
     return inferredTypes
 }
 
 internal fun createTag():Long {
-    return StatusFileChangeListener.timeSinceLastFileChange
+    val now = now
+    return if (now - StatusFileChangeListener.timeSinceLastFileChange < CACHE_EXPIRY)
+        StatusFileChangeListener.timeSinceLastFileChange
+    else
+        now
 }
 
 /**
@@ -103,12 +110,22 @@ internal fun createTag():Long {
 internal fun ObjJCompositeElement.tagged(tag:Long?):Boolean {
     if (tag == null)
         return false
-    val currentTag = this.getUserData(INFERENCE_LAST_RESOLVED).orElse(Long.MAX_VALUE)
-    if (currentTag <= tag) {
-        //LOGGER.info("Element(${this.text})'s current tag matches loop tag <$tag>")
+
+    val currentTag = lastTagged
+    if (currentTag < tag) {
+        this.putUserData(INFERENCE_LAST_RESOLVED, tag)
         return true
     }
-    //LOGGER.info("Element(${this.text})'s CurrentTag($currentTag) != New Tag($tag)")
-    this.putUserData(INFERENCE_LAST_RESOLVED, tag)
-    return false
+    return currentTag == tag
+}
+
+private val PsiElement.lastTagged:Long get() {
+    val now = now
+    var lastTagged = this.getUserData(INFERENCE_LAST_RESOLVED)
+    if (lastTagged == null) {
+        lastTagged = now
+        this.putUserData(INFERENCE_LAST_RESOLVED, lastTagged)
+    } else if (now - lastTagged < 2000)
+        return now + 1
+    return lastTagged
 }
