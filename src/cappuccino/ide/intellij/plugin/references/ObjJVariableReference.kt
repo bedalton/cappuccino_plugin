@@ -228,8 +228,7 @@ class ObjJVariableReference(
         return arrayOf()
     }
 
-    /*
-    private fun getGlobalAssignments(myElement: ObjJVariableName, nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
+    private fun getGlobalAssignments(nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
         val variableNameString = myElement.text
         val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
         if (allWithName.isNullOrEmpty()) {
@@ -251,47 +250,6 @@ class ObjJVariableReference(
         if (nullIfSelfReferencing.orFalse() && allCandidatesInFile.size == 1) {
             val onlyCandidate = allCandidatesInFile.firstOrNull() ?: return null
             if(onlyCandidate.commonContext(myElement) == onlyCandidate) {
-                return null
-            }
-        }
-        if (allCandidatesInFile.isNotEmpty())
-            return allCandidatesInFile
-        return allCandidates
-    }
-*/
-    private fun getGlobalAssignments(nullIfSelfReferencing: Boolean, tag:Long? = null) : List<ObjJCompositeElement>? {
-        if (!follow || (tag != null && this.tag == tag))
-            return if (nullIfSelfReferencing) null else listOf(myElement)
-
-        val variableNameString = this.myElement.text
-        val parentVariableDeclaration = this.myElement.parent.parent as? ObjJVariableDeclaration
-        if (parentVariableDeclaration?.hasVarKeyword().orFalse())
-            return listOf(myElement)
-
-        val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, this.myElement.project].filterNot {
-            it == parentVariableDeclaration
-        }.flatMap { declaration -> declaration.qualifiedReferenceList.mapNotNull { it.qualifiedNameParts.firstOrNull() as? ObjJVariableName }.filterNot{ it == myElement } }
-
-        val references = allWithName.mapNotNull {
-            ObjJVariableReference(it, follow = false, nullIfSelfReferencing = true).resolve(true, tag = this.tag ?: createTag())
-        }
-        val allBodyDeclarations = allWithName.filter {
-            val declaration = (it.parent.parent as? ObjJVariableDeclaration)
-            declaration?.hasVarKeyword().orFalse()
-        }
-        val allCandidates = allWithName.filterNot {variableDeclaration ->
-            variableDeclaration in allBodyDeclarations && allBodyDeclarations.any {
-                variableDeclaration.commonScope(it) != UNDETERMINED
-            }
-        }
-        val allCandidatesInFile = allCandidates.filter {
-            this.myElement.commonScope(it) != UNDETERMINED && (nullIfSelfReferencing && !this.myElement.isEquivalentTo(it))
-        }.sortedByDescending {
-            it.textRange.startOffset
-        }
-        if (nullIfSelfReferencing.orFalse() && allCandidatesInFile.size == 1) {
-            val onlyCandidate = allCandidatesInFile.firstOrNull() ?: return null
-            if(onlyCandidate.commonContext(this.myElement) == onlyCandidate) {
                 return null
             }
         }
