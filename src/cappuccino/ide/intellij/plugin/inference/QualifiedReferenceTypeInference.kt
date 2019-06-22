@@ -22,6 +22,7 @@ internal fun inferQualifiedReferenceType(parts:List<ObjJQualifiedReferenceCompon
         addStatusFileChangeListener(parts[0].project)
         internalInferQualifiedReferenceType(parts, tag)
     }*/
+    addStatusFileChangeListener(parts[0].project)
     return internalInferQualifiedReferenceType(parts, tag)
 }
 
@@ -36,7 +37,7 @@ internal fun internalInferQualifiedReferenceType(parts:List<ObjJQualifiedReferen
         //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
-        parentTypes = part.getCachedInferredTypes(null) {
+        parentTypes = part.getCachedInferredTypes(tag) {
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
                 val varDefTypeSimple = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(parts[0] as ObjJVariableName)
                 if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
@@ -90,9 +91,9 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
         LOGGER.info("Cannot get variable name part for variable <${variableName.text}> as level < 0")
         return null
     }*/
-    if (variableName.tagged(tag))
-        return null
-    
+    /*if (variableName.tagged(tag))
+        return null*/
+
     //ProgressManager.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         return inferVariableNameType(variableName, tag)
