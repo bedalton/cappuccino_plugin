@@ -15,6 +15,6 @@ class ObjJImportsIndex : ObjJStringStubIndexBase<ObjJImportStatement<*>>() {
     companion object {
 
         val instance = ObjJImportsIndex()
-        private val KEY = IndexKeyUtil.createIndexKey<String, ObjJImportStatement<*>>(ObjJImportsIndex::class.java)
+        val KEY = IndexKeyUtil.createIndexKey<String, ObjJImportStatement<*>>(ObjJImportsIndex::class.java)
     }
 }

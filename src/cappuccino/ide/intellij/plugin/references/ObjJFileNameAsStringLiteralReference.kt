@@ -8,7 +8,7 @@ import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 
 class ObjJFileNameAsStringLiteralReference(element:ObjJFileNameAsImportString)
-    : PsiPolyVariantReferenceBase<ObjJFileNameAsImportString>(element, TextRange(0, element.stringLiteral.textLength - 2))
+    : PsiPolyVariantReferenceBase<ObjJFileNameAsImportString>(element, getRange(element))
 {
 
     private val fileName = element.stringLiteral.stringValue
@@ -33,4 +33,11 @@ class ObjJFileNameAsStringLiteralReference(element:ObjJFileNameAsImportString)
         return PsiElementResolveResult.createResults(rawResult)
     }
 
+}
+
+private fun getRange(element:ObjJFileNameAsImportString) : TextRange {
+    if (element.textLength < 2)
+        return TextRange.EMPTY_RANGE
+    val offset = if (element.text.endsWith("'") || element.text.endsWith("\"")) 1 else 0
+    return TextRange(1, element.textLength - offset)
 }

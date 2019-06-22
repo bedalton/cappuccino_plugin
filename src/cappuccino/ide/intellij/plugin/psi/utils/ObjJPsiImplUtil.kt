@@ -233,7 +233,8 @@ object ObjJPsiImplUtil {
         val rawText = stringLiteral.text
         val quotationMark: String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
         val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
-        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - 1) else outText
+        val offset = if (outText.endsWith(quotationMark)) 1 else 0
+        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - offset) else outText
 
     }
 

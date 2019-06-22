@@ -305,8 +305,28 @@
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
-                     displayName="Method selector may be invalid for target"
-                     shortName="NotAClassMethod"
+                     displayName="Possibly unintended global variable"
+                     shortName="UnintendedGlobalVariable"
+                     order="last"
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJClassIsImportedInspection"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Class is not imported"
+                     shortName="ClassNotImported"
+                     order="last"
+    />
+
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJImportInspection"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Import is invalid"
+                     shortName="ImportIsInvalid"
                      order="last"
     />
 

@@ -4,6 +4,7 @@ import com.intellij.psi.stubs.IndexSink
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -192,7 +193,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * Indexes import calls for referencing
      */
     override fun indexImport(stub: ObjJImportStub<*>, indexSink: IndexSink) {
-        // @todo implement the actual indexing
+        indexSink.occurrence<ObjJImportStatement<*>, String>(ObjJImportsIndex.KEY, stub.fileName)
     }
 
     /**
