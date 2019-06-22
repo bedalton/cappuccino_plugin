@@ -142,10 +142,10 @@ class ObjJVariableReference(
         }
     }
 
-    private fun multiResolve(partial:Boolean, tag:Long? = null) : Array<ResolveResult> {
+    private fun multiResolve(tag:Long? = null) : Array<ResolveResult> {
         val element = resolve(true, tag)
         if (element != null) {
-            return PsiElementResolveResult.createResults(listOf(element))
+            return element.toResolveResult()
         }
         val out = mutableListOf<ObjJCompositeElement>()
         if (myElement.indexInQualifiedReference == 0) {
@@ -153,11 +153,11 @@ class ObjJVariableReference(
         } else {
             LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
         }
-        return PsiElementResolveResult.createResults(out)
+        return out.toResolveResult()
     }
 
     override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
-        return multiResolve(partial, null)
+        return multiResolve(createTag())
     }
 
     fun resolve(nullIfSelfReferencing: Boolean, tag:Long? = null) : PsiElement? {
@@ -297,4 +297,12 @@ private fun variableDeclarationsEnclosedGlobalStrict(variableName: ObjJVariableN
     }
     val resolved = ObjJVariableReference(variableName, false).resolve() ?: return true
     return (resolved.parent.parent.parent.parent as? ObjJBodyVariableAssignment)?.varModifier == null
+}
+
+fun List<PsiElement>.toResolveResult() : Array<ResolveResult> {
+    return PsiElementResolveResult.createResults(this)
+}
+
+fun PsiElement.toResolveResult() : Array<ResolveResult> {
+    return PsiElementResolveResult.createResults(this)
 }
