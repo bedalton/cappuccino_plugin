@@ -8,7 +8,6 @@ import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
 
 import java.util.*
@@ -164,11 +163,11 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : ObjJCompositeElement> : Strin
         return out
     }
 
-    fun getAllResolveableKeys(project: Project): List<String> {
-        return ArrayUtils.filter(ArrayList(getAllKeys(project))) { key -> isResolveableKey(key as String, project) }
+    fun getAllResolvableKeys(project: Project): List<String> {
+        return getAllKeys(project).filter { key -> isResolvableKey(key as String, project) }
     }
 
-    private fun isResolveableKey(key: String, project: Project): Boolean {
+    private fun isResolvableKey(key: String, project: Project): Boolean {
         val elementsForKey = get(key, project, scopeOrDefault(null, project))
         for (element in elementsForKey) {
             return ObjJPsiImplUtil.shouldResolve(element)

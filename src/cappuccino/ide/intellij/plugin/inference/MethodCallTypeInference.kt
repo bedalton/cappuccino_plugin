@@ -1,14 +1,15 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.*
-import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
-import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText
+import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 
@@ -21,7 +22,7 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
 // MUST BE FALSE
 // Causes infinite recursion
 private val CLASS_METHOD_BASED_RESOLVE = false
-
+/*
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     //ProgressManager.checkCanceled()
     /*if (level < 0)
@@ -72,7 +73,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         }.collapse()
     }
 }
-/*
+*/
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     //ProgressManager.checkCanceled()
     /*if (level < 0)
@@ -84,7 +85,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     }
     val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
     val callTargetTypes = callTargetType?.classes.orEmpty()
-    if (selector == "copy" || selector == "copy:")
+    if (selector == "copy" || selector == "copy:" || selector == "new:" || selector == "new:")
         return callTargetType
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
@@ -98,10 +99,10 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         emptyList()
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
-        methodDeclaration.getCachedInferredTypes {
+        methodDeclaration.getCachedInferredTypes(tag) {
             if (methodDeclaration.tagged(tag))
                 return@getCachedInferredTypes null
-            val commentReturnTypes = methodDeclaration.docComment?.getGetReturnType(methodDeclaration.project).orEmpty().withoutAnyType()
+            val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
             }
@@ -130,22 +131,19 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     else
         instanceVariableTypes
     return InferenceResult(classes = out.toSet())
-}*/
+}
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
-    val callTargetText = methodCall.callTargetText
-    val className = if (callTargetText == "super") {
-        methodCall.callTarget
+    val className = when (val callTargetText = methodCall.callTargetText) {
+        "super" -> methodCall
                 .getParentOfType(ObjJHasContainingClass::class.java)
                 ?.containingSuperClassName
                 ?: callTargetText
-    } else if (callTargetText == "self") {
-        methodCall.callTarget
+        "self" -> methodCall
                 .getParentOfType(ObjJHasContainingClass::class.java)
                 ?.containingClassName
                 ?: callTargetText
-    } else {
-        callTargetText
+        else -> callTargetText
     }
     val isValidClass = ObjJImplementationDeclarationsIndex.instance.containsKey(className, methodCall.project)
     if (!isValidClass)
@@ -178,7 +176,7 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
     }
     return null
 }
-/*
+
 private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
     //ProgressManager.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
@@ -186,10 +184,10 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         val type = simpleReturnType.stripRefSuffixes()
         return setOf(type)
     } else {
-        var out = methodDeclaration.methodHeader.getCachedType
-        if (out != null)
-            return out.classes
-        out = INFERRED_EMPTY_TYPE
+        //var out = methodDeclaration.methodHeader.getCachedReturnType(tag)
+        //if (out != null)
+         //   return out.classes
+        var out = INFERRED_EMPTY_TYPE
         val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
         val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
@@ -205,4 +203,4 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
         }
         return out.classes
     }
-}*/
+}

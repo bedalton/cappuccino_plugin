@@ -1,30 +1,13 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
 import com.intellij.openapi.project.Project
 
 fun getJsClassObject(project:Project, className: String) : GlobalJSClass? {
-    return _getJsClassObject(project, className)?.mergeWithSuperClasses(project)
+    return internalGetJsClassObject(project, className)?.mergeWithSuperClasses(project)
 }
 
 
-fun GlobalJSClass.flattenWithChildrenProperties(project:Project, className: String) : GlobalJSClass? {
-    val baseClass = _getJsClassObject(project, className)
-    val jsClass = if (baseClass != null)
-        baseClass + globalJSClasses.filter { className in this.extends }.flatten(className)
-    else
-        globalJSClasses.filter { className in this.extends }.flatten(className)
-    val objjClass = objJClassAsJsClass(project, className)
-    val allClasses = mutableListOf<GlobalJSClass>()/*ObjJClassInheritanceIndex.instance[className, project].mapNotNull {
-        objJClassAsJsClass(project, it.getClassNameString())
-    }.toMutableList()*/
-    allClasses.add(jsClass)
-    if (objjClass != null)
-        allClasses.add(objjClass)
-    return allClasses.flatten(className)
-}
-
-private fun _getJsClassObject(project: Project, className: String) : GlobalJSClass? {
+private fun internalGetJsClassObject(project: Project, className: String) : GlobalJSClass? {
     val objjClass = objJClassAsJsClass(project, className)
     val out = if (objjClass == null)
         globalJSClasses.filter { it.className == className }
@@ -61,7 +44,7 @@ fun Iterable<GlobalJSClass>.flatten(className:String) : GlobalJSClass {
 
 fun GlobalJSClass.mergeWithSuperClasses(project:Project) : GlobalJSClass {
     val superClassNames = extends.flattenNestedSuperClasses()
-    val superClasses = superClassNames.mapNotNull { _getJsClassObject(project, it) }
+    val superClasses = superClassNames.mapNotNull { internalGetJsClassObject(project, it) }
     return (superClasses + this).flatten(className)
 }
 
