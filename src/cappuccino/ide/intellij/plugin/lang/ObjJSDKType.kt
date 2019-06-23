@@ -38,7 +38,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         return findFrameworkFolders(sdkPath).isNotEmpty()
     }
 
-    override fun suggestSdkName(currentSdkName: String, sdkHome: String): String {
+    override fun suggestSdkName(currentSdkName: String?, sdkHome: String?): String {
         return "Cappuccino " + getVersionString(sdkHome)
     }
 
@@ -50,7 +50,9 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         return ObjJIcons.SDK_ADD_ICON
     }
 
-    override fun getVersionString(sdkHome: String) : String? {
+    override fun getVersionString(sdkHome: String?) : String? {
+        if (sdkHome == null)
+            return ""
         val versionFile = File(sdkHome, "version.json")
         if (!versionFile.exists())
             return null
