@@ -99,16 +99,17 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
         var out: MutableList<PsiElement> = ArrayList()
         if (selectorResult.isNotEmpty) {
             out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
-        }
-        selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement)
-        if (selectorResult.isNotEmpty) {
-            out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
+        } else {
+            selectorResult = ObjJSelectorReferenceResolveUtil.getSelectorLiteralReferences(myElement)
+            if (selectorResult.isNotEmpty) {
+                out.addAll(ObjJResolveableElementUtil.onlyResolveableElements(selectorResult.result))
+            }
         }
         if (out.isNotEmpty()) {
             if (classConstraints.isNotEmpty() && ObjJClassType.UNDETERMINED !in classConstraints && ObjJClassType.ID !in classConstraints && classConstraints.contains(ObjJClassType.ID)) {
                 val tempOut = out.filter { element -> element is ObjJCompositeElement && classConstraints.contains(ObjJHasContainingClassPsiUtil.getContainingClassName(element)) }
                 if (tempOut.isNotEmpty()) {
-                    out = tempOut as MutableList<PsiElement>
+                    out = tempOut.toMutableList()
                 }
             }
             return PsiElementResolveResult.createResults(out)

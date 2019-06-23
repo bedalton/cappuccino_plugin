@@ -69,7 +69,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
     }
 
     override fun getVariants(): Array<Any> {
-        val keys = ArrayList<Any>(ObjJClassDeclarationsIndex.instance.getAllResolveableKeys(myElement.project))
+        val keys = ArrayList<Any>(ObjJClassDeclarationsIndex.instance.getAllResolvableKeys(myElement.project))
         return keys.toTypedArray()
     }
 }

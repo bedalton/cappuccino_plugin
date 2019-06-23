@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.inference.tagged
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
@@ -12,8 +11,8 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
 fun ObjJVariableName.getPossibleClassTypes(tag:Long) : Set<String> {
-    if (this.tagged(tag))
-        return emptySet()
+    /*if (this.tagged(tag))
+        return emptySet()*/
     return getPossibleTypesIfVariableName(this, tag)
             .flatMap {
                 val out = mutableListOf(it)
@@ -30,8 +29,8 @@ private fun getPossibleTypesIfVariableName(variableName: ObjJVariableName, tag: 
         "self" -> variableName.containingClassName
         "super" -> variableName.getContainingSuperClass(true)?.text
         else -> {
-            if (variableName.tagged(tag))
-                return emptySet()
+            /*if (variableName.tagged(tag))
+                return emptySet()*/
             ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
         }
     } ?: return ObjJVariableTypeResolver.resolveVariableType(variableName, true, tag)
@@ -57,8 +56,8 @@ private fun getTypeFromInstanceVariables(variableName: ObjJVariableName) : Strin
  * Attempts to get possible call target type if method call
  */
 private fun getPossibleCallTargetTypeFromMethodCall(methodCall: ObjJMethodCall, @Suppress("SameParameterValue") follow:Boolean = true, tag: Long) : Set<String> {
-    if (methodCall.tagged(tag))
-        return emptySet()
+    /*if (methodCall.tagged(tag))
+        return emptySet()*/
     if (methodCall.selector?.text == "alloc") {
         return setOf(methodCall.callTargetText)
     }

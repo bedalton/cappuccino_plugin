@@ -10,13 +10,18 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiManager
 
 class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
+    override fun getDocumentationElementForLookupItem(psiManager: PsiManager, `object`: Any, element: PsiElement): PsiElement? {
+        return null
+    }
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
@@ -70,7 +75,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     out.append(")")
                     val returnType = function.getReturnType(createTag())
                     if (returnType.isNotNullOrBlank()) {
-                        out.append(" : ").append(returnType)
+                        out.append(": ").append(returnType)
                     }
                     out.toString() + getLocationString(element)
                 }
@@ -79,10 +84,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                 }
 
                 .info(ObjJBodyVariableAssignment::class.java, orParent = true) {
-                    val container = getLocationString(element)
-                    StringBuilder("File Scope Variable in")
-                            .append(container)
-                            .toString()
+                    null
                 }
 
                 /// Only run after all other checks
@@ -165,13 +167,15 @@ private val PsiElement.containerName:String? get () {
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
     if (DumbService.isDumb(project))
         return null
+    LOGGER.info("Trying to get quick info for variable <${this.text}>")
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
-        out.append("Class ").append(text)
+        out.append("class ").append(text)
         return out.toString()
     }
     val parentMethodDeclarationHeader = parent as? ObjJMethodDeclarationSelector
     if (parentMethodDeclarationHeader != null) {
+        out.append("parameter ")
         val type = parentMethodDeclarationHeader.formalVariableType?.text
         if (type != null)
             out.append("(").append(type).append(")")
@@ -187,7 +191,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
             //// LOGGER.info("No prev siblings")
-            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag())
+            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
             val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
             if (functionType != null) {
                 out.append(functionType.descriptionWithName(text))
@@ -195,23 +199,26 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             }
             val classNames = inferenceResult?.toClassListString("<Any?>")
             //// LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
-            out.append("Variable ").append(name)
+            if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
+                out.append("parameter")
+            else
+                out.append("var ").append(name)
             if (classNames.isNotNullOrBlank()) {
-                out.append(" : ").append(classNames)
+                out.append(": ").append(classNames)
             }
             out.append(" in ").append(getLocationString(this))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(prevSiblings, createTag())
+        val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag() + 1)
         val name = this.text
         val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
 
             val classNames = inferredTypes?.toClassListString(null)
             if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
-                out.append("Variable ").append(name)
+                out.append("property ").append(name)
             if (propertyTypes.isNotNullOrBlank()) {
-                out.append(" : ").append(propertyTypes)
+                out.append(": ").append(propertyTypes)
             }
             if (classNames.isNotNullOrBlank())
                 out.append(" in ").append(classNames)
@@ -221,9 +228,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             }
         }
     }
-
-    out.append("Variable '").append(text).append("'")
-    val possibleClasses = this.getPossibleClassTypes(createTag()).filterNot { it == "CPObject" }
+    LOGGER.info("Using fallback variable type resolver")
+    out.append("var '").append(text).append("'")
+    val possibleClasses = this.getPossibleClassTypes(createTag() + 2).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
