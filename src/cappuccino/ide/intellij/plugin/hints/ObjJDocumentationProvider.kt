@@ -167,7 +167,6 @@ private val PsiElement.containerName:String? get () {
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
     if (DumbService.isDumb(project))
         return null
-    LOGGER.info("Trying to get quick info for variable <${this.text}>")
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
         out.append("class ").append(text)
@@ -228,13 +227,12 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             }
         }
     }
-    LOGGER.info("Using fallback variable type resolver")
     out.append("var '").append(text).append("'")
     val possibleClasses = this.getPossibleClassTypes(createTag() + 2).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
-    out.append(" in").append(getLocationString(this))
+    out.append(" in ").append(getLocationString(this))
     return out.toString()
 }
 
