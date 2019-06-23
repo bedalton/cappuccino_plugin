@@ -41,8 +41,13 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
 
     private var internalTimeSinceLastFileChange = now
 
-    val timeSinceLastFileChange get() = internalTimeSinceLastFileChange
-
+    val timeSinceLastFileChange:Long
+        get() {
+            val now = now
+            if (now - internalTimeSinceLastFileChange < CACHE_EXPIRY * 3)
+                internalTimeSinceLastFileChange = now
+            return internalTimeSinceLastFileChange
+        }
 
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
@@ -50,7 +55,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
         internalTimeSinceLastFileChange = now
     }
 
-    internal fun addListenerToProject(project:Project) {
+    internal fun addListenerToProject(project: Project) {
         if (didAddListener)
             return
         didAddListener = true
@@ -62,13 +67,13 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
  * Gets the cached types values for the given element
  * This should save computation time, but results are uncertain
  */
-internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
+internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, setTag:Boolean = true, getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
     //if (this.getUserData(INFERRED_TYPES_IS_ACCESSING).orFalse())
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     val lastTagged:Long = lastTagged
-    val timeSinceTag = max(StatusFileChangeListener.timeSinceLastFileChange,lastTagged) - min(StatusFileChangeListener.timeSinceLastFileChange,lastTagged)
+    val timeSinceTag = max(StatusFileChangeListener.timeSinceLastFileChange, lastTagged) - min(StatusFileChangeListener.timeSinceLastFileChange,lastTagged)
 
     // Establish and store last text
     val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("")
@@ -80,7 +85,7 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
         if (inferred != null)
             return inferred
     }
-    val tagged = tag != null && tagged(tag)
+    val tagged = tag != null && tagged(tag, setTag)
     if (inferredVersionNumber == INFERRED_TYPES_VERSION && (timeSinceTag < CACHE_EXPIRY || tagged) && textMatches) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
@@ -97,25 +102,26 @@ internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, getIf
 }
 
 internal fun createTag():Long {
-    val now = now
-    return if (now - StatusFileChangeListener.timeSinceLastFileChange < CACHE_EXPIRY)
-        StatusFileChangeListener.timeSinceLastFileChange
-    else
-        now
+    return StatusFileChangeListener.timeSinceLastFileChange
 }
 
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun ObjJCompositeElement.tagged(tag:Long?):Boolean {
+internal fun ObjJCompositeElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
     if (tag == null)
         return false
 
     val currentTag = lastTagged
-    if (currentTag < tag) {
+
+    if (tag - currentTag >= CACHE_EXPIRY && setTag) {
         this.putUserData(INFERENCE_LAST_RESOLVED, tag)
+    }
+    if (currentTag <= tag) {
         return true
     }
+    if (setTag)
+        this.putUserData(INFERENCE_LAST_RESOLVED, tag)
     return currentTag == tag
 }
 

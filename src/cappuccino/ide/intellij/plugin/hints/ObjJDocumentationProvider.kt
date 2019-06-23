@@ -15,9 +15,13 @@ import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiManager
 
 class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
+    override fun getDocumentationElementForLookupItem(psiManager: PsiManager, `object`: Any, element: PsiElement): PsiElement? {
+        return null
+    }
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
@@ -80,10 +84,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                 }
 
                 .info(ObjJBodyVariableAssignment::class.java, orParent = true) {
-                    val container = getLocationString(element)
-                    StringBuilder("File Scope Variable in")
-                            .append(container)
-                            .toString()
+                    null
                 }
 
                 /// Only run after all other checks
@@ -166,12 +167,12 @@ private val PsiElement.containerName:String? get () {
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
     if (DumbService.isDumb(project))
         return null
+    LOGGER.info("Trying to get quick info for variable <${this.text}>")
     val out = StringBuilder()
     if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
         out.append("class ").append(text)
         return out.toString()
     }
-    inferQualifiedReferenceType(listOf(this), createTag() + 1)
     val parentMethodDeclarationHeader = parent as? ObjJMethodDeclarationSelector
     if (parentMethodDeclarationHeader != null) {
         out.append("parameter ")
@@ -190,7 +191,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
             //// LOGGER.info("No prev siblings")
-            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 2)
+            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
             val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
             if (functionType != null) {
                 out.append(functionType.descriptionWithName(text))
@@ -208,7 +209,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             out.append(" in ").append(getLocationString(this))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag() + 2)
+        val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag() + 1)
         val name = this.text
         val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
