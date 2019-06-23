@@ -1689,6 +1689,10 @@ val globalJSClasses = listOf(
         JS_ANY,
         JS_ARRAY,
         c(
+                className = "DOMWindow",
+                extends = listOf("Window")
+        ),
+        c(
                 className = "CFBundle",
                 constructor = ctor(listOf(p("aURL", "CPUrl|String"))),
                 staticFunctions = listOf(
@@ -2492,7 +2496,13 @@ val globalJSClasses = listOf(
         JsClassChildNode,
         JsClassElementCSSInlineStyle,
         JsClassEventTarget,
-        JsElementClass
+        JsElementClass,
+        JsClassHTMLOrSVGElement,
+        JsClassElementContentEditable,
+        JsClassDocumentAndElementEventHandlers,
+        JsClassNonDocumentTypeChildNode,
+        JsClassParentNode,
+        JsClassNode
 
 )
 
