@@ -167,7 +167,6 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         if (resolved == null)
             return
 
-        val inDifferentFiles = resolved.containingFile != functionCall.containingFile
         val commonScope = PsiTreeUtil.findCommonContext(resolved, functionCall)?.getContainingScope()
         if (commonScope == null || resolved.getContainingScope() == ReferencedInScope.FILE || commonScope == ReferencedInScope.FILE) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))
