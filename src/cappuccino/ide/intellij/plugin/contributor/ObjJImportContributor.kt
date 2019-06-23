@@ -2,11 +2,11 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkReference
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
-import cappuccino.ide.intellij.plugin.references.frameworkSearchRegex
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
+import cappuccino.ide.intellij.plugin.utils.createFrameworkSearchRegex
+import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
@@ -20,22 +20,15 @@ import com.intellij.psi.search.GlobalSearchScope
 import java.util.regex.Pattern
 
 object ObjJImportContributor {
-    private val bundleRegex = Pattern.compile("<key>CPBundleName</key>\\s*<string>([^<]+?)</string>")
 
     private fun frameworkNames(project:Project):List<String> {
         return FilenameIndex.getFilesByName(project, "Info.plist", GlobalSearchScope.everythingScope(project)).mapNotNull { file ->
-            val matcher = bundleRegex.matcher(file.text)
-            if (matcher.find()) {
-                val match = matcher.group(1)
-                match
-            } else {
-                null
-            }
+            findFrameworkNameInPlistText(file.text)
         }
     }
 
     private fun getFrameworkDirectory(project: Project, frameworkName:String) : PsiDirectory? {
-        val searchRegex = frameworkSearchRegex(frameworkName)
+        val searchRegex = createFrameworkSearchRegex(frameworkName)
         return FilenameIndex.getFilesByName(project, "Info.plist", GlobalSearchScope.everythingScope(project)).firstOrNull { file ->
             searchRegex.containsMatchIn(file.text)
         }?.containingDirectory
