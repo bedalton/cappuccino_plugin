@@ -139,6 +139,8 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         private val SDK_VERSION_REGEX = "\"version\"\\s*:\\s*\"([^\"]+?)\"".toRegex()
         private val LOGGER = Logger.getLogger("#${this::class.java.simpleName}")
         private const val LAST_SELECTED_SDK_HOME_KEY = "objj.sdk.LAST_HOME_PATH"
-        val instance = findInstance(ObjJSDKType::class.java)
+        val instance by lazy {
+            findInstance(ObjJSDKType::class.java)
+        }
     }
 }
