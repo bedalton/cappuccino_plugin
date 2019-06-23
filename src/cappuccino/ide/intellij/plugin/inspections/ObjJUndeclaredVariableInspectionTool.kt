@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
-import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
-import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
+import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -41,6 +38,9 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
         private fun registerProblemIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, problemsHolder:ProblemsHolder) {
             var variableName: ObjJVariableName? = variableNameIn
+
+            if (variableName?.text in ObjJGlobalJSVariablesNames || variableName?.text in globalJsFunctionNames)
+                return
 
             if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return

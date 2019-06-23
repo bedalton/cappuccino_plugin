@@ -18,7 +18,9 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
     }
 }
 
-private val CLASS_METHOD_BASED_RESOLVE = true
+// MUST BE FALSE
+// Causes infinite recursion
+private val CLASS_METHOD_BASED_RESOLVE = false
 
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     //ProgressManager.checkCanceled()

@@ -142,8 +142,8 @@ class ObjJVariableReference(
         }
     }
 
-    private fun multiResolve(partial:Boolean, tag:Long? = null) : Array<ResolveResult> {
-        val element = resolve(true, tag)
+    private fun multiResolve(tag:Long? = null) : Array<ResolveResult> {
+        val element = resolve(tag != null || nullIfSelfReferencing.orFalse(), tag)
         if (element != null) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
@@ -157,7 +157,7 @@ class ObjJVariableReference(
     }
 
     override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
-        return multiResolve(partial, null)
+        return multiResolve(null)
     }
 
     fun resolve(nullIfSelfReferencing: Boolean, tag:Long? = null) : PsiElement? {
