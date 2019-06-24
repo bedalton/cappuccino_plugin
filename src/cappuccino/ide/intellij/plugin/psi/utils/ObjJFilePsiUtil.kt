@@ -6,8 +6,13 @@ import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.ObjJImportFile
+import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
+import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFile
+import cappuccino.ide.intellij.plugin.psi.ObjJIncludeFramework
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.psi.PsiFile
 
 import java.nio.file.FileSystems
 import java.util.*
@@ -76,5 +81,30 @@ object ObjJFilePsiUtil {
             out.add(importStatement.importAsUnifiedString)
         }
         return out
+    }
+
+
+}
+
+fun PsiFile.getImportedFiles(): List<PsiFile> {
+    val out = mutableListOf<PsiFile>()
+    getImportedFiles(this, out)
+    LOGGER.info("Imported: ${out.size} files in ${this.name}\n\n${out.map { it.name }}")
+    return out
+}
+
+private fun getImportedFiles(fileIn:PsiFile, out:MutableList<PsiFile>) {
+    fileIn.getChildrenOfType(ObjJImportStatement::class.java).forEach {
+        val file = when(it) {
+            is ObjJImportFile -> it.fileNameAsImportString.reference.resolve()
+            is ObjJIncludeFile -> it.fileNameAsImportString.reference.resolve()
+            is ObjJImportFramework -> it.frameworkReference.frameworkFileName?.reference?.resolve()
+            is ObjJIncludeFramework -> it.frameworkReference.frameworkFileName?.reference?.resolve()
+            else -> null
+        } as? PsiFile ?: return@forEach
+        if (out.contains(file))
+            return@forEach
+        out.add(file)
+        getImportedFiles(file, out)
     }
 }
