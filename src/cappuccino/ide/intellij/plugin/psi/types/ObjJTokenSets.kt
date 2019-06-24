@@ -170,6 +170,14 @@ object ObjJTokenSets {
             ObjJ_FIRST_METHOD_DECLARATION_SELECTOR
     )
 
+    val HAS_PARAMS = create(
+            ObjJ_METHOD_HEADER,
+            ObjJ_METHOD_DECLARATION,
+            ObjJ_FUNCTION_LITERAL,
+            ObjJ_FUNCTION_DECLARATION,
+            ObjJ_PREPROCESSOR_DEFINE_FUNCTION
+    )
+
     val PREFIX_OPERATOR = create(
             ObjJ_PLUS,
             ObjJ_MINUS,
@@ -309,6 +317,7 @@ object ObjJTokenSets {
             ObjJ_COMMA,
             ObjJ_NEW,
             ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_IF_STATEMENT,
             ObjJ_WHILE_STATEMENT,
             ObjJ_TRY_STATEMENT,
             ObjJ_SWITCH_STATEMENT,

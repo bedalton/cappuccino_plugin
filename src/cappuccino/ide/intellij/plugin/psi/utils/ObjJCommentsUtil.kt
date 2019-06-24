@@ -214,10 +214,10 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
         }
 
         // Return matches if not empty, null otherwise
-        if (out.isNotEmpty())
-            return out
+        return if (out.isNotEmpty())
+            out
         else
-            return null
+            null
     }
 }
 

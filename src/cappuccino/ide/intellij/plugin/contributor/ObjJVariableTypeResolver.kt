@@ -22,6 +22,7 @@ object ObjJVariableTypeResolver {
         return setOf()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
@@ -69,13 +70,13 @@ object ObjJVariableTypeResolver {
                 setOf(variableName.text)
         }
         val out = mutableSetOf<String>()
-        val varNameResults = getVariableTypeFromAssignments(variableName, recurse, tag)//
+        /*val varNameResults = getVariableTypeFromAssignments(variableName, recurse, tag)//
         if (varNameResults != null) {
             if (withInheritance){
                 out.addAll(varNameResults.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) })
             } else
                 out.addAll(varNameResults)
-        }
+        }*/
         return if (out.isNotEmpty()) out else setOf()
     }
 
@@ -109,6 +110,7 @@ object ObjJVariableTypeResolver {
     }
 
     private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
+        val variableNameString = variableName.text
         val assignmentsRaw:List<ObjJVariableDeclaration> = variableName
                 .getParentBlockChildrenOfType(ObjJExpr::class.java, true)
                 .mapNotNull {expr ->  expr.leftExpr?.variableDeclaration }
@@ -116,7 +118,7 @@ object ObjJVariableTypeResolver {
                 // contain a variable with this name
                 .filter {
                     it.qualifiedReferenceList.any { qRef ->
-                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0) is ObjJVariableName
+                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0)?.text == variableNameString
                     }
                 }
 

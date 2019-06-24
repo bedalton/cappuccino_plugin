@@ -10,7 +10,7 @@ import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJGlobalVariableDeclarationImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJGlobalVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.utils.Strings
 
 import java.io.IOException
@@ -25,7 +25,7 @@ class ObjJGlobalVariableDeclarationStubType internal constructor(
 
     override fun createStub(
             variableDeclaration: ObjJGlobalVariableDeclarationImpl, stubParent: StubElement<*>): ObjJGlobalVariableDeclarationStub {
-        return ObjJGlobalVariableDeclarationStubImpl(stubParent, ObjJFileUtil.getContainingFileName(variableDeclaration), variableDeclaration.variableNameString, variableDeclaration.variableType)
+        return ObjJGlobalVariableDeclarationStubImpl(stubParent, ObjJPsiFileUtil.getContainingFileName(variableDeclaration), variableDeclaration.variableNameString, variableDeclaration.variableType)
     }
 
     @Throws(IOException::class)

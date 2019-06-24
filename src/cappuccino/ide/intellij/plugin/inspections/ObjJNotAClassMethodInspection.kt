@@ -29,14 +29,14 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             val tag = createTag()
             override fun visitMethodCall(methodCall: ObjJMethodCall) {
-                val project = methodCall.project
+                //val project = methodCall.project
                 val selectorString = methodCall.selectorString
 
                 if (selectorString in alwaysValid)
                     return
                 /*
                 val classes = inferCallTargetType(methodCall.callTarget, tag)?.toClassListExtended(project)?.withoutAnyType()?.map {
-                    if (it == "object")
+                    if (it == "Object")
                         "CPObject"
                     else
                         it

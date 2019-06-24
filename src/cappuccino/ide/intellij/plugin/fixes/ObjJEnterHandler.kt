@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
@@ -26,34 +25,6 @@ import kotlin.math.min
 @Suppress("unused")
 class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 
-/*
-    override fun preprocessEnter(file: PsiFile, editor: Editor, caretOffsetRef: Ref<Int>, caretAdvance: Ref<Int>, dataContext: DataContext, originalHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
-        if (file !is ObjJFile) {
-            return EnterHandlerDelegate.Result.Continue
-        }
-        val caretOffset:Int = caretOffsetRef.get().toInt()
-        val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
-        if (pointer.element?.text?.trim().isNullOrBlank())
-            return EnterHandlerDelegate.Result.Continue
-        val offsetInElement = caretOffset - pointer.element?.textRange?.startOffset.orElse(0)
-        var result = EnterHandlerDelegate.Result.Continue
-        var totalRange:TextRange? = null
-        for (handler in handlers) {
-            // Fetch element fresh from pointer each time, hoping that it stays current after modifications
-            val element = pointer.element
-                    ?: return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
-            val thisRange = handler.doIf(editor, element)
-            if (thisRange != null) {
-                result = EnterHandlerDelegate.Result.Default
-                totalRange = totalRange.max(thisRange)
-            }
-        }
-        if (totalRange != null) {
-            CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(totalRange))
-        }
-        return EnterHandlerDelegate.Result.Continue
-    }*/
-
     override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
         if (file !is ObjJFile) {
             return EnterHandlerDelegate.Result.Continue
@@ -62,8 +33,6 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
         if (pointer.element?.text?.trim().isNullOrBlank())
             return EnterHandlerDelegate.Result.Continue
-        val offsetInElement = caretOffset - pointer.element?.textRange?.startOffset.orElse(0)
-        var result = EnterHandlerDelegate.Result.Continue
         var totalRange:TextRange? = null
         for (handler in handlers) {
             // Fetch element fresh from pointer each time, hoping that it stays current after modifications
@@ -71,7 +40,6 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
                     ?: return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
             val thisRange = handler.doIf(editor, element)
             if (thisRange != null) {
-                result = EnterHandlerDelegate.Result.Default
                 totalRange = totalRange.max(thisRange)
             }
         }
@@ -122,74 +90,6 @@ private object MethodCallEnterHandler : OnEnterHandler {
     }
 
 }
-
-/**
- * Method call formatter
- * Unfortunately this appears not to be the place to add this information
- * /
-object MethodCallHandler : OnEnterHandler {
-
-    val LOGGER:Logger by lazy {
-        ObjJEnterHandler.LOGGER
-    }
-    override fun doIf(editor: Editor, psiElementIn: PsiElement) : Boolean {
-        val methodCall:ObjJMethodCall = psiElementIn.thisOrParentAs(ObjJMethodCall::class.java) ?: return false
-        val selectors = methodCall.qualifiedMethodCallSelectorList
-        var prevSelector:ObjJQualifiedMethodCallSelector? = null
-        var didRun = false
-        for (selector in selectors) {
-            if (prevSelector == null) {
-                prevSelector = selector
-                continue
-            }
-            if (onIfQualifiedMethodCallSelector(editor, selector, prevSelector)) {
-                didRun = true
-            }
-
-        }
-        return didRun
-    }
-
-    private fun onIfQualifiedMethodCallSelector(editor: Editor, thisMethodCallSelector: ObjJQualifiedMethodCallSelector, prevSelector: ObjJQualifiedMethodCallSelector) : Boolean {
-        LOGGER.info("Enter handler on qualified method selector")
-        if (!thisMethodCallSelector.node.isDirectlyPrecededByNewline()) {
-            LOGGER.info("Selector is not directly proceeded by a new line")
-            return false
-        }
-        val document = editor.document
-        val elementLineNumber = document.getLineNumber(thisMethodCallSelector.textRange.startOffset)
-        val startOfLine = document.getLineStartOffset(elementLineNumber)
-        val siblingColonOffset = prevSelector.colon.distanceFromStartOfLine(document)
-        val thisSelectorColonOffset = thisMethodCallSelector.colon.distanceFromStartOfLine(document)
-        val neededOffset = siblingColonOffset - thisSelectorColonOffset // if needs shift left is negative
-        val thisSelectorElementOffset = thisMethodCallSelector.textRange.startOffset
-        val newStart = thisSelectorElementOffset + neededOffset
-        if (newStart < startOfLine) {
-            LOGGER.info("New start is less than new line")
-            return false
-        }
-        if (neededOffset == 0) {
-            LOGGER.info("Needed offset is zero")
-            return false
-        }
-        if (neededOffset > 0) {
-            LOGGER.info("Needed offset is $neededOffset")
-            val neededText = " ".repeat(neededOffset)
-            assert(neededText.length == neededOffset) {"Text was not of desired length" }
-            editor.document.insertString(startOfLine, neededText)
-        } else {
-            LOGGER.info("Needed offset is $neededOffset")
-            val spaceOnlyRegex = "[^ ]".toRegex()
-            val textRange = TextRange.create(startOfLine, startOfLine + neededOffset)
-            if (document.getText(textRange).contains(spaceOnlyRegex)) {
-                throw RuntimeException("Selector spacing should have bailed out if text before was not clear")
-            }
-            editor.document.deleteString(textRange.startOffset, textRange.endOffset)
-        }
-
-        return true
-    }
-}*/
 
 /**
  * Should autocomplete implementation and protocol class statements

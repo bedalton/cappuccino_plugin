@@ -27,7 +27,7 @@ data class ObjJMethodDescription(val className:String, private val returnType:St
                 .append(parametersListPresentableText)
                 .append("]")
         if (returnType.isNotNullOrBlank()) {
-            stringBuilder.append(" : ").append(returnType)
+            stringBuilder.append(": ").append(returnType)
         }
         stringBuilder.append("in [").append(className).append("]")
         return stringBuilder.toString()

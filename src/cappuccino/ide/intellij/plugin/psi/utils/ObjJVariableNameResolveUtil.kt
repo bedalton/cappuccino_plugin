@@ -50,7 +50,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.hasParentOfType(ObjJInstanceVariableList::class.java)) {
             return variableNameElement
         }
-        return ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> !possibleFirstVar.isEquivalentTo(variableNameElement) && isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
+        return ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElement(variableNameElement, 0) { possibleFirstVar -> !possibleFirstVar.isEquivalentTo(variableNameElement) && possibleFirstVar.text == variableNameString && isPrecedingVar(variableNameElement, possibleFirstVar) }// ?: variableNameElement
 
     }
 

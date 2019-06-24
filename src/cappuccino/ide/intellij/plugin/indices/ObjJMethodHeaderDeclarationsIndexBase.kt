@@ -36,6 +36,7 @@ abstract class ObjJMethodHeaderDeclarationsIndexBase<MethodHeaderT : ObjJMethodH
         } else getAllForKeys(getKeysByPatternFuzzy(patternString, part, project, globalSearchScope), project, globalSearchScope)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @Throws(IndexNotReadyRuntimeException::class)
     fun getKeysByPatternFuzzy(patternString: String?, selectorPart: String?, project: Project, globalSearchScope: GlobalSearchScope?): List<String> {
         if (patternString == null) {

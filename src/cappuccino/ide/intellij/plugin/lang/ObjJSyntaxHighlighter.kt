@@ -108,6 +108,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_PP_FRAGMENT) {
             attrKey = PRE_PROCESSOR
         } else if (tokenType == ObjJTypes.ObjJ_IMPORT_FRAMEWORK_LITERAL ||
+                tokenType == ObjJTypes.ObjJ_FILE_NAME_AS_IMPORT_STRING ||
+                tokenType == ObjJTypes.ObjJ_FRAMEWORK_NAME ||
+                tokenType == ObjJTypes.ObjJ_FILE_NAME_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUO ||

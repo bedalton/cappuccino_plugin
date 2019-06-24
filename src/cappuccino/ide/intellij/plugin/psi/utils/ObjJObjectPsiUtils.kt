@@ -34,7 +34,7 @@ object ObjJObjectPsiUtils {
         if (properties.isEmpty())
             return null
         return InferenceResult(
-                classes = setOf("object"),
+                classes = setOf("Object"),
                 jsObjectKeys = properties
         )
     }

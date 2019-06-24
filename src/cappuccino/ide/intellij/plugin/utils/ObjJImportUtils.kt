@@ -57,22 +57,9 @@ object ObjJImportUtils {
         return getFrameworkNameInDirectory(psiElement.project, parentDirectory).firstOrNull() ?: EMPTY_FRAMEWORK_NAME
     }
 
-    fun getImportedFiles(thisFile:ObjJFile) : List<ObjJFile> {
-        val project = thisFile.project
-        val files:List<ObjJFile> = thisFile.getFileChildrenOfType(ObjJImportStatement::class.java, true).flatMap {
-            getFrameworkDirectory(project, it.frameworkNameString).flatMap {directory ->
-                val searchScope = GlobalSearchScopes.directoryScope(directory, true)
-                FilenameIndex.getFilesByName(project, it.fileNameString, searchScope).mapNotNull { it as? ObjJFile}
-            }
-        }
-        return files + files.flatMap {
-            it.getImportedFiles()
-        }
-    }
-
     fun getFrameworkDirectory(project: Project, frameworkName:String) : List<PsiDirectory> {
         val searchRegex = frameworkSearchRegex(frameworkName)
-        return FilenameIndex.getFilesByName(project, "Info.plist", GlobalSearchScope.everythingScope(project)).filter { file ->
+        return FilenameIndex.getFilesByName(project, INFO_PLIST_FILE_NAME, GlobalSearchScope.everythingScope(project)).filter { file ->
             searchRegex.containsMatchIn(file.text)
         }.map {
             it.containingDirectory
@@ -80,7 +67,6 @@ object ObjJImportUtils {
     }
 
     fun getFrameworkFileNames(project: Project, frameworkName: String) : List<String> {
-        LOGGER.info("Getting file names for framework: $frameworkName")
         return getFrameworkDirectory(project, frameworkName).flatMap { directory ->
             getFileNamesInDirectory(directory, true)
         }

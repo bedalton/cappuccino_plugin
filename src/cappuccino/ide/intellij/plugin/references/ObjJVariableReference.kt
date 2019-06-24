@@ -12,18 +12,18 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
 class ObjJVariableReference(
         element: ObjJVariableName,
         private val follow:Boolean = true,
-        private val nullIfSelfReferencing: Boolean? = null
+        private val nullIfSelfReferencing: Boolean? = null,
+        private val tag:Long? = null
 ) : PsiPolyVariantReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
@@ -53,7 +53,7 @@ class ObjJVariableReference(
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
                     for (declaration in globalVariableDeclarations) {
-                        if (imports.contains(ObjJFileUtil.getContainingFileName(declaration.containingFile))) {
+                        if (imports.contains(ObjJPsiFileUtil.getContainingFileName(declaration.containingFile))) {
                             namedElement = declaration.variableName
                         }
                     }
@@ -141,21 +141,27 @@ class ObjJVariableReference(
         }
     }
 
-    override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
-        val element = resolve(true)
+    private fun multiResolve(tag:Long? = null) : Array<ResolveResult> {
+        val element = resolve(tag != null || nullIfSelfReferencing.orFalse(), tag)
         if (element != null) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
         val out = mutableListOf<ObjJCompositeElement>()
         if (myElement.indexInQualifiedReference == 0) {
-            out.addAll(getGlobalAssignments(myElement, true).orEmpty())
+            out.addAll(getGlobalAssignments(true).orEmpty())
         } else {
             LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
         }
         return PsiElementResolveResult.createResults(out)
     }
 
-    fun resolve(nullIfSelfReferencing: Boolean) : PsiElement? {
+    override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
+        return multiResolve(null)
+    }
+
+    fun resolve(nullIfSelfReferencing: Boolean, tag:Long? = null) : PsiElement? {
+        if (tag != null && this.tag == tag)
+            return if (nullIfSelfReferencing) null else myElement
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
                 return null
@@ -164,6 +170,10 @@ class ObjJVariableReference(
             //Exception was thrown on failed attempts at adding code to file pragmatically
             return null
         }
+
+        val variableDeclaration = myElement.parent?.parent as? ObjJVariableDeclaration
+        if (variableDeclaration?.hasVarKeyword().orFalse())
+            return if (nullIfSelfReferencing) null else myElement
 
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (myElement.indexInQualifiedReference > 0) {
@@ -217,7 +227,7 @@ class ObjJVariableReference(
         return arrayOf()
     }
 
-    private fun getGlobalAssignments(variableName: ObjJVariableName, nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
+    private fun getGlobalAssignments(nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
         val variableNameString = myElement.text
         val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
         if (allWithName.isNullOrEmpty()) {
@@ -246,7 +256,6 @@ class ObjJVariableReference(
             return allCandidatesInFile
         return allCandidates
     }
-
 }
 
 private fun variableDeclarationsEnclosedGlobal(variableName: ObjJVariableName, @Suppress("SameParameterValue") follow:Boolean = false) : Boolean {
