@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
@@ -26,34 +25,6 @@ import kotlin.math.min
 @Suppress("unused")
 class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
 
-/*
-    override fun preprocessEnter(file: PsiFile, editor: Editor, caretOffsetRef: Ref<Int>, caretAdvance: Ref<Int>, dataContext: DataContext, originalHandler: EditorActionHandler?): EnterHandlerDelegate.Result {
-        if (file !is ObjJFile) {
-            return EnterHandlerDelegate.Result.Continue
-        }
-        val caretOffset:Int = caretOffsetRef.get().toInt()
-        val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
-        if (pointer.element?.text?.trim().isNullOrBlank())
-            return EnterHandlerDelegate.Result.Continue
-        val offsetInElement = caretOffset - pointer.element?.textRange?.startOffset.orElse(0)
-        var result = EnterHandlerDelegate.Result.Continue
-        var totalRange:TextRange? = null
-        for (handler in handlers) {
-            // Fetch element fresh from pointer each time, hoping that it stays current after modifications
-            val element = pointer.element
-                    ?: return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
-            val thisRange = handler.doIf(editor, element)
-            if (thisRange != null) {
-                result = EnterHandlerDelegate.Result.Default
-                totalRange = totalRange.max(thisRange)
-            }
-        }
-        if (totalRange != null) {
-            CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(totalRange))
-        }
-        return EnterHandlerDelegate.Result.Continue
-    }*/
-
     override fun postProcessEnter(file: PsiFile, editor: Editor, dataContext: DataContext): EnterHandlerDelegate.Result {
         if (file !is ObjJFile) {
             return EnterHandlerDelegate.Result.Continue
@@ -62,8 +33,6 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
         if (pointer.element?.text?.trim().isNullOrBlank())
             return EnterHandlerDelegate.Result.Continue
-        val offsetInElement = caretOffset - pointer.element?.textRange?.startOffset.orElse(0)
-        var result = EnterHandlerDelegate.Result.Continue
         var totalRange:TextRange? = null
         for (handler in handlers) {
             // Fetch element fresh from pointer each time, hoping that it stays current after modifications
@@ -71,7 +40,6 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
                     ?: return EnterHandlerDelegate.Result.Continue// bail out if element becomes stale
             val thisRange = handler.doIf(editor, element)
             if (thisRange != null) {
-                result = EnterHandlerDelegate.Result.Default
                 totalRange = totalRange.max(thisRange)
             }
         }

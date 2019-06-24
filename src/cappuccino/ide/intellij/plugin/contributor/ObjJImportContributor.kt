@@ -61,7 +61,7 @@ object ObjJImportContributor {
 
     fun addImportCompletions(resultSet: CompletionResultSet, element:PsiElement) {
         val project = element.project
-        val prevSiblingText = element.getPreviousNonEmptySibling(false)?.text ?: null
+        val prevSiblingText = element.getPreviousNonEmptySibling(false)?.text ?: return
         if (prevSiblingText == "<") {
             frameworkNames(project).forEach { frameworkName ->
                 resultSet.addElement(LookupElementBuilder.create(frameworkName).withInsertHandler(ObjJFrameworkNameInsertHandler))

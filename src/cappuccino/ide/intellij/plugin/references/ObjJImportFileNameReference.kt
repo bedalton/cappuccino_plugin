@@ -31,9 +31,8 @@ class ObjJImportFileNameReference(element:ObjJFrameworkFileName)
         if (frameworkName == null) {
             return false
         }
-        val project = myElement.project
         var directory = file.parent
-        var plist:PsiFile? = null
+        var plist: PsiFile?
         val frameworkRegex = createFrameworkSearchRegex(frameworkName)
         while (directory != null) {
             plist = directory.findFile(INFO_PLIST_FILE_NAME) ?: directory.findFile(INFO_PLIST_FILE_NAME_TO_LOWER_CASE)
