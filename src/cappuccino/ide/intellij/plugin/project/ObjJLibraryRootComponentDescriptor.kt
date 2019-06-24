@@ -14,8 +14,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modified for plugin By: Daniel Badal
+ *
  */
-
 package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
@@ -35,11 +37,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.*
 import java.util.Arrays
 
-/**
- * @author: Fedor.Korotkov
- */
 class ObjJLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
     override fun getRootTypePresentation(type: OrderRootType): OrderRootTypePresentation? {
+        if (type != OrderRootType.SOURCES)
+            return null
         return DefaultLibraryRootsComponentDescriptor.getDefaultPresentation(type)
     }
 
