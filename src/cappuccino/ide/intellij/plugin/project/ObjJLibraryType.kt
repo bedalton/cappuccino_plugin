@@ -39,7 +39,6 @@ class ObjJLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
         return ObjJIcons.SDK_ICON
     }
 
-
     companion object {
         private val LIBRARY: PersistentLibraryKind<DummyLibraryProperties> = object : PersistentLibraryKind<DummyLibraryProperties>(ObjJBundle.message("objj.sources.library.library-name")) {
             override fun createDefaultProperties(): DummyLibraryProperties {
