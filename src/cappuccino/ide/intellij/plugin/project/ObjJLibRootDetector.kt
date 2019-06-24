@@ -20,7 +20,6 @@
 
 package cappuccino.ide.intellij.plugin.project
 
-import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.roots.OrderRootType
@@ -50,12 +49,12 @@ class ObjJLibRootDetector internal constructor(rootType: OrderRootType, presenta
                 return
             }
             VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Any>() {
-                override fun visitFile(file: VirtualFile): Boolean {
+                override fun visitFile(thisFile: VirtualFile): Boolean {
                     progressIndicator?.checkCanceled()
-                    if (!file.isDirectory)
+                    if (!thisFile.isDirectory)
                         return false
-                    if (containsFrameworkFiles(file)) {
-                        result.add(file)
+                    if (containsFrameworkFiles(thisFile)) {
+                        result.add(thisFile)
                     }
                     return true
                 }
