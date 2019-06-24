@@ -32,7 +32,7 @@ private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResu
     }
 
     if (expr.text == "this") {
-        return InferenceResult(classes = setOf("object"))
+        return InferenceResult(classes = setOf("Object"))
     }
 
     //ProgressManager.checkCanceled()
@@ -127,7 +127,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
         val keys = objectLiteral.toJsObjectTypeSimple().properties
         val objectClass = if (objectLiteral.atOpenBrace != null) {
             "CPDictionary"
-        } else "object"
+        } else "Object"
         return InferenceResult(
                 classes = setOf(objectClass),
                 jsObjectKeys = keys
@@ -322,7 +322,7 @@ private fun isRegex(expr: ObjJExpr) : Boolean {
     return expr.leftExpr?.regularExpressionLiteral != null
 }
 
-val addsToNumberTypes = numberTypes.map { it.toLowerCase() } + "jsobject" + "object"
+val addsToNumberTypes = numberTypes.map { it.toLowerCase() } + "jsobject" + "Object"
 
 private fun isNotNumber(classes:Set<String>) : Boolean {
     return classes.any {

@@ -7,13 +7,12 @@ import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -54,7 +53,7 @@ class ObjJVariableReference(
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
                     for (declaration in globalVariableDeclarations) {
-                        if (imports.contains(ObjJFileUtil.getContainingFileName(declaration.containingFile))) {
+                        if (imports.contains(ObjJPsiFileUtil.getContainingFileName(declaration.containingFile))) {
                             namedElement = declaration.variableName
                         }
                     }

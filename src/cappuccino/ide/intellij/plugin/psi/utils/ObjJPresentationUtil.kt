@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import com.intellij.navigation.ItemPresentation
 import icons.ObjJIcons
 import javax.swing.Icon
@@ -16,7 +15,7 @@ import javax.swing.Icon
 fun getPresentation(declaration: ObjJImplementationDeclaration): ItemPresentation {
     val text = declaration.classNameString + if (declaration.isCategory) " (${declaration.categoryName?.className?.text})" else ""
     val icon = if (declaration.isCategory) ObjJIcons.CATEGORY_ICON else ObjJIcons.CLASS_ICON
-    val fileName = ObjJFileUtil.getContainingFileName(declaration)
+    val fileName = ObjJPsiFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
         override fun getPresentableText(): String {
             return text
@@ -36,7 +35,7 @@ fun getPresentation(declaration: ObjJImplementationDeclaration): ItemPresentatio
  * Gets presentation for a protocol declaration
  */
 fun getPresentation(declaration: ObjJProtocolDeclaration): ItemPresentation {
-    val fileName = ObjJFileUtil.getContainingFileName(declaration)
+    val fileName = ObjJPsiFileUtil.getContainingFileName(declaration)
     return object : ItemPresentation {
         override fun getPresentableText(): String {
             return declaration.classNameString
@@ -70,7 +69,7 @@ fun getPresentation(className: ObjJClassName) : ItemPresentation {
  * Gets a default presentation for a given element
  */
 private fun getDummyPresenter(psiElement: ObjJCompositeElement) : ItemPresentation {
-    val fileName = ObjJFileUtil.getContainingFileName(psiElement)
+    val fileName = ObjJPsiFileUtil.getContainingFileName(psiElement)
     return object : ItemPresentation {
         override fun getIcon(p0: Boolean): Icon? {
             return null

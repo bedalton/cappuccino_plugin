@@ -1128,7 +1128,7 @@ val VOID = rt("void", nullable = true)
 
 val JS_ANY = c(
         "?",
-        extends = listOf("object"),
+        extends = listOf("Object"),
         comment = "Object"
 )
 
@@ -1222,7 +1222,7 @@ val JS_PROTOTYPE = c(
                 f(
                         name = "isPrototypeOf",
                         parameters = listOf(
-                                p("object", "object")
+                                p("Object", "Object")
                         ),
                         returns = RT_BOOL,
                         comment = "checks if an object exists in another object's prototype chain"
@@ -1287,7 +1287,7 @@ val JS_ARRAY = c(
 )
 
 val JS_OBJECT = c(
-        "object",
+        "Object",
         functions = listOf(
                 f(
                         name = "hasOwnProperty",
@@ -1321,16 +1321,16 @@ val JS_OBJECT = c(
                 f(
                         name = "assign",
                         parameters = listOf(
-                                p("target", "object", comment = "The target object"),
-                                p("source", "object", comment = "The source object(s)", varArgs = true)
+                                p("target", "Object", comment = "The target object"),
+                                p("source", "Object", comment = "The source object(s)", varArgs = true)
                         ),
-                        returns = rt("object", comment = "The target object."),
+                        returns = rt("Object", comment = "The target object."),
                         comment = "The Object.assign() method is used to copy the values of all enumerable own properties from one or more source objects to a target object. It will return the target object"
                 ),
                 f(
                         name = "values",
                         parameters = listOf(
-                                p("object", "object")
+                                p("Object", "Object")
                         ),
                         returns = rt("?[]", comment = "An array containing the given object's own enumerable property values"),
                         comment = "Returns an array of a given object's own enumerable property values, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well)."
@@ -1339,34 +1339,34 @@ val JS_OBJECT = c(
                         name = "create",
                         parameters = listOf(
                                 p("proto", "prototype", comment = "The object which should be the prototype of the newly-created object."),
-                                p("propertiesObject", "object", comment = " If specified and not undefined, an object whose enumerable own properties (that is, those properties defined upon itself and not enumerable properties along its prototype chain) specify property descriptors to be added to the newly-created object, with the corresponding property names. These properties correspond to the second argument of Object.defineProperties().", nullable = true)
+                                p("propertiesObject", "Object", comment = " If specified and not undefined, an object whose enumerable own properties (that is, those properties defined upon itself and not enumerable properties along its prototype chain) specify property descriptors to be added to the newly-created object, with the corresponding property names. These properties correspond to the second argument of Object.defineProperties().", nullable = true)
                         ),
-                        returns = rt("object", comment = "A new object with the specified prototype object and properties."),
+                        returns = rt("Object", comment = "A new object with the specified prototype object and properties."),
                         comment = "Creates a new object, using an existing object as the prototype of the newly created object."
                 ),
                 f(
                         name = "defineProperties",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object on which to define or modify properties"),
+                                p("obj", "Object", comment = "The object on which to define or modify properties"),
                                 p("props", "PropertiesObject", comment = "An object whose keys represent the names of properties to be defined or modified and whose values are objects describing those properties. Each value in props must be either a data descriptor or an accessor descriptor; it cannot be both (see Object.defineProperty() for more details).")
                         ),
-                        returns = rt("object", comment = "The object that was passed to the function."),
+                        returns = rt("Object", comment = "The object that was passed to the function."),
                         comment = "defines new or modifies existing properties directly on an object, returning the object."
                 ),
                 f(
                         name = "defineProperty",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object on which to define the property"),
+                                p("obj", "Object", comment = "The object on which to define the property"),
                                 p("property", "string|Symbol", comment = "The name or Symbol of the property to be defined or modified"),
                                 p("descriptor", "DataDescriptor|AccessorDescriptor", comment = "The descriptor for the property being defined or modified")
                         ),
-                        returns = rt("object", comment = "The object that was passed to the function"),
+                        returns = rt("Object", comment = "The object that was passed to the function"),
                         comment = "defines a new property directly on an object, or modifies an existing property on an object, and returns the object.\n@returns The object that was passed to the function"
                 ),
                 f(
                         name = "entries",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object whose own enumerable string-keyed property [key, value] pairs are to be returned.")
+                                p("obj", "Object", comment = "The object whose own enumerable string-keyed property [key, value] pairs are to be returned.")
                         ),
                         returns = rt("[key, value][]", comment = "An array of the given object's own enumerable string-keyed property [key, value] pairs"),
                         comment = "returns an array of a given object's own enumerable string-keyed property [key, value] pairs, in the same order as that provided by a for...in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well). The order of the array returned by Object.entries() does not depend on how an object is defined. If there is a need for certain ordering then the array should be sorted first like Object.entries(obj).sort((a, b) => b[0].localeCompare(a[0]));"
@@ -1374,9 +1374,9 @@ val JS_OBJECT = c(
                 f(
                         name = "freeze",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object to freeze")
+                                p("obj", "Object", comment = "The object to freeze")
                         ),
-                        returns = rt("object", comment = "The object that was passed to the function"),
+                        returns = rt("Object", comment = "The object that was passed to the function"),
                         comment = "freezes an object. A frozen object can no longer be changed; freezing an object prevents new properties from being added to it, existing properties from being removed, prevents changing the enumerability, configurability, or writability of existing properties, and prevents the values of existing properties from being changed. In addition, freezing an object also prevents its prototype from being changed. freeze() returns the same object that was passed in."
                 ),
                 f(
@@ -1384,12 +1384,12 @@ val JS_OBJECT = c(
                         parameters = listOf(
                                 p("iterable", "iterable", comment = "An iterable such as Array or Map or other objects implementing the iterable protocol.")
                         ),
-                        returns = rt("object", comment = "A new object whose properties are given by the entries of the iterable")
+                        returns = rt("Object", comment = "A new object whose properties are given by the entries of the iterable")
                 ),
                 f(
                         name = "getOwnPropertyDescriptor",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object in which to look for the property"),
+                                p("obj", "Object", comment = "The object in which to look for the property"),
                                 p("prop", "string|Symbol", comment = "The name or Symbol of the property whose description is to be retrieved")
                         ),
                         returns = rt("PropertyDescriptor", comment = "A property descriptor of the given property if it exists on the object, undefined otherwise.", nullable = true)
@@ -1397,15 +1397,15 @@ val JS_OBJECT = c(
                 f(
                         name = "getOwnPropertyDescriptors",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object for which to get all own property descriptors")
+                                p("obj", "Object", comment = "The object for which to get all own property descriptors")
                         ),
-                        returns = rt("object", comment = "An object containing all own property descriptors of an object. Might be an empty object, if there are no properties."),
+                        returns = rt("Object", comment = "An object containing all own property descriptors of an object. Might be an empty object, if there are no properties."),
                         comment = "Returns all own property descriptors of a given object."
                 ),
                 f(
                         name = "getOwnPropertyNames",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object whose enumerable and non-enumerable properties are to be returned")
+                                p("obj", "Object", comment = "The object whose enumerable and non-enumerable properties are to be returned")
                         ),
                         returns = rt("string[]"),
                         comment = "Returns an array of all properties (including non-enumerable properties except for those which use Symbol) found directly in a given object."
@@ -1413,7 +1413,7 @@ val JS_OBJECT = c(
                 f(
                         name = "getOwnPropertySymbols",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object whose symbol properties are to be returned")
+                                p("obj", "Object", comment = "The object whose symbol properties are to be returned")
                         ),
                         returns = rt("Symbol[]", comment = "An array of all symbol properties found directly upon the given object"),
                         comment = "Returns an array of all symbol properties found directly upon a given object."
@@ -1421,7 +1421,7 @@ val JS_OBJECT = c(
                 f(
                         name = "getPrototypeOf",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object whose prototype is to be returned")
+                                p("obj", "Object", comment = "The object whose prototype is to be returned")
                         ),
                         returns = rt("prototype", comment = "The prototype of the given object. If there are no inherited properties, null is returned.", nullable = true)
                 ),
@@ -1451,7 +1451,7 @@ val JS_OBJECT = c(
                 f(
                         name = "isExtensible",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which should be checked")
+                                p("obj", "Object", comment = "The object which should be checked")
                         ),
                         returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is extensible"),
                         comment = "Determines if an object is extensible (whether it can have new properties added to it)."
@@ -1459,7 +1459,7 @@ val JS_OBJECT = c(
                 f(
                         name = "isFrozen",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which should be checked")
+                                p("obj", "Object", comment = "The object which should be checked")
                         ),
                         returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is frozen"),
                         comment = "Determines if an object is frozen.\nAn object is frozen if and only if it is not extensible, all its properties are non-configurable, and all its data properties (that is, properties which are not accessor properties with getter or setter components) are non-writable."
@@ -1467,7 +1467,7 @@ val JS_OBJECT = c(
                 f(
                         name = "isSealed",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which should be checked")
+                                p("obj", "Object", comment = "The object which should be checked")
                         ),
                         returns = RT_BOOL.copy(comment = "A Boolean indicating whether or not the given object is sealed"),
                         comment = "Returns true if the object is sealed, otherwise false. An object is sealed if it is not extensible and if all its properties are non-configurable and therefore not removable (but not necessarily non-writable)."
@@ -1475,7 +1475,7 @@ val JS_OBJECT = c(
                 f(
                         name = "keys",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object of which the enumerable's own properties are to be returned.")
+                                p("obj", "Object", comment = "The object of which the enumerable's own properties are to be returned.")
                         ),
                         returns = rt("string[]", comment = "An array of strings that represent all the enumerable properties of the given object."),
                         comment = "Returns an array of a given object's own property names, in the same order as we get with a normal loop."
@@ -1483,33 +1483,33 @@ val JS_OBJECT = c(
                 f(
                         name = "preventExtensions",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which should be made non-extensible.")
+                                p("obj", "Object", comment = "The object which should be made non-extensible.")
                         ),
-                        returns = rt("object", comment = "The object being made non-extensible."),
+                        returns = rt("Object", comment = "The object being made non-extensible."),
                         comment = "Prevents new properties from ever being added to an object (i.e. prevents future extensions to the object).\nAn object is extensible if new properties can be added to it. Object.preventExtensions() marks an object as no longer extensible, so that it will never have properties beyond the ones it had at the time it was marked as non-extensible. Note that the properties of a non-extensible object, in general, may still be deleted. Attempting to add new properties to a non-extensible object will fail, either silently or by throwing a TypeError (most commonly, but not exclusively, when in strict mode)."
                 ),
                 f(
                         name = "seal",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which should be sealed.")
+                                p("obj", "Object", comment = "The object which should be sealed.")
                         ),
-                        returns = rt("object", comment = "The object being sealed"),
+                        returns = rt("Object", comment = "The object being sealed"),
                         comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
                 ),
                 f(
                         name = "setPrototypeOf",
                         parameters = listOf(
-                                p("obj", "object", comment = "The object which is to have its prototype set."),
-                                p("prototype", "object", comment = "The object's new prototype (an object or null).", nullable = true)
+                                p("obj", "Object", comment = "The object which is to have its prototype set."),
+                                p("prototype", "Object", comment = "The object's new prototype (an object or null).", nullable = true)
                         ),
-                        returns = rt("object", comment = "The specified object."),
+                        returns = rt("Object", comment = "The specified object."),
                         comment = "Seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable."
                 )
 
 
         ),
         properties = listOf(
-                p("constructor", "object")
+                p("constructor", "Object")
         ),
         staticProperties = listOf(
                 p("prototype", "prototype")
@@ -1689,6 +1689,10 @@ val globalJSClasses = listOf(
         JS_ANY,
         JS_ARRAY,
         c(
+                className = "DOMWindow",
+                extends = listOf("Window")
+        ),
+        c(
                 className = "CFBundle",
                 constructor = ctor(listOf(p("aURL", "CPUrl|String"))),
                 staticFunctions = listOf(
@@ -1768,7 +1772,7 @@ val globalJSClasses = listOf(
                 ),
                 functions = listOf(
                         f(name = "propertyList", returns = rt("CFPropertyList")),
-                        f(name = "JSONObject", returns = rt("object")),
+                        f(name = "JSONObject", returns = rt("Object")),
                         f(name = "rawString", returns = RT_STRING),
                         f(name = "bytes", returns = rt("byte[]")),
                         f(name = "base64", returns = RT_STRING)
@@ -1821,7 +1825,7 @@ val globalJSClasses = listOf(
                         f(
                                 name = "setJSONObject",
                                 parameters = listOf(
-                                        p("anObject", "object"))
+                                        p("anObject", "Object"))
                         ),
                         f(
                                 name = "setRawString",
@@ -1903,7 +1907,7 @@ val globalJSClasses = listOf(
                                 name = "addValueForKey",
                                 parameters = listOf(
                                         p("aKey", "string"),
-                                        p("anObject", "object")
+                                        p("anObject", "Object")
                                 )
                         ),
                         f("removeValueForKey", parameters = listOf(p("aKey", "string"))),
@@ -1912,14 +1916,14 @@ val globalJSClasses = listOf(
                                 name = "replaceValueForKey",
                                 parameters = listOf(
                                         p("aKey", "string"),
-                                        p("anObject", "object")
+                                        p("anObject", "Object")
                                 )
                         ),
                         f(
                                 name = "setValueForKey",
                                 parameters = listOf(
                                         p("aKey", "string"),
-                                        p("anObject", "object")
+                                        p("anObject", "Object")
                                 )
 
                         )
@@ -1957,7 +1961,7 @@ val globalJSClasses = listOf(
                                 name = "setRequestHeader",
                                 parameters = listOf(
                                         p("aHeader", "string"),
-                                        p("aValue", "object")
+                                        p("aValue", "Object")
                                 )
                         ),
                         f(name = "responseXML", returns = rt("XMLNode")),
@@ -1977,7 +1981,7 @@ val globalJSClasses = listOf(
 
                                 )
                         ),
-                        f(name = "send", parameters = listOf(p("aBody", "object"))),
+                        f(name = "send", parameters = listOf(p("aBody", "Object"))),
                         f(name = "abort", returns = RT_ANY),
                         f(
                                 name = "addEventListener",
@@ -2156,8 +2160,8 @@ val globalJSClasses = listOf(
                 constructor = ctor(listOf(p("aName", "string"))),
                 properties = listOf(
                         p("name", "string"),
-                        p("instance_methods", "object"),
-                        p("class_methods", "object")
+                        p("instance_methods", "Object"),
+                        p("class_methods", "Object")
                 )
         ),
         c(
@@ -2492,7 +2496,13 @@ val globalJSClasses = listOf(
         JsClassChildNode,
         JsClassElementCSSInlineStyle,
         JsClassEventTarget,
-        JsElementClass
+        JsElementClass,
+        JsClassHTMLOrSVGElement,
+        JsClassElementContentEditable,
+        JsClassDocumentAndElementEventHandlers,
+        JsClassNonDocumentTypeChildNode,
+        JsClassParentNode,
+        JsClassNode
 
 )
 

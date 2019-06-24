@@ -7,8 +7,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import com.intellij.psi.stubs.PsiFileStub
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -84,7 +83,7 @@ open class StubIndexService internal constructor() {
     // ============================== //
 
     fun createFileStub(file: ObjJFile): ObjJFileStub {
-        val fileName = ObjJFileUtil.getContainingFileName(file)
+        val fileName = ObjJPsiFileUtil.getContainingFileName(file)
         val fileImportStrings = file.importStrings
         return ObjJFileStubImpl(file, fileName ?: "{?}", fileImportStrings)
     }

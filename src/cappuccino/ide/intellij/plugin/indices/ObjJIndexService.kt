@@ -9,7 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
@@ -201,7 +201,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      */
     override fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {
         // Ensure has containing file
-        val containingFileName = ObjJFileUtil.getContainingFileName(stub.psi.containingFile)
+        val containingFileName = ObjJPsiFileUtil.getContainingFileName(stub.psi.containingFile)
                 ?: return
         // Sink in file
         indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, "$containingFileName-ALL")

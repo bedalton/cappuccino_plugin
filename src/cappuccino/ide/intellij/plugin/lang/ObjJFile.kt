@@ -9,8 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import cappuccino.ide.intellij.plugin.utils.ObjJImportUtils
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import com.intellij.ide.projectView.PresentationData
 import icons.ObjJIcons
 
@@ -59,7 +58,7 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
             PsiTreeUtil.getParentOfType(this, parentClass)
 
     override fun createTreeStructureElement(): ObjJStructureViewElement {
-        val fileName = ObjJFileUtil.getFileNameSafe(this, "")
+        val fileName = ObjJPsiFileUtil.getFileNameSafe(this, "")
         return ObjJStructureViewElement(this, PresentationData(fileName, "", ObjJIcons.DOCUMENT_ICON, null), fileName)
     }
 

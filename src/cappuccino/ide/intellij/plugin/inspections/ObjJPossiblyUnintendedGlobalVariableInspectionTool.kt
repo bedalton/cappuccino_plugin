@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
-import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
-import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
+import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -48,13 +45,22 @@ class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool()
             val parentDeclaration = variableNameIn.parent.parent as? ObjJVariableDeclaration ?: return
             if (variableNameIn.reference.resolve(true) != null)
                 return
-            if ((parentDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null)
+            if ((parentDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null ||
+                    parentDeclaration.parent.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_VAR_MODIFIER)
                 return
+
             // Is Global keyword, ignore even if it should not be assigned to
             if (variableNameIn.hasText("self") || variableNameIn.hasText("super") || variableNameIn.hasText("this")) {
                 return
             }
 
+            if (variableNameIn.indexInQualifiedReference != 0) {
+                return
+            }
+
+            val text = variableNameIn.text
+            if (text in ObjJGlobalJSVariablesNames || text in globalJsFunctionNames || text in globalJsClassNames)
+                return
             if (ObjJPluginSettings.isIgnoredVariableName(variableNameIn.text)) {
                 problemsHolder.registerProblem(
                         variableNameIn,

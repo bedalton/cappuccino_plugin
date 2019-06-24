@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.references
 import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkFileName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
-import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
 import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME_TO_LOWER_CASE
 import cappuccino.ide.intellij.plugin.utils.createFrameworkSearchRegex
 import com.intellij.openapi.project.Project
@@ -43,7 +42,6 @@ class ObjJImportFileNameReference(element:ObjJFrameworkFileName)
         if (frameworkName == null) {
             return false
         }
-        val project = myElement.project
         var directory = file.parent
         var plist: PsiFile?
         while (directory != null) {

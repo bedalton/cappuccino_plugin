@@ -317,6 +317,7 @@ object ObjJTokenSets {
             ObjJ_COMMA,
             ObjJ_NEW,
             ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_IF_STATEMENT,
             ObjJ_WHILE_STATEMENT,
             ObjJ_TRY_STATEMENT,
             ObjJ_SWITCH_STATEMENT,
