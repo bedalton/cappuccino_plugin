@@ -38,6 +38,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             is ObjJVariableName -> highlightVariableName(psiElement, annotationHolder)
             is ObjJFunctionCall -> highlightFunctionName(psiElement, annotationHolder)
             is ObjJFunctionName -> if (psiElement.hasParentOfType(ObjJFunctionCall::class.java)) colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
+            is ObjJFrameworkReference -> colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.STRING)
             else -> when (psiElement.tokenType()) {
                 in ObjJTokenSets.VAR_TYPE_KEYWORDS ->
                     stripVarTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
