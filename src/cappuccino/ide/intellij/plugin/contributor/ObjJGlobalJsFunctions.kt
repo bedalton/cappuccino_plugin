@@ -406,7 +406,7 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "objj_debug_typecheck",
                         parameters = listOf(
                                 p("expectedType"),
-                                p("object")),
+                                p("Object")),
                         skipCompletion = true
                 ),
                 fn(name = "objj_eval", parameters = listOf(p("aString", "string")), returns = RT_ANY, skipCompletion = true),
@@ -657,12 +657,12 @@ private fun createGlobalJsFunctions(): List<JsFunction> {
                         name = "class_createInstance",
                         parameters = listOf(
                                 p("aClass", "objj_class")),
-                        returns = rt("object"),
+                        returns = rt("Object"),
                         skipCompletion = true),
                 fn(
                         name = "object_getClassName",
                         parameters = listOf(
-                                p("anObject", "object")),
+                                p("anObject", "Object")),
                         returns = rt("string"),
                         skipCompletion = true),
                 fn(

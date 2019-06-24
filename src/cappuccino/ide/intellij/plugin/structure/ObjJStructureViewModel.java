@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.structure;
 import cappuccino.ide.intellij.plugin.lang.ObjJFile;
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil;
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.structureView.*;
 import com.intellij.ide.util.treeView.smartTree.Sorter;
@@ -12,7 +12,7 @@ public class ObjJStructureViewModel  extends StructureViewModelBase implements
         StructureViewModel.ElementInfoProvider {
 
     ObjJStructureViewModel(PsiFile psiFile) {
-        super(psiFile, new ObjJStructureViewElement((ObjJFile)psiFile, new PresentationData(ObjJFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File"), "", ObjJIcons.DOCUMENT_ICON, null),ObjJFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File")));
+        super(psiFile, new ObjJStructureViewElement((ObjJFile)psiFile, new PresentationData(ObjJPsiFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File"), "", ObjJIcons.DOCUMENT_ICON, null), ObjJPsiFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File")));
     }
 
     @NotNull

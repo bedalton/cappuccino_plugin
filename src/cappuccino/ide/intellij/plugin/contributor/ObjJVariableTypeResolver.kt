@@ -22,6 +22,7 @@ object ObjJVariableTypeResolver {
         return setOf()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
@@ -117,7 +118,7 @@ object ObjJVariableTypeResolver {
                 // contain a variable with this name
                 .filter {
                     it.qualifiedReferenceList.any { qRef ->
-                        qRef.variableNameList.size == 1 && (qRef.variableNameList.getOrNull(0) as? ObjJVariableName)?.text == variableNameString
+                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0)?.text == variableNameString
                     }
                 }
 

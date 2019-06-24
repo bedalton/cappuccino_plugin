@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.*
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -25,13 +24,15 @@ data class InferenceResult (
     private var allClassesExpanded:Set<String>? = null
 
     val isJsObject:Boolean by lazy {
-        jsObjectKeys?.isNotEmpty().orFalse() || "object" in classes || "?" in classes
+        jsObjectKeys?.isNotEmpty().orFalse() || "Object" in classes || "?" in classes
     }
 
-    fun toClassListExtended(project:Project, objectToCPObject:Boolean = false): Set<String> {
+    @Suppress("unused")
+    fun toClassListExtended(project:Project): Set<String> {
         var classes = allClassesExpanded
         if (classes != null)
             return classes
+
         val classList = toClassList(null).withoutAnyType().plus("CPObject")
         classes = classList.flatMap {
                 ObjJInheritanceUtil.getAllInheritedClasses(it, project)
@@ -226,7 +227,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
     if (isSelector)
         returnClasses.add("SEL")
     if (isJsObject)
-        returnClasses.add("object")
+        returnClasses.add("Object")
     if (arrayTypes.isNotNullOrEmpty()) {
         returnClasses.addAll(arrayTypes!!.mapNotNull { if (it != "Array") "$it[]" else null })
     }

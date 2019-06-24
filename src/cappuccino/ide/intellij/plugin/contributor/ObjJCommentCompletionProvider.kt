@@ -144,8 +144,6 @@ object ObjJCommentCompletionProvider {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
-        val project: Project = element.project
-        var lastPart: String? = null
         for (part in commentTokenParts) {
             // Increment index at start to allow for simpler index calculations
             currentIndex++

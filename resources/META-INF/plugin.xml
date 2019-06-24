@@ -57,6 +57,7 @@
       <li>Extended type inferences</li>
       <li>Improved Autocomplete suggestions</li>
       <li>Added import statement name suggestions</li>
+      <li>Added Objective-J SDK type</li>
     </ul>
 
     <h4>Version: 0.3.05</h4>
@@ -155,7 +156,8 @@
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
     <applicationConfigurable instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
     <!-- ObjJ Libraries -->
-    <!--sdkType implementation="cappuccino.ide.intellij.plugin.lang.ObjJSDKType" /-->
+    <sdkType implementation="cappuccino.ide.intellij.plugin.project.ObjJSDKType" />
+    <library.type implementation="cappuccino.ide.intellij.plugin.project.ObjJLibraryType" />
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
