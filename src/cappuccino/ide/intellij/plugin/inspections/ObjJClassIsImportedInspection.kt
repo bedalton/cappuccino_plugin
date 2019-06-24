@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
@@ -26,6 +27,8 @@ class ObjJClassIsImportedInspection  : LocalInspectionTool() {
 
     private fun annotateIfNeccessary(problemsHolder: ProblemsHolder, psiElement:PsiElement) {
         val className = psiElement.text
+        if (className !in ObjJClassDeclarationsIndex.instance.getAllKeys(psiElement.project) && className !in ObjJPluginSettings.ignoredClassNames())
+            return
         val containingFiles = ObjJClassDeclarationsIndex.instance[className, psiElement.project].mapNotNull {
             it.containingFile as? ObjJFile
         }

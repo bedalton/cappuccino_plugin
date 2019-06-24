@@ -10,6 +10,7 @@ import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 
 import java.util.*
 import java.util.regex.Pattern
@@ -40,13 +41,13 @@ class ObjJPsiFileUtil {
         val searchScope = GlobalSearchScope.everythingScope(project)
         for (importStatement in importStatements) {
             val framework = importStatement.frameworkNameString
-            val fileName = importStatement.fileNameString
+            val fileName = importStatement.fileNameString ?: continue
             if (!addImport(imports, framework, fileName)) {
                 continue
             }
             val possibleFiles = FilenameIndex.getFilesByName(project, fileName, searchScope)
             for (possibleImportedFile in possibleFiles) {
-                if (framework != null && !framework.isEmpty()) {
+                if (framework.isNotNullOrBlank()) {
                     var directory: PsiDirectory? = possibleImportedFile.containingDirectory
                     while (directory != null) {
                         val directoryName = directory.name

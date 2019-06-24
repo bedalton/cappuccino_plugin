@@ -16,7 +16,7 @@ abstract class ObjJImportStatementStubType<PsiT : ObjJImportStatement<out ObjJIm
         psiClass: Class<PsiT>) : ObjJStubElementType<ObjJImportStub<PsiT>, PsiT>(debugName, psiClass) {
     override fun createStub(
             statement: PsiT, stubParent: StubElement<*>): ObjJImportStub<PsiT> {
-        return ObjJImportStubImpl(stubParent, this, statement.frameworkNameString, statement.fileNameString)
+        return ObjJImportStubImpl(stubParent, this, statement.frameworkNameString, statement.fileNameString.orEmpty())
     }
 
     @Throws(IOException::class)
