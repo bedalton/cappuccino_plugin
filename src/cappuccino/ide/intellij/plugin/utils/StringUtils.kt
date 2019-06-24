@@ -82,3 +82,15 @@ fun String.stripRefSuffixes() : String {
         else -> this
     }
 }
+
+fun String.equalsIgnoreCase(otherString:String) : Boolean {
+    return this.equals(otherString, true)
+}
+
+fun String.notEqualsIgnoreCase(otherString:String) : Boolean {
+    return !this.equals(otherString, true)
+}
+
+fun String.notEquals(otherString:String, ignoreCase:Boolean) : Boolean {
+    return !this.equals(otherString, ignoreCase)
+}

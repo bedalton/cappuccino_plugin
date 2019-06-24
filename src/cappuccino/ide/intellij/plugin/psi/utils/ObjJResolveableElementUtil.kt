@@ -4,7 +4,6 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 
 import java.util.ArrayList
 
@@ -26,7 +25,7 @@ object ObjJResolveableElementUtil {
     fun shouldResolve(psiElement: PsiElement?): Boolean {
         return if (psiElement == null) {
             false
-        } else shouldResolve(psiElement, "Ignoring " + psiElement.node.elementType.toString() + " in file: " + ObjJFileUtil.getContainingFileName(psiElement))
+        } else shouldResolve(psiElement, "Ignoring " + psiElement.node.elementType.toString() + " in file: " + ObjJPsiFileUtil.getContainingFileName(psiElement))
     }
 
     fun shouldResolve(psiElement: ObjJClassDeclarationElement<*>?): Boolean {

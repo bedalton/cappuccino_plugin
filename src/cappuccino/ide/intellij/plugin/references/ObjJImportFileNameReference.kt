@@ -2,6 +2,8 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkFileName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME_TO_LOWER_CASE
 import cappuccino.ide.intellij.plugin.utils.createFrameworkSearchRegex
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -34,7 +36,7 @@ class ObjJImportFileNameReference(element:ObjJFrameworkFileName)
         var plist:PsiFile? = null
         val frameworkRegex = createFrameworkSearchRegex(frameworkName)
         while (directory != null) {
-            plist = directory.findFile("info.plist")
+            plist = directory.findFile(INFO_PLIST_FILE_NAME) ?: directory.findFile(INFO_PLIST_FILE_NAME_TO_LOWER_CASE)
             if (plist != null && plist.isForFramework(frameworkRegex)) {
                 return true
             }
@@ -46,7 +48,7 @@ class ObjJImportFileNameReference(element:ObjJFrameworkFileName)
 }
 
 private fun PsiFile.isForFramework(regex:Regex) : Boolean {
-    if (this.name.toLowerCase() != "Info.plist")
+    if (this.name.toLowerCase() != INFO_PLIST_FILE_NAME)
         return false
     return regex.containsMatchIn(text)
 }

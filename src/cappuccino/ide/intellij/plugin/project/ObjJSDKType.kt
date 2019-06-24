@@ -1,5 +1,9 @@
-package cappuccino.ide.intellij.plugin.lang
+package cappuccino.ide.intellij.plugin.project
 
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.ObjJVirtualFileUtil
+import cappuccino.ide.intellij.plugin.utils.contents
 import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
 import com.intellij.openapi.projectRoots.*
 import icons.ObjJIcons
@@ -11,18 +15,11 @@ import java.util.logging.Logger
 import javax.swing.Icon
 import com.intellij.openapi.projectRoots.SdkModificator
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.util.PathUtil
 import com.intellij.openapi.projectRoots.SdkType
 import com.intellij.openapi.roots.JavadocOrderRootType
-
-
-
-
-
-
 
 
 class ObjJSDKType : SdkType(SDK_TYPE_ID) {
@@ -39,7 +36,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
     }
 
     override fun suggestSdkName(currentSdkName: String?, sdkHome: String?): String {
-        return "Cappuccino " + getVersionString(sdkHome)
+        return ObjJBundle.message("objj.sources.sdk.suggest-name", getVersionString(sdkHome) ?: "").trim()
     }
 
     override fun getIcon(): Icon {
@@ -97,25 +94,24 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         val frameworkDirectories = findFrameworkFolders(sdkRoot.path)
         for ((frameworkName, directory) in frameworkDirectories) {
             LOGGER.info("Adding Framework: $frameworkName")
-            findSourceRoots(directory, sdkModificator)
+            findAndAddSourceRoots(directory, sdkModificator)
         }
     }
 
     private fun findFrameworkFolders(homePath:String) : List<Pair<String, VirtualFile>> {
-        val file = File(homePath)
+        val file = ObjJVirtualFileUtil.findFileByPath(homePath) ?: return emptyList()
         if (!file.exists() || !file.isDirectory) {
             return emptyList()
         }
 
-        return file.listFiles().filter { it.exists() && it.isDirectory }.mapNotNull {directory ->
-            val plist = directory.listFiles().firstOrNull { it.exists() && it.isFile && it.name.toLowerCase() == PLIST_INFO_NAME} ?: return@mapNotNull null
-            val frameworkName = findFrameworkNameInPlistText(plist.readText(Charset.defaultCharset())) ?: return@mapNotNull null
-            val virtualFile = LocalFileSystem.getInstance().findFileByPath(directory.absolutePath)
+        return file.children.filter { it.exists() && it.isDirectory }.mapNotNull {directory ->
+            val plist = directory.children.firstOrNull { it.exists() && !it.isDirectory && it.name.toLowerCase() == INFO_PLIST_FILE_NAME } ?: return@mapNotNull null
+            val frameworkName = findFrameworkNameInPlistText(plist.contents) ?: return@mapNotNull null
             LOGGER.info("Found Framework: $frameworkName")
-            Pair(frameworkName, virtualFile!!)
+            Pair(frameworkName, directory)
         }
     }
-    private fun findSourceRoots(dir: VirtualFile, sdkModificator: SdkModificator) {
+    private fun findAndAddSourceRoots(dir: VirtualFile, sdkModificator: SdkModificator) {
         sdkModificator.addRoot(dir, OrderRootType.SOURCES)
         /*
         val visitor = object : VirtualFileVisitor<Any>(SKIP_ROOT) {
@@ -136,8 +132,9 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
 
     companion object {
         private const val SDK_TYPE_ID = "ObjJ.Framework"
-        private const val SDK_NAME = "Objective-J Framework"
-        private const val PLIST_INFO_NAME = "info.plist"
+        private val SDK_NAME:String by lazy {
+            ObjJBundle.message("objj.sources.sdk.name")
+        }
         private val SDK_VERSION_REGEX = "\"version\"\\s*:\\s*\"([^\"]+?)\"".toRegex()
         private val LOGGER = Logger.getLogger("#${this::class.java.simpleName}")
         private const val LAST_SELECTED_SDK_HOME_KEY = "objj.sdk.LAST_HOME_PATH"
