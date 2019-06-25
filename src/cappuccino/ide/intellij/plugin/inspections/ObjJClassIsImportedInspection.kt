@@ -33,7 +33,7 @@ class ObjJClassIsImportedInspection  : LocalInspectionTool() {
             it.containingFile as? ObjJFile
         }
         val containingFile = (psiElement.containingFile as? ObjJFile) ?: return
-        val imports = containingFile.getImportedFiles() + containingFile
+        val imports = containingFile.getImportedFiles(cache = true, recursive = true) + containingFile
         val matches = imports.intersect(containingFiles).isNotEmpty()
         if (matches)
             return
