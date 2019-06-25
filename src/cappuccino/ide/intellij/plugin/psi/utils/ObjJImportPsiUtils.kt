@@ -15,7 +15,11 @@ object ObjJImportPsiUtils {
     fun getFileNameString(importFileElement: ObjJImportFile): String {
         return if (importFileElement.stub != null) {
             importFileElement.stub.fileName
-        } else importFileElement.fileNameAsImportString.stringLiteral.stringValue
+        } else importFileElement.fileNameAsImportString.fileNameString
+    }
+
+    fun getFileNameString(fileNameAsImportString: ObjJFileNameAsImportString) : String {
+        return fileNameAsImportString.stringLiteral.stringValue.afterSlash()
     }
 
     fun getFileNameString(includeFile: ObjJIncludeFile): String {
@@ -81,15 +85,11 @@ object ObjJImportPsiUtils {
 
     fun multiResolve(importIncludeElement: ObjJImportIncludeStatement) : List<ObjJFile> {
         val reference = importIncludeElement.reference
-        val out = if (reference is PsiPolyVariantReference)
+        return if (reference is PsiPolyVariantReference)
             reference.multiResolve(true).mapNotNull { it.element as? ObjJFile }
         else {
             listOfNotNull(reference?.resolve() as? ObjJFile)
         }
-        if (out.isEmpty()) {
-            LOGGER.info("Failed to locate file for import: <${importIncludeElement.frameworkNameString}/${importIncludeElement.fileNameString}>")
-        }
-        return out
     }
 
     fun getImportIncludeElement(element: ObjJImportIncludeStatement) : ObjJImportElement<*>? {
@@ -99,4 +99,12 @@ object ObjJImportPsiUtils {
             else -> null
         }
     }
+}
+
+
+private fun String.afterSlash():String {
+    val lastPos = this.lastIndexOf("/")
+    if (lastPos < 0)
+        return this
+    return this.substring(lastPos)
 }

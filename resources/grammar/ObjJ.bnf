@@ -306,6 +306,7 @@ fileNameAsImportString
 			getName
 			setName
 			getReference
+			getFileNameString
 		]
 	}
 	;

@@ -948,6 +948,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getFileNameString(fileNameAsImportString: ObjJFileNameAsImportString) : String {
+        return ObjJImportPsiUtils.getFileNameString(fileNameAsImportString)
+    }
+
+    @JvmStatic
     fun getFileNameString(framework: ObjJImportFramework): String {
         return ObjJImportPsiUtils.getFileNameString(framework)
     }
