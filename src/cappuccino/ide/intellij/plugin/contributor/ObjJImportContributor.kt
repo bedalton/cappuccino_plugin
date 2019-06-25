@@ -120,7 +120,7 @@ object ObjJFrameworkFileNameInsertHandler : InsertHandler<LookupElement> {
      * Actually handle the insertion
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
-        if (!EditorUtil.isTextAtOffset(insertionContext, ">")) {
+        if (!EditorUtil.isTextAtOffset(insertionContext, ">") && !EditorUtil.isTextAtOffset(insertionContext, ".") && !EditorUtil.isTextAtOffset(insertionContext, "j")) {
             EditorUtil.insertText(insertionContext, ">", true)
         }
     }

@@ -15,6 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiReference
+import com.intellij.psi.augment.PsiAugmentProvider
 import javafx.scene.control.ProgressIndicator
 
 import java.nio.file.FileSystems
@@ -32,42 +33,6 @@ object ObjJFilePsiUtil {
     private val SEPARATOR = FileSystems.getDefault().separator
     private val INFO_PLIST_DICT_PATTERN = Pattern.compile(".*<dict>(.*)</dict>.*")
     private val INFO_PLIST_PROPERTY_PATTERN = Pattern.compile("(<key>(.*)</key>\n<[^>]+>(.*)</[^>]+>)*")
-
-    fun getContainingFrameworkName(file: ObjJFile): String? {
-        val filePath = file.virtualFile.path
-        val srcRoots = ProjectRootManager.getInstance(file.project).contentSourceRoots
-        var basePath: String? = null
-        for (srcRoot in srcRoots) {
-            if (filePath.startsWith(srcRoot.path)) {
-                basePath = srcRoot.path
-                break
-            }
-        }
-        if (basePath == null) {
-            return null
-        }
-        val pathComponents = mutableListOf(*filePath.substring(basePath.length).split(SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
-        var plistFile: VirtualFile? = null
-        while (pathComponents.size > 0) {
-            val path = basePath + "/" + ArrayUtils.join(pathComponents, SEPARATOR, true) + INFO_PLIST_FILE_NAME
-            //LOGGER.log(Level.INFO, "Checking for info.plist at location: <$path>")
-            plistFile = LocalFileSystem.getInstance().findFileByPath(path)
-            if (plistFile != null) {
-                break
-            }
-            pathComponents.removeAt(pathComponents.size - 1)
-        }
-        return if (plistFile == null) {
-            null
-        } else null
-    }
-
-
-    private fun getInfoPlistProperties(virtualFile: VirtualFile?): Map<String, String>? {
-        return if (virtualFile == null) {
-            emptyMap()
-        } else null
-    }
 
     /**
      * Gets all import statements in an ObjJFile as strings
@@ -135,8 +100,15 @@ private fun addToImportsList(file:ObjJFile, recursive:Boolean, cache:Boolean? = 
         getImportedFiles(file, recursive, cache, out)
 }
 
-private fun collectImports(psiFile: PsiFile) : List<ObjJImportStatement<*>> {
-
+fun collectImports(psiFile: PsiFile) : List<ObjJImportStatement<*>> {
+    val augmentCollected = PsiAugmentProvider.collectAugments(psiFile, ObjJImportStatementElement::class.java)
+    val includeCollected = PsiAugmentProvider.collectAugments(psiFile, ObjJIncludeStatementElement::class.java)
+    if (augmentCollected.size > 0 || includeCollected.size > 0) {
+        LOGGER.info("Found elements through augmented collector")
+        return augmentCollected.mapNotNull {
+            it.importFile ?: it.importFramework
+        } + includeCollected.mapNotNull { it.includeFile ?: it.includeFramework }
+    }
     return psiFile.getChildrenOfType(ObjJImportBlock::class.java).flatMap {block ->
         block.getChildrenOfType(ObjJImportStatementElement::class.java).mapNotNull {
             it.importFile ?: it.importFramework
@@ -146,4 +118,5 @@ private fun collectImports(psiFile: PsiFile) : List<ObjJImportStatement<*>> {
             it.includeFile ?: it.includeFramework
         }
     }
+    // todo handle nested import statements in preproc if statements
 }

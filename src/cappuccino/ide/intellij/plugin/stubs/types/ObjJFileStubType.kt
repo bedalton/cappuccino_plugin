@@ -4,9 +4,9 @@ import com.intellij.psi.StubBuilder
 import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
 import com.intellij.psi.stubs.*
 
@@ -33,7 +33,7 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
         stream.writeName(stub.fileName)
         stream.writeInt(stub.imports.size)
         for (importStatement in stub.imports) {
-            stream.writeName(importStatement)
+            stream.writeImportInfo(importStatement)
         }
     }
 
@@ -42,9 +42,9 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
         val numImports = stream.readInt()
-        val imports = ArrayList<String>()
+        val imports = ArrayList<ObjJImportInfoStub>()
         for (i in 0 until numImports) {
-            imports.add(StringRef.toString(stream.readName()))
+            imports.add(stream.readImportInfo())
         }
         return ObjJFileStubImpl(null, fileName, imports)
     }
@@ -54,4 +54,18 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
 
         private const val NAME = "objj.FILE"
     }
+}
+
+internal fun StubInputStream.readImportInfo() : ObjJImportInfoStub {
+    val frameworkName = readNameString()
+    val fileName = readNameString()
+    return ObjJImportInfoStub(frameworkName, fileName)
+}
+
+internal fun StubOutputStream.writeImportInfo(stub:ObjJImportInfoStub) {
+    val frameworkName = stub.framework
+    val fileName = stub.fileName
+    writeName(frameworkName)
+    writeName(fileName)
+
 }
