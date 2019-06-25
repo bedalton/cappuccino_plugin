@@ -279,7 +279,6 @@ object ObjJTokenSets {
             ObjJ_RETURN,
             ObjJ_IN,
             ObjJ_AT_CLASS,
-            ObjJ_AT_IMPLEMENTATION,
             ObjJ_QUESTION_MARK,
             ObjJ_ASSIGN,
             ObjJ_MULTIPLY_ASSIGN,
