@@ -105,7 +105,12 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 
 
 <IN_FILENAME, IN_IMPORT> {
-    {LINE_TERMINATOR}					{ canRegex(true);   yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return WHITE_SPACE; }
+    {LINE_TERMINATOR}					{
+          canRegex(true);   yybegin(YYINITIAL);
+          IElementType type = inPreProc ? ObjJ_LINE_TERMINATOR : WHITE_SPACE;
+          inPreProc = false;
+          pragmaString = null;
+          return type; }
     "<"                                 { canRegex(false);  return ObjJ_LESS_THAN; }
     ">"                                 { canRegex(false);  return ObjJ_GREATER_THAN; }
 	"'"									{ canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
