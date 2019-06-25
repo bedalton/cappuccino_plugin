@@ -9,6 +9,8 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiReference
@@ -40,13 +42,12 @@ object ObjJFilePsiUtil {
             }
         }
         if (basePath == null) {
-            //LOGGER.log(Level.INFO, "Failed to find base file path for file: <$filePath>")
             return null
         }
         val pathComponents = mutableListOf(*filePath.substring(basePath.length).split(SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
         var plistFile: VirtualFile? = null
         while (pathComponents.size > 0) {
-            val path = basePath + "/" + ArrayUtils.join(pathComponents, SEPARATOR, true) + "info.plist"
+            val path = basePath + "/" + ArrayUtils.join(pathComponents, SEPARATOR, true) + INFO_PLIST_FILE_NAME
             //LOGGER.log(Level.INFO, "Checking for info.plist at location: <$path>")
             plistFile = LocalFileSystem.getInstance().findFileByPath(path)
             if (plistFile != null) {
@@ -85,38 +86,51 @@ object ObjJFilePsiUtil {
 
 }
 
-fun PsiFile.getImportedFiles(): List<PsiFile> {
-    val out = mutableListOf<PsiFile>()
-    getImportedFiles(this, out)
+fun ObjJFile.getImportedFiles(recursive: Boolean, cache: Boolean? = null): List<ObjJFile> {
+    val out = mutableListOf<ObjJFile>()
+    getImportedFiles(this, recursive, cache, out)
     return out
 }
 
-private fun getImportedFiles(fileIn:PsiFile, out:MutableList<PsiFile>) {
+private fun getImportedFiles(fileIn:ObjJFile, recursive:Boolean, cache:Boolean? = null, out:MutableList<ObjJFile>) {
+    if (cache.orFalse()) {
+        fileIn.cachedImportFileList?.forEach { file ->
+            addToImportsList(file, recursive, cache, out)
+        }
+    }
     collectImports(fileIn).forEach { importStatement ->
-        val reference:PsiReference = when(importStatement) {
-            is ObjJImportFile -> importStatement.fileNameAsImportString.reference
-            is ObjJIncludeFile -> importStatement.fileNameAsImportString.reference
-            is ObjJImportFramework -> importStatement.frameworkReference.frameworkFileName?.reference
-            is ObjJIncludeFramework -> importStatement.frameworkReference.frameworkFileName?.reference
-            else -> null
-        } ?: return@forEach
+        val reference = getReference(importStatement) ?: return@forEach
         val files = if (reference is PsiPolyVariantReference)
-            reference.multiResolve(true).mapNotNull { it.element }
+            reference.multiResolve(true).mapNotNull { it.element as? ObjJFile }
         else {
-            listOfNotNull(reference.resolve())
+            listOfNotNull(reference.resolve() as? ObjJFile)
         }
         for (file in files) {
-            if (file !is PsiFile)
-                continue
-            if (out.contains(file))
-                return@forEach
-            out.add(file)
-            getImportedFiles(file, out)
+            addToImportsList(file, recursive, cache, out)
         }
     }
 }
 
+private fun getReference(importStatement:ObjJImportStatement<*>) : PsiReference? {
+    return when(importStatement) {
+        is ObjJImportFile -> importStatement.fileNameAsImportString.reference
+        is ObjJIncludeFile -> importStatement.fileNameAsImportString.reference
+        is ObjJImportFramework -> importStatement.frameworkReference.frameworkFileName?.reference
+        is ObjJIncludeFramework -> importStatement.frameworkReference.frameworkFileName?.reference
+        else -> null
+    }
+}
+
+private fun addToImportsList(file:ObjJFile, recursive:Boolean, cache:Boolean? = null, out:MutableList<ObjJFile>) {
+    if (out.contains(file))
+        return
+    out.add(file)
+    if (recursive.orFalse())
+        getImportedFiles(file, recursive, cache, out)
+}
+
 private fun collectImports(psiFile: PsiFile) : List<ObjJImportStatement<*>> {
+
     return psiFile.getChildrenOfType(ObjJImportBlock::class.java).flatMap {block ->
         block.getChildrenOfType(ObjJImportStatementElement::class.java).mapNotNull {
             it.importFile ?: it.importFramework

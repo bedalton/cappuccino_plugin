@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.lang
 
+import cappuccino.ide.intellij.plugin.caches.ObjJFileCache
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import com.intellij.extapi.psi.PsiFileBase
@@ -10,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.utils.ObjJImportUtils
 import com.intellij.ide.projectView.PresentationData
 import icons.ObjJIcons
@@ -17,6 +19,13 @@ import icons.ObjJIcons
 import javax.swing.*
 
 class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJLanguage.instance), ObjJCompositeElement, ObjJHasTreeStructureElement {
+
+    private val fileCache:ObjJFileCache by lazy {
+        ObjJFileCache(this)
+    }
+
+    val cachedImportFileList:List<ObjJFile>?
+        get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = false)
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>
         get() = PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJClassDeclarationElement::class.java)
