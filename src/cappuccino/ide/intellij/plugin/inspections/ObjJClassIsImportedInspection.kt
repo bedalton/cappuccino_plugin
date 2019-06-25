@@ -4,8 +4,11 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
+import cappuccino.ide.intellij.plugin.psi.impl.isNotCategory
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
@@ -16,27 +19,29 @@ class ObjJClassIsImportedInspection  : LocalInspectionTool() {
     override fun buildVisitor(problemsHolder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : ObjJVisitor() {
             override fun visitCallTarget(callTarget: ObjJCallTarget) {
-                annotateIfNeccessary(problemsHolder, callTarget)
+                annotateIfNecessary(problemsHolder, callTarget)
             }
 
             override fun visitClassName(className: ObjJClassName) {
-                annotateIfNeccessary(problemsHolder, className)
+                annotateIfNecessary(problemsHolder, className)
             }
         }
     }
 
-    private fun annotateIfNeccessary(problemsHolder: ProblemsHolder, psiElement:PsiElement) {
+    private fun annotateIfNecessary(problemsHolder: ProblemsHolder, psiElement:PsiElement) {
+        val parent = psiElement.parent
+        if (parent is ObjJClassDependencyStatement || parent is ObjJProtocolDeclaration)
+            return
+        if ((psiElement.parent as? ObjJImplementationDeclaration)?.isNotCategory.orFalse())
+            return
         val className = psiElement.text
-        if (className !in ObjJClassDeclarationsIndex.instance.getAllKeys(psiElement.project) && className !in ObjJPluginSettings.ignoredClassNames())
+        if (!ObjJClassDeclarationsIndex.instance.containsKey(className, psiElement.project) || className in ObjJPluginSettings.ignoredClassNames())
             return
-        val containingFiles = ObjJClassDeclarationsIndex.instance[className, psiElement.project].mapNotNull {
-            it.containingFile as? ObjJFile
-        }
         val containingFile = (psiElement.containingFile as? ObjJFile) ?: return
-        val imports = containingFile.getImportedFiles(cache = true, recursive = true) + containingFile
-        val matches = imports.intersect(containingFiles).isNotEmpty()
-        if (matches)
+        val importedClassNames = ObjJPsiFileUtil.getImportedClassNames(containingFile) + containingFile.definedClassNames
+        if (className in importedClassNames)
             return
+        LOGGER.info("Classes Imported:\n\t${importedClassNames.sortedDescending().joinToString(",\n\t")}")
         problemsHolder.registerProblem(psiElement, ObjJBundle.message("objective-j.inspections.class-not-imported.message", className))
 
     }

@@ -48,7 +48,7 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
 abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<ObjJImplementationStub>, ObjJImplementationDeclarationElement, ObjJImplementationDeclaration {
 
     constructor(
-            stub: ObjJImplementationStub) : super(stub, ObjJStubTypes.PROTOCOL)
+            stub: ObjJImplementationStub) : super(stub, ObjJStubTypes.IMPLEMENTATION)
 
     constructor(node: ASTNode) : super(node)
 
@@ -80,3 +80,6 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
         return superClassDeclarations.any { it.classNameString == className || it.superClassName == className } || inheritedProtocolDeclarations.any { it.classNameString == className}
     }
 }
+
+val ObjJImplementationDeclaration.isNotCategory:Boolean
+    get() = !isCategory

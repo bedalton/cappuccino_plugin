@@ -1,40 +1,49 @@
 package cappuccino.ide.intellij.plugin.lang
 
 import cappuccino.ide.intellij.plugin.caches.ObjJFileCache
-import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.ObjJClassDependencyStatement
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFilePsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
-import cappuccino.ide.intellij.plugin.utils.ObjJImportUtils
-import com.intellij.ide.projectView.PresentationData
 import icons.ObjJIcons
-
-import javax.swing.*
+import javax.swing.Icon
 
 class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJLanguage.instance), ObjJCompositeElement, ObjJHasTreeStructureElement {
 
-    private val fileCache:ObjJFileCache by lazy {
+    private val fileCache: ObjJFileCache by lazy {
         ObjJFileCache(this)
     }
 
-    val framework:String?
-        get() = fileCache.frameworkName
+    val frameworkName: String
+        get() = fileCache.frameworkName ?: EMPTY_FRAMEWORK_NAME
 
-    val cachedImportFileList:List<ObjJFile>?
-        get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = false)
+    val cachedImportFileList: List<ObjJFile>?
+        get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = true)
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>
-        get() = PsiTreeUtil.getChildrenOfTypeAsList(this, ObjJClassDeclarationElement::class.java)
+        get() = fileCache.classDeclarations
 
-    val importStrings: List<String>
-        get() = ObjJFilePsiUtil.getImportsAsStrings(this)
+    val definedClassNames:List<String>
+        get() = insideClasses.mapNotNull { it.text }
+
+    val classDependencyStatements: List<ObjJClassDependencyStatement>
+        get() = fileCache.classDependencyStatements
+
+    private val insideClasses:List<ObjJClassName>
+        get() = fileCache.insideClasses
 
     override fun toString(): String {
         return "ObjectiveJ Language file"
@@ -55,7 +64,7 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
     override fun <PsiT : PsiElement> getChildrenOfType(childClass: Class<PsiT>): List<PsiT> =
             PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
 
-    fun <PsiT:PsiElement> getFileChildrenOfType(aClass: Class<PsiT>, recursive: Boolean): List<PsiT> {
+    fun <PsiT : PsiElement> getFileChildrenOfType(aClass: Class<PsiT>, recursive: Boolean): List<PsiT> {
         val children = getChildrenOfType(aClass).toMutableList()
         if (!recursive) {
             return children

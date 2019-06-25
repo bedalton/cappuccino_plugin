@@ -268,13 +268,26 @@ importBlock
 importStatementElement
 	::= importFile
 	|	importFramework
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement"
+		]
+		methods = [
+			getReference
+			multiResolve
+			resolve
+			getImportIncludeElement
+			getFrameworkNameString
+			getFileNameString
+		]
+	}
 	;
 
 importFile
 	::= '@import' fileNameAsImportString
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
+		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFileImpl>"
 		methods=[
 			getFrameworkNameString
@@ -299,11 +312,11 @@ fileNameAsImportString
 
 
 importFramework
-	::= '@import' frameworkReference
+	::= '@import' frameworkDescriptor
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
+		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl>"
 		methods=[
 			getFrameworkNameString
@@ -321,6 +334,19 @@ includeBlock
 includeStatementElement
 	::= includeFile
 	|	includeFramework
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement"
+		]
+		methods = [
+			getReference
+			multiResolve
+			resolve
+			getImportIncludeElement
+			getFrameworkNameString
+			getFileNameString
+		]
+	}
 	;
 
 includeFile
@@ -328,7 +354,7 @@ includeFile
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>>"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFileImpl>"
 		methods=[
@@ -341,10 +367,10 @@ includeFile
 	;
 
 includeFramework
-	::= PP_INCLUDE frameworkReference LINE_TERMINATOR
+	::= PP_INCLUDE frameworkDescriptor LINE_TERMINATOR
 	{
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
+		implements="cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJIncludeFrameworkImpl>"
 		methods=[
 			getFrameworkNameString
@@ -355,7 +381,7 @@ includeFramework
 	}
 	;
 
-frameworkReference
+frameworkDescriptor
 	::= "<" FRAMEWORK_NAME "/" frameworkFileName ">"
 	{
 		pin = 1;

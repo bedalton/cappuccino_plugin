@@ -1,10 +1,11 @@
 package cappuccino.ide.intellij.plugin.indices
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.psi.stubs.IndexSink
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportStatement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -13,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
+import cappuccino.ide.intellij.plugin.psi.utils.fileNameAsImportString
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import java.util.logging.Level
@@ -117,6 +119,9 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
             return
         }
         indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassDeclarationsIndex.instance.key, stub.className)
+        val fileImportString = (stub.psi.containingFile as? ObjJFile)?.fileNameAsImportString
+        if (fileImportString != null)
+            indexSink.occurrence<ObjJClassDeclarationElement<*>, String>(ObjJClassDeclarationsByFileImportStringIndex.instance.key, fileImportString)
         if (stub is ObjJImplementationStub) {
             indexImplementationClassDeclaration(stub, indexSink)
         } else if (stub is ObjJProtocolDeclarationStub) {
@@ -193,7 +198,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      * Indexes import calls for referencing
      */
     override fun indexImport(stub: ObjJImportStub<*>, indexSink: IndexSink) {
-        indexSink.occurrence<ObjJImportStatement<*>, String>(ObjJImportsIndex.KEY, stub.fileName)
+        indexSink.occurrence<ObjJImportElement<*>, String>(ObjJImportsIndex.KEY, stub.fileName)
     }
 
     /**

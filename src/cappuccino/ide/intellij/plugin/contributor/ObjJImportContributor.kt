@@ -1,15 +1,11 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
-import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkReference
+import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkDescriptor
 import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.ObjJImportUtils
-import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
-import cappuccino.ide.intellij.plugin.utils.createFrameworkSearchRegex
-import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
@@ -26,7 +22,7 @@ object ObjJImportContributor {
 
     private fun frameworkNames(project:Project):List<String> {
         return FilenameIndex.getFilesByName(project, "Info.plist", GlobalSearchScope.everythingScope(project)).mapNotNull { file ->
-            findFrameworkNameInPlistText(file.text)
+            findFrameworkNameInPlist(file)
         }
     }
 
@@ -58,25 +54,25 @@ object ObjJImportContributor {
     }
 
     private fun getFrameworkName(element:PsiElement):String? {
-        return element.getSelfOrParentOfType(ObjJFrameworkReference::class.java)?.frameworkName?.text
+        return element.getSelfOrParentOfType(ObjJFrameworkDescriptor::class.java)?.frameworkName?.text
     }
 
     fun addImportCompletions(resultSet: CompletionResultSet, element:PsiElement) {
         val project = element.project
         val prevSiblingText = element.getPreviousNonEmptySibling(false)?.text ?: return
         when (prevSiblingText) {
-            "<" -> ObjJImportUtils.frameworkNames(project).forEach { frameworkName ->
+            "<" -> ObjJFrameworkUtils.frameworkNames(project).forEach { frameworkName ->
                 resultSet.addElement(LookupElementBuilder.create(frameworkName).withInsertHandler(ObjJFrameworkNameInsertHandler))
             }
             "/" -> {
                 val frameworkName = getFrameworkName(element)
                 if (frameworkName != null) {
-                    ObjJImportUtils.getFrameworkFileNames(project, frameworkName).forEach {fileName ->
+                    ObjJFrameworkUtils.getFrameworkFileNames(project, frameworkName).forEach { fileName ->
                         resultSet.addElement(LookupElementBuilder.create(fileName).withInsertHandler(ObjJFrameworkFileNameInsertHandler))
                     }
 
                 } else {
-                    ObjJImportUtils.getFileNamesInDirectory(element.containingFile.containingDirectory, true).forEach {fileName ->
+                    ObjJFrameworkUtils.getFileNamesInDirectory(element.containingFile.containingDirectory, true).forEach { fileName ->
                         resultSet.addElement(LookupElementBuilder.create(fileName).withInsertHandler(ObjJFrameworkNameInsertHandler))
                     }
                 }
@@ -85,10 +81,10 @@ object ObjJImportContributor {
             else -> {
                 val stringLiteral = element.getSelfOrParentOfType(ObjJStringLiteral::class.java) ?: return
                 val frameworkName = stringLiteral.enclosingFrameworkName
-                ObjJImportUtils.getFrameworkFileNames(project, frameworkName).forEach {fileName ->
+                ObjJFrameworkUtils.getFrameworkFileNames(project, frameworkName).forEach { fileName ->
                     resultSet.addElement(LookupElementBuilder.create(fileName).withInsertHandler(ObjJFrameworkFileNameInStringInsertHandler))
                 }
-                ObjJImportUtils.getFileNamesInDirectory(element.containingFile.containingDirectory, true).forEach {fileName ->
+                ObjJFrameworkUtils.getFileNamesInDirectory(element.containingFile.containingDirectory, true).forEach { fileName ->
                     resultSet.addElement(LookupElementBuilder.create(fileName).withInsertHandler(ObjJFrameworkNameInsertHandler))
                 }
             }

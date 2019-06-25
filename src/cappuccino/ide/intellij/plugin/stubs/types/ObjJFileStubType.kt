@@ -42,7 +42,7 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
         val numImports = stream.readInt()
-        val imports = ArrayList<ObjJImportInfoStub>()
+        val imports = mutableListOf<ObjJImportInfoStub>()
         for (i in 0 until numImports) {
             imports.add(stream.readImportInfo())
         }

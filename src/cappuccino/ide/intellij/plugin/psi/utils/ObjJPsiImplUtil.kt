@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.caches.*
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
@@ -942,8 +943,8 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getFileNameString(reference: ObjJFrameworkReference): String {
-        return ObjJImportPsiUtils.getFileNameString(reference)
+    fun getFileNameString(descriptor: ObjJFrameworkDescriptor): String {
+        return ObjJImportPsiUtils.getFileNameString(descriptor)
     }
 
     @JvmStatic
@@ -967,8 +968,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFrameworkNameString(reference: ObjJFrameworkReference): String? {
-        return ObjJImportPsiUtils.getFrameworkNameString(reference)
+    fun getFileNameString(importIncludeStatement: ObjJImportIncludeStatement) : String
+        = importIncludeStatement.importIncludeElement?.fileNameString ?: ""
+
+    @JvmStatic
+    fun getFrameworkNameString(descriptor: ObjJFrameworkDescriptor): String? {
+        return ObjJImportPsiUtils.getFrameworkNameString(descriptor)
     }
 
 
@@ -993,8 +998,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getImportAsUnifiedString(importStatement: ObjJImportStatement<*>) =
-            (importStatement.frameworkNameString ?: "") + ObjJImportStatement.DELIMITER + importStatement.fileNameString
+    fun getFrameworkNameString(importIncludeStatement: ObjJImportIncludeStatement) : String?
+            = importIncludeStatement.importIncludeElement?.frameworkNameString
+
+    @JvmStatic
+    fun getImportAsUnifiedString(importElement: ObjJImportElement<*>) =
+            (importElement.frameworkNameString ?: "") + ObjJImportElement.DELIMITER + importElement.fileNameString
 
     @JvmStatic
     fun getName(fileName:ObjJFileNameAsImportString) : String
@@ -1018,7 +1027,21 @@ object ObjJPsiImplUtil {
         return fileName
     }
 
+    @JvmStatic
+    fun getReference(statement:ObjJImportIncludeStatement) : PsiReference?
+            = ObjJImportPsiUtils.getReference(statement)
 
+    @JvmStatic
+    fun resolve(statement:ObjJImportIncludeStatement) : ObjJFile?
+            = ObjJImportPsiUtils.resolve(statement)
+
+    @JvmStatic
+    fun multiResolve(statement:ObjJImportIncludeStatement) : List<ObjJFile>
+            = ObjJImportPsiUtils.multiResolve(statement)
+
+    @JvmStatic
+    fun getImportIncludeElement(importIncludeStatement:ObjJImportIncludeStatement) : ObjJImportElement<*>?
+        = ObjJImportPsiUtils.getImportIncludeElement(importIncludeStatement)
 
     // ============================== //
     // ===== VariableAssignments ==== //

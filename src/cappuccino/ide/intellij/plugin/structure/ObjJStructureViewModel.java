@@ -12,7 +12,7 @@ public class ObjJStructureViewModel  extends StructureViewModelBase implements
         StructureViewModel.ElementInfoProvider {
 
     ObjJStructureViewModel(PsiFile psiFile) {
-        super(psiFile, new ObjJStructureViewElement((ObjJFile)psiFile, new PresentationData(ObjJPsiFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File"), "", ObjJIcons.DOCUMENT_ICON, null), ObjJPsiFileUtil.Companion.getFileNameSafe(psiFile, "Objective-J File")));
+        super(psiFile, new ObjJStructureViewElement((ObjJFile)psiFile, new PresentationData(ObjJPsiFileUtil.INSTANCE.getFileNameSafe(psiFile, "Objective-J File"), "", ObjJIcons.DOCUMENT_ICON, null), ObjJPsiFileUtil.INSTANCE.getFileNameSafe(psiFile, "Objective-J File")));
     }
 
     @NotNull
