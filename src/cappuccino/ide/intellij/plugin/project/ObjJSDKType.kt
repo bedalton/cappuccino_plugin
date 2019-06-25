@@ -1,10 +1,7 @@
 package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
-import cappuccino.ide.intellij.plugin.utils.ObjJVirtualFileUtil
-import cappuccino.ide.intellij.plugin.utils.contents
-import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.projectRoots.*
 import icons.ObjJIcons
 import org.jdom.Element
@@ -55,7 +52,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
             return null
         val text = versionFile.readText(Charset.defaultCharset())
         val matcher = SDK_VERSION_REGEX.find(text) ?: return null
-        return matcher.groupValues.firstOrNull()
+        return matcher.groupValues.getOrNull(1)
     }
 
     override fun createAdditionalDataConfigurable(
@@ -105,7 +102,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         }
 
         return file.children.filter { it.exists() && it.isDirectory }.mapNotNull {directory ->
-            val plist = directory.children.firstOrNull { it.exists() && !it.isDirectory && it.name.toLowerCase() == INFO_PLIST_FILE_NAME } ?: return@mapNotNull null
+            val plist = directory.children.firstOrNull { it.exists() && !it.isDirectory && it.name.toLowerCase() == INFO_PLIST_FILE_NAME_TO_LOWER_CASE } ?: return@mapNotNull null
             val frameworkName = findFrameworkNameInPlistText(plist.contents) ?: return@mapNotNull null
             LOGGER.info("Found Framework: $frameworkName")
             Pair(frameworkName, directory)
