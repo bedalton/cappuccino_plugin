@@ -18,6 +18,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
      */
     fun annotateProtocolDeclaration(protocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolder) {
         annotateIfDuplicateProtocol(protocolDeclaration, annotationHolder)
+        ObjJImplementationDeclarationAnnotatorUtil.annotateInvalidProtocolNames(protocolDeclaration.inheritedProtocolList, annotationHolder)
     }
 
 

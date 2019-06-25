@@ -138,13 +138,13 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 
 <SINGLE_QUOTE_STRING> {
 	"'" 								 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_SINGLE_QUO; }
-	{LINE_TERMINATOR}					 { return ObjJ_LINE_TERMINATOR; }
+	{LINE_TERMINATOR}					 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL);  return ObjJ_LINE_TERMINATOR; }
 	{SINGLE_QUOTE_TEXT}				 	 { return ObjJ_QUO_TEXT; }
 }
 
 <DOUBLE_QUOTE_STRING> {
 	"\"" 								 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_DOUBLE_QUO; }
-	{LINE_TERMINATOR}					 { return ObjJ_LINE_TERMINATOR; }
+	{LINE_TERMINATOR}					 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_LINE_TERMINATOR; }
 	{DOUBLE_QUOTE_TEXT}				 	 { return ObjJ_QUO_TEXT; }
 }
 

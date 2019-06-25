@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvid
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
-import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
@@ -106,7 +105,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
-            element.hasParentOfType(ObjJImportStatement::class.java) -> {
+            element.hasParentOfType(ObjJImportElement::class.java) -> {
                 ObjJImportContributor.addImportCompletions(resultSet, element)
                 resultSet.stopHere()
                 return
