@@ -46,6 +46,7 @@ object ObjJQualifiedReferenceUtil {
         for (i in 1 until numVariableNames) {
             builder.append(".").append(variableNames[i].text)
         }
+
         return builder.toString()
     }
 

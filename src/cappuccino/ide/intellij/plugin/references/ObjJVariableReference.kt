@@ -45,7 +45,7 @@ class ObjJVariableReference(
                 return null
             }
             val file = myElement.containingObjJFile
-            val imports = file?.importStrings
+            val imports = file?.cachedImportFileList
             val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
             var namedElement:PsiElement? = null
             if (globalVariableDeclarations.isNotEmpty()) {
@@ -53,7 +53,7 @@ class ObjJVariableReference(
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
                     for (declaration in globalVariableDeclarations) {
-                        if (imports.contains(ObjJPsiFileUtil.getContainingFileName(declaration.containingFile))) {
+                        if (declaration.containingFile in imports) {
                             namedElement = declaration.variableName
                         }
                     }

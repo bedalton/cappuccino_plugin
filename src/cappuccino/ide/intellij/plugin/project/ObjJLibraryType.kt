@@ -13,7 +13,7 @@ import javax.swing.Icon
 import com.intellij.openapi.roots.libraries.LibraryType
 
 /**
- * Libarary type for an objective-j framework
+ * Libarary type for an objective-j frameworkName
  */
 class ObjJLibraryType : LibraryType<DummyLibraryProperties>(LIBRARY) {
 
