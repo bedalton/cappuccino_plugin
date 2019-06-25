@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHa
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -14,6 +15,7 @@ import cappuccino.ide.intellij.plugin.references.NoIndex
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
@@ -34,6 +36,20 @@ object ObjJClassNamesCompletionProvider {
         val isParentClassDeclaration = element.parent is ObjJClassDeclarationElement<*>
         val previousSibling = element.getPreviousNonEmptySibling(true)
         val shouldAddClassCompletionsInHead = isParentClassDeclaration && previousSibling.elementType in listOf(ObjJTypes.ObjJ_COLON)
+
+        if (isParentClassDeclaration && previousSibling.elementType in listOf(ObjJTypes.ObjJ_AT_IMPLEMENTATION, ObjJTypes.ObjJ_AT_PROTOCOL)) {
+            val containingFile = element.containingFile as? ObjJFile
+            val fileName = containingFile?.name
+            val dotPos = fileName?.indexOf(".").orElse(-1)
+            val possibleClassName = if (dotPos < 1) {
+                null
+            } else
+                fileName?.substring(0, dotPos)
+            if (possibleClassName != null && possibleClassName in containingFile?.definedClassNames.orEmpty()) {
+                resultSet.addElement(LookupElementBuilder.create(possibleClassName))
+            }
+            resultSet.stopHere()
+        }
 
         // If in method header, fill in with protocols and classes
         val inMethodHeader = element.parent is ObjJClassDeclarationElement<*> && element.getPreviousNonEmptySibling(true).elementType in listOf(ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_OPEN_PAREN)
