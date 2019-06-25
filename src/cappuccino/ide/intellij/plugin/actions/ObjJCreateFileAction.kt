@@ -40,9 +40,11 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
                 .setValidator(object : InputValidatorEx {
                     override fun canClose(inputString: String?) = checkInput(inputString)
                     override fun getErrorText(inputString: String?) = ObjJBundle.message("objective-j.actions.new-file.invalid", inputString.orEmpty())
-                    override fun checkInput(inputString: String?) = inputString?.run {
-                        all { it.isLetterOrDigit() || it in "_!" || it in '\u0100'..'\uFFFF' } && firstOrNull() != '!'
-                    }?.or(false) ?: false
+                    override fun checkInput(inputString: String?) : Boolean {
+                        return inputString?.run {
+                            all { it.isLetterOrDigit() || it in "_!." || it in '\u0100'..'\uFFFF' } && firstOrNull() != '!'
+                        }?.or(false) ?: false
+                    }
                 })
                 .addKind("File", ObjJIcons.DOCUMENT_ICON, "file")
     }
@@ -82,3 +84,8 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
         }
     }
 }
+
+private val String.extension get() = FileUtilRt.getExtension(this)
+
+private val String.hasObjJExtension:Boolean
+    get() = extension == "j"
