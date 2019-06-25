@@ -2,6 +2,9 @@ package cappuccino.ide.intellij.plugin.caches
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME_TO_LOWER_CASE
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
@@ -29,5 +32,17 @@ class ObjJFileCache(file:ObjJFile) {
      */
     val importedFiles:List<ObjJFile>? get() = importedFilesCachedValue.value
 
+    private val frameworkPlist:CachedValuesManager<PsiFile?> by lazy {
+        val provider = CachedValueProvider<PsiFile> {
+            val out:PsiFile?
+            val directory:PsiDirectory? = file.parent
+            while(directory != null) {
+                val temp = directory.findFile(INFO_PLIST_FILE_NAME) ?: directory?.findFile(INFO_PLIST_FILE_NAME_TO_LOWER_CASE)
+                if ()
+            }
+
+            return out
+        }
+    }
 
 }

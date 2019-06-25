@@ -24,6 +24,9 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         ObjJFileCache(this)
     }
 
+    val framework:String?
+        get() = fileCache.frameworkName
+
     val cachedImportFileList:List<ObjJFile>?
         get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = false)
 
