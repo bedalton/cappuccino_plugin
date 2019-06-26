@@ -127,7 +127,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.hasParentOfType(ObjJInstanceVariableList::class.java) ->
                 instanceVariableListCompletion(element, resultSet)
             // All others
-            element.parent is ObjJClassDeclarationElement<*> -> {
+            element.parent is ObjJClassDeclarationElement<*> || element.parent.parent is ObjJClassDeclarationElement<*> -> {
                 getClassNameCompletions(resultSet, element)
                 resultSet.stopHere()
                 return
