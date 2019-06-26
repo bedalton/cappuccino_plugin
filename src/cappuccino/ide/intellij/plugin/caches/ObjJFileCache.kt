@@ -4,12 +4,10 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJClassDependencyStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.collectElementsOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.*
 
@@ -56,9 +54,6 @@ class ObjJFileCache(file:ObjJFile) {
                     break
                 }
                 directory = directory.parent
-            }
-            if (out == null) {
-                LOGGER.info("Failed to find framework plist for file: <${file.name}>")
             }
             CachedValueProvider.Result.create(out, dependencies)
         }
