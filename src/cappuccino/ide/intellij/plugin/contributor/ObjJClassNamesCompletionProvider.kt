@@ -18,6 +18,7 @@ import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.psi.PsiElement
 
 object ObjJClassNamesCompletionProvider {
@@ -33,19 +34,14 @@ object ObjJClassNamesCompletionProvider {
         // If is first item in array, there is a chance that this array will truly
         // become a method call, no way to be sure until a comma or selector is written
         val isFirstItemInArray = isFirstItemInArray(element)
-        val isParentClassDeclaration = element.parent is ObjJClassDeclarationElement<*>
+        val isParentClassDeclaration = element.parent is ObjJClassDeclarationElement<*> || element.parent.parent is ObjJClassDeclarationElement<*>
         val previousSibling = element.getPreviousNonEmptySibling(true)
         val shouldAddClassCompletionsInHead = isParentClassDeclaration && previousSibling.elementType in listOf(ObjJTypes.ObjJ_COLON)
-
         if (isParentClassDeclaration && previousSibling.elementType in listOf(ObjJTypes.ObjJ_AT_IMPLEMENTATION, ObjJTypes.ObjJ_AT_PROTOCOL)) {
             val containingFile = element.containingFile as? ObjJFile
             val fileName = containingFile?.name
-            val dotPos = fileName?.indexOf(".").orElse(-1)
-            val possibleClassName = if (dotPos < 1) {
-                null
-            } else
-                fileName?.substring(0, dotPos)
-            if (possibleClassName != null && possibleClassName in containingFile?.definedClassNames.orEmpty()) {
+            val possibleClassName = FileUtilRt.getNameWithoutExtension(fileName.orEmpty())
+            if (possibleClassName !in containingFile?.definedClassNames.orEmpty()) {
                 resultSet.addElement(LookupElementBuilder.create(possibleClassName))
             }
             resultSet.stopHere()
