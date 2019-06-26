@@ -12,8 +12,6 @@ class JsTypeDefIndexService : StubIndexService() {
             if (stub !is JsTypeDefFileStub) {
                 return
             }
-            // Index file by name
-            sink.occurrence<JsTypeDefFile, String>(JsTypeDefFilesByNameIndex.instance.key, stub.fileName)
     }
 
 
