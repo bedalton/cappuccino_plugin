@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 object ObjJInheritanceUtil {
@@ -19,6 +20,30 @@ object ObjJInheritanceUtil {
         return inheritedClasses
     }
 
+    fun getAllSuperClasses(classDeclarationElement: ObjJImplementationDeclaration) : List<ObjJImplementationDeclaration> {
+        val superClass = classDeclarationElement.superClassName ?: return emptyList()
+        val project = classDeclarationElement.project
+        val out = mutableListOf<ObjJImplementationDeclaration>()
+        ObjJImplementationDeclarationsIndex.instance[superClass, project].forEach {
+            out.add(it)
+            out.addAll(getAllSuperClasses(it))
+        }
+        return out
+    }
+
+    fun getAllProtocols(classDeclarationElement: ObjJClassDeclarationElement<*>) : List<ObjJProtocolDeclaration> {
+        val names = mutableSetOf<String>()
+        val project = classDeclarationElement.project
+        addProtocols(classDeclarationElement, names)
+        if (classDeclarationElement is ObjJImplementationDeclaration) {
+            classDeclarationElement.superClassDeclarations.forEach {
+                addProtocols(it, names)
+            }
+        }
+        return names.flatMap {
+            ObjJProtocolDeclarationsIndex.instance[it, project]
+        }
+    }
 
     fun appendAllInheritedProtocolsToSet(className: String, project: Project): MutableSet<ObjJProtocolDeclaration> {
         val out = mutableSetOf<ObjJProtocolDeclaration>()
@@ -28,7 +53,7 @@ object ObjJInheritanceUtil {
 
     private fun appendAllInheritedProtocolsToSet(out: MutableSet<ObjJProtocolDeclaration>, className: String, project: Project) {
         ProgressIndicatorProvider.checkCanceled()
-        if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
+        if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
 
@@ -57,7 +82,7 @@ object ObjJInheritanceUtil {
     private fun isProtocolInArray(protocolDeclarations: Set<ObjJProtocolDeclaration>, className: String): Boolean {
         for (protocolDeclaration in protocolDeclarations) {
             ProgressIndicatorProvider.checkCanceled()
-            if (protocolDeclaration.getClassNameString() == className) {
+            if (protocolDeclaration.classNameString == className) {
                 return true
             }
         }
@@ -65,7 +90,7 @@ object ObjJInheritanceUtil {
     }
 
     private fun appendAllInheritedClassesToSet(classNames: MutableSet<String>, className: String, project: Project, withProtocols:Boolean = true) {
-        if (className == UNDETERMINED || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
+        if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
 
@@ -102,10 +127,10 @@ object ObjJInheritanceUtil {
         if (parentClass == subclassName) {
             return true
         }
-        if (parentClass == ObjJClassType.UNDEF_CLASS_NAME || subclassName == ObjJClassType.UNDEF_CLASS_NAME) {
+        if (parentClass == ObjJClassType.UNDEF_CLASS_NAME || subclassName == UNDETERMINED) {
             throw CannotDetermineException()
         }
-        return if (parentClass == UNDETERMINED || parentClass == UNDETERMINED) {
+        return if (parentClass == UNDETERMINED || parentClass == ID || subclassName == UNDETERMINED || subclassName == ID) {
             true
         } else getAllInheritedClasses(subclassName, project).contains(parentClass)
     }
@@ -116,6 +141,7 @@ object ObjJInheritanceUtil {
     private fun addProtocols(
             classDeclarationElement: ObjJClassDeclarationElement<*>,
             protocols: MutableSet<String>) {
+        val project = classDeclarationElement.project
         val stub = classDeclarationElement.stub
         val newProtocols = stub?.inheritedProtocols ?: classDeclarationElement.getInheritedProtocols()
         for (protocol in newProtocols) {
@@ -123,6 +149,9 @@ object ObjJInheritanceUtil {
                 continue
             }
             protocols.add(protocol)
+            ObjJProtocolDeclarationsIndex.instance[protocol, project].forEach {
+                addProtocols(it, protocols)
+            }
         }
     }
 

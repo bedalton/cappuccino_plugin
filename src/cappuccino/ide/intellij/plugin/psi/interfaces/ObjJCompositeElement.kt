@@ -2,6 +2,9 @@ package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
+import cappuccino.ide.intellij.plugin.psi.utils.getScope
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -27,5 +30,12 @@ interface ObjJCompositeElement : PsiElement {
     fun <PsiT : PsiElement> getParentOfType(parentClass:Class<PsiT>) : PsiT?
     fun <PsiT : PsiElement> getChildOfType(childClass:Class<PsiT>) : PsiT?
     fun <PsiT : PsiElement> getChildrenOfType(childClass:Class<PsiT>) : List<PsiT>
+    fun commonContext(otherElement:PsiElement) : PsiElement? {
+        return PsiTreeUtil.findCommonContext(this, otherElement)
+    }
+
+    fun commonScope(otherElement: PsiElement) : ReferencedInScope {
+        return getScope(commonContext(otherElement))
+    }
 
 }

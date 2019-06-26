@@ -1,10 +1,14 @@
 package cappuccino.ide.intellij.plugin.hints
 
+import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.util.TextRange
@@ -23,7 +27,7 @@ data class ObjJMethodDescription(val className:String, private val returnType:St
                 .append(parametersListPresentableText)
                 .append("]")
         if (returnType.isNotNullOrBlank()) {
-            stringBuilder.append(" : ").append(returnType)
+            stringBuilder.append(": ").append(returnType)
         }
         stringBuilder.append("in [").append(className).append("]")
         return stringBuilder.toString()
@@ -66,7 +70,8 @@ data class ObjJMethodDescription(val className:String, private val returnType:St
 
 data class ObjJMethodParameterDescription(internal val selector:String, val containingClass:String, private val type:String?, private val parameterName:String?) {
     val presentableText:String get() {
-        val stringBuilder:StringBuilder = java.lang.StringBuilder(selector);
+
+        val stringBuilder:StringBuilder = java.lang.StringBuilder(selector)
         if (parameterName.isNotNullOrBlank() || type.isNotNullOrBlank()) {
             stringBuilder.append(":")
         }
@@ -76,12 +81,17 @@ data class ObjJMethodParameterDescription(internal val selector:String, val cont
         if (parameterName.isNotNullOrBlank()) {
             stringBuilder.append(parameterName)
         }
+
+        if (containingClass.isNotBlank()) {
+            stringBuilder.append (" in class ").append(containingClass)
+        }
+
         return stringBuilder.toString()
     }
 }
 
 val ObjJMethodHeader.description:ObjJMethodDescription get() {
-    val description = ObjJMethodDescription(this.containingClassName, this.returnType)
+    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes( createTag()).joinToString("|"))
     this.methodDeclarationSelectorList.forEach {
         description.addParameter(it.description)
     }
@@ -89,7 +99,7 @@ val ObjJMethodHeader.description:ObjJMethodDescription get() {
 }
 
 val ObjJMethodHeaderDeclaration<*>.genericDescription:ObjJMethodDescription get() {
-    val description = ObjJMethodDescription(this.containingClassName, this.returnType)
+    val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes( createTag()).joinToString("|"))
     this.selectorStrings.forEach {
         val selectorDescription = ObjJMethodParameterDescription(it, this.containingClassName,null, "_")
         description.addParameter(selectorDescription)
@@ -102,6 +112,18 @@ val ObjJMethodDeclarationSelector.description:ObjJMethodParameterDescription get
 }
 
 val ObjJSelector.description:ObjJMethodParameterDescription? get() {
+    val selectorLiteral = this.getParentOfType(ObjJSelectorLiteral::class.java)
+    if (selectorLiteral != null){
+        val selectors = selectorLiteral.selectorList
+        val text = selectors.joinToString("") {
+            if (it == this) {
+                "<b>${it.getSelectorString(true)}</b>"
+            } else {
+                it.getSelectorString(true)
+            }
+        }
+        return ObjJMethodParameterDescription(selector = text, containingClass = selectorLiteral.containingClassName, type = "<?>", parameterName = "_")
+    }
     val parentMethodDeclarationSelector = this.getParentOfType(ObjJMethodDeclarationSelector::class.java)
     if (parentMethodDeclarationSelector != null) {
         return parentMethodDeclarationSelector.description

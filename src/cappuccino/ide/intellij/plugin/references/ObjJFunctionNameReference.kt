@@ -48,7 +48,13 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
         return resolved == element
     }
 
-    override fun resolve(): PsiElement? {
+    override fun resolve() : PsiElement? {
+        return myElement.resolveFromCache {
+            resolveInternal()
+        }
+    }
+
+    fun resolveInternal(): PsiElement? {
         if (DumbServiceImpl.isDumb(myElement.project)) {
             return null
         }
@@ -76,15 +82,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiReferenceBa
                 return function.functionName
             }
         }
-        if (allOut.isNotEmpty())
-            return allOut[0]
-        val fromVariableName = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
-        if (fromVariableName != null)
-            return fromVariableName
-        val all = JsTypeDefFunctionsByNameIndex.instance[functionName, myElement.project]
-        if (all.size == 1)
-            return all[0]
-        return all.filter {it.enclosingNamespace.isEmpty()}.getOrNull(0) ?: all.getOrNull(0)
+        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: myElement
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {

@@ -74,12 +74,12 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                 return true
 
             var matches = true
-            if (thisHeader.returnType != thatHeader.returnType && thisHeader.returnType != "IBAction" || thatHeader.returnType == "IBAction" ) {
+            if (thisHeader.explicitReturnType != thatHeader.explicitReturnType && thisHeader.explicitReturnType != "IBAction" || thatHeader.explicitReturnType == "IBAction" ) {
                 val methodHeaderReturnTypeElement = thisHeader.methodHeaderReturnTypeElement
                 if (methodHeaderReturnTypeElement != null) {
                     val thisHeaderReturnType = methodHeaderReturnTypeElement.formalVariableType
                     matches = if (methodHeaderReturnTypeElement.formalVariableType.varTypeId != null && thatHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId == null) {
-                        problemsHolder.registerProblem(thisHeaderReturnType, ObjJBundle.message("objective-j.inspections.method-header-match.return-type-less-specific.message"), ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.returnType),
+                        problemsHolder.registerProblem(thisHeaderReturnType, ObjJBundle.message("objective-j.inspections.method-header-match.return-type-less-specific.message"), ProblemHighlightType.INFORMATION, ObjJChangeVarTypeToMatchQuickFix(thisHeaderReturnType, thatHeader.explicitReturnType),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, STATEMENT),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, METHOD),
                                 suppressInspectionFix(methodHeaderReturnTypeElement, FUNCTION),
@@ -90,7 +90,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
                                     ?: "", thisHeader.methodHeaderReturnTypeElement?.text ?: "", thisHeader.project)) {
                         true
                     } else {
-                        registerProblem(problemsHolder, methodHeaderReturnTypeElement, ObjJBundle.message("objective-j.inspections.method-header-match.should-have-return-type.message", thatHeader.returnType), ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.returnType))
+                        registerProblem(problemsHolder, methodHeaderReturnTypeElement, ObjJBundle.message("objective-j.inspections.method-header-match.should-have-return-type.message", thatHeader.explicitReturnType), ObjJChangeVarTypeToMatchQuickFix(thisHeader, thatHeader.explicitReturnType))
                         false
                     }
                 } else {

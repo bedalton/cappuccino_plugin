@@ -24,7 +24,8 @@ object ObjJIgnoreEvaluatorUtil {
     private const val IGNORE_FLAG = "@ignore"
     private const val NO_INDEX_FLAG = "@noIndex"
     private const val AT_VAR = "@var"
-    private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?$AT_VAR\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
+    private const val AT_PARAM = "@param"
+    private val VARIABLE_TYPE_REGEX = Pattern.compile(".*?(?:$AT_VAR|$AT_PARAM)\\s+($IDENT_REGEX)\\s+($IDENT_REGEX).*")
     private val SPACE_REGEX = "\\s+".toRegex()
     const val DO_NOT_RESOLVE = "doNotInferType"
 
@@ -48,8 +49,9 @@ object ObjJIgnoreEvaluatorUtil {
                 .forEach { comment ->
                     val matcher = VARIABLE_TYPE_REGEX.matcher(comment)
                     if (matcher.find()) {
-                        if (matcher.group(2) != varName)
+                        if (matcher.group(2) != varName) {
                             return@forEach
+                        }
                         return matcher.group(1)
                     }
 
@@ -194,7 +196,8 @@ enum class ObjJSuppressInspectionFlags(val title:String, val flag:String) {
     IGNORE_UNDECLARED_FUNCTION("possibly undeclared function", "undeclaredFunction"),
     IGNORE_UNDECLARED_VAR("possibly undeclared variable", "undeclaredVar"),
     IGNORE_CLASS("class in completions", "ignoreClass"),
-    IGNORE_UNDECLARED_CLASS("possibly undeclared class", "undeclaredClass");
+    IGNORE_UNDECLARED_CLASS("possibly undeclared class", "undeclaredClass"),
+    IGNORE_UNINTENDED_GLOBAL_VARIABLE("possibly unintended global variable", "unintendedGlobal");
 }
 
 enum class NoIndex(val title:String, val flag:String) {

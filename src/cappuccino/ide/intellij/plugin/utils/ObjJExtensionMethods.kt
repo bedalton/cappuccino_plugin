@@ -58,12 +58,12 @@ fun Double?.add(other:Double?) : Double? {
  * Returns `true` if this nullable char sequence is either `null` or empty or consists solely of whitespace characters.
  */
 fun CharSequence?.isNotNullOrBlank(): Boolean {
-    return !this.isNullOrBlank()
+    return this != null && this.isNotBlank()
 }
 
 /**
  * Returns `true` if this nullable char sequence is either `null` or empty or consists solely of whitespace characters.
  */
 fun CharSequence?.isNotNullOrEmpty(): Boolean {
-    return !this.isNullOrEmpty()
+    return this != null && this.isNotEmpty()
 }

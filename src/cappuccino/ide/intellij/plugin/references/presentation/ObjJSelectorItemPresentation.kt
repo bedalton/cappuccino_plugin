@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.hints.description
 import com.intellij.navigation.ItemPresentation
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
@@ -15,7 +14,7 @@ class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPre
     override fun getPresentableText(): String? {
         ProgressIndicatorProvider.checkCanceled()
         val presentableText = selector.description?.presentableText ?: return ObjJPsiImplUtil.getDescriptiveText(selector)
-        LOGGER.info("Getting PresentableText: $presentableText")
+        //LOGGER.info("Getting PresentableText: $presentableText")
         return presentableText
     }
 
@@ -24,12 +23,12 @@ class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPre
         val classDeclarationElement = selector.containingClass
         className = if (classDeclarationElement is ObjJImplementationDeclaration) {
                         val categoryName = classDeclarationElement.categoryNameString
-                        classDeclarationElement.getClassNameString() +
+                        classDeclarationElement.classNameString +
                                 if (categoryName != null && !categoryName.isEmpty()) {
                                     " ($categoryName)"
                                 } else ""
                     } else {
-                        classDeclarationElement?.getClassNameString()
+                        classDeclarationElement?.classNameString
                     }
         val fileName = ObjJPsiImplUtil.getFileName(selector)
         return (className

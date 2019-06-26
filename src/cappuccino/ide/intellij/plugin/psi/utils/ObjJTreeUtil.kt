@@ -124,6 +124,17 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
+
+val PsiElement.previous: PsiElement? get(){
+    val out: ASTNode? = this.node.treePrev ?: getPrevInTreeParent(this.node) ?: return null
+    return out?.psi
+}
+
+val PsiElement.next: PsiElement? get() {
+    val out: ASTNode? = this.node.treeNext ?: getNextInTreeParent(this.node) ?: return null
+    return out?.psi
+}
+
 private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
     var temp:ASTNode? = out?.treeParent ?: return null
     while (temp != null && temp.treePrev == null && temp.treeParent != null) {
@@ -140,13 +151,7 @@ fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
     }
     return node
 }
-fun ASTNode.getNextNonEmptyNodeIgnoringComments(): ASTNode? {
-    var node = this.getNextNonEmptyNode(true)
-    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
-        node = node.getNextNonEmptyNode(true)
-    }
-    return node
-}
+
 fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treeNext ?: getNextInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {

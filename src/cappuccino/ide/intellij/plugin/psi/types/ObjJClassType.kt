@@ -37,7 +37,7 @@ object ObjJClassType {
     val SELECTOR = "selector"
     const val FUNCTION = "Function"
     const val REGEX = "regex"
-    const val UNDETERMINED = "id"
+    const val UNDETERMINED = "UNDEF"
     const val CPOBJECT = "CPObject"
     const val JSOBJECT = "JSObject"
     const val CLASS = "Class"

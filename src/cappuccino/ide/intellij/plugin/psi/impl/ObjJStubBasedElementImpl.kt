@@ -25,6 +25,8 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
+import cappuccino.ide.intellij.plugin.psi.utils.getScope
 import com.intellij.psi.util.PsiTreeUtil
 
 open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBasedPsiElementBase<T>, ObjJCompositeElement, ObjJStubBasedElement<T> {
@@ -55,4 +57,11 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
     override fun <T:PsiElement> getChildOfType(childClass:Class<T>) : T? = PsiTreeUtil.getChildOfType(this, childClass)
     override fun <T:PsiElement> getChildrenOfType(childClass:Class<T>) : List<T> = PsiTreeUtil.getChildrenOfTypeAsList(this, childClass)
 
+    override fun commonContext(otherElement:PsiElement) : PsiElement? {
+        return PsiTreeUtil.findCommonContext(this, otherElement)
+    }
+
+    override fun commonScope(otherElement: PsiElement) : ReferencedInScope {
+        return getScope(commonContext(otherElement))
+    }
 }

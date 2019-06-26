@@ -25,12 +25,12 @@ object ObjJHasContainingClassPsiUtil {
     }
 
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {
-        val classDeclarationElement = getContainingClass(compositeElement) ?: return ObjJClassType.UNDEF.className
-        return classDeclarationElement.getClassNameString()
+        val classDeclarationElement = getContainingClass(compositeElement) ?: return ObjJClassType.UNDEF_CLASS_NAME
+        return classDeclarationElement.classNameString
     }
 
     fun getContainingClassName(classDeclarationElement: ObjJClassDeclarationElement<*>?): String {
-        return classDeclarationElement?.getClassNameString() ?: ObjJClassType.UNDEF_CLASS_NAME
+        return classDeclarationElement?.classNameString ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     fun getContainingClassName(selectorLiteral: ObjJSelectorLiteral?): String {
@@ -49,7 +49,7 @@ object ObjJHasContainingClassPsiUtil {
         if (containingClassName == null) {
             val classDeclarationElement = psiElement.getParentOfType( ObjJClassDeclarationElement::class.java)
             if (classDeclarationElement != null) {
-                containingClassName = classDeclarationElement.getClassNameString()
+                containingClassName = classDeclarationElement.classNameString
             }
         }
         if (containingClassName == null) {

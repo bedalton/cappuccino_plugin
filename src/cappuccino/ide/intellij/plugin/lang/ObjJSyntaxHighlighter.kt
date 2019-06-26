@@ -7,8 +7,11 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import com.intellij.openapi.editor.colors.TextAttributesKey.createTempTextAttributesKey
 
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
+import com.intellij.openapi.editor.markup.EffectType
+import java.awt.Color
 
 class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
 
@@ -108,6 +111,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_PP_FRAGMENT) {
             attrKey = PRE_PROCESSOR
         } else if (tokenType == ObjJTypes.ObjJ_IMPORT_FRAMEWORK_LITERAL ||
+                tokenType == ObjJTypes.ObjJ_FILE_NAME_AS_IMPORT_STRING ||
+                tokenType == ObjJTypes.ObjJ_FRAMEWORK_NAME ||
+                tokenType == ObjJTypes.ObjJ_FILE_NAME_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUO ||
@@ -139,6 +145,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
         val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_SECONDARY_LITERAL", DefaultLanguageHighlighterColors.CONSTANT)
         val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
+        val VARIABLE_TYPE_WITH_ERROR:TextAttributesKey = VARIABLE_TYPE.asErrorAttribute
         val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
         val GLOBAL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_GLOBAL_VARIABLE", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE)
@@ -147,4 +154,14 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
 
     }
+}
+
+private val TextAttributesKey.asErrorAttribute:TextAttributesKey get() {
+    val attributes = this.defaultAttributes.clone()
+    attributes.effectType = EffectType.WAVE_UNDERSCORE
+    attributes.effectColor = Color.RED.brighter()
+    attributes.errorStripeColor = Color.RED.brighter()
+    val name = this.externalName + "_ERROR"
+    val temp = createTempTextAttributesKey(name, attributes)
+    return createTextAttributesKey(name, temp)
 }

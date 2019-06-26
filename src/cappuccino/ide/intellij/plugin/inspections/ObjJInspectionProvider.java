@@ -11,7 +11,9 @@ public class ObjJInspectionProvider implements InspectionToolProvider {
         return new Class[] {
             ObjJUndeclaredVariableInspectionTool.class,
                 ObjJVariableKeyWordScopeInspection.class,
-                ObjJVariableOvershadowInspection.class
+                ObjJVariableOvershadowInspection.class,
+                ObjJPossiblyUnintendedGlobalVariableInspectionTool.class,
+                ObjJClassIsImportedInspection.class
         };
     }
 }

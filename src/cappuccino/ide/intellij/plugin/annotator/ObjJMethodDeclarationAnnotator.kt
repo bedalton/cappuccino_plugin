@@ -27,7 +27,7 @@ object ObjJMethodDeclarationAnnotator {
         val project = methodHeader.project
         val thisSelector = methodHeader.selectorString
         val containingClass = methodHeader.containingClass ?: return
-        val containingClassName = containingClass.getClassNameString()
+        val containingClassName = containingClass.classNameString
         Logger.getInstance(ObjJMethodDeclarationAnnotator::class.java).assertTrue(!DumbService.isDumb(project))
         for (classMethodHeader in ObjJClassMethodIndex.instance[containingClassName, project]) {
             // If containing class elements are not equivalent, they should not be tested
@@ -40,7 +40,7 @@ object ObjJMethodDeclarationAnnotator {
                 continue
             }
             // Check if method selectors can be considered duplicates or not.
-            if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader)) {
+            if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader as? ObjJMethodHeader)) {
                 annotationHolder.createErrorAnnotation(methodHeader, ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate-selector.message"))
                 return
             }

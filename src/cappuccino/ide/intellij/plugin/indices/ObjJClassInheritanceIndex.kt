@@ -15,7 +15,7 @@ class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<
         get() = ObjJClassDeclarationElement::class.java
 
     override fun getVersion(): Int {
-        return super.getVersion() + ObjJIndexService.INDEX_VERSION + VERSION
+        return super.getVersion() + VERSION
     }
 
     override fun getKey(): StubIndexKey<String, ObjJClassDeclarationElement<*>> {
@@ -31,7 +31,7 @@ class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<
             throw IndexNotReadyRuntimeException()
         }
         for (classDeclarationElement in get(className, project)) {
-            val currentClassName = classDeclarationElement.getClassNameString()
+            val currentClassName = classDeclarationElement.classNameString
             if (descendants.contains(currentClassName)) {
                 continue
             }

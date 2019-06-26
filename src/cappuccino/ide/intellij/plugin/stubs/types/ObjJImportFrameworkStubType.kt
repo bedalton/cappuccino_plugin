@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.psi.impl.ObjJImportFrameworkImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
 
 class ObjJImportFrameworkStubType(
-        debugName: String) : ObjJImportStatementStubType<ObjJImportFrameworkImpl>(debugName, ObjJImportFrameworkImpl::class.java) {
+        debugName: String) : ObjJImportElementStubType<ObjJImportFrameworkImpl>(debugName, ObjJImportFrameworkImpl::class.java) {
 
     override fun createPsi(
             stub: ObjJImportStub<ObjJImportFrameworkImpl>): ObjJImportFrameworkImpl {

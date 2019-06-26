@@ -15,4 +15,6 @@ public interface ObjJIcons {
     Icon SELECTOR_ICON = IconLoader.getIcon("/icons/selector-icon.png");
     Icon VARIABLE_ICON = IconLoader.getIcon("/icons/variable-icon.png");
     Icon JSDEF_DOCUMENT_ICON = IconLoader.getIcon("/icons/document-icon.png");
+    Icon SDK_ICON = IconLoader.getIcon("/icons/sdk.png");
+    Icon SDK_ADD_ICON = IconLoader.getIcon("/icons/sdk.png");
 }

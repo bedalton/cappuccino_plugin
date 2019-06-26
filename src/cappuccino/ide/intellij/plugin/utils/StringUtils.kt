@@ -80,4 +80,24 @@ fun String.afterLast(sequence:String, offset:Int = 0, ignoreCase:Boolean = false
     if (lastIndex < 0)
         return this
     return this.substring(lastIndex + sequence.length)
+fun String.stripRefSuffixes() : String {
+    return when {
+        this.endsWith("Pointer") -> this.substringFromEnd(0, "Pointer".length)
+        this.endsWith("Reference") -> this.substringFromEnd(0, "Reference".length)
+        this.endsWith("Ptr") -> this.substringFromEnd(0, "Ptr".length)
+        this.endsWith("Ref") -> this.substringFromEnd(0, "Ref".length)
+        else -> this
+    }
+}
+
+fun String.equalsIgnoreCase(otherString:String) : Boolean {
+    return this.equals(otherString, true)
+}
+
+fun String.notEqualsIgnoreCase(otherString:String) : Boolean {
+    return !this.equals(otherString, true)
+}
+
+fun String.notEquals(otherString:String, ignoreCase:Boolean) : Boolean {
+    return !this.equals(otherString, ignoreCase)
 }

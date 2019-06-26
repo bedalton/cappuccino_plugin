@@ -24,14 +24,14 @@ internal val JsClassHTMLElement = c(
                 p(name = "translate", type = "boolean")
         ),
         functions = listOf(
-                f(name = "click", returns = "void"),
+                f(name = "click", returns = VOID),
                 f(name = "removeEventListener",
                         parameters = listOf(
                                 p(name = "type", type = "string"),
                                 p(name = "listener", type = "EventListenerOrEventListenerObject"),
                                 p(name = "options", type = "boolean | EventListenerOptions", nullable = true)
                         ),
-                        returns = "void")
+                        returns = VOID)
         )
 )
 
@@ -39,107 +39,107 @@ internal val JsClassGlobalEventHandlers = c(
         className = "GlobalEventHandlers",
         isStruct = true,
         properties = listOf(
-                p("onabort", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "UIEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the user aborts the download."),
-                p("onanimationcancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onanimationend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onanimationiteration", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onanimationstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onauxclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onblur", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "FocusEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the object loses the input focus."),
-                p("oncancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("oncanplay", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when playback is possible, but would require further buffering."),
-                p("oncanplaythrough", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the contents of the object or selection have changed."),
-                p("onclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = "?"), nullable = true, comment = "Fires when the user clicks the left mouse button on the object"),
-                p("onclose", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("oncontextmenu", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = "?"), nullable = true, comment = "Fires when the user clicks the right mouse button in the client area\", opening the context menu."),
-                p("oncuechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = "?"), nullable = true),
-                p("ondblclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event")), returns = "?"), nullable = true, comment = "Fires when the user double-clicks the object."),
-                p("ondrag", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires on the source object continuously during a drag operation."),
-                p("ondragend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation."),
-                p("ondragenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The drag event")), returns = "?"), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target."),
-                p("ondragexit", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("ondragleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The drag event")), returns = "?"), nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation."),
-                p("ondragover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target."),
-                p("ondragstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object."),
-                p("ondrop", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ondurationchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the duration attribute is updated."),
-                p("onemptied", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the media element is reset to its initial state."),
-                p("onended", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the end of playback is reached."),
+                p("onabort", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "UIEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the user aborts the download."),
+                p("onanimationcancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onanimationend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onanimationiteration", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onanimationstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "AnimationEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onauxclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onblur", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "FocusEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the object loses the input focus."),
+                p("oncancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("oncanplay", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when playback is possible, but would require further buffering."),
+                p("oncanplaythrough", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the contents of the object or selection have changed."),
+                p("onclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = rt("?")), nullable = true, comment = "Fires when the user clicks the left mouse button on the object"),
+                p("onclose", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("oncontextmenu", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = rt("?")), nullable = true, comment = "Fires when the user clicks the right mouse button in the client area\", opening the context menu."),
+                p("oncuechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = rt("?")), nullable = true),
+                p("ondblclick", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event")), returns = rt("?")), nullable = true, comment = "Fires when the user double-clicks the object."),
+                p("ondrag", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires on the source object continuously during a drag operation."),
+                p("ondragend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires on the source object when the user releases the mouse at the close of a drag operation."),
+                p("ondragenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The drag event")), returns = rt("?")), nullable = true, comment = "Fires on the target element when the user drags the object to a valid drop target."),
+                p("ondragexit", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ondragleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The drag event")), returns = rt("?")), nullable = true, comment = "Fires on the target object when the user moves the mouse out of a valid drop target during a drag operation."),
+                p("ondragover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires on the target element continuously while the user drags the object over a valid drop target."),
+                p("ondragstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires on the source object when the user starts to drag a text selection or selected object."),
+                p("ondrop", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "DragEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ondurationchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the duration attribute is updated."),
+                p("onemptied", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the media element is reset to its initial state."),
+                p("onended", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the end of playback is reached."),
                 p("onerror", type = "OnErrorEventHandler", comment = "Fires when an error occurs during object loading."),
-                p("onfocus", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "FocusEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the object receives focus."),
-                p("ongotpointercapture", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("oninput", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("oninvalid", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onkeydown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent", comment = "The keyboard event")), returns = "?"), nullable = true, comment = "Fires when the user presses a key."),
-                p("onkeypress", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent")), returns = "?"), nullable = true, comment = "Fires when the user presses an alphanumeric key."),
-                p("onkeyup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent")), returns = "?"), nullable = true, comment = "Fires when the user releases a key."),
-                p("onload", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = "?"), nullable = true, comment = "Fires immediately after the browser loads the object."),
-                p("onloadeddata", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = "?"), nullable = true, comment = "Occurs when media data is loaded at the current playback position."),
-                p("onloadedmetadata", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = "?"), nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined."),
-                p("onloadend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "ProgressEvent")), returns = "?"), nullable = true),
-                p("onloadstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = "?"), nullable = true, comment = "Occurs when Internet Explorer begins looking for media data."),
-                p("onlostpointercapture", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent")), returns = "?"), nullable = true),
-                p("onmousedown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = "?"), nullable = true, comment = "Fires when the user clicks the object with either mouse button."),
-                p("onmouseenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = "?"), nullable = true),
-                p("onmouseleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = "?"), nullable = true),
-                p("onmousemove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event")), returns = "?"), nullable = true, comment = "Fires when the user moves the mouse over the object."),
-                p("onmouseout", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = "?"), nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object."),
-                p("onmouseover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event.")), returns = "?"), nullable = true, comment = "Fires when the user moves the mouse pointer into the object."),
-                p("onmouseup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = "?"), nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object."),
-                p("onpause", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when playback is paused."),
-                p("onplay", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the play method is requested."),
-                p("onplaying", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the audio or video has started playing."),
-                p("onpointercancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerdown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointermove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerout", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onpointerup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onprogress", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "ProgressEvent", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs to indicate progress while downloading media data."),
-                p("onratechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the playback rate is increased or decreased."),
-                p("onreset", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the user resets a form."),
-                p("onresize", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "UIEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onscroll", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object."),
-                p("onsecuritypolicyviolation", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "SecurityPolicyViolationEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onseeked", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the seek operation ends."),
-                p("onseeking", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the current playback position is moved."),
-                p("onselect", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Fires when the current selection changes."),
-                p("onselectionchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onselectstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onstalled", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the download has stopped."),
-                p("onsubmit", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true),
-                p("onsuspend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs if the load operation has been intentionally halted."),
-                p("ontimeupdate", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs to indicate the current playback position."),
-                p("ontoggle", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event, comment = \"The event\"")), returns = "?"), nullable = true),
-                p("ontouchcancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontouchend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontouchmove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontouchstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontransitioncancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontransitionend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontransitionrun", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("ontransitionstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = "?"), nullable = true),
-                p("onvolumechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted."),
-                p("onwaiting", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = "?"), nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available."),
-                p("onwheel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "WheelEvent", comment = "The event")), returns = "?"), nullable = true)
+                p("onfocus", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "FocusEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the object receives focus."),
+                p("ongotpointercapture", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("oninput", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("oninvalid", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onkeydown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent", comment = "The keyboard event")), returns = rt("?")), nullable = true, comment = "Fires when the user presses a key."),
+                p("onkeypress", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent")), returns = rt("?")), nullable = true, comment = "Fires when the user presses an alphanumeric key."),
+                p("onkeyup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "KeyboardEvent")), returns = rt("?")), nullable = true, comment = "Fires when the user releases a key."),
+                p("onload", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = rt("?")), nullable = true, comment = "Fires immediately after the browser loads the object."),
+                p("onloadeddata", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = rt("?")), nullable = true, comment = "Occurs when media data is loaded at the current playback position."),
+                p("onloadedmetadata", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = rt("?")), nullable = true, comment = "Occurs when the duration and dimensions of the media have been determined."),
+                p("onloadend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "ProgressEvent")), returns = rt("?")), nullable = true),
+                p("onloadstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event")), returns = rt("?")), nullable = true, comment = "Occurs when Internet Explorer begins looking for media data."),
+                p("onlostpointercapture", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent")), returns = rt("?")), nullable = true),
+                p("onmousedown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = rt("?")), nullable = true, comment = "Fires when the user clicks the object with either mouse button."),
+                p("onmouseenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = rt("?")), nullable = true),
+                p("onmouseleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent")), returns = rt("?")), nullable = true),
+                p("onmousemove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event")), returns = rt("?")), nullable = true, comment = "Fires when the user moves the mouse over the object."),
+                p("onmouseout", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = rt("?")), nullable = true, comment = "Fires when the user moves the mouse pointer outside the boundaries of the object."),
+                p("onmouseover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The mouse event.")), returns = rt("?")), nullable = true, comment = "Fires when the user moves the mouse pointer into the object."),
+                p("onmouseup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "MouseEvent", comment = "The Mouse Event")), returns = rt("?")), nullable = true, comment = "Fires when the user releases a mouse button while the mouse is over the object."),
+                p("onpause", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when playback is paused."),
+                p("onplay", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the play method is requested."),
+                p("onplaying", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the audio or video has started playing."),
+                p("onpointercancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerdown", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerenter", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerleave", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointermove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerout", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerover", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onpointerup", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "PointerEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onprogress", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "ProgressEvent", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs to indicate progress while downloading media data."),
+                p("onratechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the playback rate is increased or decreased."),
+                p("onreset", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the user resets a form."),
+                p("onresize", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "UIEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onscroll", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the user repositions the scroll box in the scroll bar on the object."),
+                p("onsecuritypolicyviolation", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "SecurityPolicyViolationEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onseeked", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the seek operation ends."),
+                p("onseeking", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the current playback position is moved."),
+                p("onselect", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Fires when the current selection changes."),
+                p("onselectionchange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onselectstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onstalled", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the download has stopped."),
+                p("onsubmit", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onsuspend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs if the load operation has been intentionally halted."),
+                p("ontimeupdate", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs to indicate the current playback position."),
+                p("ontoggle", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event, comment = \"The event\"")), returns = rt("?")), nullable = true),
+                p("ontouchcancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontouchend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontouchmove", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontouchstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TouchEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontransitioncancel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontransitionend", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontransitionrun", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("ontransitionstart", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "TransitionEvent", comment = "The event")), returns = rt("?")), nullable = true),
+                p("onvolumechange", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when the volume is changed, or playback is muted or unmuted."),
+                p("onwaiting", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "Event", comment = "The event")), returns = rt("?")), nullable = true, comment = "Occurs when playback stops because the next frame of a video resource is not available."),
+                p("onwheel", callback = callback(parameters = listOf(p("this", "JsClassGlobalEventHandlers"), p("ev", "WheelEvent", comment = "The event")), returns = rt("?")), nullable = true)
         ),
         functions = listOf(
                 f("addEventListener", parameters = listOf(
                         p(name = "type", type = "string"),
                         p("listener",
-                                callback = callback(parameters = listOf(p("ev", "Event")), returns = "?"), nullable = false),
+                                callback = callback(parameters = listOf(p("ev", "Event")), returns = rt("?")), nullable = false),
                         p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)),
-                        returns = "void"
+                        returns = VOID
                 ),
                 f("removeEventListener", parameters = listOf(
                         p(name = "type", type = "string"),
                         p("listener",
-                                callback = callback(parameters = listOf(p("ev", "Event")), returns = "?"), nullable = false),
+                                callback = callback(parameters = listOf(p("ev", "Event")), returns = rt("?")), nullable = false),
                         p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)),
-                        returns = "void"
+                        returns = VOID
                 )
         )
 )
@@ -161,8 +161,8 @@ internal val JsElementClass = c(
                 p(name = "innerHTML", type = "string"),
                 p(name = "localName", type = "string", readonly = true, comment = "Returns the local name."),
                 p(name = "namespaceURI", type = "string", nullable = true, readonly = true, comment = "Returns the namespace."),
-                p("onfullscreenchange", callback = callback(parameters = listOf(p(name = "this", type = "Element"), p("ev", "Event", comment = "The Event")), returns = "?"), nullable = true),
-                p("onfullscreenerror", callback = callback(parameters = listOf(p("this", "Element"), p("ev", "Event")), returns = "void"), nullable = true),
+                p("onfullscreenchange", callback = callback(parameters = listOf(p(name = "this", type = "Element"), p("ev", "Event", comment = "The Event")), returns = rt("?")), nullable = true),
+                p("onfullscreenerror", callback = callback(parameters = listOf(p("this", "Element"), p("ev", "Event")), returns = VOID), nullable = true),
                 p(name = "outerHTML", type = "string"),
                 p(name = "prefix", type = "string", nullable = true, readonly = true, comment = "Returns the namespace prefix."),
                 p(name = "scrollHeight", type = "number", readonly = true),
@@ -174,64 +174,63 @@ internal val JsElementClass = c(
                 p(name = "tagName", type = "string", readonly = true, comment = "Returns the HTML-uppercased qualified name.")
         ),
         functions = listOf(
-                f("attachShadow", parameters = listOf(p("init", "ShadowRootInit")), returns = "ShadowRoot", comment = "Creates a shadow root for element and returns it."),
-                f("closest", parameters = listOf(p("selector", "string")), returns = "Element | null", comment = "Returns the first (starting at element) inclusive ancestor that matches selectors, and null otherwise."),
-                f("getAttribute", parameters = listOf(p("qualifiedName", "string")), returns = "string | null", comment = "Returns element's first attribute whose qualified name is qualifiedName, and null if there is no such attribute otherwise."),
-                f("getAttributeNS", parameters = listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = "string|null", comment = "Returns element's attribute whose namespace is namespace and local name is localName, and null if there is no such attribute otherwise."),
-                f("getAttributeNames", returns = "string[]", comment = "Returns the qualified names of all element's attributes. Can contain duplicates."),
-                f("getAttributeNode", parameters = listOf(p("name", "string")), returns = "Attr | null"),
-                f("getAttributeNodeNS", listOf(p(name = "namespaceURI", type = "string"), p("localName", "string")), returns = "Attr | null"),
-                f("getBoundingClientRect", returns = "ClientRect | DOMRect"),
-                f("getClientRects", returns = "ClientRectList | DOMRectList"),
-                f("getElementsByClassName", listOf(p("classNames", "string")), returns = "HTMLCollectionOf<Element>"),
-                f("getElementsByTagName", listOf(p("qualifiedName", "string")), returns = "HTMLCollectionOf<Element>"),
-                f("getElementsByTagNameNS", listOf(p(name = "namespaceURI", type = "string"), p("localName", "string")), returns = "HTMLCollectionOf<Element>"),
-                f("hasAttribute", listOf(p("qualifiedName", "string")), returns = "boolean", comment = "Returns true if element has an attribute whose qualified name is qualifiedName, and false otherwise."),
-                f("hasAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = "boolean", comment = "Returns true if element has an attribute whose namespace is namespace and local name is localName."),
-                f("hasAttributes", returns = "boolean", comment = "Returns true if element has attributes, and false otherwise."),
-                f("hasPointerCapture", listOf(p("pointerId", "number")), returns = "boolean"),
-                f("insertAdjacentElement", listOf(p(name = "position", type = "InsertPosition"), p("insertedElement", "Element")), returns = "Element | null"),
-                f("insertAdjacentHTML", listOf(p(name = "where", type = "InsertPosition"), p("html", "string")), returns = "void"),
-                f("insertAdjacentText", listOf(p(name = "where", type = "InsertPosition"), p("text", "string")), returns = "void"),
-                f("matches", listOf(p("selectors", "string")), returns = "boolean", comment = "Returns true if matching selectors against element's root yields element, and false otherwise."),
-                f("msGetRegionContent", returns = "any"),
-                f("releasePointerCapture", listOf(p("pointerId", "number")), returns = "void"),
-                f("removeAttribute", listOf(p("qualifiedName", "string")), returns = "void", comment = "Removes element's first attribute whose qualified name is qualifiedName."),
-                f("removeAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = "void", comment = "Removes element's attribute whose namespace is namespace and local name is localName."),
-                f("removeAttributeNode", listOf(p("attr", "Attr")), returns = "Attr"),
+                f("attachShadow", parameters = listOf(p("init", "ShadowRootInit")), returns = rt("ShadowRoot"), comment = "Creates a shadow root for element and returns it."),
+                f("closest", parameters = listOf(p("selector", "string")), returns = rt("Element", nullable = true), comment = "Returns the first (starting at element) inclusive ancestor that matches selectors, and null otherwise."),
+                f("getAttribute", parameters = listOf(p("qualifiedName", "string")), returns = rt("string", nullable = true), comment = "Returns element's first attribute whose qualified name is qualifiedName, and null if there is no such attribute otherwise."),
+                f("getAttributeNS", parameters = listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = rt("string", nullable = true), comment = "Returns element's attribute whose namespace is namespace and local name is localName, and null if there is no such attribute otherwise."),
+                f("getAttributeNames", returns = rt("string[]"), comment = "Returns the qualified names of all element's attributes. Can contain duplicates."),
+                f("getAttributeNode", parameters = listOf(p("name", "string")), returns = rt("Attr", nullable = true)),
+                f("getAttributeNodeNS", listOf(p(name = "namespaceURI", type = "string"), p("localName", "string")), returns = rt("Attr", nullable = true)),
+                f("getBoundingClientRect", returns = rt("ClientRect | DOMRect")),
+                f("getClientRects", returns = rt("ClientRectList | DOMRectList")),
+                f("getElementsByClassName", listOf(p("classNames", "string")), returns = rt("HTMLCollectionOf<Element>")),
+                f("getElementsByTagName", listOf(p("qualifiedName", "string")), returns = rt("HTMLCollectionOf<Element>")),
+                f("getElementsByTagNameNS", listOf(p(name = "namespaceURI", type = "string"), p("localName", "string")), returns = rt("HTMLCollectionOf<Element>")),
+                f("hasAttribute", listOf(p("qualifiedName", "string")), returns = rt("boolean"), comment = "Returns true if element has an attribute whose qualified name is qualifiedName, and false otherwise."),
+                f("hasAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = rt("boolean"), comment = "Returns true if element has an attribute whose namespace is namespace and local name is localName."),
+                f("hasAttributes", returns = rt("boolean"), comment = "Returns true if element has attributes, and false otherwise."),
+                f("hasPointerCapture", listOf(p("pointerId", "number")), returns = rt("boolean")),
+                f("insertAdjacentElement", listOf(p(name = "position", type = "InsertPosition"), p("insertedElement", "Element")), returns = rt("Element", nullable = true)),
+                f("insertAdjacentHTML", listOf(p(name = "where", type = "InsertPosition"), p("html", "string")), returns = VOID),
+                f("insertAdjacentText", listOf(p(name = "where", type = "InsertPosition"), p("text", "string")), returns = VOID),
+                f("matches", listOf(p("selectors", "string")), returns = rt("boolean"), comment = "Returns true if matching selectors against element's root yields element, and false otherwise."),
+                f("msGetRegionContent", returns = rt("any")),
+                f("releasePointerCapture", listOf(p("pointerId", "number")), returns = VOID),
+                f("removeAttribute", listOf(p("qualifiedName", "string")), returns = VOID, comment = "Removes element's first attribute whose qualified name is qualifiedName."),
+                f("removeAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p("localName", "string")), returns = VOID, comment = "Removes element's attribute whose namespace is namespace and local name is localName."),
+                f("removeAttributeNode", listOf(p("attr", "Attr")), returns = rt("Attr")),
                 f("requestFullscreen", listOf(p(name = "options", type = "FullscreenOptions", nullable = true)),
-                        returns = "Promise<void>",
+                        returns = rt("Promise<void>"),
                         comment = "Displays element fullscreen and resolves promise when done.\n" +
-                                " When supplied, options's navigationUI member indicates whether showing\n" +
-                                " navigation UI while in fullscreen is preferred or not. If set to \"show\", navigation\n" +
-                                " simplicity is preferred over screen space, and if set to \"hide\", more screen space\n" +
-                                " is preferred. User agents are always free to honor user preference over the application's. The\n" +
-                                " default value \"auto\" indicates no application preference."),
-                f("requestPointerLock", returns = "void"),
-                f("scroll", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = "void"),
-                f("scroll", listOf(p(name = "x", type = "number"), p("y", "number")), returns = "void"),
-                f("scrollBy", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = "void"),
-                f("scrollBy", listOf(p(name = "x", type = "number"), p("y", "number")), returns = "void"),
-                f("scrollIntoView", listOf(p(name = "arg", type = "boolean | ScrollIntoViewOptions", nullable = true)), returns = "void"),
-                f("scrollTo", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = "void"),
-                f("scrollTo", listOf(p(name = "x", type = "number"), p("y", "number")), returns = "void"),
-                f("setAttribute", listOf(p(name = "qualifiedName", type = "string"), p("value", "string")), returns = "void", comment = "Sets the value of element's first attribute whose qualified name is qualifiedName to value."),
-                f("setAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p(name = "qualifiedName", type = "string"), p("value", "string")), returns = "void", comment = "Sets the value of element's attribute whose namespace is namespace and local name is localName to value."),
-                f("setAttributeNode", listOf(p("attr", "Attr")), returns = "Attr | null"),
-                f("setAttributeNodeNS", listOf(p("attr", "Attr")), returns = "Attr | null"),
-                f("setPointerCapture", listOf(p("pointerId", "number")), returns = "void"),
-                f("toggleAttribute", listOf(p(name = "qualifiedName", type = "string"), p(name = "force", type = "boolean", nullable = true)), returns = "boolean", comment = "If force is not given, \"toggles\" qualifiedName, removing it if it is present and adding it if it is not present. If force is true, adds qualifiedName. If force is false, removes qualifiedName. Returns true if qualifiedName is now present, and false otherwise."),
-                f("webkitMatchesSelector", listOf(p("selectors", "string")), returns = "boolean"),
-                f("addEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", callback = callback(listOf(p("ev", "Event")))), p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = "void"),
-                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", type = "EventListenerOrEventListenerObject"), p(name = "options", type = "boolean | EventListenerOptions", nullable = true)), returns = "void")
+                                "When supplied, options's navigationUI member indicates whether showing\n" +
+                                "navigation UI while in fullscreen is preferred or not. If set to \"show\", navigation\n" +
+                                "simplicity is preferred over screen space, and if set to \"hide\", more screen space\n" +
+                                "is preferred. User agents are always free to honor user preference over the application's. The\n" +
+                                "default value \"auto\" indicates no application preference."),
+                f("requestPointerLock", returns = VOID),
+                f("scroll", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = VOID),
+                f("scroll", listOf(p(name = "x", type = "number"), p("y", "number")), returns = VOID),
+                f("scrollBy", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = VOID),
+                f("scrollBy", listOf(p(name = "x", type = "number"), p("y", "number")), returns = VOID),
+                f("scrollIntoView", listOf(p(name = "arg", type = "boolean | ScrollIntoViewOptions", nullable = true)), returns = VOID),
+                f("scrollTo", listOf(p(name = "options", type = "ScrollToOptions", nullable = true)), returns = VOID),
+                f("scrollTo", listOf(p(name = "x", type = "number"), p("y", "number")), returns = VOID),
+                f("setAttribute", listOf(p(name = "qualifiedName", type = "string"), p("value", "string")), returns = VOID, comment = "Sets the value of element's first attribute whose qualified name is qualifiedName to value."),
+                f("setAttributeNS", listOf(p(name = "namespace", type = "string", nullable = true), p(name = "qualifiedName", type = "string"), p("value", "string")), returns = VOID, comment = "Sets the value of element's attribute whose namespace is namespace and local name is localName to value."),
+                f("setAttributeNode", listOf(p("attr", "Attr")), returns = rt("Attr", nullable = true)),
+                f("setAttributeNodeNS", listOf(p("attr", "Attr")), returns = rt("Attr", nullable = true)),
+                f("setPointerCapture", listOf(p("pointerId", "number")), returns = VOID),
+                f("toggleAttribute", listOf(p(name = "qualifiedName", type = "string"), p(name = "force", type = "boolean", nullable = true)), returns = rt("boolean"), comment = "If force is not given, \"toggles\" qualifiedName, removing it if it is present and adding it if it is not present. If force is true, adds qualifiedName. If force is false, removes qualifiedName. Returns true if qualifiedName is now present, and false otherwise."),
+                f("webkitMatchesSelector", listOf(p("selectors", "string")), returns = rt("boolean")),
+                f("addEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", callback = callback(listOf(p("ev", "Event")))), p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = VOID),
+                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", type = "EventListenerOrEventListenerObject"), p(name = "options", type = "boolean | EventListenerOptions", nullable = true)), returns = VOID)
         )
 )
 
-/** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties. */
+/** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related getMethods and properties. */
 val JsClassCSSStyleDeclaration = c(
         className = "CSSStyleDeclaration ",
-        isStruct = true,
-        comment = "The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related methods and properties.",
+        comment = "The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related getMethods and properties.",
         properties = listOf(
                 p(name = "alignContent", type = "string", nullable = true),
                 p(name = "alignItems", type = "string", nullable = true),
@@ -625,11 +624,17 @@ val JsClassCSSStyleDeclaration = c(
                 p(name = "zoom", type = "string", nullable = true)
         ),
         functions = listOf(
-                f("getPropertyPriority", listOf(p("propertyName", "string")), returns = "string"),
-                f("getPropertyValue", listOf(p("propertyName", "string")), returns = "string"),
-                f("item", listOf(p("index", "number")), returns = "string"),
-                f("removeProperty", listOf(p("propertyName", "string")), returns = "string"),
-                f("setProperty", listOf(p(name = "propertyName", type = "string"), p(name = "value", type = "string", nullable = true), p(name = "priority", type = "string", nullable = true)), returns = "void")
+                f("getPropertyPriority", listOf(p("propertyName", "string")), returns = RT_STRING),
+                f("getPropertyValue", listOf(p("propertyName", "string")), returns = RT_STRING),
+                f("item", listOf(p("index", "number")), returns = RT_STRING),
+                f("removeProperty", listOf(p("propertyName", "string")), returns = RT_STRING),
+                f("setProperty",
+                        parameters = listOf(
+                                p(name = "propertyName", type = "string|Symbol"),
+                                p(name = "value", type = "string", nullable = true),
+                                p(name = "priority", type = "string", nullable = true)
+                        ),
+                        returns = VOID)
         )
 )
 
@@ -637,8 +642,8 @@ val JsClassAnimatable = c(
         className = "Animatable",
         isStruct = true,
         functions = listOf(
-                f("animate", listOf(p("keyframes", "Array<Keyframe> | PropertyIndexedKeyframes", nullable = true), p(name = "options", type = "number | KeyframeAnimationOptions", nullable = true)), returns = "Animation"),
-                f("getAnimations", returns = "Animation[]")
+                f("animate", listOf(p("keyframes", "Array<Keyframe> | PropertyIndexedKeyframes", nullable = true), p(name = "options", type = "number | KeyframeAnimationOptions", nullable = true)), returns = rt("Animation")),
+                f("getAnimations", returns = rt("Animation[]"))
         )
 )
 
@@ -646,24 +651,24 @@ internal val JsClassChildNode = c(
         className = "ChildNode",
         isStruct = true,
         functions = listOf(
-                f("after", listOf(p("...nodes", "Array<Node | string>")), returns = "void", comment =
+                f("after", listOf(p("nodes", "Node|string", varArgs = true)), returns = VOID, comment =
                 "Inserts nodes just after node, while replacing strings in nodes with equivalent Text nodes.\n" +
-                        " Throws a \"HierarchyRequestError\" DOMException if the constraints of\n" +
-                        " the node tree are violated."),
-                f("before", listOf(p("...nodes", "Array<Node|string>")), returns = "void", comment =
+                        "Throws a \"HierarchyRequestError\" DOMException if the constraints of\n" +
+                        "the node tree are violated."),
+                f("before", listOf(p("...nodes", "Node[]|string[]")), returns = VOID, comment =
                 "Inserts nodes just before node, while replacing strings in nodes with equivalent Text nodes.\n" +
-                        " Throws a \"HierarchyRequestError\" DOMException if the constraints of\n" +
-                        " the node tree are violated."),
+                        "Throws a \"HierarchyRequestError\" DOMException if the constraints of\n" +
+                        "the node tree are violated."),
                 /**
                  *
                  */
-                f("remove", returns = "void", comment = "Removes node."),
+                f("remove", returns = VOID, comment = "Removes node."),
                 /**
                  * Replaces node with nodes, while replacing strings in nodes with equivalent Text nodes.
                  * Throws a "HierarchyRequestError" DOMException if the constraints of
                  * the node tree are violated.
                  */
-                f("replaceWith", listOf(p("...nodes", "Array<Node | string>")), returns = "void")
+                f("replaceWith", listOf(p("nodes", "Node|string", varArgs = true)), returns = VOID)
         )
 )
 
@@ -677,7 +682,18 @@ internal val JsClassEventTarget = c(
         className = "EventTarget",
         comment = "EventTarget is an interface implemented by objects that can receive events and may have listeners for them.",
         functions = listOf(
-                f("addEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", type = "EventListenerOrEventListenerObject | null"), p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = "void", comment = "Appends an event listener for events whose type attribute value is type. The callback argument sets the callback that will be invoked when the event is dispatched.\n" +
+                f("addEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", type = "EventListenerOrEventListenerObject", nullable = true), p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = VOID, comment = "Appends an event listener for events whose type attribute value is type. The callback argument sets the callback that will be invoked when the event is dispatched.\n" +
+                        "The options argument sets listener-specific options. For compatibility this can be a\n" +
+                        "boolean, in which case the method behaves exactly as if the value was specified as options's capture.\n" +
+                        "When set to true, options's capture prevents callback from being invoked when the event's eventPhase attribute value is BUBBLING_PHASE. When false (or not present), callback will not be invoked when event's eventPhase attribute value is CAPTURING_PHASE. Either way, callback will be invoked if event's eventPhase attribute value is AT_TARGET.\n" +
+                        "When set to true, options's passive indicates that the callback will not cancel the event by invoking preventDefault(). This is used to enable performance optimizations described in §2.8 Observing event listeners.\n" +
+                        "When set to true, options's once indicates that the callback will only be invoked once after which the event listener will\n" +
+                        "be removed.\n" +
+                        "The event listener is appended to target's event listener list and is not appended if it has the same type, callback, and capture."),
+                f("dispatchEvent", listOf(p("event", "Event")), returns = rt("BOOL"), comment = "Dispatches a synthetic event event to target and returns true\n" +
+                        "if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise."),
+                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "callback", type = "EventListenerOrEventListenerObject", nullable = true), p(name = "options", type = "EventListenerOptions | boolean", nullable = true)), returns = VOID, comment = "Removes the event listener in target's event listener list with the same type, callback, and options."),
+                f("addEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", type = "EventListenerOrEventListenerObject | null"), p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = VOID, comment = "Appends an event listener for events whose type attribute value is type. The callback argument sets the callback that will be invoked when the event is dispatched.\n" +
                         " The options argument sets listener-specific options. For compatibility this can be a\n" +
                         " boolean, in which case the method behaves exactly as if the value was specified as options's capture.\n" +
                         " When set to true, options's capture prevents callback from being invoked when the event's eventPhase attribute value is BUBBLING_PHASE. When false (or not present), callback will not be invoked when event's eventPhase attribute value is CAPTURING_PHASE. Either way, callback will be invoked if event's eventPhase attribute value is AT_TARGET.\n" +
@@ -685,9 +701,9 @@ internal val JsClassEventTarget = c(
                         " When set to true, options's once indicates that the callback will only be invoked once after which the event listener will\n" +
                         " be removed.\n" +
                         " The event listener is appended to target's event listener list and is not appended if it has the same type, callback, and capture."),
-                f("dispatchEvent", listOf(p("event", "Event")), returns = "boolean", comment = "Dispatches a synthetic event event to target and returns true\n" +
+                f("dispatchEvent", listOf(p("event", "Event")), returns = RT_BOOL, comment = "Dispatches a synthetic event event to target and returns true\n" +
                         " if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise."),
-                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "callback", callback = callback(listOf(p("ev", "Event"))), nullable = true), p(name = "options", type = "EventListenerOptions | boolean", nullable = true)), returns = "void", comment = "Removes the event listener in target's event listener list with the same type, callback, and options.")
+                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "callback", callback = callback(listOf(p("ev", "Event"))), nullable = true), p(name = "options", type = "EventListenerOptions | boolean", nullable = true)), returns = VOID, comment = "Removes the event listener in target's event listener list with the same type, callback, and options.")
         )
 )
 
@@ -730,21 +746,21 @@ internal val JsClassNode = c(
                 p(name = "TEXT_NODE", type = "number", readonly = true)
         ),
         functions = listOf(
-                f("appendChild", listOf(p("newChild", "Node")), returns = "Node"),
-                f("cloneNode", listOf(p(name = "deep", type = "boolean", nullable = true)), returns = "Node", comment = "Returns a copy of node. If deep is true, the copy also includes the node's descendants."),
-                f("compareDocumentPosition", listOf(p("other", "Node")), returns = "number"),
-                f("contains", listOf(p("other", "Node", nullable = true)), returns = "boolean", comment = "Returns true if other is an inclusive descendant of node, and false otherwise."),
-                f("getRootNode", listOf(p(name = "options", type = "GetRootNodeOptions", nullable = true)), returns = "Node", comment = "Returns node's shadow-including root."),
-                f("hasChildNodes", returns = "boolean", comment = "Returns whether node has children."),
-                f("insertBefore", listOf(p(name = "newChild", type = "Node"), p("refChild", "Node", nullable = true)), returns = "Node"),
-                f("isDefaultNamespace", listOf(p("namespace", "string", nullable = true)), returns = "boolean"),
-                f("isEqualNode", listOf(p("otherNode", "Node", nullable = true)), returns = "boolean", comment = "Returns whether node and otherNode have the same properties."),
-                f("isSameNode", listOf(p("otherNode", "Node", nullable = true)), returns = "boolean"),
-                f("lookupNamespaceURI", listOf(p("prefix", "string", nullable = true)), returns = "string | null"),
-                f("lookupPrefix", listOf(p("namespace", "string", nullable = true)), returns = "string | null"),
-                f("normalize", returns = "void", comment = "Removes empty exclusive Text nodes and concatenates the data of remaining contiguous exclusive Text nodes into the first of their nodes."),
-                f("removeChild", listOf(p("oldChild", "Node")), returns = "Node"),
-                f("replaceChild", listOf(p(name = "newChild", type = "Node"), p("oldChild", "Node")), returns = "Node")
+                f("appendChild", listOf(p("newChild", "Node")), returns = rt("Node")),
+                f("cloneNode", listOf(p(name = "deep", type = "boolean", nullable = true)), returns = rt("Node"), comment = "Returns a copy of node. If deep is true, the copy also includes the node's descendants."),
+                f("compareDocumentPosition", listOf(p("other", "Node")), returns = RT_NUMBER),
+                f("contains", listOf(p("other", "Node", nullable = true)), returns = RT_BOOL, comment = "Returns true if other is an inclusive descendant of node, and false otherwise."),
+                f("getRootNode", listOf(p(name = "options", type = "GetRootNodeOptions", nullable = true)), returns = rt("Node"), comment = "Returns node's shadow-including root."),
+                f("hasChildNodes", returns = RT_BOOL, comment = "Returns whether node has children."),
+                f("insertBefore", listOf(p(name = "newChild", type = "Node"), p("refChild", "Node", nullable = true)), returns = rt("Node")),
+                f("isDefaultNamespace", listOf(p("namespace", "string", nullable = true)), returns = RT_BOOL),
+                f("isEqualNode", listOf(p("otherNode", "Node", nullable = true)), returns = RT_BOOL, comment = "Returns whether node and otherNode have the same properties."),
+                f("isSameNode", listOf(p("otherNode", "Node", nullable = true)), returns = RT_BOOL),
+                f("lookupNamespaceURI", listOf(p("prefix", "string", nullable = true)), returns = RT_STRING.copy(nullable = true)),
+                f("lookupPrefix", listOf(p("namespace", "string", nullable = true)), returns = RT_STRING.copy(nullable = true)),
+                f("normalize", returns = VOID, comment = "Removes empty exclusive Text nodes and concatenates the data of remaining contiguous exclusive Text nodes into the first of their nodes."),
+                f("removeChild", listOf(p("oldChild", "Node")), returns = rt("Node")),
+                f("replaceChild", listOf(p(name = "newChild", type = "Node"), p("oldChild", "Node")), returns = rt("Node"))
         )
 )
 
@@ -773,17 +789,17 @@ internal val JsClassParentNode = c(
                  * Throws a "HierarchyRequestError" DOMException if the constraints of
                  * the node tree are violated.
                  */
-                f("append", listOf(p("...nodes", "Array<Node | string>")), returns = "void"),
+                f("append", listOf(p("...nodes", "Array<Node | string>")), returns = VOID),
                 /**
                  *
                  */
-                f("prepend", listOf(p("...nodes", "Array<Node | string>")), returns = "void", comment =
+                f("prepend", listOf(p("...nodes", "Array<Node | string>")), returns = VOID, comment =
                 "Inserts nodes before the first child of node, while\n" +
                         " replacing strings in nodes with equivalent Text nodes.\n" +
                         " Throws a \"HierarchyRequestError\" DOMException if the constraints of\n" +
                         " the node tree are violated."),
-                f("querySelector", listOf(p("selectors", "string")), returns = "Element | null", comment = "Returns the first element that is a descendant of node that matches selectors."),
-                f("querySelectorAll", listOf(p("selectors", "string")), returns = "NodeListOf<Element>", comment = "Returns all element descendants of node that match selectors.")
+                f("querySelector", listOf(p("selectors", "string")), returns = rt("Element", nullable = true), comment = "Returns the first element that is a descendant of node that matches selectors."),
+                f("querySelectorAll", listOf(p("selectors", "string")), returns = rt("NodeListOf<Element>"), comment = "Returns all element descendants of node that match selectors.")
         )
 )
 
@@ -808,6 +824,7 @@ internal val JsClassDocumentAndElementEventHandlers = c(
                         p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = "?")),
                         p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = "void"),
                 f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = "?")), p(name = "options", type = "boolean | EventListenerOptions", nullable = true)), returns = "void")
+
         )
 )
 
@@ -830,7 +847,7 @@ internal val JsClassHTMLOrSVGElement = c(
                 p(name = "tabIndex", type = "number")
         ),
         functions = listOf(
-                f("blur", returns = "void"),
-                f("focus", listOf(p(name = "options", type = "FocusOptions", nullable = true)), returns = "void")
+                f("blur", returns = VOID),
+                f("focus", listOf(p(name = "options", type = "FocusOptions", nullable = true)), returns = VOID)
         )
 )

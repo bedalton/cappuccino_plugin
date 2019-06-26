@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.ObjJBuiltInJsProperties
-import cappuccino.ide.intellij.plugin.contributor.ObjJGlobalJSVariablesNames
-import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
-import cappuccino.ide.intellij.plugin.contributor.globalJSClassNames
+import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
@@ -42,9 +39,20 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         private fun registerProblemIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, problemsHolder:ProblemsHolder) {
             var variableName: ObjJVariableName? = variableNameIn
 
+            if (variableName?.text in ObjJGlobalJSVariablesNames || variableName?.text in globalJsFunctionNames)
+                return
+
             if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return
             }
+            // Check if is global variable assignment
+            if (variableNameIn.parent is ObjJGlobalVariableDeclaration)
+                return
+
+            // if is variable assignment target
+            // Have unintended global variable inspection handle it
+            if(variableNameIn.parent.parent is ObjJVariableDeclaration)
+                return
 
             if (variableName?.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
                 return
@@ -101,7 +109,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (variableNameString in globalJSClassNames) {
+            if (variableNameString in globalJsClassNames) {
                 return
             }
 
@@ -119,7 +127,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 }
             }*/
 
-            val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project]
+            val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project].toMutableList()
             if (declarations.isNotEmpty()) {
                 return
             }
@@ -155,10 +163,12 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (ObjJKeywordsList.keywords.contains(variableName.text)) {
                 return true
             }
-            val resolved = ObjJVariableReference(variableName).resolve()
+            val resolved = ObjJVariableReference(variableName).resolve(nullIfSelfReferencing = true)
             if (resolved != null) {
                 return true//!isDeclaredInSameDeclaration(variableName, resolved)
             }
+            if (ObjJVariableReference(variableName).multiResolve(false).isNotEmpty())
+                return true
             val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return precedingVariableNameReferences.isNotEmpty() || ObjJFunctionsIndex.instance[variableName.text, variableName.project].isNotEmpty()
         }

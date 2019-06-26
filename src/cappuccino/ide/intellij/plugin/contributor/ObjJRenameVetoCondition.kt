@@ -1,13 +1,15 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.psi.ObjJPropertyName
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import com.intellij.openapi.util.Condition
 import com.intellij.psi.PsiElement
 
 class ObjJRenameVetoCondition : Condition<PsiElement> {
     override fun value(element: PsiElement): Boolean {
-        return ObjJFileUtil.isFrameworkElement(element) ||
-                element is ObjJSelector // Prevents renaming of selectors
+        return ObjJPsiFileUtil.isDefinitionElement(element) ||
+                element is ObjJSelector || // Prevents renaming of selectors
+                element is ObjJPropertyName
     }
 }

@@ -16,6 +16,9 @@ import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementPresentation
+import com.intellij.codeInsight.lookup.LookupElementRenderer
 
 /**
  * Utility for looking up possible selector completions
@@ -24,6 +27,7 @@ object ObjJSelectorLookupUtil {
 
     private val getterAccessorPropertyTypes = listOf("getter", "readonly", "copy", "property")
     private val setterAccessorPropertyTypes = listOf("setter", "property")
+
 
     /**
      * Adds a selector lookup element to the completion contributor result set.
@@ -176,9 +180,25 @@ object ObjJSelectorLookupUtil {
                     useInsertHandler = addSuffix,
                     addSpaceAfterColon = addSpaceAfterColon,
                     icon = icon)
+                    .withRenderer(renderer(suggestedText, className, tailText, icon))
         }
         val prioritizedLookupElement = PrioritizedLookupElement.withPriority(selectorLookupElement, priority)
         resultSet.addElement(prioritizedLookupElement)
+    }
+
+    private fun renderer(suggestedText: String, className: String?, tailText: String?, icon: Icon? = null) : LookupElementRenderer<LookupElement> {
+        return object : LookupElementRenderer<LookupElement>() {
+            override fun renderElement(element:LookupElement, presentation:LookupElementPresentation) {
+                presentation.itemText = suggestedText
+                if (tailText != null)
+                    presentation.tailText = tailText
+                if (className != null)
+                    presentation.typeText = "in $className"
+                if (icon != null)
+                    presentation.icon = icon
+                presentation.isTypeGrayed = true
+            }
+        }
     }
 
     /**

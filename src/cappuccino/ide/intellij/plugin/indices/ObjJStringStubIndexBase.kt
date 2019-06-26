@@ -7,7 +7,6 @@ import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
 import com.intellij.psi.PsiElement
 
@@ -24,16 +23,16 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndex
     }
 
     @Throws(IndexNotReadyRuntimeException::class)
-    operator fun get(variableName: String, project: Project): MutableList<ObjJElemT> {
+    operator fun get(variableName: String, project: Project): List<ObjJElemT> {
         return get(variableName, project, GlobalSearchScope.allScope(project))
     }
     @Throws(IndexNotReadyRuntimeException::class)
-    override operator fun get(variableName: String, project: Project, scope: GlobalSearchScope): MutableList<ObjJElemT> {
+    override operator fun get(keyString: String, project: Project, scope: GlobalSearchScope): List<ObjJElemT> {
 
         if (DumbService.getInstance(project).isDumb) {
             throw IndexNotReadyRuntimeException()
         }
-        return ArrayList(StubIndex.getElements(key, variableName, project, scope, indexedElementClass))
+        return StubIndex.getElements(key, keyString, project, scope, indexedElementClass).toList()
     }
 
 
@@ -42,6 +41,7 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndex
         return getByPattern(start, tail, project, null)
     }
 
+    @Suppress("SameParameterValue")
     @Throws(IndexNotReadyRuntimeException::class)
     private fun getByPattern(
             start: String?,
@@ -86,10 +86,14 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndex
             if (out.containsKey(key)) {
                 out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)))
             } else {
-                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project))
+                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)).toMutableList()
             }
         }
         return out
+    }
+
+    fun containsKey(key:String, project: Project) : Boolean {
+        return getAllKeys(project).contains(key)
     }
 
     fun getStartingWith(pattern: String, project: Project): List<ObjJElemT> {
@@ -159,11 +163,11 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndex
         return out
     }
 
-    fun getAllResolveableKeys(project: Project): List<String> {
-        return ArrayUtils.filter(ArrayList(getAllKeys(project))) { key -> isResolveableKey(key as String, project) }
+    fun getAllResolvableKeys(project: Project): List<String> {
+        return getAllKeys(project).filter { key -> isResolvableKey(key as String, project) }
     }
 
-    private fun isResolveableKey(key: String, project: Project): Boolean {
+    private fun isResolvableKey(key: String, project: Project): Boolean {
         val elementsForKey = get(key, project, scopeOrDefault(null, project))
         for (element in elementsForKey) {
             return ObjJPsiImplUtil.shouldResolve(element)

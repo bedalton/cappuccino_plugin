@@ -23,6 +23,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_SELECTORS_IN_METHOD_CALL", "Align Method Call Selector Colons", "Method Call")
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_FIRST_SELECTOR_IN_METHOD_CALL", "Align First Method Call Selector", "Method Call")
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SPACE_BEFORE_PAREN_STATEMENT", "Space Between control keyword and paren statement", "General")
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_PROPERTIES", "Align object properties colons", "General")
         } else if (settingsType == SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
         } else if (settingsType == SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
@@ -110,9 +111,9 @@ var isValidName = function(aName){
     }
 }
 
-function sayHello(aName, var2){
-    if (isValidName(aName, var2)){
-        return [CPString stringWithFormat:globalGreeting, aName, var2];
+function sayHello(aName,var2){
+    if (isValidName(aName,var2)){
+        return [CPString stringWithFormat:globalGreeting,aName,var2];
     }
     return null;
 }

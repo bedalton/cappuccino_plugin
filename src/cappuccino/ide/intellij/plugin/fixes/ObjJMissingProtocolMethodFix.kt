@@ -19,8 +19,8 @@ import java.util.logging.Logger
 import javax.swing.SwingUtilities
 
 /**
- * Attempts to add missing protocol methods in an implementation class
- * @todo allow selection of optional methods
+ * Attempts to add missing protocol getMethods in an implementation class
+ * @todo allow selection of optional getMethods
  */
 class ObjJMissingProtocolMethodFix(private val declaration:ObjJImplementationDeclaration, private val protocolName:String, private val methodHeaders: ProtocolMethods) : BaseIntentionAction() {
 

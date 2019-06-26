@@ -1,63 +1,65 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.containingClassNameOrNull
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.lang.documentation.DocumentationMarkup
-
-
-
-
+import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiManager
 
 class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
+    override fun getDocumentationElementForLookupItem(psiManager: PsiManager, `object`: Any, element: PsiElement): PsiElement? {
+        return null
+    }
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
-                    LOGGER.info("QuickInfo for variable name")
+                    //// LOGGER.info("QuickInfo for variable name")
                     it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
-                    LOGGER.info("QuickInfo for method selector")
-                    it.description?.presentableText
+                    // LOGGER.info("QuickInfo for method selector")
+                    it.getParentOfType(ObjJMethodHeaderDeclaration::class.java)?.text ?: it.description?.presentableText
                 }
                 .info(ObjJMethodHeaderDeclaration::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for methodHeaderDeclaration")
+                    // LOGGER.info("QuickInfo for methodHeaderDeclaration")
                     it.text
                 }
                 .info(ObjJMethodCall::class.java) { methodCall ->
-                    LOGGER.info("QuickInfo for method call")
-                    methodCall.referencedHeaders.mapNotNull { it?.text }.joinToString { "\n" }
+                    // LOGGER.info("QuickInfo for method call")
+                    methodCall.referencedHeaders.mapNotNull { it.text }.joinToString { "\n" }
                 }
                 .info(ObjJFunctionCall::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for function call")
-                    it.functionDeclarationReference?.description?.presentableText
+                    // LOGGER.info("QuickInfo for function call")
+                    it.functionDescription
                 }
                 .info(ObjJFunctionName::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for function name")
-                    (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText
+                    // LOGGER.info("QuickInfo for function name")
+                    (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText ?: it.functionDescription
                 }
                 .info(ObjJQualifiedMethodCallSelector::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for qualified method call selector")
+                    // LOGGER.info("QuickInfo for qualified method call selector")
                     it.quickInfo(comment)
                 }
                 .info(ObjJMethodDeclarationSelector::class.java, orParent = true) {
-                    LOGGER.info("QuickInfo for method declaration selector")
+                    // LOGGER.info("QuickInfo for method declaration selector")
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
-                    if (parameterComment?.paramComment != null) {
-                        out.append(" - ").append(parameterComment.paramComment)
+                    if (parameterComment?.paramCommentFormatted != null) {
+                        out.append(" - ").append(parameterComment.paramCommentFormatted)
                     }
                     out.append("[in").append(containingClassName).append("]")
                     out.toString()
@@ -71,8 +73,9 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                         out.append(it.description.presentableText)
                     }
                     out.append(")")
-                    if (function.returnType.isNotNullOrBlank()) {
-                        out.append(" : ").append(function.returnType)
+                    val returnType = function.getReturnType(createTag())
+                    if (returnType.isNotNullOrBlank()) {
+                        out.append(": ").append(returnType)
                     }
                     out.toString() + getLocationString(element)
                 }
@@ -81,10 +84,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                 }
 
                 .info(ObjJBodyVariableAssignment::class.java, orParent = true) {
-                    val container = getLocationString(element)
-                    StringBuilder("File Scope Variable in")
-                            .append(container)
-                            .toString()
+                    null
                 }
 
                 /// Only run after all other checks
@@ -120,9 +120,10 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
      * for the given element
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        val doc = StringBuilder()
+        //val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
-        return null //doc.toString()
+        //// LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
+        return comment.commentText
     }
 }
 
@@ -164,44 +165,91 @@ private val PsiElement.containerName:String? get () {
 
 
 private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String? {
+    if (DumbService.isDumb(project))
+        return null
     val out = StringBuilder()
-    if (ObjJClassDeclarationsIndex.instance[text, project].size > 0) {
-        out.append("Class ").append(text)
+    if (ObjJClassDeclarationsIndex.instance[text, project].isNotEmpty()) {
+        out.append("class ").append(text)
         return out.toString()
     }
     val parentMethodDeclarationHeader = parent as? ObjJMethodDeclarationSelector
     if (parentMethodDeclarationHeader != null) {
+        out.append("parameter ")
         val type = parentMethodDeclarationHeader.formalVariableType?.text
         if (type != null)
             out.append("(").append(type).append(")")
         out.append(text)
-        val paramComment = comment?.getParameterComment(text)?.paramComment
+        val paramComment = comment?.getParameterComment(text)?.paramCommentClean
         if (paramComment.isNotNullOrBlank()) {
             out.append(" - ").append(paramComment)
         }
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
+        return out.toString()
     } else {
-        out.append("Variable '").append(text).append("'")
-        val possibleClasses = this.getPossibleClassTypes().filterNot { it == "CPObject" }
-        if (possibleClasses.isNotEmpty()) {
-            out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
+        //// LOGGER.info("Check QNR")
+        val prevSiblings = previousSiblings
+        if (prevSiblings.isEmpty()) {
+            //// LOGGER.info("No prev siblings")
+            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
+            val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
+            if (functionType != null) {
+                out.append(functionType.descriptionWithName(text))
+                return out.toString()
+            }
+            val classNames = inferenceResult?.toClassListString("<Any?>")
+            //// LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
+            if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
+                out.append("parameter")
+            else
+                out.append("var ").append(name)
+            if (classNames.isNotNullOrBlank()) {
+                out.append(": ").append(classNames)
+            }
+            out.append(" in ").append(getLocationString(this))
+            return out.toString()
         }
-        out.append(" in").append(getLocationString(this))
+        val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag() + 1)
+        val name = this.text
+        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("&lt;Any&gt;")
+        if (propertyTypes.isNotNullOrBlank()) {
+
+            val classNames = inferredTypes?.toClassListString(null)
+            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
+                out.append("property ").append(name)
+            if (propertyTypes.isNotNullOrBlank()) {
+                out.append(": ").append(propertyTypes)
+            }
+            if (classNames.isNotNullOrBlank())
+                out.append(" in ").append(classNames)
+
+            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
+                return out.toString()
+            }
+        }
     }
+    out.append("var '").append(text).append("'")
+    val possibleClasses = this.getPossibleClassTypes(createTag() + 2).filterNot { it == "CPObject" }
+    if (possibleClasses.isNotEmpty()) {
+        out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
+    }
+    out.append(" in ").append(getLocationString(this))
     return out.toString()
 }
 
 private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = null) : String? {
     val out = StringBuilder()
+    if (comment?.commentText.isNotNullOrBlank()) {
+        out.append(comment?.commentText!!)
+    }
     val resolved = (parent as? ObjJMethodCall)?.referencedHeaders ?: emptyList()
     val resolvedComments = resolved.mapNotNull {
         it.docComment
     }
     val index = this.index
-    val resolvedSelectors = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
+    val resolvedSelectors:List<ObjJMethodDeclarationSelector> = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
-    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramComment }.joinToString("|")
+    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramCommentClean }.joinToString("|")
     out.append(selector?.text ?: "_").append(":")
     out.append("(").append(resolvedTypes.joinToString("|")).append(")")
     if (resolvedVariableNames.size > 1) {
@@ -212,4 +260,31 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
     if (positionComment.isNotNullOrEmpty())
         out.append(" - ").append(positionComment)
     return out.toString()
+}
+
+private fun JsFunctionType.descriptionWithName(name:String):String {
+    val out = StringBuilder(name)
+    out.append(this.toString())
+    return out.toString()
+}
+
+private val ObjJFunctionName.functionDescription:String? get() {
+    val basicDescription = (parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText
+    if (basicDescription.isNotNullOrBlank())
+        return basicDescription!!
+    return (parent as? ObjJFunctionCall)?.functionDescription
+}
+
+private val ObjJFunctionCall.functionDescription: String? get() {
+    val resolve = this.functionName?.reference?.resolve()
+    val parentFunction = resolve?.parentFunctionDeclaration
+    val basicDescription = parentFunction?.description?.presentableText
+    if (basicDescription.isNotNullOrBlank())
+        return basicDescription!!
+    if (parentFunction == null) {
+        return "Function ${functionName?.text}"
+    }
+    val functionNameText = functionName?.text ?: return null
+    val function = inferQualifiedReferenceType(this.previousSiblings + this, createTag())?.functionTypes?.firstOrNull()
+    return function?.descriptionWithName(functionNameText) ?: "Function ${functionName?.text} defined in ${parentFunction.containingFile?.name}"
 }

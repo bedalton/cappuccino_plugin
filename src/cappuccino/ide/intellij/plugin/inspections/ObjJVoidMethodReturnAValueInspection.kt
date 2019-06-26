@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -29,7 +30,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
         return object : ObjJVisitor() {
             override fun visitMethodDeclaration(methodDeclaration: ObjJMethodDeclaration) {
                 super.visitMethodDeclaration(methodDeclaration)
-                if (methodDeclaration.methodHeader.returnType != "void")
+                if (methodDeclaration.methodHeader.explicitReturnType != "void")
                     return
                 val block = methodDeclaration.block ?: return
                 validateBlockReturnStatements(block, problemsHolder)
@@ -117,7 +118,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
                 return false
             }
             for (call in getAllMethodsForCall(methodCall)) {
-                if (call.returnType == ObjJClassType.VOID_CLASS_NAME) {
+                if (ObjJClassType.VOID_CLASS_NAME in call.getReturnTypes( createTag())) {
                     return true
                 }
             }

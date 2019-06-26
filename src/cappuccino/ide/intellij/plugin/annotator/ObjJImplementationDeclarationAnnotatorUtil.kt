@@ -1,14 +1,18 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 
-import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.fixes.ObjJMissingProtocolMethodFix
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter.Companion.VARIABLE_TYPE_WITH_ERROR
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
+import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.DumbService
 
@@ -17,7 +21,6 @@ import com.intellij.openapi.project.DumbService
  * Used to annotate invalid implementation declarations
  */
 internal object ObjJImplementationDeclarationAnnotatorUtil {
-
 
     /**
      * Annotation entry point
@@ -31,6 +34,8 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         }*/
         annotateUnimplementedProtocols(declaration, annotationHolder)
         annotateInvalidClassNamesInInstanceVariables(declaration, annotationHolder)
+        annotateInvalidSuperClass(declaration, annotationHolder)
+        annotateInvalidProtocolNames(declaration.inheritedProtocolList, annotationHolder)
     }
 
     /**
@@ -55,7 +60,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement,  ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
+        annotationHolder.createErrorAnnotation(classNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
     }
 
 
@@ -102,13 +107,14 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
         // Get protocol name as string
         val protocolName = protocolNameElement.text
-        // Find all unimplemented methods
+        // Find all unimplemented getMethods
         val unimplementedMethods = declaration.getUnimplementedProtocolMethods(protocolName)
         if (unimplementedMethods.required.isEmpty())
             return
         // Annotate and register fix for missing required members
-        annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
-                .registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+        val annotation = annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
+        annotation.registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+        annotation.textAttributes = VARIABLE_TYPE_WITH_ERROR
     }
 
     private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
@@ -116,17 +122,17 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             return
         }
         val variables = declaration.instanceVariableList?.instanceVariableDeclarationList ?: return
-        for (variable:ObjJInstanceVariableDeclaration in variables) {
+        for (variable: ObjJInstanceVariableDeclaration in variables) {
             annotateInstanceVariableIfClassNameInvalid(variable, annotationHolder)
         }
     }
 
     private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolder) {
         val variableType = variable.formalVariableType
-        val className:ObjJClassName
+        val className: ObjJClassName
         className = if (variableType.varTypeId != null) {
             // No className present return as valid
-            if (variableType.varTypeId?.className == null){
+            if (variableType.varTypeId?.className == null) {
                 return
             }
             variableType.varTypeId?.className ?: return
@@ -138,14 +144,31 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (isValidClass)
             return
 
-        val classNameString:String = className.text ?: return
+        val classNameString: String = className.text ?: return
         var severity = HighlightSeverity.ERROR
         var message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.undec-class.message", classNameString)
         if (classNameString.startsWith("CG")) {
             severity = HighlightSeverity.WARNING
             message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", classNameString)
         }
-        annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString))
+        annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+    }
+
+    private fun annotateInvalidSuperClass(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+        val superClass = declaration.superClass ?: return
+        val superClassName = superClass.text
+        if (ObjJImplementationDeclarationsIndex.instance.containsKey(superClassName, declaration.project))
+            return
+        annotationHolder.createErrorAnnotation(superClass, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", superClassName)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+    }
+
+    internal fun annotateInvalidProtocolNames(declaration: ObjJInheritedProtocolList?, annotationHolder: AnnotationHolder) {
+        declaration?.classNameList?.forEach { protocolNameElement ->
+            val protocolNameString = protocolNameElement.text ?: return
+            if (ObjJProtocolDeclarationsIndex.instance.containsKey(protocolNameString, declaration.project))
+                return
+            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.protocol-annotator.possibly-undeclared-protocol.message", protocolNameString)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+        }
     }
 
 }

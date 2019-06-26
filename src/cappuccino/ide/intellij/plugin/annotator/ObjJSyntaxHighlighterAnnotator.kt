@@ -9,16 +9,15 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
-import cappuccino.ide.intellij.plugin.utils.containingFileName
+import cappuccino.ide.intellij.plugin.psi.utils.containingFileName
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 
 /**
  * Adds highlighting colors to Objective-J Fiels
@@ -37,6 +36,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             is ObjJVariableName -> highlightVariableName(psiElement, annotationHolder)
             is ObjJFunctionCall -> highlightFunctionName(psiElement, annotationHolder)
             is ObjJFunctionName -> if (psiElement.hasParentOfType(ObjJFunctionCall::class.java)) colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
+            is ObjJFrameworkDescriptor -> colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.STRING)
             else -> when (psiElement.tokenType()) {
                 in ObjJTokenSets.VAR_TYPE_KEYWORDS ->
                     stripVarTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
@@ -87,7 +87,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
                 return
             }
         }
-        val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve() ?: return
+        val referencedVariable:PsiElement? = ObjJVariableReference(variableNameElement).resolve(nullIfSelfReferencing = true) ?: return
         if (referencedVariable equals variableNameElement) {
             return
         }
@@ -163,10 +163,12 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             colorize(functionName, annotationHolder, ObjJSyntaxHighlighter.INSTANCE_VARIABLE)
             return
         }
-        if (resolved != null) {
+        if (resolved == null)
+            return
+
+        val commonScope = PsiTreeUtil.findCommonContext(resolved, functionCall)?.getContainingScope()
+        if (commonScope == null || resolved.getContainingScope() == ReferencedInScope.FILE || commonScope == ReferencedInScope.FILE) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))
-        } else {
-            //colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME, "")
         }
 
     }

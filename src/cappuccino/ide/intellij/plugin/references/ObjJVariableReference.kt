@@ -3,22 +3,41 @@ package cappuccino.ide.intellij.plugin.references
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
+import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
 class ObjJVariableReference(
-        element: ObjJVariableName) : PsiReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
+        element: ObjJVariableName,
+        private val follow:Boolean = true,
+        private val nullIfSelfReferencing: Boolean? = null,
+        private val tag:Long? = null
+) : PsiPolyVariantReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
+
+    private val isGlobal: Boolean by lazy {
+        variableDeclarationsEnclosedGlobal(myElement, true)
+    }
+
+    private val referencedElement:SmartPsiElementPointer<PsiElement>? by lazy {
+        val resolved = resolve()
+        if (resolved != null)
+            SmartPointerManager.createPointer(resolved)
+        else
+            null
+    }
 
     private val globalVariableNameElement: PsiElement?
         get() {
@@ -26,7 +45,7 @@ class ObjJVariableReference(
                 return null
             }
             val file = myElement.containingObjJFile
-            val imports = file?.importStrings
+            val imports = file?.cachedImportFileList
             val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
             var namedElement:PsiElement? = null
             if (globalVariableDeclarations.isNotEmpty()) {
@@ -34,7 +53,7 @@ class ObjJVariableReference(
                     namedElement = globalVariableDeclarations[0].variableName
                 } else {
                     for (declaration in globalVariableDeclarations) {
-                        if (imports.contains(ObjJFileUtil.getContainingFileName(declaration.containingFile))) {
+                        if (declaration.containingFile in imports) {
                             namedElement = declaration.variableName
                         }
                     }
@@ -82,18 +101,17 @@ class ObjJVariableReference(
             return false
         }
 
-
-        val psiElementInZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
+        val psiElementIsZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
         val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference == 0
-        if (!psiElementInZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
+        if (!psiElementIsZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
             return false
         }
         if (thisElementIsZeroIndexedInQualifiedReference && psiElement is ObjJClassName) {
             return true
         }
 
-        val referencedElement = resolve(true)
-        if (referencedElement?.isEquivalentTo(psiElement) == true) {
+        val referencedElement = this.referencedElement?.element
+        if (referencedElement?.isEquivalentTo(psiElement).orFalse()) {
             return true
         }
 
@@ -114,10 +132,36 @@ class ObjJVariableReference(
     }
 
     override fun resolve(): PsiElement? {
-        return resolve(true)
+        return myElement.resolveFromCache {
+            val result = multiResolve(false).mapNotNull { it.element }
+            if (nullIfSelfReferencing.orFalse()) {
+                return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
+            }
+            return@resolveFromCache result.firstOrNull()
+        }
     }
 
-    private fun resolve(nullIfSelfReferencing:Boolean) : PsiElement? {
+    private fun multiResolve(tag:Long? = null) : Array<ResolveResult> {
+        val element = resolve(tag != null || nullIfSelfReferencing.orFalse(), tag)
+        if (element != null) {
+            return PsiElementResolveResult.createResults(listOf(element))
+        }
+        val out = mutableListOf<ObjJCompositeElement>()
+        if (myElement.indexInQualifiedReference == 0) {
+            out.addAll(getGlobalAssignments(true).orEmpty())
+        } else {
+            LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
+        }
+        return PsiElementResolveResult.createResults(out)
+    }
+
+    override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
+        return multiResolve(null)
+    }
+
+    fun resolve(nullIfSelfReferencing: Boolean, tag:Long? = null) : PsiElement? {
+        if (tag != null && this.tag == tag)
+            return if (nullIfSelfReferencing) null else myElement
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
                 return null
@@ -126,6 +170,11 @@ class ObjJVariableReference(
             //Exception was thrown on failed attempts at adding code to file pragmatically
             return null
         }
+
+        val variableDeclaration = myElement.parent?.parent as? ObjJVariableDeclaration
+        if (variableDeclaration?.hasVarKeyword().orFalse())
+            return if (nullIfSelfReferencing) null else myElement
+
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (myElement.indexInQualifiedReference > 0) {
             return if (nullIfSelfReferencing) {
@@ -149,6 +198,8 @@ class ObjJVariableReference(
                 myElement
             }
         }
+
+
         if (nullIfSelfReferencing) {
             return variableName
         }
@@ -176,4 +227,73 @@ class ObjJVariableReference(
         return arrayOf()
     }
 
+    private fun getGlobalAssignments(nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
+        val variableNameString = myElement.text
+        val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
+        if (allWithName.isNullOrEmpty()) {
+            return null
+        }
+        val allBodyDeclarations = allWithName.filter {
+            it.hasVarKeyword()
+        }
+        val allCandidates = allWithName.filterNot {variableDeclaration ->
+            variableDeclaration in allBodyDeclarations && allBodyDeclarations.any {
+                variableDeclaration.commonScope(it) != UNDETERMINED
+            }
+        }
+        val allCandidatesInFile = allCandidates.filter {
+            myElement.commonScope(it) != UNDETERMINED && (nullIfSelfReferencing && !myElement.isEquivalentTo(it))
+        }.sortedByDescending {
+            it.textRange.startOffset
+        }
+        if (nullIfSelfReferencing.orFalse() && allCandidatesInFile.size == 1) {
+            val onlyCandidate = allCandidatesInFile.firstOrNull() ?: return null
+            if(onlyCandidate.commonContext(myElement) == onlyCandidate) {
+                return null
+            }
+        }
+        if (allCandidatesInFile.isNotEmpty())
+            return allCandidatesInFile
+        return allCandidates
+    }
+}
+
+private fun variableDeclarationsEnclosedGlobal(variableName: ObjJVariableName, @Suppress("SameParameterValue") follow:Boolean = false) : Boolean {
+    if(!DumbService.isDumb(variableName.project) && follow) {
+        return variableDeclarationsEnclosedGlobalStrict(variableName)
+    }
+    if (variableName.indexInQualifiedReference != 0)
+        return false
+    val variableDeclaration = variableName.parent.parent as? ObjJVariableDeclaration
+            ?: return false
+    val isBodyVariableAssignmentLocal
+            = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+    if (isBodyVariableAssignmentLocal || variableDeclaration.parent.parent.parent !is ObjJBlock) {
+        return false
+    }
+    val variableNameString = variableName.text
+    val isNotGlobal = variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
+        bodyVariableAssignment.varModifier != null &&
+                bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { varDec ->
+                    varDec.qualifiedReferenceList.any {
+                        LOGGER.info("${it.qualifiedNameParts[0]?.text} ==? $variableNameString")
+                        it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0]?.text == variableNameString
+                    }
+                }.orFalse()
+    }
+    return !isNotGlobal
+}
+
+private fun variableDeclarationsEnclosedGlobalStrict(variableName: ObjJVariableName) : Boolean {
+    if (variableName.indexInQualifiedReference != 0)
+        return false
+
+    val variableDeclaration = variableName.parent.parent as? ObjJVariableDeclaration ?: return false
+    val isBodyVariableAssignmentLocal
+            = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+    if (isBodyVariableAssignmentLocal || variableDeclaration.parent.parent.parent !is ObjJBlock) {
+        return false
+    }
+    val resolved = ObjJVariableReference(variableName, false).resolve() ?: return true
+    return (resolved.parent.parent.parent.parent as? ObjJBodyVariableAssignment)?.varModifier == null
 }

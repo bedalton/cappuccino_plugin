@@ -27,14 +27,14 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
     override fun getParametersForLookup(lookupElement: LookupElement?, context: ParameterInfoContext?): Array<Any>? {
         val element = lookupElement?.`object` as? ObjJCompositeElement
         if (element == null) {
-            LOGGER.info("Lookup element did not return composite element")
+            //LOGGER.info("Lookup element did not return composite element")
             return emptyArray()
         }
         if (element is ObjJFunctionDeclarationElement<*>) {
-            LOGGER.info("Element is a function declaration element")
+            //LOGGER.info("Element is a function declaration element")
             return arrayOf(element)
         }
-        LOGGER.info("Element is not a function declaration element")
+        //LOGGER.info("Element is not a function declaration element")
         return emptyArray()
     }
 
@@ -55,7 +55,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
             return element
         val arguments = element.getSelfOrParentOfType(ObjJArguments::class.java)
         if (arguments == null) {
-            LOGGER.info("Failed to find parent or self of argument type")
+            //LOGGER.info("Failed to find parent or self of argument type")
         }
         return arguments?.parent as? ObjJFunctionCall
     }
@@ -64,7 +64,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
         val file = fileIn as? ObjJFile ?: return null
         val arguments = PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJArguments::class.java, false)
         if (arguments == null) {
-            LOGGER.info("Failed to find function arguments at offset")
+            //LOGGER.info("Failed to find function arguments at offset")
             return null
         }
         return arguments.parent as? ObjJFunctionCall
@@ -87,7 +87,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
             val jsFunction = globalJsFunctions.firstOrNull { it.name == element.functionName?.text }
             jsFunction?.description
         }) ?: return {
-           LOGGER.info ("Failed to find function descriptor for function: ${element.functionName?.text ?: "UNDEF"}")
+           //LOGGER.info ("Failed to find function descriptor for function: ${element.functionName?.text ?: "UNDEF"}")
         }()
 
         context.itemsToShow = arrayOf(description)
@@ -110,7 +110,6 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
     }
 
     override fun updateUI(description: ObjJFunctionDescription?, context: ParameterInfoUIContext) {
-        LOGGER.info("Updating ui for ${description?.presentableText ?: "UNDEF"}")
         if (description == null) {
             context.isUIComponentEnabled = false
             return

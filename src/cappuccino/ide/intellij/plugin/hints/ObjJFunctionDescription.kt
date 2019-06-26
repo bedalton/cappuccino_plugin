@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.contributor.JsFunction
-import cappuccino.ide.intellij.plugin.contributor.JsProperty
+import cappuccino.ide.intellij.plugin.contributor.JsNamedProperty
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
@@ -30,9 +31,9 @@ class ObjJFunctionDescription(val name:String, val returnType:String?) {
                 .append("(")
                 .append(parametersListPresentableText)
                 .append(")")
-        if (returnType != null) {
+        if (returnType.isNotNullOrBlank()) {
             stringBuilder
-                    .append(" : ")
+                    .append(" => ")
                     .append(returnType)
         }
         return stringBuilder.toString()
@@ -94,7 +95,7 @@ class ObjJFunctionParameterDescription(val name:String, val type:String?, val nu
 
 val ObjJFunctionDeclarationElement<*>.description:ObjJFunctionDescription get() {
     val name = this.functionNameAsString
-    val returnType = this.returnType
+    val returnType = this.getReturnType(createTag())
     val description = ObjJFunctionDescription(name, returnType)
     this.formalParameterArgList.forEach {
         description.addParameter(it.description)
@@ -114,7 +115,7 @@ val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
 
 
 val JsFunction.description:ObjJFunctionDescription get() {
-    val descriptionOut = ObjJFunctionDescription(name, returns)
+    val descriptionOut = ObjJFunctionDescription(name, returns?.type)
     parameters.forEach {
         descriptionOut.addParameter(it.description)
     }
@@ -122,7 +123,7 @@ val JsFunction.description:ObjJFunctionDescription get() {
     return descriptionOut
 }
 
-val JsProperty.description:ObjJFunctionParameterDescription get() {
+val JsNamedProperty.description:ObjJFunctionParameterDescription get() {
     val descriptionOut = ObjJFunctionParameterDescription(name, type, nullable)
     descriptionOut.description = comment
     return descriptionOut

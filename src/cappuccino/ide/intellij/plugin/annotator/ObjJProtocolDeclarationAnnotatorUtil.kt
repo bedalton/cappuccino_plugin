@@ -4,7 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import java.util.ArrayList
 
@@ -18,6 +18,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
      */
     fun annotateProtocolDeclaration(protocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolder) {
         annotateIfDuplicateProtocol(protocolDeclaration, annotationHolder)
+        ObjJImplementationDeclarationAnnotatorUtil.annotateInvalidProtocolNames(protocolDeclaration.inheritedProtocolList, annotationHolder)
     }
 
 
@@ -39,7 +40,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         if (duplicates.isEmpty()) {
             return
         }
-        val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJFileUtil.getContainingFileName(protocolDeclaration) ?: "" }
+        val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJPsiFileUtil.getContainingFileName(protocolDeclaration) ?: "" }
         val errorMessage = ObjJBundle.message("objective-j.annotator-messages.protocol-declaration.duplicate-declaration.message", className, duplicatedInFileNameList)
         annotationHolder.createErrorAnnotation(classNameElement, errorMessage)
 

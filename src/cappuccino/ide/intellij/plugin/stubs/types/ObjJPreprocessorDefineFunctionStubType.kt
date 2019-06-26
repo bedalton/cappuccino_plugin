@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImp
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPreprocessorFunctionDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import com.intellij.lang.ASTNode
 
 class ObjJPreprocessorDefineFunctionStubType internal constructor(
         debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJPreprocessorDefineFunctionImpl>(debugName, ObjJPreprocessorDefineFunctionImpl::class.java) {
@@ -22,5 +23,9 @@ class ObjJPreprocessorDefineFunctionStubType internal constructor(
                                      shouldResolve: Boolean,
                                      scope:ObjJFunctionScope): ObjJFunctionDeclarationElementStub<ObjJPreprocessorDefineFunctionImpl> {
         return ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve)
+    }
+
+    override fun shouldCreateStub(node: ASTNode?): Boolean {
+        return true
     }
 }

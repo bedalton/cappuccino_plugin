@@ -14,35 +14,29 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getQu
 
 object ObjJVariableNameCompletionContributorUtil {
 
-    fun getVariableNameCompletions(variableName: ObjJVariableName?): List<String> {
-        if (variableName == null || variableName.text.isEmpty()) {
+    fun getVariableNameCompletions(variableName: ObjJVariableName?): List<ObjJVariableName> {
+        if (variableName?.text.isNullOrBlank()) {
             return emptyList()
         }
 
         //Initialize variable name array
-        val out = getInstanceVariableCompletion(variableName) ?: ArrayList()
-        addAllVariableNameElementsByName(out, variableName)
-        return out
+        val out = getInstanceVariableCompletion(variableName).orEmpty()
+        return out + addAllVariableNameElementsByName(variableName)
     }
 
-    private fun getInstanceVariableCompletion(variableName: ObjJVariableName?) : ArrayList<String>? {
+    private fun getInstanceVariableCompletion(variableName: ObjJVariableName?) : List<ObjJVariableName>? {
         if (variableName == null) {
             return null
         }
-        val completions = ObjJVariableNameAggregatorUtil.getFormalVariableInstanceVariables(variableName) ?: return null
-        val out:ArrayList<String> = ArrayList()
-        for (variableNameInLoop in completions) {
-            out.add(variableNameInLoop.text)
-        }
-        return out
+        return ObjJVariableNameAggregatorUtil.getFormalVariableInstanceVariables(variableName)
     }
 
-    private fun addAllVariableNameElementsByName(out:MutableList<String>, variableName: ObjJVariableName?) {
+    private fun addAllVariableNameElementsByName(variableName: ObjJVariableName?) : List<ObjJVariableName> {
         if (variableName == null) {
-            return
+            return emptyList()
         }
         //Get variable name regex pattern
-        val variableNamePattern = getQualifiedNameAsString(variableName).replace(CARET_INDICATOR, "(.*)")
+        val variableNamePattern = getQualifiedNameAsString(variableName).toIndexPatternString()
         val pattern = Pattern.compile(variableNamePattern)
 
         //Get Qualified name reference for completion
@@ -50,10 +44,8 @@ object ObjJVariableNameCompletionContributorUtil {
         val rawCompletionElements = getPrecedingVariableAssignmentNameElements(variableName, qualifiedNameIndex)
 
         //Parse variable names to string
-        for (currentVariableName in ArrayUtils.filter(rawCompletionElements) { variable ->
+        return rawCompletionElements.filter {variable ->
             pattern.matcher(getQualifiedNameAsString(variable)).matches()
-        }) {
-            out.add(currentVariableName.name)
         }
     }
 

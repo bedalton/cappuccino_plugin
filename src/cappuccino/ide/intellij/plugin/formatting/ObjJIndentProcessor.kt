@@ -41,6 +41,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
+        if (prevSibling == ObjJ_IF_STATEMENT || prevSibling == ObjJ_ELSE_IF_STATEMENT || prevSibling == ObjJ_STATEMENT_OR_BLOCK)
+            Indent.getNoneIndent()
+
         if (prevSibling == ObjJ_OPEN_BRACE || nextSiblingType == ObjJ_CLOSE_BRACE) {
             Indent.getNormalIndent()
         }
@@ -69,6 +72,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (elementType == ObjJ_STATEMENT_OR_BLOCK) {
             return Indent.getNoneIndent()
         }
+
+        if (elementType == ObjJ_RIGHT_EXPR)
+            return Indent.getContinuationWithoutFirstIndent()
 
         if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
@@ -105,6 +111,10 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             }
         }
 
+        if (parentType == ObjJ_LOGIC_EXPR_PRIME) {
+            return Indent.getContinuationIndent()
+        }
+
         if (ObjJTokenSets.COMMENTS.contains(elementType) && prevSiblingType == ObjJ_OPEN_BRACE && ObjJTokenSets.CLASS_DECLARATIONS.contains(parentType)) {
             return Indent.getNormalIndent()
         }
@@ -130,9 +140,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             }
 
             // Be careful to preserve typing behavior.
-            if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_EXPR || elementType == ObjJ_COMMA) {
+            if (elementType == ObjJ_PROPERTY_ASSIGNMENT || elementType == ObjJ_COMMA) {
                 return Indent.getNormalIndent()
             }
+            if (elementType == ObjJ_EXPR)
+                return Indent.getContinuationIndent()
             return if (ObjJTokenSets.COMMENTS.contains(elementType)) {
                 Indent.getNormalIndent()
             } else Indent.getNoneIndent()
@@ -167,17 +179,17 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (elementType in ObjJTokenSets.METHOD_HEADER_DECLARATION_SELECTOR) {
             if (objjSettings.ALIGN_SELECTORS_IN_METHOD_DECLARATION) {
                 val selectorSpacing = node.psi?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java)?.getSelectorAlignmentSpacing(objjSettings)
-                LOGGER.info("Get Method Dec Selector Indent Spacing: $selectorSpacing")
+                //LOGGER.info("Get Method Dec Selector Indent Spacing: $selectorSpacing")
                 if (selectorSpacing != null && selectorSpacing > 0) {
                     return Indent.getSpaceIndent(selectorSpacing)
                 } else {
-                    LOGGER.info("Failed to get selector spacing for: ${node.text}")
+                    //LOGGER.info("Failed to get selector spacing for: ${node.text}")
                 }
             }
             return Indent.getContinuationIndent()
         }
 
-        if (parentType == ObjJ_ENCLOSED_EXPR) {
+        if (parentType == ObjJ_PAREN_ENCLOSED_EXPR || parentType == ObjJ_ARRAY_INDEX_SELECTOR) {
             return if (elementType == ObjJ_OPEN_PAREN || elementType == ObjJ_CLOSE_PAREN || elementType == ObjJ_OPEN_BRACKET || elementType == ObjJ_CLOSE_BRACKET) {
                 Indent.getNoneIndent()
             } else Indent.getContinuationIndent()

@@ -89,7 +89,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             val variableNameString = variableName.text
             for (bodyVariableAssignment in bodyVariableAssignments) {
                 if (isDeclaredInBodyVariableAssignment(bodyVariableAssignment, variableNameString, offset)) {
-                    val superVariable = ObjJVariableReference(variableName).resolve()
+                    val superVariable = ObjJVariableReference(variableName).resolve(nullIfSelfReferencing = true)
                     if (superVariable == null || superVariable.isEquivalentTo(variableName)) {
                         return
                     }

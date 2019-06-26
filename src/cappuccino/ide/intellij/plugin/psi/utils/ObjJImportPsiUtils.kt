@@ -1,70 +1,110 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import java.util.regex.Pattern
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement
+import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
+import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
+import com.intellij.psi.PsiPolyVariantReference
+import com.intellij.psi.PsiReference
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJImportPsiUtils {
-    private val FRAMEWORK_REGEX = Pattern.compile("<(.*)/(.*)>")
 
-    fun getFileName(importStatement: ObjJImportFile): String {
-        return if (importStatement.stub != null) {
-            importStatement.stub.fileName
-        } else importStatement.stringLiteral.stringValue
+    fun getFileNameString(importFileElement: ObjJImportFile): String {
+        return if (importFileElement.stub != null) {
+            importFileElement.stub.fileName
+        } else importFileElement.fileNameAsImportString.fileNameString
     }
 
-    fun getFileName(includeFile: ObjJIncludeFile): String {
+    fun getFileNameString(fileNameAsImportString: ObjJFileNameAsImportString) : String {
+        return fileNameAsImportString.stringLiteral.stringValue.afterSlash()
+    }
+
+    fun getFileNameString(includeFile: ObjJIncludeFile): String {
         return if (includeFile.stub != null) {
             includeFile.stub.fileName
-        } else includeFile.stringLiteral.stringValue
+        } else includeFile.fileNameAsImportString.stringLiteral.stringValue
     }
 
-    fun getFileName(statement: ObjJImportFramework): String {
-        return if (statement.stub != null) {
-            statement.stub.fileName
-        } else statement.frameworkReference.fileName
+    fun getFileNameString(importFrameworkElement: ObjJImportFramework): String {
+        return if (importFrameworkElement.stub != null) {
+            importFrameworkElement.stub.fileName
+        } else importFrameworkElement.frameworkDescriptor.fileNameString
     }
 
-    fun getFileName(statement: ObjJIncludeFramework): String {
-        return if (statement.stub != null) {
-            statement.stub.fileName
-        } else statement.frameworkReference.fileName
+    fun getFileNameString(includeFrameworkElement: ObjJIncludeFramework): String {
+        return if (includeFrameworkElement.stub != null) {
+            includeFrameworkElement.stub.fileName
+        } else includeFrameworkElement.frameworkDescriptor.fileNameString
     }
 
-    fun getFileName(reference: ObjJFrameworkReference): String {
-        val matchResult = FRAMEWORK_REGEX.matcher(reference.importFrameworkLiteral.text)
-        return if (matchResult.groupCount() < 3) {
-            ""
-        } else matchResult.group(2)
+    fun getFileNameString(frameworkDescriptor: ObjJFrameworkDescriptor): String {
+        return frameworkDescriptor.frameworkFileName?.text ?: EMPTY_FRAMEWORK_NAME
     }
 
-
-    fun getFrameworkName(ignored: ObjJIncludeFile): String? {
-        return null
+    fun getFrameworkNameString(include: ObjJIncludeFile): String? {
+        return (include.containingFile as? ObjJFile)?.frameworkName ?: ObjJFrameworkUtils.getEnclosingFrameworkName(include.containingFile)
     }
 
-    fun getFrameworkName(ignored: ObjJImportFile): String? {
-        return null
+    fun getFrameworkNameString(import: ObjJImportFile): String? {
+        return (import.containingFile as? ObjJFile)?.frameworkName ?: ObjJFrameworkUtils.getEnclosingFrameworkName(import.containingFile)
     }
 
-    fun getFrameworkName(framework: ObjJImportFramework): String? {
-        return if (framework.stub != null) {
-            framework.stub.framework
-        } else getFrameworkName(framework.frameworkReference)
+    fun getFrameworkNameString(framework: ObjJImportFramework): String? {
+        return framework.stub?.framework ?: framework.frameworkDescriptor.frameworkNameString
     }
 
-    fun getFrameworkName(framework: ObjJIncludeFramework): String? {
-        return if (framework.stub != null) {
-            framework.stub.framework
-        } else getFrameworkName(framework.frameworkReference)
+    fun getFrameworkNameString(framework: ObjJIncludeFramework): String? {
+        return framework.stub?.framework ?: framework.frameworkDescriptor.frameworkNameString
     }
 
-    fun getFrameworkName(reference: ObjJFrameworkReference): String? {
-        val matchResult = FRAMEWORK_REGEX.matcher(reference.importFrameworkLiteral.text)
-        return if (matchResult.groupCount() < 3) {
-            null
-        } else matchResult.group(1)
+    fun getFrameworkNameString(descriptor: ObjJFrameworkDescriptor): String? {
+       return descriptor.frameworkName?.text
     }
 
+    fun getReference(importIncludeStatement:ObjJImportIncludeStatement) : PsiReference? {
+        return when(val importIncludeElement = importIncludeStatement.importIncludeElement) {
+            is ObjJImportFile -> importIncludeElement.fileNameAsImportString.reference
+            is ObjJIncludeFile -> importIncludeElement.fileNameAsImportString.reference
+            is ObjJImportFramework -> importIncludeElement.frameworkDescriptor.frameworkFileName?.reference
+            is ObjJIncludeFramework -> importIncludeElement.frameworkDescriptor.frameworkFileName?.reference
+            else -> null
+        }
+    }
 
+    fun resolve(importIncludeElement: ObjJImportIncludeStatement) : ObjJFile? {
+        val reference = importIncludeElement.reference
+        return if (reference is PsiPolyVariantReference)
+            reference.multiResolve(true).firstOrNull()?.element as? ObjJFile
+        else {
+            reference?.resolve() as? ObjJFile
+        }
+    }
+
+    fun multiResolve(importIncludeElement: ObjJImportIncludeStatement) : List<ObjJFile> {
+        val reference = importIncludeElement.reference
+        return if (reference is PsiPolyVariantReference)
+            reference.multiResolve(true).mapNotNull { it.element as? ObjJFile }
+        else {
+            listOfNotNull(reference?.resolve() as? ObjJFile)
+        }
+    }
+
+    fun getImportIncludeElement(element: ObjJImportIncludeStatement) : ObjJImportElement<*>? {
+        return when (element) {
+            is ObjJImportStatementElement -> element.importFramework ?: element.importFile
+            is ObjJIncludeStatementElement -> element.includeFramework ?: element.includeFile
+            else -> null
+        }
+    }
+}
+
+
+private fun String.afterSlash():String {
+    val lastPos = this.lastIndexOf("/")
+    if (lastPos < 0)
+        return this
+    return this.substring(lastPos)
 }
