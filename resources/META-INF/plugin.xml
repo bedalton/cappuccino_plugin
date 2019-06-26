@@ -141,6 +141,10 @@
   </project-components>
 
   <actions>
+    <action id="cappuccino.ide.intellij.plugin.actions.AddProtocolMethodsAction"
+            class="cappuccino.ide.intellij.plugin.actions.AddProtocolMethodsAction" text="Add Protocol Methods">
+      <add-to-group group-id="GenerateGroup" anchor="first" />
+    </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

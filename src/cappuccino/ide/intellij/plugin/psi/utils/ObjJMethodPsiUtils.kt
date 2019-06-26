@@ -378,7 +378,7 @@ object ObjJMethodPsiUtils {
      * Method scope enum.
      * Flags method as either static or instance
      */
-    enum class MethodScope(private val scopeMarker: String?) {
+    enum class MethodScope(val scopeMarker: String?) {
         STATIC("+"),
         INSTANCE("-"),
         INVALID(null);
