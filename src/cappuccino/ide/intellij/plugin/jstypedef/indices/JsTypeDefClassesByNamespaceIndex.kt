@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.IndexKeyUtil
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import com.intellij.psi.stubs.StubIndexKey
 
-class JsTypeDefInterfacesBySuperClassIndex private constructor() : JsTypeDefStringStubIndexBase<JsTypeDefInterfaceElement>() {
+class JsTypeDefClassesByNamespaceIndex private constructor() : JsTypeDefStringStubIndexBase<JsTypeDefInterfaceElement>() {
 
     override val indexedElementClass: Class<JsTypeDefInterfaceElement>
         get() = JsTypeDefInterfaceElement::class.java
@@ -19,9 +19,9 @@ class JsTypeDefInterfacesBySuperClassIndex private constructor() : JsTypeDefStri
 
     companion object {
 
-        val instance = JsTypeDefInterfacesBySuperClassIndex()
+        val instance = JsTypeDefClassesByNamespaceIndex()
 
-        private val KEY = IndexKeyUtil.createIndexKey(JsTypeDefInterfacesBySuperClassIndex::class.java)
+        val KEY = IndexKeyUtil.createIndexKey(JsTypeDefClassesByNamespaceIndex::class.java)
 
         private const val VERSION = 1
     }

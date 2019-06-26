@@ -80,6 +80,8 @@ fun String.afterLast(sequence:String, offset:Int = 0, ignoreCase:Boolean = false
     if (lastIndex < 0)
         return this
     return this.substring(lastIndex + sequence.length)
+}
+
 fun String.stripRefSuffixes() : String {
     return when {
         this.endsWith("Pointer") -> this.substringFromEnd(0, "Pointer".length)

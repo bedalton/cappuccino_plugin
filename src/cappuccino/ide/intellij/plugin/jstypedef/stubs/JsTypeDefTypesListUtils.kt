@@ -2,14 +2,14 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 
 
-fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : List<JsTypeDefTypeListType> {
-    val out = mutableListOf<JsTypeDefTypeListType>()
+fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : List<JsTypeListType> {
+    val out = mutableListOf<JsTypeListType>()
 
     for (type in this) {
         val asAnonymousFunction = type.anonymousFunction?.toTypeListType()
@@ -43,40 +43,40 @@ fun List<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {
     return properties
 }
 
-fun JsTypeDefFunctionReturnType.toTypeListType() : JsTypeDefTypesList? {
+fun JsTypeDefFunctionReturnType.toTypeListType() : JsTypesList? {
     val types = typeList.toJsTypeDefTypeListTypes()
     if (types.isEmpty())
         return null
     val nullable = isNullable
-    return JsTypeDefTypesList(types, nullable)
+    return JsTypesList(types, nullable)
 }
 
-fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeDefTypeListType.JsTypeDefTypeListAnonymousFunctionType {
+fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListType.JsTypeListAnonymousFunctionType {
     val parameters = this.propertiesList?.propertyList?.toTypeListTypes() ?: emptyList()
     val returnType = this.functionReturnType?.toTypeListType()
-    return JsTypeDefTypeListType.JsTypeDefTypeListAnonymousFunctionType(parameters, returnType)
+    return JsTypeListType.JsTypeListAnonymousFunctionType(parameters, returnType)
 }
 
-fun JsTypeDefArrayType.toTypeListType() : JsTypeDefTypeListType.JsTypeDefTypeListArrayType {
+fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
     val types = genericTypeTypes?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
-    return JsTypeDefTypeListType.JsTypeDefTypeListArrayType(types, dimensions)
+    return JsTypeListType.JsTypeListArrayType(types, dimensions)
 }
 
-fun JsTypeDefMapType.toTypeListType() : JsTypeDefTypeListType.JsTypeDefTypeListMapType {
+fun JsTypeDefMapType.toTypeListType() : JsTypeListType.JsTypeListMapType {
     val keys = this.keyTypes.typeList.toJsTypeDefTypeListTypes()
     val valueTypes = this.valueTypes.typeList.toJsTypeDefTypeListTypes()
-    return JsTypeDefTypeListType.JsTypeDefTypeListMapType(keys, valueTypes)
+    return JsTypeListType.JsTypeListMapType(keys, valueTypes)
 }
 
-fun JsTypeDefKeyOfType.toTypeListType() : JsTypeDefTypeListType.JsTypeDefTypeListKeyOfType {
+fun JsTypeDefKeyOfType.toTypeListType() : JsTypeListType.JsTypeListKeyOfType {
     val genericKey = this.genericsKey.text
     val mapName = this.typeMapName?.text ?: "???"
-    return JsTypeDefTypeListType.JsTypeDefTypeListKeyOfType(genericKey, mapName)
+    return JsTypeListType.JsTypeListKeyOfType(genericKey, mapName)
 }
 
-fun JsTypeDefValueOfKeyType.toTypeListType() : JsTypeDefTypeListType.JsTypeDefTypeListValueOfKeyType {
+fun JsTypeDefValueOfKeyType.toTypeListType() : JsTypeListType.JsTypeListValueOfKeyType {
     val genericKey = this.genericsKey?.text ?: "???"
     val mapName = this.typeMapName.text
-    return JsTypeDefTypeListType.JsTypeDefTypeListValueOfKeyType(genericKey, mapName)
+    return JsTypeListType.JsTypeListValueOfKeyType(genericKey, mapName)
 }

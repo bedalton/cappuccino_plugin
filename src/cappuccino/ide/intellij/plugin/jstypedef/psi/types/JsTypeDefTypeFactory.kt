@@ -7,11 +7,14 @@ class JsTypeDefTypeFactory {
     companion object {
         @JvmStatic
         fun factory(name: String): IElementType {
-            when (name) {
-                "JS_MODULE" -> return JS_MODULE
-                "JS_FUNCTION" -> return JS_FUNCTION
-                "JS_KEYS_LIST" -> return JS_KEY_LIST
-                "JS_TYPE_MAP" -> return JS_TYPE_MAP
+            return when (name) {
+                "JS_FUNCTION" -> JS_FUNCTION
+                "JS_KEYS_LIST" -> JS_KEY_LIST
+                "JS_MODULE" -> JS_MODULE
+                "JS_MODULE_NAME" -> JS_MODULE_NAME
+                "JS_PROPERTY" -> JS_PROPERTY
+                "JS_TYPE_MAP" -> JS_TYPE_MAP
+                "JS_VARIABLE_DECLARATION" -> JS_VARIABLE_DECLARATION
                 else -> throw RuntimeException("Failed to find element type in factory for type <$name>")
             }
         }

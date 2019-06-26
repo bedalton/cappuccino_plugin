@@ -61,6 +61,7 @@
 		ALIAS = 							'alias'
 		INTERNAL =							'internal'
 		STATIC_KEYWORD =                    'static'
+		CLASS_KEYWORD = 					'class'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -85,6 +86,7 @@ private fileRootElement
 private definition
 	::=	module
 	|	interfaceElement
+	|	classElement
 	|	variableDeclaration
 	|	functionDeclaration
 	|	typeMap
@@ -184,28 +186,54 @@ anonymousFunction
 	;
 
 interfaceElement
-	::= ('internal'|'static')? 'interface' typeName extendsStatement? (interfaceBody | ';')
+	::= 'interface' typeName extendsStatement? (interfaceBody | ';')
 	{
 		pin = 1
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 		]
-        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
+		stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
 		methods = [
 			getConstructors
-			getInterfaceName
+			getClassName
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+			getNamespaceComponents
+			getNamespaceComponent
+			getNamespacedName
+			isStatic
+		]
+	}
+	;
+
+classElement
+	::= readonlyStatic? 'class' typeName extendsStatement? (interfaceBody | ';')
+	{
+		pin = 2
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+		]
+        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
+		methods = [
+			getConstructors
+			getClassName
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
 	        getNamespaceComponents
 	        getNamespaceComponent
 	        getNamespacedName
+	        isStatic
 		]
 	}
 	;
 
-interfaceBody
+private interfaceBody
 	::= '{' interfaceProperties? '}'
 	{
 		pin = 1
@@ -358,6 +386,9 @@ arrayDimensions
 
 interfaceConstructor
 	::= CONST '(' propertiesList? ')'
+	{
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInInterface"
+	}
 	;
 
 function
@@ -373,6 +404,7 @@ function
 	        getNamespaceComponents
 	        getNamespaceComponent
 	        isStatic
+	        getFunctionNameString
 	    ]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -432,6 +464,7 @@ property
 	    methods = [
 	        isNullable
 	        getPropertyTypes
+	        getPropertyNameString
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
 	        getNamespacedName

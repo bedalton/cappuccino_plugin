@@ -5,7 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.openapi.progress.ProgressManager
 
 fun inferExpressionType(expr:ObjJExpr?, tag:Long) : InferenceResult? {
     if (expr == null)
@@ -60,6 +59,7 @@ private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResu
     val classes = leftExpressionType?.classes.orEmpty() + rightExpressionsType?.classes.orEmpty()
     val arrayTypes = leftExpressionType?.arrayTypes.orEmpty() + rightExpressionsType?.arrayTypes.orEmpty()
     val functionTypes = leftExpressionType?.functionTypes.orEmpty() + rightExpressionsType?.functionTypes.orEmpty()
+    val types =
     val out = InferenceResult(
             isNumeric = isNumeric,
             isBoolean = isBoolean,

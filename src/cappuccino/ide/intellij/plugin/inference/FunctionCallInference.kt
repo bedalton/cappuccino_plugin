@@ -1,17 +1,14 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.VOID
-import cappuccino.ide.intellij.plugin.contributor.allGlobalJsClassFunctions
-import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
-import cappuccino.ide.intellij.plugin.contributor.returnTypes
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 
 internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
@@ -25,18 +22,12 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
     if (resolved == null) {
         val functionName = functionCall.functionName?.text
         if (functionName != null) {
-            val functionSet = if (functionCall.indexInQualifiedReference == 0) {
-                globalJsFunctions
-            } else
-                allGlobalJsClassFunctions
-            val out = functionSet
-                    .filter {
-                        it.name == functionName
-                    }.flatMap {
-                        it.returnTypes
+            val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
+            val out = functionSet.flatMap {
+                        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
                     }.toSet()
             if (out.isNotEmpty()) {
-                return InferenceResult(classes = out)
+                return InferenceResult(classes = out.map { it.typeName }.toSet() )
             }
         }
         return null
@@ -67,7 +58,7 @@ fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*
         return InferenceResult(classes = commentReturnTypes!!)
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     if (returnStatementExpressions.isEmpty())
-        return InferenceResult(classes = setOf(VOID.type))
+        return InferenceResult(classes = setOf("void"))
     val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
@@ -86,18 +77,22 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : Inferen
     )
 }
 
-private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : Map<String, InferenceResult> {
+private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefNamedProperty> {
     //ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
-    val out = mutableMapOf<String, InferenceResult>()
+    val out = mutableListOf<JsTypeDefNamedProperty>()
     val commentWrapper = this.docComment
     for ((i, parameter) in parameters.withIndex()) {
         //ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
-            val parameterType = commentWrapper?.parameterComments
+            val comment = commentWrapper?.parameterComments
                     ?.get(i)
-                    ?.getTypes(project)
+            val types = comment?.getTypes(project)
+            JsTypeDefNamedProperty(
+                    name = parameterName,
+                    types = types.toJs
+            )
             out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
         } else {
             out[parameterName] = INFERRED_ANY_TYPE

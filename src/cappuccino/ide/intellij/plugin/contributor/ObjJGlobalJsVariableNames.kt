@@ -1,5 +1,9 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
+
 val ObjJGlobalJSVariables:List<JsNamedProperty> = {
     val out = mutableListOf(
             p("E", "number"),
@@ -54,9 +58,10 @@ val ObjJGlobalJSVariables:List<JsNamedProperty> = {
             p("kCFPropertyList280NorthFormat_v1_0", "number", ignore = true),
             p ("DEBUG", "BOOL")
     )
-    out.addAll(Window.properties)
     out
 }()
+
+
 
 val ObjJGlobalJSVariablesNames = ObjJGlobalJSVariables.filterNot{ it.ignore }.map { it.name }
 

@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.*
@@ -13,14 +14,15 @@ data class InferenceResult (
         val isNumeric:Boolean = isNumeric(classes),
         val isBoolean:Boolean = isBoolean(classes),
         val isString:Boolean = isString(classes),
-        val isDictionary:Boolean = isDictionary(classes),
+        val jsObjectKeys:PropertiesMap? = null,
+        val isDictionary:Boolean = isDictionary(classes) || !jsObjectKeys.isNullOrEmpty(),
         val isSelector:Boolean = isSelector(classes),
         val isRegex:Boolean = isRegex(classes),
-        val jsObjectKeys:PropertiesMap? = null,
         val functionTypes:List<JsFunctionType>? = null,
-        val arrayTypes:Set<String>? = null
+        val arrayTypes: Set<String>? = null
+
 ) {
-    private var globalClasses:Set<GlobalJSClass>? = null
+    private var globalClasses:Set<JsClassDefinition>? = null
     private var allClassesExpanded:Set<String>? = null
 
     val isJsObject:Boolean by lazy {
@@ -41,7 +43,7 @@ data class InferenceResult (
         return classes
     }
 
-    fun jsClasses(project:Project):Iterable<GlobalJSClass> {
+    fun jsClasses(project:Project):Iterable<JsClassDefinition> {
         var out = globalClasses
         if (out != null)
             return out
@@ -76,14 +78,16 @@ private fun isSelector(classes:Iterable<String>) : Boolean {
 }
 
 data class JsFunctionType (
-        val parameters:Map<String, InferenceResult> = mutableMapOf(),
+        val parameters:List<JsTypeDefNamedProperty> = mutableListOf(),
         val returnType:InferenceResult = INFERRED_VOID_TYPE,
         val comment: String? = null
 ) {
 
     override fun toString(): String {
         val out = StringBuilder("(")
-        val parametersString = parameters.joinToString(false)
+        val parametersString = parameters.joinToString(", ") {property ->
+            property.name + property.types.types.joinToString("|") { type -> type.typeName}
+        }
         out.append(parametersString)
                 .append(")")
         val returnTypes = this.returnType.toClassListString()
@@ -118,7 +122,6 @@ fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
 }
 
 operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
-    val arrayTypes= combine(arrayTypes, other.arrayTypes)
     val jsObjectKeys = combine(jsObjectKeys, other.jsObjectKeys)
     val functionTypes = combine(functionTypes, other.functionTypes)
     return InferenceResult(
@@ -128,7 +131,6 @@ operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
             isString = isString || other.isString,
             isDictionary = isDictionary || other.isDictionary,
             isRegex = isRegex || other.isRegex,
-            arrayTypes = if (arrayTypes.isNotNullOrEmpty()) arrayTypes else null,
             jsObjectKeys = jsObjectKeys ,
             functionTypes = functionTypes,
             classes = (classes + other.classes)
@@ -311,97 +313,4 @@ internal val INFERRED_EMPTY_TYPE:InferenceResult by lazy {
     InferenceResult(
             classes = setOf()
     )
-}
-
-fun StubOutputStream.writeJsFunctionType(function:JsFunctionType?) {
-    writeBoolean(function != null)
-    if (function == null)
-        return
-    writePropertiesMap(function.parameters)
-    writeInferenceResult(function.returnType)
-    writeUTFFast(function.comment ?: "")
-}
-
-fun StubInputStream.readJsFunctionType() : JsFunctionType? {
-    if (!readBoolean())
-        return null
-    val parameters = readPropertiesMap()
-    val returnType = readInferenceResult()
-    val comment = readUTFFast()
-    return JsFunctionType(
-            parameters = parameters,
-            returnType = returnType,
-            comment = if (comment.isNotBlank()) comment else null
-    )
-}
-
-fun StubOutputStream.writePropertiesMap(map:PropertiesMap) {
-    writeInt(map.size)
-    map.forEach { (key, value) ->
-        writeName(key)
-        writeInferenceResult(value)
-    }
-}
-
-fun StubInputStream.readPropertiesMap() : PropertiesMap {
-    val numProperties = readInt()
-    val out = mutableMapOf<String, InferenceResult>()
-    for (i in 0 until numProperties) {
-        val name = readNameString() ?: "?"
-        out[name] = readInferenceResult()
-    }
-    return out
-}
-
-
-fun StubOutputStream.writeInferenceResult(result:InferenceResult) {
-    writeName(result.toClassListString(null))
-    writeJsFunctionList(result.functionTypes)
-    writeBoolean(result.jsObjectKeys != null)
-    if (result.jsObjectKeys != null)
-        writePropertiesMap(result.jsObjectKeys)
-    writeBoolean(result.arrayTypes != null)
-    if (result.arrayTypes != null)
-        writeName(result.arrayTypes.joinToString(TYPES_DELIM))
-}
-
-fun StubInputStream.readInferenceResult() : InferenceResult {
-    val classes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    val functions = readJsFunctionList()
-    val objectKeys = if (readBoolean())
-        readPropertiesMap()
-    else
-        null
-
-    val arrayTypes = if (readBoolean()) {
-        readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    } else
-        null
-
-    return InferenceResult(
-            classes = classes,
-            functionTypes = functions,
-            jsObjectKeys = objectKeys,
-            arrayTypes = arrayTypes
-    )
-}
-
-internal fun StubOutputStream.writeJsFunctionList(functions:List<JsFunctionType>?) {
-    writeBoolean(functions != null)
-    if (functions == null)
-        return
-    writeInt(functions.size)
-    functions.forEach {
-        writeJsFunctionType(it)
-    }
-}
-
-
-internal fun StubInputStream.readJsFunctionList() : List<JsFunctionType>? {
-    if (!readBoolean())
-        return null
-    val numFunctions = readInt()
-    return (0 until numFunctions).mapNotNull {
-        readJsFunctionType()
-    }
 }

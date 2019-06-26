@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
-import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import com.intellij.psi.stubs.IndexSink
@@ -37,10 +36,10 @@ class JsTypeDefIndexService : StubIndexService() {
     }
 
     override fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
-        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNameIndex.KEY, stub.interfaceName)
-        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefInterfacesByNamespaceIndex.KEY, superType)
+            sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType)
         }
     }
 

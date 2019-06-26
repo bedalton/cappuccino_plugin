@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.utils.afterLast
 import cappuccino.ide.intellij.plugin.utils.put
 import cappuccino.ide.intellij.plugin.utils.trimFromBeginning

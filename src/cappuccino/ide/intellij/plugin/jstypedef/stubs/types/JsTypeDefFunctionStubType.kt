@@ -6,7 +6,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFunctionStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -32,7 +32,7 @@ class JsTypeDefFunctionStubType internal constructor(
             property.toStubParameter()
         }?.toList() ?: emptyList()
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
-        val returnType = JsTypeDefTypesList(returnTypes, function.isNullableReturnType)
+        val returnType = JsTypesList(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = !function.isStatic
         return JsTypeDefFunctionStubImpl(

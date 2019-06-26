@@ -816,14 +816,14 @@ internal val JsClassDocumentAndElementEventHandlers = c(
         className = "DocumentAndElementEventHandlers",
         isStruct = true,
         functions = listOf(
-                f("oncopy", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = "?"), nullable = true))),
-                f("oncut", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = "?"), nullable = true))),
-                f("onpaste", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = "?"), nullable = true))),
+                f("oncopy", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = RT_ANY), nullable = true))),
+                f("oncut", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = RT_ANY), nullable = true))),
+                f("onpaste", listOf(p("listener", callback = callback(parameters = listOf(p("ev", "ClipboardEvent")), returns = RT_ANY), nullable = true))),
                 f("addEventListener", listOf(
                         p(name = "type", type = "string"),
-                        p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = "?")),
-                        p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = "void"),
-                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = "?")), p(name = "options", type = "boolean | EventListenerOptions", nullable = true)), returns = "void")
+                        p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = RT_ANY)),
+                        p(name = "options", type = "boolean | AddEventListenerOptions", nullable = true)), returns = VOID),
+                f("removeEventListener", listOf(p(name = "type", type = "string"), p(name = "listener", callback = callback(listOf(p("ev", "Event")), returns = RT_ANY)), p(name = "options", type = "boolean | EventListenerOptions", nullable = true)), returns = VOID)
 
         )
 )

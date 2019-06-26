@@ -1,15 +1,14 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFunctionStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefVariableDeclarationImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefVariableDeclarationStubImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeTypes
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -17,56 +16,73 @@ import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
 class JsTypeDefVariableDeclarationStubType internal constructor(
-        debugName: String) : JsTypeDefStubElementType<JsTypeDefVariableStub, JsTypeDefFunctionImpl>(debugName, JsTypeDefFunctionImpl::class.java) {
+        debugName: String) : JsTypeDefStubElementType<JsTypeDefVariableDeclarationStub, JsTypeDefVariableDeclarationImpl>(debugName, JsTypeDefVariableDeclarationImpl::class.java) {
 
     override fun createPsi(
-            stub: JsTypeDefFunctionStub): JsTypeDefFunctionImpl {
-        return JsTypeDefFunctionImpl(stub, this)
+            stub: JsTypeDefVariableDeclarationStub): JsTypeDefVariableDeclarationImpl {
+        return JsTypeDefVariableDeclarationImpl(stub, this)
     }
 
-    override fun createStub(function:JsTypeDefFunctionImpl, parent: StubElement<*>): JsTypeDefFunctionStub {
-        val fileName = function.containingFile.name
-        val moduleName = function.enclosingNamespace
-        val functionName = function.functionName.text
-        val parameters = function.propertiesList?.propertyList?.map { property ->
-            property.toStubParameter()
-        } ?: listOf()
-        val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
-        val returnType = JsTypeDefTypesList(returnTypes, function.isNullableReturnType)
-        val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
-        val isStatic:Boolean = function.isStatic || isGlobal
-        return JsTypeDefFunctionStubImpl(parent, fileName, moduleName, functionName, parameters, returnType, isGlobal, isStatic)
+    override fun createStub(declaration:JsTypeDefVariableDeclarationImpl, parent: StubElement<*>): JsTypeDefVariableDeclarationStub {
+        val fileName = declaration.containingFile.name
+        val enclosingNamespace = declaration.enclosingNamespace
+        val enclosingNamespaceComponents = declaration.enclosingNamespaceComponents
+        val variableName = declaration.property.propertyNameString
+        val types = JsTypesList(declaration.property.propertyTypes.toJsTypeDefTypeListTypes(), declaration.property.isNullable)
+        val readOnly = declaration.readonly != null
+        val comment = null
+        val default = null
+        return JsTypeDefVariableDeclarationStubImpl(
+                parent = parent,
+                fileName = fileName,
+                enclosingNamespace = enclosingNamespace,
+                enclosingNamespaceComponents = enclosingNamespaceComponents,
+                variableName = variableName,
+                types = types,
+                readonly = readOnly,
+                comment = comment,
+                default = default
+        )
     }
 
     @Throws(IOException::class)
     override fun serialize(
-            stub: JsTypeDefFunctionStub,
+            stub: JsTypeDefVariableDeclarationStub,
             stream: StubOutputStream) {
-
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
-        stream.writeName(stub.functionName)
-        stream.writePropertiesList(stub.parameters)
-        stream.writeTypes(stub.returnType)
-        stream.writeBoolean(stub.global)
-        stream.writeBoolean(stub.static)
+        stream.writeName(stub.variableName)
+        stream.writeTypes(stub.types)
+        stream.writeBoolean(stub.readonly)
+        stream.writeName(stub.comment)
+        stream.writeName(stub.default)
     }
 
     @Throws(IOException::class)
     override fun deserialize(
-            stream: StubInputStream, parent: StubElement<*>): JsTypeDefFunctionStub {
-
-        val fileName = stream.readName()?.string ?: ""
-        val moduleName = stream.readNameString() ?: ""
-        val functionName = stream.readNameString() ?: ""
-        val parameters = stream.readPropertiesList()
-        val returnType = stream.readTypes()
-        val global = stream.readBoolean()
-        val static = stream.readBoolean()
-        return JsTypeDefFunctionStubImpl(parent, fileName, moduleName, functionName, parameters, returnType, global, static)
+            stream: StubInputStream, parent: StubElement<*>): JsTypeDefVariableDeclarationStub {
+        val fileName = stream.readNameString() ?: ""
+        val enclosingNamespace = stream.readNameString() ?: ""
+        val enclosingNamespaceComponents = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX) ?: emptyList()
+        val variableName:String = stream.readNameString() ?: ""
+        val types: JsTypesList = stream.readTypes()
+        val readonly: Boolean = stream.readBoolean()
+        val comment: String? = stream.readNameString()
+        val default: String? = stream.readNameString()
+        return JsTypeDefVariableDeclarationStubImpl(
+                parent = parent,
+                fileName = fileName,
+                enclosingNamespace = enclosingNamespace,
+                enclosingNamespaceComponents = enclosingNamespaceComponents,
+                variableName = variableName,
+                readonly = readonly,
+                types = types,
+                comment = comment,
+                default = default
+        )
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node?.psi as? JsTypeDefFunction)?.functionName?.text.isNotNullOrBlank()
+        return (node?.psi as? JsTypeDefVariableDeclaration)?.property?.propertyName != null
     }
 }

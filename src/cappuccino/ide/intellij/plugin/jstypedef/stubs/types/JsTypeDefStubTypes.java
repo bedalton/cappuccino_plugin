@@ -8,4 +8,5 @@ public interface JsTypeDefStubTypes {
     JsTypeDefModuleNameStubType JS_MODULE_NAME = new JsTypeDefModuleNameStubType("JS_MODULE_NAME");
     JsTypeDefPropertyStubType JS_PROPERTY = new JsTypeDefPropertyStubType("JS_PROPERTY");
     JsTypeDefTypeMapStubType JS_TYPE_MAP = new JsTypeDefTypeMapStubType("JS_TYPE_MAP");
+    JsTypeDefVariableDeclarationStubType JS_VARIABLE_DECLARATION = new JsTypeDefVariableDeclarationStubType("JS_VARIABLE_DECLARATION");
 }

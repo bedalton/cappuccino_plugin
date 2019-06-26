@@ -1,13 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -29,7 +27,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val fileName = property.containingFile.name
         val enclosingNamespace = property.enclosingNamespace
         val propertyName = property.propertyName.text
-        val typeList = JsTypeDefTypesList(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
+        val typeList = JsTypesList(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
     }
 

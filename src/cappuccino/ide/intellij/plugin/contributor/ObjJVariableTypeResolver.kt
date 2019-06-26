@@ -1,16 +1,12 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 
@@ -82,92 +78,6 @@ object ObjJVariableTypeResolver {
         return if (out.isNotEmpty()) out else setOf()
     }
 
-    private fun getVariableTypeFromAssignments(variableName:ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
-        val fromBodyVariableAssignments = getVariableTypeFromBodyVariableAssignments(variableName, recurse, tag)
-        if (fromBodyVariableAssignments?.isNotEmpty().orFalse()) {
-            return fromBodyVariableAssignments
-        }
-        val fromExpressionAssignments = getVariableTypeFromExpressionAssignments(variableName, recurse, tag)
-        if (fromExpressionAssignments?.isNotEmpty().orFalse()) {
-            return fromExpressionAssignments
-        }
-        return null
-    }
-
-    private fun getVariableTypeFromBodyVariableAssignments(variableName: ObjJVariableName, recurse: Boolean, tag: Long) : Set<String>? {
-        if (variableName.indexInQualifiedReference != 0) {
-            return null
-        }
-        val variableNameText = variableName.text
-        val assignmentsRaw = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
-                .flatMap { it.variableDeclarationList?.variableDeclarationList ?: emptyList() }
-                .filter { it.qualifiedReferenceList.any { q -> q.text == variableNameText } }
-
-        val out = mutableSetOf<String>()
-        for (variableDeclaration in assignmentsRaw) {
-            val set = getVariableTypeFromAssignment(variableDeclaration, recurse, tag) ?: continue
-            out.addAll(set)
-        }
-        return out.toSet()
-    }
-
-    private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
-        val variableNameString = variableName.text
-        val assignmentsRaw:List<ObjJVariableDeclaration> = variableName
-                .getParentBlockChildrenOfType(ObjJExpr::class.java, true)
-                .mapNotNull {expr ->  expr.leftExpr?.variableDeclaration }
-                // Convoluted check to ensure that any of the qualified references listed in a compound expression
-                // contain a variable with this name
-                .filter {
-                    it.qualifiedReferenceList.any { qRef ->
-                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0)?.text == variableNameString
-                    }
-                }
-
-        val out = mutableSetOf<String>()
-        assignmentsRaw.forEach {
-            val set = getVariableTypeFromAssignment(it, recurse, tag) ?: return@forEach
-            out.addAll(set)
-        }
-        return out
-    }
-
-    private fun getVariableTypeFromAssignment(variableDeclaration:ObjJVariableDeclaration, recurse: Boolean, tag:Long) : Set<String>? {
-        val expression = variableDeclaration.expr
-        val leftExpr = expression?.leftExpr ?: return null
-        var out:Set<String>? = getTypeFromMethodCall(leftExpr, tag)
-        if (out != null) {
-            return out
-        }
-        out = getTypeFromQualifiedReferenceAssignment(leftExpr, recurse, tag)
-        if (out != null) {
-            return out
-        }
-        return null
-    }
-
-    private fun getTypeFromMethodCall(leftExpression: ObjJLeftExpr, tag:Long) : Set<String>? {
-        val methodCall = leftExpression.methodCall ?: return null
-        val selector = methodCall.selectorString
-        val skipIf = listOf(
-                "null",
-                "nil"
-        )
-        val out = ObjJUnifiedMethodIndex.instance[selector, methodCall.project].flatMap { it.getReturnTypes(tag) }.toSet().filterNot{ returnType ->
-            returnType.toLowerCase() in skipIf ||returnType == "id" || returnType.contains("<")
-        }.toSet()
-        return if (out.isNotEmpty()) out else null
-    }
-
-    private fun getTypeFromQualifiedReferenceAssignment(leftExpression: ObjJLeftExpr, recurse:Boolean, tag:Long) : Set<String>? {
-        if (!recurse) {
-            return null
-        }
-        val qualifiedAssignment = leftExpression.qualifiedReference ?: return null
-        val lastVar = qualifiedAssignment.lastVar ?: return null
-        return resolveVariableType(lastVar, false, tag)
-    }
-
     private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName): Set<String>? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
         return if (formalVariableType.varTypeId?.className != null) {
@@ -201,132 +111,4 @@ object ObjJVariableTypeResolver {
         }
         return null
     }
-
-    // @todo implement checks for call assignments
-    /*
-    fun getCallTargetTypeIfAllocStatement(callTarget:ObjJCallTarget): String {
-        val subMethodCall = callTarget.qualifiedReference?.methodCall ?: return callTarget.text
-        val subMethodCallSelectorString = subMethodCall.selectorString
-        if (subMethodCallSelectorString == "alloc:" || subMethodCallSelectorString == "new:") {
-            return subMethodCall.getCallTargetText()
-        }
-        return callTarget.text
-    }*/
-}
-
-
-private fun resolveExpressionType(expr:ObjJExpr) : List<String> {
-
-    //if (expr.leftExpr?.qualifiedReference != null)
-    return listOf()
-}
-
-private fun getIfExprHasRight(expr:ObjJExpr) : List<String>? {
-    val left = expr.leftExpr ?: return null
-    val rightExpressions = expr.rightExprList
-    if (rightExpressions.isEmpty())
-        return null
-    val out = mutableListOf<String>()
-    if (expr.isString)
-        out.add(ObjJClassType.STRING)
-    if (expr.isBool)
-        out.add(ObjJClassType.BOOL)
-    //out.addAll(expr.numberTypes)
-    return out
-}
-
-private val ObjJExpr.isString:Boolean get() {
-    if (this.leftExpr?.primary?.stringLiteral != null)
-        return true
-    val rightExpressions = this.rightExprList
-    if (rightExpressions.isEmpty())
-        return false
-    for(rightExpr in rightExpressions) {
-        if (rightExpr.mathExprPrime?.expr?.leftExpr?.primary?.stringLiteral != null)
-            return true
-    }
-    return false
-}
-
-private val ObjJExpr.hasMath:Boolean get() {
-    val rightExpressions = this.rightExprList
-    if (rightExpressions.isEmpty())
-        return false
-    for(rightExpr in rightExpressions) {
-        if (rightExpr.mathExprPrime != null)
-            return true
-    }
-    return false
-}
-
-private val ObjJExpr.isBool:Boolean get() {
-    val rightExpressions = this.rightExprList
-    if (rightExpressions.isEmpty())
-        return false
-    for(rightExpr in rightExpressions) {
-        if (rightExpr?.logicExprPrime != null)
-            return true
-    }
-    return false
-}
-
-
-private fun resolveQualifiedReference(qualifiedReference:ObjJQualifiedReference?) : List<String> {
-    if (qualifiedReference == null) return listOf()
-    val parts = qualifiedReference.qualifiedNameParts
-    if (parts.isEmpty())
-        return emptyList()
-    var currentClasses = listOf<String>()
-    var skipNext = false
-    for (index in 0 until parts.size) {
-        if (skipNext) {
-            skipNext = false
-            continue
-        }
-        val currentClass = getJsClassUnion(currentClasses, qualifiedReference.project)
-        if (currentClass == null) {
-
-        }
-        var rawClassList:List<String> = listOf()
-        val part = parts[index]
-        val variableName = if (part is ObjJVariableName) part.text else if (part is ObjJFunctionCall) part.functionName?.text else null
-
-        if (part is ObjJVariableName) {
-            if (currentClass?.properties?.isEmpty().orTrue()) {
-                rawClassList = ObjJVariableTypeResolver.resolveVariableType(part).toList()
-            }
-        } else if (part is ObjJFunctionCall) {
-            val functionName = part.functionName ?: ""
-            rawClassList = (currentClass?.functions ?: allJSClassesFunctions).filter { it.name == functionName }.mapNotNull { it.returns }
-            if (rawClassList.isEmpty()) {
-                val callbacks = currentClass?.properties?.mapNotNull { it.callback } ?: listOf()
-                if (callbacks.isNotEmpty())
-                    rawClassList = callbacks.mapNotNull { it.returns }
-            }
-        } else if (part is ObjJArrayIndexSelector) {
-            if (currentClasses.contains("String") || currentClasses.contains("string") || currentClasses.contains("CPString")) {
-                rawClassList = listOf("CPString")
-            } else
-                rawClassList = listOf("?")
-        }
-
-        if (rawClassList.isEmpty() && variableName != null) {
-            rawClassList = allJSClassesProperties.filter { it.name == part.text }.map { it.type }
-        }
-
-        currentClasses = rawClassList
-                .flatMap {
-                    it.split("Array|\\s*\\|\\s*".toRegex())
-                }
-                .map { it.trim() }
-        val arrayTypes = currentClasses.filter { it.startsWith("<")}.flatMap {
-            it.substring(1, it.length - 2).split("\\s*|\\s*".toRegex())
-        }.map { it.trim() }
-
-        if (arrayTypes.isNotEmpty() && parts.getOrNull(index + 1) is ObjJArrayIndexSelector) {
-            skipNext = true
-            currentClasses = arrayTypes
-        }
-    }
-    return currentClasses
 }

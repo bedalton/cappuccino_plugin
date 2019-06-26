@@ -192,7 +192,7 @@ interfaceElement
         stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
 		methods = [
 			getConstructors
-			getInterfaceName
+			getClassName
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
 	        getNamespaceComponents
