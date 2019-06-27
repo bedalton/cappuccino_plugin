@@ -1,7 +1,9 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsFunction
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
@@ -27,7 +29,7 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
                         it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
                     }.toSet()
             if (out.isNotEmpty()) {
-                return InferenceResult(classes = out.map { it.typeName }.toSet() )
+                return InferenceResult(types = out )
             }
         }
         return null
@@ -55,25 +57,25 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
 fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
     val commentReturnTypes = function.docComment?.getReturnTypes(function.project)
     if (commentReturnTypes.isNotNullOrEmpty())
-        return InferenceResult(classes = commentReturnTypes!!)
+        return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
     val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     if (returnStatementExpressions.isEmpty())
-        return InferenceResult(classes = setOf("void"))
+        return INFERRED_VOID_TYPE
     val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
     return types
 }
 
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsFunctionType {
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsFunction {
     val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
-    return JsFunctionType(this.parameterTypes(), returnTypes)
+    return JsFunction(name = this.functionNameAsString, parameters = this.parameterTypes(), returnType = returnTypes)
 }
 
 fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : InferenceResult? {
-    val functionType = toJsFunctionType(tag)
+    val functionType = toJsFunctionType(tag).toJsTypeListType()
     return InferenceResult(
-            functionTypes = listOf(functionType)
+            types = setOf(functionType)
     )
 }
 
@@ -89,13 +91,16 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefN
             val comment = commentWrapper?.parameterComments
                     ?.get(i)
             val types = comment?.getTypes(project)
-            JsTypeDefNamedProperty(
+            val property = JsTypeDefNamedProperty(
                     name = parameterName,
-                    types = types.toJs
+                    types = InferenceResult(types = types?.toJsTypeList().orEmpty())
             )
-            out[parameterName] = if (parameterType != null) InferenceResult(classes = parameterType.toSet())  else INFERRED_ANY_TYPE
+            out.add(property)
         } else {
-            out[parameterName] = INFERRED_ANY_TYPE
+            out.add(JsTypeDefNamedProperty(
+                    name = parameterName,
+                    types = INFERRED_ANY_TYPE
+            ))
         }
     }
     return out

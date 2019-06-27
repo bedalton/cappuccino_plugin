@@ -19,7 +19,7 @@ import java.util.logging.Logger
 class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private val objjSettings:ObjJCodeStyleSettings) {
     fun getChildIndent(node: ASTNode): Indent? {
         val elementType = node.elementType
-        val prevSibling = node.getPreviousNonEmptySiblingIgnoringComments()
+        val prevSibling = node.getPreviousNonEmptyNodeIgnoringComments()
         val prevSiblingType = prevSibling?.elementType
         val nextSibling = node.getNextNonEmptyNode(true)
         val nextSiblingType = nextSibling?.elementType

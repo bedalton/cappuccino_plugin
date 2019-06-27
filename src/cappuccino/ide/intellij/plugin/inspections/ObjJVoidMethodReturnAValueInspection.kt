@@ -10,7 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
@@ -43,7 +43,7 @@ class ObjJVoidMethodReturnAValueInspection : LocalInspectionTool() {
         private val NIL_EQUIVALENTS = listOf("nil", "null", "undefined")
 
         private fun validateBlockReturnStatements(block: ObjJBlock, problemsHolder: ProblemsHolder) {
-            if (ObjJIgnoreEvaluatorUtil.isIgnored(block, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
+            if (ObjJCommentEvaluatorUtil.isIgnored(block, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnStatementsList = block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)

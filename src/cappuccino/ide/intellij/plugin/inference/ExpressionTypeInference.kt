@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
@@ -180,7 +179,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
                 orExpressionType = listOfNotNull(
                         orExpressionType,
                         inferExpressionType(rightExpr.logicExprPrime?.expr!!, tag)
-                ).collapse()
+                ).combine()
                 current = orExpressionType
             }
             continue
@@ -206,7 +205,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
 }
 
 internal fun getInferredTypeFromExpressionArray(assignments:List<ObjJExpr>, tag:Long) : InferenceResult {
-    return assignments.mapNotNull { inferExpressionType(it,  tag) }.collapse()
+    return assignments.mapNotNull { inferExpressionType(it,  tag) }.combine()
 }
 
 private object IsNumericUtil {

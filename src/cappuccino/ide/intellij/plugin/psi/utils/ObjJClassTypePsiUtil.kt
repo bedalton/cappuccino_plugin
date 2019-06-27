@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -21,7 +21,7 @@ object ObjJClassTypePsiUtil {
         // Is primitive type, do not continue check
         if (classNameString in ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES || classNameString.contains("signed"))
             return true
-        if (ObjJIgnoreEvaluatorUtil.isIgnored(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS))
+        if (ObjJCommentEvaluatorUtil.isIgnored(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS))
             return true
         val project:Project = className.project
         if (globalJsClassNames.contains(classNameString))

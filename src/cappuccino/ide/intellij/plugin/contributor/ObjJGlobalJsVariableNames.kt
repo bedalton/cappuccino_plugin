@@ -1,9 +1,5 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
-
 val ObjJGlobalJSVariables:List<JsNamedProperty> = {
     val out = mutableListOf(
             p("E", "number"),

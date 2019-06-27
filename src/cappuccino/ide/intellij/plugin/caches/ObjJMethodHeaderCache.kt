@@ -48,7 +48,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
         var types = returnTypesInternal
         if (types != null)
             return types
-        types = returnStatementsCache.value?.values?.filterNotNull()?.collapse()
+        types = returnStatementsCache.value?.values?.filterNotNull()?.combine()
         returnTypesInternal = types
         return types ?: INFERRED_ANY_TYPE
     }
@@ -79,7 +79,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
                     null
                 map[it] = type
             }
-            returnTypesInternal = map.values.filterNotNull().collapse()
+            returnTypesInternal = map.values.filterNotNull().combine()
             CachedValueProvider.Result.create(map, dependencies)
         }
         return manager.createCachedValue(provider)
@@ -104,7 +104,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
         var types = returnTypesInternal
         if (types != null)
             return types
-        types = variableTypeCache.value?.values?.filterNotNull()?.collapse()
+        types = variableTypeCache.value?.values?.filterNotNull()?.combine()
         returnTypesInternal = types
         return types ?: INFERRED_ANY_TYPE
     }

@@ -7,7 +7,7 @@ import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredFunctionNames
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags.*
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
@@ -62,8 +62,8 @@ class ObjJInvalidFunctionNameInspection : LocalInspectionTool() {
 
     private fun isIgnored(functionCall: ObjJFunctionCall) : Boolean {
         return ObjJPluginSettings.isIgnoredFunctionName(functionCall.functionName?.text ?: "#_#_#") ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_FUNCTION) ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_VAR) ||
+                ObjJCommentEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_FUNCTION) ||
+                ObjJCommentEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_VAR) ||
                 ObjJPluginSettings.isIgnoredVariableName(functionCall.functionName?.text ?: "#_#_#")
 
     }

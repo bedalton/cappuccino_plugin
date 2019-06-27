@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFunctionStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -32,7 +32,7 @@ class JsTypeDefFunctionStubType internal constructor(
             property.toStubParameter()
         }?.toList() ?: emptyList()
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
-        val returnType = JsTypesList(returnTypes, function.isNullableReturnType)
+        val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = !function.isStatic
         return JsTypeDefFunctionStubImpl(
@@ -55,7 +55,7 @@ class JsTypeDefFunctionStubType internal constructor(
         stream.writeName(stub.enclosingNamespace)
         stream.writeName(stub.functionName)
         stream.writePropertiesList(stub.parameters)
-        stream.writeTypes(stub.returnType)
+        stream.writeInferenceResult(stub.returnType)
         stream.writeBoolean(stub.returnType.nullable)
         stream.writeBoolean(stub.global)
         stream.writeBoolean(stub.static || stub.global)
@@ -69,7 +69,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val enclosingNamespaece = stream.readNameString() ?: ""
         val functionName = stream.readNameString() ?: ""
         val parameters = stream.readPropertiesList()
-        val returnType = stream.readTypes()
+        val returnType = stream.readInferenceResult()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
         return JsTypeDefFunctionStubImpl(

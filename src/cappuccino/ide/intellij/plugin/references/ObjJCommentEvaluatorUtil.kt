@@ -14,11 +14,11 @@ import com.intellij.psi.impl.source.tree.PsiCommentImpl
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
-object ObjJIgnoreEvaluatorUtil {
+object ObjJCommentEvaluatorUtil {
 
     @Suppress("unused")
     private val LOGGER: Logger by lazy {
-        Logger.getLogger(ObjJIgnoreEvaluatorUtil::class.java.canonicalName)
+        Logger.getLogger(ObjJCommentEvaluatorUtil::class.java.canonicalName)
     }
     private const val IDENT_REGEX = "[_\$a-zA-Z][_\$a-zA-Z0-9]*"
     private const val IGNORE_FLAG = "@ignore"

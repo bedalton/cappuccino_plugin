@@ -15,6 +15,8 @@ import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -168,6 +170,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Provides completions results for less specific elements or cases
      */
     private fun genericCompletion(element: PsiElement, resultSet: CompletionResultSet) {
+        val project = element.project
         if (element.getPreviousNonEmptySibling(true)?.text?.endsWith(".") == true) {
             appendQualifiedReferenceCompletions(element, resultSet)
             return
@@ -218,7 +221,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (shouldAddJsClassNames(element)) {
-            globalJsClassNames.forEach {
+            JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).filter {
+                it.
+            }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
@@ -270,10 +275,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
+        val properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null}
         if (shouldIgnoreIgnoredGlobals) {
-            addCompletionElementsSimple(resultSet, ObjJGlobalVariableNamesWithoutIgnores, -200.0)
+            addCompletionElementsSimple(resultSet, properties.filter { it.atSilent == null}.map { it.propertyNameString }, -200.0)
         } else {
-            addCompletionElementsSimple(resultSet, ObjJGlobalJSVariablesNames, -200.0)
+            addCompletionElementsSimple(resultSet, properties.map { it.propertyNameString }, -200.0)
         }
     }
 

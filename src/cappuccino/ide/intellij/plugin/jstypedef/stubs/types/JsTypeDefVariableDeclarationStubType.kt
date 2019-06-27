@@ -1,14 +1,14 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefVariableDeclarationImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -28,7 +28,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val enclosingNamespace = declaration.enclosingNamespace
         val enclosingNamespaceComponents = declaration.enclosingNamespaceComponents
         val variableName = declaration.property.propertyNameString
-        val types = JsTypesList(declaration.property.propertyTypes.toJsTypeDefTypeListTypes(), declaration.property.isNullable)
+        val types = InferenceResult(declaration.property.propertyTypes.toJsTypeDefTypeListTypes(), declaration.property.isNullable)
         val readOnly = declaration.readonly != null
         val comment = null
         val default = null
@@ -52,7 +52,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
         stream.writeName(stub.variableName)
-        stream.writeTypes(stub.types)
+        stream.writeInferenceResult(stub.types)
         stream.writeBoolean(stub.readonly)
         stream.writeName(stub.comment)
         stream.writeName(stub.default)
@@ -65,7 +65,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val enclosingNamespace = stream.readNameString() ?: ""
         val enclosingNamespaceComponents = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX) ?: emptyList()
         val variableName:String = stream.readNameString() ?: ""
-        val types: JsTypesList = stream.readTypes()
+        val types: InferenceResult = stream.readInferenceResult()
         val readonly: Boolean = stream.readBoolean()
         val comment: String? = stream.readNameString()
         val default: String? = stream.readNameString()

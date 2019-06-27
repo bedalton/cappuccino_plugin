@@ -62,6 +62,8 @@
 		INTERNAL =							'internal'
 		STATIC_KEYWORD =                    'static'
 		CLASS_KEYWORD = 					'class'
+		AT_SILENT =                         '@silent'
+		AT_QUIET =                          '@quiet'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -126,22 +128,26 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= READONLY? VAR property eos?
+	::= READONLY? VAR <<enterMode "variableDeclaration">> property <<exitMode "variableDeclaration">> eos?
 	{
 		pin = 3
-		extends = property
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 		]
-		methods = [
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+	    methods = [
+	        isNullable
+	        getPropertyTypes
+	        getPropertyNameString
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
 	        getNamespacedName
 	        getNamespaceComponents
 	        getNamespaceComponent
-		]
+	    ]
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
 	}
 	;
 
@@ -234,6 +240,13 @@ classElement
 	;
 
 private interfaceBody
+	::= '{' interfaceProperties? '}'
+	{
+		pin = 1
+	}
+	;
+
+interfaceBodyProperty
 	::= '{' interfaceProperties? '}'
 	{
 		pin = 1
@@ -458,7 +471,7 @@ private propertiesList_recover
 	;
 
 property
-	::= readonlyStatic?  propertyName ':' (types|interfaceBody)
+	::= (<<notInMode "variableDeclaration">>readonlyStatic)?  propertyName ':' (types|interfaceBodyProperty) tailModifier?
 	{
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	    methods = [
@@ -588,6 +601,11 @@ stringLiteral
 		]
 	}
 	;
+
+private tailModifier
+    ::= AT_SILENT
+    |   AT_QUIET
+    ;
 
 integer
 	::= INTEGER_LITERAL

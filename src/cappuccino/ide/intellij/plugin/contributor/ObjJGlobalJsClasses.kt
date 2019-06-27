@@ -2,27 +2,11 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
-
-data class JsNamedProperty(
-        val name: String,
-        override val type: String = "Any",
-        val isPublic: Boolean = true,
-        override val nullable: Boolean = true,
-        override val readonly: Boolean = false,
-        override val comment: String? = null,
-        override val default: String? = null,
-        val ignore: Boolean = false,
-        override val callback: JsFunctionType? = null,
-        val deprecated: Boolean = false,
-        val varArgs: Boolean = type.startsWith("...")
-) : JsProperty
-
-val EMPTY_TYPES_LIST = JsTypesList(emptyList(), true)
 
 interface JsProperty {
     val type: String
@@ -33,7 +17,7 @@ interface JsProperty {
     val callback: JsFunctionType?
 }
 
-class CollapsedClassType(project:Project, typesList: JsTypesList) {
+class CollapsedClassType(project:Project, typesList: InferenceResult) {
     private val collapsedClasses:Set<JsClassDefinition> by lazy {
         typesList.types.collapseToDefinitions(project)
     }

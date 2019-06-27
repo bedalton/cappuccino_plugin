@@ -2,33 +2,14 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsFunction
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType.JsTypeListBasicType as JsTypeListBasicType
-
-data class JsClassDefinition (
-        val className: String,
-        val extends:List<JsTypeListType>,
-        val enclosingNameSpaceComponents: List<String> = listOf(),
-        val properties: Set<JsTypeDefNamedProperty> = setOf(),
-        val functions: Set<JsFunction> = setOf(),
-        val staticProperties: Set<JsTypeDefNamedProperty> = setOf(),
-        val staticFunctions: Set<JsFunction> = setOf(),
-        val isObjJ:Boolean = false,
-        val isStruct:Boolean = true,
-        val static:Boolean = false
-)
 
 
 internal fun objJClassAsJsClass(project: Project, className: String): JsClassDefinition? {
@@ -62,7 +43,7 @@ internal fun objJClassAsJsClass(project: Project, className: String): JsClassDef
     return JsClassDefinition(
             className = className,
             properties = properties.toSet(),
-            extends = extends.map { JsTypeListBasicType(it) },
+            extends = extends.map { JsTypeListType.JsTypeListBasicType(it) },
             isObjJ = true,
             isStruct = false,
             static = false
@@ -88,40 +69,7 @@ private fun ObjJInstanceVariableDeclaration.toJsProperty(): JsTypeDefNamedProper
             readonly = false,
             static = false,
             comment = null,
-            types = listOf(type).toJsTypeList()
+            types = listOf(type).toInferenceResult()
     )
 }
 
-
-fun List<String>.toJsTypeList() : JsTypesList {
-    val types = this.map {
-        JsTypeListBasicType(it)
-    }
-    return JsTypesList(types, true)
-}
-
-fun JsTypeDefFunction.toJsFunctionType() : JsFunction {
-    return JsFunction(
-            name = functionNameString,
-            comment = null, // @todo implement comment parsing
-            parameters = propertiesList?.propertyList?.toNamedPropertiesList() ?: emptyList(),
-            returnType = functionReturnType?.toTypeListType() ?: EMPTY_TYPES_LIST
-    )
-}
-
-fun List<JsTypeDefProperty>.toNamedPropertiesList() : List<JsTypeDefNamedProperty> {
-    return map {
-        it.toJsNamedProperty()
-    }
-}
-
-fun JsTypeDefProperty.toJsNamedProperty() : JsTypeDefNamedProperty {
-    return JsTypeDefNamedProperty(
-            name = propertyNameString,
-            comment = docComment?.commentText,
-            static = this.staticKeyword != null,
-            readonly = this.readonly != null,
-            types = JsTypesList(typeList.toJsTypeDefTypeListTypes(), isNullable),
-            default = null
-    )
-}

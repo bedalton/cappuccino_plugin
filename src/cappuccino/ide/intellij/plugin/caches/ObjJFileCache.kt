@@ -9,7 +9,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.collectElementsOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.*
 

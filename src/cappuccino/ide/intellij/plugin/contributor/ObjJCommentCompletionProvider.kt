@@ -11,7 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySiblingIgnoringComments
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.trimFromBeginning
@@ -264,7 +264,7 @@ object ObjJCommentCompletionProvider {
         // Add DO_NOT_RESOLVE completion if there is no other text
         if (commentTokenParts.isEmpty()) {
             addCompletionElementsSimple(resultSet, listOf(
-                    ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
+                    ObjJCommentEvaluatorUtil.DO_NOT_RESOLVE
             ))
         }
         // Add @var and @ignore keywords to completion, if first character is @

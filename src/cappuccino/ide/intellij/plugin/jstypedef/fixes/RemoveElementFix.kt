@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.fixes
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
-import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeIgnoringComments
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNodeIgnoringComments
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -21,7 +18,7 @@ class RemoveElementFix(element:PsiElement, private val message:String) : BaseInt
     }
 
     override fun getFamilyName(): String {
-        return JsTypeDefBundle.message("JsTypeDef-quick-fix.family-name")
+        return JsTypeDefBundle.message("jstypedef-quick-fix.family-name")
     }
 
     override fun isAvailable(p0: Project, p1: Editor?, p2: PsiFile?): Boolean {

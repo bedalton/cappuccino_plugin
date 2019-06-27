@@ -3,7 +3,7 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
@@ -14,7 +14,7 @@ import com.intellij.psi.PsiElement
 object ObjJVariableTypeResolver {
 
     fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
-        if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJIgnoreEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
+        if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJCommentEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
             return resolveVariableTypeWithoutMethodParse(variableName, recurse, tag, withInheritance)
         }
         return setOf()
@@ -43,7 +43,7 @@ object ObjJVariableTypeResolver {
         }
 
         // Get annotation based variable type
-        val annotationBasedVariableType = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName)
+        val annotationBasedVariableType = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
         if (annotationBasedVariableType != null) {
             return if (withInheritance)
                 ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()

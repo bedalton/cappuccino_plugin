@@ -12,7 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
@@ -99,7 +99,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            if (ObjJIgnoreEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
+            if (ObjJCommentEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
                 return
             }
 
@@ -132,7 +132,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
             if (variableNameString.substring(0, 1) == variableNameString.substring(0, 1).toUpperCase() && variableNameString != variableNameString.toUpperCase()) {
-                if (ObjJIgnoreEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_CLASS, variableNameString) || ObjJPluginSettings.isIgnoredClassName(variableNameString))
+                if (ObjJCommentEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_CLASS, variableNameString) || ObjJPluginSettings.isIgnoredClassName(variableNameString))
                     return
                 problemsHolder.registerProblem(
                         variableName,

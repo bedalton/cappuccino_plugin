@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.readTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
@@ -27,7 +27,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val fileName = property.containingFile.name
         val enclosingNamespace = property.enclosingNamespace
         val propertyName = property.propertyName.text
-        val typeList = JsTypesList(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
+        val typeList = InferenceResult(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
     }
 
@@ -48,7 +48,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val fileName = stream.readNameString() ?: ""
         val enclosingNamespace = stream.readNameString() ?: ""
         val propertyName = stream.readNameString() ?: "???"
-        val types = stream.readTypes()
+        val types = stream.readInferenceResult()
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX).plus(propertyName), propertyName, types)
     }
 

@@ -1,15 +1,15 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 
 
-fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : List<JsTypeListType> {
-    val out = mutableListOf<JsTypeListType>()
+fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
+    val out = mutableSetOf<JsTypeListType>()
 
     for (type in this) {
         val asAnonymousFunction = type.anonymousFunction?.toTypeListType()
@@ -35,7 +35,7 @@ fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : List<JsTypeListType> {
     return out
 }
 
-fun List<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {
+fun Iterable<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {
     val properties = mutableListOf<JsTypeDefNamedProperty>()
     for (property in this) {
         properties.add(property.toStubParameter())
@@ -43,18 +43,18 @@ fun List<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {
     return properties
 }
 
-fun JsTypeDefFunctionReturnType.toTypeListType() : JsTypesList? {
+fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
     val types = typeList.toJsTypeDefTypeListTypes()
     if (types.isEmpty())
         return null
     val nullable = isNullable
-    return JsTypesList(types, nullable)
+    return InferenceResult(types, nullable)
 }
 
-fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListType.JsTypeListAnonymousFunctionType {
+fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListType.JsTypeListFunctionType {
     val parameters = this.propertiesList?.propertyList?.toTypeListTypes() ?: emptyList()
     val returnType = this.functionReturnType?.toTypeListType()
-    return JsTypeListType.JsTypeListAnonymousFunctionType(parameters, returnType)
+    return JsTypeListType.JsTypeListFunctionType(parameters, returnType)
 }
 
 fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {

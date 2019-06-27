@@ -1,10 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypesList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
@@ -80,6 +81,12 @@ object JsTypeDefPsiImplUtil {
             element.stub?.enclosingNamespace
                 ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                 ?: ""
+
+    @JvmStatic
+    fun getEnclosingNamespace(element:JsTypeDefVariableDeclaration) : String =
+            element.stub?.enclosingNamespace
+                    ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
+                    ?: ""
     @JvmStatic
     fun getEnclosingNamespaceComponents(element:JsTypeDefProperty) : List<String> =
             element.stub?.enclosingNamespaceComponents
@@ -87,12 +94,25 @@ object JsTypeDefPsiImplUtil {
                     ?: listOf()
 
     @JvmStatic
+    fun getEnclosingNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String> =
+            element.stub?.enclosingNamespaceComponents
+                    ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
+                    ?: listOf()
+    @JvmStatic
     fun getNamespaceComponents(element:JsTypeDefProperty) : List<String>
             = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.propertyName.text)
 
     @JvmStatic
+    fun getNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String>
+            = element.stub?.namespaceComponents ?: element.property.namespaceComponents
+
+    @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefProperty) : String
             = element.stub?.propertyName ?: element.propertyName.text
+
+    @JvmStatic
+    fun getNamespaceComponent(element:JsTypeDefVariableDeclaration) : String
+            = element.property.namespaceComponent
 
     @JvmStatic
     fun getEnclosingNamespace(elementIn:JsTypeDefFunction) : String {
@@ -197,7 +217,6 @@ object JsTypeDefPsiImplUtil {
     fun getEnclosingNamespace(element:JsTypeDefModule) : String =
             element.stub?.enclosingNamespace
                     ?: element.enclosingNamespaceComponents.joinToString(".")
-                    ?: ""
 
     @JvmStatic
     fun getEnclosingNamespaceComponents(module:JsTypeDefModule) : List<String> {
@@ -346,6 +365,17 @@ object JsTypeDefPsiImplUtil {
         return isNullable(property.typeList)
     }
 
+
+    @JvmStatic
+    fun getPropertyTypes(declaration:JsTypeDefVariableDeclaration) : List<JsTypeDefType> {
+        return declaration.property.propertyTypes
+    }
+
+    @JvmStatic
+    fun isNullable(declaration:JsTypeDefVariableDeclaration) : Boolean {
+        return declaration.property.isNullable
+    }
+
     @JvmStatic
     fun isNullableReturnType(function:JsTypeDefFunction) : Boolean {
         return isNullable(function.functionReturnType)
@@ -382,12 +412,12 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTypesForKey(typeMap: JsTypeDefTypeMap, key:String) : JsTypesList? {
+    fun getTypesForKey(typeMap: JsTypeDefTypeMap, key:String) : InferenceResult? {
         val stub = typeMap.stub
         if (stub != null) {
             return stub.getTypesForKey(key)
         }
-        return typeMap.keyValuePairs.filter{ it.key == key }.map { it.typesList }.combine()
+        return typeMap.keyValuePairs.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
     }
 
     @JvmStatic
@@ -400,10 +430,10 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getTypesList(keyValuePair: JsTypeDefTypeMapKeyValuePair) : JsTypesList {
+    fun getTypesList(keyValuePair: JsTypeDefTypeMapKeyValuePair) : InferenceResult {
         val nullable = isNullable(keyValuePair)
         val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
-        return JsTypesList(types, nullable)
+        return InferenceResult(types = types, nullable = nullable)
     }
 
     @JvmStatic
@@ -505,6 +535,13 @@ object JsTypeDefPsiImplUtil {
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
     }
 
+
+    @JvmStatic
+    fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
+        return declaration.property.propertyNameString
+    }
+
+
     @JvmStatic
     fun getFunctionNameString(function:JsTypeDefFunction) : String {
         val functionName = function.functionName
@@ -518,15 +555,3 @@ val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()
 
 typealias JsTypeDefClassName = String
-
-fun List<JsTypesList>.combine() : JsTypesList {
-    val nullable = this.any { it.nullable }
-    val types = this.flatMap { it.types }
-    return JsTypesList(types, nullable)
-}
-
-fun JsTypesList.plus(otherType: JsTypesList) : JsTypesList {
-    val nullable = this.nullable || otherType.nullable
-    val types = this.types + otherType.types
-    return JsTypesList(types, nullable)
-}

@@ -1,23 +1,22 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
-import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeListType.*
-import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
+import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.JsFunctionType
+import cappuccino.ide.intellij.plugin.inference.PropertiesMap
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsFunction
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.TypeListType
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
-fun StubInputStream.readTypes():JsTypesList {
-    val types = readTypesList()
-    val nullable = readBoolean()
-    return JsTypesList(types, nullable)
-}
 
-
-private fun StubInputStream.readTypesList():List<JsTypeListType> {
-    val types : MutableList<JsTypeListType> = mutableListOf()
+private fun StubInputStream.readTypesList(): List<JsTypeListType> {
+    val types: MutableList<JsTypeListType> = mutableListOf()
     val numberOfTypes = readInt()
-    for(i in 0 until numberOfTypes) {
+    for (i in 0 until numberOfTypes) {
         val type = readType() ?: continue
         types.add(type)
     }
@@ -37,12 +36,12 @@ private fun StubInputStream.readType(): JsTypeListType? {
 }
 
 
-private fun StubInputStream.readBasicType() : JsTypeListBasicType? {
+private fun StubInputStream.readBasicType(): JsTypeListBasicType? {
     val type = readNameString() ?: return null
     return JsTypeListBasicType(type)
 }
 
-private fun StubInputStream.readKeyOfType() : JsTypeListKeyOfType? {
+private fun StubInputStream.readKeyOfType(): JsTypeListKeyOfType? {
     val key = readNameString()
     val mapName = readNameString()
     if (key == null || mapName == null)
@@ -50,7 +49,7 @@ private fun StubInputStream.readKeyOfType() : JsTypeListKeyOfType? {
     return JsTypeListKeyOfType(key, mapName)
 }
 
-private fun StubInputStream.readValueOfKeyType() : JsTypeListValueOfKeyType? {
+private fun StubInputStream.readValueOfKeyType(): JsTypeListValueOfKeyType? {
     val key = readNameString()
     val mapName = readNameString()
     if (key == null || mapName == null)
@@ -59,29 +58,30 @@ private fun StubInputStream.readValueOfKeyType() : JsTypeListValueOfKeyType? {
 }
 
 
-private fun StubInputStream.readInterfaceBodyType() : JsTypeListInterfaceBody {
+private fun StubInputStream.readInterfaceBodyType(): JsTypeListInterfaceBody {
     val properties = readPropertiesList()
     val numFunctions = readInt()
     val functions = mutableListOf<JsFunction>()
     for (i in 0 until numFunctions) {
         functions.add(readFunction())
     }
-    return JsTypeListInterfaceBody(properties, functions)
+    return JsTypeListInterfaceBody(properties = properties.toSet(), functions = functions.toSet())
 }
 
-private fun StubInputStream.readMapType() : JsTypeListMapType {
+private fun StubInputStream.readMapType(): JsTypeListMapType {
     val keys = readTypesList()
     val valueTypes = readTypesList()
-    return JsTypeListMapType(keys, valueTypes)
+    return JsTypeListMapType(keys.toSet(), valueTypes.toSet())
 }
 
-private fun StubInputStream.readAnonymousFunctionType() : JsTypeListAnonymousFunctionType {
+private fun StubInputStream.readAnonymousFunctionType(): JsTypeListFunctionType {
+    val name = readNameString()
     val parameters = readPropertiesList()
-    val returnType = readTypes()
-    return JsTypeListAnonymousFunctionType(parameters, returnType)
+    val returnType = readInferenceResult()
+    return JsTypeListFunctionType(name = name, parameters = parameters, returnType = returnType)
 }
 
-fun StubInputStream.readPropertiesList() : List<JsTypeDefNamedProperty> {
+fun StubInputStream.readPropertiesList(): List<JsTypeDefNamedProperty> {
     val numProperties = readInt()
     val properties = mutableListOf<JsTypeDefNamedProperty>()
     for (i in 0 until numProperties) {
@@ -92,9 +92,9 @@ fun StubInputStream.readPropertiesList() : List<JsTypeDefNamedProperty> {
 }
 
 
-private fun StubInputStream.readProperty() : JsTypeDefNamedProperty? {
+private fun StubInputStream.readProperty(): JsTypeDefNamedProperty? {
     val propertyName = readNameString()
-    val types = readTypes()
+    val types = readInferenceResult()
     val readonly = readBoolean()
     val static = readBoolean()
     if (propertyName == null)
@@ -102,28 +102,24 @@ private fun StubInputStream.readProperty() : JsTypeDefNamedProperty? {
     return JsTypeDefNamedProperty(propertyName, types, readonly, static)
 }
 
-private fun StubInputStream.readFunction() : JsFunction {
+private fun StubInputStream.readFunction(): JsFunction {
     val functionName = readNameString()
     val parameters = readPropertiesList()
-    val returnType = readTypes()
+    val returnType = readInferenceResult()
     val static = readBoolean()
-    return JsFunction(functionName, parameters, returnType, static)
+    return JsFunction(name = functionName, parameters = parameters, returnType = returnType, static = static)
 }
 
-fun StubOutputStream.writeTypes(type:JsTypesList) {
-    writeTypeList(type.types)
-    writeBoolean(type.nullable)
-}
 
-private fun StubOutputStream.writeTypeList(types:List<JsTypeListType>) {
+private fun StubOutputStream.writeTypeList(types: Set<JsTypeListType>) {
     writeInt(types.size)
-    for(type in types){
+    for (type in types) {
         writeType(type)
     }
 }
 
 
-private fun StubOutputStream.writeType(type:JsTypeListType) {
+private fun StubOutputStream.writeType(type: JsTypeListType) {
     when (type) {
         is JsTypeListBasicType -> writeBasicType(type)
         is JsTypeListArrayType -> writeArrayType(type)
@@ -131,7 +127,7 @@ private fun StubOutputStream.writeType(type:JsTypeListType) {
         is JsTypeListKeyOfType -> writeKeyOfType(type)
         is JsTypeListValueOfKeyType -> writeValueOfKeyType(type)
         is JsTypeListInterfaceBody -> writeInterfaceBody(type)
-        is JsTypeListAnonymousFunctionType -> writeAnonymousFunctionType(type)
+        is JsTypeListFunctionType -> writeAnonymousFunctionType(type)
     }
 }
 
@@ -140,10 +136,10 @@ private fun StubOutputStream.writeBasicType(basicType: JsTypeListBasicType) {
     writeName(basicType.typeName)
 }
 
-private fun StubInputStream.readArrayType() : JsTypeListArrayType {
+private fun StubInputStream.readArrayType(): JsTypeListArrayType {
     val types = readTypesList()
     val dimensions = readInt()
-    return JsTypeListArrayType(types, dimensions)
+    return JsTypeListArrayType(types.toSet(), dimensions)
 }
 
 private fun StubOutputStream.writeArrayType(type: JsTypeListArrayType) {
@@ -152,49 +148,49 @@ private fun StubOutputStream.writeArrayType(type: JsTypeListArrayType) {
     writeInt(type.dimensions)
 }
 
-private fun StubOutputStream.writeKeyOfType(type:JsTypeListKeyOfType) {
+private fun StubOutputStream.writeKeyOfType(type: JsTypeListKeyOfType) {
     writeInt(TypeListType.KEYOF.id)
     writeName(type.genericKey)
     writeName(type.mapName)
 }
 
-private fun StubOutputStream.writeValueOfKeyType(type:JsTypeListValueOfKeyType) {
+private fun StubOutputStream.writeValueOfKeyType(type: JsTypeListValueOfKeyType) {
     writeInt(TypeListType.VALUEOF.id)
     writeName(type.genericKey)
     writeName(type.mapName)
 }
 
-private fun StubOutputStream.writeInterfaceBody(body:JsTypeListInterfaceBody) {
+private fun StubOutputStream.writeInterfaceBody(body: JsTypeListInterfaceBody) {
     writeInt(TypeListType.INTERFACE_BODY.id)
-    writePropertiesList(body.properties)
+    writePropertiesList(body.properties.toList())
     writeInt(body.functions.size)
-    for(function in body.functions)
+    for (function in body.functions)
         writeFunction(function)
 }
 
 
-private fun StubOutputStream.writeAnonymousFunctionType(function:JsTypeListAnonymousFunctionType) {
+private fun StubOutputStream.writeAnonymousFunctionType(function: JsTypeListFunctionType) {
     writePropertiesList(function.parameters)
-    writeTypes(function.returnType ?: JsTypesList())
+    writeInferenceResult(function.returnType ?: INFERRED_EMPTY_TYPE)
 }
 
-private fun StubOutputStream.writeFunction(function:JsFunction) {
+private fun StubOutputStream.writeFunction(function: JsFunction) {
     writeName(function.name)
     writePropertiesList(function.parameters)
-    writeTypes(function.returnType ?: JsTypesList())
+    writeInferenceResult(function.returnType)
     writeBoolean(function.static)
 }
 
-fun StubOutputStream.writePropertiesList(properties:List<JsTypeDefNamedProperty>) {
+fun StubOutputStream.writePropertiesList(properties: List<JsTypeDefNamedProperty>) {
     writeInt(properties.size)
     for (property in properties) {
         writeProperty(property)
     }
 }
 
-private fun StubOutputStream.writeProperty(type:JsTypeDefNamedProperty) {
+private fun StubOutputStream.writeProperty(type: JsTypeDefNamedProperty) {
     writeName(type.name)
-    writeTypes(type.types)
+    writeInferenceResult(type.types)
     writeBoolean(type.readonly)
     writeBoolean(type.static)
 }
@@ -208,9 +204,8 @@ private fun StubOutputStream.writeMapType(mapType: JsTypeListMapType) {
 fun List<JsTypeListInterfaceBody>.collapse(): JsTypeListInterfaceBody {
     val propertiesList = this.flatMap { it.properties }.toSet()
     val functionList = this.flatMap { it.functions }.toSet()
-    return JsTypeListInterfaceBody(propertiesList.toList(), functionList.toList())
+    return JsTypeListInterfaceBody(propertiesList, functionList)
 }
-
 
 
 fun StubOutputStream.writeJsFunctionType(function: JsFunctionType?) {
@@ -222,7 +217,7 @@ fun StubOutputStream.writeJsFunctionType(function: JsFunctionType?) {
     writeUTFFast(function.comment ?: "")
 }
 
-fun StubInputStream.readJsFunctionType() : JsFunctionType? {
+fun StubInputStream.readJsFunctionType(): JsFunctionType? {
     if (!readBoolean())
         return null
     val parameters = readPropertiesList()
@@ -235,7 +230,7 @@ fun StubInputStream.readJsFunctionType() : JsFunctionType? {
     )
 }
 
-fun StubOutputStream.writePropertiesMap(map:PropertiesMap) {
+fun StubOutputStream.writePropertiesMap(map: PropertiesMap) {
     writeInt(map.size)
     map.forEach { (key, value) ->
         writeName(key)
@@ -243,7 +238,7 @@ fun StubOutputStream.writePropertiesMap(map:PropertiesMap) {
     }
 }
 
-fun StubInputStream.readPropertiesMap() : PropertiesMap {
+fun StubInputStream.readPropertiesMap(): PropertiesMap {
     val numProperties = readInt()
     val out = mutableMapOf<String, InferenceResult>()
     for (i in 0 until numProperties) {
@@ -255,38 +250,17 @@ fun StubInputStream.readPropertiesMap() : PropertiesMap {
 
 
 fun StubOutputStream.writeInferenceResult(result: InferenceResult) {
-    writeName(result.toClassListString(null))
-    writeJsFunctionList(result.functionTypes)
-    writeBoolean(result.jsObjectKeys != null)
-    if (result.jsObjectKeys != null)
-        writePropertiesMap(result.jsObjectKeys)
-    writeBoolean(result.arrayTypes != null)
-    if (result.arrayTypes != null)
-        writeName(result.arrayTypes.joinToString(TYPES_DELIM))
+    writeTypeList(result.types)
+    writeBoolean(result.nullable)
 }
 
-fun StubInputStream.readInferenceResult() : InferenceResult {
-    val classes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    val functions = readJsFunctionList()
-    val objectKeys = if (readBoolean())
-        readPropertiesMap()
-    else
-        null
-
-    val arrayTypes = if (readBoolean()) {
-        readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    } else
-        null
-
-    return InferenceResult(
-            classes = classes,
-            functionTypes = functions,
-            jsObjectKeys = objectKeys,
-            arrayTypes = arrayTypes
-    )
+fun StubInputStream.readInferenceResult(): InferenceResult {
+    val types = readTypesList()
+    val nullable = readBoolean()
+    return InferenceResult(types = types.toSet(), nullable = nullable)
 }
 
-internal fun StubOutputStream.writeJsFunctionList(functions:List<JsFunctionType>?) {
+internal fun StubOutputStream.writeJsFunctionList(functions: List<JsFunction>?) {
     writeBoolean(functions != null)
     if (functions == null)
         return
@@ -297,7 +271,7 @@ internal fun StubOutputStream.writeJsFunctionList(functions:List<JsFunctionType>
 }
 
 
-internal fun StubInputStream.readJsFunctionList() : List<JsFunctionType>? {
+internal fun StubInputStream.readJsFunctionList(): List<JsFunctionType>? {
     if (!readBoolean())
         return null
     val numFunctions = readInt()
