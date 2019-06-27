@@ -1,14 +1,14 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import com.intellij.openapi.project.Project
 
 data class InferenceResult(
         val types: Set<JsTypeListType> = emptySet(),
@@ -26,9 +26,16 @@ data class InferenceResult(
 
     val classes:Set<String> get() = _classes
 
+
     val properties: List<JsNamedProperty> by lazy {
         interfaceTypes.flatMap {
-            it.properties + it.functions
+            it.allProperties + it.allFunctions
+        }
+    }
+
+    fun toJsClasses(project:Project) : List<JsClassDefinition> {
+        return classes.flatMap {
+            getClassDefinitions(project, it)
         }
     }
 
@@ -41,10 +48,10 @@ data class InferenceResult(
     val jsObjectKeys: Set<String> by lazy {
         val out = mutableSetOf<String>()
         interfaceTypes.forEach {
-            for (property in it.properties) {
+            for (property in it.allProperties) {
                 out.add(property.name)
             }
-            it.functions.forEach { function ->
+            it.allFunctions.forEach { function ->
                 if (function.name != null)
                     out.add(function.name)
             }
@@ -81,8 +88,8 @@ data class InferenceResult(
         types.mapNotNull { it as? JsTypeListType.JsTypeListBasicType }
     }
 
-    val interfaceTypes: List<JsTypeListType.JsTypeListInterfaceBody> by lazy {
-        types.mapNotNull { it as? JsTypeListType.JsTypeListInterfaceBody }
+    val interfaceTypes: List<JsTypeListType.JsTypeListClass> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListClass }
     }
 
     val functionTypes: List<JsTypeListType.JsTypeListFunctionType> by lazy {

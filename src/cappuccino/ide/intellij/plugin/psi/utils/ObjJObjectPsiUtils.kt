@@ -1,61 +1,92 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.PropertiesMap
+import cappuccino.ide.intellij.plugin.inference.inferExpressionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.plus
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJObjectLiteral
 import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJPropertyName
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.util.Key
 
 object ObjJObjectPsiUtils {
 
-    fun toJsObjectTypeSimple(element:ObjJObjectLiteral) : JsObjectType {
-        val storedDefinition = element.getUserData(OBJECT_LITERAL_EXPANDED_JS_OBJECT_KEY) ?: element.stub?.objectWithoutInference
+    fun toJsObjectTypeSimple(element: ObjJObjectLiteral): JsTypeListClass {
+        val storedDefinition: JsTypeListClass? = element.getUserData(OBJECT_LITERAL_EXPANDED_JS_OBJECT_KEY)
+                ?: element.stub?.objectWithoutInference
         if (storedDefinition != null)
             return storedDefinition
 
-        val out = mutableMapOf<String, InferenceResult>()
+        val out = mutableSetOf<JsTypeDefNamedProperty>()
         element.propertyAssignmentList.forEach {
             val name = it.propertyName.stringLiteral?.stringValue ?: it.propertyName.text
             val subObject = toJsObjectTypeSimple(it.expr)
-            out[name] = subObject ?: INFERRED_ANY_TYPE
+            out.add(JsTypeDefNamedProperty(
+                    name = name,
+                    types = subObject ?: INFERRED_ANY_TYPE,
+                    readonly = false,
+                    static = false)
+            )
         }
-        return JsObjectType(out)
-    }
-
-
-    private fun toJsObjectTypeSimple(expr:ObjJExpr?) : InferenceResult? {
-        if (expr == null || expr.rightExprList.isNotEmpty())
-            return null
-        val element = expr.leftExpr?.objectLiteral ?: return null
-        val properties = toJsObjectTypeSimple(element).properties
-        if (properties.isEmpty())
-            return null
-        return InferenceResult(
-                classes = setOf("Object"),
-                jsObjectKeys = properties
+        return JsTypeListClass(
+                allProperties = out,
+                allFunctions = setOf()
         )
     }
 
-    fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsObjectType {
-        val out = mutableMapOf<String, InferenceResult>()
+
+    private fun toJsObjectTypeSimple(expr: ObjJExpr?): InferenceResult? {
+        if (expr == null || expr.rightExprList.isNotEmpty())
+            return null
+        val element = expr.leftExpr?.objectLiteral ?: return null
+        val properties = toJsObjectTypeSimple(element)
+        if (properties.allProperties.isNullOrEmpty())
+            return null
+        return InferenceResult(
+                types = setOf(
+                        JsTypeListType.JsTypeListBasicType("Object"),
+                        properties
+                )
+        )
+    }
+
+    fun toJsObjectType(element: ObjJObjectLiteral, tag: Long): JsTypeListClass {
+        val outProperties = mutableSetOf<JsTypeDefNamedProperty>()
+        val outFunctions = mutableSetOf<JsTypeListFunctionType>()
         element.propertyAssignmentList.forEach {
             val name = it.propertyName.stringLiteral?.stringValue ?: it.propertyName.text
             val expr = it.expr
             val type = inferExpressionType(expr, tag) ?: INFERRED_ANY_TYPE
-            out[name] = type
+            if (type.functionTypes.isNotEmpty()) {
+                outFunctions.addAll(type.functionTypes)
+            } else {
+                outProperties.add(
+                        JsTypeDefNamedProperty(
+                                name = name,
+                                static = false,
+                                readonly = false,
+                                default = null,
+                                comment = null,
+                                types = type
+                        )
+                )
+            }
         }
-        val expanded = JsObjectType(out)
+        val expanded = JsTypeListClass(allProperties = outProperties, allFunctions = outFunctions)
         element.putUserData(OBJECT_LITERAL_EXPANDED_JS_OBJECT_KEY, expanded)
         return expanded
     }
 
-    fun getNamespacedName(propertyName:ObjJPropertyName) : String {
+    fun getNamespacedName(propertyName: ObjJPropertyName): String {
         var out = propertyName.key
         var parent = propertyName.parent.parent.parent.parent.parent as? ObjJPropertyAssignment
-        while(parent != null) {
+        while (parent != null) {
             out = "${parent.key}.$out"
             parent = parent.parent.parent.parent.parent as? ObjJPropertyAssignment
         }
@@ -63,72 +94,40 @@ object ObjJObjectPsiUtils {
 
     }
 
-    fun getKey(propertyAssignment: ObjJPropertyAssignment) : String {
+    fun getKey(propertyAssignment: ObjJPropertyAssignment): String {
         return propertyAssignment.propertyName.key
     }
 
-    fun getKey(propertyName: ObjJPropertyName) : String {
+    fun getKey(propertyName: ObjJPropertyName): String {
         return propertyName.stringLiteral?.stringValue ?: propertyName.text
     }
 
 }
 
-data class JsObjectType (val properties:PropertiesMap) {
-
-    operator fun get(key:String) : InferenceResult?
-            = properties[key] ?: getNestedProperty(key)
-
-    private fun getNestedProperty(key:String) : InferenceResult? {
-        val namespaceComponents = key.split("\\.".toRegex())
-        var thisProperties:InferenceResult? = null
-        for(i in 0 until namespaceComponents.size) {
-            val thisKey = namespaceComponents[i]
-            val objectProperties = thisProperties?.jsObjectKeys ?: properties
-            if (objectProperties.isNullOrEmpty() || !objectProperties.containsKey(thisKey))
-                return null
-            thisProperties = objectProperties[thisKey] ?: return null
-        }
-        return thisProperties
+operator fun JsTypeListClass.plus(other: JsTypeListClass): JsTypeListClass {
+    val properties = mutableSetOf<JsTypeDefNamedProperty>()
+    val instanceProperties = mutableListOf<String>()
+    val staticProperties = mutableListOf<String>()
+    this.instanceProperties.forEach { thisProperty ->
+        val propertyName = thisProperty.name
+        val otherWithName = other.getInstanceProperty(propertyName)
+        properties.add(thisProperty + otherWithName)
+        instanceProperties.add(propertyName)
     }
-
-    fun containsKey(key:String)
-            = properties.containsKey(key)
-
-    val keys:Set<String> get() = properties.keys
-
-    val propertyKeys:Set<String> by lazy {
-        collapseToNamespaceKeys(null, properties)
+    this.staticProperties.forEach { thisProperty ->
+        val propertyName = thisProperty.name
+        val otherWithName = other.getStaticProperty(propertyName)
+        properties.add(thisProperty + otherWithName)
+        staticProperties.add(propertyName)
     }
-
-    private fun collapseToNamespaceKeys(namespaceIn:String?, objectKeys:PropertiesMap) : Set<String> {
-        val namespace = if (namespaceIn.isNotNullOrBlank()) "${namespaceIn!!}." else ""
-        val out = objectKeys.flatMap { (_, value) ->
-            if (value.jsObjectKeys.isNullOrEmpty())
-                emptySet()
-            else
-                collapseToNamespaceKeys(namespace, value.jsObjectKeys)
-        }.toSet()
-        return if (namespaceIn != null)
-            out + namespaceIn
-        else
-            out
+    val functions = this.allFunctions + other.allFunctions
+    other.instanceProperties.filter { it.name !in instanceProperties }.forEach {
+        properties.add(it)
     }
+    other.staticProperties.filter { it.name !in staticProperties }.forEach {
+        properties.add(it)
+    }
+    return JsTypeListClass(allProperties = properties, allFunctions = functions)
 }
 
-operator fun JsObjectType.plus(other: JsObjectType) : JsObjectType {
-    val properties = mutableMapOf<String, InferenceResult>()
-    this.properties.forEach { (key, value) ->
-        val otherWithName = other[key]
-        properties[key] = if (otherWithName != null)
-            value + otherWithName
-        else
-            value
-    }
-    val currentKeys = properties.keys
-    other.properties.filter { it.key !in currentKeys }.forEach { (key, value) ->
-        properties[key] = value
-    }
-    return JsObjectType(properties = properties)
-}
-
-private val OBJECT_LITERAL_EXPANDED_JS_OBJECT_KEY = Key<JsObjectType>("objj.inference.JS_OBJECT")
+private val OBJECT_LITERAL_EXPANDED_JS_OBJECT_KEY = Key<JsTypeListClass>("objj.inference.JS_OBJECT")

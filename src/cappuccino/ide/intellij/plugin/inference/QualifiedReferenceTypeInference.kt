@@ -119,22 +119,26 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     val classNames = classes.flatMap { jsClass ->
         jsClass.properties.firstOrNull {
             it.name == variableNameString
-        }?.types ?: emptySet()
+        }?.types?.types ?: emptySet()
     }.toSet()
     var functions: List<JsTypeListFunctionType> = classes.mapNotNull { jsClass ->
         jsClass.functions.firstOrNull {
             it.name == variableNameString
-        }?.toJsTypeListType() ?: return@mapNotNull null
+        }?: return@mapNotNull null
     }
 
 
     val child = parentTypes.propertyForKey(variableNameString)
-    if (child is JsFunction)
-        functions = functions + child.toJsTypeListType()
-    val out = if (child is JsTypeDefNamedProperty)
-        classNames.toInferenceResult() + child.types
+    if (child is JsTypeListFunctionType)
+        functions = functions + child
+    val outTypes = if (child is JsTypeDefNamedProperty)
+        classNames + child.types.types
     else
-        classNames.toInferenceResult()
+        classNames
+    val out = InferenceResult(
+            types = outTypes,
+            nullable = true
+    )
 
     if (functions.isNotEmpty()) {
         return out.copy(
@@ -284,7 +288,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
             })
     }
     val returnTypes = functions.flatMap {
-        it.returnType.types
+        it.returnType?.types.orEmpty()
     }.toSet()
     return InferenceResult(
             types = returnTypes
@@ -312,11 +316,9 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
         val expr = resolved.getAssignmentExprOrNull()
         if (expr != null) {
             val functionType = inferExpressionType(expr, tag)
-            if (functionType != null) {
-                functionType.functionTypes.mapNotNull {
-                    it.returnType
-                }.combine()
-            }
+            functionType?.functionTypes?.mapNotNull {
+                it.returnType
+            }?.combine()
         }
     }
     var basicReturnTypes = functionDeclaration
@@ -334,11 +336,12 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
     if (basicReturnTypes.isNullOrEmpty() && functionDeclaration != null) {
         basicReturnTypes = inferFunctionDeclarationReturnType(functionDeclaration, tag)?.classes ?: emptySet()
     }
-    val types:MutableSet<JsTypeListType> = basicReturnTypes?.toJsTypeList()?.toMutableSet() ?: mutableSetOf()
-    types.addAll(functionTypes.flatMap {
-        it.returnType.types
-    })
-    types.addAll(functionTypes.map { it.toJsTypeListType() })
+    val types:MutableSet<JsTypeListType> = basicReturnTypes.orEmpty().toJsTypeList().toMutableSet()
+    val returnTypes = functionTypes.flatMap {
+        it.returnType?.types ?: emptySet()
+    }
+    types.addAll(returnTypes)
+    types.addAll(functionTypes.map { it })
 
     return InferenceResult(
             types = types

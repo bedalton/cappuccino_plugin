@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 
@@ -104,7 +105,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String>
-            = element.stub?.namespaceComponents ?: element.property.namespaceComponents
+            = element.stub?.namespaceComponents ?: element.property?.namespaceComponents.orEmpty()
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefProperty) : String
@@ -112,7 +113,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefVariableDeclaration) : String
-            = element.property.namespaceComponent
+            = element.property?.namespaceComponent.orEmpty()
 
     @JvmStatic
     fun getEnclosingNamespace(elementIn:JsTypeDefFunction) : String {
@@ -190,7 +191,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getNamespaceComponents(element:JsTypeDefClassElement) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.typeNameString)
+            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.className)
 
     @JvmStatic
     fun getNamespaceComponent(element: JsTypeDefClassElement) : String
@@ -329,7 +330,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getConstructors(interfaceElement: JsTypeDefInterfaceElement) : List<JsTypeDefFunction> {
-        val functions = interfaceElement.functionList ?: return listOf()
+        val functions = interfaceElement.functionList
         return functions.filter {
             it.functionName.const != null
         }
@@ -337,12 +338,13 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getConstructors(interfaceElement: JsTypeDefClassElement) : List<JsTypeDefFunction> {
-        val functions = interfaceElement.functionList ?: return listOf()
+        val functions = interfaceElement.functionList
         return functions.filter {
             it.functionName.const != null
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun isStatic(declaration:JsTypeDefInterfaceElement) : Boolean = false
 
@@ -368,12 +370,12 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getPropertyTypes(declaration:JsTypeDefVariableDeclaration) : List<JsTypeDefType> {
-        return declaration.property.propertyTypes
+        return declaration.property?.propertyTypes.orEmpty()
     }
 
     @JvmStatic
     fun isNullable(declaration:JsTypeDefVariableDeclaration) : Boolean {
-        return declaration.property.isNullable
+        return declaration.property?.isNullable.orTrue()
     }
 
     @JvmStatic
@@ -501,7 +503,7 @@ object JsTypeDefPsiImplUtil {
             //LOGGER.log(Level.INFO, "EOS assumed as ahead == null")
             return true
         }
-        return ahead in EOS_TOKENS
+        return ahead in EOS_TOKENS || hadLineTerminator
     }
 
     @Suppress("unused")
@@ -518,6 +520,7 @@ object JsTypeDefPsiImplUtil {
         return text.substring(1, textLength-2)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun isStatic(functionDeclaration:JsTypeDefFunctionDeclaration) : Boolean {
         return true
@@ -538,7 +541,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
-        return declaration.property.propertyNameString
+        return declaration.property?.propertyNameString.orEmpty()
     }
 
 
@@ -550,6 +553,7 @@ object JsTypeDefPsiImplUtil {
     }
 }
 
+@Suppress("unused")
 val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()

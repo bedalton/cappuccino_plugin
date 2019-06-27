@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.hints
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -262,7 +263,14 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment:CommentWrapper? = 
     return out.toString()
 }
 
+
 private fun JsFunctionType.descriptionWithName(name:String):String {
+    val out = StringBuilder(name)
+    out.append(this.toString())
+    return out.toString()
+}
+
+private fun JsTypeListFunctionType.descriptionWithName(name:String):String {
     val out = StringBuilder(name)
     out.append(this.toString())
     return out.toString()

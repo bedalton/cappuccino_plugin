@@ -6,6 +6,7 @@ import com.intellij.psi.tree.IElementType;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*;
+import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*;
 
 %%
 
@@ -56,7 +57,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <BLOCK_COMMENT> {
-	"*/"								 { yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
+	"*/"								 { yybegin(YYINITIAL); return ObjJ_BLOCK_COMMENT_END; }
   	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
  	'.*'/'\n'							 { return ObjJ_BLOCK_COMMENT_LINE; }
 }
@@ -77,17 +78,15 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
   "("                        { return JS_OPEN_PAREN; }
   ")"                        { return JS_CLOSE_PAREN; }
   "."                        { return JS_DOT; }
-  "declare"                  { return JS_DECLARE; }
   "readonly"                 { return JS_READONLY; }
   "var"                      { return JS_VAR; }
   "Array"                    { return JS_ARRAY; }
   "interface"                { return JS_INTERFACE; }
   "extends"                  { return JS_EXTENDS; }
   "const"                    { return JS_CONST; }
-  "function"                 { return JS_FUNCTION; }
+  "function"                 { return JS_FUNCTION_KEYWORD; }
   "void"                     { return JS_VOID; }
-  "null"                     { return JS_NULL; }
-  "module"                   { return JS_MODULE; }
+  "module"                   { return JS_MODULE_KEYWORD; }
   "Map"                      { return JS_MAP; }
   "typemap"                  { return JS_TYPE_MAP_KEYWORD; }
   "keyof"                    { return JS_KEYOF; }

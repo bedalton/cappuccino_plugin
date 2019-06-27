@@ -1,8 +1,10 @@
 package cappuccino.ide.intellij.plugin.inference
 
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
 fun inferExpressionType(expr:ObjJExpr?, tag:Long) : InferenceResult? {
@@ -30,7 +32,7 @@ private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResu
     }
 
     if (expr.text == "this") {
-        return InferenceResult(classes = setOf("Object"))
+        return InferenceResult(types = setOf("Object").toJsTypeList())
     }
 
     //ProgressManager.checkCanceled()
@@ -53,25 +55,17 @@ private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResu
     val isRegex:Boolean = isRegex(expr) || leftExpressionType?.isRegex.orFalse() || rightExpressionsType?.isRegex.orFalse()
     val isDictionary:Boolean = leftExpressionType?.isDictionary ?: rightExpressionsType?.isDictionary ?: false
     val isString:Boolean = isString(expr) || (leftExpressionType?.isString ?: rightExpressionsType?.isString ?: false)
-    val jsObjectKeys= combine(leftExpressionType?.jsObjectKeys, rightExpressionsType?.jsObjectKeys)
     val isSelector:Boolean = isSelector(expr) || (leftExpressionType?.isSelector ?: rightExpressionsType?.isSelector ?: false)
-    val classes = leftExpressionType?.classes.orEmpty() + rightExpressionsType?.classes.orEmpty()
-    val arrayTypes = leftExpressionType?.arrayTypes.orEmpty() + rightExpressionsType?.arrayTypes.orEmpty()
-    val functionTypes = leftExpressionType?.functionTypes.orEmpty() + rightExpressionsType?.functionTypes.orEmpty()
-    val types =
-    val out = InferenceResult(
+    val types = leftExpressionType?.types.orEmpty() + rightExpressionsType?.types.orEmpty()
+    return InferenceResult(
+            types = types,
             isNumeric = isNumeric,
             isBoolean = isBoolean,
             isRegex = isRegex,
             isDictionary = isDictionary,
             isString = isString,
-            jsObjectKeys =  jsObjectKeys,
-            isSelector = isSelector,
-            classes = classes,
-            arrayTypes = if (arrayTypes.isNotEmpty()) arrayTypes else null,
-            functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null
+            isSelector = isSelector
     )
-    return out
 }
 
 fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResult? {
@@ -115,21 +109,21 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
     if (leftExpression.minusMinus != null || leftExpression.plusPlus != null)
         return InferenceResult(isNumeric = true)
     if (leftExpression.arrayLiteral != null) {
-        val types = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes
+        var types:Set<JsTypeListType> = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes.toJsTypeList()
+        if (types.isNotNullOrEmpty())
+            types = types + JsTypeListType.JsTypeListArrayType(types, 1)
         return InferenceResult(
-                classes = setOf("CPArray"),
-                arrayTypes = if (types.isNotEmpty()) types else setOf("?")
+                types = types
         )
     }
     val objectLiteral = leftExpression.objectLiteral
     if (objectLiteral != null) {
-        val keys = objectLiteral.toJsObjectTypeSimple().properties
+        val interaceBody = objectLiteral.toJsObjectTypeSimple()
         val objectClass = if (objectLiteral.atOpenBrace != null) {
             "CPDictionary"
         } else "Object"
         return InferenceResult(
-                classes = setOf(objectClass),
-                jsObjectKeys = keys
+                types = setOf(JsTypeListType.JsTypeListBasicType(objectClass), interaceBody)
         )
     }
     if (leftExpression.variableDeclaration?.expr != null) {
@@ -159,7 +153,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
     var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {
         if (rightExpr.comparisonExprPrime != null)
-            return InferenceResult(classes = setOf(JS_BOOL.className), isBoolean = true)
+            return InferenceResult(types = setOf(JS_BOOL).toJsTypeList(), isBoolean = true)
         //ProgressManager.checkCanceled()
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
@@ -186,13 +180,13 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions:List<Ob
         }
 
         if (rightExpr.comparisonExprPrime != null || rightExpr.instanceOfExprPrime != null || rightExpr.logicExprPrime != null) {
-            current = current.copy(isBoolean = true, classes = current.classes.plus(JS_BOOL.className))
+            current = current.copy(isBoolean = true, types = current.classes.plus(JS_BOOL).toJsTypeList())
         }
         if (rightExpr.mathExprPrime != null) {
             val newTypes = inferExpressionType(rightExpr.mathExprPrime!!.expr, tag)?.classes.orEmpty() + current.classes
             if (isNotNumber(newTypes))
                 return InferenceResult(
-                        classes = setOf(JS_STRING.className),
+                        types = setOf(JS_STRING).toJsTypeList(),
                         isString = true
                 )
             current = resolveToNumberType(newTypes)
@@ -330,30 +324,40 @@ private fun isNotNumber(classes:Set<String>) : Boolean {
 }
 
 private fun resolveToNumberType(newTypes:Set<String>) : InferenceResult {
-    return if (JS_DOUBLE.className in newTypes && JS_NUMBER.className !in newTypes) {
+    return if (JS_DOUBLE in newTypes && JS_NUMBER !in newTypes) {
         InferenceResult(
-                classes = setOf(JS_DOUBLE.className),
+                types = setOf(JS_DOUBLE).toJsTypeList(),
                 isNumeric = true
         )
-    } else if (JS_FLOAT.className in newTypes && JS_NUMBER.className !in newTypes) {
+    } else if (JS_FLOAT in newTypes && JS_NUMBER !in newTypes) {
         InferenceResult(
-                classes = setOf(JS_FLOAT.className),
+                types = setOf(JS_FLOAT).toJsTypeList(),
                 isNumeric = true
         )
-    } else if ((JS_LONG.className in newTypes || JS_LONG_LONG.className in newTypes) && JS_LONG.className !in newTypes) {
+    } else if ((JS_LONG in newTypes || JS_LONG_LONG in newTypes) && JS_LONG !in newTypes) {
         InferenceResult(
-                classes = setOf(JS_LONG.className),
+                types = setOf(JS_LONG).toJsTypeList(),
                 isNumeric = true
         )
-    } else if (JS_INT.className in newTypes && JS_NUMBER.className !in newTypes) {
+    } else if (JS_INT in newTypes && JS_NUMBER !in newTypes) {
         InferenceResult(
-                classes = setOf(JS_INT.className),
+                types = setOf(JS_INT).toJsTypeList(),
                 isNumeric = true
         )
     } else {
         InferenceResult(
-                classes = setOf(JS_NUMBER.className),
+                types = setOf(JS_NUMBER).toJsTypeList(),
                 isNumeric = true
         )
     }
 }
+
+
+const val JS_DOUBLE = "double"
+const val JS_NUMBER = "number"
+const val JS_FLOAT = "float"
+const val JS_LONG = "long"
+const val JS_LONG_LONG = "long long"
+const val JS_INT = "int"
+const val JS_BOOL = "boolean"
+const val JS_STRING = "string"

@@ -2,8 +2,8 @@ package cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces
 
 import com.intellij.psi.PsiElement
 
-interface JsTypeDefNoNull : JsTypeDefElement
+interface JsTypeDefNotInInterface : JsTypeDefElement
 
-interface JsTypeDefHasNull : JsTypeDefElement {
+interface JsTypeDefInInterface : JsTypeDefElement {
     val nullType : PsiElement?
 }

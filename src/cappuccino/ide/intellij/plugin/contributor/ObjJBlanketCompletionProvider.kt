@@ -15,8 +15,13 @@ import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.collapse
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -222,7 +227,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
         if (shouldAddJsClassNames(element)) {
             JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).filter {
-                it.
+                it is JsTypeDefClassElement
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
@@ -291,12 +296,12 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             if (type.isNotNullOrBlank())
                 lookupElement = lookupElement.withPresentableText("${it.text} : $type")
             val asFunctionDeclaration = it.parentFunctionDeclaration
-            if (asFunctionDeclaration != null) {
-                lookupElement = lookupElement
+            lookupElement = if (asFunctionDeclaration != null) {
+                lookupElement
                         .withInsertHandler(ObjJFunctionNameInsertHandler)
                         .withTailText("(" +asFunctionDeclaration.paramNames.joinToString(", ") +")")
             } else {
-                lookupElement = lookupElement.withInsertHandler(ObjJVariableInsertHandler)
+                lookupElement.withInsertHandler(ObjJVariableInsertHandler)
             }
             lookupElement = lookupElement.withBoldness(true)
             resultSet.addElement(lookupElement)
@@ -547,12 +552,13 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val classes = inferred.classes
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
-        val types = classes.toInferenceResult().jsClasses(element.project).flatten("???")
+        val types:JsClassDefinition = classes.toInferenceResult().toJsClasses(element.project).collapse()
         val functions = if (includeStatic) types.staticFunctions else types.functions
         val properties = if (includeStatic) types.staticProperties else types.properties
         functions.forEach { classFunction ->
+            val functionName = classFunction.name ?: return@forEach
             val lookupElementBuilder = LookupElementBuilder
-                    .create(classFunction.name)
+                    .create(functionName)
                     .withTailText("(" + ArrayUtils.join(classFunction.parameters.map { it.name }, ",") + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
@@ -561,20 +567,26 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         properties.forEach {
             val lookupElementBuilder = LookupElementBuilder
                     .create(it.name)
-                    .withTailText(":" + it.type)
+                    .withTailText(":" + it.types.toClassListString("?"))
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }
-        inferred.functionTypes?.forEach { jsFunction ->
+        inferred.functionTypes.forEach { jsFunction ->
             val lookupElementBuilder = LookupElementBuilder
                     .create("()")
-                    .withTailText("("+ jsFunction.parameters.map{ it.key + ":" + it.value.classes.joinToString("|")}.joinToString(", ") + ")")
+                    .withTailText("("+ jsFunction.parameters.joinToString(", ") { it.name + ":" + it.types.toClassListString() } + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }
-        inferred.jsObjectKeys?.forEach {
+        inferred.properties.forEach {
+            val propertyName = it.name ?: return@forEach
+            val propertyType = when (it) {
+                is JsTypeDefNamedProperty -> it.types
+                is JsTypeListType.JsTypeListFunctionType -> it.returnType
+                else -> INFERRED_ANY_TYPE
+            }
             val lookupElementBuilder = LookupElementBuilder
-                    .create(it.key)
-                    .withTailText(":" + it.value.classes.joinToString("|") )
+                    .create(propertyName)
+                    .withTailText(":" + propertyType?.toClassListString())
                     .withBoldness(true)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY))
 

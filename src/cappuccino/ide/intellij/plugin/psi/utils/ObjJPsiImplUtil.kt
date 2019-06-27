@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.caches.*
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.util.TextRange
@@ -1256,12 +1257,12 @@ object ObjJPsiImplUtil {
     // ======= Object Literal ======= //
     // ============================== //
     @JvmStatic
-    fun toJsObjectTypeSimple(element:ObjJObjectLiteral) : JsObjectType {
+    fun toJsObjectTypeSimple(element:ObjJObjectLiteral) : JsTypeListClass {
         return ObjJObjectPsiUtils.toJsObjectTypeSimple(element)
     }
 
     @JvmStatic
-    fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsObjectType {
+    fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsTypeListClass {
         return ObjJObjectPsiUtils.toJsObjectType(element, tag)
     }
 

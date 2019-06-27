@@ -3,6 +3,9 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
@@ -15,19 +18,23 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
 object ObjJFunctionNameCompletionProvider {
 
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.toIndexPatternString()
-        addAllGlobalJSFunctionNames(resultSet, (functionNamePattern.length - 5) > 8)
+        addAllGlobalJSFunctionNames(resultSet, element.project, (functionNamePattern.length - 5) > 8)
         addAllLocalFunctionNames(resultSet, element)
         addIndexBasedCompletions(resultSet, element)
 
         if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
-            globalJsClassNames.forEach {
+            JsTypeDefClassesByNamespaceIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter{
+                it is JsTypeDefClassElement
+            }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }
         }
@@ -72,11 +79,13 @@ object ObjJFunctionNameCompletionProvider {
         }
     }
 
-    private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, showEvenSkipped:Boolean) {
+    private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, project:Project, showEvenSkipped:Boolean) {
         val functions = if (showEvenSkipped) {
-            globalJsFunctionNames
+            JsTypeDefFunctionsByNameIndex.instance.getAllKeys(project)
         } else {
-            globalJsFunctionNamesMinusSkips
+            JsTypeDefFunctionsByNameIndex.instance.getAll(project, GlobalSearchScope.allScope(project)).filter {
+                it.atSilent == null && it.atSilent == null
+            }.map { it.functionNameString }
         }
 
         for (function in functions) {

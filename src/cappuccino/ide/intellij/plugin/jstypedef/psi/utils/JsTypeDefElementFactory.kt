@@ -30,7 +30,7 @@ object JsTypeDefElementFactory {
                     $propertyName : $propertyTypes
                 }
                 """.trimIndent().toFile(project)
-        return file.interfaces.getOrNull(0)?.interfaceBody?.propertyList?.getOrNull(0)
+        return file.interfaces.getOrNull(0)?.propertyList?.getOrNull(0)
     }
 
     fun createTypeName(project:Project, typeName: String) : JsTypeDefTypeName? {

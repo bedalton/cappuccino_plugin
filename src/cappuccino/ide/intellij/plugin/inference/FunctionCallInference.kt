@@ -1,8 +1,7 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsFunction
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
@@ -26,7 +25,7 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
         if (functionName != null) {
             val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
             val out = functionSet.flatMap {
-                        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
+                        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
                     }.toSet()
             if (out.isNotEmpty()) {
                 return InferenceResult(types = out )
@@ -67,13 +66,19 @@ fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*
     return types
 }
 
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsFunction {
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsTypeListFunctionType {
     val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
-    return JsFunction(name = this.functionNameAsString, parameters = this.parameterTypes(), returnType = returnTypes)
+    return JsTypeListFunctionType(
+            name = this.functionNameAsString,
+            parameters = this.parameterTypes(),
+            returnType = returnTypes,
+            comment = docComment?.commentText,
+            isStatic = true
+    )
 }
 
 fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : InferenceResult? {
-    val functionType = toJsFunctionType(tag).toJsTypeListType()
+    val functionType = toJsFunctionType(tag)
     return InferenceResult(
             types = setOf(functionType)
     )

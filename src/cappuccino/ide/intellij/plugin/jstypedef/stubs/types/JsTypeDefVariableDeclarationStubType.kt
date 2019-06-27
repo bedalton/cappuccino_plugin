@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefVariableDeclarationImpl
@@ -9,6 +10,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariab
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -27,8 +29,8 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val fileName = declaration.containingFile.name
         val enclosingNamespace = declaration.enclosingNamespace
         val enclosingNamespaceComponents = declaration.enclosingNamespaceComponents
-        val variableName = declaration.property.propertyNameString
-        val types = InferenceResult(declaration.property.propertyTypes.toJsTypeDefTypeListTypes(), declaration.property.isNullable)
+        val variableName = declaration.property?.propertyNameString.orEmpty()
+        val types = InferenceResult(declaration.property?.propertyTypes.orEmpty().toJsTypeDefTypeListTypes(), declaration.property?.isNullable.orTrue())
         val readOnly = declaration.readonly != null
         val comment = null
         val default = null
@@ -63,9 +65,9 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefVariableDeclarationStub {
         val fileName = stream.readNameString() ?: ""
         val enclosingNamespace = stream.readNameString() ?: ""
-        val enclosingNamespaceComponents = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX) ?: emptyList()
+        val enclosingNamespaceComponents = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX)
         val variableName:String = stream.readNameString() ?: ""
-        val types: InferenceResult = stream.readInferenceResult()
+        val types: InferenceResult = stream.readInferenceResult() ?: INFERRED_VOID_TYPE
         val readonly: Boolean = stream.readBoolean()
         val comment: String? = stream.readNameString()
         val default: String? = stream.readNameString()

@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
@@ -39,9 +40,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         private fun registerProblemIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, problemsHolder:ProblemsHolder) {
             var variableName: ObjJVariableName? = variableNameIn
 
-            if (variableName?.text in ObjJGlobalJSVariablesNames || variableName?.text in globalJsFunctionNames)
-                return
-
             if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return
             }
@@ -72,10 +70,21 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (isItselfAVariableDeclaration(variableName)) {
                 return
             }
-            val project = variableName.project
+
+            val project = variableNameIn.project
             if (DumbService.isDumb(project)) {
                 return
             }
+            val variableNameString = variableNameIn.text
+
+            if (JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(variableNameString, project))
+                return
+
+            if (JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(variableNameString, project))
+                return
+
+            if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(variableNameString, project))
+                return
 
             if (ObjJClassDeclarationsIndex.instance[variableName.text, variableName.project].isNotEmpty()) {
                 return
@@ -100,16 +109,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (ObjJCommentEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR, variableName.text)) {
-                return
-            }
-
-            val variableNameString = variableName.text
-
-            if (variableNameString in ObjJGlobalJSVariablesNames) {
-                return
-            }
-
-            if (variableNameString in globalJsClassNames) {
                 return
             }
 
@@ -174,6 +173,8 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         }
 
         private fun isDeclaredInSameDeclaration(variableName: ObjJVariableName, resolved:PsiElement) : Boolean {
+            if (variableName.isEquivalentTo(resolved))
+                return false
             val resolvedDeclaration = resolved.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
             val thisVariableDeclaration = variableName.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
             return resolvedDeclaration.isEquivalentTo(thisVariableDeclaration)
@@ -272,7 +273,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 }
             }
 
-            if (reference.parent is ObjJVariableDeclaration) {
+            if (reference.parent is ObjJVariableDeclaration && !isDeclaredInSameDeclaration(variableName, reference)) {
                 if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.varModifier != null ||
                         variableName.getParentOfType(ObjJInExpr::class.java)?.varModifier != null) {
                     return true

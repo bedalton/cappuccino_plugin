@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
@@ -48,7 +49,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val fileName = stream.readNameString() ?: ""
         val enclosingNamespace = stream.readNameString() ?: ""
         val propertyName = stream.readNameString() ?: "???"
-        val types = stream.readInferenceResult()
+        val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX).plus(propertyName), propertyName, types)
     }
 

@@ -50,10 +50,10 @@
 		INTERFACE =							'interface'
 		EXTENDS =							'extends'
 		CONST =								'constructor'
-		FUNCTION =							'function'
+		FUNCTION_KEYWORD =					'function'
 		VOID = 								'void'
 		NULL_TYPE =							'null'
-		MODULE =							'module'
+		MODULE_KEYWORD =					'module'
 		MAP =								'Map'
 		TYPE_MAP_KEYWORD = 					'typemap'
 		KEYOF = 							'keyof'
@@ -96,7 +96,7 @@ private definition
 	;
 
 module
-	::= MODULE namespacedModuleName '{' moduleElements? '}'
+	::= MODULE_KEYWORD namespacedModuleName '{' moduleElements? '}'
 	{
 		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -112,6 +112,7 @@ module
 			getAllSubModules
 			getEnclosingNamespace
 			getCollapsedNamespaceComponents
+			getNamespaceComponent
 		]
 	}
 	;
@@ -152,7 +153,7 @@ variableDeclaration
 	;
 
 functionDeclaration
-	::= FUNCTION function eos?
+	::= FUNCTION_KEYWORD <<enterMode "functionDeclaration">>function<<exitMode "functionDeclaration">>
 	{
 		pin = 2
 		extends = function
@@ -184,7 +185,7 @@ keyList
 	};
 
 anonymousFunction
-	::= '(' propertiesList? ')' '=>' functionReturnType
+	::= <<enterMode "useMapOf">>'(' propertiesList? ')' '=>' functionReturnType <<exitMode "useMapOf">>
 	{
 		pin = 1
 
@@ -222,7 +223,7 @@ classElement
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration"
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 		]
         stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
@@ -247,7 +248,7 @@ private interfaceBody
 	;
 
 interfaceBodyProperty
-	::= '{' interfaceProperties? '}'
+	::= interfaceBody
 	{
 		pin = 1
 	}
@@ -266,8 +267,8 @@ private interfaceProperties_recover
 
 private interfaceProperty
 	::= interfaceConstructor eos?
-	|	function eos?
-	|	property eos?
+	|	function
+	|	property
 	;
 
 
@@ -319,7 +320,7 @@ type
 	;
 
 keyOfType
-	::= <<useMapOf>> genericsKey KEYOF typeMapName
+	::= <<inMode "useMapOf">>(genericsKey KEYOF typeMapName)
 	{
 		pin=3
 	}
@@ -405,7 +406,7 @@ interfaceConstructor
 	;
 
 function
-	::= 'static'? functionName '(' propertiesList? ')' (':' functionReturnType)?
+	::= (<<notInMode "functionDeclaration">> 'static')? functionName <<enterMode "useMapOf">> '(' propertiesList? ')' (':' functionReturnType)?<<exitMode "useMapOf">> tailModifier
 	{
 		pin = 3
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -530,7 +531,7 @@ functionReturnType
 	;
 
 valueOfKeyType
-	::= <<useMapOf>> typeMapName '[' genericsKey ']'
+	::= <<inMode "useMapOf">>(typeMapName '[' genericsKey ']')
 	{
 		pin = 3
 	}
@@ -578,8 +579,10 @@ moduleName
 			getNamespaceComponents
 			getNamespacedName
 			getEnclosingNamespaceComponents
+			getEnclosingNamespace
 			getIndexInDirectNamespace
 			getIndexInNamespace
+			getFullyNamespacedName
 		]
 	}
 	;
@@ -603,6 +606,13 @@ stringLiteral
 	;
 
 private tailModifier
+	::= tailModifierPrime eos
+	|	eos tailModifierPrime
+	|	tailModifierPrime
+	|	eos
+	;
+
+private tailModifierPrime
     ::= AT_SILENT
     |   AT_QUIET
     ;

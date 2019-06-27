@@ -1,18 +1,13 @@
 package cappuccino.ide.intellij.plugin.formatting;
 
-import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector;
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets;
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes;
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings;
 import com.intellij.formatting.Alignment;
-import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.logging.Logger;
 
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.ObjJ_TERNARY_EXPR_PRIME;
 

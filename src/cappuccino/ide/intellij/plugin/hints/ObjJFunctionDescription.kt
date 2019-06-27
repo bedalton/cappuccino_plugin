@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
@@ -110,16 +110,6 @@ val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
             name = parameterName,
             type = parameterType,
             nullable = nullable)
-}
-
-
-val cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsFunction.description:ObjJFunctionDescription get() {
-    val descriptionOut = ObjJFunctionDescription(name ?: "?", returnType?.toString())
-    parameters.forEach {
-        descriptionOut.addParameter(it.description)
-    }
-    descriptionOut.description = comment
-    return descriptionOut
 }
 
 val JsTypeDefNamedProperty.description:ObjJFunctionParameterDescription get() {

@@ -156,7 +156,7 @@ object ObjJMethodPsiUtils {
             val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
-            InferenceResult(classes = returnTypes)
+            InferenceResult(types = returnTypes.toJsTypeList())
         }?.toClassList().orEmpty()
     }
 
@@ -187,7 +187,7 @@ object ObjJMethodPsiUtils {
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
         val simpleOut = selfExpressionTypes + superExpressionTypes
         if (simpleOut.isNotEmpty()) {
-            return InferenceResult(classes = simpleOut.toSet()).toClassList()
+            return InferenceResult(types = simpleOut.toJsTypeList()).toClassList()
         }
         var out = INFERRED_EMPTY_TYPE
         expressions.forEach {

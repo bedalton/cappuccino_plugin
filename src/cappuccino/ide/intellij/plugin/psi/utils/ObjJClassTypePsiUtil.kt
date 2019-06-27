@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
@@ -24,12 +24,11 @@ object ObjJClassTypePsiUtil {
         if (ObjJCommentEvaluatorUtil.isIgnored(className, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS))
             return true
         val project:Project = className.project
-        if (globalJsClassNames.contains(classNameString))
-            return true
         if (DumbService.isDumb(project))
             return null
         return ObjJClassDeclarationsIndex.instance.containsKey(classNameString, project) ||
-                ObjJTypeDefIndex.instance.containsKey(classNameString, project)
+                ObjJTypeDefIndex.instance.containsKey(classNameString, project) ||
+                JsTypeDefClassesByNamespaceIndex.instance.containsKey(classNameString, project)
     }
 
     /**
@@ -40,11 +39,10 @@ object ObjJClassTypePsiUtil {
         // Is primitive type, do not continue check
         if (classNameString in ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES || classNameString.contains("signed"))
             return true
-        if (globalJsClassNames.contains(classNameString))
-            return true
         if (DumbService.isDumb(project))
             return null
         return classNameString in ObjJClassDeclarationsIndex.instance.getAllKeys(project) ||
-                classNameString in ObjJTypeDefIndex.instance.getAllKeys(project)
+                classNameString in ObjJTypeDefIndex.instance.getAllKeys(project) ||
+                JsTypeDefClassesByNamespaceIndex.instance.containsKey(classNameString, project)
     }
 }

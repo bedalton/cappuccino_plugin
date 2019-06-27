@@ -1,15 +1,14 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces
 
-import cappuccino.ide.intellij.plugin.contributor.JsClassDefinition
-import cappuccino.ide.intellij.plugin.contributor.toJsFunctionType
-import cappuccino.ide.intellij.plugin.contributor.toNamedPropertiesList
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toNamedPropertiesList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 
 interface JsTypeDefClassDeclaration : JsTypeDefElement, JsTypeDefHasNamespace {
     val typeName: JsTypeDefTypeName?
     val extendsStatement: JsTypeDefExtendsStatement
-    val typeNameString: String
     val interfaceConstructorList: List<JsTypeDefInterfaceConstructor>
     val functionList: List<JsTypeDefFunction>
     val propertyList: List<JsTypeDefProperty>
@@ -30,8 +29,8 @@ fun JsTypeDefClassDeclaration.toJsClassDefinition() : JsClassDefinition {
             staticFunctions = functionList.filter {
                 it.isStatic
             }.map { it.toJsFunctionType() }.toSet(),
-            properties = this.propertyList.filter{it.staticKeyword == null}.toNamedPropertiesList().toSet().orEmpty(),
-            staticProperties = this.propertyList.filter{it.staticKeyword != null}.toNamedPropertiesList().toSet().orEmpty(),
+            properties = this.propertyList.filter{it.staticKeyword == null}.toNamedPropertiesList().toSet(),
+            staticProperties = this.propertyList.filter{it.staticKeyword != null}.toNamedPropertiesList().toSet(),
             isStruct = this is JsTypeDefInterfaceElement,
             enclosingNameSpaceComponents = enclosingNamespaceComponents
     )

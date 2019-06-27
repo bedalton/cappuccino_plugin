@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.parser
 
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
 import com.intellij.lang.*
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.project.Project
@@ -7,9 +9,7 @@ import com.intellij.psi.*
 import com.intellij.psi.tree.*
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.psi.tree.TokenSet.EMPTY
 
 class JsTypeDefParserDefinition : ParserDefinition {
@@ -23,7 +23,7 @@ class JsTypeDefParserDefinition : ParserDefinition {
     }
 
     override fun getCommentTokens(): TokenSet {
-        return COMMENTS
+        return ObjJTokenSets.COMMENTS
     }
 
     override fun getStringLiteralElements(): TokenSet {
@@ -35,7 +35,7 @@ class JsTypeDefParserDefinition : ParserDefinition {
     }
 
     override fun getFileNodeType(): IFileElementType {
-        return FILE
+        return JsTypeDefStubTypes.JS_FILE
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
@@ -47,7 +47,7 @@ class JsTypeDefParserDefinition : ParserDefinition {
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return ObjJTypes.Factory.createElement(node)
+        return JsTypeDefTypes.Factory.createElement(node)
     }
 
     companion object {

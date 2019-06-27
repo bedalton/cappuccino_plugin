@@ -2,15 +2,12 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 
 internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
@@ -21,7 +18,7 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
 
 // MUST BE FALSE
 // Causes infinite recursion
-private val CLASS_METHOD_BASED_RESOLVE = false
+//private val CLASS_METHOD_BASED_RESOLVE = false
 /*
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     //ProgressManager.checkCanceled()
@@ -109,7 +106,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
             val thisClasses = getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
             if (thisClasses.isNotEmpty()) {
                 InferenceResult(
-                        classes = thisClasses
+                        types = thisClasses.toJsTypeList()
                 )
             } else
                 null
@@ -130,7 +127,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         getReturnType
     else
         instanceVariableTypes
-    return InferenceResult(classes = out.toSet())
+    return InferenceResult(types = out.toJsTypeList())
 }
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
@@ -149,7 +146,7 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     if (!isValidClass)
         return null
     return InferenceResult(
-            classes = setOf(className)
+            types = setOf(className).toJsTypeList()
     )
 }
 

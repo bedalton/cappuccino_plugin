@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkDescriptor
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJObjectLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
@@ -9,10 +10,12 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
+import com.intellij.codeInsight.editorActions.TypedHandlerDelegate.Result
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -30,6 +33,57 @@ class ObjJTypedHandlerDelegate : TypedHandlerDelegate() {
             BlockCloseKeypressHandler,
             ClassKeypressHandler
     )
+
+    private val beforeKeyPressedHandler: List<BeforeKeyPressHandler> = listOf(
+            SlashPressedHandler
+    )
+
+    override fun beforeCharTyped(thisChar: Char, project: Project, editor: Editor, file: PsiFile, fileType: FileType): Result {
+        val caretPosition = editor.caretModel.offset
+        var tempOriginalElement = try {
+            file.findElementAt(caretPosition - 1)
+        } catch (_: Exception) {
+            null
+        }
+        if (tempOriginalElement?.tokenType() in ObjJTokenSets.WHITE_SPACE) {
+            tempOriginalElement = tempOriginalElement?.getPreviousNonEmptySibling(true)
+        }
+
+        if (tempOriginalElement == null) {
+            return Result.CONTINUE
+        }
+        val lastPrevChar = getLastPrevChar(tempOriginalElement, caretPosition)
+        // Check if anything should handle keypress and return if none do
+        // This ensures that there is not a lot of cpu wasted
+        // finding a compatible element when no one will handle it
+        val handlers = beforeKeyPressedHandler.filter {
+            thisChar in it.keysToHandle &&
+                    (lastPrevChar == null || it.prevCharRequired?.contains(lastPrevChar).orTrue())
+        }
+        if (handlers.isEmpty()) {
+            return Result.CONTINUE
+        }
+        val tempElement: ObjJCompositeElement = (if (tempOriginalElement is ObjJCompositeElement)
+            tempOriginalElement
+        else if (tempOriginalElement.parent is ObjJCompositeElement)
+            tempOriginalElement.parent as ObjJCompositeElement
+        else {
+            val prevSibling = tempOriginalElement.getPreviousNonEmptySibling(false)
+            if (prevSibling is ObjJCompositeElement)
+                prevSibling
+            else
+                prevSibling?.parent as? ObjJCompositeElement
+        }) ?: return Result.CONTINUE
+        val elementPointer: SmartPsiElementPointer<ObjJCompositeElement> = SmartPointerManager.createPointer(tempElement)
+        val originalElementPointer = SmartPointerManager.createPointer(tempOriginalElement)
+        for (handler in handlers) {
+            val element = elementPointer.element ?: return Result.DEFAULT
+            if (thisChar in handler.keysToHandle && handler.handle(element, originalElementPointer.element, project, editor, file) == Result.STOP) {
+                return Result.STOP
+            }
+        }
+        return Result.CONTINUE
+    }
 
     override fun charTyped(thisChar: Char, project: Project, editor: Editor, file: PsiFile): Result {
         val caretPosition = editor.caretModel.offset
@@ -142,4 +196,23 @@ private object ClassKeypressHandler : KeyPressHandler {
         return false
     }
 
+}
+
+
+private interface BeforeKeyPressHandler {
+    val keysToHandle: List<Char>
+    val prevCharRequired:List<Char>?
+    fun handle(element: ObjJCompositeElement, originalElement:PsiElement?, project: Project, editor: Editor, file: PsiFile): Result
+}
+
+private object SlashPressedHandler : BeforeKeyPressHandler {
+    override val keysToHandle: List<Char> = listOf('/')
+    override val prevCharRequired: List<Char>? = null
+
+    override fun handle(element: ObjJCompositeElement, originalElement: PsiElement?, project: Project, editor: Editor, file: PsiFile): Result {
+        if (!element.hasParentOfType(ObjJFrameworkDescriptor::class.java))
+            return Result.DEFAULT
+        EditorUtil.offsetCaret(editor, 1)
+        return Result.STOP
+    }
 }

@@ -7,7 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.jstypedef.structure.JsTypeDefStructureViewElement
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
@@ -20,7 +20,7 @@ import javax.swing.*
 
 class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, JsTypeDefLanguage.instance), JsTypeDefElement, JsTypeDefHasTreeStructureElement {
 
-    override val containerName get() = ObjJFileUtil.getFileNameSafe(this)
+    override val containerName get() = ObjJPsiFileUtil.getFileNameSafe(this)
 
     val interfaces: List<JsTypeDefInterfaceElement>
         get() = getChildrenOfType(JsTypeDefInterfaceElement::class.java)
@@ -81,7 +81,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
             PsiTreeUtil.getParentOfType(this, parentClass)
 
     override fun createTreeStructureElement(): JsTypeDefStructureViewElement {
-        val fileName = ObjJFileUtil.getFileNameSafe(this, "")
+        val fileName = ObjJPsiFileUtil.getFileNameSafe(this, "")
         return JsTypeDefStructureViewElement(this, PresentationData(fileName, "", ObjJIcons.DOCUMENT_ICON, null), fileName)
     }
 

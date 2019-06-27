@@ -84,11 +84,21 @@ interface JsTypeDefModuleNameStub : StubElement<JsTypeDefModuleNameImpl>, JsType
         get() = enclosingNamespaceComponents + moduleName
 }
 
-
-interface JsTypeDefInterfaceStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefNamespacedComponent {
+interface JsTypeDefClassDeclarationStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefNamespacedComponent {
     val fileName:String
     val className:String
     val superTypes:List<JsTypeDefClassName>
+    override val namespaceComponents:List<String>
+        get() = enclosingNamespaceComponents + className
+}
+
+
+interface JsTypeDefClassStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefClassDeclarationStub {
+    override val namespaceComponents:List<String>
+        get() = enclosingNamespaceComponents + className
+}
+
+interface JsTypeDefInterfaceStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefClassDeclarationStub {
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
 }

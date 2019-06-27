@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
@@ -14,7 +15,7 @@ interface JsProperty {
     val readonly: Boolean
     val comment: String?
     val default: String?
-    val callback: JsFunctionType?
+    val callback: JsTypeListFunctionType?
 }
 
 class CollapsedClassType(project:Project, typesList: InferenceResult) {
@@ -29,7 +30,7 @@ class CollapsedClassType(project:Project, typesList: InferenceResult) {
 
 }
 
-private fun List<JsTypeListType>.collapseAllSuperTypeNames(project:Project, captured:MutableSet<String> = mutableSetOf(), out:MutableSet<String> = mutableSetOf()) : Set<String> {
+private fun Iterable<JsTypeListType>.collapseAllSuperTypeNames(project:Project, captured:MutableSet<String> = mutableSetOf(), out:MutableSet<String> = mutableSetOf()) : Set<String> {
     this.filter { it is JsTypeListType.JsTypeListBasicType }.forEach {basicType ->
         val type = basicType.typeName
         if (type in captured)
@@ -42,7 +43,7 @@ private fun List<JsTypeListType>.collapseAllSuperTypeNames(project:Project, capt
     return out
 }
 
-fun List<JsTypeListType>.collapseToDefinitions(project:Project, captured:MutableSet<String> = mutableSetOf(), out:MutableSet<JsClassDefinition> = mutableSetOf()) : Set<JsClassDefinition> {
+fun Iterable<JsTypeListType>.collapseToDefinitions(project:Project, captured:MutableSet<String> = mutableSetOf(), out:MutableSet<JsClassDefinition> = mutableSetOf()) : Set<JsClassDefinition> {
     this.filter { it is JsTypeListType.JsTypeListBasicType }.forEach {basicType ->
         val type = basicType.typeName
         if (type in captured)

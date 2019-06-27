@@ -28,9 +28,9 @@ object ObjJPsiFileUtil {
      * might still be necessary though
      */
     @JvmOverloads
-    fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String? = null, includePath: Boolean = false): String? {
+    fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String? = null, includePath: Boolean = false): String {
         if (psiFile == null) {
-            return defaultValue
+            return defaultValue ?: ""
         }
 
         if (!includePath) {
@@ -41,7 +41,7 @@ object ObjJPsiFileUtil {
             psiFile.virtualFile.path
         }
         val fileName = psiFile.name
-        return if (fileName.isNotEmpty()) fileName else defaultValue
+        return if (fileName.isNotEmpty()) fileName else defaultValue ?: ""
     }
 
     /**

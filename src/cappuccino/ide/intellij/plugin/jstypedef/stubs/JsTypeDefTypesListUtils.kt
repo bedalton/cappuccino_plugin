@@ -3,12 +3,13 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 
 
-fun List<JsTypeDefType>.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
+fun Iterable<JsTypeDefType>.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
     val out = mutableSetOf<JsTypeListType>()
 
     for (type in this) {
@@ -51,14 +52,14 @@ fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
     return InferenceResult(types, nullable)
 }
 
-fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListType.JsTypeListFunctionType {
-    val parameters = this.propertiesList?.propertyList?.toTypeListTypes() ?: emptyList()
+fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
+    val parameters = this.propertiesList?.propertyList?.toTypeListTypes().orEmpty()
     val returnType = this.functionReturnType?.toTypeListType()
-    return JsTypeListType.JsTypeListFunctionType(parameters, returnType)
+    return JsTypeListFunctionType(parameters= parameters, returnType = returnType, isStatic = false)
 }
 
 fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
-    val types = genericTypeTypes?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
+    val types = genericTypeTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
     return JsTypeListType.JsTypeListArrayType(types, dimensions)
 }

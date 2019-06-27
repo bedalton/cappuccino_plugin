@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub
@@ -36,10 +37,18 @@ class JsTypeDefIndexService : StubIndexService() {
     }
 
     override fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
-        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
-        sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefInterfaceElement, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType)
+            sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType)
+        }
+    }
+
+    override fun indexClass(stub:JsTypeDefClassStub, sink:IndexSink) {
+        sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        for (superType in stub.superTypes) {
+            sink.occurrence<JsTypeDefClassDeclaration, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType)
         }
     }
 

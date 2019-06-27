@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
@@ -31,7 +32,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val parameters = function.propertiesList?.propertyList?.map { property ->
             property.toStubParameter()
         }?.toList() ?: emptyList()
-        val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptyList()
+        val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = !function.isStatic
@@ -78,7 +79,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 enclosingNamespace = enclosingNamespaece,
                 functionName = functionName,
                 parameters = parameters,
-                returnType = returnType,
+                returnType = returnType ?: INFERRED_VOID_TYPE,
                 global = global,
                 static = static || global
             )
