@@ -2,11 +2,13 @@
 
 package cappuccino.ide.intellij.plugin.psi.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.tree.TokenSet.create
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
 
 object ObjJTokenSets {
 
@@ -21,7 +23,7 @@ object ObjJTokenSets {
 
     val CLASS_DECLARATIONS = create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION)
 
-    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT, JsTypeDefTypes.JS_BLOCK_COMMENT, JsTypeDefTypes.JS_SINGLE_LINE_COMMENT)
+    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT, JS_BLOCK_COMMENT, JS_SINGLE_LINE_COMMENT)
 
     val STRING_LITERALS = create(ObjJ_SINGLE_QUOTE_STRING_LITERAL, ObjJ_DOUBLE_QUOTE_STRING_LITERAL)
 

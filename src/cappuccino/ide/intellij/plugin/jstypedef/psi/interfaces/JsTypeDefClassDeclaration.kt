@@ -4,9 +4,12 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toNamedPropertiesList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import com.intellij.psi.StubBasedPsiElement
+import com.intellij.psi.stubs.StubElement
 
-interface JsTypeDefClassDeclaration : JsTypeDefElement, JsTypeDefHasNamespace {
+interface JsTypeDefClassDeclaration<StubT:StubElement<*>> : JsTypeDefStubBasedElement<StubT>, JsTypeDefElement, JsTypeDefHasNamespace {
     val typeName: JsTypeDefTypeName?
     val extendsStatement: JsTypeDefExtendsStatement
     val interfaceConstructorList: List<JsTypeDefInterfaceConstructor>
@@ -16,7 +19,7 @@ interface JsTypeDefClassDeclaration : JsTypeDefElement, JsTypeDefHasNamespace {
     val className:String
 }
 
-fun JsTypeDefClassDeclaration.toJsClassDefinition() : JsClassDefinition {
+fun JsTypeDefClassDeclaration<*>.toJsClassDefinition() : JsClassDefinition {
     val extends = extendsStatement.typeList.toJsTypeDefTypeListTypes()
     return JsClassDefinition(
             className = className,

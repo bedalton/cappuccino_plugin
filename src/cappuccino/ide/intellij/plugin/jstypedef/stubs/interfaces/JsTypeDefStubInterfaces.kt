@@ -4,10 +4,11 @@ import cappuccino.ide.intellij.plugin.contributor.JsProperty
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefClassName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import com.intellij.psi.stubs.PsiFileStub
@@ -84,21 +85,21 @@ interface JsTypeDefModuleNameStub : StubElement<JsTypeDefModuleNameImpl>, JsType
         get() = enclosingNamespaceComponents + moduleName
 }
 
-interface JsTypeDefClassDeclarationStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefNamespacedComponent {
+interface JsTypeDefClassDeclarationStub<PsiT:JsTypeDefClassDeclaration<*>> : StubElement<PsiT>, JsTypeDefNamespacedComponent {
     val fileName:String
     val className:String
-    val superTypes:List<JsTypeDefClassName>
+    val superTypes:Set<JsTypeListType>
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
 }
 
 
-interface JsTypeDefClassStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefClassDeclarationStub {
+interface JsTypeDefClassStub : StubElement<JsTypeDefClassElementImpl>, JsTypeDefClassDeclarationStub<JsTypeDefClassElementImpl> {
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
 }
 
-interface JsTypeDefInterfaceStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefClassDeclarationStub {
+interface JsTypeDefInterfaceStub : StubElement<JsTypeDefInterfaceElementImpl>, JsTypeDefClassDeclarationStub<JsTypeDefInterfaceElementImpl> {
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
 }

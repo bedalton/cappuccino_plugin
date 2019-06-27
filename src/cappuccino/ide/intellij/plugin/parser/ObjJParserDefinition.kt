@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
 import com.intellij.psi.tree.TokenSet.EMPTY
+import com.intellij.psi.tree.TokenSet.create
 
 class ObjJParserDefinition : ParserDefinition {
 
@@ -51,6 +52,6 @@ class ObjJParserDefinition : ParserDefinition {
     }
 
     companion object {
-        val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
+        val WHITE_SPACES = create(TokenType.WHITE_SPACE)
     }
 }

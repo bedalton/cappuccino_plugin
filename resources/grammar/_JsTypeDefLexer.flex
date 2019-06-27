@@ -82,6 +82,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
   "var"                      { return JS_VAR; }
   "Array"                    { return JS_ARRAY; }
   "interface"                { return JS_INTERFACE; }
+  "class"					 { return JS_CLASS_KEYWORD; }
   "extends"                  { return JS_EXTENDS; }
   "const"                    { return JS_CONST; }
   "function"                 { return JS_FUNCTION_KEYWORD; }

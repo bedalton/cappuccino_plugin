@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.JsTypeDefStubVersion
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFileStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFileStub
 import com.intellij.psi.PsiFile
@@ -18,7 +19,7 @@ class JsTypeDefFileStubType internal constructor(): IStubFileElementType<JsTypeD
     }
 
     override fun getStubVersion(): Int {
-        return JsTypeDefIndexService.SOURCE_STUB_VERSION
+        return JsTypeDefStubVersion.VERSION
     }
 
     override fun getExternalId(): String {

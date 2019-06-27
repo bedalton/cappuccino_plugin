@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.parser
 
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
+import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
 import com.intellij.lang.*
@@ -7,15 +10,12 @@ import com.intellij.lexer.Lexer
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.tree.*
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import com.intellij.psi.tree.TokenSet.EMPTY
 
 class JsTypeDefParserDefinition : ParserDefinition {
 
     override fun createLexer(project: Project): Lexer {
-        return ObjJLexer()
+        return JsTypeDefLexer()
     }
 
     override fun getWhitespaceTokens(): TokenSet {
@@ -39,7 +39,7 @@ class JsTypeDefParserDefinition : ParserDefinition {
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return ObjJFile(viewProvider)
+        return JsTypeDefFile(viewProvider)
     }
 
     override fun spaceExistanceTypeBetweenTokens(left: ASTNode, right: ASTNode): ParserDefinition.SpaceRequirements {

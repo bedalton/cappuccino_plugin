@@ -9,7 +9,7 @@ class JsTypeDefTypeFactory {
         fun factory(name: String): IElementType {
             return when (name) {
                 "JS_FUNCTION" -> JS_FUNCTION
-                "JS_KEYS_LIST" -> JS_KEY_LIST
+                "JS_KEY_LIST" -> JS_KEY_LIST
                 "JS_MODULE" -> JS_MODULE
                 "JS_MODULE_NAME" -> JS_MODULE_NAME
                 "JS_PROPERTY" -> JS_PROPERTY

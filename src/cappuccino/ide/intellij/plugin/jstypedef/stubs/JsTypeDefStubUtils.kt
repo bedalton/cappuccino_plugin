@@ -10,7 +10,7 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
 
-private fun StubInputStream.readTypesList(): List<JsTypeListType> {
+fun StubInputStream.readTypesList(): List<JsTypeListType> {
     val types: MutableList<JsTypeListType> = mutableListOf()
     val numberOfTypes = readInt()
     for (i in 0 until numberOfTypes) {
@@ -103,7 +103,7 @@ private fun StubInputStream.readProperty(): JsTypeDefNamedProperty? {
     )
 }
 
-private fun StubOutputStream.writeTypeList(types: Set<JsTypeListType>) {
+fun StubOutputStream.writeTypeList(types: Set<JsTypeListType>) {
     writeInt(types.size)
     for (type in types) {
         writeType(type)
