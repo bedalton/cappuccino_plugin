@@ -72,7 +72,7 @@ fun JsTypeDefFunction.toJsFunctionType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
             comment = null, // @todo implement comment parsing
-            parameters = functionPropertiesList?.functionPropertyList?.toNamedPropertiesList() ?: emptyList(),
+            parameters = propertiesList?.properties?.toNamedPropertiesList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
@@ -81,7 +81,7 @@ fun JsTypeDefFunction.toJsFunctionType(): JsTypeListFunctionType {
 fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
-            parameters = functionPropertiesList?.functionPropertyList?.toNamedPropertiesList() ?: emptyList(),
+            parameters = propertiesList?.properties?.toNamedPropertiesList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }

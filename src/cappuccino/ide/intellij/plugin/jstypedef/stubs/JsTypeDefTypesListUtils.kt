@@ -50,7 +50,7 @@ fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
 }
 
 fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
-    val parameters = this.functionPropertiesList?.functionPropertyList?.toTypeListTypes().orEmpty()
+    val parameters = this.propertiesList?.properties?.toTypeListTypes().orEmpty()
     val returnType = this.functionReturnType?.toTypeListType()
     return JsTypeListFunctionType(parameters= parameters, returnType = returnType, isStatic = false)
 }

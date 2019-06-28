@@ -188,7 +188,9 @@ anonymousFunction
 	::= '(' functionPropertiesList? ')' '=>' functionReturnType /*<<exitMode "useMapOf">>*/
 	{
 		pin = 1
-
+		methods = [
+			propertiesList="functionPropertiesList"
+		]
 	}
 	;
 
@@ -420,7 +422,8 @@ function
 	        getNamespaceComponent
 	        isStatic
 	        getFunctionNameString
-	    ]
+			propertiesList="functionPropertiesList"
+		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
@@ -456,6 +459,9 @@ functionPropertiesList
 	::= functionProperty (',' functionProperty)
 	{
 		pin=2
+		methods = [
+			properties="functionProperty"
+		]
 	}
 	;
 
@@ -478,6 +484,9 @@ propertiesList
 		implements = [
 		    "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefAllowAnonymousFunctions"
 		    "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+		methods = [
+			properties="property"
 		]
 	}
 	;

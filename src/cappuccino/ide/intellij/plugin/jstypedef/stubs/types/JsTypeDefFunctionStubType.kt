@@ -29,7 +29,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val fileName = function.containingFile.name
         val enclosingNamespace = function.enclosingNamespace
         val functionName = function.functionName.text
-        val parameters = function.propertiesList?.propertyList?.map { property ->
+        val parameters = function.propertiesList?.properties?.map { property ->
             property.toStubParameter()
         }?.toList() ?: emptyList()
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
