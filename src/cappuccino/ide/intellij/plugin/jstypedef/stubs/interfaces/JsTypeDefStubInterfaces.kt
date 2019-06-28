@@ -114,7 +114,7 @@ val JsTypeDefNamespacedComponent.fullyNamespacedName : String
     get() = namespaceComponents.joinToString(".")
 
 
-interface JsTypeDefTypeMapStub : StubElement<JsTypeDefTypeMapImpl> {
+interface JsTypeDefTypeMapStub : StubElement<JsTypeDefTypeMapElementImpl> {
     val fileName:String
     val mapName:String
     val values:List<JsTypeDefTypeMapEntry>

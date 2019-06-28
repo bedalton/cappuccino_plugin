@@ -91,8 +91,9 @@ private definition
 	|	classElement
 	|	variableDeclaration
 	|	functionDeclaration
-	|	typeMap
-	|	keyList eos?
+	|	typeMapElement
+	|	type
+	|	keyList eos
 	;
 
 module
@@ -129,7 +130,7 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= READONLY? VAR <<enterMode "variableDeclaration">> property <<exitMode "variableDeclaration">> eos?
+	::= READONLY? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos
 	{
 		pin = 2
 		implements = [
@@ -153,7 +154,7 @@ variableDeclaration
 	;
 
 functionDeclaration
-	::= FUNCTION_KEYWORD <<enterMode "functionDeclaration">>function<<exitMode "functionDeclaration">>
+	::= FUNCTION_KEYWORD function
 	{
 		pin = 1
 		implements = [
@@ -184,9 +185,9 @@ keyList
 	};
 
 anonymousFunction
-	::= <<enterMode "useMapOf">>'(' propertiesList? ')' '=>' functionReturnType <<exitMode "useMapOf">>
+	::= '(' functionPropertiesList? ')' '=>' functionReturnType /*<<exitMode "useMapOf">>*/
 	{
-		pin = 2
+		pin = 1
 
 	}
 	;
@@ -263,9 +264,9 @@ private interfaceProperties_recover
 	;
 
 private interfaceProperty
-	::= interfaceConstructor eos?
-	|	function
-	|	property
+	::= property eos
+	|	interfaceConstructor eos
+	|	function eos
 	;
 
 
@@ -298,18 +299,13 @@ private types
 	;
 
 type
-	::= keyOfType
-	|	valueOfKeyType
-	|	arrayType
+	::= arrayType
 	|	mapType
 	| 	typeName
-	|	'null'
 	|  	anonymousFunction
-	|	'void'
+	|	'null'
 	{
 		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasVoid"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 		]
@@ -317,9 +313,9 @@ type
 	;
 
 keyOfType
-	::= <<inMode "useMapOf">> genericsKey KEYOF typeMapName
+	::= genericsKey KEYOF typeMapName
 	{
-		pin=3
+		pin=2
 	}
 	;
 
@@ -334,7 +330,7 @@ keyTypes ::= types
 
 valueTypes ::= types
 
-typeMap
+typeMapElement
 	::= TYPE_MAP_KEYWORD typeMapName '{' typeMapBody? '}'
 	{
 		pin = 1
@@ -354,7 +350,7 @@ typeMap
 	;
 
 private typeMapBody
-	::= typeMapKeyValuePair+
+	::= keyValuePair+
 	{
 		recoverWhile = typeMapBody_recover
 	}
@@ -364,8 +360,8 @@ private typeMapBody_recover
 	::= !("}")
 	;
 
-typeMapKeyValuePair
-	::= stringLiteral ':' types eos?
+keyValuePair
+	::= stringLiteral ':' types eos
 	{
 	    pin = 2
 		methods = [
@@ -411,7 +407,7 @@ interfaceConstructor
 	;
 
 function
-	::= (<<notInMode "functionDeclaration">> 'static')? functionName <<enterMode "useMapOf">> '(' propertiesList? ')' (':' functionReturnType)? tailModifier? <<exitMode "useMapOf">>
+	::= completionModifier? 'static'? functionName '(' functionPropertiesList? ')' (':' functionReturnType)?
 	{
 		pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -430,12 +426,7 @@ function
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
 	  	]
 	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub"
-	  	recoverWhile = function_recover
 	}
-	;
-
-private function_recover
-	::= !(eos)
 	;
 
 functionName
@@ -461,6 +452,24 @@ functionName
 	}
 	;
 
+functionPropertiesList
+	::= functionProperty (',' functionProperty)
+	{
+		pin=2
+	}
+	;
+
+functionProperty
+	::= propertyName ':' (keyOfType|valueOfKeyType|types)
+	{
+		pin=2
+		extends = property
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty"
+		]
+	}
+	;
+
 propertiesList
 	::= property (',' property)*
 	{
@@ -478,9 +487,9 @@ private propertiesList_recover
 	;
 
 property
-	::= readonlyStatic?  propertyName ':' (types|interfaceBodyProperty) tailModifier?
+	::= completionModifier? readonlyStatic?  propertyName ':' (types|interfaceBodyProperty)
 	{
-	    pin = 3
+	    pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	    methods = [
 	        isNullable
@@ -525,7 +534,8 @@ propertyName
 	;
 
 functionReturnType
-	::= types
+	::= valueOfKeyType
+	|	types
 	|	VOID
 	{
 		implements = [
@@ -538,7 +548,7 @@ functionReturnType
 	;
 
 valueOfKeyType
-	::= <<inMode "useMapOf">> typeMapName '[' genericsKey ']'
+	::= typeMapName '[' genericsKey ']'
 	{
 		pin = 3
 	}
@@ -612,14 +622,7 @@ stringLiteral
 	}
 	;
 
-private tailModifier
-	::= tailModifierPrime eos
-	|	eos tailModifierPrime
-	|	tailModifierPrime
-	|	eos
-	;
-
-private tailModifierPrime
+private completionModifier
     ::= AT_SILENT
     |   AT_QUIET
     ;
@@ -631,7 +634,7 @@ integer
 keyName ::= ID ;
 
 private eos
-	::= <<lineTerminatorAhead>>
-	|	';'
-	|	LINE_TERMINATOR
+	::= LINE_TERMINATOR ';'?
+	|	<<lineTerminatorAhead>> ';'?
+	| 	';'
 	;

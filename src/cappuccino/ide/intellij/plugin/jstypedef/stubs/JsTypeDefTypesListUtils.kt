@@ -26,13 +26,9 @@ fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
         if (asMapType != null)
             out.add(asMapType)
 
-        val asKeyOfType = type.keyOfType?.toTypeListType()
-        if (asKeyOfType != null)
-            out.add(asKeyOfType)
-
-        val asValueOfType = type.valueOfKeyType?.toTypeListType()
-        if (asValueOfType != null)
-            out.add(asValueOfType)
+        val asBasicType = type.typeName?.toTypeListType()
+        if (asBasicType != null)
+            out.add(asBasicType)
     }
     return out
 }
@@ -54,7 +50,7 @@ fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
 }
 
 fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
-    val parameters = this.propertiesList?.propertyList?.toTypeListTypes().orEmpty()
+    val parameters = this.functionPropertiesList?.functionPropertyList?.toTypeListTypes().orEmpty()
     val returnType = this.functionReturnType?.toTypeListType()
     return JsTypeListFunctionType(parameters= parameters, returnType = returnType, isStatic = false)
 }
@@ -78,7 +74,11 @@ fun JsTypeDefKeyOfType.toTypeListType() : JsTypeListType.JsTypeListKeyOfType {
 }
 
 fun JsTypeDefValueOfKeyType.toTypeListType() : JsTypeListType.JsTypeListValueOfKeyType {
-    val genericKey = this.genericsKey?.text ?: "???"
+    val genericKey = this.genericsKey.text ?: "???"
     val mapName = this.typeMapName.text
     return JsTypeListType.JsTypeListValueOfKeyType(genericKey, mapName)
+}
+
+fun JsTypeDefTypeName.toTypeListType() : JsTypeListType.JsTypeListBasicType {
+    return JsTypeListType.JsTypeListBasicType(this.text)
 }

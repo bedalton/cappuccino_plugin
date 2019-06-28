@@ -7,9 +7,7 @@ import cappuccino.ide.intellij.plugin.inference.plus
 import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceBodyProperty
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
@@ -74,7 +72,7 @@ fun JsTypeDefFunction.toJsFunctionType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
             comment = null, // @todo implement comment parsing
-            parameters = propertiesList?.propertyList?.toNamedPropertiesList() ?: emptyList(),
+            parameters = functionPropertiesList?.functionPropertyList?.toNamedPropertiesList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
@@ -83,7 +81,7 @@ fun JsTypeDefFunction.toJsFunctionType(): JsTypeListFunctionType {
 fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
-            parameters = propertiesList?.propertyList?.toNamedPropertiesList() ?: emptyList(),
+            parameters = functionPropertiesList?.functionPropertyList?.toNamedPropertiesList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
@@ -94,11 +92,20 @@ fun List<JsTypeDefProperty>.toNamedPropertiesList(): List<JsTypeDefNamedProperty
     }
 }
 
+
 fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
-    var typeList = typeList.toJsTypeDefTypeListTypes()
+    val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
     val interfaceBodyAsType = interfaceBodyProperty?.toJsTypeListType()
     if (interfaceBodyAsType != null)
-        typeList = typeList + interfaceBodyAsType
+        typeList.add(interfaceBodyAsType)
+    if (this is JsTypeDefFunctionProperty) {
+        val keyOfType = this.keyOfType?.toTypeListType()
+        if (keyOfType != null)
+            typeList.add(keyOfType)
+        val valueOfType = this.valueOfKeyType?.toTypeListType()
+        if (valueOfType != null)
+            typeList.add(valueOfType)
+    }
     return JsTypeDefNamedProperty(
             name = propertyNameString,
             comment = docComment?.commentText,

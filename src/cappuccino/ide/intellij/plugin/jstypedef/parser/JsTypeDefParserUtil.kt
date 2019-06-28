@@ -97,6 +97,8 @@ class JsTypeDefParserUtil : GeneratedParserUtilBase() {
             var i = 0
             var ahead = builder_.lookAhead(i)
             var hadLineTerminator = false
+            if (eol(builder_, level_))
+                return true
             while (ahead === com.intellij.psi.TokenType.WHITE_SPACE || ahead === JS_LINE_TERMINATOR) {
                 if (ahead === JS_LINE_TERMINATOR) {
                     hadLineTerminator = true

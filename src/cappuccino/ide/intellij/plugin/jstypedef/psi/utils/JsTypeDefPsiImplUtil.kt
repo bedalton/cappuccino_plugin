@@ -150,6 +150,10 @@ object JsTypeDefPsiImplUtil {
             = element.stub?.functionName ?: element.functionName.text
 
     @JvmStatic
+    fun getNamespaceComponent(element:JsTypeDefFunctionDeclaration) : String
+            = element.function?.namespaceComponent ?: "???"
+
+    @JvmStatic
     fun getEnclosingNamespace(element:JsTypeDefFunctionName) : String
             = (element.parent as JsTypeDefFunction).enclosingNamespace
 
@@ -407,7 +411,7 @@ object JsTypeDefPsiImplUtil {
     // ========== TypeMap =========== //
     // ============================== //
     @JvmStatic
-    fun getMapName(typeMap:JsTypeDefTypeMap) : String? {
+    fun getMapName(typeMap:JsTypeDefTypeMapElement) : String? {
         val stub = typeMap.stub
         if (stub != null)
             return stub.mapName
@@ -415,40 +419,40 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getKeys(typeMap:JsTypeDefTypeMap) : List<String> {
+    fun getKeys(typeMap:JsTypeDefTypeMapElement) : List<String> {
         val stub = typeMap.stub
         if (stub != null)
             return stub.values.map { it.key }
-        return typeMap.keyValuePairs.map { it.stringLiteral.content }
+        return typeMap.keyValuePairList.map { it.stringLiteral.content }
     }
 
     @JvmStatic
-    fun getTypesForKey(typeMap: JsTypeDefTypeMap, key:String) : InferenceResult? {
+    fun getTypesForKey(typeMap: JsTypeDefTypeMapElement, key:String) : InferenceResult? {
         val stub = typeMap.stub
         if (stub != null) {
             return stub.getTypesForKey(key)
         }
-        return typeMap.keyValuePairs.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
+        return typeMap.keyValuePairList.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
     }
 
     @JvmStatic
-    fun getKeyValuePairs(typeMap: JsTypeDefTypeMap) : List<JsTypeDefTypeMapKeyValuePair>
-            = typeMap.typeMapKeyValuePairList
+    fun getKeyValuePairs(typeMap: JsTypeDefTypeMapElement) : List<JsTypeDefKeyValuePair>
+            = typeMap.keyValuePairList
 
     @JvmStatic
-    fun getKey(keyValuePair: JsTypeDefTypeMapKeyValuePair) : String {
+    fun getKey(keyValuePair: JsTypeDefKeyValuePair) : String {
         return keyValuePair.stringLiteral.content
     }
 
     @JvmStatic
-    fun getTypesList(keyValuePair: JsTypeDefTypeMapKeyValuePair) : InferenceResult {
+    fun getTypesList(keyValuePair: JsTypeDefKeyValuePair) : InferenceResult {
         val nullable = isNullable(keyValuePair)
         val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
         return InferenceResult(types = types, nullable = nullable)
     }
 
     @JvmStatic
-    fun isNullable(keyValuePair: JsTypeDefTypeMapKeyValuePair) : Boolean {
+    fun isNullable(keyValuePair: JsTypeDefKeyValuePair) : Boolean {
         return keyValuePair.typeList.any { it.nullType != null }
     }
 
@@ -566,5 +570,3 @@ object JsTypeDefPsiImplUtil {
 val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()
-
-typealias JsTypeDefClassName = String
