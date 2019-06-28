@@ -35,10 +35,9 @@ open class JsTypeDefElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), JsT
             return containingFile?.name ?: "???"
         }
 
-    override val containingObjJFile: JsTypeDefFile?
+    override val containingTypeDefFile: JsTypeDefFile?
         get() {
-            val file = containingFile
-            return file as? JsTypeDefFile
+            return containingFile as? JsTypeDefFile
         }
 
     override fun toString(): String {

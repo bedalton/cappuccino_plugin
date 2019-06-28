@@ -7,7 +7,6 @@ import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.ReflectionUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import org.jetbrains.annotations.NonNls
 
 import java.lang.reflect.Constructor

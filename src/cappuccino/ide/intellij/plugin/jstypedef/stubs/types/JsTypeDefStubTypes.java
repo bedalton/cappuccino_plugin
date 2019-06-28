@@ -1,10 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types;
 
 public interface JsTypeDefStubTypes {
+    JsTypeDefClassStubType JS_CLASS = new JsTypeDefClassStubType("JS_CLASS_ELEMENT");
     JsTypeDefFileStubType JS_FILE = new JsTypeDefFileStubType();
     JsTypeDefFunctionStubType JS_FUNCTION = new JsTypeDefFunctionStubType("JS_FUNCTION");
+    JsTypeDefInterfaceStubType JS_INTERFACE = new JsTypeDefInterfaceStubType("JS_INTERFACE_ELEMENT");
     JsTypeDefKeysListStubType JS_KEY_LIST = new JsTypeDefKeysListStubType("JS_KEY_LIST");
-    JsTypeDefInterfaceStubType JS_INTERFACE = JsTypeDefInterfaceStubType()
     JsTypeDefModuleStubType JS_MODULE = new JsTypeDefModuleStubType("JS_MODULE");
     JsTypeDefModuleNameStubType JS_MODULE_NAME = new JsTypeDefModuleNameStubType("JS_MODULE_NAME");
     JsTypeDefPropertyStubType JS_PROPERTY = new JsTypeDefPropertyStubType("JS_PROPERTY");

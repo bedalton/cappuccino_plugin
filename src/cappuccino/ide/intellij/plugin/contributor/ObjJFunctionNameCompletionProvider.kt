@@ -32,8 +32,8 @@ object ObjJFunctionNameCompletionProvider {
         addIndexBasedCompletions(resultSet, element)
 
         if (element.node.getPreviousNonEmptyNode(true)?.text == "new") {
-            JsTypeDefClassesByNamespaceIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter{
-                it is JsTypeDefClassElement
+            JsTypeDefClassesByNamespaceIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).mapNotNull{
+                (it as? JsTypeDefClassElement)?.className
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }

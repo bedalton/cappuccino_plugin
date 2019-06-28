@@ -226,8 +226,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (shouldAddJsClassNames(element)) {
-            JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).filter {
-                it is JsTypeDefClassElement
+            JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).mapNotNull{
+                (it as? JsTypeDefClassElement)?.className
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
             }

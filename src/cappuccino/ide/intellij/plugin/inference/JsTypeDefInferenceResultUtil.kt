@@ -7,7 +7,7 @@ fun PropertiesMap.toJsTypeDefInterfaceBody() : JsTypeListClass {
     val functionProperties = mutableListOf<JsTypeListFunctionType>()
     val namedProperties = mutableListOf<JsTypeDefNamedProperty>()
     forEach {(key, type) ->
-        val function = type.functionTypes?.getOrNull(0)
+        val function = type.functionTypes.getOrNull(0)
         if (function != null) {
             val typeDefFunction = JsTypeListFunctionType(
                     name = key,

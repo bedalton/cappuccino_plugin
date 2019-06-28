@@ -4,6 +4,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefClassStubImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefInterfaceStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub
@@ -23,7 +25,7 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
         val fileName = declaration.containingFile.name
         val namespaceComponents = declaration.namespaceComponents.toMutableList()
         val className = namespaceComponents.removeAt(namespaceComponents.lastIndex)
-        val superClasses = declaration.extendsStatement.typeList.toJsTypeDefTypeListTypes()
+        val superClasses = declaration.extendsStatement?.typeList.toJsTypeDefTypeListTypes()
         return createStub(parent, fileName, namespaceComponents, className, superClasses)
     }
 
@@ -64,7 +66,7 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
 }
 
 
-class JsTypeDefInterfaceStubType:JsTypeDefClassDeclarationStubType<JsTypeDefInterfaceElementImpl, JsTypeDefInterfaceStub>("JS_INTERFACE_ELEMENT", JsTypeDefInterfaceElementImpl::class.java) {
+class JsTypeDefInterfaceStubType(debugName:String):JsTypeDefClassDeclarationStubType<JsTypeDefInterfaceElementImpl, JsTypeDefInterfaceStub>(debugName, JsTypeDefInterfaceElementImpl::class.java) {
     override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>): JsTypeDefInterfaceStub {
         return JsTypeDefInterfaceStubImpl(parent, fileName, namespaceComponents, className, superClasses)
     }
@@ -74,7 +76,7 @@ class JsTypeDefInterfaceStubType:JsTypeDefClassDeclarationStubType<JsTypeDefInte
     }
 }
 
-class JsTypeDefClassStubType:JsTypeDefClassDeclarationStubType<JsTypeDefClassElementImpl, JsTypeDefClassStub>("JS_INTERFACE_ELEMENT", JsTypeDefClassElementImpl::class.java) {
+class JsTypeDefClassStubType(debugName: String):JsTypeDefClassDeclarationStubType<JsTypeDefClassElementImpl, JsTypeDefClassStub>(debugName, JsTypeDefClassElementImpl::class.java) {
     override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>): JsTypeDefClassStub {
         return JsTypeDefClassStubImpl(parent, fileName, namespaceComponents, className, superClasses)
     }

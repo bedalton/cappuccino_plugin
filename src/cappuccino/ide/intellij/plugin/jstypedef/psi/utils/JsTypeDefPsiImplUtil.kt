@@ -125,6 +125,10 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getEnclosingNamespaceComponents(elementIn:JsTypeDefFunctionDeclaration) : List<String>
+        = elementIn.function?.enclosingNamespaceComponents.orEmpty()
+
+    @JvmStatic
     fun getEnclosingNamespaceComponents(elementIn:JsTypeDefFunction) : List<String> {
         val stub = elementIn.stub
         if (stub != null)
@@ -136,6 +140,10 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getNamespaceComponents(element:JsTypeDefFunction) : List<String>
             = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.functionName.text)
+
+    @JvmStatic
+    fun getNamespaceComponents(element:JsTypeDefFunctionDeclaration) : List<String>
+            = element.function?.namespaceComponents.orEmpty()
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefFunction) : String
@@ -237,8 +245,8 @@ object JsTypeDefPsiImplUtil {
             return stub.namespaceComponents
         val temp = mutableListOf<String>()
         var currentModule:JsTypeDefModule? = module
-        while (currentModule != null) {
-            temp.add(0, currentModule.namespacedModuleName.text)
+        while (currentModule?.namespacedModuleName != null) {
+            temp.add(0, currentModule.namespacedModuleName!!.text)
             currentModule = currentModule.getParentOfType(JsTypeDefModule::class.java)
         }
         return temp.joinToString(".").split(NAMESPACE_SPLITTER_REGEX)
@@ -246,7 +254,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefModule) : String
-            = element.stub?.moduleName ?: element.namespacedModuleName.moduleName.text
+            = element.stub?.moduleName ?: element.namespacedModuleName?.moduleName?.text ?: ""
 
 
     @JvmStatic
@@ -264,8 +272,9 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getCollapsedNamespaceComponents(module:JsTypeDefModule) : List<JsTypeDefModuleName> {
-        val out = module.namespacedModuleName.namespace.moduleNameList.toMutableList()
-        out.add(module.namespacedModuleName.moduleName)
+        val moduleName = module.namespacedModuleName ?: return emptyList()
+        val out = moduleName.namespace.moduleNameList.toMutableList()
+        out.add(moduleName.moduleName)
         return out
     }
 

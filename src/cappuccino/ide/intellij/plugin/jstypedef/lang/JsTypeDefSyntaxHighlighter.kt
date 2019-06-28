@@ -1,11 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.lang
 
+import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
-import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
@@ -13,7 +13,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributes
 class JsTypeDefSyntaxHighlighter : SyntaxHighlighterBase() {
 
     override fun getHighlightingLexer(): Lexer {
-        return ObjJLexer()
+        return JsTypeDefLexer()
     }
 
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
@@ -52,19 +52,19 @@ class JsTypeDefSyntaxHighlighter : SyntaxHighlighterBase() {
 
     companion object {
         private val EMPTY_KEYS:Array<TextAttributesKey> = arrayOf()
-        val ID:TextAttributesKey = createTextAttributesKey("ObjJ_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
-        val KEYWORD:TextAttributesKey = createTextAttributesKey("ObjJ_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-        val STRING:TextAttributesKey = createTextAttributesKey("ObjJ_STRING", DefaultLanguageHighlighterColors.STRING)
-        val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("ObjJ_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
-        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("ObjJ_SECONDARY_LITERAL", DefaultLanguageHighlighterColors.CONSTANT)
-        val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("ObjJ_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
-        val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-        val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
-        val GLOBAL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_GLOBAL_VARIABLE", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE)
-        val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
-        val GLOBAL_FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("ObjJ_GLOBAL_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
-        val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("ObjJ_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val ID:TextAttributesKey = createTextAttributesKey("JsTypeDef_ID", DefaultLanguageHighlighterColors.IDENTIFIER)
+        val KEYWORD:TextAttributesKey = createTextAttributesKey("JsTypeDef_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
+        val STRING:TextAttributesKey = createTextAttributesKey("JsTypeDef_STRING", DefaultLanguageHighlighterColors.STRING)
+        val LINE_COMMENT:TextAttributesKey = createTextAttributesKey("JsTypeDef_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+        val BLOCK_COMMENT:TextAttributesKey = createTextAttributesKey("JsTypeDef_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT)
+        val SECONDARY_LITERAL:TextAttributesKey = createTextAttributesKey("JsTypeDef_SECONDARY_LITERAL", DefaultLanguageHighlighterColors.CONSTANT)
+        val VARIABLE_TYPE:TextAttributesKey = createTextAttributesKey("JsTypeDef_VARIABLE_TYPE", DefaultLanguageHighlighterColors.KEYWORD)
+        val INSTANCE_VARIABLE:TextAttributesKey = createTextAttributesKey("JsTypeDef_INSTANCE_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+        val PARAMETER_VARIABLE:TextAttributesKey = createTextAttributesKey("JsTypeDef_PARAMETER_VARIABLE", DefaultLanguageHighlighterColors.PARAMETER)
+        val GLOBAL_VARIABLE:TextAttributesKey = createTextAttributesKey("JsTypeDef_GLOBAL_VARIABLE", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE)
+        val FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("JsTypeDef_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val GLOBAL_FUNCTION_NAME:TextAttributesKey = createTextAttributesKey("JsTypeDef_GLOBAL_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val FILE_LEVEL_VARIABLE:TextAttributesKey = createTextAttributesKey("JsTypeDef_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
 
     }
 }

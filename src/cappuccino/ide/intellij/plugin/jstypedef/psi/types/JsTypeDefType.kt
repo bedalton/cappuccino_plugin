@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.types
 
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
 import com.intellij.psi.tree.IElementType
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 
-class JsTypeDefType(debug: String) : IElementType(debug, ObjJLanguage.instance)
+class JsTypeDefType(debug: String) : IElementType(debug, JsTypeDefLanguage.instance)

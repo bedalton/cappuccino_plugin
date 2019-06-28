@@ -13,7 +13,7 @@
 	generateTokenAccessors=true
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
 	consumeTokenMethod("interfaceBody")="consumeTokenFast"
-	elementTypeFactory("function|variableDeclaration|property|module|moduleName|typeMap|keyList|interfaceElement|classElement")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
+	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeMap|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
 
 	name("eos") = "semi-colon"
 	name("stringLiteral") = "String"
@@ -98,7 +98,7 @@ private definition
 module
 	::= MODULE_KEYWORD namespacedModuleName '{' moduleElements? '}'
 	{
-		pin = 2
+		pin = 1
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -131,7 +131,7 @@ private moduleElements_recover
 variableDeclaration
 	::= READONLY? VAR <<enterMode "variableDeclaration">> property <<exitMode "variableDeclaration">> eos?
 	{
-		pin = 3
+		pin = 2
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
@@ -155,8 +155,7 @@ variableDeclaration
 functionDeclaration
 	::= FUNCTION_KEYWORD <<enterMode "functionDeclaration">>function<<exitMode "functionDeclaration">>
 	{
-		pin = 2
-		extends = function
+		pin = 1
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
@@ -187,7 +186,7 @@ keyList
 anonymousFunction
 	::= <<enterMode "useMapOf">>'(' propertiesList? ')' '=>' functionReturnType <<exitMode "useMapOf">>
 	{
-		pin = 1
+		pin = 2
 
 	}
 	;
@@ -318,7 +317,7 @@ type
 	;
 
 keyOfType
-	::= <<inMode "useMapOf">>(genericsKey KEYOF typeMapName)
+	::= <<inMode "useMapOf">> genericsKey KEYOF typeMapName
 	{
 		pin=3
 	}
@@ -326,6 +325,9 @@ keyOfType
 
 mapType
 	::= MAP '<' keyTypes ',' valueTypes '>'
+	{
+	    pin=1
+	}
 	;
 
 keyTypes ::= types
@@ -365,6 +367,7 @@ private typeMapBody_recover
 typeMapKeyValuePair
 	::= stringLiteral ':' types eos?
 	{
+	    pin = 2
 		methods = [
 			getKey
 			getTypesList
@@ -394,19 +397,23 @@ arrayType
 
 arrayDimensions
 	::= '[' integer ']'
+	{
+	    pin=1
+	}
 	;
 
 interfaceConstructor
 	::= CONST '(' propertiesList? ')'
 	{
+	    pin=1
 		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInInterface"
 	}
 	;
 
 function
-	::= (<<notInMode "functionDeclaration">> 'static')? functionName <<enterMode "useMapOf">> '(' propertiesList? ')' (':' functionReturnType)?<<exitMode "useMapOf">> tailModifier
+	::= (<<notInMode "functionDeclaration">> 'static')? functionName <<enterMode "useMapOf">> '(' propertiesList? ')' (':' functionReturnType)? tailModifier? <<exitMode "useMapOf">>
 	{
-		pin = 3
+		pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	    methods = [
 	        isNullableReturnType
@@ -457,6 +464,7 @@ functionName
 propertiesList
 	::= property (',' property)*
 	{
+	    pin=2
 		recoverWhile = propertiesList_recover
 		implements = [
 		    "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefAllowAnonymousFunctions"
@@ -470,8 +478,9 @@ private propertiesList_recover
 	;
 
 property
-	::= (<<notInMode "variableDeclaration">>readonlyStatic)?  propertyName ':' (types|interfaceBodyProperty) tailModifier?
+	::= readonlyStatic?  propertyName ':' (types|interfaceBodyProperty) tailModifier?
 	{
+	    pin = 3
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	    methods = [
 	        isNullable
@@ -529,7 +538,7 @@ functionReturnType
 	;
 
 valueOfKeyType
-	::= <<inMode "useMapOf">>(typeMapName '[' genericsKey ']')
+	::= <<inMode "useMapOf">> typeMapName '[' genericsKey ']'
 	{
 		pin = 3
 	}

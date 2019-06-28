@@ -11,7 +11,7 @@ import com.intellij.psi.stubs.StubElement
 
 interface JsTypeDefClassDeclaration<StubT:StubElement<*>> : JsTypeDefStubBasedElement<StubT>, JsTypeDefElement, JsTypeDefHasNamespace {
     val typeName: JsTypeDefTypeName?
-    val extendsStatement: JsTypeDefExtendsStatement
+    val extendsStatement: JsTypeDefExtendsStatement?
     val interfaceConstructorList: List<JsTypeDefInterfaceConstructor>
     val functionList: List<JsTypeDefFunction>
     val propertyList: List<JsTypeDefProperty>
@@ -20,7 +20,7 @@ interface JsTypeDefClassDeclaration<StubT:StubElement<*>> : JsTypeDefStubBasedEl
 }
 
 fun JsTypeDefClassDeclaration<*>.toJsClassDefinition() : JsClassDefinition {
-    val extends = extendsStatement.typeList.toJsTypeDefTypeListTypes()
+    val extends = extendsStatement?.typeList.toJsTypeDefTypeListTypes()
     return JsClassDefinition(
             className = className,
             extends = extends,

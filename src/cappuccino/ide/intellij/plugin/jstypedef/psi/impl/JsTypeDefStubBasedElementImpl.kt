@@ -43,10 +43,10 @@ open class JsTypeDefStubBasedElementImpl<StubT : StubElement<out PsiElement>> : 
             if (module != null) {
                 return module.namespacedName
             }
-            return containingFile?.name ?: "???"
+            return containingFile.name
         }
 
-    override val containingObjJFile: JsTypeDefFile
+    override val containingTypeDefFile: JsTypeDefFile
         get() {
             val file = containingFile
             assert(file is JsTypeDefFile) { "JsTypeDefElement is not inside a JsTypeDefFile: " + file + " " + if (file.isValid) file.text else "<invalid>" }

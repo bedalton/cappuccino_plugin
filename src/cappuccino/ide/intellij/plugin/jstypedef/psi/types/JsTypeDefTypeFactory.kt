@@ -8,7 +8,9 @@ class JsTypeDefTypeFactory {
         @JvmStatic
         fun factory(name: String): IElementType {
             return when (name) {
+                "JS_CLASS_ELEMENT" -> JS_CLASS
                 "JS_FUNCTION" -> JS_FUNCTION
+                "JS_INTERFACE_ELEMENT" -> JS_INTERFACE
                 "JS_KEY_LIST" -> JS_KEY_LIST
                 "JS_MODULE" -> JS_MODULE
                 "JS_MODULE_NAME" -> JS_MODULE_NAME

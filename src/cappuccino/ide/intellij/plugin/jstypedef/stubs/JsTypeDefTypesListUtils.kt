@@ -9,9 +9,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 
 
-fun Iterable<JsTypeDefType>.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
+fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
     val out = mutableSetOf<JsTypeListType>()
-
+    if (this == null)
+        return emptySet()
     for (type in this) {
         val asAnonymousFunction = type.anonymousFunction?.toTypeListType()
         if (asAnonymousFunction != null) {
@@ -65,8 +66,8 @@ fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
 }
 
 fun JsTypeDefMapType.toTypeListType() : JsTypeListType.JsTypeListMapType {
-    val keys = this.keyTypes.typeList.toJsTypeDefTypeListTypes()
-    val valueTypes = this.valueTypes.typeList.toJsTypeDefTypeListTypes()
+    val keys = this.keyTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
+    val valueTypes = this.valueTypes?.typeList.toJsTypeDefTypeListTypes()
     return JsTypeListType.JsTypeListMapType(keys, valueTypes)
 }
 

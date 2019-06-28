@@ -13,10 +13,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 
 class JsTypeDefFindUsagesProvider : FindUsagesProvider {
 
@@ -55,11 +51,12 @@ class JsTypeDefFindUsagesProvider : FindUsagesProvider {
     override fun getDescriptiveName(
             psiElement: PsiElement): String {
         val element = psiElement as? JsTypeDefElement ?: return ""
-        return JsTypeDefPsiImplUtil.getDescriptiveText(psiElement) + " in " + psiElement
+        return JsTypeDefPsiImplUtil.getDescriptiveText(element) + " in " + psiElement
     }
 
     override fun getNodeText(
             psiElement: PsiElement, b: Boolean): String {
-        return ObjJPsiImplUtil.getDescriptiveText(psiElement) ?: psiElement.text
+        val typeDefElement = psiElement as? JsTypeDefElement ?: return psiElement.text
+        return JsTypeDefPsiImplUtil.getDescriptiveText(typeDefElement)
     }
 }
