@@ -1,12 +1,16 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefKeyListImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefKeyListStubImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefKeysListStub
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -55,5 +59,9 @@ class JsTypeDefKeysListStubType internal constructor(
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         return (node?.psi as? JsTypeDefKeyList)?.keyName?.text?.isNotNullOrBlank().orFalse()
+    }
+
+    override fun indexStub(stub: JsTypeDefKeysListStub, sink: IndexSink) {
+        //ServiceManager.getService(StubIndexService::class.java).indexKeysList(stub, sink)
     }
 }

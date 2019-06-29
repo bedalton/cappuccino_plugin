@@ -82,7 +82,7 @@ class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, 
 
     override fun createTreeStructureElement(): JsTypeDefStructureViewElement {
         val fileName = ObjJPsiFileUtil.getFileNameSafe(this, "")
-        return JsTypeDefStructureViewElement(this, PresentationData(fileName, "", ObjJIcons.DOCUMENT_ICON, null), fileName)
+        return JsTypeDefStructureViewElement(this, PresentationData(fileName, "", ObjJIcons.JSDEF_DOCUMENT_ICON, null), fileName)
     }
 
 }

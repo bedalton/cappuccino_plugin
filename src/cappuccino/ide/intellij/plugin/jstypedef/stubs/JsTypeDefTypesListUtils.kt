@@ -41,6 +41,16 @@ fun Iterable<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty>
     return properties
 }
 
+
+fun Iterable<JsTypeDefFunctionProperty>.toFunctionTypeListTypes() : List<JsTypeDefNamedProperty> {
+    val properties = mutableListOf<JsTypeDefNamedProperty>()
+    for (property in this) {
+        properties.add(property.toStubParameter())
+    }
+    return properties
+}
+
+
 fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
     val types = typeList.toJsTypeDefTypeListTypes()
     if (types.isEmpty())
@@ -50,13 +60,13 @@ fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
 }
 
 fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
-    val parameters = this.propertiesList?.properties?.toTypeListTypes().orEmpty()
+    val parameters = this.propertiesList?.properties?.toFunctionTypeListTypes().orEmpty()
     val returnType = this.functionReturnType?.toTypeListType()
-    return JsTypeListFunctionType(parameters= parameters, returnType = returnType, isStatic = false)
+    return JsTypeListFunctionType(parameters= parameters, returnType = returnType, static = false)
 }
 
 fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
-    val types = genericTypeTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
+    val types = arrayGenericTypeTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
     return JsTypeListType.JsTypeListArrayType(types, dimensions)
 }

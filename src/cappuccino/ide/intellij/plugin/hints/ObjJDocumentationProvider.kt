@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -173,6 +174,12 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         out.append("class ").append(text)
         return out.toString()
     }
+
+    if (JsTypeDefClassesByNameIndex.instance.containsKey(text, project)) {
+        out.append("Js Class ").append(text)
+        return out.toString()
+    }
+
     val parentMethodDeclarationHeader = parent as? ObjJMethodDeclarationSelector
     if (parentMethodDeclarationHeader != null) {
         out.append("parameter ")
@@ -190,7 +197,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
         //// LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
-            //// LOGGER.info("No prev siblings")
+            LOGGER.info("No prev siblings")
             val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
             val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
             if (functionType != null) {
@@ -209,9 +216,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null) : String
             out.append(" in ").append(getLocationString(this))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(listOf(this), createTag() + 1)
+        val inferredTypes = inferQualifiedReferenceType(this.previousSiblings + this, createTag() + 1)
         val name = this.text
-        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, createTag())?.toClassListString("&lt;Any&gt;")
+        val propertyTypes= getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
 
             val classNames = inferredTypes?.toClassListString(null)

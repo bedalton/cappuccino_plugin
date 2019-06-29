@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.ReflectionUtil
 import org.jetbrains.annotations.NonNls
@@ -34,9 +33,5 @@ abstract class JsTypeDefStubElementType<StubT : StubElement<*>, PsiT : JsTypeDef
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         return true
-    }
-
-    override fun indexStub(stub: StubT, sink: IndexSink) {
-        // do not force inheritors to implement this method
     }
 }

@@ -13,7 +13,7 @@ fun PropertiesMap.toJsTypeDefInterfaceBody() : JsTypeListClass {
                     name = key,
                     parameters = function.parameters,
                     returnType = function.returnType ?: INFERRED_VOID_TYPE,
-                    isStatic = false
+                    static = false
             )
             functionProperties.add(typeDefFunction)
         } else {

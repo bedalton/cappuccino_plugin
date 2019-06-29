@@ -376,10 +376,20 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isNullable(property:JsTypeDefProperty) : Boolean {
-        return isNullable(property.typeList)
+    fun getPropertyTypes(property:JsTypeDefFunctionProperty) : List<JsTypeDefType> {
+        return property.typeList
     }
 
+    @JvmStatic
+    fun isNullable(property:JsTypeDefProperty) : Boolean {
+        return property.nullable != null
+    }
+
+
+    @JvmStatic
+    fun isNullable(property:JsTypeDefFunctionProperty) : Boolean {
+        return property.nullable != null
+    }
 
     @JvmStatic
     fun getPropertyTypes(declaration:JsTypeDefVariableDeclaration) : List<JsTypeDefType> {
@@ -551,6 +561,12 @@ object JsTypeDefPsiImplUtil {
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
     }
 
+    @JvmStatic
+    fun getPropertyNameString(property:JsTypeDefFunctionProperty) : String {
+        val propertyNameElement = property.propertyName
+        val escapedId = propertyNameElement.escapedId
+        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
+    }
 
     @JvmStatic
     fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {

@@ -73,7 +73,7 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsTypeListFun
             parameters = this.parameterTypes(),
             returnType = returnTypes,
             comment = docComment?.commentText,
-            isStatic = true
+            static = true
     )
 }
 

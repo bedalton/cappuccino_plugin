@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProper
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
@@ -42,6 +43,13 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
 }
 
 fun JsTypeDefProperty.toStubParameter() : JsTypeDefNamedProperty {
+    return JsTypeDefNamedProperty(
+            name = propertyName.text,
+            types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)
+    )
+}
+
+fun JsTypeDefFunctionProperty.toStubParameter() : JsTypeDefNamedProperty {
     return JsTypeDefNamedProperty(
             name = propertyName.text,
             types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)

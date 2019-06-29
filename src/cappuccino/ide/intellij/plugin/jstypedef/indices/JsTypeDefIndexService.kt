@@ -40,7 +40,7 @@ class JsTypeDefIndexService : StubIndexService() {
         sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
         sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
     }
 
@@ -48,7 +48,7 @@ class JsTypeDefIndexService : StubIndexService() {
         sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
         sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
     }
 }

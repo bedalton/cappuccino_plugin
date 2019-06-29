@@ -186,6 +186,6 @@ abstract class ObjJStringStubIndexBase<ObjJElemT : PsiElement> : StringStubIndex
             Logger.getLogger(ObjJStringStubIndexBase::class.java.name)
         }
         protected val emptyList: Map<Any, Any> = emptyMap()
-        private const val VERSION = 3
+        protected const val VERSION = 3
     }
 }

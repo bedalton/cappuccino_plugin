@@ -1,11 +1,15 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
+import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefModuleNameImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefModuleNameStubImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleNameStub
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -55,5 +59,9 @@ class JsTypeDefModuleNameStubType internal constructor(
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         return (node?.psi as? JsTypeDefModuleName)?.text.isNotNullOrBlank()
+    }
+
+    override fun indexStub(stub: JsTypeDefModuleNameStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexModuleName(stub, sink)
     }
 }

@@ -1,52 +1,74 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefModuleImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefModuleStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleStub
+import cappuccino.ide.intellij.plugin.inference.toInferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefTypeMapElementImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefTypeMapStubImpl
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeMapStub
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import com.intellij.lang.ASTNode
+import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
 class JsTypeDefTypeMapStubType internal constructor(
-        debugName: String) : JsTypeDefStubElementType<JsTypeDefModuleStub, JsTypeDefModuleImpl>(debugName, JsTypeDefModuleImpl::class.java) {
+        debugName: String) : JsTypeDefStubElementType<JsTypeDefTypeMapStub, JsTypeDefTypeMapElementImpl>(debugName, JsTypeDefTypeMapElementImpl::class.java) {
 
     override fun createPsi(
-            stub: JsTypeDefModuleStub): JsTypeDefModuleImpl {
-        return JsTypeDefModuleImpl(stub, this)
+            stub: JsTypeDefTypeMapStub): JsTypeDefTypeMapElementImpl {
+        return JsTypeDefTypeMapElementImpl(stub, this)
     }
 
-    override fun createStub(module:JsTypeDefModuleImpl, parent: StubElement<*>): JsTypeDefModuleStub {
-        val fileName = module.containingFile.name
-        val namespaceComponents = module.namespaceComponents.toMutableList()
-        val moduleName = namespaceComponents.removeAt(namespaceComponents.lastIndex)
-        return JsTypeDefModuleStubImpl(parent, fileName, namespaceComponents, moduleName)
+    override fun createStub(typeMap:JsTypeDefTypeMapElementImpl, parent: StubElement<*>): JsTypeDefTypeMapStub {
+        val fileName = typeMap.containingFile.name
+        val mapName = typeMap.mapName ?: ""
+        val values = typeMap.keyValuePairList.map {
+            JsTypeDefTypeMapEntry(it.key, it.typesList.toInferenceResult())
+        }
+        return JsTypeDefTypeMapStubImpl(parent, fileName, mapName, values)
     }
 
     @Throws(IOException::class)
     override fun serialize(
-            stub: JsTypeDefModuleStub,
+            stub: JsTypeDefTypeMapStub,
             stream: StubOutputStream) {
 
         stream.writeName(stub.fileName)
-        val namespaceComponents = stub.namespaceComponents
-        stream.writeInt(namespaceComponents.size)
-        for (component in namespaceComponents)
-            stream.writeName(component)
-        stream.writeName(stub.moduleName)
+        stream.writeName(stub.mapName)
+        stream.writeInt(stub.values.size)
+        for (value in stub.values) {
+            stream.writeName(value.key)
+            stream.writeInferenceResult(value.types)
+        }
     }
 
     @Throws(IOException::class)
     override fun deserialize(
-            stream: StubInputStream, parent: StubElement<*>): JsTypeDefModuleStub {
+            stream: StubInputStream, parent: StubElement<*>): JsTypeDefTypeMapStub {
 
         val fileName = stream.readName()?.string ?: ""
-        val numComponents = stream.readInt()
-        val namespaceComponents = mutableListOf<String>()
-        for (i in 0 until numComponents){
-            namespaceComponents.add(stream.readNameString() ?: "???")
+        val mapName = stream.readNameString() ?: "???"
+        val numValues = stream.readInt()
+        val values:List<JsTypeDefTypeMapEntry> = (0 until numValues).mapNotNull {
+            val key = stream.readNameString()
+            val types = stream.readInferenceResult()
+            if (key == null || types == null)
+                return@mapNotNull null
+            return@mapNotNull JsTypeDefTypeMapEntry(key, types)
         }
-        val moduleName = stream.readNameString() ?: ""
-        return JsTypeDefModuleStubImpl(parent, fileName, namespaceComponents, moduleName)
+        return JsTypeDefTypeMapStubImpl(parent, fileName, mapName, values)
+    }
+
+    override fun shouldCreateStub(node: ASTNode?): Boolean {
+        return (node as? JsTypeDefTypeMapElement)?.mapName.isNotNullOrBlank()
+    }
+
+    override fun indexStub(stub: JsTypeDefTypeMapStub, sink: IndexSink) {
+        //ServiceManager.getService(StubIndexService::class.java).indexTypeMap(stub, sink)
     }
 }

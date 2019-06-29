@@ -68,20 +68,11 @@ fun List<String>.toInferenceResult(): InferenceResult {
     return InferenceResult(types = types, nullable = true)
 }
 
-fun JsTypeDefFunction.toJsFunctionType(): JsTypeListFunctionType {
-    return JsTypeListFunctionType(
-            name = functionNameString,
-            comment = null, // @todo implement comment parsing
-            parameters = propertiesList?.properties?.toNamedPropertiesList() ?: emptyList(),
-            returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
-    )
-}
-
-
 fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
-            parameters = propertiesList?.properties?.toNamedPropertiesList() ?: emptyList(),
+            comment = null, // @todo implement comment parsing
+            parameters = propertiesList?.properties?.toNamedFunctionPropertiesList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
@@ -91,7 +82,6 @@ fun List<JsTypeDefProperty>.toNamedPropertiesList(): List<JsTypeDefNamedProperty
         it.toJsNamedProperty()
     }
 }
-
 
 fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
     val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
@@ -116,9 +106,32 @@ fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
     )
 }
 
+fun List<JsTypeDefFunctionProperty>.toNamedFunctionPropertiesList(): List<JsTypeDefNamedProperty> {
+    return map {
+        it.toJsNamedProperty()
+    }
+}
+fun JsTypeDefFunctionProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
+    val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
+    val keyOfType = this.keyOfType?.toTypeListType()
+    if (keyOfType != null)
+        typeList.add(keyOfType)
+    val valueOfType = this.valueOfKeyType?.toTypeListType()
+    if (valueOfType != null)
+        typeList.add(valueOfType)
+    return JsTypeDefNamedProperty(
+            name = propertyNameString,
+            comment = docComment?.commentText,
+            static = false,
+            readonly = false,
+            types = InferenceResult(types = typeList, nullable = isNullable),
+            default = null
+    )
+}
+
 fun JsTypeDefInterfaceBodyProperty.toJsTypeListType(): JsTypeListClass {
     return JsTypeListClass(
-            allFunctions = this.functionList.map { it.toJsFunctionType() }.toSet(),
+            allFunctions = this.functionList.map { it.toJsTypeListType() }.toSet(),
             allProperties = this.propertyList.toNamedPropertiesList().toSet()
     )
 }
@@ -132,7 +145,7 @@ data class JsTypeDefNamedProperty(
         override val name: String,
         override val types: InferenceResult,
         override val readonly: Boolean = false,
-        val static: Boolean = false,
+        override val static: Boolean = false,
         override val comment: String? = null,
         override val default: String? = null
 ) : JsTypeDefPropertyBase, JsNamedProperty {
@@ -149,6 +162,7 @@ interface JsTypeDefPropertyBase {
 
 interface JsNamedProperty {
     val name: String?
+    val static:Boolean
 }
 
 
@@ -181,11 +195,11 @@ sealed class JsTypeListType(open val typeName: String) {
         }
 
         val instanceFunctions: Set<JsTypeListFunctionType> by lazy {
-            allFunctions.filterNot { it.isStatic }.toSet()
+            allFunctions.filterNot { it.static }.toSet()
         }
 
         val staticFunctions: Set<JsTypeListFunctionType> by lazy {
-            allFunctions.filter { it.isStatic }.toSet()
+            allFunctions.filter { it.static }.toSet()
         }
 
 
@@ -221,7 +235,7 @@ sealed class JsTypeListType(open val typeName: String) {
         }
     }
 
-    data class JsTypeListFunctionType(override val name: String? = null, val parameters: List<JsTypeDefNamedProperty>, val returnType: InferenceResult?, val isStatic: Boolean = false, val comment: String? = null) : JsTypeListType("Function"), JsNamedProperty {
+    data class JsTypeListFunctionType(override val name: String? = null, val parameters: List<JsTypeDefNamedProperty>, val returnType: InferenceResult?, override val static: Boolean = false, val comment: String? = null) : JsTypeListType("Function"), JsNamedProperty {
         override fun toString(): String {
             val out = StringBuilder()
             if (name != null)

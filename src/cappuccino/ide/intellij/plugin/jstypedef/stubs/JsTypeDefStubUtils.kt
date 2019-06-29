@@ -198,7 +198,7 @@ fun StubInputStream.readJsFunctionType(): JsTypeListFunctionType? {
             parameters = parameters,
             returnType = returnType,
             comment = if (comment.isNotBlank()) comment else null,
-            isStatic = isStatic
+            static = isStatic
     )
 }
 

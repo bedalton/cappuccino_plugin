@@ -163,7 +163,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
             }
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
-                //LOGGER.info("Cannot complete after ${prevSibling.elementType}")
+                LOGGER.info("Cannot complete after ${prevSibling.elementType}")
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
@@ -226,7 +226,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (shouldAddJsClassNames(element)) {
+            LOGGER.info("Adding js class name completions for pattern: ${element.text.toIndexPatternString()}. There are ${JsTypeDefClassesByNameIndex.instance.getAllKeys(element.project).size} keys in class index")
             JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).mapNotNull{
+                LOGGER.info("JSClass: ${it.className}")
                 (it as? JsTypeDefClassElement)?.className
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
@@ -598,9 +600,9 @@ internal val PsiElement.textWithoutCaret:String get() = this.text?.replace(ObjJB
 
 internal fun String.toIndexPatternString():String  {
     val queryBody = "([^A-Z_]*?)"
-    val stringBuilder = StringBuilder("[_]?$queryBody")
+    val stringBuilder = StringBuilder("[_]?")
     this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("(?<=[A-Z_])".toRegex()).forEach {
-        stringBuilder.append(it).append(queryBody)
+        stringBuilder.append(queryBody).append(it)
     }
-    return stringBuilder.toString()
+    return stringBuilder.append(queryBody).toString()
 }

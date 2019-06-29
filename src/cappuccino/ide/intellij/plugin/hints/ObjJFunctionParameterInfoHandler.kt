@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.hints
 
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJArguments
@@ -77,7 +77,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
             functionDeclaration.description
         } else {
             val functionName = element.functionName?.text
-            val jsFunction = if(functionName != null) JsTypeDefFunctionsByNameIndex.instance[functionName, element.project].firstOrNull()?.toJsFunctionType() else null
+            val jsFunction = if(functionName != null) JsTypeDefFunctionsByNameIndex.instance[functionName, element.project].firstOrNull()?.toJsTypeListType() else null
             jsFunction?.toString()
         }) ?: return
         context.itemsToShow = arrayOf(description)

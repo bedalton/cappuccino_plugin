@@ -185,7 +185,7 @@ keyList
 	};
 
 anonymousFunction
-	::= '(' functionPropertiesList? ')' '=>' functionReturnType /*<<exitMode "useMapOf">>*/
+	::= '(' functionPropertiesList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
 	{
 		pin = 1
 		methods = [
@@ -195,7 +195,7 @@ anonymousFunction
 	;
 
 interfaceElement
-	::= 'interface' typeName extendsStatement? (interfaceBody | ';')
+	::= 'interface' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
 	{
 		pin = 1
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -218,7 +218,7 @@ interfaceElement
 	;
 
 classElement
-	::= readonlyStatic? 'class' typeName extendsStatement? (interfaceBody | ';')
+	::= readonlyStatic? 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
 	{
 		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -303,7 +303,7 @@ private types
 type
 	::= arrayType
 	|	mapType
-	| 	typeName
+	| 	typeName genericTypeTypes?
 	|  	anonymousFunction
 	|	'null'
 	{
@@ -373,8 +373,19 @@ keyValuePair
 		]
 	}
 	;
-
 genericTypeTypes
+	::= '<' typeList '>'
+	{
+		pin = 1
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+	}
+	;
+
+arrayGenericTypeTypes
 	::= '<' types '>'
 	{
 		pin = 1
@@ -387,14 +398,15 @@ genericTypeTypes
 	;
 
 arrayType
-	::= ARRAY arrayDimensions? genericTypeTypes
+	::= ARRAY arrayDimensions? arrayGenericTypeTypes
+	|   typeName '[' integer? ']'
 	{
 		pin = 1
 	}
 	;
 
 arrayDimensions
-	::= '[' integer ']'
+	::= '[' integer? ']'
 	{
 	    pin=1
 	}
@@ -456,23 +468,29 @@ functionName
 	;
 
 functionPropertiesList
-	::= functionProperty (',' functionProperty)
+	::= functionProperty (',' functionProperty)*
 	{
 		pin=2
 		methods = [
 			properties="functionProperty"
 		]
+		recoverWhile=functionPropertiesList_recover
 	}
 	;
 
+private functionPropertiesList_recover
+    ::= !(')')
+    ;
+
 functionProperty
-	::= propertyName ':' (keyOfType|valueOfKeyType|types)
+	::= propertyName '?'? ':' (keyOfType|valueOfKeyType|types)
 	{
 		pin=2
-		extends = property
-		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty"
-		]
+		methods = [
+		    isNullable
+	        getPropertyTypes
+	        getPropertyNameString
+        ]
 	}
 	;
 
@@ -496,7 +514,7 @@ private propertiesList_recover
 	;
 
 property
-	::= completionModifier? readonlyStatic?  propertyName ':' (types|interfaceBodyProperty)
+	::= completionModifier? readonlyStatic?  propertyName '?'? ':' (types|interfaceBodyProperty)
 	{
 	    pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -543,9 +561,9 @@ propertyName
 	;
 
 functionReturnType
-	::= valueOfKeyType
+	::= (valueOfKeyType
 	|	types
-	|	VOID
+	|	VOID) '?'?
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyOfTypes"

@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
 import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
@@ -12,6 +13,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
@@ -87,5 +90,9 @@ class JsTypeDefFunctionStubType internal constructor(
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
         return (node?.psi as? JsTypeDefFunction)?.functionName?.text.isNotNullOrBlank()
+    }
+
+    override fun indexStub(stub: JsTypeDefFunctionStub, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexFunction(stub, sink)
     }
 }

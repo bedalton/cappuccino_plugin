@@ -221,7 +221,7 @@ fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimite
     val functionTypes = this.functionTypes.map {
         it.toString()
     }
-    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes
+    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes.types.map { "${it.typeName}[]".replace("[][]", "[]")}
     val typesString = types.joinToString(delimiter)
     return if (typesString.isNotBlank())
         typesString

@@ -146,7 +146,7 @@ object ObjJMethodCallCompletionContributor {
         //LOGGER.log(Level.INFO, "Found <"+methodHeaders.size+"> method headers in list")
         for (methodHeader: ObjJMethodHeaderDeclaration<*> in methodHeaders) {
             ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, String.format("Scope for target is <%s>; Method scope is <%s>;",targetScope.toString(),if(methodHeader.isStatic)"static" else "instance"))
+            //LOGGER.log(Level.INFO, String.format("Scope for target is <%s>; Method scope is <%s>;",targetScope.toString(),if(methodHeader.static)"static" else "instance"))
             //Determine if method call matches scope, continue loop if it does not
             if (!inScope(targetScope, methodHeader)) {
                 continue
