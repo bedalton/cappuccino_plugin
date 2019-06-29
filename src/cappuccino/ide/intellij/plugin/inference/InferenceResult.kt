@@ -14,7 +14,7 @@ data class InferenceResult(
         val types: Set<JsTypeListType> = emptySet(),
         val nullable: Boolean = true,
         internal val _classes: Set<String> = types.mapNotNull {
-            (it as? JsTypeListType.JsTypeListBasicType)?.typeName
+            (it as? JsTypeListType.JsTypeListBasicType ?: it as? JsTypeListType.JsTypeListUnionType)?.typeName
         }.toSet(),
         val isNumeric: Boolean = isNumeric(_classes),
         val isBoolean: Boolean = isBoolean(_classes),

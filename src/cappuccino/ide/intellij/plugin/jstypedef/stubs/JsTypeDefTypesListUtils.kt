@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -30,6 +30,7 @@ fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
         val asBasicType = type.typeName?.toTypeListType()
         if (asBasicType != null)
             out.add(asBasicType)
+        val asUnionType = type.typeUnion?.toTypeListType()
     }
     return out
 }
@@ -67,30 +68,35 @@ fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
     return JsTypeListFunctionType(parameters= parameters, returnType = returnType, static = false)
 }
 
-fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
+fun JsTypeDefArrayType.toTypeListType() : JsTypeListArrayType {
     val types = typeList.toJsTypeDefTypeListTypes()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
-    return JsTypeListType.JsTypeListArrayType(types, dimensions)
+    return JsTypeListArrayType(types, dimensions)
 }
 
-fun JsTypeDefMapType.toTypeListType() : JsTypeListType.JsTypeListMapType {
+fun JsTypeDefMapType.toTypeListType() : JsTypeListMapType {
     val keys = this.keyTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
     val valueTypes = this.valueTypes?.typeList.toJsTypeDefTypeListTypes()
-    return JsTypeListType.JsTypeListMapType(keys, valueTypes)
+    return JsTypeListMapType(keys, valueTypes)
 }
 
-fun JsTypeDefKeyOfType.toTypeListType() : JsTypeListType.JsTypeListKeyOfType {
+fun JsTypeDefKeyOfType.toTypeListType() : JsTypeListKeyOfType {
     val genericKey = this.genericsKey.text
     val mapName = this.typeMapName?.text ?: "???"
-    return JsTypeListType.JsTypeListKeyOfType(genericKey, mapName)
+    return JsTypeListKeyOfType(genericKey, mapName)
 }
 
-fun JsTypeDefValueOfKeyType.toTypeListType() : JsTypeListType.JsTypeListValueOfKeyType {
+fun JsTypeDefValueOfKeyType.toTypeListType() : JsTypeListValueOfKeyType {
     val genericKey = this.genericsKey.text ?: "???"
     val mapName = this.typeMapName.text
-    return JsTypeListType.JsTypeListValueOfKeyType(genericKey, mapName)
+    return JsTypeListValueOfKeyType(genericKey, mapName)
 }
 
-fun JsTypeDefTypeName.toTypeListType() : JsTypeListType.JsTypeListBasicType {
-    return JsTypeListType.JsTypeListBasicType(this.text)
+fun JsTypeDefTypeName.toTypeListType() : JsTypeListBasicType {
+    return JsTypeListBasicType(this.text)
+}
+
+fun JsTypeDefTypeUnion.toTypeListType() : JsTypeListUnionType {
+    val typeNames = this.typeNameList.map { it.text }.toSet()
+    return JsTypeListUnionType(typeNames)
 }

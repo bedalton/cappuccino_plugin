@@ -30,6 +30,7 @@ private fun StubInputStream.readType(): JsTypeListType? {
         TypeListType.MAP -> readMapType()
         TypeListType.FUNCTION -> readJsFunctionType()
         TypeListType.INTERFACE_BODY -> readInterfaceBodyType()
+        TypeListType.UNION_TYPE -> readUnionType()
     }
 }
 
@@ -72,6 +73,14 @@ private fun StubInputStream.readMapType(): JsTypeListMapType {
     val keys = readTypesList()
     val valueTypes = readTypesList()
     return JsTypeListMapType(keys.toSet(), valueTypes.toSet())
+}
+
+private fun StubInputStream.readUnionType() : JsTypeListUnionType {
+    val numTypes = readInt()
+    val typeNames = (0 until numTypes).mapNotNull {
+        readNameString()
+    }.toSet()
+    return JsTypeListUnionType(typeNames)
 }
 
 fun StubInputStream.readPropertiesList(): List<JsTypeDefNamedProperty> {
@@ -148,6 +157,7 @@ private fun StubOutputStream.writeType(type: JsTypeListType) {
         is JsTypeListValueOfKeyType -> writeValueOfKeyType(type)
         is JsTypeListClass -> writeInterfaceBody(type)
         is JsTypeListFunctionType -> writeJsFunctionType(type)
+        is JsTypeListUnionType -> writeUnionType(type)
     }
 }
 
@@ -179,6 +189,12 @@ private fun StubOutputStream.writeInterfaceBody(body: JsTypeListClass) {
     writeInt(TypeListType.INTERFACE_BODY.id)
     writePropertiesList(body.allProperties)
     writeJsFunctionList(body.allFunctions)
+}
+
+private fun StubOutputStream.writeUnionType(type:JsTypeListUnionType) {
+    writeInt(type.typeNames.size)
+    for(typeName in type.typeNames)
+        writeName(typeName)
 }
 
 fun StubOutputStream.writePropertiesList(propertiesIn: Iterable<JsTypeDefNamedProperty>) {

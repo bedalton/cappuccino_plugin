@@ -40,10 +40,10 @@ class JsTypeDefAnnotator : Annotator {
             // Additional pass to annotate elements needing semi-colons
             // Cannot be combines to earlier calls, as this annotation may need to run in parallel
             if (element.elementType == JsTypeDefTypes.JS_VOID) {
-                annotateInvalidVoidStatements(element, annotationHolder)
+                //annotateInvalidVoidStatements(element, annotationHolder)
             }
             if (element.elementType == JsTypeDefTypes.JS_NULL_TYPE) {
-                annotateInvalidNullStatement(element, annotationHolder)
+                //annotateInvalidNullStatement(element, annotationHolder)
             }
         } catch (ignored: IndexNotReadyRuntimeException) {
             // Index was not ready, and threw exceptions due to the heavy uses of indexes in validation and annotation

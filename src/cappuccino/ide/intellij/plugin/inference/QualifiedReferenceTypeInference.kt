@@ -113,9 +113,17 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     val variableNameString = variableName.text
 
     if (static) {
-        val types = parentTypes.classes.flatMap { declaration ->
-            JsTypeDefClassesByNameIndex.instance[declaration, project].filterIsInstance<JsTypeDefClassElement>().flatMap {
-                it.propertyList.toNamedPropertiesList() + it.functionList.map { it.toJsTypeListType()}
+        val types = parentTypes.classes.flatMap { className ->
+            if (className.contains("&")) {
+                className.split("\\s*&\\s*".toRegex()).flatMap {
+                    JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap {
+                        it.propertyList.toNamedPropertiesList() + it.functionList.map { it.toJsTypeListType()}
+                    }
+                }
+            } else {
+                JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap {
+                    it.propertyList.toNamedPropertiesList() + it.functionList.map { it.toJsTypeListType() }
+                }
             }
         }.filter { it.name == variableNameString && it.static }
                 .flatMap {

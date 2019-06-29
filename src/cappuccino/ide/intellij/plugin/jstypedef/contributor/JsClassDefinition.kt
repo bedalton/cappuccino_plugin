@@ -31,6 +31,11 @@ data class JsClassDefinition(
 )
 
 fun getClassDefinitions(project: Project, className: String) : List<JsClassDefinition> {
+    if (className.contains("&")) {
+        return className.split("\\s*&\\s*".toRegex()).flatMap {
+            getClassDefinitions(project, it)
+        }
+    }
     val objjClass = objJClassAsJsClass(project, className)
     val jsClasses = JsTypeDefClassesByNamespaceIndex.instance[className, project].map { it.toJsClassDefinition() }
     return if (objjClass != null)
@@ -209,6 +214,7 @@ sealed class JsTypeListType(open val typeName: String) {
     data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName")
     data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map")
     data class JsTypeListBasicType(override val typeName: String) : JsTypeListType(typeName)
+    data class JsTypeListUnionType(val typeNames:Set<String>) : JsTypeListType(typeNames.joinToString("&"))
     @Suppress("MemberVisibilityCanBePrivate", "unused")
     data class JsTypeListClass(
             val allProperties: Set<JsTypeDefNamedProperty>,
@@ -239,6 +245,9 @@ sealed class JsTypeListType(open val typeName: String) {
             allFunctions.filter { it.static }.toSet()
         }
 
+        val unionTypes:Set<JsTypeListUnionType> by lazy {
+            allFunctions.mapNotNull { it as? JsTypeListUnionType }.toSet()
+        }
 
         fun getInstanceProperty(name: String): JsTypeDefNamedProperty? {
             return instanceProperties.firstOrNull {
@@ -263,6 +272,7 @@ sealed class JsTypeListType(open val typeName: String) {
                 it.name == name
             }
         }
+
 
         fun collapseToKeys(): Set<String> {
             val out = mutableSetOf<String>()
@@ -315,7 +325,8 @@ enum class TypeListType(val id: Int) {
     VALUEOF(3),
     MAP(4),
     INTERFACE_BODY(5),
-    FUNCTION(6);
+    FUNCTION(6),
+    UNION_TYPE(7);
 
     companion object {
         fun forKey(key: Int): TypeListType {

@@ -13,7 +13,7 @@
 	generateTokenAccessors=true
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
 	consumeTokenMethod("interfaceBody")="consumeTokenFast"
-	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeMap|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
+	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeMapElement|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
 
 	name("eos") = "semi-colon"
 	name("stringLiteral") = "String"
@@ -65,6 +65,7 @@
 		CLASS_KEYWORD = 					'class'
 		AT_SILENT =                         '@silent'
 		AT_QUIET =                          '@quiet'
+		UNION = 							'&'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -221,9 +222,9 @@ interfaceElement
 	;
 
 classElement
-	::= readonlyStatic? 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
+	::= 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
 	{
-		pin = 2
+		pin = 1
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
@@ -269,7 +270,7 @@ private interfaceProperties_recover
 	;
 
 private interfaceProperty
-	::= interfacePropertyPrime eos?
+	::= interfacePropertyPrime (','|eos?)
 	;
 
 private interfacePropertyPrime
@@ -308,17 +309,36 @@ private types
 	;
 
 type
+	::= typeUnion
+	|	typeLeft
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+	}
+	;
+
+private typeLeft
 	::= anonymousFunction
 	|	arrayType
 	|	mapType
 	| 	typeName genericTypeTypes?
 	|	'null'
 	|	stringLiteral
+	;
+
+typeUnion
+	::= typeName typeUnionPrime+
 	{
-		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
-		]
+		pin=2
+	}
+	;
+
+private typeUnionPrime
+	::= '&' typeName
+	{
+		pin=1
 	}
 	;
 
@@ -341,7 +361,7 @@ keyTypes ::= types
 valueTypes ::= types
 
 typeMapElement
-	::= TYPE_MAP_KEYWORD typeMapName '{' typeMapBody? '}'
+	::= TYPE_MAP_KEYWORD typeMapName extendsStatement? '{' typeMapBody? '}'
 	{
 		pin = 1
 		extends = "cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -425,18 +445,44 @@ private arrayGenericTypeTypes
 	;
 
 arrayType
-	::= ARRAY arrayDimensions? arrayGenericTypeTypes
-	|	'(' types ')' '[' integer? ']'
-	|   typeName '[' integer? ']'
+	::= arrayTypes
 	{
 		pin = 1
 	}
 	;
 
-arrayDimensions
-	::= '[' integer? ']'
+private arrayTypes
+	::= arrayTypeInParens
+	|	arrayTypeSimple
+	|	arrayTypeWithArrayKeyword
+	;
+
+private arrayTypeWithArrayKeyword
+	::= ARRAY arrayDimensions? arrayGenericTypeTypes
 	{
-	    pin=1
+		pin=1
+	}
+	;
+
+private arrayTypeInParens
+	::='(' types ')' arrayDimensions
+	{
+		pin=4
+	}
+	;
+
+private arrayTypeSimple
+	::= typeName arrayDimensions
+	{
+		pin=2
+	}
+	;
+
+arrayDimensions
+	::= ('[' ']')+
+	|	'[' integer ']'
+	{
+	    pin(".*")=2
 	}
 	;
 

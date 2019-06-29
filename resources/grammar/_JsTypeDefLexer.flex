@@ -81,6 +81,7 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
   	")"                        	{ return JS_CLOSE_PAREN; }
   	"."                        	{ return JS_DOT; }
  	"..."						{ return JS_ELLIPSIS; }
+  	"&"							{ return JS_UNION; }
   	"readonly"                 	{ return JS_READONLY; }
   	"var"                      	{ return JS_VAR; }
   	"Array"                    	{ return JS_ARRAY; }

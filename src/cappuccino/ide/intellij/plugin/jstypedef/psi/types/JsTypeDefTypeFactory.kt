@@ -15,7 +15,7 @@ class JsTypeDefTypeFactory {
                 "JS_MODULE" -> JS_MODULE
                 "JS_MODULE_NAME" -> JS_MODULE_NAME
                 "JS_PROPERTY" -> JS_PROPERTY
-                "JS_TYPE_MAP" -> JS_TYPE_MAP
+                "JS_TYPE_MAP_ELEMENT" -> JS_TYPE_MAP
                 "JS_VARIABLE_DECLARATION" -> JS_VARIABLE_DECLARATION
                 else -> throw RuntimeException("Failed to find element type in factory for type <$name>")
             }
