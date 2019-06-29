@@ -364,6 +364,7 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun isStatic(declaration:JsTypeDefInterfaceElement) : Boolean = false
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun isStatic(declaration:JsTypeDefClassElement) : Boolean
         = true

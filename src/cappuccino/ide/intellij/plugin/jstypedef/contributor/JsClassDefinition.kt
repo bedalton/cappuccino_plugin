@@ -245,10 +245,6 @@ sealed class JsTypeListType(open val typeName: String) {
             allFunctions.filter { it.static }.toSet()
         }
 
-        val unionTypes:Set<JsTypeListUnionType> by lazy {
-            allFunctions.mapNotNull { it as? JsTypeListUnionType }.toSet()
-        }
-
         fun getInstanceProperty(name: String): JsTypeDefNamedProperty? {
             return instanceProperties.firstOrNull {
                 it.name == name

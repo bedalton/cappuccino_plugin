@@ -15,22 +15,34 @@ fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
     if (this == null)
         return emptySet()
     for (type in this) {
+
         val asAnonymousFunction = type.anonymousFunction?.toTypeListType()
         if (asAnonymousFunction != null) {
             out.add(asAnonymousFunction)
+            continue;
         }
         val asArrayType = type.arrayType?.toTypeListType()
-        if (asArrayType != null)
+        if (asArrayType != null) {
             out.add(asArrayType)
+            continue
+        }
 
         val asMapType = type.mapType?.toTypeListType()
-        if (asMapType != null)
+        if (asMapType != null) {
             out.add(asMapType)
+            continue
+        }
 
         val asBasicType = type.typeName?.toTypeListType()
-        if (asBasicType != null)
+        if (asBasicType != null) {
             out.add(asBasicType)
+            continue
+        }
         val asUnionType = type.typeUnion?.toTypeListType()
+        if (asUnionType != null) {
+            out.add(asUnionType)
+            continue
+        }
     }
     return out
 }

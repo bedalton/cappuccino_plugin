@@ -472,7 +472,7 @@ private arrayTypeInParens
 	;
 
 private arrayTypeSimple
-	::= typeName arrayDimensions
+	::= type arrayDimensions
 	{
 		pin=2
 	}
