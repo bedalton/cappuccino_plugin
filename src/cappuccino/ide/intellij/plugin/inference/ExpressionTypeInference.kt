@@ -81,8 +81,14 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
             return null
         return inferExpressionType(leftExpression.parenEnclosedExpr!!.expr!!, tag)
     }
+
+    if (leftExpression.newExpression != null) {
+        return setOf(leftExpression.newExpression?.functionCall?.functionNameString ?: "Object").toInferenceResult()
+    }
+
     if (leftExpression.qualifiedReference != null)
         return inferQualifiedReferenceType(leftExpression.qualifiedReference!!.qualifiedNameParts, tag)
+
     if (leftExpression.primary != null) {
         val primary = leftExpression.primary ?: return null
         if (primary.integer != null || primary.decimalLiteral != null) {

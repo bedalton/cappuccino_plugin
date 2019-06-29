@@ -2,16 +2,18 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces
 
 import cappuccino.ide.intellij.plugin.contributor.JsProperty
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.psi.stubs.StubElement
 
@@ -34,7 +36,7 @@ interface JsTypeDefKeysListStub : StubElement<JsTypeDefKeyListImpl> {
 interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefNamespacedComponent {
     val fileName:String
     val functionName:String
-    val parameters:List<JsTypeDefNamedProperty>
+    val parameters:List<JsTypeDefFunctionArgument>
     val returnType: InferenceResult
     val global:Boolean
     val static:Boolean
@@ -44,17 +46,20 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
 
 fun JsTypeDefProperty.toStubParameter() : JsTypeDefNamedProperty {
     return JsTypeDefNamedProperty(
-            name = propertyName.text,
+            name = propertyNameString,
             types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)
     )
 }
 
-fun JsTypeDefFunctionProperty.toStubParameter() : JsTypeDefNamedProperty {
-    return JsTypeDefNamedProperty(
+fun JsTypeDefArgument.toStubParameter() : JsTypeDefFunctionArgument {
+    return JsTypeDefFunctionArgument(
             name = propertyName.text,
-            types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)
+            types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable),
+            varArgs = varArgs,
+            comment = docComment?.commentText
     )
 }
+
 
 /**
  * Property stub interface

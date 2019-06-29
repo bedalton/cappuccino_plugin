@@ -27,7 +27,7 @@ class JsTypeDefKeysListStubType internal constructor(
     override fun createStub(keysList:JsTypeDefKeyListImpl, parent: StubElement<*>): JsTypeDefKeysListStub {
         val fileName = keysList.containingFile.name
         val keyListName = keysList.keyName?.text ?: ""
-        return JsTypeDefKeyListStubImpl(parent, fileName, keyListName, keysList.stringLiteralList.map { it.content })
+        return JsTypeDefKeyListStubImpl(parent, fileName, keyListName, keysList.stringLiteralList.map { it.stringValue })
     }
 
     @Throws(IOException::class)

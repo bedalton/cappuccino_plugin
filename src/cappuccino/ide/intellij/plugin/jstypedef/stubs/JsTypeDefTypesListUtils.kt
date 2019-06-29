@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
@@ -33,6 +34,7 @@ fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
     return out
 }
 
+@Suppress("unused")
 fun Iterable<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty> {
     val properties = mutableListOf<JsTypeDefNamedProperty>()
     for (property in this) {
@@ -42,8 +44,8 @@ fun Iterable<JsTypeDefProperty>.toTypeListTypes() : List<JsTypeDefNamedProperty>
 }
 
 
-fun Iterable<JsTypeDefFunctionProperty>.toFunctionTypeListTypes() : List<JsTypeDefNamedProperty> {
-    val properties = mutableListOf<JsTypeDefNamedProperty>()
+fun Iterable<JsTypeDefArgument>.toFunctionTypeListTypes() : List<JsTypeDefFunctionArgument> {
+    val properties = mutableListOf<JsTypeDefFunctionArgument>()
     for (property in this) {
         properties.add(property.toStubParameter())
     }
@@ -60,13 +62,13 @@ fun JsTypeDefFunctionReturnType.toTypeListType() : InferenceResult? {
 }
 
 fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
-    val parameters = this.propertiesList?.properties?.toFunctionTypeListTypes().orEmpty()
+    val parameters = this.argumentsList?.arguments?.toFunctionTypeListTypes().orEmpty()
     val returnType = this.functionReturnType?.toTypeListType()
     return JsTypeListFunctionType(parameters= parameters, returnType = returnType, static = false)
 }
 
 fun JsTypeDefArrayType.toTypeListType() : JsTypeListType.JsTypeListArrayType {
-    val types = arrayGenericTypeTypes?.typeList?.toJsTypeDefTypeListTypes().orEmpty()
+    val types = typeList.toJsTypeDefTypeListTypes()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
     return JsTypeListType.JsTypeListArrayType(types, dimensions)
 }

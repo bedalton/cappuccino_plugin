@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.impl
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
@@ -12,7 +12,7 @@ class JsTypeDefFunctionStubImpl(
         override val fileName:String,
         override val enclosingNamespace:String,
         override val functionName: String,
-        override val parameters: List<JsTypeDefNamedProperty>,
+        override val parameters: List<JsTypeDefFunctionArgument>,
         override val returnType: InferenceResult,
         override val global:Boolean,
         override val static: Boolean

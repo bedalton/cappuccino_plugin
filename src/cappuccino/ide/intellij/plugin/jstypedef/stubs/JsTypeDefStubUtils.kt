@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs
 
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
@@ -103,6 +104,34 @@ private fun StubInputStream.readProperty(): JsTypeDefNamedProperty? {
     )
 }
 
+fun StubInputStream.readFunctionArgumentsList(): List<JsTypeDefFunctionArgument> {
+    val numProperties = readInt()
+    val properties = mutableListOf<JsTypeDefFunctionArgument>()
+    for (i in 0 until numProperties) {
+        val property = readFunctionProperty() ?: continue
+        properties.add(property)
+    }
+    return properties
+}
+
+
+private fun StubInputStream.readFunctionProperty(): JsTypeDefFunctionArgument? {
+    val propertyName = readNameString()
+    val types = readInferenceResult()
+    val comment = readUTFFast()
+    val default = readNameString()
+    val varArgs = readBoolean()
+    if (propertyName == null)
+        return null
+    return JsTypeDefFunctionArgument(
+            name = propertyName,
+            types = types ?: INFERRED_ANY_TYPE,
+            comment = if (comment.isBlank()) null else comment,
+            default = default,
+            varArgs = varArgs
+    )
+}
+
 fun StubOutputStream.writeTypeList(types: Set<JsTypeListType>) {
     writeInt(types.size)
     for (type in types) {
@@ -169,6 +198,22 @@ private fun StubOutputStream.writeProperty(type: JsTypeDefNamedProperty) {
     writeName(type.default)
 }
 
+fun StubOutputStream.writeFunctionArgumentsList(propertiesIn: Iterable<JsTypeDefFunctionArgument>) {
+    val properties = propertiesIn as? List ?: propertiesIn.toList()
+    writeInt(properties.size)
+    for (property in properties) {
+        writeFunctionProperty(property)
+    }
+}
+
+private fun StubOutputStream.writeFunctionProperty(type: JsTypeDefFunctionArgument) {
+    writeName(type.name)
+    writeInferenceResult(type.types)
+    writeUTFFast(type.comment ?: "")
+    writeName(type.default)
+    writeBoolean(type.varArgs)
+}
+
 private fun StubOutputStream.writeMapType(mapType: JsTypeListMapType) {
     writeInt(TypeListType.MAP.id)
     writeTypeList(mapType.keyTypes)
@@ -180,7 +225,7 @@ fun StubOutputStream.writeJsFunctionType(function: JsTypeListFunctionType?) {
     if (function == null)
         return
     writeName(function.name)
-    writePropertiesList(function.parameters)
+    writeFunctionArgumentsList(function.parameters)
     writeInferenceResult(function.returnType)
     writeUTFFast(function.comment ?: "")
 }
@@ -189,7 +234,7 @@ fun StubInputStream.readJsFunctionType(): JsTypeListFunctionType? {
     if (!readBoolean())
         return null
     val name = readNameString()
-    val parameters = readPropertiesList()
+    val parameters = readFunctionArgumentsList()
     val returnType = readInferenceResult()
     val comment = readUTFFast()
     val isStatic = readBoolean()

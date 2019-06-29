@@ -15,10 +15,7 @@ import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.collapse
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
@@ -543,20 +540,30 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
         val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
                 ?: element.parent as? ObjJQualifiedReferenceComponent ?: return
-        //LOGGER.info("Appending Qualified reference completions")
+        LOGGER.info("Appending Qualified reference completions")
         val index = qualifiedNameComponent.indexInQualifiedReference
         if (index <= 0) {
-            //LOGGER.info("Qualified reference is zero indexed")
+            LOGGER.info("Qualified reference is zero indexed")
             return
         }
+        val project = element.project
         val previousComponents = qualifiedNameComponent.previousSiblings
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         val classes = inferred.classes
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
-        val types:JsClassDefinition = classes.toInferenceResult().toJsClasses(element.project).collapse()
+        val jsClasses = classes.toInferenceResult().toJsClasses(element.project)
+        if (jsClasses.size != classes.size) {
+            LOGGER.info("ClassTypes and JsClasses is not equal.\n\tClassTypes: <$classes>\n\tFound: <${jsClasses.map{it.className}}>")
+        } else if (classes.isNotEmpty()) {
+            LOGGER.info("Found all js classes: <$classes>")
+        } else {
+            LOGGER.info("Failed to find qualified reference type for completions")
+        }
+        val types:JsClassDefinition = jsClasses.collapseWithSuperType(project)
         val functions = if (includeStatic) types.staticFunctions else types.functions
         val properties = if (includeStatic) types.staticProperties else types.properties
+        LOGGER.info("Found ${functions.size} functions and ${properties.size} properties in classes")
         functions.forEach { classFunction ->
             val functionName = classFunction.name ?: return@forEach
             val lookupElementBuilder = LookupElementBuilder

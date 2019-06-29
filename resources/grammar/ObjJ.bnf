@@ -1864,6 +1864,7 @@ functionCall
 			getExprList
 			getCloseParen
 			getOpenParen
+			getFunctionNameString
 		]
 
 	}

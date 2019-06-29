@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
@@ -32,8 +31,8 @@ class JsTypeDefFunctionStubType internal constructor(
         val fileName = function.containingFile.name
         val enclosingNamespace = function.enclosingNamespace
         val functionName = function.functionName.text
-        val parameters = function.propertiesList?.properties?.map { property ->
-            property.toStubParameter()
+        val parameters = function.argumentsList?.arguments?.map { argument ->
+            argument.toStubParameter()
         }?.toList() ?: emptyList()
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
@@ -58,9 +57,8 @@ class JsTypeDefFunctionStubType internal constructor(
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
         stream.writeName(stub.functionName)
-        stream.writePropertiesList(stub.parameters)
+        stream.writeFunctionArgumentsList(stub.parameters)
         stream.writeInferenceResult(stub.returnType)
-        stream.writeBoolean(stub.returnType.nullable)
         stream.writeBoolean(stub.global)
         stream.writeBoolean(stub.static || stub.global)
     }
@@ -69,22 +67,22 @@ class JsTypeDefFunctionStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefFunctionStub {
 
-        val fileName = stream.readName()?.string ?: ""
-        val enclosingNamespaece = stream.readNameString() ?: ""
+        val fileName = stream.readNameString() ?: ""
+        val enclosingNamespace = stream.readNameString() ?: ""
         val functionName = stream.readNameString() ?: ""
-        val parameters = stream.readPropertiesList()
+        val parameters = stream.readFunctionArgumentsList()
         val returnType = stream.readInferenceResult()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,
-                enclosingNamespace = enclosingNamespaece,
+                enclosingNamespace = enclosingNamespace,
                 functionName = functionName,
                 parameters = parameters,
-                returnType = returnType ?: INFERRED_VOID_TYPE,
+                returnType = returnType!!,
                 global = global,
-                static = static || global
+                static = static
             )
     }
 

@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
@@ -84,10 +84,10 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : Inferen
     )
 }
 
-private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefNamedProperty> {
+private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefFunctionArgument> {
     //ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
-    val out = mutableListOf<JsTypeDefNamedProperty>()
+    val out = mutableListOf<JsTypeDefFunctionArgument>()
     val commentWrapper = this.docComment
     for ((i, parameter) in parameters.withIndex()) {
         //ProgressManager.checkCanceled()
@@ -96,13 +96,13 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefN
             val comment = commentWrapper?.parameterComments
                     ?.get(i)
             val types = comment?.getTypes(project)
-            val property = JsTypeDefNamedProperty(
+            val property = JsTypeDefFunctionArgument(
                     name = parameterName,
                     types = InferenceResult(types = types?.toJsTypeList().orEmpty())
             )
             out.add(property)
         } else {
-            out.add(JsTypeDefNamedProperty(
+            out.add(JsTypeDefFunctionArgument(
                     name = parameterName,
                     types = INFERRED_ANY_TYPE
             ))

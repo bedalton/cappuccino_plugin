@@ -78,7 +78,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefProperty) : String =
+    fun getEnclosingNamespace(element: JsTypeDefProperty) : String =
             element.stub?.enclosingNamespace
                 ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                 ?: ""
@@ -89,7 +89,7 @@ object JsTypeDefPsiImplUtil {
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                     ?: ""
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element:JsTypeDefProperty) : List<String> =
+    fun getEnclosingNamespaceComponents(element: JsTypeDefProperty) : List<String> =
             element.stub?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
@@ -100,20 +100,20 @@ object JsTypeDefPsiImplUtil {
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefProperty) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.propertyName.text)
+    fun getNamespaceComponents(element: JsTypeDefProperty) : List<String>
+            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.propertyNameString)
 
     @JvmStatic
     fun getNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String>
-            = element.stub?.namespaceComponents ?: element.property?.namespaceComponents.orEmpty()
+            = element.stub?.namespaceComponents ?: element.enclosingNamespaceComponents + element.property?.propertyNameString.orEmpty()
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefProperty) : String
-            = element.stub?.propertyName ?: element.propertyName.text
+    fun getNamespaceComponent(element: JsTypeDefProperty) : String
+            = element.stub?.propertyName ?: element.propertyNameString
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefVariableDeclaration) : String
-            = element.property?.namespaceComponent.orEmpty()
+            = element.stub?.variableName ?: element.property?.namespaceComponent.orEmpty()
 
     @JvmStatic
     fun getEnclosingNamespace(elementIn:JsTypeDefFunction) : String {
@@ -233,9 +233,9 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getEnclosingNamespaceComponents(module:JsTypeDefModule) : List<String> {
-        val stub = module.stub
-        if (stub != null) {
-            return stub.namespaceComponents
+        val stubbedNamespace = module.stub?.namespaceComponents
+        if (stubbedNamespace != null) {
+            return stubbedNamespace
         }
         val components = getNamespaceComponents(module).toMutableList()
         components.removeAt(components.lastIndex)
@@ -244,9 +244,9 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getNamespaceComponents(module:JsTypeDefModule) : List<String> {
-        val stub = module.stub
-        if (stub != null)
-            return stub.namespaceComponents
+        val stubbedNamespace = module.stub?.namespaceComponents
+        if (stubbedNamespace != null)
+            return stubbedNamespace
         val temp = mutableListOf<String>()
         var currentModule:JsTypeDefModule? = module
         while (currentModule?.namespacedModuleName != null) {
@@ -284,6 +284,9 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getEnclosingNamespaceComponents(moduleName:JsTypeDefModuleName) : List<String> {
+        val stubbedNamespace = moduleName.stub?.enclosingNamespaceComponents
+        if (stubbedNamespace != null)
+            return stubbedNamespace
         val parentModule = getParentModule(moduleName) ?: return listOf()
         val out = getEnclosingNamespaceComponents(parentModule).toMutableList()
         val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
@@ -297,7 +300,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getEnclosingNamespace(moduleName:JsTypeDefModuleName) : String {
-        return getEnclosingNamespaceComponents(moduleName).joinToString(".")
+        return moduleName.stub?.enclosingNamespace ?: getEnclosingNamespaceComponents(moduleName).joinToString(".")
     }
 
     @JvmStatic
@@ -306,12 +309,12 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getFullyNamespacedName(moduleName:JsTypeDefModuleName) : String
-            = (getEnclosingNamespaceComponents(moduleName) + moduleName.text)
+            = moduleName.stub?.fullyNamespacedName ?: (getEnclosingNamespaceComponents(moduleName) + moduleName.text)
                 .joinToString(".")
 
     @JvmStatic
     fun getNamespaceComponent(element:JsTypeDefModuleName) : String
-            = element.text
+            = element.stub?.moduleName ?: element.text
 
     @JvmStatic
     fun getIndexInDirectNamespace(moduleName:JsTypeDefModuleName) : Int {
@@ -340,10 +343,10 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
     // ========= Interfaces ========= //
     // ============================== //
-
+/*
     @JvmStatic
     fun getConstructors(interfaceElement: JsTypeDefInterfaceElement) : List<JsTypeDefFunction> {
-        val functions = interfaceElement.functionList
+        val functions = interfaceElement.interfaceConstructorList
         return functions.filter {
             it.functionName.const != null
         }
@@ -356,14 +359,14 @@ object JsTypeDefPsiImplUtil {
             it.functionName.const != null
         }
     }
-
+*/
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun isStatic(declaration:JsTypeDefInterfaceElement) : Boolean = false
 
     @JvmStatic
     fun isStatic(declaration:JsTypeDefClassElement) : Boolean
-        = declaration.staticKeyword != null
+        = true
 
 
     // ============================== //
@@ -371,24 +374,24 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getPropertyTypes(property:JsTypeDefProperty) : List<JsTypeDefType> {
+    fun getPropertyTypes(property: JsTypeDefProperty) : List<JsTypeDefType> {
         return property.typeList
     }
 
     @JvmStatic
-    fun getPropertyTypes(property:JsTypeDefFunctionProperty) : List<JsTypeDefType> {
+    fun getPropertyTypes(property: JsTypeDefArgument) : List<JsTypeDefType> {
         return property.typeList
     }
 
     @JvmStatic
-    fun isNullable(property:JsTypeDefProperty) : Boolean {
-        return property.nullable != null
+    fun isNullable(property: JsTypeDefProperty) : Boolean {
+        return property.stub?.nullable ?: property.nullable != null || isNullable(property.typeList)
     }
 
 
     @JvmStatic
-    fun isNullable(property:JsTypeDefFunctionProperty) : Boolean {
-        return property.nullable != null
+    fun isNullable(property: JsTypeDefArgument) : Boolean {
+        return property.nullable != null || isNullable(property.typeList)
     }
 
     @JvmStatic
@@ -398,7 +401,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun isNullable(declaration:JsTypeDefVariableDeclaration) : Boolean {
-        return declaration.property?.isNullable.orTrue()
+        return declaration.stub?.nullable ?: declaration.property?.isNullable.orTrue()
     }
 
     @JvmStatic
@@ -422,27 +425,19 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
     @JvmStatic
     fun getMapName(typeMap:JsTypeDefTypeMapElement) : String? {
-        val stub = typeMap.stub
-        if (stub != null)
-            return stub.mapName
-        return typeMap.typeMapName?.text
+        return typeMap.stub?.mapName ?: typeMap.typeMapName?.text
     }
 
     @JvmStatic
     fun getKeys(typeMap:JsTypeDefTypeMapElement) : List<String> {
-        val stub = typeMap.stub
-        if (stub != null)
-            return stub.values.map { it.key }
-        return typeMap.keyValuePairList.map { it.stringLiteral.content }
+        return typeMap.stub?.values?.map { it.key }
+                ?: typeMap.keyValuePairList.map { it.stringLiteral.stringValue }
     }
 
     @JvmStatic
     fun getTypesForKey(typeMap: JsTypeDefTypeMapElement, key:String) : InferenceResult? {
-        val stub = typeMap.stub
-        if (stub != null) {
-            return stub.getTypesForKey(key)
-        }
-        return typeMap.keyValuePairList.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
+        return typeMap.stub?.getTypesForKey(key)
+                ?: typeMap.keyValuePairList.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
     }
 
     @JvmStatic
@@ -451,7 +446,7 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getKey(keyValuePair: JsTypeDefKeyValuePair) : String {
-        return keyValuePair.stringLiteral.content
+        return keyValuePair.stringLiteral.stringValue
     }
 
     @JvmStatic
@@ -529,18 +524,14 @@ object JsTypeDefPsiImplUtil {
         return ahead in EOS_TOKENS || hadLineTerminator
     }
 
+    @JvmStatic
+    fun getVarArgs(argument: JsTypeDefArgument) : Boolean {
+        return argument.ellipsis != null
+    }
+
     @Suppress("unused")
     fun PsiElement?.hasNodeType(elementType: IElementType): Boolean {
         return this != null && this.node.elementType === elementType
-    }
-
-    @JvmStatic
-    fun getContent(stringLiteral: JsTypeDefStringLiteral) : String {
-        val text = stringLiteral.text
-        val textLength = text.length
-        if (textLength < 3)
-            return ""
-        return text.substring(1, textLength-2)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -551,18 +542,21 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun isStatic(function:JsTypeDefFunction) : Boolean {
-        return function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
+        return function.stub?.static ?: function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
     }
 
     @JvmStatic
-    fun getPropertyNameString(property:JsTypeDefProperty) : String {
+    fun getPropertyNameString(property: JsTypeDefProperty) : String {
+        val stubName = property.stub?.propertyName
+        if (stubName != null)
+            return stubName
         val propertyNameElement = property.propertyName
-        val escapedId = propertyNameElement.escapedId
-        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
+        val escapedId = propertyNameElement?.escapedId
+        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement?.stringLiteral?.stringValue ?: propertyNameElement?.text.orEmpty()
     }
 
     @JvmStatic
-    fun getPropertyNameString(property:JsTypeDefFunctionProperty) : String {
+    fun getPropertyNameString(property: JsTypeDefArgument) : String {
         val propertyNameElement = property.propertyName
         val escapedId = propertyNameElement.escapedId
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
@@ -570,15 +564,28 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
-        return declaration.property?.propertyNameString.orEmpty()
+        return declaration.stub?.variableName ?: declaration.property?.propertyNameString.orEmpty()
     }
 
 
     @JvmStatic
     fun getFunctionNameString(function:JsTypeDefFunction) : String {
+        val stubName = function.stub?.functionName
+        if (stubName != null)
+            return stubName
         val functionName = function.functionName
         val escapedId = functionName.escapedId
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: functionName.text
+    }
+
+    @JvmStatic
+    fun getStringValue(stringLiteral: JsTypeDefStringLiteral): String {
+        val rawText = stringLiteral.text
+        val quotationMark: String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
+        val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
+        val offset = if (outText.endsWith(quotationMark)) 1 else 0
+        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - offset) else outText
+
     }
 }
 

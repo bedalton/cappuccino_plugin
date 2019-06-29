@@ -31,7 +31,7 @@ class JsTypeDefPropertyStubType internal constructor(
     override fun createStub(property:JsTypeDefPropertyImpl, parent: StubElement<*>): JsTypeDefPropertyStub {
         val fileName = property.containingFile.name
         val enclosingNamespace = property.enclosingNamespace
-        val propertyName = property.propertyName.text
+        val propertyName = property.propertyNameString
         val typeList = InferenceResult(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
         return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
     }

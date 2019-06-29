@@ -43,6 +43,36 @@ fun getClassDefinition(project: Project, className: String): JsClassDefinition? 
     return getClassDefinitions(project, className).collapse()
 }
 
+private fun JsClassDefinition.getAllInheritedClasses(project:Project, parsed:MutableSet<String>, out:MutableSet<JsClassDefinition>, addSelf:Boolean = false) : Set<JsClassDefinition> {
+    if (addSelf){
+        parsed.add(className)
+        out.add(this)
+    }
+    extends.forEach {
+        if (it !is JsTypeListBasicType)
+            return@forEach
+        val typeName = it.typeName
+        if (parsed.contains(typeName))
+            return@forEach
+        parsed.add(typeName)
+        val classDefinition = getClassDefinition(project, typeName) ?: return@forEach
+        out.add(classDefinition)
+        classDefinition.getAllInheritedClasses(project, parsed, out)
+    }
+    return out
+}
+
+fun Iterable<JsClassDefinition>.collapseWithSuperType(project:Project): JsClassDefinition {
+    val parsed = this.map { it.className }.toMutableSet()
+    val out = this.toMutableSet()
+    val extends = flatMap { it.extends }.toMutableSet()
+    extends.toSet().forEach {
+        val classDec = getClassDefinition(project, it.typeName) ?: return@forEach
+        classDec.getAllInheritedClasses(project, parsed, out, true)
+    }
+    return out.collapse()
+}
+
 fun Iterable<JsClassDefinition>.collapse(): JsClassDefinition {
     val firstName = this.firstOrNull()?.className
     val className = if (firstName != null && this.all { it.className == firstName }) firstName else "???"
@@ -72,7 +102,7 @@ fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
             name = functionNameString,
             comment = null, // @todo implement comment parsing
-            parameters = propertiesList?.properties?.toNamedFunctionPropertiesList() ?: emptyList(),
+            parameters = argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
             returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
@@ -88,7 +118,7 @@ fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
     val interfaceBodyAsType = interfaceBodyProperty?.toJsTypeListType()
     if (interfaceBodyAsType != null)
         typeList.add(interfaceBodyAsType)
-    if (this is JsTypeDefFunctionProperty) {
+    if (this is JsTypeDefArgument) {
         val keyOfType = this.keyOfType?.toTypeListType()
         if (keyOfType != null)
             typeList.add(keyOfType)
@@ -106,12 +136,12 @@ fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
     )
 }
 
-fun List<JsTypeDefFunctionProperty>.toNamedFunctionPropertiesList(): List<JsTypeDefNamedProperty> {
+fun List<JsTypeDefArgument>.toFunctionArgumentList(): List<JsTypeDefFunctionArgument> {
     return map {
         it.toJsNamedProperty()
     }
 }
-fun JsTypeDefFunctionProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
+fun JsTypeDefArgument.toJsNamedProperty(): JsTypeDefFunctionArgument {
     val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
     val keyOfType = this.keyOfType?.toTypeListType()
     if (keyOfType != null)
@@ -119,13 +149,12 @@ fun JsTypeDefFunctionProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
     val valueOfType = this.valueOfKeyType?.toTypeListType()
     if (valueOfType != null)
         typeList.add(valueOfType)
-    return JsTypeDefNamedProperty(
+    return JsTypeDefFunctionArgument(
             name = propertyNameString,
             comment = docComment?.commentText,
-            static = false,
-            readonly = false,
             types = InferenceResult(types = typeList, nullable = isNullable),
-            default = null
+            default = null,
+            varArgs = varArgs
     )
 }
 
@@ -144,18 +173,26 @@ data class JsTypeDefTypeMapEntry(val key: String, val types: InferenceResult)
 data class JsTypeDefNamedProperty(
         override val name: String,
         override val types: InferenceResult,
-        override val readonly: Boolean = false,
+        val readonly: Boolean = false,
         override val static: Boolean = false,
         override val comment: String? = null,
         override val default: String? = null
 ) : JsTypeDefPropertyBase, JsNamedProperty {
     override val nullable: Boolean get() = types.nullable
 }
+data class JsTypeDefFunctionArgument(
+        val name: String,
+        override val types: InferenceResult,
+        override val comment: String? = null,
+        override val default: String? = null,
+        val varArgs:Boolean = false
+) : JsTypeDefPropertyBase {
+    override val nullable: Boolean get() = types.nullable
+}
 
 interface JsTypeDefPropertyBase {
     val types: InferenceResult
     val nullable: Boolean
-    val readonly: Boolean
     val comment: String?
     val default: String?
 }
@@ -235,7 +272,7 @@ sealed class JsTypeListType(open val typeName: String) {
         }
     }
 
-    data class JsTypeListFunctionType(override val name: String? = null, val parameters: List<JsTypeDefNamedProperty>, val returnType: InferenceResult?, override val static: Boolean = false, val comment: String? = null) : JsTypeListType("Function"), JsNamedProperty {
+    data class JsTypeListFunctionType(override val name: String? = null, val parameters: List<JsTypeDefFunctionArgument>, val returnType: InferenceResult?, override val static: Boolean = false, val comment: String? = null) : JsTypeListType("Function"), JsNamedProperty {
         override fun toString(): String {
             val out = StringBuilder()
             if (name != null)

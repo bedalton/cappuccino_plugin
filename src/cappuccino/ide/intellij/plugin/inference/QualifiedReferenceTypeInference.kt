@@ -11,10 +11,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.interfaces.getReturnTypes
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
@@ -205,6 +202,9 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     }
 
     if (referencedVariable is ObjJVariableName) {
+        if (!referencedVariable.isEquivalentTo(variableName)) {
+            return inferQualifiedReferenceType(referencedVariable.previousSiblings + referencedVariable, tag)
+        }
         val out = ObjJVariableTypeResolver.resolveVariableType(
                 variableName = referencedVariable,
                 recurse = false,

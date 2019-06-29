@@ -106,6 +106,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getFunctionNameString(functionCall:ObjJFunctionCall) : String? {
+        return functionCall.functionName?.text
+    }
+
+    @JvmStatic
     fun setName(defineFunction: ObjJPreprocessorDefineFunction, name: String): PsiElement {
         return ObjJFunctionDeclarationPsiUtil.setName(defineFunction, name)
     }

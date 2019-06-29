@@ -42,6 +42,7 @@
 		DOT =								'.'
 		SINGLE_QUOTE =						"'"
 		DOUBLE_QUOTE =						'"'
+		ELLIPSIS = 							'...'
 
 		//KeyWords
 		READONLY =							'readonly'
@@ -73,6 +74,7 @@
 		LINE_TERMINATOR =					'LINETERMINATOR'
 		SINGLE_QUOTE_STRING	=				"regexp:'([^\\'\r\n]|\\[\\'brfntvuU0])*'"
 		DOUBLE_QUOTE_STRING	= 				'regexp:"([^\\"\r\n]|\\[\\"brfntvuU0])*"'
+		INCOMPLETE_STRING =					'_______INCOM____STRING'
 		INTEGER_LITERAL =					'regexp:[0-9]+'
 		ESCAPED_ID =						'regexp:`\s*[_a-zA-Z][_a-zA-Z0-9]*\s*`'
 		ID = 								'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
@@ -185,9 +187,10 @@ keyList
 	};
 
 anonymousFunction
-	::= '(' functionPropertiesList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
+	::= '(' anonymousFunction ')'
+	|	'(' argumentsList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
 	{
-		pin = 1
+		pin(".*") = 2
 		methods = [
 			propertiesList="functionPropertiesList"
 		]
@@ -205,7 +208,7 @@ interfaceElement
 		]
 		stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
 		methods = [
-			getConstructors
+			//getConstructors
 			getClassName
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
@@ -228,7 +231,7 @@ classElement
 		]
         stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
 		methods = [
-			getConstructors
+			//getConstructors
 			getClassName
 			getEnclosingNamespace
 			getEnclosingNamespaceComponents
@@ -266,11 +269,15 @@ private interfaceProperties_recover
 	;
 
 private interfaceProperty
-	::= property eos
-	|	interfaceConstructor eos
-	|	function eos
+	::= interfacePropertyPrime eos?
 	;
 
+private interfacePropertyPrime
+	::= property
+	|	interfaceConstructor
+	|	function
+	| 	namelessFunction
+	;
 
 extendsStatement
 	::= 'extends' typeList
@@ -287,7 +294,7 @@ extendsStatement
 private typeList
 	::= type ("," type)*
 	{
-		pin = 2
+		pin=2
 	}
 	;
 
@@ -301,11 +308,12 @@ private types
 	;
 
 type
-	::= arrayType
+	::= anonymousFunction
+	|	arrayType
 	|	mapType
 	| 	typeName genericTypeTypes?
-	|  	anonymousFunction
 	|	'null'
+	|	stringLiteral
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
@@ -374,7 +382,7 @@ keyValuePair
 	}
 	;
 genericTypeTypes
-	::= '<' typeList '>'
+	::= '<' genericsTypeList '>'
 	{
 		pin = 1
 		implements = [
@@ -385,7 +393,26 @@ genericTypeTypes
 	}
 	;
 
-arrayGenericTypeTypes
+genericsTypeList
+	::= genericTypesType (',' genericTypesType)*
+	{
+		recoverWhile=genericsTypeList_recover
+	}
+	;
+
+private genericsTypeList_recover
+	::= !(">")
+	;
+
+
+genericTypesType
+	::= genericsKey (':'|'=') types
+	|	valueOfKeyType
+	|	types
+	|	VOID
+	;
+
+private arrayGenericTypeTypes
 	::= '<' types '>'
 	{
 		pin = 1
@@ -399,6 +426,7 @@ arrayGenericTypeTypes
 
 arrayType
 	::= ARRAY arrayDimensions? arrayGenericTypeTypes
+	|	'(' types ')' '[' integer? ']'
 	|   typeName '[' integer? ']'
 	{
 		pin = 1
@@ -413,7 +441,7 @@ arrayDimensions
 	;
 
 interfaceConstructor
-	::= CONST '(' propertiesList? ')'
+	::= CONST '(' argumentsList? ')'
 	{
 	    pin=1
 		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInInterface"
@@ -421,7 +449,7 @@ interfaceConstructor
 	;
 
 function
-	::= completionModifier? 'static'? functionName '(' functionPropertiesList? ')' (':' functionReturnType)?
+	::= completionModifier? 'static'? functionName genericTypeTypes?'(' argumentsList? ')' (':' functionReturnType)?
 	{
 		pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -444,10 +472,19 @@ function
 	}
 	;
 
+namelessFunction
+	::= '(' argumentsList? ')' (':' functionReturnType)?
+	{
+		pin=2
+	}
+	;
+
 functionName
 	::= CONST
 	|	ESCAPED_ID
 	|	ID
+	|	KEYS_KEYWORD
+	|	MAP
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
@@ -467,26 +504,28 @@ functionName
 	}
 	;
 
-functionPropertiesList
-	::= functionProperty (',' functionProperty)*
+argumentsList
+	::= argument (',' argument)*
 	{
 		pin=2
 		methods = [
 			properties="functionProperty"
+	        arguments = "argument"
 		]
-		recoverWhile=functionPropertiesList_recover
+		recoverWhile=argumentsList_recover
 	}
 	;
 
-private functionPropertiesList_recover
+private argumentsList_recover
     ::= !(')')
     ;
 
-functionProperty
-	::= propertyName '?'? ':' (keyOfType|valueOfKeyType|types)
+argument
+	::= '...'? propertyName '?'? ':' (keyOfType|valueOfKeyType|types|interfaceBody)
 	{
 		pin=2
 		methods = [
+			getVarArgs
 		    isNullable
 	        getPropertyTypes
 	        getPropertyNameString
@@ -494,46 +533,44 @@ functionProperty
 	}
 	;
 
-propertiesList
-	::= property (',' property)*
+
+property
+	::= propertyElement
+	| 	propertyAccess
 	{
-	    pin=2
-		recoverWhile = propertiesList_recover
-		implements = [
-		    "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefAllowAnonymousFunctions"
-		    "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
-		]
-		methods = [
-			properties="property"
-		]
+	extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+    	    methods = [
+    	        isNullable
+    	        getPropertyTypes
+    	        getPropertyNameString
+    			getEnclosingNamespace
+    			getEnclosingNamespaceComponents
+    	        getNamespacedName
+    	        getNamespaceComponents
+    	        getNamespaceComponent
+    	    ]
+    		implements = [
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyMapReturn"
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub>"
+    	  	]
+    	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub"
 	}
 	;
 
-private propertiesList_recover
-	::= !(")")
-	;
 
-property
-	::= completionModifier? readonlyStatic?  propertyName '?'? ':' (types|interfaceBodyProperty)
+private propertyElement
+	::= completionModifier? readonlyStatic?  propertyName ('?'? ':') (types|interfaceBodyProperty|stringLiteral)
 	{
 	    pin = 4
-		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
-	    methods = [
-	        isNullable
-	        getPropertyTypes
-	        getPropertyNameString
-			getEnclosingNamespace
-			getEnclosingNamespaceComponents
-	        getNamespacedName
-	        getNamespaceComponents
-	        getNamespaceComponent
-	    ]
-		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyMapReturn"
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub>"
-	  	]
-	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub"
+
+	}
+	;
+
+propertyAccess
+	::= '[' propertyName ':' typeName ']' ':' types
+	{
+		pin=3
 	}
 	;
 
@@ -545,7 +582,8 @@ private readonlyStatic
     ;
 
 propertyName
-	::= ESCAPED_ID
+	::= stringLiteral
+	|	ESCAPED_ID
 	|	ID
 	|	KEYOF
 	|	KEYS_KEYWORD
@@ -561,9 +599,7 @@ propertyName
 	;
 
 functionReturnType
-	::= (valueOfKeyType
-	|	types
-	|	VOID) '?'?
+	::= (valueOfKeyType|types|VOID)
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyOfTypes"
@@ -583,7 +619,6 @@ valueOfKeyType
 
 typeName
 	::= ID
-	| 	VOID
 	|	ARRAY
 	|	MAP
 	{
@@ -644,7 +679,7 @@ stringLiteral
 	|	DOUBLE_QUOTE_STRING
 	{
 		methods = [
-			getContent
+			getStringValue
 		]
 	}
 	;
