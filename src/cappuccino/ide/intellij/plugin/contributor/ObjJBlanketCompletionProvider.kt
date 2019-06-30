@@ -193,11 +193,12 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
 
+        LOGGER.info("Adding generic completions")
+
         ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
 
         if (element.hasParentOfType(ObjJExpr::class.java)) {
             resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
-
         }
 
         if (element.getContainingScope() == ReferencedInScope.FILE) {
@@ -205,6 +206,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
 
         if (ObjJVariablePsiUtil.isNewVarDec(element)) {
+            LOGGER.info("IsNewVarDec; Return")
             resultSet.stopHere()
             return
         }
@@ -283,11 +285,24 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
-        val properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null && it.enclosingNamespaceComponents.isEmpty()}
+        var properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null}
+        properties.forEach {
+            if (it.enclosingNamespace.isNotEmpty())
+            LOGGER.info("${it.propertyNameString} is namespaced by: ${it.enclosingNamespace}")
+        }
+        properties = properties.filter {
+            it.enclosingNamespace.isEmpty()
+        }
+        if (properties.isEmpty()) {
+            LOGGER.info("Found not matching properties in index with patternString <${element.text.toIndexPatternString()}. PropertiesInIndex: ${JsTypeDefPropertiesByNameIndex.instance.getAllKeys(element.project).mapNotNull { it }}")
+        }
+
         if (shouldIgnoreIgnoredGlobals) {
+            LOGGER.info("Adding all global <${properties.size}> properties")
             addCompletionElementsSimple(resultSet, properties.filter { it.atSilent == null}.map { it.propertyNameString }, -200.0)
         } else {
-            addCompletionElementsSimple(resultSet, properties.map { it.propertyNameString }, -200.0)
+            LOGGER.info("Adding some of the <${properties.size}> global properties")
+            addCompletionElementsSimple(resultSet, properties.filter{ it.atSilent == null && it.atQuiet == null}.map { it.propertyNameString }, -200.0)
         }
     }
 
