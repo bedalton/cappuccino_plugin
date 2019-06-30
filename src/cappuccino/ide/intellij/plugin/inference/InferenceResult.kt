@@ -26,6 +26,9 @@ data class InferenceResult(
 
     val classes:Set<String> get() = _classes
 
+    val toIndexSearchString:String by lazy {
+        "(" + classes.joinToString("|") { Regex.escape(it) } + ")"
+    }
 
     val properties: List<JsNamedProperty> by lazy {
         interfaceTypes.flatMap {

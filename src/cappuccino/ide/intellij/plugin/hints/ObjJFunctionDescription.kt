@@ -1,7 +1,9 @@
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.inference.toClassListString
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
@@ -92,16 +94,6 @@ class ObjJFunctionParameterDescription(val name:String, val type:String?, val nu
     }
 }
 
-val ObjJFunctionDeclarationElement<*>.description:ObjJFunctionDescription get() {
-    val name = this.functionNameAsString
-    val returnType = this.getReturnType(createTag())
-    val description = ObjJFunctionDescription(name, returnType)
-    this.formalParameterArgList.forEach {
-        description.addParameter(it.description)
-    }
-    return description
-}
-
 val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
     val parameterName = this.variableName?.text ?: "_"
     val parameterType =  this.parameterType
@@ -112,7 +104,17 @@ val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
             nullable = nullable)
 }
 
-val JsTypeDefNamedProperty.description:ObjJFunctionParameterDescription get() {
+val JsTypeListType.JsTypeListFunctionType.description:ObjJFunctionDescription get() {
+    val name = this.name ?: "_"
+    val returnType = this.returnType?.toClassListString("Any?")
+    val description = ObjJFunctionDescription(name, returnType)
+    this.parameters.forEach {
+        description.addParameter(it.description)
+    }
+    return description
+}
+
+val JsTypeDefFunctionArgument.description:ObjJFunctionParameterDescription get() {
     val descriptionOut = ObjJFunctionParameterDescription(name, types.toString(), nullable)
     descriptionOut.description = comment
     return descriptionOut

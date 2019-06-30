@@ -332,7 +332,7 @@ object ObjJFunctionDeclarationPsiUtil {
         val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
         if (isBodyVariableAssignmentLocal || isNested)
             return false
-        val functionName = functionDeclaration.functionNameAsString
+        val functionName = functionDeclaration.functionNameString
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
             bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { varDec ->
                 varDec.qualifiedReferenceList.any {
@@ -352,7 +352,7 @@ object ObjJFunctionDeclarationPsiUtil {
         val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
         if (isBodyVariableAssignmentLocal || isNested)
             return false
-        val functionName = functionDeclaration.functionNameAsString
+        val functionName = functionDeclaration.functionNameString
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
             bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any varDec@{ varDec ->
                 varDec.qualifiedReferenceList.any{

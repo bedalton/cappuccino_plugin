@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
@@ -31,9 +32,10 @@ class JsTypeDefPropertyStubType internal constructor(
     override fun createStub(property:JsTypeDefPropertyImpl, parent: StubElement<*>): JsTypeDefPropertyStub {
         val fileName = property.containingFile.name
         val enclosingNamespace = property.enclosingNamespace
+        val enclosingClass = property.getParentOfType(JsTypeDefClassDeclaration::class.java)?.className
         val propertyName = property.propertyNameString
         val typeList = InferenceResult(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
-        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, property.namespaceComponents, propertyName, typeList)
+        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingClass, property.namespaceComponents, propertyName, typeList)
     }
 
     @Throws(IOException::class)
@@ -43,6 +45,7 @@ class JsTypeDefPropertyStubType internal constructor(
 
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
+        stream.writeName(stub.enclosingClass)
         stream.writeName(stub.propertyName)
         stream.writeInferenceResult(stub.types)
     }
@@ -53,9 +56,10 @@ class JsTypeDefPropertyStubType internal constructor(
 
         val fileName = stream.readNameString() ?: ""
         val enclosingNamespace = stream.readNameString() ?: ""
+        val enclosingClass = stream.readNameString()
         val propertyName = stream.readNameString() ?: "???"
         val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
-        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX).plus(propertyName), propertyName, types)
+        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingClass, enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX).plus(propertyName), propertyName, types)
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {

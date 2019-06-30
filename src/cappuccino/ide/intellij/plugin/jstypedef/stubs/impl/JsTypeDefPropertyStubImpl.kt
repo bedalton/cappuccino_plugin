@@ -10,6 +10,7 @@ class JsTypeDefPropertyStubImpl (
         parent:StubElement<*>,
         override val fileName: String,
         override val enclosingNamespace: String,
+        override val enclosingClass: String?,
         override val namespaceComponents: List<String>,
         override val propertyName: String,
         override val types: InferenceResult,

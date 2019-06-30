@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFunctionStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
@@ -30,6 +31,7 @@ class JsTypeDefFunctionStubType internal constructor(
     override fun createStub(function:JsTypeDefFunctionImpl, parent: StubElement<*>): JsTypeDefFunctionStub {
         val fileName = function.containingFile.name
         val enclosingNamespace = function.enclosingNamespace
+        val enclosingClass = function.getParentOfType(JsTypeDefClassDeclaration::class.java)?.className
         val functionName = function.functionName.text
         val parameters = function.argumentsList?.arguments?.map { argument ->
             argument.toStubParameter()
@@ -42,6 +44,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 parent = parent,
                 fileName = fileName,
                 enclosingNamespace = enclosingNamespace,
+                enclosingClass = enclosingClass,
                 functionName = functionName,
                 parameters = parameters,
                 returnType = returnType,
@@ -56,6 +59,7 @@ class JsTypeDefFunctionStubType internal constructor(
 
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
+        stream.writeName(stub.enclosingClass)
         stream.writeName(stub.functionName)
         stream.writeFunctionArgumentsList(stub.parameters)
         stream.writeInferenceResult(stub.returnType)
@@ -69,6 +73,7 @@ class JsTypeDefFunctionStubType internal constructor(
 
         val fileName = stream.readNameString() ?: ""
         val enclosingNamespace = stream.readNameString() ?: ""
+        val enclosingClass = stream.readNameString()
         val functionName = stream.readNameString() ?: ""
         val parameters = stream.readFunctionArgumentsList()
         val returnType = stream.readInferenceResult()
@@ -78,6 +83,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 parent = parent,
                 fileName = fileName,
                 enclosingNamespace = enclosingNamespace,
+                enclosingClass = enclosingClass,
                 functionName = functionName,
                 parameters = parameters,
                 returnType = returnType!!,

@@ -78,7 +78,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
         } else {
             val functionName = element.functionName?.text
             val jsFunction = if(functionName != null) JsTypeDefFunctionsByNameIndex.instance[functionName, element.project].firstOrNull()?.toJsTypeListType() else null
-            jsFunction?.toString()
+            jsFunction?.description
         }) ?: return
         context.itemsToShow = arrayOf(description)
         context.showHint(element, element.textRange.startOffset, this)

@@ -18,11 +18,19 @@ class JsTypeDefIndexService : StubIndexService() {
     override fun indexFunction(stub: JsTypeDefFunctionStub, sink:IndexSink) {
         sink.occurrence<JsTypeDefFunction, String>(JsTypeDefFunctionsByNameIndex.instance.key, stub.functionName)
         sink.occurrence<JsTypeDefFunction, String>(JsTypeDefFunctionsByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+        val enclosingClass = stub.enclosingClass
+        if(enclosingClass != null) {
+            sink.occurrence<JsTypeDefFunction, String>(JsTypeDefFunctionsByClassNamesIndex.instance.key, enclosingClass)
+        }
     }
 
     override fun indexProperty(stub: JsTypeDefPropertyStub, sink:IndexSink) {
         sink.occurrence<JsTypeDefProperty, String>(JsTypeDefPropertiesByNameIndex.instance.key, stub.propertyName)
         sink.occurrence<JsTypeDefProperty, String>(JsTypeDefPropertiesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
+        val enclosingClass = stub.enclosingClass
+        if(enclosingClass != null) {
+            sink.occurrence<JsTypeDefProperty, String>(JsTypeDefPropertiesByClassNameIndex.instance.key, enclosingClass)
+        }
     }
 
     override fun indexModule(stub: JsTypeDefModuleStub, sink:IndexSink) {

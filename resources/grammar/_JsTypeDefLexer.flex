@@ -95,7 +95,7 @@ ID=[$_a-zA-Z][_a-zA-Z0-9]*
   	"Map"                      	{ return JS_MAP; }
   	"typemap"                  	{ return JS_TYPE_MAP_KEYWORD; }
   	"keyof"                    	{ return JS_KEYOF; }
-  	"keys"                     	{ return JS_KEYS_KEYWORD; }
+  	"keyset"                    { return JS_KEYS_KEYWORD; }
   	"alias"                    	{ return JS_ALIAS; }
   	"internal"                 	{ return JS_INTERNAL; }
   	"static"                   	{ return JS_STATIC_KEYWORD; }

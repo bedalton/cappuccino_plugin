@@ -3,15 +3,17 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -51,7 +53,7 @@ object ObjJFunctionNameCompletionProvider {
         }
         for (function in functions) {
             ProgressIndicatorProvider.checkCanceled()
-            val functionName = function.functionNameAsString
+            val functionName = function.functionNameString
             val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
             if (shouldPossiblyIgnore && element.containingFile != function.containingFile)
                 continue
@@ -73,7 +75,7 @@ object ObjJFunctionNameCompletionProvider {
                     .create(functionName)
                     .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY ))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.TYPEDEF_PRIORITY ))
         }
     }
 
@@ -86,10 +88,33 @@ object ObjJFunctionNameCompletionProvider {
             }
         }.filter {
             it.enclosingNamespaceComponents.isEmpty()
-        }.map { it.functionNameString }
+        }
 
-        for (function in functions) {
-            addGlobalFunctionName(resultSet, function)
+        for (functionIn in functions) {
+            val function = functionIn.toJsTypeListType()
+            val functionName = function.name ?: continue
+            val arguments = StringBuilder()
+            function.parameters.forEach {
+                arguments.append(", ").append(it.name)
+                val type = it.types.toString()
+                val nullable = it.nullable
+                if (type.isNotNullOrBlank()) {
+                    arguments.append(":").append(type)
+                }
+                if (nullable.orFalse()) {
+                    arguments.append("?")
+                }
+            }
+            val argumentsString = if (arguments.length > 2)
+                arguments.substring(2)
+            else
+                ""
+            val lookupElementBuilder = LookupElementBuilder
+                    .create(functionName)
+                    .withTailText("(" + argumentsString + ") in [" + ObjJPsiImplUtil.getFileName(functionIn)+"]")
+                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY))
+
         }
     }
 

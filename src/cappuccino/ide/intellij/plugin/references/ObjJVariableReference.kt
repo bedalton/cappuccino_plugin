@@ -7,12 +7,16 @@ import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex
+import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -152,7 +156,33 @@ class ObjJVariableReference(
         } else {
             LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
         }
-        return PsiElementResolveResult.createResults(out)
+        if (out.isNotEmpty()) {
+            return PsiElementResolveResult.createResults(out)
+        }
+
+        val project = myElement.project
+        val variableName = myElement.text
+        // Get simple if no previous siblings
+        val prevSiblings = myElement.previousSiblings
+        if (prevSiblings.isEmpty()) {
+            val outSimple: List<JsTypeDefProperty> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter { it.enclosingNamespace.isEmpty() }
+            return PsiElementResolveResult.createResults(outSimple)
+        }
+        val className = prevSiblings.joinToString("\\.") { Regex.escape(it.text) }
+        val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
+
+        // Get types if qualified
+        val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
+                ?: return PsiElementResolveResult.EMPTY_ARRAY
+        if (classTypes.classes.isNotEmpty()) {
+            val classNamesIndexParameter = classTypes.toIndexSearchString
+            val searchString = "$classNamesIndexParameter\\.$variableName"
+            val found = JsTypeDefPropertiesByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
+                it.isStatic == isStatic
+            }
+            return PsiElementResolveResult.createResults(found)
+        }
+        return PsiElementResolveResult.EMPTY_ARRAY
     }
 
     override fun multiResolve(partial:Boolean) : Array<ResolveResult> {

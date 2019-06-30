@@ -1,16 +1,26 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.utils
 
+import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
+import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefModuleNameReference
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenericsKeyReference
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
+import cappuccino.ide.intellij.plugin.references.ObjJStringLiteralReference
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.tree.IElementType
 
 object JsTypeDefPsiImplUtil {
@@ -42,6 +52,16 @@ object JsTypeDefPsiImplUtil {
         return moduleName.text ?: ""
     }
 
+    @JvmStatic
+    fun getName(name:JsTypeDefTypeMapName) : String {
+        return name.text
+    }
+
+    @JvmStatic
+    fun getName(key:JsTypeDefGenericsKey) : String {
+        return key.text
+    }
+
     // ============================== //
     // ========== Set Name ========== //
     // ============================== //
@@ -68,6 +88,17 @@ object JsTypeDefPsiImplUtil {
         val newModuleName = JsTypeDefElementFactory.createModuleName(oldModuleName.project, newName) ?: return oldModuleName
         return oldModuleName.replace(newModuleName)
     }
+
+    @JvmStatic
+    fun setName(name:JsTypeDefTypeMapName, newName:String) : PsiElement {
+        return name
+    }
+
+    @JvmStatic
+    fun setName(key:JsTypeDefGenericsKey, newName:String) : PsiElement {
+        return key
+    }
+
 
     // ============================== //
     // ========== Namespace ========= //
@@ -380,11 +411,6 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getPropertyTypes(property: JsTypeDefArgument) : List<JsTypeDefType> {
-        return property.typeList
-    }
-
-    @JvmStatic
     fun isNullable(property: JsTypeDefProperty) : Boolean {
         return property.stub?.nullable ?: property.nullable != null || isNullable(property.typeList)
     }
@@ -463,7 +489,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     // ============================== //
-    // ========= Interface ========== //
+    // ====== Class/Interface ======= //
     // ============================== //
 
     @JvmStatic
@@ -477,6 +503,12 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
     // ======== Descriptions ======== //
     // ============================== //
+
+    @JvmStatic
+    fun getDescription(function:JsTypeDefFunction): ObjJFunctionDescription {
+        return (function.stub?.asJsFunctionType ?: function.toJsTypeListType()).description
+    }
+
     @JvmStatic
     fun getDescriptiveText(psiElement: JsTypeDefElement) : String {
         return when (psiElement) {
@@ -495,6 +527,107 @@ object JsTypeDefPsiImplUtil {
             else -> ""
         }
     }
+
+    // ============================== //
+    // ========== Property ========== //
+    // ============================== //
+
+    @JvmStatic
+    fun isStatic(property:JsTypeDefProperty) : Boolean {
+        return property.stub?.static ?: property.staticKeyword != null || (property.parent is JsTypeDefVariableDeclaration)
+    }
+    @JvmStatic
+    fun getPropertyNameString(property: JsTypeDefProperty) : String {
+        val stubName = property.stub?.propertyName
+        if (stubName != null)
+            return stubName
+        val propertyNameElement = property.propertyName
+        val escapedId = propertyNameElement?.escapedId
+        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement?.stringLiteral?.stringValue ?: propertyNameElement?.text.orEmpty()
+    }
+
+    @JvmStatic
+    fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
+        return declaration.stub?.variableName ?: declaration.property?.propertyNameString.orEmpty()
+    }
+
+    // ============================== //
+    // ========= Functions ========== //
+    // ============================== //
+
+    @JvmStatic
+    fun getVarArgs(argument: JsTypeDefArgument) : Boolean {
+        return argument.ellipsis != null
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    @JvmStatic
+    fun isStatic(functionDeclaration:JsTypeDefFunctionDeclaration) : Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun isStatic(function:JsTypeDefFunction) : Boolean {
+        return function.stub?.static ?: function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
+    }
+
+    @JvmStatic
+    fun getArgumentNameString(property: JsTypeDefArgument) : String {
+        val propertyNameElement = property.propertyName
+        val escapedId = propertyNameElement.escapedId
+        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
+    }
+
+    @JvmStatic
+    fun getFunctionNameString(function:JsTypeDefFunction) : String {
+        val stubName = function.stub?.functionName
+        if (stubName != null)
+            return stubName
+        val functionName = function.functionName
+        val escapedId = functionName.escapedId
+        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: functionName.text
+    }
+
+    // ============================== //
+    // ========= References ========= //
+    // ============================== //
+
+    @JvmStatic
+    fun getReference(name:JsTypeDefModuleName) : PsiPolyVariantReference {
+        return JsTypeDefModuleNameReference(name)
+    }
+
+    @JvmStatic
+    fun getReference(name:JsTypeDefTypeMapName) : PsiPolyVariantReference {
+        return JsTypeDefTypeMapNameReference(name)
+    }
+
+    @JvmStatic
+    fun getReference(name:JsTypeDefTypeName) : PsiPolyVariantReference {
+        return JsTypeDefTypeNameReference(name)
+    }
+
+    @JvmStatic
+    fun getReference(name:JsTypeDefGenericsKey) : PsiPolyVariantReference {
+        return JsTypeDefTypeGenericsKeyReference(name)
+    }
+
+    // ============================== //
+    // ========== Literals ========== //
+    // ============================== //
+    @JvmStatic
+    fun getStringValue(stringLiteral: JsTypeDefStringLiteral): String {
+        val rawText = stringLiteral.text
+        val quotationMark: String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
+        val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
+        val offset = if (outText.endsWith(quotationMark)) 1 else 0
+        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - offset) else outText
+
+    }
+
+    // ============================== //
+    // ======== Nodes and PSI ======= //
+    // ============================== //
 
     fun eos(compositeElement: PsiElement?): Boolean {
         if (compositeElement == null) {
@@ -525,69 +658,12 @@ object JsTypeDefPsiImplUtil {
         return ahead in EOS_TOKENS || hadLineTerminator
     }
 
-    @JvmStatic
-    fun getVarArgs(argument: JsTypeDefArgument) : Boolean {
-        return argument.ellipsis != null
-    }
 
     @Suppress("unused")
     fun PsiElement?.hasNodeType(elementType: IElementType): Boolean {
         return this != null && this.node.elementType === elementType
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    @JvmStatic
-    fun isStatic(functionDeclaration:JsTypeDefFunctionDeclaration) : Boolean {
-        return true
-    }
-
-    @JvmStatic
-    fun isStatic(function:JsTypeDefFunction) : Boolean {
-        return function.stub?.static ?: function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
-    }
-
-    @JvmStatic
-    fun getPropertyNameString(property: JsTypeDefProperty) : String {
-        val stubName = property.stub?.propertyName
-        if (stubName != null)
-            return stubName
-        val propertyNameElement = property.propertyName
-        val escapedId = propertyNameElement?.escapedId
-        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement?.stringLiteral?.stringValue ?: propertyNameElement?.text.orEmpty()
-    }
-
-    @JvmStatic
-    fun getPropertyNameString(property: JsTypeDefArgument) : String {
-        val propertyNameElement = property.propertyName
-        val escapedId = propertyNameElement.escapedId
-        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
-    }
-
-    @JvmStatic
-    fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
-        return declaration.stub?.variableName ?: declaration.property?.propertyNameString.orEmpty()
-    }
-
-
-    @JvmStatic
-    fun getFunctionNameString(function:JsTypeDefFunction) : String {
-        val stubName = function.stub?.functionName
-        if (stubName != null)
-            return stubName
-        val functionName = function.functionName
-        val escapedId = functionName.escapedId
-        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: functionName.text
-    }
-
-    @JvmStatic
-    fun getStringValue(stringLiteral: JsTypeDefStringLiteral): String {
-        val rawText = stringLiteral.text
-        val quotationMark: String = if (rawText.startsWith("\"")) "\"" else if (rawText.startsWith("'")) "'" else return rawText
-        val outText = if (rawText.startsWith(quotationMark)) rawText.substring(1) else rawText
-        val offset = if (outText.endsWith(quotationMark)) 1 else 0
-        return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - offset) else outText
-
-    }
 }
 
 @Suppress("unused")

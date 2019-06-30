@@ -4,31 +4,37 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArg
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
+import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.resolve
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.PsiElement
 
-internal fun inferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
+internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
     return functionCall.getCachedInferredTypes(tag) {
         internalInferFunctionCallReturnType(functionCall, tag)
     }
 }
 
-internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, tag:Long) : InferenceResult? {
+internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
     val resolved = functionCall.functionName?.reference?.resolve() as? ObjJCompositeElement
     if (resolved == null) {
         val functionName = functionCall.functionName?.text
         if (functionName != null) {
             val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
             val out = functionSet.flatMap {
-                        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
-                    }.toSet()
+                it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+            }.toSet()
             if (out.isNotEmpty()) {
-                return InferenceResult(types = out )
+                return InferenceResult(types = out)
             }
         }
         return null
@@ -40,7 +46,7 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
         return cached
     return resolved.getCachedInferredTypes(tag) {
         val functionAsVariableName = resolved as? ObjJVariableName
-        val function:ObjJFunctionDeclarationElement<*>? = (when {
+        val function: ObjJFunctionDeclarationElement<*>? = (when {
             functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
             resolved is ObjJFunctionName -> resolved.parentFunctionDeclaration
             else -> null
@@ -53,7 +59,7 @@ internal fun internalInferFunctionCallReturnType(functionCall:ObjJFunctionCall, 
     }
 }
 
-fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
+fun inferFunctionDeclarationReturnType(function: ObjJFunctionDeclarationElement<*>, tag: Long): InferenceResult? {
     val commentReturnTypes = function.docComment?.getReturnTypes(function.project)
     if (commentReturnTypes.isNotNullOrEmpty())
         return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
@@ -66,10 +72,10 @@ fun inferFunctionDeclarationReturnType(function:ObjJFunctionDeclarationElement<*
     return types
 }
 
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsTypeListFunctionType {
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag: Long): JsTypeListFunctionType {
     val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
     return JsTypeListFunctionType(
-            name = this.functionNameAsString,
+            name = this.functionNameString,
             parameters = this.parameterTypes(),
             returnType = returnTypes,
             comment = docComment?.commentText,
@@ -77,14 +83,14 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag:Long) : JsTypeListFun
     )
 }
 
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag:Long) : InferenceResult? {
+fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): InferenceResult? {
     val functionType = toJsFunctionType(tag)
     return InferenceResult(
             types = setOf(functionType)
     )
 }
 
-private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefFunctionArgument> {
+private fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFunctionArgument> {
     //ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
     val out = mutableListOf<JsTypeDefFunctionArgument>()
@@ -112,7 +118,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes() : List<JsTypeDefF
 }
 
 
-internal val PsiElement.parentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
+internal val PsiElement.parentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
     get() {
         return (this as? ObjJFunctionName)?.cachedParentFunctionDeclaration
                 ?: (this as? ObjJVariableName)?.cachedParentFunctionDeclaration

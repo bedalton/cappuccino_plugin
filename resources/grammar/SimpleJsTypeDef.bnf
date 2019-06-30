@@ -14,7 +14,7 @@
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
 	consumeTokenMethod("interfaceBody")="consumeTokenFast"
 	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeMapElement|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
-
+	implements(".*")="cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 	name("eos") = "semi-colon"
 	name("stringLiteral") = "String"
 	name("integer") = "Int"
@@ -59,7 +59,7 @@
 		MAP =								'Map'
 		TYPE_MAP_KEYWORD = 					'typemap'
 		KEYOF = 							'keyof'
-		KEYS_KEYWORD =						'keys'
+		KEYS_KEYWORD =						'keyset'
 		ALIAS = 							'alias'
 		INTERNAL =							'internal'
 		STATIC_KEYWORD =                    'static'
@@ -205,9 +205,6 @@ anonymousFunction
 	|	'(' argumentsList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
 	{
 		pin(".*") = 2
-		methods = [
-			propertiesList="functionPropertiesList"
-		]
 	}
 	;
 
@@ -432,7 +429,7 @@ genericTypeTypes
 	}
 	;
 
-genericsTypeList
+private genericsTypeList
 	::= genericTypesType (',' genericTypesType)*
 	{
 		recoverWhile=genericsTypeList_recover
@@ -445,10 +442,17 @@ private genericsTypeList_recover
 
 
 genericTypesType
-	::= genericsKey (':'|'=') types
+	::= genericsKeyWithType
 	|	valueOfKeyType
 	|	types
 	|	VOID
+	;
+
+private genericsKeyWithType
+	::= genericsKey (':'|'=') types
+	{
+		pin=2
+	}
 	;
 
 private arrayGenericTypeTypes
@@ -531,10 +535,11 @@ function
 	        getNamespaceComponent
 	        isStatic
 	        getFunctionNameString
-			propertiesList="functionPropertiesList"
+	        getDescription
 		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
 	  	]
 	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub"
@@ -569,6 +574,7 @@ functionName
 			getEnclosingNamespaceComponents
 	        getNamespaceComponents
 	        getNamespaceComponent
+	        getReference
 		]
 
 	}
@@ -579,7 +585,6 @@ argumentsList
 	{
 		pin=2
 		methods = [
-			properties="functionProperty"
 	        arguments = "argument"
 		]
 		recoverWhile=argumentsList_recover
@@ -591,14 +596,13 @@ private argumentsList_recover
     ;
 
 argument
-	::= '...'? propertyName '?'? ':' (keyOfType|valueOfKeyType|types|interfaceBody)
+	::= '...'? propertyName '?'? ':' (keyOfType|valueOfKeyType|types|interfaceBodyProperty)
 	{
 		pin=2
 		methods = [
 			getVarArgs
 		    isNullable
-	        getPropertyTypes
-	        getPropertyNameString
+	        getArgumentNameString
         ]
 	}
 	;
@@ -618,6 +622,7 @@ property
     	        getNamespacedName
     	        getNamespaceComponents
     	        getNamespaceComponent
+    	        isStatic
     	    ]
     		implements = [
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -699,6 +704,7 @@ typeName
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
 		]
 		methods = [
+			getReference
 			getName
 			setName
 		]
@@ -734,16 +740,33 @@ moduleName
 			getIndexInDirectNamespace
 			getIndexInNamespace
 			getFullyNamespacedName
+	        getReference
 		]
 	}
 	;
 
 typeMapName
 	::= ID
+	{
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		methods = [
+	        getReference
+	        getName
+	        setName
+		]
+	}
 	;
 
 genericsKey
 	::= ID
+	{
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		methods = [
+			getReference
+			getName
+			setName
+		]
+	}
 	;
 
 stringLiteral
@@ -752,6 +775,9 @@ stringLiteral
 	{
 		methods = [
 			getStringValue
+			getName
+			setName
+			getReference
 		]
 	}
 	;

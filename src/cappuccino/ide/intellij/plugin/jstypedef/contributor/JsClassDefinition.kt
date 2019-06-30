@@ -105,10 +105,10 @@ fun List<String>.toInferenceResult(): InferenceResult {
 
 fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
-            name = functionNameString,
+            name = stub?.functionName ?: functionNameString,
             comment = null, // @todo implement comment parsing
-            parameters = argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
-            returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
+            parameters = stub?.parameters ?: argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
+            returnType = stub?.returnType ?: functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
 
@@ -155,7 +155,7 @@ fun JsTypeDefArgument.toJsNamedProperty(): JsTypeDefFunctionArgument {
     if (valueOfType != null)
         typeList.add(valueOfType)
     return JsTypeDefFunctionArgument(
-            name = propertyNameString,
+            name = argumentNameString,
             comment = docComment?.commentText,
             types = InferenceResult(types = typeList, nullable = isNullable),
             default = null,

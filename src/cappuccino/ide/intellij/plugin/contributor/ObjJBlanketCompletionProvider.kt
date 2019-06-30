@@ -17,8 +17,11 @@ import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByClassNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -553,7 +556,20 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val classes = inferred.classes
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
-        val jsClasses = classes.toInferenceResult().toJsClasses(element.project)
+
+        val classIndexString = inferred.toIndexSearchString
+        val functions = JsTypeDefFunctionsByClassNamesIndex.instance.getByPatternFlat(classIndexString, project).filter {
+            it.isStatic == includeStatic
+        }.map {
+            it.toJsTypeListType()
+        }
+        val properties = JsTypeDefPropertiesByClassNameIndex.instance.getByPatternFlat(classIndexString, project).filter {
+            it.isStatic == includeStatic
+        }.map {
+            it.toJsNamedProperty()
+        }
+
+        /*val jsClasses = classes.toInferenceResult().toJsClasses(element.project)
         if (jsClasses.size != classes.size) {
             LOGGER.info("ClassTypes and JsClasses is not equal.\n\tClassTypes: <$classes>\n\tFound: <${jsClasses.map{it.className}}>")
         } else if (classes.isNotEmpty()) {
@@ -564,7 +580,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val types:JsClassDefinition = jsClasses.collapseWithSuperType(project)
         val functions = if (includeStatic) types.staticFunctions else types.functions
         val properties = if (includeStatic) types.staticProperties else types.properties
-        LOGGER.info("Found ${functions.size} functions and ${properties.size} properties in classes")
+        LOGGER.info("Found ${functions.size} functions and ${properties.size} properties in classes")*/
         functions.forEach { classFunction ->
             val functionName = classFunction.name ?: return@forEach
             val lookupElementBuilder = LookupElementBuilder

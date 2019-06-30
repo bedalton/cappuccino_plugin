@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.psi.stubs.StubElement
@@ -40,6 +41,8 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
     val returnType: InferenceResult
     val global:Boolean
     val static:Boolean
+    val enclosingClass:String?
+    val asJsFunctionType:JsTypeListType.JsTypeListFunctionType
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + functionName
 }
@@ -54,12 +57,18 @@ fun JsTypeDefProperty.toStubParameter() : JsTypeDefNamedProperty {
 fun JsTypeDefArgument.toStubParameter() : JsTypeDefFunctionArgument {
     return JsTypeDefFunctionArgument(
             name = propertyName.text,
-            types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable),
+            types = InferenceResult( types = this.propertyTypes(), nullable = isNullable),
             varArgs = varArgs,
             comment = docComment?.commentText
     )
 }
 
+fun JsTypeDefArgument.propertyTypes() : Set<JsTypeListType> {
+    return typeList.toJsTypeDefTypeListTypes() + listOfNotNull(
+            keyOfType?.toTypeListType(),
+            valueOfKeyType?.toTypeListType()
+    )
+}
 
 /**
  * Property stub interface
@@ -70,6 +79,7 @@ interface JsTypeDefPropertyStub : StubElement<JsTypeDefPropertyImpl>, JsTypeDefN
     val types:InferenceResult
     val nullable:Boolean
     val static:Boolean
+    val enclosingClass:String?
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + propertyName
 }

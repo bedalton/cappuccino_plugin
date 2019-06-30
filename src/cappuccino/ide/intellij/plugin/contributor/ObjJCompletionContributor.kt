@@ -63,6 +63,7 @@ class ObjJCompletionContributor : CompletionContributor() {
         val GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY = -50.0
         val GENERIC_VARIABLE_SUGGESTION_PRIORITY = -40.0
         val FUNCTIONS_NOT_IN_FILE_PRIORITY = -70.0
+        val TYPEDEF_PRIORITY = -300.0
         val FUNCTION_SHOULD_SKIP = -120.0
     }
 
