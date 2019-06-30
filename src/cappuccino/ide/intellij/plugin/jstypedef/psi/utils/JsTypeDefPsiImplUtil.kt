@@ -121,7 +121,7 @@ object JsTypeDefPsiImplUtil {
         if (stub != null)
             return stub.enclosingNamespace
         val element = elementIn.parent as? JsTypeDefFunctionDeclaration ?: elementIn
-        return element.getParentOfType(JsTypeDefHasNamespace::class.java)?.enclosingNamespace ?: ""
+        return element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName ?: ""
     }
 
     @JvmStatic
@@ -134,7 +134,7 @@ object JsTypeDefPsiImplUtil {
         if (stub != null)
             return stub.enclosingNamespaceComponents
         val element = elementIn.parent as? JsTypeDefFunctionDeclaration ?: elementIn
-        return element.getParentOfType(JsTypeDefHasNamespace::class.java)?.enclosingNamespaceComponents ?: emptyList()
+        return element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents ?: emptyList()
     }
 
     @JvmStatic

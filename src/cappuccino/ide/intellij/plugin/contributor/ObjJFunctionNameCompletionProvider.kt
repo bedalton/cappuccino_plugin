@@ -6,11 +6,9 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
+import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
@@ -81,12 +79,14 @@ object ObjJFunctionNameCompletionProvider {
 
     private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, project:Project, showEvenSkipped:Boolean) {
         val functions = if (showEvenSkipped) {
-            JsTypeDefFunctionsByNameIndex.instance.getAllKeys(project)
+            JsTypeDefFunctionsByNameIndex.instance.getAll(project).filter{ it.atSilent == null}
         } else {
             JsTypeDefFunctionsByNameIndex.instance.getAll(project, GlobalSearchScope.allScope(project)).filter {
-                it.atSilent == null && it.atSilent == null
-            }.map { it.functionNameString }
-        }
+                it.atSilent == null && it.atQuiet == null
+            }
+        }.filter {
+            it.enclosingNamespaceComponents.isEmpty()
+        }.map { it.functionNameString }
 
         for (function in functions) {
             addGlobalFunctionName(resultSet, function)

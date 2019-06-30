@@ -36,6 +36,12 @@ object EditorUtil {
         }
     }
 
+    fun deleteText(document:Document, range: TextRange) {
+        com.intellij.openapi.application.runWriteAction {
+            document.deleteString(range.startOffset, range.endOffset)
+        }
+    }
+
     fun isTextAtOffset(context: InsertionContext, text: String): Boolean {
         if (context.selectionEndOffset == context.document.textLength) {
             return true

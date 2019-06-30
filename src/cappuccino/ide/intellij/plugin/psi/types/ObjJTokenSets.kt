@@ -289,6 +289,8 @@ object ObjJTokenSets {
             ObjJ_IN,
             ObjJ_AT_CLASS,
             ObjJ_AT_IMPLEMENTATION,
+            ObjJ_PROTOCOL_DECLARATION,
+            ObjJ_IMPLEMENTATION_DECLARATION,
             ObjJ_QUESTION_MARK,
             ObjJ_ASSIGN,
             ObjJ_MULTIPLY_ASSIGN,

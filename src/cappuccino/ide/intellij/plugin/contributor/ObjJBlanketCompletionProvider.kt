@@ -19,6 +19,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -204,7 +205,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             resultSet.stopHere()
             return
         }
-        // If @ and in class declartion
+        // If @ and in class declaration
         if (element.text.startsWith("@")) {
             if (element is ObjJClassDeclarationElement<*> || element.parent is ObjJClassDeclarationElement<*>) {
                 resultSet.addElement(LookupElementBuilder.create("end").withPresentableText("@end"))
@@ -279,7 +280,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
-        val properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null}
+        val properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null && it.enclosingNamespaceComponents.isEmpty()}
         if (shouldIgnoreIgnoredGlobals) {
             addCompletionElementsSimple(resultSet, properties.filter { it.atSilent == null}.map { it.propertyNameString }, -200.0)
         } else {

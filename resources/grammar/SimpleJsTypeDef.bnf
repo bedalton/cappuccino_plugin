@@ -43,6 +43,7 @@
 		SINGLE_QUOTE =						"'"
 		DOUBLE_QUOTE =						'"'
 		ELLIPSIS = 							'...'
+		UNION = 							'&'
 
 		//KeyWords
 		READONLY =							'readonly'
@@ -65,7 +66,8 @@
 		CLASS_KEYWORD = 					'class'
 		AT_SILENT =                         '@silent'
 		AT_QUIET =                          '@quiet'
-		UNION = 							'&'
+		FILE_KEYWORD =                      '@file'
+		DECLARE =                           'declare'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -82,7 +84,11 @@
 	]
 }
 
-defFile ::= fileRootElement*
+defFile ::= fileDirective? fileRootElement*
+
+fileDirective
+    ::= FILE_KEYWORD ':' completionModifier
+    ;
 
 private fileRootElement
 	::= !<<eof>> definition
@@ -133,7 +139,7 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= READONLY? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos
+	::= variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos
 	{
 		pin = 2
 		implements = [
@@ -155,11 +161,18 @@ variableDeclaration
 	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
 	}
 	;
+private variableDeclarationPrefix
+    ::= 'declare' READONLY
+    |   READONLY 'declare'
+    |   'declare'
+    |   READONLY
+    |
+    ;
 
 functionDeclaration
-	::= FUNCTION_KEYWORD function
+	::= 'declare'? FUNCTION_KEYWORD function eos?
 	{
-		pin = 1
+		pin = 2
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
@@ -199,9 +212,9 @@ anonymousFunction
 	;
 
 interfaceElement
-	::= 'interface' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
+	::= completionModifier? 'interface' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
 	{
-		pin = 1
+		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
@@ -222,9 +235,9 @@ interfaceElement
 	;
 
 classElement
-	::= 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
+	::= completionModifier? 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
 	{
-		pin = 1
+		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
@@ -310,6 +323,7 @@ private types
 
 type
 	::= typeUnion
+	|	arrayType
 	|	typeLeft
 	{
 		implements = [
@@ -321,12 +335,17 @@ type
 
 private typeLeft
 	::= anonymousFunction
-	|	arrayType
 	|	mapType
+	|   qualifiedTypeName
 	| 	typeName genericTypeTypes?
 	|	'null'
 	|	stringLiteral
+	|   VOID
 	;
+
+qualifiedTypeName
+    ::= (typeName '.')+ typeName
+    ;
 
 typeUnion
 	::= typeName typeUnionPrime+
@@ -445,11 +464,15 @@ private arrayGenericTypeTypes
 	;
 
 arrayType
-	::= arrayTypes
+	::= arrayTypes arrayLimit?
 	{
 		pin = 1
 	}
 	;
+
+arrayLimit
+    ::= '{' integer '}'
+    ;
 
 private arrayTypes
 	::= arrayTypeInParens
@@ -472,7 +495,7 @@ private arrayTypeInParens
 	;
 
 private arrayTypeSimple
-	::= type arrayDimensions
+	::= typeLeft arrayDimensions
 	{
 		pin=2
 	}
@@ -531,6 +554,7 @@ functionName
 	|	ID
 	|	KEYS_KEYWORD
 	|	MAP
+	|   'declare'
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
@@ -614,7 +638,7 @@ private propertyElement
 	;
 
 propertyAccess
-	::= '[' propertyName ':' typeName ']' ':' types
+	::= readonlyStatic? '[' propertyName ':' typeName ']' ':' types
 	{
 		pin=3
 	}
@@ -633,6 +657,8 @@ propertyName
 	|	ID
 	|	KEYOF
 	|	KEYS_KEYWORD
+	|   'declare'
+	|   ARRAY
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"

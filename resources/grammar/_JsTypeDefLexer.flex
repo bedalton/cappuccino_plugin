@@ -37,7 +37,7 @@ SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 ESCAPED_ID=`[ \t\n\x0B\f\r]*[_a-zA-Z][_a-zA-Z0-9]*[ \t\n\x0B\f\r]*`
 
 INTEGER_LITERAL=[0-9]+
-ID=[_a-zA-Z][_a-zA-Z0-9]*
+ID=[$_a-zA-Z][_a-zA-Z0-9]*
 
 %state DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT
 
@@ -101,6 +101,8 @@ ID=[_a-zA-Z][_a-zA-Z0-9]*
   	"static"                   	{ return JS_STATIC_KEYWORD; }
   	"@quiet"                   	{ return JS_AT_QUIET; }
   	"@silent"                  	{ return JS_AT_SILENT; }
+    "@file"                     { return JS_FILE_KEYWORD; }
+    "declare"                   { return JS_DECLARE; }
 
  	{BLOCK_COMMENT}            	{ return JS_BLOCK_COMMENT; }
   	{SINGLE_LINE_COMMENT}      	{ return JS_SINGLE_LINE_COMMENT; }

@@ -1,0 +1,6 @@
+<K\s+(?:extends\s+)?keyof\s+([^>]+)>\(([^:]+): K,
+($2: K keyof $1,
+
+new\(([^)]*)\):[^;]+
+
+Only show js class name completions after "new" and when class has static functions or variables
