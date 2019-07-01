@@ -1,0 +1,1619 @@
+
+/** The SVGAElement interface provides access to the properties of <a> element, as well as getMethods to manipulate them. */
+class SVGAElement extends SVGGraphicsElement, SVGURIReference {
+    new();
+    readonly target: SVGAnimatedString;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGAngle interface is used to represent a value that can be an <angle> or <number> value. An SVGAngle reflected through the animVal attribute is always read only. */
+class SVGAngle {
+    new();
+    static readonly SVG_ANGLETYPE_DEG: number;
+    static readonly SVG_ANGLETYPE_GRAD: number;
+    static readonly SVG_ANGLETYPE_RAD: number;
+    static readonly SVG_ANGLETYPE_UNKNOWN: number;
+    static readonly SVG_ANGLETYPE_UNSPECIFIED: number;
+    readonly unitType: number;
+    value: number;
+    valueAsString: string;
+    valueInSpecifiedUnits: number;
+    convertToSpecifiedUnits(unitType: number): void;
+    newValueSpecifiedUnits(unitType: number, valueInSpecifiedUnits: number): void;
+    readonly SVG_ANGLETYPE_DEG: number;
+    readonly SVG_ANGLETYPE_GRAD: number;
+    readonly SVG_ANGLETYPE_RAD: number;
+    readonly SVG_ANGLETYPE_UNKNOWN: number;
+    readonly SVG_ANGLETYPE_UNSPECIFIED: number;
+}
+
+class SVGAnimateElement extends SVGAnimationElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGAnimateMotionElement extends SVGAnimationElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateMotionElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateMotionElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGAnimateTransformElement extends SVGAnimationElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateTransformElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimateTransformElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGAnimatedAngle interface is used for attributes of basic type <angle> which can be animated. */
+class SVGAnimatedAngle {
+    new();
+    readonly animVal: SVGAngle;
+    readonly baseVal: SVGAngle;
+}
+
+/** The SVGAnimatedBoolean interface is used for attributes of type boolean which can be animated. */
+class SVGAnimatedBoolean {
+    new();
+    readonly animVal: boolean;
+    baseVal: boolean;
+}
+
+/** The SVGAnimatedEnumeration interface is used for attributes whose value must be a constant from a particular enumeration and which can be animated. */
+class SVGAnimatedEnumeration {
+    new();
+    readonly animVal: number;
+    baseVal: number;
+}
+
+/** The SVGAnimatedInteger interface is used for attributes of basic type <integer> which can be animated. */
+class SVGAnimatedInteger {
+    new();
+    readonly animVal: number;
+    baseVal: number;
+}
+
+/** The SVGAnimatedLength interface is used for attributes of basic type <length> which can be animated. */
+class SVGAnimatedLength {
+    new();
+    readonly animVal: SVGLength;
+    readonly baseVal: SVGLength;
+}
+
+/** The SVGAnimatedLengthList interface is used for attributes of type SVGLengthList which can be animated. */
+class SVGAnimatedLengthList {
+    new();
+    readonly animVal: SVGLengthList;
+    readonly baseVal: SVGLengthList;
+}
+
+/** The SVGAnimatedNumber interface is used for attributes of basic type <Number> which can be animated. */
+class SVGAnimatedNumber {
+    new();
+    readonly animVal: number;
+    baseVal: number;
+}
+
+/** The SVGAnimatedNumber interface is used for attributes which take a list of numbers and which can be animated. */
+class SVGAnimatedNumberList {
+    new();
+    readonly animVal: SVGNumberList;
+    readonly baseVal: SVGNumberList;
+}
+
+interface SVGAnimatedPoints {
+    readonly animatedPoints: SVGPointList;
+    readonly points: SVGPointList;
+}
+
+/** The SVGAnimatedPreserveAspectRatio interface is used for attributes of type SVGPreserveAspectRatio which can be animated. */
+class SVGAnimatedPreserveAspectRatio {
+    new();
+    readonly animVal: SVGPreserveAspectRatio;
+    readonly baseVal: SVGPreserveAspectRatio;
+}
+
+/** The SVGAnimatedRect interface is used for attributes of basic SVGRect which can be animated. */
+class SVGAnimatedRect {
+    new();
+    readonly animVal: DOMRectReadOnly;
+    readonly baseVal: DOMRect;
+}
+
+/** The SVGAnimatedString interface represents string attributes which can be animated from each SVG declaration. You need to create SVG attribute before doing anything else, everything should be declared inside this. */
+class SVGAnimatedString {
+    new();
+    readonly animVal: string;
+    baseVal: string;
+}
+
+/** The SVGAnimatedTransformList interface is used for attributes which take a list of numbers and which can be animated. */
+class SVGAnimatedTransformList {
+    new();
+    readonly animVal: SVGTransformList;
+    readonly baseVal: SVGTransformList;
+}
+
+class SVGAnimationElement extends SVGElement {
+    new();
+    readonly targetElement: SVGElement;
+    getCurrentTime(): number;
+    getSimpleDuration(): number;
+    getStartTime(): number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimationElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGAnimationElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGCircleElement interface is an interface for the <circle> element. The circle element is defined by the cx and cy attributes that denote the coordinates of the centre of the circle. */
+class SVGCircleElement extends SVGGraphicsElement {
+    new();
+    readonly cx: SVGAnimatedLength;
+    readonly cy: SVGAnimatedLength;
+    readonly r: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGCircleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGCircleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGClipPathElement interface provides access to the properties of <clipPath> elements, as well as getMethods to manipulate them. */
+class SVGClipPathElement extends SVGGraphicsElement {
+    new();
+    readonly clipPathUnits: SVGAnimatedEnumeration;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGClipPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGClipPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGComponentTransferFunctionElement interface defines a base interface used by the component transfer function interfaces. */
+class SVGComponentTransferFunctionElement extends SVGElement {
+    new();
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_DISCRETE: number;
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_GAMMA: number;
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY: number;
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_LINEAR: number;
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_TABLE: number;
+    static readonly SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN: number;
+    readonly amplitude: SVGAnimatedNumber;
+    readonly exponent: SVGAnimatedNumber;
+    readonly intercept: SVGAnimatedNumber;
+    readonly offset: SVGAnimatedNumber;
+    readonly slope: SVGAnimatedNumber;
+    readonly tableValues: SVGAnimatedNumberList;
+    readonly type: SVGAnimatedEnumeration;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_DISCRETE: number;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_GAMMA: number;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY: number;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_LINEAR: number;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_TABLE: number;
+    readonly SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGComponentTransferFunctionElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGComponentTransferFunctionElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGCursorElement extends SVGElement {
+    new();
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGCursorElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGCursorElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGDefsElement interface corresponds to the <defs> element. */
+interface SVGDefsElement extends SVGGraphicsElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGDefsElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGDefsElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGDescElement interface corresponds to the <desc> element. */
+class SVGDescElement extends SVGElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGDescElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGDescElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap SVGElementEventMap extends ElementEventMap, GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
+}
+
+/** All of the SVG DOM interfaces that correspond directly to elements in the SVG language derive from the SVGElement interface. */
+class SVGElement extends Element, GlobalEventHandlers, DocumentAndElementEventHandlers, SVGElementInstance, HTMLOrSVGElement, ElementCSSInlineStyle {
+    new();
+    /** @deprecated */
+    readonly className: any;
+    readonly ownerSVGElement: SVGSVGElement | null;
+    readonly viewportElement: SVGElement | null;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGElementInstance extends EventTarget {
+    new();
+    readonly correspondingElement: SVGElement;
+    readonly correspondingUseElement: SVGUseElement;
+}
+
+class SVGElementInstanceList {
+    new();
+    /** @deprecated */
+    readonly length: number;
+    /** @deprecated */
+    item(index: number): SVGElementInstance;
+}
+
+/** The SVGEllipseElement interface provides access to the properties of <ellipse> elements. */
+class SVGEllipseElement extends SVGGraphicsElement {
+    new();
+    readonly cx: SVGAnimatedLength;
+    readonly cy: SVGAnimatedLength;
+    readonly rx: SVGAnimatedLength;
+    readonly ry: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGEllipseElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGEllipseElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEBlendElement interface corresponds to the <feBlend> element. */
+class SVGFEBlendElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_FEBLEND_MODE_COLOR: number;
+    static readonly SVG_FEBLEND_MODE_COLOR_BURN: number;
+    static readonly SVG_FEBLEND_MODE_COLOR_DODGE: number;
+    static readonly SVG_FEBLEND_MODE_DARKEN: number;
+    static readonly SVG_FEBLEND_MODE_DIFFERENCE: number;
+    static readonly SVG_FEBLEND_MODE_EXCLUSION: number;
+    static readonly SVG_FEBLEND_MODE_HARD_LIGHT: number;
+    static readonly SVG_FEBLEND_MODE_HUE: number;
+    static readonly SVG_FEBLEND_MODE_LIGHTEN: number;
+    static readonly SVG_FEBLEND_MODE_LUMINOSITY: number;
+    static readonly SVG_FEBLEND_MODE_MULTIPLY: number;
+    static readonly SVG_FEBLEND_MODE_NORMAL: number;
+    static readonly SVG_FEBLEND_MODE_OVERLAY: number;
+    static readonly SVG_FEBLEND_MODE_SATURATION: number;
+    static readonly SVG_FEBLEND_MODE_SCREEN: number;
+    static readonly SVG_FEBLEND_MODE_SOFT_LIGHT: number;
+    static readonly SVG_FEBLEND_MODE_UNKNOWN: number;
+    readonly in1: SVGAnimatedString;
+    readonly in2: SVGAnimatedString;
+    readonly mode: SVGAnimatedEnumeration;
+    readonly SVG_FEBLEND_MODE_COLOR: number;
+    readonly SVG_FEBLEND_MODE_COLOR_BURN: number;
+    readonly SVG_FEBLEND_MODE_COLOR_DODGE: number;
+    readonly SVG_FEBLEND_MODE_DARKEN: number;
+    readonly SVG_FEBLEND_MODE_DIFFERENCE: number;
+    readonly SVG_FEBLEND_MODE_EXCLUSION: number;
+    readonly SVG_FEBLEND_MODE_HARD_LIGHT: number;
+    readonly SVG_FEBLEND_MODE_HUE: number;
+    readonly SVG_FEBLEND_MODE_LIGHTEN: number;
+    readonly SVG_FEBLEND_MODE_LUMINOSITY: number;
+    readonly SVG_FEBLEND_MODE_MULTIPLY: number;
+    readonly SVG_FEBLEND_MODE_NORMAL: number;
+    readonly SVG_FEBLEND_MODE_OVERLAY: number;
+    readonly SVG_FEBLEND_MODE_SATURATION: number;
+    readonly SVG_FEBLEND_MODE_SCREEN: number;
+    readonly SVG_FEBLEND_MODE_SOFT_LIGHT: number;
+    readonly SVG_FEBLEND_MODE_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEBlendElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEBlendElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEColorMatrixElement interface corresponds to the <feColorMatrix> element. */
+class SVGFEColorMatrixElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_FECOLORMATRIX_TYPE_HUEROTATE: number;
+    static readonly SVG_FECOLORMATRIX_TYPE_LUMINANCETOALPHA: number;
+    static readonly SVG_FECOLORMATRIX_TYPE_MATRIX: number;
+    static readonly SVG_FECOLORMATRIX_TYPE_SATURATE: number;
+    static readonly SVG_FECOLORMATRIX_TYPE_UNKNOWN: number;
+    readonly in1: SVGAnimatedString;
+    readonly type: SVGAnimatedEnumeration;
+    readonly values: SVGAnimatedNumberList;
+    readonly SVG_FECOLORMATRIX_TYPE_HUEROTATE: number;
+    readonly SVG_FECOLORMATRIX_TYPE_LUMINANCETOALPHA: number;
+    readonly SVG_FECOLORMATRIX_TYPE_MATRIX: number;
+    readonly SVG_FECOLORMATRIX_TYPE_SATURATE: number;
+    readonly SVG_FECOLORMATRIX_TYPE_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEColorMatrixElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEColorMatrixElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEComponentTransferElement interface corresponds to the <feComponentTransfer> element. */
+interface SVGFEComponentTransferElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly in1: SVGAnimatedString;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEComponentTransferElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEComponentTransferElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFECompositeElement interface corresponds to the <feComposite> element. */
+class SVGFECompositeElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_FECOMPOSITE_OPERATOR_ARITHMETIC: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_ATOP: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_IN: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_OUT: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_OVER: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_UNKNOWN: number;
+    static readonly SVG_FECOMPOSITE_OPERATOR_XOR: number;
+    readonly in1: SVGAnimatedString;
+    readonly in2: SVGAnimatedString;
+    readonly k1: SVGAnimatedNumber;
+    readonly k2: SVGAnimatedNumber;
+    readonly k3: SVGAnimatedNumber;
+    readonly k4: SVGAnimatedNumber;
+    readonly operator: SVGAnimatedEnumeration;
+    readonly SVG_FECOMPOSITE_OPERATOR_ARITHMETIC: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_ATOP: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_IN: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_OUT: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_OVER: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_UNKNOWN: number;
+    readonly SVG_FECOMPOSITE_OPERATOR_XOR: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFECompositeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFECompositeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEConvolveMatrixElement interface corresponds to the <feConvolveMatrix> element. */
+class SVGFEConvolveMatrixElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_EDGEMODE_DUPLICATE: number;
+    static readonly SVG_EDGEMODE_NONE: number;
+    static readonly SVG_EDGEMODE_UNKNOWN: number;
+    static readonly SVG_EDGEMODE_WRAP: number;
+    readonly bias: SVGAnimatedNumber;
+    readonly divisor: SVGAnimatedNumber;
+    readonly edgeMode: SVGAnimatedEnumeration;
+    readonly in1: SVGAnimatedString;
+    readonly kernelMatrix: SVGAnimatedNumberList;
+    readonly kernelUnitLengthX: SVGAnimatedNumber;
+    readonly kernelUnitLengthY: SVGAnimatedNumber;
+    readonly orderX: SVGAnimatedInteger;
+    readonly orderY: SVGAnimatedInteger;
+    readonly preserveAlpha: SVGAnimatedBoolean;
+    readonly targetX: SVGAnimatedInteger;
+    readonly targetY: SVGAnimatedInteger;
+    readonly SVG_EDGEMODE_DUPLICATE: number;
+    readonly SVG_EDGEMODE_NONE: number;
+    readonly SVG_EDGEMODE_UNKNOWN: number;
+    readonly SVG_EDGEMODE_WRAP: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEConvolveMatrixElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEConvolveMatrixElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEDiffuseLightingElement interface corresponds to the <feDiffuseLighting> element. */
+class SVGFEDiffuseLightingElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly diffuseConstant: SVGAnimatedNumber;
+    readonly in1: SVGAnimatedString;
+    readonly kernelUnitLengthX: SVGAnimatedNumber;
+    readonly kernelUnitLengthY: SVGAnimatedNumber;
+    readonly surfaceScale: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDiffuseLightingElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDiffuseLightingElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEDisplacementMapElement interface corresponds to the <feDisplacementMap> element. */
+class SVGFEDisplacementMapElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_CHANNEL_A: number;
+    static readonly SVG_CHANNEL_B: number;
+    static readonly SVG_CHANNEL_G: number;
+    static readonly SVG_CHANNEL_R: number;
+    static readonly SVG_CHANNEL_UNKNOWN: number;
+    readonly in1: SVGAnimatedString;
+    readonly in2: SVGAnimatedString;
+    readonly scale: SVGAnimatedNumber;
+    readonly xChannelSelector: SVGAnimatedEnumeration;
+    readonly yChannelSelector: SVGAnimatedEnumeration;
+    readonly SVG_CHANNEL_A: number;
+    readonly SVG_CHANNEL_B: number;
+    readonly SVG_CHANNEL_G: number;
+    readonly SVG_CHANNEL_R: number;
+    readonly SVG_CHANNEL_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDisplacementMapElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDisplacementMapElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEDistantLightElement interface corresponds to the <feDistantLight> element. */
+class SVGFEDistantLightElement extends SVGElement {
+    new();
+    readonly azimuth: SVGAnimatedNumber;
+    readonly elevation: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDistantLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEDistantLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEFloodElement interface corresponds to the <feFlood> element. */
+class SVGFEFloodElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFloodElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFloodElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEFuncAElement interface corresponds to the <feFuncA> element. */
+class SVGFEFuncAElement extends SVGComponentTransferFunctionElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncAElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncAElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEFuncBElement interface corresponds to the <feFuncB> element. */
+class SVGFEFuncBElement extends SVGComponentTransferFunctionElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncBElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncBElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEFuncGElement interface corresponds to the <feFuncG> element. */
+class SVGFEFuncGElement extends SVGComponentTransferFunctionElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEFuncRElement interface corresponds to the <feFuncR> element. */
+class SVGFEFuncRElement extends SVGComponentTransferFunctionElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncRElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEFuncRElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEGaussianBlurElement interface corresponds to the <feGaussianBlur> element. */
+class SVGFEGaussianBlurElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly in1: SVGAnimatedString;
+    readonly stdDeviationX: SVGAnimatedNumber;
+    readonly stdDeviationY: SVGAnimatedNumber;
+    setStdDeviation(stdDeviationX: number, stdDeviationY: number): void;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEGaussianBlurElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEGaussianBlurElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEImageElement interface corresponds to the <feImage> element. */
+class SVGFEImageElement extends SVGElement, SVGFilterPrimitiveStandardAttributes, SVGURIReference {
+    new();
+    readonly preserveAspectRatio: SVGAnimatedPreserveAspectRatio;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEImageElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEImageElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEMergeElement interface corresponds to the <feMerge> element. */
+class SVGFEMergeElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMergeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMergeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEMergeNodeElement interface corresponds to the <feMergeNode> element. */
+class SVGFEMergeNodeElement extends SVGElement {
+    new();
+    readonly in1: SVGAnimatedString;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMergeNodeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMergeNodeElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEMorphologyElement interface corresponds to the <feMorphology> element. */
+class SVGFEMorphologyElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_MORPHOLOGY_OPERATOR_DILATE: number;
+    static readonly SVG_MORPHOLOGY_OPERATOR_ERODE: number;
+    static readonly SVG_MORPHOLOGY_OPERATOR_UNKNOWN: number;
+    readonly in1: SVGAnimatedString;
+    readonly operator: SVGAnimatedEnumeration;
+    readonly radiusX: SVGAnimatedNumber;
+    readonly radiusY: SVGAnimatedNumber;
+    readonly SVG_MORPHOLOGY_OPERATOR_DILATE: number;
+    readonly SVG_MORPHOLOGY_OPERATOR_ERODE: number;
+    readonly SVG_MORPHOLOGY_OPERATOR_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMorphologyElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEMorphologyElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEOffsetElement interface corresponds to the <feOffset> element. */
+class SVGFEOffsetElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly dx: SVGAnimatedNumber;
+    readonly dy: SVGAnimatedNumber;
+    readonly in1: SVGAnimatedString;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEOffsetElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEOffsetElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFEPointLightElement interface corresponds to the <fePointLight> element. */
+class SVGFEPointLightElement extends SVGElement {
+    new();
+    readonly x: SVGAnimatedNumber;
+    readonly y: SVGAnimatedNumber;
+    readonly z: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEPointLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFEPointLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFESpecularLightingElement interface corresponds to the <feSpecularLighting> element. */
+class SVGFESpecularLightingElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly in1: SVGAnimatedString;
+    readonly kernelUnitLengthX: SVGAnimatedNumber;
+    readonly kernelUnitLengthY: SVGAnimatedNumber;
+    readonly specularConstant: SVGAnimatedNumber;
+    readonly specularExponent: SVGAnimatedNumber;
+    readonly surfaceScale: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFESpecularLightingElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFESpecularLightingElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFESpotLightElement interface corresponds to the <feSpotLight> element. */
+class SVGFESpotLightElement extends SVGElement {
+    new();
+    readonly limitingConeAngle: SVGAnimatedNumber;
+    readonly pointsAtX: SVGAnimatedNumber;
+    readonly pointsAtY: SVGAnimatedNumber;
+    readonly pointsAtZ: SVGAnimatedNumber;
+    readonly specularExponent: SVGAnimatedNumber;
+    readonly x: SVGAnimatedNumber;
+    readonly y: SVGAnimatedNumber;
+    readonly z: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFESpotLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFESpotLightElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFETileElement interface corresponds to the <feTile> element. */
+class SVGFETileElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    readonly in1: SVGAnimatedString;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFETileElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFETileElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFETurbulenceElement interface corresponds to the <feTurbulence> element. */
+class SVGFETurbulenceElement extends SVGElement, SVGFilterPrimitiveStandardAttributes {
+    new();
+    static readonly SVG_STITCHTYPE_NOSTITCH: number;
+    static readonly SVG_STITCHTYPE_STITCH: number;
+    static readonly SVG_STITCHTYPE_UNKNOWN: number;
+    static readonly SVG_TURBULENCE_TYPE_FRACTALNOISE: number;
+    static readonly SVG_TURBULENCE_TYPE_TURBULENCE: number;
+    static readonly SVG_TURBULENCE_TYPE_UNKNOWN: number;
+    readonly baseFrequencyX: SVGAnimatedNumber;
+    readonly baseFrequencyY: SVGAnimatedNumber;
+    readonly numOctaves: SVGAnimatedInteger;
+    readonly seed: SVGAnimatedNumber;
+    readonly stitchTiles: SVGAnimatedEnumeration;
+    readonly type: SVGAnimatedEnumeration;
+    readonly SVG_STITCHTYPE_NOSTITCH: number;
+    readonly SVG_STITCHTYPE_STITCH: number;
+    readonly SVG_STITCHTYPE_UNKNOWN: number;
+    readonly SVG_TURBULENCE_TYPE_FRACTALNOISE: number;
+    readonly SVG_TURBULENCE_TYPE_TURBULENCE: number;
+    readonly SVG_TURBULENCE_TYPE_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFETurbulenceElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFETurbulenceElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGFilterElement interface provides access to the properties of <filter> elements, as well as getMethods to manipulate them. */
+class SVGFilterElement extends SVGElement, SVGURIReference {
+    new();
+    /** @deprecated */
+    readonly filterResX: SVGAnimatedInteger;
+    /** @deprecated */
+    readonly filterResY: SVGAnimatedInteger;
+    readonly filterUnits: SVGAnimatedEnumeration;
+    readonly height: SVGAnimatedLength;
+    readonly primitiveUnits: SVGAnimatedEnumeration;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    /** @deprecated */
+    setFilterRes(filterResX: number, filterResY: number): void;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFilterElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGFilterElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface SVGFilterPrimitiveStandardAttributes {
+    readonly height: SVGAnimatedLength;
+    readonly result: SVGAnimatedString;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+}
+
+interface SVGFitToViewBox {
+    readonly preserveAspectRatio: SVGAnimatedPreserveAspectRatio;
+    readonly viewBox: SVGAnimatedRect;
+}
+
+/** The SVGForeignObjectElement interface provides access to the properties of <foreignObject> elements, as well as getMethods to manipulate them. */
+class SVGForeignObjectElement extends SVGGraphicsElement {
+    new();
+    readonly height: SVGAnimatedLength;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGForeignObjectElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGForeignObjectElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGGElement interface corresponds to the <g> element. */
+class SVGGElement extends SVGGraphicsElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGGeometryElement extends SVGGraphicsElement {
+    new();
+    readonly pathLength: SVGAnimatedNumber;
+    getPointAtLength(distance: number): DOMPoint;
+    getTotalLength(): number;
+    isPointInFill(point?: DOMPointInit): boolean;
+    isPointInStroke(point?: DOMPointInit): boolean;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGeometryElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGeometryElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGGradient interface is a base interface used by SVGLinearGradientElement and SVGRadialGradientElement. */
+class SVGGradientElement extends SVGElement, SVGURIReference {
+    new();
+    static readonly SVG_SPREADMETHOD_PAD: number;
+    static readonly SVG_SPREADMETHOD_REFLECT: number;
+    static readonly SVG_SPREADMETHOD_REPEAT: number;
+    static readonly SVG_SPREADMETHOD_UNKNOWN: number;
+    readonly gradientTransform: SVGAnimatedTransformList;
+    readonly gradientUnits: SVGAnimatedEnumeration;
+    readonly spreadMethod: SVGAnimatedEnumeration;
+    readonly SVG_SPREADMETHOD_PAD: number;
+    readonly SVG_SPREADMETHOD_REFLECT: number;
+    readonly SVG_SPREADMETHOD_REPEAT: number;
+    readonly SVG_SPREADMETHOD_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGGraphicsElement interface represents SVG elements whose primary purpose is to directly render graphics into a group. */
+class SVGGraphicsElement extends SVGElement, SVGTests {
+    new();
+    readonly transform: SVGAnimatedTransformList;
+    getBBox(options?: SVGBoundingBoxOptions): DOMRect;
+    getCTM(): DOMMatrix | null;
+    getScreenCTM(): DOMMatrix | null;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGraphicsElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGGraphicsElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGImageElement interface corresponds to the <image> element. */
+class SVGImageElement extends SVGGraphicsElement, SVGURIReference {
+    new();
+    readonly height: SVGAnimatedLength;
+    readonly preserveAspectRatio: SVGAnimatedPreserveAspectRatio;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGImageElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGImageElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGLength interface correspond to the <length> basic data type. */
+class SVGLength {
+    new();
+    static readonly SVG_LENGTHTYPE_CM: number;
+    static readonly SVG_LENGTHTYPE_EMS: number;
+    static readonly SVG_LENGTHTYPE_EXS: number;
+    static readonly SVG_LENGTHTYPE_IN: number;
+    static readonly SVG_LENGTHTYPE_MM: number;
+    static readonly SVG_LENGTHTYPE_NUMBER: number;
+    static readonly SVG_LENGTHTYPE_PC: number;
+    static readonly SVG_LENGTHTYPE_PERCENTAGE: number;
+    static readonly SVG_LENGTHTYPE_PT: number;
+    static readonly SVG_LENGTHTYPE_PX: number;
+    static readonly SVG_LENGTHTYPE_UNKNOWN: number;
+    readonly unitType: number;
+    value: number;
+    valueAsString: string;
+    valueInSpecifiedUnits: number;
+    convertToSpecifiedUnits(unitType: number): void;
+    newValueSpecifiedUnits(unitType: number, valueInSpecifiedUnits: number): void;
+    readonly SVG_LENGTHTYPE_CM: number;
+    readonly SVG_LENGTHTYPE_EMS: number;
+    readonly SVG_LENGTHTYPE_EXS: number;
+    readonly SVG_LENGTHTYPE_IN: number;
+    readonly SVG_LENGTHTYPE_MM: number;
+    readonly SVG_LENGTHTYPE_NUMBER: number;
+    readonly SVG_LENGTHTYPE_PC: number;
+    readonly SVG_LENGTHTYPE_PERCENTAGE: number;
+    readonly SVG_LENGTHTYPE_PT: number;
+    readonly SVG_LENGTHTYPE_PX: number;
+    readonly SVG_LENGTHTYPE_UNKNOWN: number;
+}
+
+/** The SVGLengthList defines a list of SVGLength objects. */
+class SVGLengthList {
+    new();
+    readonly length: number;
+    readonly numberOfItems: number;
+    appendItem(newItem: SVGLength): SVGLength;
+    clear(): void;
+    getItem(index: number): SVGLength;
+    initialize(newItem: SVGLength): SVGLength;
+    insertItemBefore(newItem: SVGLength, index: number): SVGLength;
+    removeItem(index: number): SVGLength;
+    replaceItem(newItem: SVGLength, index: number): SVGLength;
+    [index: number]: SVGLength;
+}
+
+/** The SVGLineElement interface provides access to the properties of <line> elements, as well as getMethods to manipulate them. */
+class SVGLineElement extends SVGGraphicsElement {
+    new();
+    readonly x1: SVGAnimatedLength;
+    readonly x2: SVGAnimatedLength;
+    readonly y1: SVGAnimatedLength;
+    readonly y2: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGLineElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGLineElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGLinearGradientElement interface corresponds to the <linearGradient> element. */
+class SVGLinearGradientElement extends SVGGradientElement {
+    new();
+    readonly x1: SVGAnimatedLength;
+    readonly x2: SVGAnimatedLength;
+    readonly y1: SVGAnimatedLength;
+    readonly y2: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGLinearGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGLinearGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGMarkerElement extends SVGElement, SVGFitToViewBox {
+    new();
+    static readonly SVG_MARKERUNITS_STROKEWIDTH: number;
+    static readonly SVG_MARKERUNITS_UNKNOWN: number;
+    static readonly SVG_MARKERUNITS_USERSPACEONUSE: number;
+    static readonly SVG_MARKER_ORIENT_ANGLE: number;
+    static readonly SVG_MARKER_ORIENT_AUTO: number;
+    static readonly SVG_MARKER_ORIENT_UNKNOWN: number;
+    readonly markerHeight: SVGAnimatedLength;
+    readonly markerUnits: SVGAnimatedEnumeration;
+    readonly markerWidth: SVGAnimatedLength;
+    readonly orientAngle: SVGAnimatedAngle;
+    readonly orientType: SVGAnimatedEnumeration;
+    readonly refX: SVGAnimatedLength;
+    readonly refY: SVGAnimatedLength;
+    setOrientToAngle(angle: SVGAngle): void;
+    setOrientToAuto(): void;
+    readonly SVG_MARKERUNITS_STROKEWIDTH: number;
+    readonly SVG_MARKERUNITS_UNKNOWN: number;
+    readonly SVG_MARKERUNITS_USERSPACEONUSE: number;
+    readonly SVG_MARKER_ORIENT_ANGLE: number;
+    readonly SVG_MARKER_ORIENT_AUTO: number;
+    readonly SVG_MARKER_ORIENT_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMarkerElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMarkerElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGMaskElement interface provides access to the properties of <mask> elements, as well as getMethods to manipulate them. */
+class SVGMaskElement extends SVGElement, SVGTests {
+    new();
+    readonly height: SVGAnimatedLength;
+    readonly maskContentUnits: SVGAnimatedEnumeration;
+    readonly maskUnits: SVGAnimatedEnumeration;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMaskElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMaskElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGMetadataElement interface corresponds to the <metadata> element. */
+class SVGMetadataElement extends SVGElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMetadataElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGMetadataElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGNumber interface corresponds to the <number> basic data type. */
+class SVGNumber {
+    new();
+    value: number;
+}
+
+/** The SVGNumberList defines a list of SVGNumber objects. */
+class SVGNumberList {
+    new();
+    readonly length: number;
+    readonly numberOfItems: number;
+    appendItem(newItem: SVGNumber): SVGNumber;
+    clear(): void;
+    getItem(index: number): SVGNumber;
+    initialize(newItem: SVGNumber): SVGNumber;
+    insertItemBefore(newItem: SVGNumber, index: number): SVGNumber;
+    removeItem(index: number): SVGNumber;
+    replaceItem(newItem: SVGNumber, index: number): SVGNumber;
+    [index: number]: SVGNumber;
+}
+
+/** The SVGPathElement interface corresponds to the <path> element. */
+class SVGPathElement extends SVGGraphicsElement {
+    new();
+    /** @deprecated */
+    readonly pathSegList: SVGPathSegList;
+    /** @deprecated */
+    createSVGPathSegArcAbs(x: number, y: number, r1: number, r2: number, angle: number, largeArcFlag: boolean, sweepFlag: boolean): SVGPathSegArcAbs;
+    /** @deprecated */
+    createSVGPathSegArcRel(x: number, y: number, r1: number, r2: number, angle: number, largeArcFlag: boolean, sweepFlag: boolean): SVGPathSegArcRel;
+    /** @deprecated */
+    createSVGPathSegClosePath(): SVGPathSegClosePath;
+    /** @deprecated */
+    createSVGPathSegCurvetoCubicAbs(x: number, y: number, x1: number, y1: number, x2: number, y2: number): SVGPathSegCurvetoCubicAbs;
+    /** @deprecated */
+    createSVGPathSegCurvetoCubicRel(x: number, y: number, x1: number, y1: number, x2: number, y2: number): SVGPathSegCurvetoCubicRel;
+    /** @deprecated */
+    createSVGPathSegCurvetoCubicSmoothAbs(x: number, y: number, x2: number, y2: number): SVGPathSegCurvetoCubicSmoothAbs;
+    /** @deprecated */
+    createSVGPathSegCurvetoCubicSmoothRel(x: number, y: number, x2: number, y2: number): SVGPathSegCurvetoCubicSmoothRel;
+    /** @deprecated */
+    createSVGPathSegCurvetoQuadraticAbs(x: number, y: number, x1: number, y1: number): SVGPathSegCurvetoQuadraticAbs;
+    /** @deprecated */
+    createSVGPathSegCurvetoQuadraticRel(x: number, y: number, x1: number, y1: number): SVGPathSegCurvetoQuadraticRel;
+    /** @deprecated */
+    createSVGPathSegCurvetoQuadraticSmoothAbs(x: number, y: number): SVGPathSegCurvetoQuadraticSmoothAbs;
+    /** @deprecated */
+    createSVGPathSegCurvetoQuadraticSmoothRel(x: number, y: number): SVGPathSegCurvetoQuadraticSmoothRel;
+    /** @deprecated */
+    createSVGPathSegLinetoAbs(x: number, y: number): SVGPathSegLinetoAbs;
+    /** @deprecated */
+    createSVGPathSegLinetoHorizontalAbs(x: number): SVGPathSegLinetoHorizontalAbs;
+    /** @deprecated */
+    createSVGPathSegLinetoHorizontalRel(x: number): SVGPathSegLinetoHorizontalRel;
+    /** @deprecated */
+    createSVGPathSegLinetoRel(x: number, y: number): SVGPathSegLinetoRel;
+    /** @deprecated */
+    createSVGPathSegLinetoVerticalAbs(y: number): SVGPathSegLinetoVerticalAbs;
+    /** @deprecated */
+    createSVGPathSegLinetoVerticalRel(y: number): SVGPathSegLinetoVerticalRel;
+    /** @deprecated */
+    createSVGPathSegMovetoAbs(x: number, y: number): SVGPathSegMovetoAbs;
+    /** @deprecated */
+    createSVGPathSegMovetoRel(x: number, y: number): SVGPathSegMovetoRel;
+    /** @deprecated */
+    getPathSegAtLength(distance: number): number;
+    getPointAtLength(distance: number): SVGPoint;
+    getTotalLength(): number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGPathSeg {
+    new();
+    static readonly PATHSEG_ARC_ABS: number;
+    static readonly PATHSEG_ARC_REL: number;
+    static readonly PATHSEG_CLOSEPATH: number;
+    static readonly PATHSEG_CURVETO_CUBIC_ABS: number;
+    static readonly PATHSEG_CURVETO_CUBIC_REL: number;
+    static readonly PATHSEG_CURVETO_CUBIC_SMOOTH_ABS: number;
+    static readonly PATHSEG_CURVETO_CUBIC_SMOOTH_REL: number;
+    static readonly PATHSEG_CURVETO_QUADRATIC_ABS: number;
+    static readonly PATHSEG_CURVETO_QUADRATIC_REL: number;
+    static readonly PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS: number;
+    static readonly PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL: number;
+    static readonly PATHSEG_LINETO_ABS: number;
+    static readonly PATHSEG_LINETO_HORIZONTAL_ABS: number;
+    static readonly PATHSEG_LINETO_HORIZONTAL_REL: number;
+    static readonly PATHSEG_LINETO_REL: number;
+    static readonly PATHSEG_LINETO_VERTICAL_ABS: number;
+    static readonly PATHSEG_LINETO_VERTICAL_REL: number;
+    static readonly PATHSEG_MOVETO_ABS: number;
+    static readonly PATHSEG_MOVETO_REL: number;
+    static readonly PATHSEG_UNKNOWN: number;
+    readonly pathSegType: number;
+    readonly pathSegTypeAsLetter: string;
+    readonly PATHSEG_ARC_ABS: number;
+    readonly PATHSEG_ARC_REL: number;
+    readonly PATHSEG_CLOSEPATH: number;
+    readonly PATHSEG_CURVETO_CUBIC_ABS: number;
+    readonly PATHSEG_CURVETO_CUBIC_REL: number;
+    readonly PATHSEG_CURVETO_CUBIC_SMOOTH_ABS: number;
+    readonly PATHSEG_CURVETO_CUBIC_SMOOTH_REL: number;
+    readonly PATHSEG_CURVETO_QUADRATIC_ABS: number;
+    readonly PATHSEG_CURVETO_QUADRATIC_REL: number;
+    readonly PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS: number;
+    readonly PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL: number;
+    readonly PATHSEG_LINETO_ABS: number;
+    readonly PATHSEG_LINETO_HORIZONTAL_ABS: number;
+    readonly PATHSEG_LINETO_HORIZONTAL_REL: number;
+    readonly PATHSEG_LINETO_REL: number;
+    readonly PATHSEG_LINETO_VERTICAL_ABS: number;
+    readonly PATHSEG_LINETO_VERTICAL_REL: number;
+    readonly PATHSEG_MOVETO_ABS: number;
+    readonly PATHSEG_MOVETO_REL: number;
+    readonly PATHSEG_UNKNOWN: number;
+}
+
+class SVGPathSegArcAbs extends SVGPathSeg {
+    new();
+    angle: number;
+    largeArcFlag: boolean;
+    r1: number;
+    r2: number;
+    sweepFlag: boolean;
+    x: number;
+    y: number;
+}
+
+interface SVGPathSegArcRel extends SVGPathSeg {
+    new();
+    angle: number;
+    largeArcFlag: boolean;
+    r1: number;
+    r2: number;
+    sweepFlag: boolean;
+    x: number;
+    y: number;
+}
+
+interface SVGPathSegClosePath extends SVGPathSeg {
+    new();
+}
+
+class SVGPathSegCurvetoCubicAbs extends SVGPathSeg {
+    new();
+    x: number;
+    x1: number;
+    x2: number;
+    y: number;
+    y1: number;
+    y2: number;
+}
+
+class SVGPathSegCurvetoCubicRel extends SVGPathSeg {
+    new();
+    x: number;
+    x1: number;
+    x2: number;
+    y: number;
+    y1: number;
+    y2: number;
+}
+
+class SVGPathSegCurvetoCubicSmoothAbs extends SVGPathSeg {
+    new();
+    x: number;
+    x2: number;
+    y: number;
+    y2: number;
+}
+
+class SVGPathSegCurvetoCubicSmoothRel extends SVGPathSeg {
+    new();
+    x: number;
+    x2: number;
+    y: number;
+    y2: number;
+}
+
+class SVGPathSegCurvetoQuadraticAbs extends SVGPathSeg {
+    new();
+    x: number;
+    x1: number;
+    y: number;
+    y1: number;
+}
+
+class SVGPathSegCurvetoQuadraticRel extends SVGPathSeg {
+	new()
+    x: number;
+    x1: number;
+    y: number;
+    y1: number;
+}
+
+class SVGPathSegCurvetoQuadraticSmoothAbs extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+class SVGPathSegCurvetoQuadraticSmoothRel extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+class SVGPathSegLinetoAbs extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+class SVGPathSegLinetoHorizontalAbs extends SVGPathSeg {
+    new();
+    x: number;
+}
+
+class SVGPathSegLinetoHorizontalRel extends SVGPathSeg {
+    new();
+    x: number;
+}
+
+class SVGPathSegLinetoRel extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+class SVGPathSegLinetoVerticalAbs extends SVGPathSeg {
+    new();
+    y: number;
+}
+
+class SVGPathSegLinetoVerticalRel extends SVGPathSeg {
+    new();
+    y: number;
+}
+
+class SVGPathSegList {
+    new();
+    readonly numberOfItems: number;
+    appendItem(newItem: SVGPathSeg): SVGPathSeg;
+    clear(): void;
+    getItem(index: number): SVGPathSeg;
+    initialize(newItem: SVGPathSeg): SVGPathSeg;
+    insertItemBefore(newItem: SVGPathSeg, index: number): SVGPathSeg;
+    removeItem(index: number): SVGPathSeg;
+    replaceItem(newItem: SVGPathSeg, index: number): SVGPathSeg;
+}
+
+class SVGPathSegMovetoAbs extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+class SVGPathSegMovetoRel extends SVGPathSeg {
+    new();
+    x: number;
+    y: number;
+}
+
+/** The SVGPatternElement interface corresponds to the <pattern> element. */
+class SVGPatternElement extends SVGElement, SVGTests, SVGFitToViewBox, SVGURIReference {
+    new();
+    readonly height: SVGAnimatedLength;
+    readonly patternContentUnits: SVGAnimatedEnumeration;
+    readonly patternTransform: SVGAnimatedTransformList;
+    readonly patternUnits: SVGAnimatedEnumeration;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPatternElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPatternElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SVGPointList {
+    new();
+    readonly numberOfItems: number;
+    appendItem(newItem: SVGPoint): SVGPoint;
+    clear(): void;
+    getItem(index: number): SVGPoint;
+    initialize(newItem: SVGPoint): SVGPoint;
+    insertItemBefore(newItem: SVGPoint, index: number): SVGPoint;
+    removeItem(index: number): SVGPoint;
+    replaceItem(newItem: SVGPoint, index: number): SVGPoint;
+}
+
+/** The SVGPolygonElement interface provides access to the properties of <polygon> elements, as well as getMethods to manipulate them. */
+class SVGPolygonElement extends SVGGraphicsElement, SVGAnimatedPoints {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPolygonElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPolygonElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+/** The SVGPolylineElement interface provides access to the properties of <polyline> elements, as well as getMethods to manipulate them. */
+class SVGPolylineElement extends SVGGraphicsElement, SVGAnimatedPoints {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPolylineElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGPolylineElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGPreserveAspectRatio interface corresponds to the preserveAspectRatio attribute, which is available for some of SVG's elements. */
+class SVGPreserveAspectRatio {
+    new();
+    static readonly SVG_MEETORSLICE_MEET: number;
+    static readonly SVG_MEETORSLICE_SLICE: number;
+    static readonly SVG_MEETORSLICE_UNKNOWN: number;
+    static readonly SVG_PRESERVEASPECTRATIO_NONE: number;
+    static readonly SVG_PRESERVEASPECTRATIO_UNKNOWN: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMAXYMAX: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMAXYMID: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMAXYMIN: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMIDYMAX: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMIDYMID: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMIDYMIN: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMINYMAX: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMINYMID: number;
+    static readonly SVG_PRESERVEASPECTRATIO_XMINYMIN: number;
+    align: number;
+    meetOrSlice: number;
+    readonly SVG_MEETORSLICE_MEET: number;
+    readonly SVG_MEETORSLICE_SLICE: number;
+    readonly SVG_MEETORSLICE_UNKNOWN: number;
+    readonly SVG_PRESERVEASPECTRATIO_NONE: number;
+    readonly SVG_PRESERVEASPECTRATIO_UNKNOWN: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMAXYMAX: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMAXYMID: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMAXYMIN: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMIDYMAX: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMIDYMID: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMIDYMIN: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMINYMAX: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMINYMID: number;
+    readonly SVG_PRESERVEASPECTRATIO_XMINYMIN: number;
+}
+
+/** The SVGRadialGradientElement interface corresponds to the <RadialGradient> element. */
+class SVGRadialGradientElement extends SVGGradientElement {
+    new();
+    readonly cx: SVGAnimatedLength;
+    readonly cy: SVGAnimatedLength;
+    readonly fx: SVGAnimatedLength;
+    readonly fy: SVGAnimatedLength;
+    readonly r: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGRadialGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGRadialGradientElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGRectElement interface provides access to the properties of <rect> elements, as well as getMethods to manipulate them. */
+class SVGRectElement extends SVGGraphicsElement {
+    new();
+    readonly height: SVGAnimatedLength;
+    readonly rx: SVGAnimatedLength;
+    readonly ry: SVGAnimatedLength;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGRectElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGRectElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap SVGSVGElementEventMap extends SVGElementEventMap {
+    "SVGUnload": Event;
+    "SVGZoom": SVGZoomEvent;
+}
+
+/** The SVGSVGElement interface provides access to the properties of <svg> elements, as well as getMethods to manipulate them. This interface contains also various miscellaneous commonly-used utility getMethods, such as matrix operations and the ability to control the time of redraw on visual rendering devices. */
+class SVGSVGElement extends SVGGraphicsElement, DocumentEvent, SVGFitToViewBox, SVGZoomAndPan {
+    new();
+    static readonly SVG_ZOOMANDPAN_DISABLE: number;
+    static readonly SVG_ZOOMANDPAN_MAGNIFY: number;
+    static readonly SVG_ZOOMANDPAN_UNKNOWN: number;
+    /** @deprecated */
+    contentScriptType: string;
+    /** @deprecated */
+    contentStyleType: string;
+    currentScale: number;
+    readonly currentTranslate: SVGPoint;
+    readonly height: SVGAnimatedLength;
+    onunload: ((this: SVGSVGElement, ev: Event) => any) | null;
+    onzoom: ((this: SVGSVGElement, ev: SVGZoomEvent) => any) | null;
+    /** @deprecated */
+    readonly pixelUnitToMillimeterX: number;
+    /** @deprecated */
+    readonly pixelUnitToMillimeterY: number;
+    /** @deprecated */
+    readonly screenPixelToMillimeterX: number;
+    /** @deprecated */
+    readonly screenPixelToMillimeterY: number;
+    /** @deprecated */
+    readonly viewport: SVGRect;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    checkEnclosure(element: SVGElement, rect: SVGRect): boolean;
+    checkIntersection(element: SVGElement, rect: SVGRect): boolean;
+    createSVGAngle(): SVGAngle;
+    createSVGLength(): SVGLength;
+    createSVGMatrix(): SVGMatrix;
+    createSVGNumber(): SVGNumber;
+    createSVGPoint(): SVGPoint;
+    createSVGRect(): SVGRect;
+    createSVGTransform(): SVGTransform;
+    createSVGTransformFromMatrix(matrix: SVGMatrix): SVGTransform;
+    deselectAll(): void;
+    /** @deprecated */
+    forceRedraw(): void;
+    getComputedStyle(elt: Element, pseudoElt?: string | null): CSSStyleDeclaration;
+    /** @deprecated */
+    getCurrentTime(): number;
+    getElementById(elementId: string): Element;
+    getEnclosureList(rect: SVGRect, referenceElement: SVGElement): NodeListOf<SVGCircleElement | SVGEllipseElement | SVGImageElement | SVGLineElement | SVGPathElement | SVGPolygonElement | SVGPolylineElement | SVGRectElement | SVGTextElement | SVGUseElement>;
+    getIntersectionList(rect: SVGRect, referenceElement: SVGElement): NodeListOf<SVGCircleElement | SVGEllipseElement | SVGImageElement | SVGLineElement | SVGPathElement | SVGPolygonElement | SVGPolylineElement | SVGRectElement | SVGTextElement | SVGUseElement>;
+    /** @deprecated */
+    pauseAnimations(): void;
+    /** @deprecated */
+    setCurrentTime(seconds: number): void;
+    /** @deprecated */
+    suspendRedraw(maxWaitMilliseconds: number): number;
+    /** @deprecated */
+    unpauseAnimations(): void;
+    /** @deprecated */
+    unsuspendRedraw(suspendHandleID: number): void;
+    /** @deprecated */
+    unsuspendRedrawAll(): void;
+    addEventListener(type: K keyof SVGSVGElementEventMap, listener: (this: SVGSVGElement, ev: SVGSVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGSVGElementEventMap, listener: (this: SVGSVGElement, ev: SVGSVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGScriptElement interface corresponds to the SVG <script> element. */
+class SVGScriptElement extends SVGElement, SVGURIReference {
+    new();
+    type: string;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGScriptElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGScriptElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGStopElement interface corresponds to the <stop> element. */
+class SVGStopElement extends SVGElement {
+    new();
+    readonly offset: SVGAnimatedNumber;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGStopElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGStopElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGStringList defines a list of DOMString objects. */
+class SVGStringList {
+    new();
+    readonly length: number;
+    readonly numberOfItems: number;
+    appendItem(newItem: string): string;
+    clear(): void;
+    getItem(index: number): string;
+    initialize(newItem: string): string;
+    insertItemBefore(newItem: string, index: number): string;
+    removeItem(index: number): string;
+    replaceItem(newItem: string, index: number): string;
+    [index: number]: string;
+}
+
+/** The SVGStyleElement interface corresponds to the SVG <style> element. */
+class SVGStyleElement extends SVGElement {
+    new();
+    disabled: boolean;
+    media: string;
+    title: string;
+    type: string;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGStyleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGStyleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGSwitchElement interface corresponds to the <switch> element. */
+class SVGSwitchElement extends SVGGraphicsElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGSwitchElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGSwitchElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGSymbolElement interface corresponds to the <symbol> element. */
+class SVGSymbolElement extends SVGElement, SVGFitToViewBox {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGSymbolElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGSymbolElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGTSpanElement interface represents a <tspan> element. */
+class SVGTSpanElement extends SVGTextPositioningElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTSpanElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTSpanElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface SVGTests {
+    readonly requiredExtensions: SVGStringList;
+    readonly systemLanguage: SVGStringList;
+}
+
+/** The SVGTextContentElement interface is implemented by elements that support rendering child text content. It is inherited by various text-related interfaces, such as SVGTextElement, SVGTSpanElement, SVGTRefElement, SVGAltGlyphElement and SVGTextPathElement. */
+class SVGTextContentElement extends SVGGraphicsElement {
+    new();
+    static readonly LENGTHADJUST_SPACING: number;
+    static readonly LENGTHADJUST_SPACINGANDGLYPHS: number;
+    static readonly LENGTHADJUST_UNKNOWN: number;
+    readonly lengthAdjust: SVGAnimatedEnumeration;
+    readonly textLength: SVGAnimatedLength;
+    getCharNumAtPosition(point: SVGPoint): number;
+    getComputedTextLength(): number;
+    getEndPositionOfChar(charnum: number): SVGPoint;
+    getExtentOfChar(charnum: number): SVGRect;
+    getNumberOfChars(): number;
+    getRotationOfChar(charnum: number): number;
+    getStartPositionOfChar(charnum: number): SVGPoint;
+    getSubStringLength(charnum: number, nchars: number): number;
+    selectSubString(charnum: number, nchars: number): void;
+    readonly LENGTHADJUST_SPACING: number;
+    readonly LENGTHADJUST_SPACINGANDGLYPHS: number;
+    readonly LENGTHADJUST_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextContentElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextContentElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGTextElement interface corresponds to the <text> elements. */
+class SVGTextElement extends SVGTextPositioningElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGTextPathElement interface corresponds to the <textPath> element. */
+class SVGTextPathElement extends SVGTextContentElement, SVGURIReference {
+    new();
+    static readonly TEXTPATH_METHODTYPE_ALIGN: number;
+    static readonly TEXTPATH_METHODTYPE_STRETCH: number;
+    static readonly TEXTPATH_METHODTYPE_UNKNOWN: number;
+    static readonly TEXTPATH_SPACINGTYPE_AUTO: number;
+    static readonly TEXTPATH_SPACINGTYPE_EXACT: number;
+    static readonly TEXTPATH_SPACINGTYPE_UNKNOWN: number;
+    readonly method: SVGAnimatedEnumeration;
+    readonly spacing: SVGAnimatedEnumeration;
+    readonly startOffset: SVGAnimatedLength;
+    readonly TEXTPATH_METHODTYPE_ALIGN: number;
+    readonly TEXTPATH_METHODTYPE_STRETCH: number;
+    readonly TEXTPATH_METHODTYPE_UNKNOWN: number;
+    readonly TEXTPATH_SPACINGTYPE_AUTO: number;
+    readonly TEXTPATH_SPACINGTYPE_EXACT: number;
+    readonly TEXTPATH_SPACINGTYPE_UNKNOWN: number;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextPathElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGTextPositioningElement interface is implemented by elements that support attributes that position individual text glyphs. It is inherited by SVGTextElement, SVGTSpanElement, SVGTRefElement and SVGAltGlyphElement. */
+class SVGTextPositioningElement extends SVGTextContentElement {
+    new();
+    readonly dx: SVGAnimatedLengthList;
+    readonly dy: SVGAnimatedLengthList;
+    readonly rotate: SVGAnimatedNumberList;
+    readonly x: SVGAnimatedLengthList;
+    readonly y: SVGAnimatedLengthList;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextPositioningElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTextPositioningElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGTitleElement interface corresponds to the <title> element. */
+class SVGTitleElement extends SVGElement {
+    new();
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTitleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGTitleElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** SVGTransform is the interface for one of the component transformations within an SVGTransformList; thus, an SVGTransform object corresponds to a single component (e.g., scale(…) or matrix(…)) within a transform attribute. */
+interface SVGTransform {
+    new();
+    static readonly SVG_TRANSFORM_MATRIX: number;
+    static readonly SVG_TRANSFORM_ROTATE: number;
+    static readonly SVG_TRANSFORM_SCALE: number;
+    static readonly SVG_TRANSFORM_SKEWX: number;
+    static readonly SVG_TRANSFORM_SKEWY: number;
+    static readonly SVG_TRANSFORM_TRANSLATE: number;
+    static readonly SVG_TRANSFORM_UNKNOWN: number;
+    readonly angle: number;
+    readonly matrix: SVGMatrix;
+    readonly type: number;
+    setMatrix(matrix: SVGMatrix): void;
+    setRotate(angle: number, cx: number, cy: number): void;
+    setScale(sx: number, sy: number): void;
+    setSkewX(angle: number): void;
+    setSkewY(angle: number): void;
+    setTranslate(tx: number, ty: number): void;
+    readonly SVG_TRANSFORM_MATRIX: number;
+    readonly SVG_TRANSFORM_ROTATE: number;
+    readonly SVG_TRANSFORM_SCALE: number;
+    readonly SVG_TRANSFORM_SKEWX: number;
+    readonly SVG_TRANSFORM_SKEWY: number;
+    readonly SVG_TRANSFORM_TRANSLATE: number;
+    readonly SVG_TRANSFORM_UNKNOWN: number;
+}
+
+/** The SVGTransformList defines a list of SVGTransform objects. */
+class SVGTransformList {
+    new();
+    readonly numberOfItems: number;
+    appendItem(newItem: SVGTransform): SVGTransform;
+    clear(): void;
+    consolidate(): SVGTransform;
+    createSVGTransformFromMatrix(matrix: SVGMatrix): SVGTransform;
+    getItem(index: number): SVGTransform;
+    initialize(newItem: SVGTransform): SVGTransform;
+    insertItemBefore(newItem: SVGTransform, index: number): SVGTransform;
+    removeItem(index: number): SVGTransform;
+    replaceItem(newItem: SVGTransform, index: number): SVGTransform;
+}
+
+interface SVGURIReference {
+    readonly href: SVGAnimatedString;
+}
+
+/** The SVGUnitTypes interface defines a commonly used set of constants used for reflecting gradientUnits, patternContentUnits and other similar attributes. */
+class SVGUnitTypes {
+    new();
+    static readonly SVG_UNIT_TYPE_OBJECTBOUNDINGBOX: number;
+    static readonly SVG_UNIT_TYPE_UNKNOWN: number;
+    static readonly SVG_UNIT_TYPE_USERSPACEONUSE: number;
+    readonly SVG_UNIT_TYPE_OBJECTBOUNDINGBOX: number;
+    readonly SVG_UNIT_TYPE_UNKNOWN: number;
+    readonly SVG_UNIT_TYPE_USERSPACEONUSE: number;
+}
+
+/** The SVGUseElement interface corresponds to the <use> element. */
+class SVGUseElement extends SVGGraphicsElement, SVGURIReference {
+    new();
+    readonly animatedInstanceRoot: SVGElementInstance | null;
+    readonly height: SVGAnimatedLength;
+    readonly instanceRoot: SVGElementInstance | null;
+    readonly width: SVGAnimatedLength;
+    readonly x: SVGAnimatedLength;
+    readonly y: SVGAnimatedLength;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGUseElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGUseElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGViewElement interface provides access to the properties of <view> elements, as well as getMethods to manipulate them. */
+interface SVGViewElement extends SVGElement, SVGFitToViewBox, SVGZoomAndPan {
+    new();
+    static readonly SVG_ZOOMANDPAN_DISABLE: number;
+    static readonly SVG_ZOOMANDPAN_MAGNIFY: number;
+    static readonly SVG_ZOOMANDPAN_UNKNOWN: number;
+    /** @deprecated */
+    readonly viewTarget: SVGStringList;
+    addEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGViewElement, ev: SVGElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SVGElementEventMap, listener: (this: SVGViewElement, ev: SVGElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SVGZoomAndPan interface is used to reflect the zoomAndPan attribute, and is mixed in to other interfaces for elements that support this attribute. */
+interface SVGZoomAndPan {
+    readonly zoomAndPan: number;
+}
+
+declare var SVGZoomAndPan: {
+    readonly SVG_ZOOMANDPAN_DISABLE: number;
+    readonly SVG_ZOOMANDPAN_MAGNIFY: number;
+    readonly SVG_ZOOMANDPAN_UNKNOWN: number;
+};
+
+class SVGZoomEvent extends UIEvent {
+    new();
+    readonly newScale: number;
+    readonly newTranslate: SVGPoint;
+    readonly previousScale: number;
+    readonly previousTranslate: SVGPoint;
+    readonly zoomRectScreen: SVGRect;
+}

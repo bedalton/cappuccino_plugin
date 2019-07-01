@@ -1,0 +1,93 @@
+package cappuccino.ide.intellij.plugin.management
+
+import cappuccino.ide.intellij.plugin.project.ObjJLibraryType
+import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.utils.contents
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.libraries.Library
+import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.FilenameIndex
+import java.util.logging.Logger
+
+
+object JsTypeDefBundledSourcesRegistrationUtil {
+
+    private val LOGGER = Logger.getLogger("#"+ JsTypeDefBundledSourcesRegistrationUtil::class.java)
+    private const val BUNDLE_DEFINITIONS_FOLDER = "definitions"
+    private const val ROOT_FOLDER = "jstypedef"
+    private const val LIBRARY_NAME = "JsTypeDef-Std-Lib"
+    private const val VERSION_TEXT_FILE_NAME = "version.txt"
+
+    fun register(module:Module) {
+        val moduleScope = module.moduleContentWithDependenciesScope
+        if (!FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
+            LOGGER.info("No objj-files in project")
+            return
+        }
+        runWriteAction {
+            registerInternal(module)
+        }
+
+    }
+
+    private fun registerInternal(module:Module) : Boolean {
+        val rootModel = ModuleRootManager.getInstance(module).modifiableModel
+        val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
+        val libraryPath = ObjJFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$ROOT_FOLDER")
+        if (libraryPath == null) {
+            val pluginRoot = ObjJFileUtil.PLUGIN_HOME_DIRECTORY
+            if (pluginRoot == null || !pluginRoot.exists()) {
+                LOGGER.info("Failed to locate bundled jstypedef files: Plugin root is invalid")
+            } else {
+                LOGGER.info("Failed to locate bundled jstypedef files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+            }
+            return false
+        }
+
+        // Check if same version
+        if (isSourceCurrent(libraryPath, modifiableModel)) {
+            LOGGER.info("Source jstypedef files are current")
+            return true
+        }
+
+        LOGGER.info("Registering jstypedef files")
+        val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
+                ?: modifiableModel.createLibrary(LIBRARY_NAME, ObjJLibraryType.LIBRARY)
+        val libModel = library.modifiableModel
+        libModel.addRoot(libraryPath, OrderRootType.SOURCES)
+        libModel.commit()
+        modifiableModel.commit()
+        rootModel.commit()
+        return true
+    }
+
+    private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
+        val versionString = newLibraryPath?.findFileByRelativePath("version.txt")?.contents
+        val oldVersionString = currentLibraryVersion(model)
+        if (versionString == null && oldVersionString == null)
+            throw Exception("JsTypeDef library versions cannot be null")
+        return versionString == oldVersionString
+    }
+
+
+    private fun cleanAndReturnLibrary(modifiableModel: ModifiableModel) : Library? {
+        val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return null
+        oldLibrary.modifiableModel.removeRoot(ROOT_FOLDER, OrderRootType.SOURCES)
+        return oldLibrary
+    }
+
+
+    private fun currentLibraryVersion(model:ModifiableModel) : String? {
+        return model.getLibraryByName(LIBRARY_NAME)
+                ?.getFiles(OrderRootType.SOURCES)
+                .orEmpty().filter { it.name == VERSION_TEXT_FILE_NAME }
+                .firstOrNull()
+                ?.contents
+    }
+
+
+}
