@@ -12,6 +12,7 @@ import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
@@ -178,10 +179,15 @@ class ObjJVariableReference(
         // Get simple if no previous siblings
         val prevSiblings = myElement.previousSiblings
         if (prevSiblings.isEmpty()) {
-            val outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
+            var outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
                 it.enclosingNamespace.isEmpty()
             }.mapNotNull {
                 it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
+            }
+            if (outSimple.isEmpty()) {
+                outSimple = JsTypeDefClassesByNameIndex.instance[variableName, project].mapNotNull {
+                    (it as? JsTypeDefClassElement)?.typeName
+                }
             }
             return PsiElementResolveResult.createResults(outSimple)
         }
@@ -190,12 +196,11 @@ class ObjJVariableReference(
 
         // Get types if qualified
         val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
-        if (classTypes == null) {
-            return PsiElementResolveResult.EMPTY_ARRAY
-        }
+                ?: return PsiElementResolveResult.EMPTY_ARRAY
+
         if (classTypes.classes.isNotEmpty()) {
-            val allClassNames = classTypes.classes.flatMap {
-                JsTypeDefClassesByNameIndex.instance[it, project].map {
+            val allClassNames = classTypes.classes.flatMap { className ->
+                JsTypeDefClassesByNameIndex.instance[className, project].map {
                     it.toJsClassDefinition()
                 }
             }.withAllSuperClassNames(project)

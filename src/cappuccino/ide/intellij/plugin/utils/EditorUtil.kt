@@ -44,7 +44,7 @@ object EditorUtil {
 
     fun isTextAtOffset(context: InsertionContext, text: String): Boolean {
         if (context.selectionEndOffset == context.document.textLength) {
-            return true
+            return false
         }
         val range = TextRange.create(context.selectionEndOffset, context.selectionEndOffset + text.length)
         return isTextAtOffset(context.document, range, text)

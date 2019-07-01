@@ -7,7 +7,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTyp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -179,7 +180,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
     }
 
     val referencedVariable = if (!DumbService.isDumb(variableName.project))
-        variableName.reference.resolve() as? ObjJCompositeElement
+        variableName.reference.resolve()
     else
         null
 
@@ -188,7 +189,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
     }
 }
 
-private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: ObjJCompositeElement, containingClass: String?, tag: Long): InferenceResult? {
+private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long): InferenceResult? {
     val project = variableName.project
     val variableNameString: String = variableName.text
     val varDefType = if (referencedVariable is ObjJNamedElement)
@@ -215,7 +216,18 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         if (out.isNotEmpty()) {
             return InferenceResult(types = out.toJsTypeList())
         }
+    } else if (referencedVariable is JsTypeDefPropertyName) {
+        val result = (referencedVariable.parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types
+        if (result != null)
+            return result
+    } else if (referencedVariable is JsTypeDefFunctionName) {
+        val result = (referencedVariable.parent as? JsTypeDefFunction)?.toJsTypeListType()
+        if (result != null)
+            return InferenceResult(types = setOf(result))
+    } else if (referencedVariable is JsTypeDefTypeName) {
+        return InferenceResult(types = setOf(referencedVariable.text).toJsTypeList())
     }
+
     val functionDeclaration = when (referencedVariable) {
         is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
         is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration
@@ -236,11 +248,10 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         }
     }
 
-    if (referencedVariable.tagged(tag))
+    if (referencedVariable.tagged(tag)) {
         return null
-    variableName.tagged(tag)
+    }
 
-    val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
     val staticVariablesUnfiltered = JsTypeDefPropertiesByNameIndex.instance[variableNameString, project]
     val staticVariables = staticVariablesUnfiltered.filter {
         it.enclosingNamespaceComponents.isEmpty()
@@ -249,6 +260,17 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         val namedProperty = it.toJsNamedProperty()
         namedProperty.types.types
     }.toSet()
+
+    if (staticVariableTypes.isNotEmpty()) {
+        return InferenceResult(types = staticVariableTypes)
+    }
+
+    val className = variableName.text
+    if (JsTypeDefClassesByNameIndex.instance.containsKey(className, project)) {
+        return InferenceResult(types = setOf(className).toJsTypeList())
+    }
+
+    val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
     val out = getInferredTypeFromExpressionArray(assignedExpressions, tag)
     return if (staticVariableTypes.isNotEmpty())
         out.copy(types = out.types + staticVariableTypes)

@@ -161,7 +161,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
             }
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER ->{
-                LOGGER.info("Cannot complete after ${prevSibling.elementType}")
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
@@ -190,10 +189,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             return
         }
 
-        LOGGER.info("Adding generic completions")
-
         ObjJFunctionNameCompletionProvider.appendCompletionResults(resultSet, element)
-
         if (element.hasParentOfType(ObjJExpr::class.java)) {
             resultSet.addElement(LookupElementBuilder.create("function").withInsertHandler(ObjJFunctionNameInsertHandler))
         }
@@ -203,7 +199,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
 
         if (ObjJVariablePsiUtil.isNewVarDec(element)) {
-            LOGGER.info("IsNewVarDec; Return")
             resultSet.stopHere()
             return
         }
@@ -226,9 +221,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (shouldAddJsClassNames(element)) {
-            LOGGER.info("Adding js class name completions for pattern: ${element.text.toIndexPatternString()}. There are ${JsTypeDefClassesByNameIndex.instance.getAllKeys(element.project).size} keys in class index")
             JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).mapNotNull{
-                LOGGER.info("JSClass: ${it.className}")
                 (it as? JsTypeDefClassElement)?.className
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
@@ -283,22 +276,13 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
         var properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null}
-        properties.forEach {
-            if (it.enclosingNamespace.isNotEmpty())
-            LOGGER.info("${it.propertyNameString} is namespaced by: ${it.enclosingNamespace}")
-        }
         properties = properties.filter {
             it.enclosingNamespace.isEmpty()
         }
-        if (properties.isEmpty()) {
-            LOGGER.info("Found not matching properties in index with patternString <${element.text.toIndexPatternString()}. PropertiesInIndex: ${JsTypeDefPropertiesByNameIndex.instance.getAllKeys(element.project).mapNotNull { it }}")
-        }
 
         if (shouldIgnoreIgnoredGlobals) {
-            LOGGER.info("Adding all global <${properties.size}> properties")
             addCompletionElementsSimple(resultSet, properties.filter { it.atSilent == null}.map { it.propertyNameString }, -200.0)
         } else {
-            LOGGER.info("Adding some of the <${properties.size}> global properties")
             addCompletionElementsSimple(resultSet, properties.filter{ it.atSilent == null && it.atQuiet == null}.map { it.propertyNameString }, -200.0)
         }
     }
@@ -506,17 +490,14 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
         val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
                 ?: element.parent as? ObjJQualifiedReferenceComponent ?: return
-        LOGGER.info("Appending Qualified reference completions")
         val index = qualifiedNameComponent.indexInQualifiedReference
         if (index <= 0) {
-            LOGGER.info("Qualified reference is zero indexed")
             return
         }
         val project = element.project
         val previousComponents = qualifiedNameComponent.previousSiblings
-        LOGGER.info("INFERRING TYPE FOR QN")
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
-        LOGGER.info("Converted: ${inferred.types.size} types into ${inferred.classes.size} type strings")
+        LOGGER.info("Converted <${previousComponents.map{it.text}}> -> ${inferred.types.size} types into ${inferred.classes.size} type strings")
         val classes = inferred.classes.toMutableSet()
         val collapsedClass = classes.flatMap {
             JsTypeDefClassesByNameIndex.instance[it, project].map {

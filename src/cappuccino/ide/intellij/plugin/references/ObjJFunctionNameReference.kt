@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIn
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
@@ -108,10 +109,15 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
         val prevSiblings = functionCall.previousSiblings
         if (prevSiblings.isEmpty()) {
             LOGGER.info("No siblings for function <$functionName>")
-            val outSimple: List<JsTypeDefFunctionName> = JsTypeDefFunctionsByNameIndex.instance[functionName, project].filter {
+            var outSimple: List<JsTypeDefElement> = JsTypeDefFunctionsByNameIndex.instance[functionName, project].filter {
                 it.enclosingNamespace.isEmpty()
             }.map {
                 it.functionName
+            }
+            if (outSimple.isEmpty()) {
+                outSimple = JsTypeDefClassesByNameIndex.instance[functionName, project].mapNotNull {
+                    (it as? JsTypeDefClassElement)?.typeName
+                }
             }
             LOGGER.info("Found: ${outSimple.size} reference results for function <$functionName>: <${outSimple.joinToString(", ") { it.text }}>")
             return PsiElementResolveResult.createResults(outSimple)
