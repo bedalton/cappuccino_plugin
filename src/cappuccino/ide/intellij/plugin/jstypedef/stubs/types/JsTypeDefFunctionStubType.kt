@@ -39,7 +39,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
-        val static:Boolean = !function.isStatic
+        val static:Boolean = function.isStatic
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,

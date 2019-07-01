@@ -2,18 +2,22 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.resolve
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.PsiElement
@@ -25,38 +29,60 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
-    val resolved = functionCall.functionName?.reference?.resolve() as? ObjJCompositeElement
-    if (resolved == null) {
-        val functionName = functionCall.functionName?.text
-        if (functionName != null) {
-            val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
-            val out = functionSet.flatMap {
-                it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
-            }.toSet()
-            if (out.isNotEmpty()) {
-                return InferenceResult(types = out)
+    val out = functionCall.functionName?.reference?.multiResolve(false)?.mapNotNull {
+        val resolved = it.element ?: return@mapNotNull null
+        val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
+                ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)
+                ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
+        if (cached != null)
+            return cached
+        resolved.getCachedInferredTypes(tag) {
+            val function: ObjJFunctionDeclarationElement<*>? = (when (resolved) {
+                is ObjJVariableName -> resolved.parentFunctionDeclaration
+                is ObjJFunctionName -> resolved.parentFunctionDeclaration
+                else -> null
+            })
+            when {
+                function != null -> {
+                    inferFunctionDeclarationReturnType(function, tag)
+                }
+                resolved is JsTypeDefElement -> {
+                    val parent = resolved.parent
+
+                    val out = when (resolved) {
+                        is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
+                        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
+                        is JsTypeDefProperty -> resolved.toJsNamedProperty().types
+                        is JsTypeDefPropertyName -> (parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types
+                        else -> {
+                            null
+                        }
+                    }
+                    out
+                }
+                else -> {
+                    val expression = (resolved as? ObjJVariableName)?.getAssignmentExprOrNull()
+                            ?: return@getCachedInferredTypes null
+                    inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
+                }
             }
         }
-        return null
+    }.orEmpty().combine()
+    if (out.types.isNotEmpty()) {
+        return out
     }
-    val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
-            ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)
-            ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
-    if (cached != null)
-        return cached
-    return resolved.getCachedInferredTypes(tag) {
-        val functionAsVariableName = resolved as? ObjJVariableName
-        val function: ObjJFunctionDeclarationElement<*>? = (when {
-            functionAsVariableName != null -> functionAsVariableName.parentFunctionDeclaration
-            resolved is ObjJFunctionName -> resolved.parentFunctionDeclaration
-            else -> null
-        })
-        if (function == null) {
-            val expression = functionAsVariableName?.getAssignmentExprOrNull() ?: return@getCachedInferredTypes null
-            return@getCachedInferredTypes inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
+    val functionName = functionCall.functionName?.text
+    if (functionName != null) {
+        val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
+        val lastOut = functionSet.flatMap {
+            it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+        }.toSet()
+        if (lastOut.isNotEmpty()) {
+            return InferenceResult(types = lastOut)
         }
-        inferFunctionDeclarationReturnType(function, tag)
     }
+    return null
+
 }
 
 fun inferFunctionDeclarationReturnType(function: ObjJFunctionDeclarationElement<*>, tag: Long): InferenceResult? {

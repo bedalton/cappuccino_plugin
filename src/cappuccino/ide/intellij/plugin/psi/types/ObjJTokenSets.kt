@@ -335,6 +335,8 @@ object ObjJTokenSets {
             ObjJ_CASE_CLAUSE,
             ObjJ_DEFAULT_CLAUSE,
             ObjJ_CASE,
-            ObjJ_AT_END
+            ObjJ_AT_END,
+            ObjJ_BLOCK_COMMENT,
+            ObjJ_SINGLE_LINE_COMMENT
     )
 }

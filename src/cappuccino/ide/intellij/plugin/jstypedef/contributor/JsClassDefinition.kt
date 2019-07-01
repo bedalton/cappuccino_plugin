@@ -6,8 +6,10 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.plus
 import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
@@ -46,6 +48,34 @@ fun getClassDefinitions(project: Project, className: String) : List<JsClassDefin
 
 fun getClassDefinition(project: Project, className: String): JsClassDefinition? {
     return getClassDefinitions(project, className).collapse()
+}
+
+fun JsTypeDefClassDeclaration<*>.withAllSuperClasses() : List<JsTypeDefClassDeclaration<*>>  {
+    return listOf(this.toJsClassDefinition()).withAllSuperClasses(project)
+}
+
+fun Iterable<JsClassDefinition>.withAllSuperClassNames(project: Project) : Set<String> {
+    val parsed = this.map { it.className }.toMutableSet()
+    val out = this.toMutableSet()
+    val extends = flatMap { it.extends }.toMutableSet()
+    extends.toSet().forEach {
+        val classDec = getClassDefinition(project, it.typeName) ?: return@forEach
+        classDec.getAllInheritedClasses(project, parsed, out, true)
+    }
+    return out.map { it.className }.toSet()
+}
+
+fun Iterable<JsClassDefinition>.withAllSuperClasses(project: Project) : List<JsTypeDefClassDeclaration<*>> {
+    val parsed = this.map { it.className }.toMutableSet()
+    val out = this.toMutableSet()
+    val extends = flatMap { it.extends }.toMutableSet()
+    extends.toSet().forEach {
+        val classDec = getClassDefinition(project, it.typeName) ?: return@forEach
+        classDec.getAllInheritedClasses(project, parsed, out, true)
+    }
+    return out.map { it.className }.flatMap {
+        JsTypeDefClassesByNameIndex.instance[it, project]
+    }
 }
 
 private fun JsClassDefinition.getAllInheritedClasses(project:Project, parsed:MutableSet<String>, out:MutableSet<JsClassDefinition>, addSelf:Boolean = false) : Set<JsClassDefinition> {

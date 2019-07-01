@@ -408,6 +408,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesBySuperClassIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex"/>
@@ -415,6 +416,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModuleNamesByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModulesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModulesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByClassNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex"/>

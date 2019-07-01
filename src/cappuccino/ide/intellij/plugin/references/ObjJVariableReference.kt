@@ -9,8 +9,13 @@ import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toClassList
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamespacedComponent
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
@@ -86,37 +91,46 @@ class ObjJVariableReference(
         return newVariableName
     }
 
-    override fun isReferenceTo(psiElement: PsiElement): Boolean {
+    override fun isReferenceTo(otherElement: PsiElement): Boolean {
 
         // Element is in compiled objective-j document
         try {
-            if (psiElement.containingFile.text.startsWith("@STATIC;") || myElement.containingFile.text.startsWith("@STATIC;")) {
+            if (otherElement.containingFile.text.startsWith("@STATIC;") || myElement.containingFile.text.startsWith("@STATIC;")) {
                 return false
             }
         // Element is virtual and not in file
         } catch (e:Exception) { return false }
 
         // Text is not equivalent, ignore
-        if (psiElement.text != myElement.text) {
+        if (otherElement.text != myElement.text) {
             return false
         }
         //Is Same element, Do not reference self
-        if (psiElement.isEquivalentTo(myElement)) {
+        if (otherElement.isEquivalentTo(myElement)) {
             return false
         }
 
-        val psiElementIsZeroIndexInQualifiedReference = psiElement !is ObjJVariableName || psiElement.indexInQualifiedReference == 0
+        val psiElementIsZeroIndexInQualifiedReference = otherElement !is ObjJVariableName || otherElement.indexInQualifiedReference == 0
         val thisElementIsZeroIndexedInQualifiedReference = myElement.indexInQualifiedReference == 0
-        if (!psiElementIsZeroIndexInQualifiedReference || !thisElementIsZeroIndexedInQualifiedReference) {
+        if (!psiElementIsZeroIndexInQualifiedReference || (!thisElementIsZeroIndexedInQualifiedReference && otherElement is ObjJCompositeElement)) {
             return false
         }
-        if (thisElementIsZeroIndexedInQualifiedReference && psiElement is ObjJClassName) {
+        if (thisElementIsZeroIndexedInQualifiedReference && otherElement is ObjJClassName) {
             return true
         }
 
         val referencedElement = this.referencedElement?.element
-        if (referencedElement?.isEquivalentTo(psiElement).orFalse()) {
+        if (referencedElement?.isEquivalentTo(otherElement).orFalse()) {
             return true
+        }
+
+        if (otherElement is JsTypeDefNamespacedComponent) {
+            val otherIndex = otherElement.namespaceComponents.size
+            if (thisElementIsZeroIndexedInQualifiedReference && otherIndex > 0)
+                return false
+            val enclosingClass = otherElement.namespaceComponents.getOrNull(0) ?: return false
+            val parentClass = inferQualifiedReferenceType(myElement.previousSiblings, tag ?: createTag())?.toClassList(null) ?: return false
+            return enclosingClass in parentClass
         }
 
         if (referencedInScope == null) {
@@ -124,7 +138,7 @@ class ObjJVariableReference(
         }
 
         //Finds this elements, and the new elements scope
-        val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, psiElement)
+        val sharedContext:PsiElement? = PsiTreeUtil.findCommonContext(myElement, otherElement)
         val sharedScope:ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED
         if (sharedScope == UNDETERMINED && referencedInScope != UNDETERMINED) {
             return false
@@ -137,25 +151,24 @@ class ObjJVariableReference(
 
     override fun resolve(): PsiElement? {
         return myElement.resolveFromCache {
-            val result = multiResolve(false).mapNotNull { it.element }
+            val result = multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse()).mapNotNull { it.element }
             if (nullIfSelfReferencing.orFalse()) {
                 return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
             }
-            return@resolveFromCache result.firstOrNull()
+            return@resolveFromCache result.filterNot { it == myElement }.firstOrNull() ?: result.firstOrNull()
         }
     }
 
-    private fun multiResolve(tag:Long? = null) : Array<ResolveResult> {
-        val element = resolve(tag != null || nullIfSelfReferencing.orFalse(), tag)
-        if (element != null) {
+    private fun multiResolve(tag:Long? = null, nullIfSelfReferencing: Boolean) : Array<ResolveResult> {
+        val element = resolveInternal(tag)
+        if (element != null && !element.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
         val out = mutableListOf<ObjJCompositeElement>()
         if (myElement.indexInQualifiedReference == 0) {
             out.addAll(getGlobalAssignments(true).orEmpty())
-        } else {
-            LOGGER.info("Failed to resolve non-zero indexed qualified reference variable")
         }
+
         if (out.isNotEmpty()) {
             return PsiElementResolveResult.createResults(out)
         }
@@ -165,7 +178,11 @@ class ObjJVariableReference(
         // Get simple if no previous siblings
         val prevSiblings = myElement.previousSiblings
         if (prevSiblings.isEmpty()) {
-            val outSimple: List<JsTypeDefProperty> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter { it.enclosingNamespace.isEmpty() }
+            val outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
+                it.enclosingNamespace.isEmpty()
+            }.mapNotNull {
+                it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
+            }
             return PsiElementResolveResult.createResults(outSimple)
         }
         val className = prevSiblings.joinToString("\\.") { Regex.escape(it.text) }
@@ -173,25 +190,46 @@ class ObjJVariableReference(
 
         // Get types if qualified
         val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
-                ?: return PsiElementResolveResult.EMPTY_ARRAY
+        if (classTypes == null) {
+            return PsiElementResolveResult.EMPTY_ARRAY
+        }
         if (classTypes.classes.isNotEmpty()) {
-            val classNamesIndexParameter = classTypes.toIndexSearchString
-            val searchString = "$classNamesIndexParameter\\.$variableName"
+            val allClassNames = classTypes.classes.flatMap {
+                JsTypeDefClassesByNameIndex.instance[it, project].map {
+                    it.toJsClassDefinition()
+                }
+            }.withAllSuperClassNames(project)
+            val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it)} + ")\\." + variableName
             val found = JsTypeDefPropertiesByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
                 it.isStatic == isStatic
+            }.mapNotNull {
+                it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
             }
             return PsiElementResolveResult.createResults(found)
         }
-        return PsiElementResolveResult.EMPTY_ARRAY
+        return if (nullIfSelfReferencing)
+            PsiElementResolveResult.EMPTY_ARRAY
+        else
+            PsiElementResolveResult.createResults(listOf(myElement))
     }
 
     override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
-        return multiResolve(null)
+        return multiResolve(tag, nullIfSelfReferencing.orFalse())
     }
 
-    fun resolve(nullIfSelfReferencing: Boolean, tag:Long? = null) : PsiElement? {
+    fun resolve(nullIfSelfReferencing: Boolean? = null, tag:Long? = null) : PsiElement? {
+        return myElement.resolveFromCache {
+            val result = multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse()).mapNotNull { it.element }
+            if (nullIfSelfReferencing.orFalse()) {
+                return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
+            }
+            return@resolveFromCache result.firstOrNull()
+        }
+    }
+
+    private fun resolveInternal(tag:Long? = null) : PsiElement? {
         if (tag != null && this.tag == tag)
-            return if (nullIfSelfReferencing) null else myElement
+            return null
         try {
             if (myElement.containingFile.text.startsWith("@STATIC;")) {
                 return null
@@ -203,15 +241,11 @@ class ObjJVariableReference(
 
         val variableDeclaration = myElement.parent?.parent as? ObjJVariableDeclaration
         if (variableDeclaration?.hasVarKeyword().orFalse())
-            return if (nullIfSelfReferencing) null else myElement
+            return null
 
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (myElement.indexInQualifiedReference > 0) {
-            return if (nullIfSelfReferencing) {
-                variableName
-            } else {
-                variableName ?: myElement
-            }
+            return variableName
         }
         if (variableName == null) {
             variableName = globalVariableNameElement
@@ -222,19 +256,9 @@ class ObjJVariableReference(
                 return variableName
         }
         if (variableName is ObjJVariableName && variableName.indexInQualifiedReference > 0) {
-            return if (nullIfSelfReferencing) {
-                null
-            } else {
-                myElement
-            }
+            null
         }
-
-
-        if (nullIfSelfReferencing) {
-            return variableName
-        }
-
-        return variableName ?: myElement
+        return variableName
     }
 
     private fun resolveIfClassName() : PsiElement? {

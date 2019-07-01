@@ -8,21 +8,28 @@ import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toClassList
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
 import java.util.logging.Logger
 
-class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
+class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
     private val file: PsiFile = functionName.containingFile
     private val isFunctionCall:Boolean get () {
@@ -32,13 +39,20 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiPolyVariant
         return myElement.parent is ObjJFunctionDeclaration
     }
 
+    private val previousSiblingTypes:Set<String>? by lazy {
+        val prevSiblings = myElement.getParentOfType(ObjJFunctionCall::class.java)?.previousSiblings
+                ?: return@lazy null
+        inferQualifiedReferenceType(prevSiblings, tag)?.toClassList(null)?.toSet().orEmpty()
+    }
+
     override fun isReferenceTo(element: PsiElement): Boolean {
         if (element.text != functionName) {
             return false
         }
 
         if (myElement?.indexInQualifiedReference != 0) {
-            return false;
+            if (myElement is ObjJCompositeElement && element is ObjJCompositeElement)
+                return false;
         }
 
         val elementIsFunctionCall = element.parent is ObjJFunctionCall
@@ -49,6 +63,15 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiPolyVariant
         if (isFunctionCall && elementIsFunctionCall) {
             return false
         }
+
+        if (isFunctionCall) {
+            val enclosingClassName = ((element as? JsTypeDefFunctionName)?.parent as? JsTypeDefFunction)?.enclosingNamespaceComponents?.firstOrNull()
+            if (enclosingClassName.isNotNullOrBlank() && enclosingClassName!! in previousSiblingTypes.orEmpty())
+                return true
+            if (previousSiblingTypes == null && enclosingClassName == null)
+                return true
+        }
+
         val found = multiResolve(false).mapNotNull { it.element }
         LOGGER.info("Found: ${found.size} referenced elements")
         if (element in found)
@@ -100,22 +123,25 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName) : PsiPolyVariant
         val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         if (classTypes.classes.isNotEmpty()) {
-            val classNamesIndexParameter = classTypes.toIndexSearchString
-            val searchString = "$classNamesIndexParameter\\.$functionName"
+            val allClassNames = classTypes.classes.flatMap {
+                JsTypeDefClassesByNameIndex.instance[it, project].map {
+                    it.toJsClassDefinition()
+                }
+            }.withAllSuperClassNames(project)
+            val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it)} + ")\\." + functionName
             val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
                 it.isStatic == isStatic
-            }.map { it.functionName }
-            LOGGER.info("Found <${classTypes.classes.size}> classes for function name: $functionName: <${found.joinToString(", ") { it.text }}>")
+            }
+            LOGGER.info("Found <${found.size}> functions over <${allClassNames.size}> classes")
             return PsiElementResolveResult.createResults(found)
         }
-        LOGGER.info("Found NO classes for function name: $functionName")
         return PsiElementResolveResult.EMPTY_ARRAY
     }
 
 
     override fun resolve() : PsiElement? {
         return myElement.resolveFromCache {
-            resolveInternal()
+            multiResolve(false).firstOrNull()?.element
         }
     }
 

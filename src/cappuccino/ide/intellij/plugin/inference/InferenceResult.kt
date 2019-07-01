@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
@@ -13,21 +14,21 @@ import com.intellij.openapi.project.Project
 data class InferenceResult(
         val types: Set<JsTypeListType> = emptySet(),
         val nullable: Boolean = true,
-        internal val _classes: Set<String> = types.mapNotNull {
-            (it as? JsTypeListType.JsTypeListBasicType ?: it as? JsTypeListType.JsTypeListUnionType)?.typeName
-        }.toSet(),
-        val isNumeric: Boolean = isNumeric(_classes),
-        val isBoolean: Boolean = isBoolean(_classes),
-        val isString: Boolean = isString(_classes),
-        val isDictionary: Boolean = isDictionary(_classes),
-        val isSelector: Boolean = isSelector(_classes),
-        val isRegex: Boolean = isRegex(_classes)
+        val isNumeric: Boolean = isNumeric(types),
+        val isBoolean: Boolean = isBoolean(types),
+        val isString: Boolean = isString(types),
+        val isDictionary: Boolean = isDictionary(types),
+        val isSelector: Boolean = isSelector(types),
+        val isRegex: Boolean = isRegex(types)
 ) : Iterable<String> {
 
-    val classes:Set<String> get() = _classes
+    val classes:Set<String> by lazy {
+        types.map { it.typeName }.toSet()
+    }
 
     val toIndexSearchString:String by lazy {
-        "(" + classes.joinToString("|") { Regex.escape(it) } + ")"
+        LOGGER.info("Classes: <$classes>")
+        "(" + classes.joinToString("|") { Regex.escapeReplacement(it) } + ")"
     }
 
     val properties: List<JsNamedProperty> by lazy {
@@ -63,7 +64,7 @@ data class InferenceResult(
     }
 
     val isJsObject: Boolean by lazy {
-        interfaceTypes.isNotNullOrEmpty() || "Object" in _classes || "?" in _classes
+        interfaceTypes.isNotNullOrEmpty() || "Object" in classes || "?" in classes
     }
 
     val mapTypes: List<JsTypeListType.JsTypeListMapType> by lazy {
@@ -109,28 +110,28 @@ data class InferenceResult(
 
 }
 
-private fun isNumeric(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() in numberTypes }
+private fun isNumeric(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in numberTypes }
 }
 
-private fun isBoolean(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() in booleanTypes }
+private fun isBoolean(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in booleanTypes }
 }
 
-private fun isString(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() in stringTypes }
+private fun isString(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in stringTypes }
 }
 
-private fun isRegex(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() == "regex" }
+private fun isRegex(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() == "regex" }
 }
 
-private fun isDictionary(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() in dictionaryTypes }
+private fun isDictionary(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in dictionaryTypes }
 }
 
-private fun isSelector(classes: Iterable<String>): Boolean {
-    return classes.any { it.toLowerCase() == "sel" }
+private fun isSelector(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() == "sel" }
 }
 
 open class JsFunctionType(
@@ -192,15 +193,15 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
             emptySet()
     }
     val returnClasses = mutableListOf<String>()
-    if (isNumeric && numberTypes.intersect(_classes).isEmpty())
+    if (isNumeric && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (isBoolean && booleanTypes.intersect(_classes).isEmpty() && _classes.isEmpty())
+    if (isBoolean && booleanTypes.intersect(classes).isEmpty())
         returnClasses.add("BOOL")
     if (isRegex)
         returnClasses.add("regex")
     if (isDictionary)
         returnClasses.add("CPDictionary")
-    if (isString && stringTypes.intersect(_classes).isEmpty())
+    if (isString && stringTypes.intersect(classes).isEmpty())
         returnClasses.add("CPString")
     if (isSelector)
         returnClasses.add("SEL")
@@ -209,7 +210,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
     if (arrayTypes.types.isNotNullOrEmpty()) {
         returnClasses.addAll(arrayTypes.types.mapNotNull{ if (it.typeName != "Array" && it.typeName !in anyTypes) "$it[]" else null})
     }
-    returnClasses.addAll(_classes)
+    returnClasses.addAll(classes)
     return returnClasses.mapNotNull {
         when (it) {
             in anyTypes -> simplifyAnyTypeTo
@@ -261,7 +262,7 @@ internal fun Iterable<String>.withoutAnyType(): Set<String> {
 
 internal val InferenceResult.anyType: Boolean
     get() {
-        return _classes.any { it in anyTypes }
+        return classes.any { it in anyTypes }
     }
 
 internal val INFERRED_ANY_TYPE = InferenceResult(

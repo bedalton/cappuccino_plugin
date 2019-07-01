@@ -67,7 +67,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
  * Gets the cached types values for the given element
  * This should save computation time, but results are uncertain
  */
-internal fun <T: ObjJCompositeElement> T.getCachedInferredTypes(tag:Long?, setTag:Boolean = true, getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
+internal fun <T: PsiElement> T.getCachedInferredTypes(tag:Long?, setTag:Boolean = true, getIfNull:(()->InferenceResult?)? = null) : InferenceResult? {
     //if (this.getUserData(INFERRED_TYPES_IS_ACCESSING).orFalse())
       //  return null;
     this.putUserData(INFERRED_TYPES_IS_ACCESSING, true)
@@ -108,7 +108,7 @@ internal fun createTag():Long {
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun ObjJCompositeElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
+internal fun PsiElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
     if (tag == null)
         return false
 

@@ -11,32 +11,36 @@ import com.intellij.psi.stubs.PsiFileStub
 open class StubIndexService {
 
 
-    open fun indexFile(stub:PsiFileStub<*>, sink: IndexSink) {
+    open fun indexFile(stub: PsiFileStub<*>, sink: IndexSink) {
         LOGGER.warning("IndexFile should be overridden")
     }
 
-    open fun indexFunction(stub:JsTypeDefFunctionStub, sink:IndexSink) {
+    open fun indexFunction(stub: JsTypeDefFunctionStub, sink: IndexSink) {
         throw NotImplementedError("index functions method must be overridden")
     }
 
 
-    open fun indexProperty(stub:JsTypeDefPropertyStub, sink:IndexSink) {
+    open fun indexProperty(stub: JsTypeDefPropertyStub, sink: IndexSink) {
         throw NotImplementedError("index property method must be overridden")
     }
 
-    open fun indexModule(stub:JsTypeDefModuleStub, sink:IndexSink) {
+    open fun indexModule(stub: JsTypeDefModuleStub, sink: IndexSink) {
         throw NotImplementedError("index module method must be overridden")
     }
 
-    open fun indexModuleName(stub:JsTypeDefModuleNameStub, sink:IndexSink) {
+    open fun indexModuleName(stub: JsTypeDefModuleNameStub, sink: IndexSink) {
         throw NotImplementedError("index module name method must be overridden")
     }
 
-    open fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
+    open fun indexInterface(stub: JsTypeDefInterfaceStub, sink: IndexSink) {
         throw NotImplementedError("index interface indexing method must be overridden")
     }
 
-    open fun indexClass(stub:JsTypeDefClassStub, sink:IndexSink) {
+    open fun indexClass(stub: JsTypeDefClassStub, sink: IndexSink) {
+        throw NotImplementedError("index interface indexing method must be overridden")
+    }
+
+    open fun indexTypeMap(stub: JsTypeDefTypeMapStub, sink: IndexSink) {
         throw NotImplementedError("index interface indexing method must be overridden")
     }
 

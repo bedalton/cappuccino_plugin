@@ -199,9 +199,8 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         //// LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
-            LOGGER.info("No prev siblings")
             val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
-            val functionType = inferenceResult?.functionTypes.orEmpty().sortedBy { it.parameters.size }.firstOrNull()
+            val functionType = inferenceResult?.functionTypes.orEmpty().minBy { it.parameters.size }
             if (functionType != null) {
                 out.append(functionType.descriptionWithName(text))
                 return out.toString()

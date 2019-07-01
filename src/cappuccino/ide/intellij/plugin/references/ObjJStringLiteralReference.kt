@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 
@@ -21,20 +21,16 @@ class ObjJStringLiteralReference(stringLiteral:ObjJStringLiteral)  : PsiPolyVari
         val stringLiteralArguments = arguments.mapNotNull { it.propertyName.stringLiteral }.filter { it.stringValue == stringValue }
         if (stringLiteralArguments.isNotEmpty())
             return PsiElementResolveResult.createResults(stringLiteralArguments)
-        val typeMapNames = arguments.flatMap { it.keyOfType?.typeMapName?.reference?.multiResolve(false).orEmpty().map { it.element } }
-        val typeMapKeys = typeMapNames.mapNotNull { it.getParentOfType(JsTypeDefTypeMapElement::class.java) }.flatMap {
-            it.keyValuePairs.filter { it.key == stringValue}
+        val typeMapKeys = arguments.mapNotNull{ it.keyOfType?.typeMapName?.text }.flatMap {
+            collapseKeyValuePairs(project, it)
+        } .map { it.stringLiteral }.filter {
+            it.stringValue == stringValue
         }
-        val interfaceKeys = typeMapNames.mapNotNull { it.getParentOfType(JsTypeDefClassDeclaration::class.java) }.flatMap {
-            it.propertyList.mapNotNull { it.stringLiteral }.filter { it.stringValue == stringValue }
-        }
-        val out:List<JsTypeDefElement> = typeMapKeys + interfaceKeys
-        return if (out.isNotEmpty()) {
-            PsiElementResolveResult.createResults(out)
+        return if (typeMapKeys.isNotNullOrEmpty()) {
+            PsiElementResolveResult.createResults(typeMapKeys)
         } else {
             PsiElementResolveResult.EMPTY_ARRAY
         }
-
     }
 
     private val arguments: List<JsTypeDefArgument>? get() {
@@ -68,4 +64,26 @@ class ObjJStringLiteralReference(stringLiteral:ObjJStringLiteral)  : PsiPolyVari
         return result
     }
 
+}
+
+fun getSuperTypes(project:Project, className:String, out:MutableList<String>): Set<String> {
+    val classElements = JsTypeDefTypeMapByNameIndex.instance[className, project]
+    for (classElement in classElements) {
+        classElement.extendsStatement?.typeList?.mapNotNull { it.typeName?.text }.orEmpty().forEach{
+            if (it in out)
+                return@forEach
+            out.add(it)
+            getSuperTypes(project, it, out)
+        }
+    }
+    return out.toSet()
+}
+
+fun collapseKeyValuePairs(project:Project, classNameIn:String):List<JsTypeDefKeyValuePair> {
+    val allClasses = getSuperTypes(project, classNameIn, mutableListOf()) + classNameIn
+    return allClasses.flatMap {className ->
+        JsTypeDefTypeMapByNameIndex.instance[className, project].flatMap {
+            it.keyValuePairList
+        }
+    }
 }

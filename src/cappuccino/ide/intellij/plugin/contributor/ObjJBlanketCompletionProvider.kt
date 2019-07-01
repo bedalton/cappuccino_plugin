@@ -14,15 +14,12 @@ import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
-import cappuccino.ide.intellij.plugin.inference.toInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByClassNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -326,56 +323,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
     }
 
-    /*
-
-
-    private fun getSelectorTargets(element: PsiElement) : Set<String> {
-        val out = mutableSetOf<String>()
-        val selector = element.getParentOfType(ObjJQualifiedMethodCallSelector::class.java) ?: return emptySet()
-        val index = selector.index
-        val selectorString = selector.getParentOfType(ObjJMethodCall::class.java)?.selectorStrings?.subList(0, index).orEmpty().joinToString(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
-        if (selectorString.isNotNullOrBlank()) {
-            ObjJMethodFragmentIndex.instance[selectorString, element.project].forEach {
-                val thisSelector = it.selectorList.getOrNull(index)?.getParentOfType(ObjJMethodDeclarationSelector::class.java) ?: return@forEach
-                val type = thisSelector.formalVariableType?.varTypeId?.getIdType(false) ?: thisSelector.formalVariableType?.text ?: return@forEach
-                if (type.toLowerCase() !in anyTypes)
-                    out.add(type)
-            }
-        }
-        return out
-
-    }
-
-    private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables:List<ObjJVariableName>, classFilters:Set<String>) {
-        LOGGER.info("Adding completions for ${variables.size} variables")
-        variables.forEach {
-            addVariableNameCompletionElementWithPriority(resultSet, it, classFilters)
-        }
-    }
-
-    private fun addVariableNameCompletionElementWithPriority(resultSet:CompletionResultSet, variable:ObjJVariableName, classFilters: Set<String>) {
-        LOGGER.info("ADDING COMPLETION FOR: " + variable.text)
-        val inferredTypes = inferQualifiedReferenceType(variable.previousSiblings + variable, createTag())
-        val classList = inferredTypes?.toClassList("?").orEmpty().filterNot {it == "?"}.toSet()
-        val lookupElement = LookupElementBuilder.create(variable.text).withInsertHandler(ObjJVariableInsertHandler)
-        if (classList.isEmpty() || classFilters.isEmpty()) {
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY))
-            return
-        }
-        val targeted = classFilters.any {targetClass ->
-            targetClass in classList || classList.any {
-                ObjJInheritanceUtil.isInstanceOf(variable.project, it, targetClass)
-            }
-        }
-        if (targeted) {
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.TARGETTED_VARIABLE_SUGGESTION_PRIORITY))
-        } else {
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY))
-        }
-
-    }*/
-
-
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
             ProgressIndicatorProvider.checkCanceled()
@@ -567,35 +514,27 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         val project = element.project
         val previousComponents = qualifiedNameComponent.previousSiblings
+        LOGGER.info("INFERRING TYPE FOR QN")
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
-        val classes = inferred.classes
+        LOGGER.info("Converted: ${inferred.types.size} types into ${inferred.classes.size} type strings")
+        val classes = inferred.classes.toMutableSet()
+        val collapsedClass = classes.flatMap {
+            JsTypeDefClassesByNameIndex.instance[it, project].map {
+                it.toJsClassDefinition()
+            }
+        }.toSet().collapseWithSuperType(project)
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
 
         val classIndexString = inferred.toIndexSearchString
-        val functions = JsTypeDefFunctionsByClassNamesIndex.instance.getByPatternFlat(classIndexString, project).filter {
-            it.isStatic == includeStatic
-        }.map {
-            it.toJsTypeListType()
-        }
-        val properties = JsTypeDefPropertiesByClassNameIndex.instance.getByPatternFlat(classIndexString, project).filter {
-            it.isStatic == includeStatic
-        }.map {
-            it.toJsNamedProperty()
-        }
+        LOGGER.info("Class index string == <$classIndexString> for ${classes.size} classes.")
 
-        /*val jsClasses = classes.toInferenceResult().toJsClasses(element.project)
-        if (jsClasses.size != classes.size) {
-            LOGGER.info("ClassTypes and JsClasses is not equal.\n\tClassTypes: <$classes>\n\tFound: <${jsClasses.map{it.className}}>")
-        } else if (classes.isNotEmpty()) {
-            LOGGER.info("Found all js classes: <$classes>")
-        } else {
-            LOGGER.info("Failed to find qualified reference type for completions")
-        }
-        val types:JsClassDefinition = jsClasses.collapseWithSuperType(project)
-        val functions = if (includeStatic) types.staticFunctions else types.functions
-        val properties = if (includeStatic) types.staticProperties else types.properties
-        LOGGER.info("Found ${functions.size} functions and ${properties.size} properties in classes")*/
+        val functions = if (includeStatic)
+            collapsedClass.staticFunctions
+        else
+            collapsedClass.functions
+        LOGGER.info("Found <${functions.size}> functions. There are <${JsTypeDefFunctionsByClassNamesIndex.instance.getAllKeys(project).size}> classes in functions index")
+
         functions.forEach { classFunction ->
             val functionName = classFunction.name ?: return@forEach
             val lookupElementBuilder = LookupElementBuilder
@@ -604,6 +543,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
         }
+
+        val properties = if (includeStatic)
+            collapsedClass.staticProperties
+        else
+            collapsedClass.properties
 
         properties.forEach {
             val lookupElementBuilder = LookupElementBuilder

@@ -111,7 +111,7 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getEnclosingNamespace(element: JsTypeDefProperty) : String =
             element.stub?.enclosingNamespace
-                ?: element.getParentOfType(JsTypeDefVariableDeclaration::class.java)?.enclosingNamespace
+                ?: (element.parent as? JsTypeDefVariableDeclaration)?.enclosingNamespace
                 ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                 ?: ""
 
@@ -123,6 +123,7 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getEnclosingNamespaceComponents(element: JsTypeDefProperty) : List<String> =
             element.stub?.enclosingNamespaceComponents
+                    ?: (element.parent as? JsTypeDefVariableDeclaration)?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
 

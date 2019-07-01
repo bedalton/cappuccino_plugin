@@ -129,7 +129,7 @@ interface JsTypeDefInterfaceStub : StubElement<JsTypeDefInterfaceElementImpl>, J
 
 interface JsTypeDefNamespacedComponent {
     val enclosingNamespace:String
-    val enclosingNamespaceComponents:List<String> get() = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX)
+    val enclosingNamespaceComponents:List<String> get() = if (enclosingNamespace.isBlank()) emptyList() else enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX)
     val namespaceComponents:List<String>
 }
 

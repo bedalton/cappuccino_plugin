@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
@@ -16,7 +17,6 @@ fun inferExpressionType(expr:ObjJExpr?, tag:Long) : InferenceResult? {
 }
 
 private fun internalInferExpressionType(expr:ObjJExpr, tag:Long) : InferenceResult? {
-
     if (expr.text == "self") {
         val parentClass = expr.getParentOfType(ObjJClassDeclarationElement::class.java)
         if (parentClass != null)
@@ -74,8 +74,9 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
         return null
     }
 
-    if (leftExpression.functionCall != null)
+    if (leftExpression.functionCall != null) {
         return inferFunctionCallReturnType(leftExpression.functionCall!!, tag)
+    }
     if (leftExpression.parenEnclosedExpr != null) {
         if (leftExpression.parenEnclosedExpr?.expr == null)
             return null
