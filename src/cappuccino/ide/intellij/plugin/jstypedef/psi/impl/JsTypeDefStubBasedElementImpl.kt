@@ -53,9 +53,6 @@ open class JsTypeDefStubBasedElementImpl<StubT : StubElement<out PsiElement>> : 
             return file as JsTypeDefFile
         }
 
-    val psiOrParent: JsTypeDefElement
-        get() = this
-
     constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
     constructor(node: ASTNode) : super(node)
