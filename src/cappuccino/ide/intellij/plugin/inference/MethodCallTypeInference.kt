@@ -5,8 +5,10 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.project.DumbService
 
@@ -81,7 +83,9 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         return getAllocStatementType(methodCall)
     }
     val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
-    val callTargetTypes = callTargetType?.classes.orEmpty()
+    val callTargetTypes = callTargetType?.classes.orEmpty().flatMap {
+        ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+    }.toSet()
     if (selector == "copy" || selector == "copy:" || selector == "new:" || selector == "new:")
         return callTargetType
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
@@ -94,6 +98,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         }
     } else
         emptyList()
+
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes(tag) {
@@ -121,13 +126,21 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
                 null
         }
     }
-    val out = if (getReturnType.isNotEmpty() && instanceVariableTypes.isNotEmpty())
-        getReturnType + instanceVariableTypes
-    else if (getReturnType.isNotEmpty())
-        getReturnType
-    else
-        instanceVariableTypes
-    return InferenceResult(types = out.toJsTypeList())
+    // Accessors are different than instance var names
+    val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
+        instanceVariable ->
+        instanceVariable.getCachedInferredTypes(tag) {
+            LOGGER.info("Getting instance variable type information from <${instanceVariable.text}>")
+            return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
+        }?.classes.orEmpty()
+    }
+    val out = mutableSetOf<String>()
+    out.addAll(instanceVariableAccessorTypes)
+    out.addAll(instanceVariableTypes)
+    out.addAll(getReturnType)
+    return InferenceResult(
+            types = out.toJsTypeList()
+    )
 }
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
