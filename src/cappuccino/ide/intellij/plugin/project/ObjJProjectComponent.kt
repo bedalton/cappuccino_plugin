@@ -1,4 +1,4 @@
-package cappuccino.ide.intellij.plugin.management
+package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
@@ -50,6 +50,6 @@ class ObjJProjectComponent(project:Project) : ProjectComponent {
     }
 
     companion object {
-        private val LOGGER = Logger.getLogger("#"+ObjJProjectComponent::class.java)
+        private val LOGGER = Logger.getLogger("#"+ ObjJProjectComponent::class.java)
     }
 }
