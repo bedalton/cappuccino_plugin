@@ -110,10 +110,8 @@ private fun getNeeded(project: Project, searchScope: GlobalSearchScope, hasFound
             return@forEach
         val plistName = findFrameworkNameInPlist(it)?.toLowerCase()
         if (plistName == null) {
-            LOGGER.warning("Failed to find framework name in plist file: ${it.name}. Content:\n ${it.text}")
             return@forEach
         }
-        LOGGER.info("PlistNameFound: $plistName.")
         if (plistName == "foundation")
             hasFoundation = true
         else if (plistName == "appkit")

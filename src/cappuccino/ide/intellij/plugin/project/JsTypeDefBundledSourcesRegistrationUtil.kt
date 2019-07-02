@@ -1,9 +1,13 @@
 package cappuccino.ide.intellij.plugin.project
 
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.contents
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ModuleRootManager
@@ -21,7 +25,21 @@ object JsTypeDefBundledSourcesRegistrationUtil {
     private const val LIBRARY_NAME = "JsTypeDef-Std-Lib"
     private const val VERSION_TEXT_FILE_NAME = "version.txt"
 
-    fun register(module:Module) {
+    fun register(module:Module, project:Project) {
+
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).smartInvokeLater {
+                register(module, project)
+            }
+            return
+        }
+        if (JsTypeDefClassesByNameIndex.instance.containsKey("Document", project)
+                && JsTypeDefClassesByNameIndex.instance.containsKey("Window", project)
+                && JsTypeDefPropertiesByNamespaceIndex.instance.containsKey("Window.document", project)
+        ) {
+            LOGGER.info("Project already has typedef definitions")
+            return
+        }
         val moduleScope = module.moduleContentWithDependenciesScope
         if (!FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
             LOGGER.info("No objj-files in project")

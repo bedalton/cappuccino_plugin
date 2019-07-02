@@ -31,7 +31,7 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
                     return
                 val module = file.getModule(project)
                 if (module != null) {
-                    JsTypeDefBundledSourcesRegistrationUtil.register(module)
+                    JsTypeDefBundledSourcesRegistrationUtil.register(module, project)
                     initFrameworkDefaults(project, module, editorManager.selectedTextEditor, file)
                 }
             }
