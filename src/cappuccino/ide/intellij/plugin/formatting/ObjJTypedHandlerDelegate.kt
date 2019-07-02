@@ -133,22 +133,6 @@ class ObjJTypedHandlerDelegate : TypedHandlerDelegate() {
         }
         return Result.CONTINUE
     }
-
-    private fun getLastPrevChar(tempOriginalElement:PsiElement, caretPosition:Int) : Char? {
-        var element:PsiElement? = tempOriginalElement
-        while (element != null && element.textRange.startOffset > caretPosition) {
-            element = element.previous
-        }
-        if (element == null)
-            element = tempOriginalElement
-        while (element != null && element.textRange.endOffset > caretPosition) {
-            element = element.next
-        }
-        if (element == null)
-            return null
-        val offsetToCharInElement = caretPosition - element.textRange.startOffset
-        return element.textToCharArray().getOrNull(offsetToCharInElement)
-    }
 }
 
 private interface KeyPressHandler {
