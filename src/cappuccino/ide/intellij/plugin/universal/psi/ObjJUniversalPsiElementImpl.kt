@@ -18,7 +18,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.usageView.UsageViewUtil
 import javax.swing.Icon
 
-class ObjJUniversalPsiElementImpl<PsiT:ObjJUniversalPsiElement<PsiT>>(node: ASTNode) : ASTWrapperPsiElement(node),  ObjJUniversalPsiElement<PsiT> {
+class ObjJUniversalPsiElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),  ObjJUniversalPsiElement {
 
     override fun <T: PsiElement> getParentOfType(parentClass:Class<T>) : T? = PsiTreeUtil.getParentOfType(this, parentClass)
     override fun <T: PsiElement> getChildOfType(childClass:Class<T>) : T? = PsiTreeUtil.getChildOfType(this, childClass)
@@ -59,9 +59,9 @@ class ObjJUniversalPsiElementImpl<PsiT:ObjJUniversalPsiElement<PsiT>>(node: ASTN
 }
 
 
-open class ObjJUniversalStubBasedElementImpl<PsiT:ObjJUniversalStubBasedElement<PsiT, *>, StubT : StubElement<out PsiElement>> : StubBasedPsiElementBase<StubT>, ObjJUniversalPsiElement<PsiT>, ObjJUniversalStubBasedElement<PsiT, StubT> {
+open class ObjJUniversalStubBasedElementImpl<StubT : StubElement<out PsiElement>> : StubBasedPsiElementBase<StubT>, ObjJUniversalPsiElement, ObjJUniversalStubBasedElement<StubT> {
 
-    val psiOrParent: ObjJUniversalPsiElement<PsiT>
+    val psiOrParent: ObjJUniversalPsiElement
         get() = this
 
     constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)

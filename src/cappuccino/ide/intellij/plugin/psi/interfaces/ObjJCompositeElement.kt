@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 import java.util.logging.Level
 import java.util.logging.Logger
 
-interface ObjJCompositeElement : ObjJUniversalPsiElement<ObjJCompositeElement> {
+interface ObjJCompositeElement : ObjJUniversalPsiElement {
 
     val containingObjJFile: ObjJFile?
         get() {

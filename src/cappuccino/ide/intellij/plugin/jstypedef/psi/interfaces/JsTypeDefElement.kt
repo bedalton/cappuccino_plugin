@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import java.util.logging.Level
 import java.util.logging.Logger
 
-interface JsTypeDefElement : ObjJUniversalPsiElement<JsTypeDefElement> {
+interface JsTypeDefElement : ObjJUniversalPsiElement {
 
     val containingTypeDefFile: JsTypeDefFile?
         get() {

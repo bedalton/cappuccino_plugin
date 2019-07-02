@@ -24,12 +24,13 @@ import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
 import cappuccino.ide.intellij.plugin.psi.utils.getScope
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalStubBasedElement
 import com.intellij.psi.util.PsiTreeUtil
 
-open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBasedPsiElementBase<T>, ObjJCompositeElement, ObjJUniversalStubBasedElement<ObjJCompositeElement, T> {
+open class ObjJStubBasedElementImpl<StubT : StubElement<out PsiElement>> : StubBasedPsiElementBase<StubT>, ObjJCompositeElement, ObjJStubBasedElement<StubT> {
 
     override val containingObjJFile: ObjJFile
         get() {
@@ -41,7 +42,7 @@ open class ObjJStubBasedElementImpl<T : StubElement<out PsiElement>> : StubBased
     val psiOrParent: ObjJCompositeElement
         get() = this
 
-    constructor(stub: T, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+    constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
     constructor(node: ASTNode) : super(node)
 

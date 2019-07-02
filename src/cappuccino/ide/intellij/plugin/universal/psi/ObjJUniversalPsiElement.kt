@@ -9,7 +9,7 @@ import com.intellij.psi.StubBasedPsiElement
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
 
-interface ObjJUniversalPsiElement<PsiT:ObjJUniversalPsiElement<PsiT>> : PsiElement {
+interface ObjJUniversalPsiElement : PsiElement {
 
     fun getModule() : Module? = ModuleUtilCore.findModuleForPsiElement(this)
 
@@ -25,4 +25,4 @@ interface ObjJUniversalPsiElement<PsiT:ObjJUniversalPsiElement<PsiT>> : PsiEleme
         return getScope(commonContext(otherElement))
     }
 }
-interface ObjJUniversalStubBasedElement<PsiT:ObjJUniversalPsiElement<PsiT>, StubT: StubElement<*>> : StubBasedPsiElement<StubT>, ObjJUniversalPsiElement<PsiT>
+interface ObjJUniversalStubBasedElement<StubT: StubElement<*>> : StubBasedPsiElement<StubT>, ObjJUniversalPsiElement

@@ -88,27 +88,21 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
 
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
-        LOGGER.info("Multi Resolving")
         val resolved = resolveInternal();
         if (resolved != null && !resolved.isEquivalentTo(myElement)) {
-            LOGGER.info("Resolved function Element")
             return PsiElementResolveResult.createResults(resolved)
         }
-        LOGGER.info("Did not resolve function on first try")
         // Continue if function call
         val functionCall = myElement.parent as? ObjJFunctionCall
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
-        LOGGER.info("Element is Function Call")
         // Get Base variables
         val project = functionCall.project
         val functionName = functionCall.functionNameString
                 ?:  return PsiElementResolveResult.EMPTY_ARRAY
 
-        LOGGER.info("Function has name")
         // Get simple if no previous siblings
         val prevSiblings = functionCall.previousSiblings
         if (prevSiblings.isEmpty()) {
-            LOGGER.info("No siblings for function <$functionName>")
             var outSimple: List<JsTypeDefElement> = JsTypeDefFunctionsByNameIndex.instance[functionName, project].filter {
                 it.enclosingNamespace.isEmpty()
             }.map {
@@ -119,7 +113,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
                     (it as? JsTypeDefClassElement)?.typeName
                 }
             }
-            LOGGER.info("Found: ${outSimple.size} reference results for function <$functionName>: <${outSimple.joinToString(", ") { it.text }}>")
             return PsiElementResolveResult.createResults(outSimple)
         }
         val className = prevSiblings.joinToString("\\.") { Regex.escape(it.text) }
@@ -138,7 +131,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
             val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
                 it.isStatic == isStatic
             }
-            LOGGER.info("Found <${found.size}> functions over <${allClassNames.size}> classes")
             return PsiElementResolveResult.createResults(found)
         }
         return PsiElementResolveResult.EMPTY_ARRAY
