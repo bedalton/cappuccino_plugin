@@ -17,7 +17,6 @@ import java.util.logging.Logger
 object JsTypeDefBundledSourcesRegistrationUtil {
 
     private val LOGGER = Logger.getLogger("#"+ JsTypeDefBundledSourcesRegistrationUtil::class.java)
-    private const val BUNDLE_DEFINITIONS_FOLDER = "definitions"
     private const val ROOT_FOLDER = "jstypedef"
     private const val LIBRARY_NAME = "JsTypeDef-Std-Lib"
     private const val VERSION_TEXT_FILE_NAME = "version.txt"
