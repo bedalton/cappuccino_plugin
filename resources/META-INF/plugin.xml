@@ -152,7 +152,7 @@
       <implementation-class>cappuccino.intellij.plugin.support.ObjectiveJPluginController</implementation-class>
     </component-->
     <component>
-      <implementation-class>cappuccino.ide.intellij.plugin.management.ObjJProjectComponent</implementation-class>
+      <implementation-class>cappuccino.ide.intellij.plugin.project.ObjJProjectComponent</implementation-class>
     </component>
   </project-components>
 
