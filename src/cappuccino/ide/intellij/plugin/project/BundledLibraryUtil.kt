@@ -7,6 +7,8 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScopes
 import java.util.logging.Logger
 
 internal const val BUNDLE_DEFINITIONS_FOLDER = "definitions"
@@ -18,14 +20,19 @@ internal fun registerSourcesAsLibrary(module: Module, libraryName:String, direct
     val library = getCreateLibrary(libraryName, modifiableModel)
     val libModel = library.modifiableModel
     directories.forEach {directory ->
-        val libraryPath = ObjJFileUtil.getPluginResourceFile("${BUNDLE_DEFINITIONS_FOLDER}/$directory")
+        val libraryPath = ObjJFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")
         if (libraryPath == null) {
             val pluginRoot = ObjJFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
-                LOGGER.info("Failed to locate bundled files: Plugin root is invalid")
+                LOGGER.severe("Failed to locate bundled files: Plugin root is invalid")
+                throw Exception("Failed to locate bundled files: Plugin root is invalid")
             } else {
-                LOGGER.info("Failed to locate bundled files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+                val searchScope = GlobalSearchScopes.directoriesScope(module.project, true, pluginRoot)
+                val errorMessage = "Failed to locate bundled files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>;\nfiles:\n${FilenameIndex.getAllFilesByExt(module.project, "j", searchScope).map { "\n\t${it.name}" }}"
+                LOGGER.severe(errorMessage)
+                throw Exception(errorMessage)
             }
+
             return false
         }
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)

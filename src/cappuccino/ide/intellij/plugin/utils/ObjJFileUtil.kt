@@ -8,13 +8,13 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import java.io.File
+import java.util.logging.Logger
 
+private val LOGGER:Logger = Logger.getLogger("#"+ObjJFileUtil::class.java.canonicalName)
 
 val VirtualFile.contents: String
     get() {
@@ -55,11 +55,16 @@ object ObjJFileUtil {
     val PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
-            return VfsUtil.findFileByIoFile(file, true)
+            val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
+                    ?: throw Exception("Failed to locate plugin lib folder")
+            val jar = libFolder.findChild("Cappuccino Plugin.jar")
+                    ?: throw Exception("Failed to locate plugin jar")
+            return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
+            //return jar
         }
 
     private val PLUGIN_RESOURCES_DIRECTORY: VirtualFile?
-        get() = PLUGIN_HOME_DIRECTORY?.findChild(RESOURCES_FOLDER)
+        get() = PLUGIN_HOME_DIRECTORY
 
     fun getPluginResourceFile(relativePath: String): VirtualFile? {
         return PLUGIN_RESOURCES_DIRECTORY?.findFileByRelativePath(relativePath)

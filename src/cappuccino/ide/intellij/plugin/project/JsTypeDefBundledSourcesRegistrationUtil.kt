@@ -38,11 +38,10 @@ object JsTypeDefBundledSourcesRegistrationUtil {
                 && JsTypeDefPropertiesByNamespaceIndex.instance.containsKey("Window.document", project)
         ) {
             LOGGER.info("Project already has typedef definitions")
-            return
+            //return
         }
         val moduleScope = module.moduleContentWithDependenciesScope
         if (!FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
-            LOGGER.info("No objj-files in project")
             return
         }
         runWriteAction {
@@ -59,26 +58,31 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
 
     private fun registerSourcesAsLibrary(module:Module) : Boolean {
+        val project = module.project
+        if (DumbService.isDumb(project)) {
+            DumbService.getInstance(project).smartInvokeLater {
+                registerSourcesAsLibrary(module)
+            }
+            return false
+        }
         val rootModel = ModuleRootManager.getInstance(module).modifiableModel
         val modifiableModel = rootModel.moduleLibraryTable.modifiableModel
         val libraryPath = ObjJFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$ROOT_FOLDER")
         if (libraryPath == null) {
             val pluginRoot = ObjJFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
-                LOGGER.info("Failed to locate bundled jstypedef files: Plugin root is invalid")
+                throw Exception("Failed to locate bundled jstypedef files: Plugin root is invalid")
             } else {
-                LOGGER.info("Failed to locate bundled jstypedef files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+                throw Exception("Failed to locate bundled jstypedef files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
             }
-            return false
         }
 
         // Check if same version
         if (isSourceCurrent(libraryPath, modifiableModel)) {
             LOGGER.info("Source jstypedef files are current")
-            return true
+            //return true
         }
 
-        LOGGER.info("Registering jstypedef files")
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)
                 ?: modifiableModel.createLibrary(LIBRARY_NAME, ObjJLibraryType.LIBRARY)
         val libModel = library.modifiableModel
@@ -108,8 +112,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
     private fun currentLibraryVersion(model:ModifiableModel) : String? {
         return model.getLibraryByName(LIBRARY_NAME)
                 ?.getFiles(OrderRootType.SOURCES)
-                .orEmpty().filter { it.name == VERSION_TEXT_FILE_NAME }
-                .firstOrNull()
+                .orEmpty().firstOrNull { it.name == VERSION_TEXT_FILE_NAME }
                 ?.contents
     }
 
