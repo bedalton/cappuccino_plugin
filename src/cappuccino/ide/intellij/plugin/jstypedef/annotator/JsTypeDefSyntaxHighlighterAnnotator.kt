@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
@@ -57,6 +58,10 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
             }
             return
         }
+        when (functionName.text) {
+            in NO_COLOR_KEYWORDS -> stripAnnotation(functionName, annotationHolder)
+            "self" -> colorize(functionName, annotationHolder, JsTypeDefSyntaxHighlighter.KEYWORD)
+        }
     }
 
     /**
@@ -70,6 +75,9 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
                 highlightPropertyName(propertyName, annotationHolder)
             }
             return
+        }
+        if (propertyName.text in NO_COLOR_KEYWORDS) {
+            stripAnnotation(propertyName, annotationHolder)
         }
     }
 
@@ -89,7 +97,17 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
     }
 
     companion object {
-
+        val NO_COLOR_KEYWORDS = listOf(
+                "keys",
+                "keyof",
+                "declare",
+                "array",
+                "Array",
+                "Map",
+                "extends",
+                "module",
+                "alias"
+        )
     }
 
 }

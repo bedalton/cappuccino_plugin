@@ -6,8 +6,7 @@ import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import icons.ObjJIcons
-
-import javax.swing.*
+import javax.swing.Icon
 
 class ObjJColorSettingsPage : ColorSettingsPage {
 
@@ -67,7 +66,7 @@ class ObjJColorSettingsPage : ColorSettingsPage {
 globalGreeting = @"Hello %s!";
 
 //This is a regular variable
-var element = document.<funcName>getElementById</funcName>("tagName");
+var element = <js_var>document</js_var>.<funcName>getElementById</funcName>("tagName");
 
 <fileLevelVariable>element</fileLevelVariable>.<identifier>innerHTML</identifier> = @"21";
 
@@ -85,6 +84,9 @@ var isValidName = function(aName)
 
 function sayHello(aName)
 {
+    var fab = -<js_val>SQRT</js_val>,
+        abFab = <js_func>abs(fab)</js_func>;
+
     if (<funcName>isValidName</funcName>(<paramVar>aName</paramVar>))
     {
         return [<varType>CPString</varType> stringWithFormat:<globalVar>globalGreeting</globalVar>, <paramVar>aName</paramVar>];
@@ -128,8 +130,12 @@ function sayHello(aName)
                 AttributesDescriptor("Parameter Variables", ObjJSyntaxHighlighter.PARAMETER_VARIABLE),
                 AttributesDescriptor("Function Calls", ObjJSyntaxHighlighter.FUNCTION_NAME),
                 AttributesDescriptor("Global Function Calls", ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME),
+                AttributesDescriptor("Global Javascript Function Calls", ObjJSyntaxHighlighter.JS_TYPEDEF_FUNCTION_NAME),
                 AttributesDescriptor("File Level Variables", ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE),
-                AttributesDescriptor("Global Variables", ObjJSyntaxHighlighter.GLOBAL_VARIABLE))
+                AttributesDescriptor("Global Variables", ObjJSyntaxHighlighter.GLOBAL_VARIABLE),
+                AttributesDescriptor("Global Javascript Variables", ObjJSyntaxHighlighter.JS_TYPEDEF_VARIABLE),
+                AttributesDescriptor("Global Javascript Functions", ObjJSyntaxHighlighter.JS_TYPEDEF_FUNCTION_NAME)
+        )
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
                 "identifier" to ObjJSyntaxHighlighter.ID,
                 "keyword" to ObjJSyntaxHighlighter.KEYWORD,
@@ -144,7 +150,10 @@ function sayHello(aName)
                 "globalFunctionNames" to ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME,
                 "pp" to ObjJSyntaxHighlighter.PRE_PROCESSOR,
                 "at" to ObjJSyntaxHighlighter.AT_STATEMENT,
-                "funcName" to ObjJSyntaxHighlighter.FUNCTION_NAME
+                "funcName" to ObjJSyntaxHighlighter.FUNCTION_NAME,
+                "js_var" to ObjJSyntaxHighlighter.JS_TYPEDEF_VARIABLE,
+                "js_func" to ObjJSyntaxHighlighter.JS_TYPEDEF_FUNCTION_NAME
+
         )
     }
 }

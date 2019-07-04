@@ -1,6 +1,8 @@
 package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*
@@ -82,7 +84,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         val variableName = variableNameElement.text
         val index = parent.variableNameList.indexOf(variableNameElement)
         if (index == 0) {
-            if (!ObjJClassDeclarationsIndex.instance[variableName, project].isEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
+            if (ObjJClassDeclarationsIndex.instance[variableName, project].isNotEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
                 colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
                 return
             }
@@ -99,7 +101,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             return
         } else if (referencedVariable.hasParentOfType(ObjJBlockElement::class.java)) {
 
-        } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java)) {
+        } else if (referencedVariable.hasParentOfType(ObjJGlobalVariableDeclaration::class.java) || referencedVariable.hasParentOfType(ObjJGlobal::class.java) || referencedVariable?.containingFile is JsTypeDefFile) {
             colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.GLOBAL_VARIABLE)
             return
         } else if (referencedVariable.getParentOfType(ObjJBodyVariableAssignment::class.java)?.getContainingScope() == ReferencedInScope.FILE) {
@@ -153,6 +155,8 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     }
 
     private fun highlightFunctionName(functionCall: ObjJFunctionCall, annotationHolder: AnnotationHolder) {
+        if (functionCall.indexInQualifiedReference > 0)
+            return
         val functionName = functionCall.functionName ?: return
         val resolved = functionName.reference.resolve()
         if (resolved?.getParentOfType(ObjJMethodHeader::class.java) != null) {
@@ -167,6 +171,10 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             return
 
         val commonScope = PsiTreeUtil.findCommonContext(resolved, functionCall)?.getContainingScope()
+        if (commonScope == null && functionCall.indexInQualifiedReference > 0) {
+            return
+        }
+
         if (commonScope == null || resolved.getContainingScope() == ReferencedInScope.FILE || commonScope == ReferencedInScope.FILE) {
             colorize(functionName,annotationHolder, ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME, ObjJBundle.message("objective-j.general.defined-in-file.text", functionName.containingFileName ?: ""))
         }
