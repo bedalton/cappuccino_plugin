@@ -41,7 +41,6 @@ class ObjJClassIsImportedInspection  : LocalInspectionTool() {
         val importedClassNames = ObjJPsiFileUtil.getImportedClassNames(containingFile) + containingFile.definedClassNames
         if (className in importedClassNames)
             return
-        LOGGER.info("Classes Imported:\n\t${importedClassNames.sortedDescending().joinToString(",\n\t")}")
         problemsHolder.registerProblem(psiElement, ObjJBundle.message("objective-j.inspections.class-not-imported.message", className))
 
     }
