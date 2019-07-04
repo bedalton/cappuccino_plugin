@@ -32,8 +32,6 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
     val constructors = body.interfaceConstructorList
     if (constructors.isEmpty())
         return
-    if (body.namelessFunctionList.isNotEmpty())
-        return
     val properties=body.propertyList
     val functions = body.functionList
     if (properties.isEmpty())
@@ -107,6 +105,9 @@ class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, propert
             }
             propertyBody.functionList.forEach {
                 out.append("\n\tstatic ").append(it.text)
+            }
+            propertyBody.namelessFunctionList.forEach {
+                out.append("\n\tstatic self").append(it.text)
             }
             out.append(interfaceText.substring(bodyStartOffset))
             LOGGER.info("WouldWrite:\n$out")
