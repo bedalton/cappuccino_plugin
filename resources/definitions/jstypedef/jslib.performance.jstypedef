@@ -1,0 +1,172 @@
+
+
+class PerfWidgetExternal {
+	new()
+    readonly activeNetworkRequestCount: number;
+    readonly averageFrameTime: number;
+    readonly averagePaintTime: number;
+    readonly extraInformationEnabled: boolean;
+    readonly independentRenderingEnabled: boolean;
+    readonly irDisablingContentString: string;
+    readonly irStatusAvailable: boolean;
+    readonly maxCpuSpeed: number;
+    readonly paintRequestsPerSecond: number;
+    readonly performanceCounter: number;
+    readonly performanceCounterFrequency: number;
+    addEventListener(eventType: string, callback: Function): void;
+    getMemoryUsage(): number;
+    getProcessCpuUsage(): number;
+    getRecentCpuUsage(last: number | null): any;
+    getRecentFrames(last: number | null): any;
+    getRecentMemoryUsage(last: number | null): any;
+    getRecentPaintRequests(last: number | null): any;
+    removeEventListener(eventType: string, callback: Function): void;
+    repositionWindow(x: number, y: number): void;
+    resizeWindow(width: number, height: number): void;
+}
+
+typemap PerformanceEventMap {
+    "resourcetimingbufferfull": Event;
+}
+
+/** The Performance interface provides access to performance-related information for the current page. It's part of the High Resolution Time API, but is enhanced by the Performance Timeline API, the Navigation Timing API, the User Timing API, and the Resource Timing API. */
+class Performance extends EventTarget {
+	new()
+    /** @deprecated */
+    readonly navigation: PerformanceNavigation;
+    onresourcetimingbufferfull: ((this: Performance, ev: Event) => any) | null;
+    readonly timeOrigin: number;
+    /** @deprecated */
+    readonly timing: PerformanceTiming;
+    clearMarks(markName?: string): void;
+    clearMeasures(measureName?: string): void;
+    clearResourceTimings(): void;
+    getEntries(): PerformanceEntryList;
+    getEntriesByName(name: string, type?: string): PerformanceEntryList;
+    getEntriesByType(type: string): PerformanceEntryList;
+    mark(markName: string): void;
+    measure(measureName: string, startMark?: string, endMark?: string): void;
+    now(): number;
+    setResourceTimingBufferSize(maxSize: number): void;
+    toJSON(): any;
+    addEventListener(type: K keyof PerformanceEventMap, listener: (this: Performance, ev: PerformanceEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof PerformanceEventMap, listener: (this: Performance, ev: PerformanceEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The PerformanceEntry object encapsulates a single performance metric that is part of the performance timeline. A performance entry can be directly created by making a performance mark or measure (for example by calling the mark() method) at an explicit point in an application. Performance entries are also created in indirect ways such as loading a resource (such as an image). */
+class PerformanceEntry {
+	new()
+    readonly duration: number;
+    readonly entryType: string;
+    readonly name: string;
+    readonly startTime: number;
+    toJSON(): any;
+}
+
+/** PerformanceMark is an abstract interface for PerformanceEntry objects with an entryType of "mark". Entries of this type are created by calling performance.mark() to add a named DOMHighResTimeStamp (the mark) to the browser's performance timeline. */
+class PerformanceMark extends PerformanceEntry {
+	new()
+}
+
+/** PerformanceMeasure is an abstract interface for PerformanceEntry objects with an entryType of "measure". Entries of this type are created by calling performance.measure() to add a named DOMHighResTimeStamp (the measure) between two marks to the browser's performance timeline. */
+class PerformanceMeasure extends PerformanceEntry {
+	new()
+}
+
+/** The legacy PerformanceNavigation interface represents information about how the navigation to the current document was done. */
+class PerformanceNavigation {
+	new()
+	static readonly TYPE_BACK_FORWARD: number
+	static readonly TYPE_NAVIGATE: number
+	static readonly TYPE_RELOAD: number
+	static readonly TYPE_RESERVED: number
+    readonly redirectCount: number;
+    readonly type: number;
+    toJSON(): any;
+    readonly TYPE_BACK_FORWARD: number;
+    readonly TYPE_NAVIGATE: number;
+    readonly TYPE_RELOAD: number;
+    readonly TYPE_RESERVED: number;
+}
+
+/** The PerformanceNavigationTiming interface provides getMethods and properties to store and retrieve metrics regarding the browser's document navigation events. For example, this interface can be used to determine how much time it takes to load or unload a document. */
+class PerformanceNavigationTiming extends PerformanceResourceTiming {
+	new()
+    readonly domComplete: number;
+    readonly domContentLoadedEventEnd: number;
+    readonly domContentLoadedEventStart: number;
+    readonly domInteractive: number;
+    readonly loadEventEnd: number;
+    readonly loadEventStart: number;
+    readonly redirectCount: number;
+    readonly type: NavigationType;
+    readonly unloadEventEnd: number;
+    readonly unloadEventStart: number;
+    toJSON(): any;
+}
+
+class PerformanceObserver {
+	new(callback: PerformanceObserverCallback)
+    disconnect(): void;
+    observe(options: PerformanceObserverInit): void;
+    takeRecords(): PerformanceEntryList;
+}
+
+class PerformanceObserverEntryList {
+	new()
+    getEntries(): PerformanceEntryList;
+    getEntriesByName(name: string, type?: string): PerformanceEntryList;
+    getEntriesByType(type: string): PerformanceEntryList;
+}
+
+/** The PerformanceResourceTiming interface enables retrieval and analysis of detailed network timing data regarding the loading of an application's resources. An application can use the timing metrics to determine, for example, the length of time it takes to fetch a specific resource, such as an XMLHttpRequest, <SVG>, image, or script. */
+class PerformanceResourceTiming extends PerformanceEntry {
+	new()
+    readonly connectEnd: number;
+    readonly connectStart: number;
+    readonly decodedBodySize: number;
+    readonly domainLookupEnd: number;
+    readonly domainLookupStart: number;
+    readonly encodedBodySize: number;
+    readonly fetchStart: number;
+    readonly initiatorType: string;
+    readonly nextHopProtocol: string;
+    readonly redirectEnd: number;
+    readonly redirectStart: number;
+    readonly requestStart: number;
+    readonly responseEnd: number;
+    readonly responseStart: number;
+    readonly secureConnectionStart: number;
+    readonly transferSize: number;
+    readonly workerStart: number;
+    toJSON(): any;
+}
+
+/** The PerformanceTiming interface is a legacy interface kept for backwards compatibility and contains properties that offer performance timing information for various events which occur during the loading and use of the current page. You get a PerformanceTiming object describing your page using the window.performance.timing property. */
+class PerformanceTiming {
+	new()
+    readonly connectEnd: number;
+    readonly connectStart: number;
+    readonly domComplete: number;
+    readonly domContentLoadedEventEnd: number;
+    readonly domContentLoadedEventStart: number;
+    readonly domInteractive: number;
+    readonly domLoading: number;
+    readonly domainLookupEnd: number;
+    readonly domainLookupStart: number;
+    readonly fetchStart: number;
+    readonly loadEventEnd: number;
+    readonly loadEventStart: number;
+    readonly navigationStart: number;
+    readonly redirectEnd: number;
+    readonly redirectStart: number;
+    readonly requestStart: number;
+    readonly responseEnd: number;
+    readonly responseStart: number;
+    readonly secureConnectionStart: number;
+    readonly unloadEventEnd: number;
+    readonly unloadEventStart: number;
+    toJSON(): any;
+}

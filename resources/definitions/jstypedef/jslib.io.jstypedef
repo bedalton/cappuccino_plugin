@@ -1,0 +1,533 @@
+
+
+/** The ByteLengthQueuingStrategy interface of the the Streams API provides a built-in byte length queuing strategy that can be used when constructing streams. */
+class ByteLengthQueuingStrategy extends QueuingStrategy<ArrayBufferView> {
+    new(options: { highWaterMark: number });
+    highWaterMark: number;
+    size(chunk: ArrayBufferView): number;
+}
+
+/** The Cache interface provides a storage mechanism for Request / Response object pairs that are cached, for example as part of the ServiceWorker life cycle. Note that the Cache interface is exposed to windowed scopes as well as workers. You don't have to use it in conjunction with service workers, even though it is defined in the service worker spec. */
+class Cache {
+    new();
+    add(request: RequestInfo): Promise<void>;
+    addAll(requests: RequestInfo[]): Promise<void>;
+    delete(request: RequestInfo, options?: CacheQueryOptions): Promise<boolean>;
+    keys(request?: RequestInfo, options?: CacheQueryOptions): Promise<ReadonlyArray<Request>>;
+    match(request: RequestInfo, options?: CacheQueryOptions): Promise<Response | undefined>;
+    matchAll(request?: RequestInfo, options?: CacheQueryOptions): Promise<ReadonlyArray<Response>>;
+    put(request: RequestInfo, response: Response): Promise<void>;
+}
+
+/** The File interface provides information about files and allows JavaScript in a web page to access their content. */
+class File extends Blob {
+	new(fileBits: BlobPart[], fileName: string, options?: FilePropertyBag)
+    readonly lastModified: number;
+    readonly name: string;
+}
+
+/** An object of this type is returned by the files property of the HTML <input> element; this lets you access the list of files selected with the <input type="file"> element. It's also used for a list of files dropped into web content when using the drag and drop API; see the DataTransfer object for details on this usage. */
+class FileList {
+    new()
+    readonly length: number;
+    item(index: number): File | null;
+    [index: number]: File;
+}
+
+typemap FileReaderEventMap {
+    "abort": ProgressEvent;
+    "error": ProgressEvent;
+    "load": ProgressEvent;
+    "loadend": ProgressEvent;
+    "loadstart": ProgressEvent;
+    "progress": ProgressEvent;
+}
+
+/** The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read. */
+class FileReader extends EventTarget {
+    new()
+    static readonly DONE: number;
+    static readonly EMPTY: number;
+    static readonly LOADING: number;
+    readonly error: DOMException | null;
+    onabort: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    onerror: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    onload: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    onloadend: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    onloadstart: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    onprogress: ((this: FileReader, ev: ProgressEvent) => any) | null;
+    readonly readyState: number;
+    readonly result: string | ArrayBuffer | null;
+    abort(): void;
+    readAsArrayBuffer(blob: Blob): void;
+    readAsBinaryString(blob: Blob): void;
+    readAsDataURL(blob: Blob): void;
+    readAsText(blob: Blob, encoding?: string): void;
+    readonly DONE: number;
+    readonly EMPTY: number;
+    readonly LOADING: number;
+    addEventListener(type: K keyof FileReaderEventMap, listener: (this: FileReader, ev: FileReaderEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof FileReaderEventMap, listener: (this: FileReader, ev: FileReaderEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+/** The Range interface represents a fragment of a document that can contain nodes and parts of text nodes. */
+class Range extends AbstractRange {
+    new();
+    static readonly END_TO_END: number;
+    static readonly END_TO_START: number;
+    static readonly START_TO_END: number;
+    static readonly START_TO_START: number;
+    /**
+     * Returns the node, furthest away from
+     * the document, that is an ancestor of both range's start node and end node.
+     */
+    readonly commonAncestorContainer: Node;
+    cloneContents(): DocumentFragment;
+    cloneRange(): Range;
+    collapse(toStart?: boolean): void;
+    compareBoundaryPoints(how: number, sourceRange: Range): number;
+    /**
+     * Returns −1 if the point is before the range, 0 if the point is
+     * in the range, and 1 if the point is after the range.
+     */
+    comparePoint(node: Node, offset: number): number;
+    createContextualFragment(fragment: string): DocumentFragment;
+    deleteContents(): void;
+    detach(): void;
+    extractContents(): DocumentFragment;
+    getBoundingClientRect(): ClientRect | DOMRect;
+    getClientRects(): ClientRectList | DOMRectList;
+    insertNode(node: Node): void;
+    /**
+     * Returns whether range intersects node.
+     */
+    intersectsNode(node: Node): boolean;
+    isPointInRange(node: Node, offset: number): boolean;
+    selectNode(node: Node): void;
+    selectNodeContents(node: Node): void;
+    setEnd(node: Node, offset: number): void;
+    setEndAfter(node: Node): void;
+    setEndBefore(node: Node): void;
+    setStart(node: Node, offset: number): void;
+    setStartAfter(node: Node): void;
+    setStartBefore(node: Node): void;
+    surroundContents(newParent: Node): void;
+    readonly END_TO_END: number;
+    readonly END_TO_START: number;
+    readonly START_TO_END: number;
+    readonly START_TO_START: number;
+}
+
+interface ReadableByteStreamController {
+    readonly byobRequest: ReadableStreamBYOBRequest | undefined;
+    readonly desiredSize: number | null;
+    close(): void;
+    enqueue(chunk: ArrayBufferView): void;
+    error(error?: any): void;
+}
+
+/** The ReadableStream interface of the Streams API represents a readable stream of byte data. The Fetch API offers a concrete instance of a ReadableStream through the body property of a Response object. */
+class ReadableStream<R = any> {
+    new(underlyingSource: UnderlyingByteSource, strategy?: { highWaterMark?: number, size?: undefined });
+    new(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
+    readonly locked: boolean;
+    cancel(reason?: any): Promise<void>;
+    getReader(options: { mode: "byob" }): ReadableStreamBYOBReader;
+    getReader(): ReadableStreamDefaultReader<R>;
+    pipeThrough<T>(writableReadable: { writable: WritableStream<R>, readable: ReadableStream<T> }, options?: PipeOptions): ReadableStream<T>;
+    pipeTo(dest: WritableStream<R>, options?: PipeOptions): Promise<void>;
+    tee(): ReadableStream<R>[]
+}
+
+class ReadableStreamBYOBReader {
+	new(stream: ReadableStream<Uint8Array>)
+    readonly closed: Promise<void>;
+    cancel(reason?: any): Promise<void>;
+    read<T:ArrayBufferView>(view: T): Promise<ReadableStreamReadResult<T>>;
+    releaseLock(): void;
+}
+
+interface ReadableStreamBYOBRequest {
+    readonly view: ArrayBufferView;
+    respond(bytesWritten: number): void;
+    respondWithNewView(view: ArrayBufferView): void;
+}
+
+interface ReadableStreamDefaultController<R = any> {
+    readonly desiredSize: number | null;
+    close(): void;
+    enqueue(chunk: R): void;
+    error(error?: any): void;
+}
+
+interface ReadableStreamDefaultReader<R = any> {
+    readonly closed: Promise<void>;
+    cancel(reason?: any): Promise<void>;
+    read(): Promise<ReadableStreamReadResult<R>>;
+    releaseLock(): void;
+}
+
+interface ReadableStreamReadResult<T> {
+    done: boolean;
+    value: T;
+}
+
+class ReadableStreamReader<R = any> {
+	new()
+    cancel(): Promise<void>;
+    read(): Promise<ReadableStreamReadResult<R>>;
+    releaseLock(): void;
+}
+
+/** The Request interface of the Fetch API represents a resource request. */
+class Request extends Body {
+	new(input: RequestInfo, init?: RequestInit)
+    /**
+     * Returns the cache mode associated with request, which is a string indicating
+     * how the request will interact with the browser's cache when fetching.
+     */
+    readonly cache: RequestCache;
+    /**
+     * Returns the credentials mode associated with request, which is a string
+     * indicating whether credentials will be sent with the request always, never, or only when sent to a
+     * same-origin URL.
+     */
+    readonly credentials: RequestCredentials;
+    /**
+     * Returns the kind of resource requested by request, e.g., "document" or
+     * "script".
+     */
+    readonly destination: RequestDestination;
+    /**
+     * Returns a Headers object consisting of the headers associated with request.
+     * Note that headers added in the network layer by the user agent will not be accounted for in this
+     * object, e.g., the "Host" header.
+     */
+    readonly headers: Headers;
+    /**
+     * Returns request's subresource integrity metadata, which is a cryptographic hash of
+     * the resource being fetched. Its value consists of multiple hashes separated by whitespace. [SRI]
+     */
+    readonly integrity: string;
+    /**
+     * Returns a boolean indicating whether or not request is for a history
+     * navigation (a.k.a. back-foward navigation).
+     */
+    readonly isHistoryNavigation: boolean;
+    /**
+     * Returns a boolean indicating whether or not request is for a reload navigation.
+     */
+    readonly isReloadNavigation: boolean;
+    /**
+     * Returns a boolean indicating whether or not request can outlive the global in which
+     * it was created.
+     */
+    readonly keepalive: boolean;
+    /**
+     * Returns request's HTTP method, which is "GET" by default.
+     */
+    readonly method: string;
+    /**
+     * Returns the mode associated with request, which is a string indicating
+     * whether the request will use CORS, or will be restricted to same-origin URLs.
+     */
+    readonly mode: RequestMode;
+    /**
+     * Returns the redirect mode associated with request, which is a string
+     * indicating how redirects for the request will be handled during fetching. A request will follow redirects by default.
+     */
+    readonly redirect: RequestRedirect;
+    /**
+     * Returns the referrer of request. Its value can be a same-origin URL if
+     * explicitly set in init, the empty string to indicate no referrer, and
+     * "about:client" when defaulting to the global's default. This is used during
+     * fetching to determine the value of the `Referer` header of the request being made.
+     */
+    readonly referrer: string;
+    /**
+     * Returns the referrer policy associated with request. This is used during
+     * fetching to compute the value of the request's referrer.
+     */
+    readonly referrerPolicy: ReferrerPolicy;
+    /**
+     * Returns the signal associated with request, which is an AbortSignal object indicating whether or not request has been aborted, and its abort
+     * event handler.
+     */
+    readonly signal: AbortSignal;
+    /**
+     * Returns the URL of request as a string.
+     */
+    readonly url: string;
+    clone(): Request;
+}
+
+/** The Response interface of the Fetch API represents the response to a request. */
+class Response extends Body {
+	new(body?: BodyInit | null, init?: ResponseInit)
+	static error(): Response
+	static redirect(url: string, status?: number): Response
+    readonly headers: Headers;
+    readonly ok: boolean;
+    readonly redirected: boolean;
+    readonly status: number;
+    readonly statusText: string;
+    readonly trailer: Promise<Headers>;
+    readonly type: ResponseType;
+    readonly url: string;
+    clone(): Response;
+}
+
+
+interface ReadableByteStreamControllerCallback {
+    (controller: ReadableByteStreamController): void | PromiseLike<void>;
+}
+
+interface ReadableStreamDefaultControllerCallback<R> {
+    (controller: ReadableStreamDefaultController<R>): void | PromiseLike<void>;
+}
+
+interface ReadableStreamErrorCallback {
+    (reason: any): void | PromiseLike<void>;
+}
+
+interface TransformStreamDefaultControllerCallback<O> {
+    (controller: TransformStreamDefaultController<O>): void | PromiseLike<void>;
+}
+
+interface TransformStreamDefaultControllerTransformCallback<I, O> {
+    (chunk: I, controller: TransformStreamDefaultController<O>): void | PromiseLike<void>;
+}
+
+interface VoidFunction {
+    (): void;
+}
+
+
+/** The WebSocket object provides the API for creating and managing a WebSocket connection to a server, as well as for sending and receiving data on the connection. */
+class WebSocket extends EventTarget {
+    new(url: string, protocols?: string | string[]);
+    static readonly CLOSED: number;
+    static readonly CLOSING: number;
+    static readonly CONNECTING: number;
+    static readonly OPEN: number;
+    binaryType: BinaryType;
+    readonly bufferedAmount: number;
+    readonly extensions: string;
+    onclose: ((this: WebSocket, ev: CloseEvent) => any) | null;
+    onerror: ((this: WebSocket, ev: Event) => any) | null;
+    onmessage: ((this: WebSocket, ev: MessageEvent) => any) | null;
+    onopen: ((this: WebSocket, ev: Event) => any) | null;
+    readonly protocol: string;
+    readonly readyState: number;
+    readonly url: string;
+    close(code?: number, reason?: string): void;
+    send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void;
+    readonly CLOSED: number;
+    readonly CLOSING: number;
+    readonly CONNECTING: number;
+    readonly OPEN: number;
+    addEventListener(type: K keyof WebSocketEventMap, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof WebSocketEventMap, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap WebSocketEventMap {
+    "close": CloseEvent;
+    "error": Event;
+    "message": MessageEvent;
+    "open": Event;
+}
+
+/** The WritableStream interface of the the Streams API provides a standard abstraction for writing streaming data to a destination, known as a sink. This object comes with built-in backpressure and queuing. */
+class WritableStream<W = any> {
+    new(underlyingSink?: UnderlyingSink<W>, strategy?: QueuingStrategy<W>);
+    readonly locked: boolean;
+    abort(reason?: any): Promise<void>;
+    getWriter(): WritableStreamDefaultWriter<W>;
+}
+
+/** The WritableStreamDefaultController interface of the the Streams API represents a controller allowing control of a WritableStream's state. When constructing a WritableStream, the underlying sink is given a corresponding WritableStreamDefaultController instance to manipulate. */
+interface WritableStreamDefaultController {
+    error(error?: any): void;
+}
+
+/** The WritableStreamDefaultWriter interface of the the Streams API is the object returned by WritableStream.getWriter() and once created locks the < writer to the WritableStream ensuring that no other streams can write to the underlying sink. */
+interface WritableStreamDefaultWriter<W = any> {
+    readonly closed: Promise<void>;
+    readonly desiredSize: number | null;
+    readonly ready: Promise<void>;
+    abort(reason?: any): Promise<void>;
+    close(): Promise<void>;
+    releaseLock(): void;
+    write(chunk: W): Promise<void>;
+}
+
+interface WritableStreamDefaultControllerCloseCallback {
+    (): void | PromiseLike<void>;
+}
+
+interface WritableStreamDefaultControllerStartCallback {
+    (controller: WritableStreamDefaultController): void | PromiseLike<void>;
+}
+
+interface WritableStreamDefaultControllerWriteCallback<W> {
+    (chunk: W, controller: WritableStreamDefaultController): void | PromiseLike<void>;
+}
+
+interface WritableStreamErrorCallback {
+    (reason: any): void | PromiseLike<void>;
+}
+
+typemap XMLHttpRequestEventMap extends XMLHttpRequestEventTargetEventMap {
+    "readystatechange": Event;
+}
+
+/** Use XMLHttpRequest (XHR) objects to interact with servers. You can retrieve data from a URL without having to do a full page refresh. This enables a Web page to update just part of a page without disrupting what the user is doing. */
+class XMLHttpRequest extends XMLHttpRequestEventTarget {
+    new();
+    static readonly DONE: number;
+    static readonly HEADERS_RECEIVED: number;
+    static readonly LOADING: number;
+    static readonly OPENED: number;
+    static readonly UNSENT: number;
+    onreadystatechange: ((this: XMLHttpRequest, ev: Event) => any) | null;
+    /**
+     * Returns client's state.
+     */
+    readonly readyState: number;
+    /**
+     * Returns the response's body.
+     */
+    readonly response: any;
+    /**
+     * Returns the text response.
+     * Throws an "InvalidStateError" DOMException if responseType is not the empty string or "text".
+     */
+    readonly responseText: string;
+    /**
+     * Returns the response type.
+     * Can be set to change the response type. Values are:
+     * the empty string (default),
+     * "arraybuffer",
+     * "blob",
+     * "document",
+     * "json", and
+     * "text".
+     * When set: setting to "document" is ignored if current global object is not a Window object.
+     * When set: throws an "InvalidStateError" DOMException if state is loading or done.
+     * When set: throws an "InvalidAccessError" DOMException if the synchronous flag is set and current global object is a Window object.
+     */
+    responseType: XMLHttpRequestResponseType;
+    readonly responseURL: string;
+    /**
+     * Returns the document response.
+     * Throws an "InvalidStateError" DOMException if responseType is not the empty string or "document".
+     */
+    readonly responseXML: Document | null;
+    readonly status: number;
+    readonly statusText: string;
+    /**
+     * Can be set to a time in milliseconds. When set to a non-zero value will cause fetching to terminate after the given time has passed. When the time has passed, the
+     * request has not yet completed, and the synchronous flag is unset, a timeout event will then be dispatched, or a
+     * "TimeoutError" DOMException will be thrown otherwise (for the send() method).
+     * When set: throws an "InvalidAccessError" DOMException if the synchronous flag is set and current global object is a Window object.
+     */
+    timeout: number;
+    /**
+     * Returns the associated XMLHttpRequestUpload object. It can be used to gather transmission information when data is
+     * transferred to a server.
+     */
+    readonly upload: XMLHttpRequestUpload;
+    /**
+     * True when credentials are to be included in a cross-origin request. False when they are
+     * to be excluded in a cross-origin request and when cookies are to be ignored in its response.
+     * Initially false.
+     * When set: throws an "InvalidStateError" DOMException if state is not unsent or opened, or if the send() flag is set.
+     */
+    withCredentials: boolean;
+    /**
+     * Cancels any network activity.
+     */
+    abort(): void;
+    getAllResponseHeaders(): string;
+    getResponseHeader(name: string): string | null;
+    /**
+     * Sets the request method, request URL, and synchronous flag.
+     * Throws a "SyntaxError" DOMException if either method is not a
+     * valid HTTP method or url cannot be parsed.
+     * Throws a "SecurityError" DOMException if method is a
+     * case-insensitive match for `CONNECT`, `TRACE`, or `TRACK`.
+     * Throws an "InvalidAccessError" DOMException if async is false, current global object is a Window object, and the timeout attribute is not zero or the responseType attribute is not the empty string.
+     */
+    open(method: string, url: string): void;
+    open(method: string, url: string, async: boolean, username?: string | null, password?: string | null): void;
+    /**
+     * Acts as if the `Content-Type` header value for response is mime.
+     * (It does not actually change the header though.)
+     * Throws an "InvalidStateError" DOMException if state is loading or done.
+     */
+    overrideMimeType(mime: string): void;
+    /**
+     * Initiates the request. The body argument provides the request body, if any,
+     * and is ignored if the request method is GET or HEAD.
+     * Throws an "InvalidStateError" DOMException if either state is not opened or the send() flag is set.
+     */
+    send(body?: Document | BodyInit | null): void;
+    /**
+     * Combines a header in author request headers.
+     * Throws an "InvalidStateError" DOMException if either state is not opened or the send() flag is set.
+     * Throws a "SyntaxError" DOMException if name is not a header name
+     * or if value is not a header value.
+     */
+    setRequestHeader(name: string, value: string): void;
+    readonly DONE: number;
+    readonly HEADERS_RECEIVED: number;
+    readonly LOADING: number;
+    readonly OPENED: number;
+    readonly UNSENT: number;
+    addEventListener(type: K keyof XMLHttpRequestEventMap, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof XMLHttpRequestEventMap, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap XMLHttpRequestEventTargetEventMap {
+    "abort": ProgressEvent;
+    "error": ProgressEvent;
+    "load": ProgressEvent;
+    "loadend": ProgressEvent;
+    "loadstart": ProgressEvent;
+    "progress": ProgressEvent;
+    "timeout": ProgressEvent;
+}
+
+class XMLHttpRequestEventTarget extends EventTarget {
+    new();
+    onabort: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    onerror: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    onload: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    onloadend: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    onloadstart: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    ontimeout: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+    addEventListener(type: K keyof XMLHttpRequestEventTargetEventMap, listener: (this: XMLHttpRequestEventTarget, ev: XMLHttpRequestEventTargetEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof XMLHttpRequestEventTargetEventMap, listener: (this: XMLHttpRequestEventTarget, ev: XMLHttpRequestEventTargetEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+class XMLHttpRequestUpload extends XMLHttpRequestEventTarget {
+    new();
+    addEventListener(type: K keyof XMLHttpRequestEventTargetEventMap, listener: (this: XMLHttpRequestUpload, ev: XMLHttpRequestEventTargetEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof XMLHttpRequestEventTargetEventMap, listener: (this: XMLHttpRequestUpload, ev: XMLHttpRequestEventTargetEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+class webkitRTCPeerConnection extends RTCPeerConnection {
+    new(configuration: RTCConfiguration);
+    addEventListener(type: K keyof RTCPeerConnectionEventMap, listener: (this: webkitRTCPeerConnection, ev: RTCPeerConnectionEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof RTCPeerConnectionEventMap, listener: (this: webkitRTCPeerConnection, ev: RTCPeerConnectionEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}

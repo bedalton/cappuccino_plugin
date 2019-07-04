@@ -1,0 +1,681 @@
+
+
+/** The CSS interface holds useful CSS-related getMethods. No object with this interface are implemented: it contains only static getMethods and therefore is a utilitarian interface. */
+class CSS {
+    static escape(value: string): string;
+    static supports(property: string, value?: string): boolean;
+}
+
+/** An object implementing the CSSConditionRule interface represents a single condition CSS at-rule, which consists of a condition and a statement block. It is a child of CSSGroupingRule. */
+class CSSConditionRule extends CSSGroupingRule {
+    new();
+    conditionText: string;
+}
+
+class CSSFontFaceRule extends CSSRule {
+    new();
+    readonly style: CSSStyleDeclaration;
+}
+
+/** An object implementing the CSSGroupingRule interface represents any CSS at-rule that contains other rules nested within it. */
+class CSSGroupingRule extends CSSRule {
+    new();
+    readonly cssRules: CSSRuleList;
+    deleteRule(index: number): void;
+    insertRule(rule: string, index: number): number;
+}
+
+class CSSImportRule extends CSSRule {
+    new();
+    readonly href: string;
+    readonly media: MediaList;
+    readonly styleSheet: CSSStyleSheet;
+}
+
+/** The CSSKeyframeRule interface describes an object representing a set of style for a given keyframe. It corresponds to the contains of a single keyframe of a @keyframes at-rule. It implements the CSSRule interface with a type value of 8 (CSSRule.KEYFRAME_RULE). */
+class CSSKeyframeRule extends CSSRule {
+    new();
+    keyText: string;
+    readonly style: CSSStyleDeclaration;
+}
+
+/** The CSSKeyframesRule interface describes an object representing a complete set of keyframes for a CSS animation. It corresponds to the contains of a whole @keyframes at-rule. It implements the CSSRule interface with a type value of 7 (CSSRule.KEYFRAMES_RULE). */
+class CSSKeyframesRule extends CSSRule {
+    new();
+    readonly cssRules: CSSRuleList;
+    name: string;
+    appendRule(rule: string): void;
+    deleteRule(select: string): void;
+    findRule(select: string): CSSKeyframeRule | null;
+}
+
+/** The CSSMediaRule is an interface representing a single CSS @media rule. It implements the CSSConditionRule interface, and therefore the CSSGroupingRule and the CSSRule interface with a type value of 4 (CSSRule.MEDIA_RULE). */
+class CSSMediaRule extends CSSConditionRule {
+    new();
+    readonly media: MediaList;
+}
+
+/** The CSSNamespaceRule interface describes an object representing a single CSS @namespace at-rule. It implements the CSSRule interface, with a type value of 10 (CSSRule.NAMESPACE_RULE). */
+class CSSNamespaceRule extends CSSRule {
+    new();
+    readonly namespaceURI: string;
+    readonly prefix: string;
+}
+
+/** CSSPageRule is an interface representing a single CSS @page rule. It implements the CSSRule interface with a type value of 6 (CSSRule.PAGE_RULE). */
+class CSSPageRule extends CSSRule {
+    new();
+    readonly pseudoClass: string;
+    readonly selector: string;
+    selectorText: string;
+    readonly style: CSSStyleDeclaration;
+}
+
+/** The CSSRule interface represents a single CSS rule. There are several types of rules, listed in the Type constants section below. */
+class CSSRule {
+    new();
+    static readonly CHARSET_RULE: number;
+    static readonly FONT_FACE_RULE: number;
+    static readonly IMPORT_RULE: number;
+    static readonly KEYFRAMES_RULE: number;
+    static readonly KEYFRAME_RULE: number;
+    static readonly MEDIA_RULE: number;
+    static readonly NAMESPACE_RULE: number;
+    static readonly PAGE_RULE: number;
+    static readonly STYLE_RULE: number;
+    static readonly SUPPORTS_RULE: number;
+    static readonly UNKNOWN_RULE: number;
+    static readonly VIEWPORT_RULE: number;
+    readonly parentRule: CSSRule | null;
+    readonly parentStyleSheet: CSSStyleSheet | null;
+    readonly type: number;
+    readonly CHARSET_RULE: number;
+    readonly FONT_FACE_RULE: number;
+    readonly IMPORT_RULE: number;
+    readonly KEYFRAMES_RULE: number;
+    readonly KEYFRAME_RULE: number;
+    readonly MEDIA_RULE: number;
+    readonly NAMESPACE_RULE: number;
+    readonly PAGE_RULE: number;
+    readonly STYLE_RULE: number;
+    readonly SUPPORTS_RULE: number;
+    readonly UNKNOWN_RULE: number;
+    readonly VIEWPORT_RULE: number;
+    cssText: string;
+}
+
+/** A CSSRuleList is an (indirect-modify only) array-like object containing an ordered collection of CSSRule objects. */
+class CSSRuleList {
+    new();
+    readonly length: number;
+    item(index: number): CSSRule | null;
+    [index: number]: CSSRule;
+}
+
+/** The CSSStyleDeclaration API represents an object that is a CSS declaration block, that exposes style information and various style-related getMethods and properties. */
+class CSSStyleDeclaration {
+    new();
+    alignContent: string | null;
+    alignItems: string | null;
+    alignSelf: string | null;
+    alignmentBaseline: string | null;
+    animation: string;
+    animationDelay: string;
+    animationDirection: string;
+    animationDuration: string;
+    animationFillMode: string;
+    animationIterationCount: string;
+    animationName: string;
+    animationPlayState: string;
+    animationTimingFunction: string;
+    backfaceVisibility: string | null;
+    background: string | null;
+    backgroundAttachment: string | null;
+    backgroundClip: string | null;
+    backgroundColor: string | null;
+    backgroundImage: string | null;
+    backgroundOrigin: string | null;
+    backgroundPosition: string | null;
+    backgroundPositionX: string | null;
+    backgroundPositionY: string | null;
+    backgroundRepeat: string | null;
+    backgroundSize: string | null;
+    baselineShift: string | null;
+    border: string | null;
+    borderBottom: string | null;
+    borderBottomColor: string | null;
+    borderBottomLeftRadius: string | null;
+    borderBottomRightRadius: string | null;
+    borderBottomStyle: string | null;
+    borderBottomWidth: string | null;
+    borderCollapse: string | null;
+    borderColor: string | null;
+    borderImage: string | null;
+    borderImageOutset: string | null;
+    borderImageRepeat: string | null;
+    borderImageSlice: string | null;
+    borderImageSource: string | null;
+    borderImageWidth: string | null;
+    borderLeft: string | null;
+    borderLeftColor: string | null;
+    borderLeftStyle: string | null;
+    borderLeftWidth: string | null;
+    borderRadius: string | null;
+    borderRight: string | null;
+    borderRightColor: string | null;
+    borderRightStyle: string | null;
+    borderRightWidth: string | null;
+    borderSpacing: string | null;
+    borderStyle: string | null;
+    borderTop: string | null;
+    borderTopColor: string | null;
+    borderTopLeftRadius: string | null;
+    borderTopRightRadius: string | null;
+    borderTopStyle: string | null;
+    borderTopWidth: string | null;
+    borderWidth: string | null;
+    bottom: string | null;
+    boxShadow: string | null;
+    boxSizing: string | null;
+    breakAfter: string | null;
+    breakBefore: string | null;
+    breakInside: string | null;
+    captionSide: string | null;
+    clear: string | null;
+    clip: string | null;
+    clipPath: string | null;
+    clipRule: string | null;
+    color: string | null;
+    colorInterpolationFilters: string | null;
+    columnCount: any;
+    columnFill: string | null;
+    columnGap: any;
+    columnRule: string | null;
+    columnRuleColor: any;
+    columnRuleStyle: string | null;
+    columnRuleWidth: any;
+    columnSpan: string | null;
+    columnWidth: any;
+    columns: string | null;
+    content: string | null;
+    counterIncrement: string | null;
+    counterReset: string | null;
+    cssFloat: string | null;
+    cssText: string;
+    cursor: string | null;
+    direction: string | null;
+    display: string | null;
+    dominantBaseline: string | null;
+    emptyCells: string | null;
+    enableBackground: string | null;
+    fill: string | null;
+    fillOpacity: string | null;
+    fillRule: string | null;
+    filter: string | null;
+    flex: string | null;
+    flexBasis: string | null;
+    flexDirection: string | null;
+    flexFlow: string | null;
+    flexGrow: string | null;
+    flexShrink: string | null;
+    flexWrap: string | null;
+    floodColor: string | null;
+    floodOpacity: string | null;
+    font: string | null;
+    fontFamily: string | null;
+    fontFeatureSettings: string | null;
+    fontSize: string | null;
+    fontSizeAdjust: string | null;
+    fontStretch: string | null;
+    fontStyle: string | null;
+    fontVariant: string | null;
+    fontWeight: string | null;
+    gap: string | null;
+    glyphOrientationHorizontal: string | null;
+    glyphOrientationVertical: string | null;
+    grid: string | null;
+    gridArea: string | null;
+    gridAutoColumns: string | null;
+    gridAutoFlow: string | null;
+    gridAutoRows: string | null;
+    gridColumn: string | null;
+    gridColumnEnd: string | null;
+    gridColumnGap: string | null;
+    gridColumnStart: string | null;
+    gridGap: string | null;
+    gridRow: string | null;
+    gridRowEnd: string | null;
+    gridRowGap: string | null;
+    gridRowStart: string | null;
+    gridTemplate: string | null;
+    gridTemplateAreas: string | null;
+    gridTemplateColumns: string | null;
+    gridTemplateRows: string | null;
+    height: string | null;
+    imeMode: string | null;
+    justifyContent: string | null;
+    justifyItems: string | null;
+    justifySelf: string | null;
+    kerning: string | null;
+    layoutGrid: string | null;
+    layoutGridChar: string | null;
+    layoutGridLine: string | null;
+    layoutGridMode: string | null;
+    layoutGridType: string | null;
+    left: string | null;
+    readonly length: number;
+    letterSpacing: string | null;
+    lightingColor: string | null;
+    lineBreak: string | null;
+    lineHeight: string | null;
+    listStyle: string | null;
+    listStyleImage: string | null;
+    listStylePosition: string | null;
+    listStyleType: string | null;
+    margin: string | null;
+    marginBottom: string | null;
+    marginLeft: string | null;
+    marginRight: string | null;
+    marginTop: string | null;
+    marker: string | null;
+    markerEnd: string | null;
+    markerMid: string | null;
+    markerStart: string | null;
+    mask: string | null;
+    maskImage: string | null;
+    maxHeight: string | null;
+    maxWidth: string | null;
+    minHeight: string | null;
+    minWidth: string | null;
+    msContentZoomChaining: string | null;
+    msContentZoomLimit: string | null;
+    msContentZoomLimitMax: any;
+    msContentZoomLimitMin: any;
+    msContentZoomSnap: string | null;
+    msContentZoomSnapPoints: string | null;
+    msContentZoomSnapType: string | null;
+    msContentZooming: string | null;
+    msFlowFrom: string | null;
+    msFlowInto: string | null;
+    msFontFeatureSettings: string | null;
+    msGridColumn: any;
+    msGridColumnAlign: string | null;
+    msGridColumnSpan: any;
+    msGridColumns: string | null;
+    msGridRow: any;
+    msGridRowAlign: string | null;
+    msGridRowSpan: any;
+    msGridRows: string | null;
+    msHighContrastAdjust: string | null;
+    msHyphenateLimitChars: string | null;
+    msHyphenateLimitLines: any;
+    msHyphenateLimitZone: any;
+    msHyphens: string | null;
+    msImeAlign: string | null;
+    msOverflowStyle: string | null;
+    msScrollChaining: string | null;
+    msScrollLimit: string | null;
+    msScrollLimitXMax: any;
+    msScrollLimitXMin: any;
+    msScrollLimitYMax: any;
+    msScrollLimitYMin: any;
+    msScrollRails: string | null;
+    msScrollSnapPointsX: string | null;
+    msScrollSnapPointsY: string | null;
+    msScrollSnapType: string | null;
+    msScrollSnapX: string | null;
+    msScrollSnapY: string | null;
+    msScrollTranslation: string | null;
+    msTextCombineHorizontal: string | null;
+    msTextSizeAdjust: any;
+    msTouchAction: string | null;
+    msTouchSelect: string | null;
+    msUserSelect: string | null;
+    msWrapFlow: string;
+    msWrapMargin: any;
+    msWrapThrough: string;
+    objectFit: string | null;
+    objectPosition: string | null;
+    opacity: string | null;
+    order: string | null;
+    orphans: string | null;
+    outline: string | null;
+    outlineColor: string | null;
+    outlineOffset: string | null;
+    outlineStyle: string | null;
+    outlineWidth: string | null;
+    overflow: string | null;
+    overflowX: string | null;
+    overflowY: string | null;
+    padding: string | null;
+    paddingBottom: string | null;
+    paddingLeft: string | null;
+    paddingRight: string | null;
+    paddingTop: string | null;
+    pageBreakAfter: string | null;
+    pageBreakBefore: string | null;
+    pageBreakInside: string | null;
+    readonly parentRule: CSSRule;
+    penAction: string | null;
+    perspective: string | null;
+    perspectiveOrigin: string | null;
+    pointerEvents: string | null;
+    position: string | null;
+    quotes: string | null;
+    resize: string | null;
+    right: string | null;
+    rotate: string | null;
+    rowGap: string | null;
+    rubyAlign: string | null;
+    rubyOverhang: string | null;
+    rubyPosition: string | null;
+    scale: string | null;
+    scrollBehavior: string;
+    stopColor: string | null;
+    stopOpacity: string | null;
+    stroke: string | null;
+    strokeDasharray: string | null;
+    strokeDashoffset: string | null;
+    strokeLinecap: string | null;
+    strokeLinejoin: string | null;
+    strokeMiterlimit: string | null;
+    strokeOpacity: string | null;
+    strokeWidth: string | null;
+    tableLayout: string | null;
+    textAlign: string | null;
+    textAlignLast: string | null;
+    textAnchor: string | null;
+    textCombineUpright: string | null;
+    textDecoration: string | null;
+    textIndent: string | null;
+    textJustify: string | null;
+    textKashida: string | null;
+    textKashidaSpace: string | null;
+    textOverflow: string | null;
+    textShadow: string | null;
+    textTransform: string | null;
+    textUnderlinePosition: string | null;
+    top: string | null;
+    touchAction: string;
+    transform: string | null;
+    transformOrigin: string | null;
+    transformStyle: string | null;
+    transition: string;
+    transitionDelay: string;
+    transitionDuration: string;
+    transitionProperty: string;
+    transitionTimingFunction: string;
+    translate: string | null;
+    unicodeBidi: string | null;
+    userSelect: string | null;
+    verticalAlign: string | null;
+    visibility: string | null;
+    /** @deprecated */
+    webkitAlignContent: string;
+    /** @deprecated */
+    webkitAlignItems: string;
+    /** @deprecated */
+    webkitAlignSelf: string;
+    /** @deprecated */
+    webkitAnimation: string;
+    /** @deprecated */
+    webkitAnimationDelay: string;
+    /** @deprecated */
+    webkitAnimationDirection: string;
+    /** @deprecated */
+    webkitAnimationDuration: string;
+    /** @deprecated */
+    webkitAnimationFillMode: string;
+    /** @deprecated */
+    webkitAnimationIterationCount: string;
+    /** @deprecated */
+    webkitAnimationName: string;
+    /** @deprecated */
+    webkitAnimationPlayState: string;
+    /** @deprecated */
+    webkitAnimationTimingFunction: string;
+    /** @deprecated */
+    webkitAppearance: string;
+    /** @deprecated */
+    webkitBackfaceVisibility: string;
+    /** @deprecated */
+    webkitBackgroundClip: string;
+    /** @deprecated */
+    webkitBackgroundOrigin: string;
+    /** @deprecated */
+    webkitBackgroundSize: string;
+    /** @deprecated */
+    webkitBorderBottomLeftRadius: string;
+    /** @deprecated */
+    webkitBorderBottomRightRadius: string;
+    webkitBorderImage: string | null;
+    /** @deprecated */
+    webkitBorderRadius: string;
+    /** @deprecated */
+    webkitBorderTopLeftRadius: string;
+    /** @deprecated */
+    webkitBorderTopRightRadius: string;
+    /** @deprecated */
+    webkitBoxAlign: string;
+    webkitBoxDirection: string | null;
+    /** @deprecated */
+    webkitBoxFlex: string;
+    /** @deprecated */
+    webkitBoxOrdinalGroup: string;
+    webkitBoxOrient: string | null;
+    /** @deprecated */
+    webkitBoxPack: string;
+    /** @deprecated */
+    webkitBoxShadow: string;
+    /** @deprecated */
+    webkitBoxSizing: string;
+    webkitColumnBreakAfter: string | null;
+    webkitColumnBreakBefore: string | null;
+    webkitColumnBreakInside: string | null;
+    webkitColumnCount: any;
+    webkitColumnGap: any;
+    webkitColumnRule: string | null;
+    webkitColumnRuleColor: any;
+    webkitColumnRuleStyle: string | null;
+    webkitColumnRuleWidth: any;
+    webkitColumnSpan: string | null;
+    webkitColumnWidth: any;
+    webkitColumns: string | null;
+    /** @deprecated */
+    webkitFilter: string;
+    /** @deprecated */
+    webkitFlex: string;
+    /** @deprecated */
+    webkitFlexBasis: string;
+    /** @deprecated */
+    webkitFlexDirection: string;
+    /** @deprecated */
+    webkitFlexFlow: string;
+    /** @deprecated */
+    webkitFlexGrow: string;
+    /** @deprecated */
+    webkitFlexShrink: string;
+    /** @deprecated */
+    webkitFlexWrap: string;
+    /** @deprecated */
+    webkitJustifyContent: string;
+    /** @deprecated */
+    webkitMask: string;
+    /** @deprecated */
+    webkitMaskBoxImage: string;
+    /** @deprecated */
+    webkitMaskBoxImageOutset: string;
+    /** @deprecated */
+    webkitMaskBoxImageRepeat: string;
+    /** @deprecated */
+    webkitMaskBoxImageSlice: string;
+    /** @deprecated */
+    webkitMaskBoxImageSource: string;
+    /** @deprecated */
+    webkitMaskBoxImageWidth: string;
+    /** @deprecated */
+    webkitMaskClip: string;
+    /** @deprecated */
+    webkitMaskComposite: string;
+    /** @deprecated */
+    webkitMaskImage: string;
+    /** @deprecated */
+    webkitMaskOrigin: string;
+    /** @deprecated */
+    webkitMaskPosition: string;
+    /** @deprecated */
+    webkitMaskRepeat: string;
+    /** @deprecated */
+    webkitMaskSize: string;
+    /** @deprecated */
+    webkitOrder: string;
+    /** @deprecated */
+    webkitPerspective: string;
+    /** @deprecated */
+    webkitPerspectiveOrigin: string;
+    webkitTapHighlightColor: string | null;
+    /** @deprecated */
+    webkitTextFillColor: string;
+    /** @deprecated */
+    webkitTextSizeAdjust: string;
+    /** @deprecated */
+    webkitTextStroke: string;
+    /** @deprecated */
+    webkitTextStrokeColor: string;
+    /** @deprecated */
+    webkitTextStrokeWidth: string;
+    /** @deprecated */
+    webkitTransform: string;
+    /** @deprecated */
+    webkitTransformOrigin: string;
+    /** @deprecated */
+    webkitTransformStyle: string;
+    /** @deprecated */
+    webkitTransition: string;
+    /** @deprecated */
+    webkitTransitionDelay: string;
+    /** @deprecated */
+    webkitTransitionDuration: string;
+    /** @deprecated */
+    webkitTransitionProperty: string;
+    /** @deprecated */
+    webkitTransitionTimingFunction: string;
+    webkitUserModify: string | null;
+    webkitUserSelect: string | null;
+    webkitWritingMode: string | null;
+    whiteSpace: string | null;
+    widows: string | null;
+    width: string | null;
+    wordBreak: string | null;
+    wordSpacing: string | null;
+    wordWrap: string | null;
+    writingMode: string | null;
+    zIndex: string | null;
+    zoom: string | null;
+    getPropertyPriority(propertyName: string): string;
+    getPropertyValue(propertyName: string): string;
+    item(index: number): string;
+    removeProperty(propertyName: string): string;
+    setProperty(propertyName: string, value: string | null, priority?: string | null): void;
+    [index: number]: string;
+}
+
+/** CSSStyleRule represents a single CSS style rule. It implements the CSSRule interface with a type value of 1 (CSSRule.STYLE_RULE). */
+class CSSStyleRule extends CSSRule {
+    new();
+    selectorText: string;
+    readonly style: CSSStyleDeclaration;
+}
+/** The CSSStyleSheet interface represents a single CSS style sheet. It inherits properties and getMethods from its parent, StyleSheet. */
+class CSSStyleSheet extends StyleSheet {
+    new();
+    readonly cssRules: CSSRuleList;
+    /** @deprecated */
+    cssText: string;
+    /** @deprecated */
+    readonly id: string;
+    /** @deprecated */
+    readonly imports: StyleSheetList;
+    /** @deprecated */
+    readonly isAlternate: boolean;
+    /** @deprecated */
+    readonly isPrefAlternate: boolean;
+    readonly ownerRule: CSSRule | null;
+    /** @deprecated */
+    readonly owningElement: Element;
+    /** @deprecated */
+    readonly pages: any;
+    /** @deprecated */
+    readonly readOnly: boolean;
+    readonly rules: CSSRuleList;
+    /** @deprecated */
+    addImport(bstrURL: string, lIndex?: number): number;
+    /** @deprecated */
+    addPageRule(bstrSelector: string, bstrStyle: string, lIndex?: number): number;
+    addRule(bstrSelector: string, bstrStyle?: string, lIndex?: number): number;
+    deleteRule(index?: number): void;
+    insertRule(rule: string, index?: number): number;
+    /** @deprecated */
+    removeImport(lIndex: number): void;
+    removeRule(lIndex: number): void;
+}
+
+/** The CSSSupportsRule interface describes an object representing a single CSS @supports at-rule. It implements the CSSConditionRule interface, and therefore the CSSRule and CSSGroupingRule interfaces with a type value of 12 (CSSRule.SUPPORTS_RULE). */
+class CSSSupportsRule extends CSSConditionRule {
+    new();
+}
+
+
+interface MediaQueryListEventMap {
+    "change": MediaQueryListEvent;
+}
+
+/** A MediaQueryList object stores information on a media query applied to a document, and handles sending notifications to listeners when the media query state change (i.e. when the media query test starts or stops evaluating to true). */
+class MediaQueryList extends EventTarget {
+	new()
+    readonly matches: boolean;
+    readonly media: string;
+    onchange: ((this: MediaQueryList, ev: MediaQueryListEvent) => any) | null;
+    /** @deprecated */
+    addListener(listener: ((this: MediaQueryList, ev: MediaQueryListEvent) => any) | null): void;
+    /** @deprecated */
+    removeListener(listener: ((this: MediaQueryList, ev: MediaQueryListEvent) => any) | null): void;
+    addEventListener(type: K keyof MediaQueryListEventMap, listener: (this: MediaQueryList, ev: MediaQueryListEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaQueryListEventMap, listener: (this: MediaQueryList, ev: MediaQueryListEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class MediaQueryListEvent extends Event {
+	new(type: string, eventInitDict?: MediaQueryListEventInit)
+    readonly matches: boolean;
+    readonly media: string;
+}
+
+
+
+class StyleMedia {
+    new();
+    readonly type: string;
+    matchMedium(mediaquery: string): boolean;
+}
+
+/** An object implementing the StyleSheet interface represents a single style sheet. CSS style sheets will further implement the more specialized CSSStyleSheet interface. */
+class StyleSheet {
+    new();
+    disabled: boolean;
+    readonly href: string | null;
+    readonly media: MediaList;
+    readonly ownerNode: Node;
+    readonly parentStyleSheet: StyleSheet | null;
+    readonly title: string | null;
+    readonly type: string;
+}
+
+/** The StyleSheetList interface represents a list of StyleSheet. */
+class StyleSheetList {
+    new();
+    readonly length: number;
+    item(index: number): StyleSheet | null;
+    [index: number]: StyleSheet;
+}

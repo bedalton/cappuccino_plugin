@@ -1,0 +1,276 @@
+
+/** A DeviceAcceleration object provides information about the amount of acceleration the device is experiencing along all three axes. */
+class DeviceAcceleration {
+    new();
+    readonly x: number | null;
+    readonly y: number | null;
+    readonly z: number | null;
+}
+
+interface DeviceAccelerationDict {
+    x?: number | null;
+    y?: number | null;
+    z?: number | null;
+}
+
+/** The DeviceLightEvent provides web developers with information from photo sensors or similiar detectors about ambient light levels near the device. For example this may be useful to adjust the screen's brightness based on the current ambient light level in order to save energy or provide better readability. */
+class DeviceLightEvent extends Event {
+    new(typeArg: string, eventInitDict?: DeviceLightEventInit);
+    readonly value: number;
+}
+
+interface DeviceLightEventInit extends EventInit {
+    value?: number;
+}
+
+/** The DeviceMotionEvent provides web developers with information about the speed of changes for the device's position and orientation. */
+class DeviceMotionEvent extends Event {
+    new(typeArg: string, eventInitDict?: DeviceMotionEventInit);
+    readonly acceleration: DeviceAcceleration | null;
+    readonly accelerationIncludingGravity: DeviceAcceleration | null;
+    readonly interval: number | null;
+    readonly rotationRate: DeviceRotationRate | null;
+    initDeviceMotionEvent(type: string, bubbles: boolean, cancelable: boolean, acceleration: DeviceAccelerationDict | null, accelerationIncludingGravity: DeviceAccelerationDict | null, rotationRate: DeviceRotationRateDict | null, interval: number | null): void;
+}
+interface DeviceMotionEventInit extends EventInit {
+    acceleration?: DeviceAccelerationDict | null;
+    accelerationIncludingGravity?: DeviceAccelerationDict | null;
+    interval?: number | null;
+    rotationRate?: DeviceRotationRateDict | null;
+}
+/** The DeviceOrientationEvent provides web developers with information from the physical orientation of the device running the web page. */
+class DeviceOrientationEvent extends Event {
+    new(typeArg: string, eventInitDict?: DeviceOrientationEventInit);
+    readonly absolute: boolean;
+    readonly alpha: number | null;
+    readonly beta: number | null;
+    readonly gamma: number | null;
+    initDeviceOrientationEvent(type: string, bubbles: boolean, cancelable: boolean, alpha: number | null, beta: number | null, gamma: number | null, absolute: boolean): void;
+}
+
+interface DeviceOrientationEventInit extends EventInit {
+    absolute?: boolean;
+    alpha?: number | null;
+    beta?: number | null;
+    gamma?: number | null;
+}
+
+/** A DeviceRotationRate object provides information about the rate at which the device is rotating around all three axes. */
+class DeviceRotationRate {
+    new();
+    readonly alpha: number | null;
+    readonly beta: number | null;
+    readonly gamma: number | null;
+}
+
+interface DeviceRotationRateDict {
+    alpha?: number | null;
+    beta?: number | null;
+    gamma?: number | null;
+}
+
+/** The Gamepad interface of the Gamepad API defines an individual gamepad or other controller, allowing access to information such as button presses, axis positions, and id. */
+class Gamepad {
+	new()
+    readonly axes: ReadonlyArray<number>;
+    readonly buttons: ReadonlyArray<GamepadButton>;
+    readonly connected: boolean;
+    readonly hand: GamepadHand;
+    readonly hapticActuators: ReadonlyArray<GamepadHapticActuator>;
+    readonly id: string;
+    readonly index: number;
+    readonly mapping: GamepadMappingType;
+    readonly pose: GamepadPose | null;
+    readonly timestamp: number;
+}
+
+/** The GamepadButton interface defines an individual button of a gamepad or other controller, allowing access to the current state of different types of buttons available on the control device. */
+class GamepadButton {
+	new()
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+
+/** The GamepadEvent interface of the Gamepad API contains references to gamepads connected to the system, which is what the gamepad events Window.gamepadconnected and Window.gamepaddisconnected are fired in response to. */
+class GamepadEvent extends Event {
+	new(type: string, eventInitDict: GamepadEventInit)
+    readonly gamepad: Gamepad;
+}
+
+interface GamepadEventInit extends EventInit {
+    gamepad: Gamepad;
+}
+
+
+/** The GamepadHapticActuator interface of the Gamepad API represents hardware in the controller designed to provide haptic feedback to the user (if available), most commonly vibration hardware. */
+class GamepadHapticActuator {
+	new()
+    readonly type: GamepadHapticActuatorType;
+    pulse(value: number, duration: number): Promise<boolean>;
+}
+
+/** The GamepadPose interface of the Gamepad API represents the pose of a WebVR controller at a given timestamp (which includes orientation, position, velocity, and acceleration information.) */
+class GamepadPose {
+	new()
+    readonly angularAcceleration: Float32Array | null;
+    readonly angularVelocity: Float32Array | null;
+    readonly hasOrientation: boolean;
+    readonly hasPosition: boolean;
+    readonly linearAcceleration: Float32Array | null;
+    readonly linearVelocity: Float32Array | null;
+    readonly orientation: Float32Array | null;
+    readonly position: Float32Array | null;
+}
+
+/** The Navigator interface represents the state and the identity of the user agent. It allows scripts to query it and to register themselves to carry on some activities. */
+class Navigator extends NavigatorID, NavigatorOnLine, NavigatorContentUtils, NavigatorStorageUtils, MSNavigatorDoNotTrack, MSFileSaver, NavigatorBeacon, NavigatorConcurrentHardware, NavigatorUserMedia, NavigatorLanguage, NavigatorStorage, NavigatorAutomationInformation {
+	new()
+    readonly activeVRDisplays: ReadonlyArray<VRDisplay>;
+    readonly authentication: WebAuthentication;
+    readonly clipboard: Clipboard;
+    readonly cookieEnabled: boolean;
+    readonly doNotTrack: string | null;
+    gamepadInputEmulation: GamepadInputEmulationType;
+    readonly geolocation: Geolocation;
+    readonly maxTouchPoints: number;
+    readonly mimeTypes: MimeTypeArray;
+    readonly msManipulationViewsEnabled: boolean;
+    readonly msMaxTouchPoints: number;
+    readonly msPointerEnabled: boolean;
+    readonly plugins: PluginArray;
+    readonly pointerEnabled: boolean;
+    readonly serviceWorker: ServiceWorkerContainer;
+    readonly webdriver: boolean;
+    getGamepads(): Array<Gamepad | null>;
+    getVRDisplays(): Promise<VRDisplay[]>;
+    javaEnabled(): boolean;
+    msLaunchUri(uri: string, successCallback?: MSLaunchUriCallback, noHandlerCallback?: MSLaunchUriCallback): void;
+    requestMediaKeySystemAccess(keySystem: string, supportedConfigurations: MediaKeySystemConfiguration[]): Promise<MediaKeySystemAccess>;
+    vibrate(pattern: number | number[]): boolean;
+}
+
+interface NavigatorAutomationInformation {
+    readonly webdriver: boolean;
+}
+
+interface NavigatorBeacon {
+    sendBeacon(url: string, data?: Blob | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer | FormData | string | null): boolean;
+}
+
+interface NavigatorConcurrentHardware {
+    readonly hardwareConcurrency: number;
+}
+
+interface NavigatorContentUtils {
+}
+
+interface NavigatorID {
+    readonly appCodeName: string;
+    readonly appName: string;
+    readonly appVersion: string;
+    readonly platform: string;
+    readonly product: string;
+    readonly productSub: string;
+    readonly userAgent: string;
+    readonly vendor: string;
+    readonly vendorSub: string;
+}
+
+interface NavigatorLanguage {
+    readonly language: string;
+    readonly languages: ReadonlyArray<string>;
+}
+
+interface NavigatorOnLine {
+    readonly onLine: boolean;
+}
+
+interface NavigationPreloadState {
+    enabled?: boolean;
+    headerValue?: string;
+}
+
+interface NavigatorStorage {
+    readonly storage: StorageManager;
+}
+
+interface NavigatorStorageUtils {
+}
+
+interface NavigatorUserMedia {
+    readonly mediaDevices: MediaDevices;
+    getDisplayMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;
+    getUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+}
+
+/** The Screen interface represents a screen, usually the one on which the current window is being rendered, and is obtained using window.screen. */
+class Screen {
+    new();
+    readonly availHeight: number;
+    readonly availWidth: number;
+    readonly colorDepth: number;
+    readonly height: number;
+    readonly orientation: ScreenOrientation;
+    readonly pixelDepth: number;
+    readonly width: number;
+}
+
+typemap ScreenOrientationEventMap {
+    "change": Event;
+}
+
+class ScreenOrientation extends EventTarget {
+    new();
+    readonly angle: number;
+    onchange: ((this: ScreenOrientation, ev: Event) => any) | null;
+    readonly type: OrientationType;
+    lock(orientation: OrientationLockType): Promise<void>;
+    unlock(): void;
+    addEventListener(type: K keyof ScreenOrientationEventMap, listener: (this: ScreenOrientation, ev: ScreenOrientationEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof ScreenOrientationEventMap, listener: (this: ScreenOrientation, ev: ScreenOrientationEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+
+/** The Touch interface represents a single contact point on a touch-sensitive device. The contact point is commonly a finger or stylus and the device may be a touchscreen or trackpad. */
+class Touch {
+    new(touchInitDict: TouchInit);
+    readonly altitudeAngle: number;
+    readonly azimuthAngle: number;
+    readonly clientX: number;
+    readonly clientY: number;
+    readonly force: number;
+    readonly identifier: number;
+    readonly pageX: number;
+    readonly pageY: number;
+    readonly radiusX: number;
+    readonly radiusY: number;
+    readonly rotationAngle: number;
+    readonly screenX: number;
+    readonly screenY: number;
+    readonly target: EventTarget;
+    readonly touchType: TouchType;
+}
+
+/** The TouchEvent interface represents an event sent when the state of contacts with a touch-sensitive surface changes. This surface can be a touch screen or trackpad, for example. The event can describe one or more points of contact with the screen and includes support for detecting movement, addition and removal of contact points, and so forth. */
+class TouchEvent extends UIEvent {
+    new(type: string, eventInitDict?: TouchEventInit);
+    readonly altKey: boolean;
+    readonly changedTouches: TouchList;
+    readonly ctrlKey: boolean;
+    readonly metaKey: boolean;
+    readonly shiftKey: boolean;
+    readonly targetTouches: TouchList;
+    readonly touches: TouchList;
+}
+
+/** The TouchList interface represents a list of contact points with a touch surface; for example, if the user has three fingers on the touch surface (such as a screen or trackpad), the corresponding TouchList object would have one Touch object for each finger, for a total of three entries. */
+class TouchList {
+    new();
+    readonly length: number;
+    item(index: number): Touch | null;
+    [index: number]: Touch;
+}
+

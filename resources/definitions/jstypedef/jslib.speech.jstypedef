@@ -1,0 +1,171 @@
+
+class SpeechGrammar {
+    new();
+    src: string;
+    weight: number;
+}
+
+class SpeechGrammarList {
+    new();
+    readonly length: number;
+    addFromString(string: string, weight?: number): void;
+    addFromURI(src: string, weight?: number): void;
+    item(index: number): SpeechGrammar;
+    [index: number]: SpeechGrammar;
+}
+
+typemap SpeechRecognitionEventMap {
+    "audioend": Event;
+    "audiostart": Event;
+    "end": Event;
+    "error": SpeechRecognitionError;
+    "nomatch": SpeechRecognitionEvent;
+    "result": SpeechRecognitionEvent;
+    "soundend": Event;
+    "soundstart": Event;
+    "speechend": Event;
+    "speechstart": Event;
+    "start": Event;
+}
+
+class SpeechRecognition extends EventTarget {
+    new();
+    continuous: boolean;
+    grammars: SpeechGrammarList;
+    interimResults: boolean;
+    lang: string;
+    maxAlternatives: number;
+    onaudioend: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onaudiostart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onerror: ((this: SpeechRecognition, ev: SpeechRecognitionError) => any) | null;
+    onnomatch: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+    onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+    onsoundend: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onsoundstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onspeechend: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onspeechstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+    serviceURI: string;
+    abort(): void;
+    start(): void;
+    stop(): void;
+    addEventListener(type: K keyof SpeechRecognitionEventMap, listener: (this: SpeechRecognition, ev: SpeechRecognitionEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SpeechRecognitionEventMap, listener: (this: SpeechRecognition, ev: SpeechRecognitionEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SpeechRecognitionAlternative {
+    new();
+    readonly confidence: number;
+    readonly transcript: string;
+}
+
+class SpeechRecognitionError extends Event {
+    new();
+    readonly error: SpeechRecognitionErrorCode;
+    readonly message: string;
+}
+
+class SpeechRecognitionEvent extends Event {
+    new();
+    readonly emma: Document | null;
+    readonly interpretation: any;
+    readonly resultIndex: number;
+    readonly results: SpeechRecognitionResultList;
+}
+
+class SpeechRecognitionResult {
+    new();
+    readonly isFinal: boolean;
+    readonly length: number;
+    item(index: number): SpeechRecognitionAlternative;
+    [index: number]: SpeechRecognitionAlternative;
+}
+
+class SpeechRecognitionResultList {
+    new();
+    readonly length: number;
+    item(index: number): SpeechRecognitionResult;
+    [index: number]: SpeechRecognitionResult;
+}
+
+typemap SpeechSynthesisEventMap {
+    "voiceschanged": Event;
+}
+
+/** The SpeechSynthesis interface of the Web Speech API is the controller interface for the speech service; this can be used to retrieve information about the synthesis voices available on the device, start and pause speech, and other commands besides. */
+class SpeechSynthesis extends EventTarget {
+    new();
+    onvoiceschanged: ((this: SpeechSynthesis, ev: Event) => any) | null;
+    readonly paused: boolean;
+    readonly pending: boolean;
+    readonly speaking: boolean;
+    cancel(): void;
+    getVoices(): SpeechSynthesisVoice[];
+    pause(): void;
+    resume(): void;
+    speak(utterance: SpeechSynthesisUtterance): void;
+    addEventListener(type: K keyof SpeechSynthesisEventMap, listener: (this: SpeechSynthesis, ev: SpeechSynthesisEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SpeechSynthesisEventMap, listener: (this: SpeechSynthesis, ev: SpeechSynthesisEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class SpeechSynthesisErrorEvent extends SpeechSynthesisEvent {
+    new();
+    readonly error: SpeechSynthesisErrorCode;
+}
+
+/** The SpeechSynthesisEvent interface of the Web Speech API contains information about the current state of SpeechSynthesisUtterance objects that have been processed in the speech service. */
+class SpeechSynthesisEvent extends Event {
+    new();
+    readonly charIndex: number;
+    readonly elapsedTime: number;
+    readonly name: string;
+    readonly utterance: SpeechSynthesisUtterance;
+}
+
+typemap SpeechSynthesisUtteranceEventMap {
+    "boundary": SpeechSynthesisEvent;
+    "end": SpeechSynthesisEvent;
+    "error": SpeechSynthesisErrorEvent;
+    "mark": SpeechSynthesisEvent;
+    "pause": SpeechSynthesisEvent;
+    "resume": SpeechSynthesisEvent;
+    "start": SpeechSynthesisEvent;
+}
+
+/** The SpeechSynthesisUtterance interface of the Web Speech API represents a speech request. It contains the content the speech service should read and information about how to read it (e.g. language, pitch and volume.) */
+class SpeechSynthesisUtterance extends EventTarget {
+    new();
+    new(text: string);
+    lang: string;
+    onboundary: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => any) | null;
+    onmark: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    onpause: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    onresume: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    onstart: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
+    pitch: number;
+    rate: number;
+    text: string;
+    voice: SpeechSynthesisVoice;
+    volume: number;
+    addEventListener(type: K keyof SpeechSynthesisUtteranceEventMap, listener: (this: SpeechSynthesisUtterance, ev: SpeechSynthesisUtteranceEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SpeechSynthesisUtteranceEventMap, listener: (this: SpeechSynthesisUtterance, ev: SpeechSynthesisUtteranceEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SpeechSynthesisVoice interface of the Web Speech API represents a voice that the system supports. Every SpeechSynthesisVoice has its own relative speech service including information about language, name and URI. */
+class SpeechSynthesisVoice {
+    new();
+    readonly default: boolean;
+    readonly lang: string;
+    readonly localService: boolean;
+    readonly name: string;
+    readonly voiceURI: string;
+}
