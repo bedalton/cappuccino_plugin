@@ -103,6 +103,7 @@ private definition
 	|	typeMapElement
 	|	type
 	|	keyList eos
+	|	';'
 	;
 
 module
@@ -139,7 +140,7 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos
+	::= variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos?
 	{
 		pin = 2
 		implements = [
@@ -557,9 +558,14 @@ functionName
 	::= CONST
 	|	ESCAPED_ID
 	|	ID
+	|	KEYOF
 	|	KEYS_KEYWORD
 	|	MAP
+	|	ARRAY
 	|   'declare'
+	|	'extends'
+	|	'module'
+	|	'alias'
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
@@ -662,8 +668,12 @@ propertyName
 	|	ID
 	|	KEYOF
 	|	KEYS_KEYWORD
+	|	MAP
 	|   'declare'
 	|   ARRAY
+	|	'extends'
+	|	'module'
+	|	'alias'
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
