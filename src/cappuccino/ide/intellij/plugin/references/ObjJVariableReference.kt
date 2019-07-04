@@ -37,10 +37,6 @@ class ObjJVariableReference(
 ) : PsiPolyVariantReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
-    private val isGlobal: Boolean by lazy {
-        variableDeclarationsEnclosedGlobal(myElement, true)
-    }
-
     private val referencedElement:SmartPsiElementPointer<PsiElement>? by lazy {
         val resolved = resolve()
         if (resolved != null)
@@ -165,16 +161,8 @@ class ObjJVariableReference(
         if (element != null && !element.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
-        val out = mutableListOf<ObjJCompositeElement>()
-        if (myElement.indexInQualifiedReference == 0) {
-            out.addAll(getGlobalAssignments(true).orEmpty())
-        }
-
-        if (out.isNotEmpty()) {
-            return PsiElementResolveResult.createResults(out)
-        }
-
         val project = myElement.project
+
         val variableName = myElement.text
         // Get simple if no previous siblings
         val prevSiblings = myElement.previousSiblings
@@ -261,7 +249,7 @@ class ObjJVariableReference(
                 return variableName
         }
         if (variableName is ObjJVariableName && variableName.indexInQualifiedReference > 0) {
-            null
+            return null
         }
         return variableName
     }
@@ -285,7 +273,7 @@ class ObjJVariableReference(
     override fun getVariants(): Array<Any> {
         return arrayOf()
     }
-
+/*
     private fun getGlobalAssignments(nullIfSelfReferencing: Boolean) : List<ObjJCompositeElement>? {
         val variableNameString = myElement.text
         val allWithName = ObjJVariableDeclarationsByNameIndex.instance[variableNameString, myElement.project]
@@ -314,35 +302,9 @@ class ObjJVariableReference(
         if (allCandidatesInFile.isNotEmpty())
             return allCandidatesInFile
         return allCandidates
-    }
+    }*/
 }
-
-private fun variableDeclarationsEnclosedGlobal(variableName: ObjJVariableName, @Suppress("SameParameterValue") follow:Boolean = false) : Boolean {
-    if(!DumbService.isDumb(variableName.project) && follow) {
-        return variableDeclarationsEnclosedGlobalStrict(variableName)
-    }
-    if (variableName.indexInQualifiedReference != 0)
-        return false
-    val variableDeclaration = variableName.parent.parent as? ObjJVariableDeclaration
-            ?: return false
-    val isBodyVariableAssignmentLocal
-            = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
-    if (isBodyVariableAssignmentLocal || variableDeclaration.parent.parent.parent !is ObjJBlock) {
-        return false
-    }
-    val variableNameString = variableName.text
-    val isNotGlobal = variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
-        bodyVariableAssignment.varModifier != null &&
-                bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { varDec ->
-                    varDec.qualifiedReferenceList.any {
-                        LOGGER.info("${it.qualifiedNameParts[0]?.text} ==? $variableNameString")
-                        it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0]?.text == variableNameString
-                    }
-                }.orFalse()
-    }
-    return !isNotGlobal
-}
-
+/*
 private fun variableDeclarationsEnclosedGlobalStrict(variableName: ObjJVariableName) : Boolean {
     if (variableName.indexInQualifiedReference != 0)
         return false
@@ -355,4 +317,4 @@ private fun variableDeclarationsEnclosedGlobalStrict(variableName: ObjJVariableN
     }
     val resolved = ObjJVariableReference(variableName, false).resolve() ?: return true
     return (resolved.parent.parent.parent.parent as? ObjJBodyVariableAssignment)?.varModifier == null
-}
+}*/

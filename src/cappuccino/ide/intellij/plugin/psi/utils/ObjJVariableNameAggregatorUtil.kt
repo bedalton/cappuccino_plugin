@@ -242,7 +242,17 @@ object ObjJVariableNameAggregatorUtil {
         if (containingClassName == null || isUniversalMethodCaller(containingClassName)) {
             return EMPTY_VARIABLE_NAME_LIST
         }
+        for (declaration in ObjJInstanceVariablesByClassIndex.instance[containingClassName, project]) {
+            ProgressIndicatorProvider.checkCanceled()
+            if (declaration.variableName != null) {
+                result.add(declaration.variableName!!)
+            }
+        }
+
         for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, project)) {
+            // Item was already pulled outside of list
+            if (variableHoldingClassName == containingClassName)
+                continue
             ProgressIndicatorProvider.checkCanceled()
             for (declaration in ObjJInstanceVariablesByClassIndex.instance[variableHoldingClassName, project]) {
                 ProgressIndicatorProvider.checkCanceled()
