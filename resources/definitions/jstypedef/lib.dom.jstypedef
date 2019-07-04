@@ -2012,7 +2012,7 @@ class AudioWorklet extends Worklet {
     new();
 }
 
-interface AudioWorkletNodeEventMap {
+typemap AudioWorkletNodeEventMap {
     "processorerror": Event;
 }
 
@@ -2032,7 +2032,7 @@ class BarProp {
     readonly visible: boolean;
 }
 
-interface BaseAudioContextEventMap {
+typemap BaseAudioContextEventMap {
     "statechange": Event;
 }
 
@@ -3687,7 +3687,7 @@ interface DhKeyGenParams extends Algorithm {
     prime: Uint8Array;
 }
 
-interface DocumentEventMap extends GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
+typemap DocumentEventMap extends GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
     "fullscreenchange": Event;
     "fullscreenerror": Event;
     "pointerlockchange": Event;
@@ -4194,7 +4194,7 @@ class Document extends Node, NonElementParentNode, DocumentOrShadowRoot, ParentN
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
-interface DocumentAndElementEventHandlersEventMap {
+typemap DocumentAndElementEventHandlersEventMap {
     "copy": ClipboardEvent;
     "cut": ClipboardEvent;
     "paste": ClipboardEvent;
@@ -4860,7 +4860,7 @@ interface Geolocation {
     watchPosition(successCallback: PositionCallback, errorCallback?: PositionErrorCallback, options?: PositionOptions): number;
 }
 
-interface GlobalEventHandlersEventMap {
+typemap GlobalEventHandlersEventMap {
     "abort": UIEvent;
     "animationcancel": AnimationEvent;
     "animationend": AnimationEvent;
@@ -5686,6 +5686,8 @@ class HTMLDocument extends Document {
 
 interface HTMLElementEventMap extends ElementEventMap, GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
 }
+
+interface DOMElement extends HTMLElement;
 
 /** The HTMLElement interface represents any HTML element. Some elements directly implement this interface, others implement it via an interface that inherits it. */
 class HTMLElement extends Element, GlobalEventHandlers, DocumentAndElementEventHandlers, ElementContentEditable, HTMLOrSVGElement, ElementCSSInlineStyle {
