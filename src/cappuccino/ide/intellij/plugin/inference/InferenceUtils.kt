@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -40,6 +39,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     internal var didAddListener = false
 
     private var internalTimeSinceLastFileChange = now
+    private var lastTag = now
 
     val timeSinceLastFileChange:Long
         get() {
@@ -48,6 +48,14 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
                 internalTimeSinceLastFileChange = now
             return internalTimeSinceLastFileChange
         }
+
+    internal val nextTag : Long get() {
+        val now = now
+        if (now - lastTag < CACHE_EXPIRY / 2)
+            return lastTag
+        lastTag = timeSinceLastFileChange
+        return lastTag
+    }
 
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile)
@@ -102,7 +110,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag:Long?, setTag:Boolean 
 }
 
 internal fun createTag():Long {
-    return StatusFileChangeListener.timeSinceLastFileChange
+    return StatusFileChangeListener.nextTag
 }
 
 /**

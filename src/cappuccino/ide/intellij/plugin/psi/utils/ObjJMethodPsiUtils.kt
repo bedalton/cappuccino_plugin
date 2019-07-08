@@ -17,6 +17,9 @@ import org.jetbrains.annotations.Contract
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
+import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -153,6 +156,12 @@ object ObjJMethodPsiUtils {
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         return methodHeader.getCachedInferredTypes(tag) {
+            if (methodHeader.tagged(tag))
+                return@getCachedInferredTypes null
+            val commentReturnTypes = methodHeader.docComment?.getReturnTypes(methodHeader.project).orEmpty().withoutAnyType()
+            if (commentReturnTypes.isNotEmpty()) {
+                return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
+            }
             val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
@@ -334,6 +343,28 @@ object ObjJMethodPsiUtils {
         } else false
     }
 
+    // ============================== //
+    // ========== Structs =========== //
+    // ============================== //
+    fun getSelectorsAsStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+        return header.stub?.selectorStructs ?: header.methodDeclarationSelectorList.map {
+            it.toSelectorStruct()
+        }
+    }
+
+    fun getSelectorsAsStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+        return selectorLiteral.stub?.selectorStructs ?: selectorLiteral.selectorList.map {
+            ObjJSelectorStruct(
+                    selector = it.getSelectorString(false),
+                    variableType = null,
+                    variableName = null,
+                    hasColon = it.getNextNonEmptyNode(true)?.elementType == ObjJTypes.ObjJ_COLON,
+                    containingClassName = null
+            )
+        }
+    }
+
+
     fun isRequired(methodHeader: ObjJMethodHeader) =
             methodHeader.getParentOfType(ObjJProtocolScopedMethodBlock::class.java)?.atOptional == null
 
@@ -378,11 +409,11 @@ object ObjJMethodPsiUtils {
      * Method scope enum.
      * Flags method as either static or instance
      */
-    enum class MethodScope(private val scopeMarker: String?) {
+    enum class MethodScope(val scopeMarker: String?) {
         STATIC("+"),
         INSTANCE("-"),
+        SELECTOR_LITERAL("::"),
         INVALID(null);
-
 
         companion object {
 

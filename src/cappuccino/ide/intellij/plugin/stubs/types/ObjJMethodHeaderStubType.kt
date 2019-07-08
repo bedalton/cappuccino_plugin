@@ -16,6 +16,8 @@ import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.readSelectorStructList
+import cappuccino.ide.intellij.plugin.stubs.stucts.writeSelectorStructList
 import cappuccino.ide.intellij.plugin.utils.Strings
 
 import java.io.IOException
@@ -36,9 +38,21 @@ class ObjJMethodHeaderStubType internal constructor(
         val params = methodHeader.paramTypesAsStrings
         val returnType = methodHeader.explicitReturnType
         val required = methodHeader.isRequired
+        val selectorStructs = methodHeader.getSelectorsAsStructs()
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
         val ignored = ObjJCommentEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, methodHeader.isStatic, selectors, params, returnType, required, shouldResolve, ignored)
+        return ObjJMethodHeaderStubImpl(
+                parent = parentStub,
+                className = containingClassName,
+                isStatic = methodHeader.isStatic,
+                selectorStrings = selectors,
+                paramTypes = params,
+                explicitReturnType = returnType,
+                isRequired = required,
+                selectorStructs = selectorStructs,
+                shouldResolve = shouldResolve,
+                ignored = ignored
+        )
     }
 
     @Throws(IOException::class)
@@ -60,6 +74,7 @@ class ObjJMethodHeaderStubType internal constructor(
         }
         stubOutputStream.writeName(stub.explicitReturnType)
         stubOutputStream.writeBoolean(stub.isRequired)
+        stubOutputStream.writeSelectorStructList(stub.selectorStructs)
         stubOutputStream.writeBoolean(stub.shouldResolve())
         stubOutputStream.writeBoolean(stub.ignored)
 
@@ -82,9 +97,21 @@ class ObjJMethodHeaderStubType internal constructor(
         }
         val explicitReturnType = stream.readNameString() ?: ""
         val required = stream.readBoolean()
+        val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()
         val ignored = stream.readBoolean()
-        return ObjJMethodHeaderStubImpl(parentStub, containingClassName, isStatic, selectors, params, explicitReturnType, required, shouldResolve, ignored)
+        return ObjJMethodHeaderStubImpl(
+                parent = parentStub,
+                className = containingClassName,
+                isStatic = isStatic,
+                selectorStrings = selectors,
+                paramTypes = params,
+                explicitReturnType = explicitReturnType,
+                isRequired = required,
+                selectorStructs = selectorStructs,
+                shouldResolve = shouldResolve,
+                ignored = ignored
+        )
     }
 
 

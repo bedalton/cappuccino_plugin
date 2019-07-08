@@ -88,6 +88,75 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     }.toSet()
     if (selector == "copy" || selector == "copy:" || selector == "new:" || selector == "new:")
         return callTargetType
+
+    if (DumbService.isDumb(project))
+        return null
+    val returnTypes = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
+            .mapNotNull { classDeclaration ->
+                classDeclaration.getMethodStructs(false, tag).firstOrNull { it.selectorString == selector }?.returnType
+            }.combine()
+    if (returnTypes.classes.withoutAnyType().isNotEmpty())
+        return returnTypes
+    val getMethods: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance[selector, project]
+    val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
+    val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
+        methodDeclaration.getCachedInferredTypes(tag) {
+            if (methodDeclaration.tagged(tag))
+                return@getCachedInferredTypes null
+            val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
+            if (commentReturnTypes.isNotEmpty()) {
+                return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
+            }
+            val thisClasses = getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
+            if (thisClasses.isNotEmpty()) {
+                InferenceResult(
+                        types = thisClasses.toJsTypeList()
+                )
+            } else
+                null
+        }?.classes.orEmpty()
+    }
+    val instanceVariableTypes = callTargetTypes.flatMap {className ->
+        ObjJInstanceVariablesByClassIndex.instance[className, project].filter{ it.variableName?.text == selector}.mapNotNull {
+            val type = it.variableType
+            if (type.isNotBlank())
+                type
+            else
+                null
+        }
+    }
+    // Accessors are different than instance var names
+    val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
+        instanceVariable ->
+        instanceVariable.getCachedInferredTypes(tag) {
+            LOGGER.info("Getting instance variable type information from <${instanceVariable.text}>")
+            return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
+        }?.classes.orEmpty()
+    }
+    val out = mutableSetOf<String>()
+    out.addAll(instanceVariableAccessorTypes)
+    out.addAll(instanceVariableTypes)
+    out.addAll(getReturnType)
+    return InferenceResult(
+            types = out.toJsTypeList()
+    )
+}
+/*
+private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
+    //ProgressManager.checkCanceled()
+    /*if (level < 0)
+        return null*/
+    val project = methodCall.project
+    val selector = methodCall.selectorString
+    if (selector == "alloc" || selector == "alloc:") {
+        return getAllocStatementType(methodCall)
+    }
+    val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
+    val callTargetTypes = callTargetType?.classes.orEmpty().flatMap {
+        ObjJInheritanceUtil.getAllInheritedClasses(it, project)
+    }.toSet()
+    if (selector == "copy" || selector == "copy:" || selector == "new:" || selector == "new:")
+        return callTargetType
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
         if (callTargetTypes.isNotEmpty()) {
             ObjJUnifiedMethodIndex.instance[selector, project].filter {
@@ -141,7 +210,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     return InferenceResult(
             types = out.toJsTypeList()
     )
-}
+}*/
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
     val className = when (val callTargetText = methodCall.callTargetText) {

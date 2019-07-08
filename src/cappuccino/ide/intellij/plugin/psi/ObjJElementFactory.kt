@@ -168,14 +168,12 @@ object ObjJElementFactory {
 
     fun createMethodReturnTypeElement(project: Project, returnType:String) : ObjJMethodHeaderReturnTypeElement {
         val script = """
-            @implementation XX
-            +($returnType) sel1 {
-                return;
-            }
+            @protocol XX
+            +($returnType) sel1;
             @end
         """.trimIndent()
         val file = createFileFromText(project, script)
-        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.classDeclarations.getOrNull(0)?.internalMethodHeaders?.getOrNull(0)?.methodHeaderReturnTypeElement
+        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.getChildOfType(ObjJProtocolDeclaration::class.java)?.getChildOfType(ObjJMethodHeader::class.java)?.methodHeaderReturnTypeElement
         com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
         return returnTypeElement!!
     }

@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImplementationDeclarationElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 
@@ -25,6 +26,10 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
 
     override fun getMethodHeaders(internalOnly: Boolean): List<ObjJMethodHeader> {
         return cache.getMethods(internalOnly)
+    }
+
+    override fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct> {
+        return cache.getMethodStructs(internalOnly, tag)
     }
 
     override fun getAllSelectors(internalOnly: Boolean): Set<String> {
@@ -58,6 +63,10 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
 
     override fun getMethodHeaders(internalOnly: Boolean): List<ObjJMethodHeader> {
         return cache.getMethods(internalOnly)
+    }
+
+    override fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct> {
+        return cache.getMethodStructs(internalOnly, tag)
     }
 
     override fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?

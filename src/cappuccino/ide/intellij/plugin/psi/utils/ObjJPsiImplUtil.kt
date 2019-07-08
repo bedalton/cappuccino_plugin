@@ -21,6 +21,7 @@ import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.types.toQualifiedNamePaths
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import com.intellij.navigation.ItemPresentation
@@ -466,6 +467,23 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getSelectorsAsStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorsAsStructs(selectorLiteral)
+    }
+
+
+    @JvmStatic
+    fun getSelectorsAsStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorsAsStructs(header)
+    }
+
+    @JvmStatic
+    fun getSelectorsAsStructs(accessorProperty: ObjJAccessorProperty) : List<ObjJSelectorStruct> {
+        return ObjJAccessorPropertyPsiUtil.getSelectorsAsStructs(accessorProperty)
+    }
+
+
+    @JvmStatic
     fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return ObjJMethodPsiUtils.getVarType(selector)
     }
@@ -479,8 +497,14 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getVariableType(type:ObjJFormalVariableType) : String {
+        return type.varTypeId?.className?.text ?: type.text
+    }
+
+    @JvmStatic
     fun isRequired(methodHeader: ObjJMethodHeader): Boolean =
             ObjJMethodPsiUtils.isRequired(methodHeader)
+
 
     @JvmStatic
     fun getSingleVariableNameElementOrNull(callTarget: ObjJCallTarget): ObjJVariableName? {

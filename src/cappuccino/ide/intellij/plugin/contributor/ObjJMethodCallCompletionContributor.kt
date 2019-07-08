@@ -41,7 +41,7 @@ object ObjJMethodCallCompletionContributor {
         }
         val selectorLiteral = psiElement.getSelfOrParentOfType(ObjJSelectorLiteral::class.java)
         if (selectorLiteral != null) {
-            addSelectorLiteralCompletions(result, psiElement, selectorLiteral);
+            addSelectorLiteralCompletions(result, psiElement, selectorLiteral)
             return
         }
         val methodCall = psiElement.getParentOfType(ObjJMethodCall::class.java)
@@ -77,6 +77,7 @@ object ObjJMethodCallCompletionContributor {
             else
                 selector
         }
+        val tag = createTag()
         val selectorString: String = getSelectorStringFromSelectorStrings(selectorStrings)
         val selector: ObjJSelector? = if (selectorIndex >= 0 && selectorIndex < selectors.size) selectors[selectorIndex] else null
 
@@ -87,9 +88,29 @@ object ObjJMethodCallCompletionContributor {
         //Determine possible containing class names
         val possibleContainingClassNames: List<String> = when {
             scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
-            selector != null -> getClassConstraints(selector, createTag())
+            selector != null -> getClassConstraints(selector, tag)
             else -> emptyList()
         }
+
+        val project = psiElement.project
+        if (possibleContainingClassNames.isNotEmpty()) {
+            val selectorRegex = "^selectorString".toRegex()
+            val matchedSelectors = possibleContainingClassNames
+                    .flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
+                    .flatMap { it.getMethodStructs(true, createTag()) }
+                    .filter { selectorRegex.containsMatchIn(it.selectorString)}
+                    .mapNotNull {
+                        val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@mapNotNull null
+                        ObjJSelectorLookupUtil.createSelectorLookupElement(selectorStruct, it.containingClassName, true, null)
+                    }
+            if (matchedSelectors.isNotEmpty()) {
+                matchedSelectors.forEach {
+                    result.addElement(it)
+                }
+                return
+            }
+        }
+
         //Add actual method call completions
         var didAdd = addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, possibleContainingClassNames, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
 

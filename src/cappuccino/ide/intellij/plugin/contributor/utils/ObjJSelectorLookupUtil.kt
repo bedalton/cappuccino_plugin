@@ -16,6 +16,7 @@ import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.codeInsight.lookup.LookupElementRenderer
@@ -217,6 +218,32 @@ object ObjJSelectorLookupUtil {
             elementBuilder = elementBuilder.withIcon(icon)
         }
         if (useInsertHandler) {
+            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler(addSpaceAfterColon))
+        }
+        return elementBuilder
+    }
+
+    /**
+     * Creates a lookup element builder base for a selector
+     */
+    fun createSelectorLookupElement(selectorStruct:ObjJSelectorStruct, className: String?, addSpaceAfterColon:Boolean, icon: Icon? = null): LookupElementBuilder {
+        var elementBuilder = LookupElementBuilder
+                .create(selectorStruct.selector)
+        val tailText = if (selectorStruct.variableType != null) {
+            ":(" + selectorStruct.variableType + ')' + (selectorStruct.variableName ?: "")
+        } else {
+            null
+        }
+        if (tailText != null) {
+            elementBuilder = elementBuilder.withTailText(tailText)
+        }
+        if (className != null) {
+            elementBuilder = elementBuilder.withTypeText("in $className")
+        }
+        if (icon != null) {
+            elementBuilder = elementBuilder.withIcon(icon)
+        }
+        if (selectorStruct.hasColon) {
             elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler(addSpaceAfterColon))
         }
         return elementBuilder

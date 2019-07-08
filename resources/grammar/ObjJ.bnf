@@ -700,6 +700,7 @@ accessorProperty
 			getSetter
 			shouldResolve
 			getMethodHeaderCache
+			getSelectorsAsStructs
 		]
 	}
 	;
@@ -1105,6 +1106,7 @@ methodHeader
 			isRequired
 			createTreeStructureElement
 			getMethodHeaderCache
+			getSelectorsAsStructs
 		]
 	}
 	;
@@ -2011,6 +2013,11 @@ formalVariableType
 	| VAR_TYPE_SIGNED
 	| <<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
 	| className
+	{
+		methods = [
+			getVariableType
+		]
+	}
 	;
 
 varTypeId
@@ -2110,6 +2117,7 @@ selectorLiteral
 			shouldResolve
 			getContainingSuperClass
 			getMethodHeaderCache
+			getSelectorsAsStructs
 		]
 	}
 	;

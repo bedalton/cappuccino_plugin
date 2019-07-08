@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
