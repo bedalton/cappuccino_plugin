@@ -119,7 +119,7 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
 
 fun ObjJSelectorLiteral.toMethodStruct() : ObjJMethodStruct {
     return ObjJMethodStruct(
-            selectors = getSelectorsAsStructs(),
+            selectors = selectorStructs,
             returnType = null,
             methodScope = SELECTOR_LITERAL,
             containingClassName = null

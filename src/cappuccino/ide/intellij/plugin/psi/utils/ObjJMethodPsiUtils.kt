@@ -346,13 +346,13 @@ object ObjJMethodPsiUtils {
     // ============================== //
     // ========== Structs =========== //
     // ============================== //
-    fun getSelectorsAsStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+    fun getSelectorStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
         return header.stub?.selectorStructs ?: header.methodDeclarationSelectorList.map {
             it.toSelectorStruct()
         }
     }
 
-    fun getSelectorsAsStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+    fun getSelectorStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
         return selectorLiteral.stub?.selectorStructs ?: selectorLiteral.selectorList.map {
             ObjJSelectorStruct(
                     selector = it.getSelectorString(false),

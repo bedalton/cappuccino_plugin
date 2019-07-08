@@ -467,19 +467,19 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getSelectorsAsStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
-        return ObjJMethodPsiUtils.getSelectorsAsStructs(selectorLiteral)
+    fun getSelectorStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorStructs(selectorLiteral)
     }
 
 
     @JvmStatic
-    fun getSelectorsAsStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
-        return ObjJMethodPsiUtils.getSelectorsAsStructs(header)
+    fun getSelectorStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorStructs(header)
     }
 
     @JvmStatic
-    fun getSelectorsAsStructs(accessorProperty: ObjJAccessorProperty) : List<ObjJSelectorStruct> {
-        return ObjJAccessorPropertyPsiUtil.getSelectorsAsStructs(accessorProperty)
+    fun getSelectorStructs(accessorProperty: ObjJAccessorProperty) : List<ObjJSelectorStruct> {
+        return ObjJAccessorPropertyPsiUtil.getSelectorStructs(accessorProperty)
     }
 
 

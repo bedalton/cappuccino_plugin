@@ -115,8 +115,11 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
             }
             return PsiElementResolveResult.createResults(outSimple)
         }
-        val className = prevSiblings.joinToString("\\.") { Regex.escape(it.text) }
+        val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
+        if (!isStatic) {
+            LOGGER.info("JsClassesByNamespace ($className):\n\t${JsTypeDefClassesByNamespaceIndex.instance.getAllKeys(project).joinToString("\n\t")}")
+        }
 
         // Get types if qualified
         val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
@@ -130,6 +133,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
             val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it)} + ")\\." + functionName
             val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
                 it.isStatic == isStatic
+            }.map {
+                it.functionName ?: it
             }
             return PsiElementResolveResult.createResults(found)
         }

@@ -9,7 +9,7 @@ import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 
 interface ObjJMethodHeaderDeclaration<StubT:ObjJMethodHeaderDeclarationStub<*>>:ObjJStubBasedElement<StubT>, ObjJHasMethodSelector {
 
-    fun getSelectorsAsStructs():List<ObjJSelectorStruct>
+    val selectorStructs:List<ObjJSelectorStruct>
 
     fun getCachedReturnType(tag:Long):InferenceResult?
 

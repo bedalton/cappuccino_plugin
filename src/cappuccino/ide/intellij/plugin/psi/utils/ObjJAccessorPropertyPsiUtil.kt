@@ -279,7 +279,7 @@ object ObjJAccessorPropertyPsiUtil {
         }
     }
 
-    fun getSelectorsAsStructs(accessorProperty: ObjJAccessorProperty): List<ObjJSelectorStruct> {
+    fun getSelectorStructs(accessorProperty: ObjJAccessorProperty): List<ObjJSelectorStruct> {
         val out = accessorProperty.stub?.selectorStructs.orEmpty().toMutableList()
         if (out.isNotEmpty())
             return out

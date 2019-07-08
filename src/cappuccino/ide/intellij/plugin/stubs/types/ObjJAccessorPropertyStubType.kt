@@ -42,7 +42,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         }
         val getter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, variableType, accessorProperty) else null
         val setter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, variableType, accessorProperty) else null
-        val selectorStructs = accessorProperty.getSelectorsAsStructs()
+        val selectorStructs = accessorProperty.selectorStructs
         return ObjJAccessorPropertyStubImpl(
                 parent = parentStub,
                 containingClass = containingClass,

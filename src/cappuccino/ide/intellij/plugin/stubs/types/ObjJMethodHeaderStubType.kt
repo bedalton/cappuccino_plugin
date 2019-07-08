@@ -38,7 +38,7 @@ class ObjJMethodHeaderStubType internal constructor(
         val params = methodHeader.paramTypesAsStrings
         val returnType = methodHeader.explicitReturnType
         val required = methodHeader.isRequired
-        val selectorStructs = methodHeader.getSelectorsAsStructs()
+        val selectorStructs = methodHeader.selectorStructs
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
         val ignored = ObjJCommentEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
         return ObjJMethodHeaderStubImpl(
