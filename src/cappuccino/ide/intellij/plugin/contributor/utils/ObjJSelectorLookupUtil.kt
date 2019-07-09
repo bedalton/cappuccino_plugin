@@ -223,22 +223,33 @@ object ObjJSelectorLookupUtil {
         return elementBuilder
     }
 
+
+    fun addSelectorLookupElement(
+            resultSet: CompletionResultSet,
+            selectorStruct:ObjJSelectorStruct,
+            addSpaceAfterColon:Boolean,
+            priority: Double? = null,
+            icon: Icon? = null
+    ) {
+        val lookupElement = createSelectorLookupElement(selectorStruct, addSpaceAfterColon, icon)
+        if (priority != null) {
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, priority))
+        } else {
+            resultSet.addElement(lookupElement)
+        }
+    }
     /**
      * Creates a lookup element builder base for a selector
      */
-    fun createSelectorLookupElement(selectorStruct:ObjJSelectorStruct, className: String?, addSpaceAfterColon:Boolean, icon: Icon? = null): LookupElementBuilder {
+    fun createSelectorLookupElement(selectorStruct:ObjJSelectorStruct, addSpaceAfterColon:Boolean, icon: Icon? = null): LookupElementBuilder {
         var elementBuilder = LookupElementBuilder
                 .create(selectorStruct.selector)
-        val tailText = if (selectorStruct.variableType != null) {
-            ":(" + selectorStruct.variableType + ')' + (selectorStruct.variableName ?: "")
-        } else {
-            null
-        }
+        val tailText = selectorStruct.tail
         if (tailText != null) {
             elementBuilder = elementBuilder.withTailText(tailText)
         }
-        if (className != null) {
-            elementBuilder = elementBuilder.withTypeText("in $className")
+        if (selectorStruct.isContainerAClass) {
+            elementBuilder = elementBuilder.withTypeText("in ${selectorStruct.containerName}")
         }
         if (icon != null) {
             elementBuilder = elementBuilder.withIcon(icon)
