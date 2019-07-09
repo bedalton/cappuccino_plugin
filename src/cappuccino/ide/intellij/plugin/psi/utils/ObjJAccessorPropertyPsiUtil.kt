@@ -126,7 +126,7 @@ object ObjJAccessorPropertyPsiUtil {
                                     variableType = variableType,
                                     variableName = variableName,
                                     hasColon = true,
-                                    containingClassName = containingClassName
+                                    containerName = containingClassName
                             )
                     )
             )
@@ -304,7 +304,7 @@ object ObjJAccessorPropertyPsiUtil {
                     variableType = variableType,
                     variableName = variableName,
                     hasColon = true,
-                    containingClassName = containingClassName
+                    containerName = containingClassName
             ))
         }
         return out

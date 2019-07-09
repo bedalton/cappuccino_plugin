@@ -33,10 +33,24 @@ data class ObjJMethodStruct(val selectors:List<ObjJSelectorStruct>, val returnTy
     }
 }
 
-data class ObjJSelectorStruct(val selector:String, val variableType:String?, val variableName:String?, val hasColon:Boolean = variableName != null, val containingClassName: String?) {
+data class ObjJSelectorStruct(val selector:String, val variableType:String?, val variableName:String?, val hasColon:Boolean = variableName != null, val containerName: String?, val isContainerAClass:Boolean = true) {
     val selectorString:String by lazy {
         if (this.hasColon) "$selector:" else selector
     }
+
+    val tail:String by lazy {
+        if (!hasColon && variableType == null) {
+            return@lazy ""
+        }
+        if (variableType.isNullOrBlank())
+            return@lazy ":"
+        val builder = StringBuilder(":")
+        builder.append('(').append(variableType) .append(")")
+        if (variableName != null)
+            builder.append(variableName)
+        builder.toString()
+    }
+
     override fun toString(): String {
         return selectorString
     }
@@ -47,7 +61,7 @@ data class ObjJSelectorStruct(val selector:String, val variableType:String?, val
                 variableType = null,
                 variableName = null,
                 hasColon = false,
-                containingClassName = containingClassName
+                containerName = containingClassName
 
         )
     }
@@ -106,11 +120,12 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
                                 variableType = variableType,
                                 variableName = variableName,
                                 hasColon = true,
-                                containingClassName = containingClassName
+                                containerName = containingClassName,
+                                isContainerAClass = true
                         )),
                         returnType = null,
                         methodScope = INSTANCE,
-                        containingClassName = containingClassName
+                        containingClassName = containingClassName,
                 )
         )
     }
@@ -141,7 +156,7 @@ fun ObjJSelector.toSelectorStruct(containingClassName: String?) : ObjJSelectorSt
             variableType = null,
             variableName = null,
             hasColon = hasColon,
-            containingClassName = containingClassName
+            containerName = containingClassName
     )
 }
 
@@ -153,7 +168,7 @@ fun ObjJMethodDeclarationSelector.toSelectorStruct() : ObjJSelectorStruct {
     val variableType = formalVariableType?.variableType
     val variableName = variableName?.text
     return ObjJSelectorStruct(
-            containingClassName = containingClassName,
+            containerName = containingClassName,
             selector = selector,
             variableType = variableType,
             variableName = variableName
@@ -225,7 +240,7 @@ fun StubInputStream.readSelectorStruct() : ObjJSelectorStruct {
     val type = readNameString()
     val variableName = readNameString()
     return ObjJSelectorStruct(
-            containingClassName = containingClassName,
+            containerName = containingClassName,
             selector = selector,
             variableType = type,
             variableName = variableName
@@ -233,7 +248,7 @@ fun StubInputStream.readSelectorStruct() : ObjJSelectorStruct {
 }
 
 fun StubOutputStream.writeSelectorStruct(selector:ObjJSelectorStruct) {
-    writeName(selector.containingClassName)
+    writeName(selector.containerName)
     writeName(selector.selector)
     writeName(selector.variableType)
     writeName(selector.variableName)
