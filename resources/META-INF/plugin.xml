@@ -395,15 +395,18 @@
     <!-- ========= JsTypeDef =========== -->
     <!-- =============================== -->
     <lang.parserDefinition language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParserDefinition"/>
+    <lang.findUsagesProvider language="JsTypeDef"
+                             implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFindUsagesProvider"/>
 
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="JsTypeDef"
                                    language="JsTypeDef"
                                    implementationClass="cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefSyntaxHighlighterFactory"/>
-    <lang.findUsagesProvider language="JsTypeDef"
-                             implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFindUsagesProvider"/>
 
+    <!-- Formatting and Completion -->
     <lang.braceMatcher language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefBraceMatcher"/>
+    <completion.contributor language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefCompletionContributor" />
+
 
     <!-- STUBS AND INDICES -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService"
@@ -429,6 +432,14 @@
     <!-- Annotators -->
     <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefAnnotator" />
     <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefSyntaxHighlighterAnnotator" />
+
+    <!-- Inspections -->
+    <localInspection language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.inspections.JsTypeDefUnknownTypeInspection"
+                     level="ERROR"
+                     shortName="UnknownType"
+                     groupName="JsTypeDef Inspections"
+                     displayName="Unknown Type Inspection"
+                     />
 
     <!-- File Template -->
     <internalFileTemplate name="jstypedef.file" />
