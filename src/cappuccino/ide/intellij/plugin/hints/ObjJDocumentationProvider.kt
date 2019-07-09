@@ -3,7 +3,9 @@ package cappuccino.ide.intellij.plugin.hints
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -27,7 +29,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
-                    //// LOGGER.info("QuickInfo for variable name")
+                    LOGGER.info("QuickInfo for variable name")
                     it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
@@ -91,6 +93,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
                 /// Only run after all other checks
                 .info(ObjJCompositeElement::class.java) {
+                    LOGGER.info("COMPOSITE ELEMENT")
                     ObjJDescriptionUtil.getDescriptiveText(it) + getLocationString(it)
                 }
                 .infoString
@@ -199,6 +202,11 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         //// LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
         if (prevSiblings.isEmpty()) {
+            val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
+                it.toJsTypeListType()
+            }.minBy { it.parameters.size }
+            if (jsTypeDefFunctionResult != null)
+                return jsTypeDefFunctionResult.description.presentableText
             val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
             val functionType = inferenceResult?.functionTypes.orEmpty().minBy { it.parameters.size }
             if (functionType != null) {
@@ -272,9 +280,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? =
 }
 
 private fun JsTypeListFunctionType.descriptionWithName(name: String): String {
-    val out = StringBuilder(name)
-    out.append(this.toString())
-    return out.toString()
+    return this.copy(name = name).description.presentableText
 }
 
 private val ObjJFunctionName.functionDescription: String?
@@ -287,20 +293,6 @@ private val ObjJFunctionName.functionDescription: String?
 
 private val ObjJFunctionCall.functionDescription: String?
     get() {
-        val polyResolved = this.functionName?.reference?.multiResolve(false)?.mapNotNull { it.element }.orEmpty()
-        val parentFunction: ObjJUniversalFunctionElement? = polyResolved.mapNotNull { resolved ->
-            resolved.parentFunctionDeclaration ?: resolved.parent as? ObjJUniversalFunctionElement
-        }.firstOrNull()
-
-        val basicDescription = parentFunction?.description?.presentableText
-        if (basicDescription.isNotNullOrBlank())
-            return basicDescription!!
-        if (parentFunction == null) {
-            return "Function ${functionName?.text}"
-        }
-        //@todo check why we return description based on current call after checking for parent function null-ness
-        val functionNameText = this.functionNameString ?: return null
-        val function = inferQualifiedReferenceType(this.previousSiblings + this, createTag())?.functionTypes?.firstOrNull()
-        return function?.descriptionWithName(functionNameText)
-                ?: "Function ${functionName?.text} defined in ${parentFunction.containingFile?.name}"
+        val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration ?: return "Function ${functionName?.text}"
+        return parentFunction.description.presentableText
     }
