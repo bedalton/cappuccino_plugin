@@ -637,6 +637,11 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getContainingClassName(variableDeclaration: ObjJInstanceVariableDeclaration): String {
+        return ObjJHasContainingClassPsiUtil.getContainingClassName(variableDeclaration)
+    }
+
+    @JvmStatic
     fun getContainingClassName(classDeclarationElement: ObjJClassDeclarationElement<*>?): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(classDeclarationElement)
     }
