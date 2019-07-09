@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.inference.toJsTypeList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
@@ -33,14 +34,14 @@ data class ObjJMethodStruct(val selectors:List<ObjJSelectorStruct>, val returnTy
     }
 }
 
-data class ObjJSelectorStruct(val selector:String, val variableType:String?, val variableName:String?, val hasColon:Boolean = variableName != null, val containerName: String?, val isContainerAClass:Boolean = true) {
+data class ObjJSelectorStruct(val selector:String, val variableType:String?, val variableName:String?, val hasColon:Boolean = variableName != null, val containerName: String, val isContainerAClass:Boolean = true) {
     val selectorString:String by lazy {
         if (this.hasColon) "$selector:" else selector
     }
 
-    val tail:String by lazy {
+    val tail:String? by lazy {
         if (!hasColon && variableType == null) {
-            return@lazy ""
+            return@lazy null
         }
         if (variableType.isNullOrBlank())
             return@lazy ":"
@@ -56,7 +57,7 @@ data class ObjJSelectorStruct(val selector:String, val variableType:String?, val
     }
     companion object {
         @Suppress("FunctionName")
-        fun Getter(selectorIn:String, containingClassName: String?) = ObjJSelectorStruct(
+        fun Getter(selectorIn:String, containingClassName: String) = ObjJSelectorStruct(
                 selector = selectorIn,
                 variableType = null,
                 variableName = null,
@@ -125,7 +126,7 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
                         )),
                         returnType = null,
                         methodScope = INSTANCE,
-                        containingClassName = containingClassName,
+                        containingClassName = containingClassName
                 )
         )
     }
@@ -141,7 +142,7 @@ fun ObjJSelectorLiteral.toMethodStruct() : ObjJMethodStruct {
     )
 }
 
-fun ObjJSelector.toSelectorStruct(containingClassName: String?) : ObjJSelectorStruct {
+fun ObjJSelector.toSelectorStruct(containingClassName: String) : ObjJSelectorStruct {
     val selectorString = getSelectorString(false)
     val parent = parent
     if (parent is ObjJSelectorLiteral) {
@@ -235,21 +236,26 @@ fun StubOutputStream.writeSelectorStructList(selectors:List<ObjJSelectorStruct>)
 }
 
 fun StubInputStream.readSelectorStruct() : ObjJSelectorStruct {
-    val containingClassName = readNameString()
+    val containerName = readNameString() ?: ObjJClassType.UNDEF_CLASS_NAME
+    val isContainerAClass = readBoolean()
     val selector = readNameString() ?: EMPTY_SELECTOR
     val type = readNameString()
     val variableName = readNameString()
+    val hasColon = readBoolean()
     return ObjJSelectorStruct(
-            containerName = containingClassName,
+            containerName = containerName,
             selector = selector,
             variableType = type,
-            variableName = variableName
+            variableName = variableName,
+            hasColon = hasColon
     )
 }
 
 fun StubOutputStream.writeSelectorStruct(selector:ObjJSelectorStruct) {
     writeName(selector.containerName)
+    writeBoolean(selector.isContainerAClass)
     writeName(selector.selector)
     writeName(selector.variableType)
     writeName(selector.variableName)
+    writeBoolean(selector.hasColon)
 }

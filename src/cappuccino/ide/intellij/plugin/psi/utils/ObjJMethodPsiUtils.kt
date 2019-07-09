@@ -359,7 +359,7 @@ object ObjJMethodPsiUtils {
                     variableType = null,
                     variableName = null,
                     hasColon = it.getNextNonEmptyNode(true)?.elementType == ObjJTypes.ObjJ_COLON,
-                    containerName = null,
+                    containerName = selectorLiteral.containingFileName,
                     isContainerAClass = false
             )
         }
