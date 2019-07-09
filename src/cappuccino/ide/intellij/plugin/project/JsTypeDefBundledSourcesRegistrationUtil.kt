@@ -71,10 +71,11 @@ object JsTypeDefBundledSourcesRegistrationUtil {
         if (libraryPath == null) {
             val pluginRoot = ObjJFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
-                throw Exception("Failed to locate bundled jstypedef files: Plugin root is invalid")
+                LOGGER.severe("Failed to locate bundled jstypedef files: Plugin root is invalid")
             } else {
-                throw Exception("Failed to locate bundled jstypedef files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
+                LOGGER.severe("Failed to locate bundled jstypedef files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>")
             }
+            return false
         }
 
         // Check if same version

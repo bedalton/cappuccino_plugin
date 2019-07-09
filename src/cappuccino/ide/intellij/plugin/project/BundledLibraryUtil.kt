@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
@@ -13,6 +14,15 @@ import java.util.logging.Logger
 
 internal const val BUNDLE_DEFINITIONS_FOLDER = "definitions"
 private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
+
+internal fun canRegisterSourcesAsLibrary(module:Module, directories: List<String>) : Boolean {
+    if (!ObjJFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
+        LOGGER.severe("Failed to find plugin home directory")
+    }
+    return directories.all {directory ->
+        ObjJFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")?.exists().orFalse()
+    }
+}
 
 internal fun registerSourcesAsLibrary(module: Module, libraryName:String, directories:List<String>) : Boolean {
     val rootModel = ModuleRootManager.getInstance(module).modifiableModel
