@@ -40,7 +40,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         return ObjJInstanceVariableDeclarationStubImpl(
                 parent = stubElement,
                 containingClass = declaration.containingClassName,
-                varType = declaration.formalVariableType.text,
+                variableType = declaration.formalVariableType.text,
                 variableName = variableName,
                 getter = getter,
                 setter = setter,
@@ -54,7 +54,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
             stub: ObjJInstanceVariableDeclarationStub,
             stream: StubOutputStream) {
         stream.writeName(stub.containingClass)
-        stream.writeName(stub.varType)
+        stream.writeName(stub.variableType)
         stream.writeName(stub.variableName)
         stream.writeName(Strings.notNull(stub.getter, ""))
         stream.writeName(Strings.notNull(stub.setter, ""))
@@ -79,7 +79,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         return ObjJInstanceVariableDeclarationStubImpl(
                 parent = parentStub,
                 containingClass = containingClass,
-                varType = varType,
+                variableType = varType,
                 variableName = variableName,
                 getter = getter,
                 setter = setter,

@@ -146,7 +146,7 @@ object ObjJAccessorPropertyPsiUtil {
      * @return method header stub
      */
     fun getGetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
-        val varType = variableDeclaration.stub?.varType ?: variableDeclaration.formalVariableType.text
+        val varType = variableDeclaration.stub?.variableType ?: variableDeclaration.formalVariableType.text
         val getter: String = variableDeclaration.stub?.getter
                 ?: getGetterFromAccessorPropertyList(variableDeclaration.accessorPropertyList)
                 ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text

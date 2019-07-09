@@ -7,7 +7,7 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJInstanceVariableDecla
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
-class ObjJInstanceVariableDeclarationStubImpl(parent: StubElement<*>, containingClass: String?, override val varType: String, override val variableName: String, getter: String?, setter: String?, override val accessorStructs: List<ObjJMethodStruct>, private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJInstanceVariableDeclarationImpl>(parent, ObjJStubTypes.INSTANCE_VAR), ObjJInstanceVariableDeclarationStub {
+class ObjJInstanceVariableDeclarationStubImpl(parent: StubElement<*>, containingClass: String?, override val variableType: String, override val variableName: String, getter: String?, setter: String?, override val accessorStructs: List<ObjJMethodStruct>, private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJInstanceVariableDeclarationImpl>(parent, ObjJStubTypes.INSTANCE_VAR), ObjJInstanceVariableDeclarationStub {
 
     override val containingClass: String = containingClass ?: ObjJClassType.UNDEF_CLASS_NAME
     override val getter: String? = if (getter != null && getter.isNotEmpty()) getter else null

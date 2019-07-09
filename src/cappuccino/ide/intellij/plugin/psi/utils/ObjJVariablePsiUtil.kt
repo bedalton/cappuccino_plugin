@@ -34,7 +34,7 @@ object ObjJVariablePsiUtil {
     }
 
     fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String {
-        return variable.stub?.varType
+        return variable.stub?.variableType
                 ?: variable.formalVariableType.varTypeId?.className?.text
                 ?: variable.formalVariableType.text
     }

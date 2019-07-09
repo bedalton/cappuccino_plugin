@@ -34,7 +34,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         val variableType: String?
         if (variableDeclaration != null) {
             val variableDeclarationStub = variableDeclaration.stub
-            variableType = variableDeclarationStub?.varType ?: variableDeclaration.formalVariableType.text
+            variableType = variableDeclarationStub?.variableType ?: variableDeclaration.formalVariableType.text
             variableName = variableDeclarationStub?.variableName ?: if (variableDeclaration.variableName != null) variableDeclaration.variableName!!.text else null
         } else {
             variableName = null
