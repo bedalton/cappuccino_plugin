@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
@@ -9,6 +10,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
@@ -452,8 +454,13 @@ fun ObjJFunctionName.resolve() : PsiElement? {
     return this.reference.resolve()
 }
 
-val ObjJFunctionCall.functionDeclarationReference:ObjJFunctionDeclarationElement<*>? get() {
+val ObjJFunctionCall.functionDeclarationReference:ObjJUniversalFunctionElement? get() {
     val functionName = this.functionName?: return null
+    if (indexInQualifiedReference == 0) {
+        val jsResolved = JsTypeDefFunctionsByNameIndex.instance[functionName.text, project].firstOrNull()
+        if (jsResolved != null)
+            return jsResolved
+    }
     val resolved = functionName.resolve() ?: return null
     return ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(resolved)
 }
