@@ -26,15 +26,15 @@ class ObjJColorSettingsPage : ColorSettingsPage {
 /*
     A Block Comment
 */
-@implementation MyClass : <<varType>HasProtocol</varType>>
+@implementation MyClass : <<variableType>HasProtocol</variableType>>
 {
-    <varType>id</varType> _reference;
-    <varType>int</varType> _varInt;
-    <varType>CPString</varType> _string  @accessors(property=string);
-    <varType>CPColor</varType> _backgroundColor;
+    <variableType>id</variableType> _reference;
+    <variableType>int</variableType> _varInt;
+    <variableType>CPString</variableType> _string  @accessors(property=string);
+    <variableType>CPColor</variableType> _backgroundColor;
 }
 
--(void) setBackgroundColor:(<varType>CPColor</varType>)aColor
+-(void) setBackgroundColor:(<variableType>CPColor</variableType>)aColor
 {
     //A Line Comment
     var i = 0,
@@ -43,7 +43,7 @@ class ObjJColorSettingsPage : ColorSettingsPage {
     <instanceVar>_backgroundColor</instanceVar> = <paramVar>aColor</paramVar>;
 }
 
--(<varType>CPString</varType>) colorHex
+-(<variableType>CPString</variableType>) colorHex
 {
     if (<instanceVar>_backgroundColor</instanceVar>)
     {
@@ -89,7 +89,7 @@ function sayHello(aName)
 
     if (<funcName>isValidName</funcName>(<paramVar>aName</paramVar>))
     {
-        return [<varType>CPString</varType> stringWithFormat:<globalVar>globalGreeting</globalVar>, <paramVar>aName</paramVar>];
+        return [<variableType>CPString</variableType> stringWithFormat:<globalVar>globalGreeting</globalVar>, <paramVar>aName</paramVar>];
     }
     return null;
 }
@@ -141,7 +141,7 @@ function sayHello(aName)
                 "keyword" to ObjJSyntaxHighlighter.KEYWORD,
                 "string" to ObjJSyntaxHighlighter.STRING,
                 "literal2" to ObjJSyntaxHighlighter.SECONDARY_LITERAL,
-                "varType" to ObjJSyntaxHighlighter.VARIABLE_TYPE,
+                "variableType" to ObjJSyntaxHighlighter.VARIABLE_TYPE,
                 "fileLevelVariable" to ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE,
                 "instanceVar" to ObjJSyntaxHighlighter.INSTANCE_VARIABLE,
                 "paramVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,

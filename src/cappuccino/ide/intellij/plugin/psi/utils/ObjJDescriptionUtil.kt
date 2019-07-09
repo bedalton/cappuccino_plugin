@@ -41,7 +41,7 @@ object ObjJDescriptionUtil {
         if (variableDeclaration != null) {
             val property = selector.getParentOfType(ObjJAccessorProperty::class.java)
             val propertyString = if (property != null) property.accessorPropertyType.text + "=" else ""
-            val returnType = if (variableDeclaration.stub != null) variableDeclaration.stub.varType else variableDeclaration.formalVariableType.text
+            val returnType = if (variableDeclaration.stub != null) variableDeclaration.stub.variableType else variableDeclaration.formalVariableType.text
             return "- (" + returnType + ") @accessors(" + propertyString + selector.getSelectorString(false) + ")"
         }
         val methodCall = selector.getParentOfType(ObjJMethodCall::class.java)
