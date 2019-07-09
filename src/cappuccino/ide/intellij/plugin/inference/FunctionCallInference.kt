@@ -16,8 +16,10 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.resolve
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.PsiElement
@@ -29,6 +31,23 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
+    val resolves = functionCall.functionName?.reference?.multiResolve(false).orEmpty().map { it.element }
+    val jsTypeDefResolves = resolves.mapNotNull { it as? JsTypeDefElement }
+    val typeDefOut = jsTypeDefResolves
+            .mapNotNull {
+                (it as? JsTypeDefFunction) ?: ((it as? JsTypeDefFunctionName)?.parent as? JsTypeDefFunction)
+            }.flatMap {
+                it.functionReturnType?.toTypeListType()?.toJsTypeList().orEmpty()
+            } +
+            jsTypeDefResolves.mapNotNull {
+                it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty ?: (it as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)
+            }.flatMap {
+                it.typeList.toJsTypeDefTypeListTypes()
+            }
+    if (typeDefOut.isNotEmpty()) {
+        return InferenceResult(types = typeDefOut.toSet())
+    }
+
     val out = functionCall.functionName?.reference?.multiResolve(false)?.mapNotNull {
         val resolved = it.element ?: return@mapNotNull null
         val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
