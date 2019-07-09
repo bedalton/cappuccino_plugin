@@ -18,7 +18,7 @@ object ObjJPsiFileUtil {
      * Gets containing file name in a safe way
      * @todo see if file name does need to be safely retrieved
      */
-    fun getContainingFileName(psiElement: PsiElement?): String? {
+    fun getContainingFileName(psiElement: PsiElement?): String {
         return getFileNameSafe(psiElement?.containingFile)
     }
 
@@ -89,7 +89,7 @@ fun sharesSameFile(element1: PsiElement?, element2: PsiElement?): Boolean {
 /**
  * Helper extension function to get containing file name from any element
  */
-val PsiElement.containingFileName: String?
+val PsiElement.containingFileName: String
     get() = ObjJPsiFileUtil.getContainingFileName(this)
 
 
