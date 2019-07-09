@@ -1,14 +1,10 @@
 package cappuccino.ide.intellij.plugin.references
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbServiceImpl
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
-import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
@@ -16,31 +12,42 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByName
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
+import cappuccino.ide.intellij.plugin.psi.ObjJPreprocessorDefineFunction
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
-
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbServiceImpl
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.*
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Logger
 
-class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
+class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
     private val file: PsiFile = functionName.containingFile
-    private val isFunctionCall:Boolean get () {
-        return myElement.parent is ObjJFunctionCall
-    }
-    private val isFunctionDeclaration:Boolean get() {
-        return myElement.parent is ObjJFunctionDeclaration
-    }
+    private val isFunctionCall: Boolean
+        get () {
+            return myElement.parent is ObjJFunctionCall
+        }
+    private val isFunctionDeclaration: Boolean
+        get() {
+            return myElement.parent is ObjJFunctionDeclaration
+        }
 
-    private val previousSiblingTypes:Set<String>? by lazy {
+    private val previousSiblingTypes: Set<String>? by lazy {
         val prevSiblings = myElement.getParentOfType(ObjJFunctionCall::class.java)?.previousSiblings
                 ?: return@lazy null
         inferQualifiedReferenceType(prevSiblings, tag)?.toClassList(null)?.toSet().orEmpty()
@@ -53,7 +60,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
 
         if (myElement?.indexInQualifiedReference != 0) {
             if (myElement is ObjJCompositeElement && element is ObjJCompositeElement)
-                return false;
+                return false
         }
 
         val elementIsFunctionCall = element.parent is ObjJFunctionCall
@@ -82,13 +89,14 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
             if (it.isEquivalentTo(element).orFalse())
                 return true
         }
-        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: return false
+        val resolved = ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+                ?: return false
         return resolved == element
     }
 
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
-        val resolved = resolveInternal();
+        val resolved = resolveInternal()
         if (resolved != null && !resolved.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(resolved)
         }
@@ -98,7 +106,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
         // Get Base variables
         val project = functionCall.project
         val functionName = functionCall.functionNameString
-                ?:  return PsiElementResolveResult.EMPTY_ARRAY
+                ?: return PsiElementResolveResult.EMPTY_ARRAY
 
         // Get simple if no previous siblings
         val prevSiblings = functionCall.previousSiblings
@@ -130,8 +138,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
                     it.toJsClassDefinition()
                 }
             }.withAllSuperClassNames(project)
-            val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it)} + ")\\." + functionName
-            val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
+            val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it) } + ")\\." + functionName
+            val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString, project).filter {
                 it.isStatic == isStatic
             }.map {
                 it.functionName ?: it
@@ -142,7 +150,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
     }
 
 
-    override fun resolve() : PsiElement? {
+    override fun resolve(): PsiElement? {
         return myElement.resolveFromCache {
             multiResolve(false).firstOrNull()?.element
         }
@@ -176,7 +184,8 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag:Long = c
                 return function.functionName
             }
         }
-        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement) ?: myElement
+        return if (allOut.isNotEmpty()) allOut[0] else ObjJVariableNameResolveUtil.getVariableDeclarationElementForFunctionName(myElement)
+                ?: myElement
     }
 
     override fun handleElementRename(newFunctionName: String): PsiElement {
