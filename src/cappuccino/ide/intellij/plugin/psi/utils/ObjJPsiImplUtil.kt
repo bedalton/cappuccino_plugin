@@ -82,7 +82,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getName(variableDeclaration: ObjJInstanceVariableDeclaration): String {
-        return if (variableDeclaration.variableName != null) variableDeclaration.variableName!!.text else ""
+        return variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: ""
+    }
+
+    @JvmStatic
+    fun getVariableNameString(variableDeclaration: ObjJInstanceVariableDeclaration): String {
+        return variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: ""
     }
 
     @JvmStatic
