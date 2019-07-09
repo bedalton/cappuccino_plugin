@@ -16,5 +16,5 @@ internal fun annotateInvalidMapReturnType(
         annotationHolder: AnnotationHolder) {
     if (element.hasParentOfType(JsTypeDefFunctionReturnType::class.java) || element.hasParentOfType(JsTypeDefAnonymousFunction::class.java))
         return
-    annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.invalid-map-return-type-usage.message"))
+    annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-map-return-type-usage.message"))
 }

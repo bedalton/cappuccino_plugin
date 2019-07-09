@@ -16,6 +16,6 @@ internal fun annotateInvalidNullStatement (
             annotationHolder: AnnotationHolder) {
     if (!element.hasParentOfType(JsTypeDefNoVoid::class.java))
         return
-    val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.invalid-null.message"))
-    annotation.registerFix(RemoveElementInPipedListFix(element, JsTypeDefBundle.message("jstypedef.invalid-null.quick-fix.remove-void.message")))
+    val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-null.message"))
+    annotation.registerFix(RemoveElementInPipedListFix(element, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-null.quick-fix.remove-void.message")))
 }

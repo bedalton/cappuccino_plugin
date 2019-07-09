@@ -17,6 +17,6 @@ internal fun annotateInvalidVoidStatements (
             annotationHolder: AnnotationHolder) {
     if (!element.hasParentOfType(JsTypeDefNoVoid::class.java) || element.hasParentOfType(JsTypeDefGenericTypeTypes::class.java))
         return
-    val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.invalid-void.message"))
-    annotation.registerFix(RemoveElementInPipedListFix(element, JsTypeDefBundle.message("jstypedef.invalid-void.quick-fix.remove-void.message")))
+    val annotation = annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-void.message"))
+    annotation.registerFix(RemoveElementInPipedListFix(element, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-void.quick-fix.remove-void.message")))
 }

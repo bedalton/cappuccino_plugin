@@ -25,7 +25,7 @@ class RemoveElementInPipedListFix(element:PsiElement, private val message:String
     }
 
     override fun getFamilyName(): String {
-        return JsTypeDefBundle.message("jstypedef-quick-fix.family-name")
+        return JsTypeDefBundle.message("jstypedef.quick-fix.family-name")
     }
 
     override fun isAvailable(p0: Project, p1: Editor?, p2: PsiFile?): Boolean {

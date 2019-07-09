@@ -15,5 +15,5 @@ internal fun annotateInvalidKeyOfUsage(
         annotationHolder: AnnotationHolder) {
     if (!element.hasParentOfType(JsTypeDefNoKeyOfTypes::class.java))
         return
-    annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.invalid-keyof-usage.message"))
+    annotationHolder.createAnnotation(HighlightSeverity.ERROR, element.textRange, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-keyof-usage.message"))
 }
