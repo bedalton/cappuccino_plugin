@@ -644,6 +644,7 @@ instanceVariableDeclaration
 			createTreeStructureElement
 			getAccessorPropertyList
 			getVariableType
+			getVariableNameString
 		]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
