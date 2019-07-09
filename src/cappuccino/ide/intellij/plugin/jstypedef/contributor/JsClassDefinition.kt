@@ -315,7 +315,7 @@ sealed class JsTypeListType(open val typeName: String) {
                 out.append(name)
             out.append("(")
             val parametersString = parameters.joinToString(", ") { property ->
-                property.name + property.types.types.joinToString("|") { type -> type.typeName }
+                property.name + ":" +  property.types.types.joinToString("|") { type -> type.typeName }
             }
             out.append(parametersString)
                     .append(")")
