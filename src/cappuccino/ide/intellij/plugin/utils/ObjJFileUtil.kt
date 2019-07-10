@@ -56,11 +56,10 @@ object ObjJFileUtil {
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
-                    ?: throw Exception("Failed to locate plugin lib folder")
+                    ?: return null
             val jar = libFolder.findChild("Cappuccino Plugin.jar")
-                    ?: throw Exception("Failed to locate plugin jar")
+                    ?: return null
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
-            //return jar
         }
 
     private val PLUGIN_RESOURCES_DIRECTORY: VirtualFile?

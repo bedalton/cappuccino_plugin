@@ -18,6 +18,7 @@ private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
 internal fun canRegisterSourcesAsLibrary(module:Module, directories: List<String>) : Boolean {
     if (!ObjJFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
         LOGGER.severe("Failed to find plugin home directory")
+        return false
     }
     return directories.all {directory ->
         ObjJFileUtil.getPluginResourceFile("$BUNDLE_DEFINITIONS_FOLDER/$directory")?.exists().orFalse()
@@ -35,12 +36,12 @@ internal fun registerSourcesAsLibrary(module: Module, libraryName:String, direct
             val pluginRoot = ObjJFileUtil.PLUGIN_HOME_DIRECTORY
             if (pluginRoot == null || !pluginRoot.exists()) {
                 LOGGER.severe("Failed to locate bundled files: Plugin root is invalid")
-                throw Exception("Failed to locate bundled files: Plugin root is invalid")
+                //throw Exception("Failed to locate bundled files: Plugin root is invalid")
             } else {
                 val searchScope = GlobalSearchScopes.directoriesScope(module.project, true, pluginRoot)
                 val errorMessage = "Failed to locate bundled files: Files in plugin root is <${pluginRoot.children?.map { it.name }}>;\nfiles:\n${FilenameIndex.getAllFilesByExt(module.project, "j", searchScope).map { "\n\t${it.name}" }}"
                 LOGGER.severe(errorMessage)
-                throw Exception(errorMessage)
+                //throw Exception(errorMessage)
             }
 
             return false
