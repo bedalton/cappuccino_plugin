@@ -43,6 +43,9 @@ open class StubIndexService {
     open fun indexTypeMap(stub: JsTypeDefTypeMapStub, sink: IndexSink) {
         throw NotImplementedError("index interface indexing method must be overridden")
     }
+    open fun indexKeyList(stub:JsTypeDefKeysListStub, sink: IndexSink) {
+        throw NotImplementedError("index interface indexing method must be overridden")
+    }
 
     fun createFileStub(file:JsTypeDefFile) : JsTypeDefFileStub {
         val fileName = file.containerName

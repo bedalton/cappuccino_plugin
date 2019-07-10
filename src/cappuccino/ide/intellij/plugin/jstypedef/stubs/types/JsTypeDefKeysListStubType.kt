@@ -62,6 +62,6 @@ class JsTypeDefKeysListStubType internal constructor(
     }
 
     override fun indexStub(stub: JsTypeDefKeysListStub, sink: IndexSink) {
-        //ServiceManager.getService(StubIndexService::class.java).indexKeysList(stub, sink)
+        ServiceManager.getService(StubIndexService::class.java).indexKeyList(stub, sink)
     }
 }

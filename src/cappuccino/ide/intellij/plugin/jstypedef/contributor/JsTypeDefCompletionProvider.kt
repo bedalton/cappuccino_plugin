@@ -6,6 +6,8 @@ import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
@@ -77,6 +79,9 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
 
         val objjTypeDefCompletions = ObjJTypeDefIndex.instance.getKeysByPattern(indexSearchString, project)
         addLookupElementsSimple(resultSet, objjTypeDefCompletions, JsTypeDefCompletionContributor.ObjJ_AT_TYPEDEF_NAME_COMPLETIONS)
+
+        val keysets = JsTypeDefKeyListsByNameIndex.instance.getKeysByPattern(indexSearchString, project)
+        addLookupElementsSimple(resultSet, keysets, JsTypeDefCompletionContributor.JS_KEYSET_NAME_COMPLETIONS)
     }
 
     /**

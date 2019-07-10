@@ -29,6 +29,7 @@ class JsTypeDefCompletionContributor : CompletionContributor() {
     companion object {
         val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
         const val JS_CLASS_NAME_COMPLETIONS = 100.0
+        const val JS_KEYSET_NAME_COMPLETIONS = 50.0
         const val ObjJ_CLASS_NAME_COMPLETIONS = 10.0
         const val ObjJ_AT_TYPEDEF_NAME_COMPLETIONS = -100.0
     }

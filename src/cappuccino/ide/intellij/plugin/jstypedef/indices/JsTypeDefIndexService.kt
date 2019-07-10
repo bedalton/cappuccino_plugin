@@ -77,6 +77,10 @@ class JsTypeDefIndexService : StubIndexService() {
         }
     }
 
+    override fun indexKeyList(stub:JsTypeDefKeysListStub, sink: IndexSink) {
+        sink.occurrence(JsTypeDefKeyListsByNameIndex.instance.key, stub.listName)
+    }
+
     override fun indexTypeMap(stub:JsTypeDefTypeMapStub, sink:IndexSink) {
         if(stub.mapName.isBlank())
             return
