@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefModuleNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenericsKeyReference
@@ -17,6 +18,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJStringLiteralReference
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.orTrue
@@ -721,6 +723,19 @@ object JsTypeDefPsiImplUtil {
             return true
         }
         return ahead in EOS_TOKENS || hadLineTerminator
+    }
+
+    // ============================== //
+    // ========= Generics =========== //
+    // ============================== //
+
+    fun getEnclosingGenerics(element:PsiElement) : List<String> {
+        val out = mutableListOf<String>()
+        var parent:JsTypeDefHasGenerics? = element.getParentOfType(JsTypeDefHasGenerics::class.java) ?: return emptyList()
+        while (parent != null) {
+            out.addAll(parent.genericKeys)
+        }
+        return out
     }
 
 

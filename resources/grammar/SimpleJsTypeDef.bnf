@@ -179,6 +179,7 @@ functionDeclaration
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 		]
 		methods = [
 			getEnclosingNamespace
@@ -189,6 +190,7 @@ functionDeclaration
 	        isStatic
 	        isQuiet
 	        isSilent
+	        getGenericsKeys
 		]
 	}
 	;
@@ -221,6 +223,7 @@ interfaceElement
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
 		methods = [
@@ -234,6 +237,7 @@ interfaceElement
 			isStatic
 			isQuiet
 			isSilent
+			getGenericsKeys
 		]
 	}
 	;
@@ -246,6 +250,7 @@ classElement
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 		]
         stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
 		methods = [
@@ -259,6 +264,7 @@ classElement
 	        isStatic
 			isQuiet
 			isSilent
+			getGenericsKeys
 		]
 	}
 	;
@@ -335,6 +341,10 @@ type
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+
+		methods = [
+			getEnclosingGenerics
 		]
 	}
 	;

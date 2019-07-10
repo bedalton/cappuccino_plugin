@@ -16,6 +16,130 @@ Modified for Objetive-J plugin use by Daniel Badal
 
 ***************************************************************************** */
 
+
+// Primitive types
+interface _primitive
+interface boolean : _primitive;
+interface BOOL : _primitive;
+interface number:_primitive;
+interface float:number;
+interface double:number;
+interface char:string;
+class string: _primitive {
+
+
+	/**
+	 * @param charNum:number A sequence of numbers that are UTF-16 code units.
+	 * @returns A string of length N consisting of the N specified UTF-16 code units/ This method returns a string not and not a String object.
+	 */
+	static fromCharCode(...charNum:number) : string
+
+	/**
+	 * Returns a string created by using the specified sequence of code points.
+	 * This method returns a string and not a String object.
+	 * @param charNum:number A sequence of code points.
+	 * @returns A string created by using the specified sequence of code points. This method returns a string not and not a String object.
+	 * @throws RangeError is thrown if an invalid Unicode code point is given
+	 */
+	static fromCodePoint(...charNum:number) : string
+
+
+	/**
+  	 * @deprecated
+     */
+  	anchor(name) : HTMLAnchorElement
+
+  	/**
+  	 * @deprecated
+  	 */
+  	big()
+
+  	/*
+  	 * @deprecated
+  	 */
+  	blink()
+
+  	/*
+  	 * @returns A string containing a <b> HTML element.
+  	 * @deprecated
+  	 */
+  	bold()
+
+  	/**
+  	 * returns a new string consisting of the single UTF-16 code unit located at the specified offset into the string.
+  	 */
+	charAt(index:number):char
+
+	charCodeAt(index:number):number
+
+	codePointAt(pos:number):number|null
+
+	concat(...string2:string) : string
+
+	endsWith(searchString, length:number|null):boolean
+
+  	/*
+  	 * @returns A string containing a <tt> HTML element.
+  	 * @deprecated
+  	 */
+  	fixed():HTMLElement
+
+	/**
+	 * @returns the length of a string
+	 */
+	readonly length:number;
+
+	/** The indexOf() method returns the index of (the position of) the first occurrence of a specified text in a string */
+	indexOf(query:string);
+
+	/**
+	 * The indexOf() method returns the index of (the position of) the first occurrence of a specified text in a string */
+	 * @param query:string
+	 * @param startingPosition:number the starting position for the search
+	 */
+	indexOf(query:string, startingPosition:number);
+
+	/** The lastIndexOf() method returns the index of the last occurrence of a specified text in a string: */
+	lastIndexOf(query:string);
+
+	/**
+	 * The lastIndexOf() method returns the index of the last occurrence of a specified text in a string:
+	 * If the second parameter is 15, the search starts at position 15, and searches to the beginning of the string.
+	 * @param query:string
+	 * @param startingPosition:number the starting position for the search
+	 */
+	lastIndexOf(query:string, startingPosition:number);
+
+	/** Searches a string for a specified value and returns the position of the match */
+	search(query:string);
+
+	/**
+	 * Extracts a part of a string and returns the extracted part in a new string
+	 * @param start:number start (can be negative)
+	 * @param end:number end (exclusive) - can be negative
+	 */
+	slice(start:number, end:number|null): string
+
+	/**
+	 * Extracts a part of a string and returns the extracted part in a new string
+	 * @param start:number start cannot be negative
+	 * @param end:number end (exclusive) - cannot be negative
+	 * if end is ommitted, it will slice the rest of the string
+	 */
+	substring(start:number, end:number|null): string
+
+	/**
+	 * @param start:number start position - can be negative
+	 * @param length:number specifies the length of the extracted part
+	 * If the first parameter is negative, the position counts from the end of the string
+	 * If length is ommited, slices out rest of string
+	 */
+	substr(start:number, length:number|null): string
+}
+interface String:string;
+
+
+
 interface Account {
     displayName: string;
     id: string;

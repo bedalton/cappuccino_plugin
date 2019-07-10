@@ -24,8 +24,6 @@ class JsTypeDefIndexService : StubIndexService() {
         val enclosingClass = stub.enclosingClass
         if(enclosingClass.isNotNullOrBlank()) {
             sink.occurrence(JsTypeDefFunctionsByClassNamesIndex.instance.key, enclosingClass!!)
-        } else {
-            LOGGER.info("No Enclosing class for function: <${stub.functionName}>")
         }
     }
 
@@ -37,8 +35,6 @@ class JsTypeDefIndexService : StubIndexService() {
         val enclosingClass = stub.enclosingClass
         if(enclosingClass.isNotNullOrBlank()) {
             sink.occurrence(JsTypeDefPropertiesByClassNameIndex.instance.key, enclosingClass!!)
-        } else {
-            LOGGER.info("No Enclosing class for property: <${stub.propertyName}>")
         }
     }
 

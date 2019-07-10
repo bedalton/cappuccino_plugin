@@ -439,6 +439,7 @@
                      shortName="UnknownTypeInFile"
                      groupName="JsTypeDef Inspections"
                      displayName="Unknown Javascript Type Inspection"
+                     enabledByDefault="true"
                      />
 
     <!-- File Template -->
