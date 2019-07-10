@@ -11,6 +11,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 
 class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
+
+    override fun getGroupDisplayName(): String {
+        return JsTypeDefBundle.message("jstypedef.inspections.group-name")
+    }
+
+    override fun getShortName(): String {
+        return JsTypeDefBundle.message("jstypedef.inspections.invalid-type.shortName")
+    }
+
+    override fun getDisplayName(): String {
+        return JsTypeDefBundle.message("jstypedef.inspections.invalid-type.display-name")
+    }
+
     override fun buildVisitor(problemsHolder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : JsTypeDefVisitor() {
             override fun visitType(type: JsTypeDefType) {

@@ -436,9 +436,9 @@
     <!-- Inspections -->
     <localInspection language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.inspections.JsTypeDefUnknownTypeInspection"
                      level="ERROR"
-                     shortName="UnknownType"
+                     shortName="UnknownTypeInFile"
                      groupName="JsTypeDef Inspections"
-                     displayName="Unknown Type Inspection"
+                     displayName="Unknown Javascript Type Inspection"
                      />
 
     <!-- File Template -->
