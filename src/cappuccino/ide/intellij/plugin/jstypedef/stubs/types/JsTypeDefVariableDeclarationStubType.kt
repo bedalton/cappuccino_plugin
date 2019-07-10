@@ -47,7 +47,9 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
                 types = types,
                 readonly = readOnly,
                 comment = comment,
-                default = default
+                default = default,
+                isSilent = declaration.isSilent,
+                isQuiet = declaration.isQuiet
         )
     }
 
@@ -62,6 +64,8 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         stream.writeBoolean(stub.readonly)
         stream.writeName(stub.comment)
         stream.writeName(stub.default)
+        stream.writeBoolean(stub.isSilent)
+        stream.writeBoolean(stub.isQuiet)
     }
 
     @Throws(IOException::class)
@@ -75,6 +79,8 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val readonly: Boolean = stream.readBoolean()
         val comment: String? = stream.readNameString()
         val default: String? = stream.readNameString()
+        val isSilent = stream.readBoolean()
+        val isQuiet = stream.readBoolean()
         return JsTypeDefVariableDeclarationStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -84,7 +90,9 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
                 readonly = readonly,
                 types = types,
                 comment = comment,
-                default = default
+                default = default,
+                isSilent = isSilent,
+                isQuiet = isQuiet
         )
     }
 

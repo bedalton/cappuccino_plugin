@@ -20,7 +20,9 @@ class JsTypeDefFunctionStubImpl(
         override val parameters: List<JsTypeDefFunctionArgument>,
         override val returnType: InferenceResult,
         override val global:Boolean,
-        override val static: Boolean
+        override val static: Boolean,
+        override val isQuiet:Boolean,
+        override val isSilent:Boolean
 ) : JsTypeDefStubBaseImpl<JsTypeDefFunctionImpl>(parent, JsTypeDefStubTypes.JS_FUNCTION), JsTypeDefFunctionStub {
 
     override val asJsFunctionType: JsTypeListType.JsTypeListFunctionType by lazy {

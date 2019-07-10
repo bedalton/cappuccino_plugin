@@ -140,9 +140,9 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/ property /*<<exitMode "variableDeclaration">>*/ eos?
+	::= completionModifier? variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/<<enterMode "inOuterCompletionModifier">> property <<exitMode "inOuterCompletionModifier">>/*<<exitMode "variableDeclaration">>*/ eos?
 	{
-		pin = 2
+		pin = 3
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
@@ -158,6 +158,8 @@ variableDeclaration
 	        getNamespacedName
 	        getNamespaceComponents
 	        getNamespaceComponent
+	        isQuiet
+	        isSilent
 	    ]
 	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
 	}
@@ -171,9 +173,9 @@ private variableDeclarationPrefix
     ;
 
 functionDeclaration
-	::= 'declare'? FUNCTION_KEYWORD function eos?
+	::= <<enterMode "inOuterCompletionModifier">>completionModifier?'declare'? FUNCTION_KEYWORD function eos? <<exitMode "inOuterCompletionModifier">>
 	{
-		pin = 2
+		pin = 4
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
@@ -185,6 +187,8 @@ functionDeclaration
 	        getNamespaceComponents
 	        getNamespaceComponent
 	        isStatic
+	        isQuiet
+	        isSilent
 		]
 	}
 	;
@@ -228,6 +232,8 @@ interfaceElement
 			getNamespaceComponent
 			getNamespacedName
 			isStatic
+			isQuiet
+			isSilent
 		]
 	}
 	;
@@ -251,6 +257,8 @@ classElement
 	        getNamespaceComponent
 	        getNamespacedName
 	        isStatic
+			isQuiet
+			isSilent
 		]
 	}
 	;
@@ -523,7 +531,7 @@ interfaceConstructor
 	;
 
 function
-	::= completionModifier? 'static'? functionName genericTypeTypes?'(' argumentsList? ')' (':' functionReturnType)?
+	::= (<<notInMode "inOuterCompletionModifier">>completionModifier)? 'static'? functionName genericTypeTypes?'(' argumentsList? ')' (':' functionReturnType)?
 	{
 		pin = 4
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -537,6 +545,8 @@ function
 	        isStatic
 	        getFunctionNameString
 	        getDescription
+	        isQuiet
+	        isSilent
 		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -580,7 +590,6 @@ functionName
 			getEnclosingNamespaceComponents
 	        getNamespaceComponents
 	        getNamespaceComponent
-	        getReference
 		]
 
 	}
@@ -629,6 +638,8 @@ property
     	        getNamespaceComponents
     	        getNamespaceComponent
     	        isStatic
+    	        isQuiet
+    	        isSilent
     	    ]
     		implements = [
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -641,7 +652,7 @@ property
 
 
 private propertyElement
-	::= completionModifier? readonlyStatic?  propertyName ('?'? ':') (types|interfaceBodyProperty|stringLiteral)
+	::= (<<notInMode "inOuterCompletionModifier">>completionModifier)? readonlyStatic?  propertyName ('?'? ':') (types|interfaceBodyProperty|stringLiteral)
 	{
 	    pin = 4
 
@@ -785,9 +796,6 @@ stringLiteral
 	{
 		methods = [
 			getStringValue
-			getName
-			setName
-			getReference
 		]
 	}
 	;

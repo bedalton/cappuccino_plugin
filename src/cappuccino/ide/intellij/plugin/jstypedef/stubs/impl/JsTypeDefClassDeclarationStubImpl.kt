@@ -13,7 +13,9 @@ class JsTypeDefClassStubImpl(
         override val fileName:String,
         override val enclosingNamespaceComponents: List<String>,
         override val className: String,
-        override val superTypes: Set<JsTypeListType>
+        override val superTypes: Set<JsTypeListType>,
+        override val isSilent: Boolean,
+        override val isQuiet: Boolean
 ) : JsTypeDefStubBaseImpl<JsTypeDefClassElementImpl>(parent, JsTypeDefStubTypes.JS_CLASS), JsTypeDefClassStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")
@@ -25,7 +27,9 @@ class JsTypeDefInterfaceStubImpl(
         override val fileName:String,
         override val enclosingNamespaceComponents: List<String>,
         override val className: String,
-        override val superTypes: Set<JsTypeListType>
+        override val superTypes: Set<JsTypeListType>,
+        override val isSilent: Boolean,
+        override val isQuiet: Boolean
 ) : JsTypeDefStubBaseImpl<JsTypeDefInterfaceElementImpl>(parent, JsTypeDefStubTypes.JS_INTERFACE), JsTypeDefInterfaceStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")

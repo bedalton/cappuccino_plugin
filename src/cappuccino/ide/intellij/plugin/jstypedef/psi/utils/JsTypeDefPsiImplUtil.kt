@@ -18,6 +18,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.references.ObjJStringLiteralReference
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
@@ -502,6 +503,25 @@ object JsTypeDefPsiImplUtil {
     fun getClassName(classDeclaration: JsTypeDefClassElement) : String
             = classDeclaration.stub?.className ?: classDeclaration.typeName?.text ?: "?"
 
+    @JvmStatic
+    fun isSilent(classDeclaration: JsTypeDefClassElement) : Boolean {
+        return classDeclaration.stub?.isSilent ?: classDeclaration.atSilent != null
+    }
+
+    @JvmStatic
+    fun isSilent(classDeclaration: JsTypeDefInterfaceElement) : Boolean {
+        return classDeclaration.stub?.isSilent ?: classDeclaration.atSilent != null
+    }
+
+    @JvmStatic
+    fun isQuiet(classDeclaration: JsTypeDefInterfaceElement) : Boolean {
+        return classDeclaration.stub?.isQuiet ?: classDeclaration.atQuiet != null
+    }
+
+    @JvmStatic
+    fun isQuiet(classDeclaration: JsTypeDefClassElement) : Boolean {
+        return classDeclaration.stub?.isQuiet ?: classDeclaration.atQuiet != null
+    }
     // ============================== //
     // ======== Descriptions ======== //
     // ============================== //
@@ -553,6 +573,27 @@ object JsTypeDefPsiImplUtil {
         return declaration.stub?.variableName ?: declaration.property?.propertyNameString.orEmpty()
     }
 
+    @JvmStatic
+    fun isSilent(declaration:JsTypeDefVariableDeclaration) : Boolean {
+        return declaration.stub?.isSilent ?: declaration.atSilent != null
+    }
+
+    @JvmStatic
+    fun isQuiet(declaration:JsTypeDefVariableDeclaration) : Boolean {
+        return declaration.stub?.isQuiet ?: declaration.atQuiet != null
+    }
+
+    @JvmStatic
+    fun isQuiet(property:JsTypeDefProperty):Boolean {
+        return property.stub?.isQuiet != null || property.atQuiet != null || (property.parent as? JsTypeDefVariableDeclaration)?.isQuiet ?: false
+    }
+
+    @JvmStatic
+    fun isSilent(property:JsTypeDefProperty):Boolean {
+        return property.stub?.isSilent != null || property.atSilent != null || (property.parent as? JsTypeDefVariableDeclaration)?.isSilent ?: false
+    }
+
+
     // ============================== //
     // ========= Functions ========== //
     // ============================== //
@@ -589,6 +630,28 @@ object JsTypeDefPsiImplUtil {
         val escapedId = functionName.escapedId
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: functionName.text
     }
+
+
+    @JvmStatic
+    fun isSilent(declaration:JsTypeDefFunction) : Boolean {
+        return declaration.stub?.isSilent ?: declaration.atSilent != null || (declaration.parent as? JsTypeDefFunctionDeclaration)?.atSilent != null
+    }
+
+    @JvmStatic
+    fun isQuiet(declaration:JsTypeDefFunction) : Boolean {
+        return declaration.stub?.isQuiet ?: declaration.atQuiet != null || (declaration.parent as? JsTypeDefFunctionDeclaration)?.atQuiet != null
+    }
+
+    @JvmStatic
+    fun isSilent(declaration:JsTypeDefFunctionDeclaration) : Boolean {
+        return declaration.atSilent != null
+    }
+
+    @JvmStatic
+    fun isQuiet(declaration:JsTypeDefFunctionDeclaration) : Boolean {
+        return declaration.atQuiet != null
+    }
+
 
     // ============================== //
     // ========= References ========= //

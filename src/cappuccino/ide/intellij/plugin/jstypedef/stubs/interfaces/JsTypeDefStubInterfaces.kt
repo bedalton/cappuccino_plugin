@@ -43,6 +43,8 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
     val static:Boolean
     val enclosingClass:String?
     val asJsFunctionType:JsTypeListType.JsTypeListFunctionType
+    val isQuiet:Boolean
+    val isSilent:Boolean
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + functionName
 }
@@ -80,6 +82,8 @@ interface JsTypeDefPropertyStub : StubElement<JsTypeDefPropertyImpl>, JsTypeDefN
     val nullable:Boolean
     val static:Boolean
     val enclosingClass:String?
+    val isQuiet:Boolean
+    val isSilent:Boolean
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + propertyName
 }
@@ -111,6 +115,8 @@ interface JsTypeDefModuleNameStub : StubElement<JsTypeDefModuleNameImpl>, JsType
 interface JsTypeDefClassDeclarationStub<PsiT:JsTypeDefClassDeclaration<*>> : StubElement<PsiT>, JsTypeDefNamespacedComponent {
     val fileName:String
     val className:String
+    val isSilent:Boolean
+    val isQuiet:Boolean
     val superTypes:Set<JsTypeListType>
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
@@ -149,4 +155,6 @@ interface JsTypeDefVariableDeclarationStub : StubElement<JsTypeDefVariableDeclar
     val variableName:String
     val types:InferenceResult
     val static:Boolean
+    val isSilent:Boolean
+    val isQuiet:Boolean
 }

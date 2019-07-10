@@ -34,7 +34,9 @@ class JsTypeDefSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == JS_STATIC_KEYWORD ||
                 tokenType == JS_EXTENDS ||
                 tokenType == JS_CONST ||
-                tokenType == JS_DECLARE
+                tokenType == JS_DECLARE ||
+                tokenType == JS_AT_QUIET ||
+                tokenType == JS_AT_SILENT
         ) {
             attrKey = KEYWORD
         } else if (tokenType == JS_STRING_LITERAL ||

@@ -29,7 +29,9 @@ data class JsClassDefinition(
         val staticFunctions: Set<JsTypeListFunctionType> = setOf(),
         val isObjJ: Boolean = false,
         val isStruct: Boolean = true,
-        val static: Boolean = false
+        val static: Boolean = false,
+        val isSilent:Boolean = false,
+        val isQuiet:Boolean = false
 )
 
 fun getClassDefinitions(project: Project, className: String) : List<JsClassDefinition> {

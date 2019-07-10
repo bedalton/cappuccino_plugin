@@ -16,7 +16,9 @@ class JsTypeDefVariableDeclarationStubImpl (
         override val types: InferenceResult,
         override val readonly: Boolean,
         override val comment: String? = null,
-        override val default: String? = null
+        override val default: String? = null,
+        override val isSilent: Boolean,
+        override val isQuiet: Boolean
 ) : JsTypeDefStubBaseImpl<JsTypeDefVariableDeclarationImpl>(parent, JsTypeDefStubTypes.JS_VARIABLE_DECLARATION), JsTypeDefVariableDeclarationStub  {
     override val type: String
         get() = types.types.joinToString("|") { it.toString() }

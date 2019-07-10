@@ -15,10 +15,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeTypeList
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
+import com.intellij.psi.stubs.*
 import java.io.IOException
 
 abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<*>, StubT:JsTypeDefClassDeclarationStub<PsiT>> internal constructor(
@@ -29,10 +26,10 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
         val namespaceComponents = declaration.namespaceComponents.toMutableList()
         val className = namespaceComponents.removeAt(namespaceComponents.lastIndex)
         val superClasses = declaration.extendsStatement?.typeList.toJsTypeDefTypeListTypes()
-        return createStub(parent, fileName, namespaceComponents, className, superClasses)
+        return createStub(parent, fileName, namespaceComponents, className, superClasses, declaration.isSilent, declaration.isQuiet)
     }
 
-    protected abstract fun createStub(parent: StubElement<*>, fileName:String, namespaceComponents:List<String>, className:String, superClasses:Set<JsTypeListType>) : StubT
+    protected abstract fun createStub(parent: StubElement<*>, fileName:String, namespaceComponents:List<String>, className:String, superClasses:Set<JsTypeListType>, isSilent:Boolean, isQuiet:Boolean) : StubT
 
     @Throws(IOException::class)
     override fun serialize(
@@ -46,6 +43,8 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
             stream.writeName(component)
         stream.writeName(stub.className)
         stream.writeTypeList(stub.superTypes)
+        stream.writeBoolean(stub.isSilent)
+        stream.writeBoolean(stub.isQuiet)
     }
 
     @Throws(IOException::class)
@@ -60,7 +59,9 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
         }
         val className = stream.readNameString() ?: ""
         val superTypes = stream.readTypesList().toSet()
-        return createStub(parent, fileName, namespaceComponents, className, superTypes)
+        val isSilent = stream.readBoolean()
+        val isQuiet = stream.readBoolean()
+        return createStub(parent, fileName, namespaceComponents, className, superTypes, isSilent, isQuiet)
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
@@ -70,8 +71,8 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
 
 
 class JsTypeDefInterfaceStubType(debugName:String):JsTypeDefClassDeclarationStubType<JsTypeDefInterfaceElementImpl, JsTypeDefInterfaceStub>(debugName, JsTypeDefInterfaceElementImpl::class.java) {
-    override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>): JsTypeDefInterfaceStub {
-        return JsTypeDefInterfaceStubImpl(parent, fileName, namespaceComponents, className, superClasses)
+    override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>, isSilent: Boolean, isQuiet: Boolean): JsTypeDefInterfaceStub {
+        return JsTypeDefInterfaceStubImpl(parent, fileName, namespaceComponents, className, superClasses, isSilent, isQuiet)
     }
 
     override fun createPsi(stub: JsTypeDefInterfaceStub): JsTypeDefInterfaceElementImpl {
@@ -84,8 +85,8 @@ class JsTypeDefInterfaceStubType(debugName:String):JsTypeDefClassDeclarationStub
 }
 
 class JsTypeDefClassStubType(debugName: String):JsTypeDefClassDeclarationStubType<JsTypeDefClassElementImpl, JsTypeDefClassStub>(debugName, JsTypeDefClassElementImpl::class.java) {
-    override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>): JsTypeDefClassStub {
-        return JsTypeDefClassStubImpl(parent, fileName, namespaceComponents, className, superClasses)
+    override fun createStub(parent: StubElement<*>, fileName: String, namespaceComponents: List<String>, className: String, superClasses: Set<JsTypeListType>, isSilent:Boolean, isQuiet:Boolean): JsTypeDefClassStub {
+        return JsTypeDefClassStubImpl(parent, fileName, namespaceComponents, className, superClasses, isQuiet, isSilent)
     }
 
     override fun createPsi(stub: JsTypeDefClassStub): JsTypeDefClassElementImpl {

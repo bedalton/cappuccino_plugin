@@ -27,7 +27,7 @@ object ObjJFunctionNameCompletionProvider {
 
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
         val functionNamePattern = element.text.toIndexPatternString()
-        addAllGlobalJSFunctionNames(resultSet, element.project, (functionNamePattern.length - 5) > 8)
+        addAllGlobalJSFunctionNames(resultSet, element.project, (element.textWithoutCaret.length > 5))
         addAllLocalFunctionNames(resultSet, element)
         addIndexBasedCompletions(resultSet, element)
 
@@ -81,10 +81,10 @@ object ObjJFunctionNameCompletionProvider {
 
     private fun addAllGlobalJSFunctionNames(resultSet: CompletionResultSet, project:Project, showEvenSkipped:Boolean) {
         val functions = if (showEvenSkipped) {
-            JsTypeDefFunctionsByNameIndex.instance.getAll(project).filter{ it.atSilent == null}
+            JsTypeDefFunctionsByNameIndex.instance.getAll(project).filterNot{ it.isSilent}
         } else {
-            JsTypeDefFunctionsByNameIndex.instance.getAll(project, GlobalSearchScope.allScope(project)).filter {
-                it.atSilent == null && it.atQuiet == null
+            JsTypeDefFunctionsByNameIndex.instance.getAll(project, GlobalSearchScope.allScope(project)).filterNot {
+                it.isSilent || it.isQuiet
             }
         }.filter {
             it.enclosingNamespaceComponents.isEmpty()

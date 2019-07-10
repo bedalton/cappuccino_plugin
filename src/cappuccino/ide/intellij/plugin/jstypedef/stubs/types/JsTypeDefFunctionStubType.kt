@@ -40,6 +40,8 @@ class JsTypeDefFunctionStubType internal constructor(
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = function.isStatic
+        val isSilent = function.isSilent
+        val isQuiet = function.isQuiet
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -49,7 +51,9 @@ class JsTypeDefFunctionStubType internal constructor(
                 parameters = parameters,
                 returnType = returnType,
                 global = isGlobal,
-                static = static)
+                static = static,
+                isSilent = isSilent,
+                isQuiet = isQuiet)
     }
 
     @Throws(IOException::class)
@@ -79,6 +83,8 @@ class JsTypeDefFunctionStubType internal constructor(
         val returnType = stream.readInferenceResult()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
+        val isSilent = stream.readBoolean()
+        val isQuiet = stream.readBoolean()
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -88,7 +94,9 @@ class JsTypeDefFunctionStubType internal constructor(
                 parameters = parameters,
                 returnType = returnType!!,
                 global = global,
-                static = static
+                static = static,
+                isSilent = isSilent,
+                isQuiet = isQuiet
             )
     }
 

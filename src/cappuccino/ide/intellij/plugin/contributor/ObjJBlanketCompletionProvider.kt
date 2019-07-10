@@ -221,7 +221,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
         if (shouldAddJsClassNames(element)) {
-            JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project).mapNotNull{
+            JsTypeDefClassesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), project)
+                    .filterNot {
+                        it.isSilent || (it.isQuiet && (element.textWithoutCaret.length > 5))
+                    }
+                    .mapNotNull{
                 (it as? JsTypeDefClassElement)?.className
             }.forEach {
                 resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
@@ -275,15 +279,15 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
-        var properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filter { it.atSilent == null}
+        var properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filterNot { it.isSilent}
         properties = properties.filter {
             it.enclosingNamespace.isEmpty()
         }
 
         if (shouldIgnoreIgnoredGlobals) {
-            addCompletionElementsSimple(resultSet, properties.filter { it.atSilent == null}.map { it.propertyNameString }, -200.0)
+            addCompletionElementsSimple(resultSet, properties.filterNot { it.isSilent}.map { it.propertyNameString }, -200.0)
         } else {
-            addCompletionElementsSimple(resultSet, properties.filter{ it.atSilent == null && it.atQuiet == null}.map { it.propertyNameString }, -200.0)
+            addCompletionElementsSimple(resultSet, properties.filterNot{ it.isSilent || it.isQuiet}.map { it.propertyNameString }, -200.0)
         }
     }
 
@@ -499,8 +503,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         LOGGER.info("Converted <${previousComponents.map{it.text}}> -> ${inferred.types.size} types into ${inferred.classes.size} type strings")
         val classes = inferred.classes.toMutableSet()
-        val collapsedClass = classes.flatMap {
-            JsTypeDefClassesByNameIndex.instance[it, project].map {
+        val collapsedClass = classes.flatMap { className ->
+            JsTypeDefClassesByNameIndex.instance[className, project].map {
                 it.toJsClassDefinition()
             }
         }.toSet().collapseWithSuperType(project)

@@ -16,6 +16,8 @@ interface JsTypeDefClassDeclaration<StubT:StubElement<*>> : JsTypeDefStubBasedEl
     val functionList: List<JsTypeDefFunction>
     val propertyList: List<JsTypeDefProperty>
     val isStatic:Boolean
+    val isSilent:Boolean
+    val isQuiet:Boolean
     val className:String
 }
 
@@ -35,6 +37,8 @@ fun JsTypeDefClassDeclaration<*>.toJsClassDefinition() : JsClassDefinition {
             properties = this.propertyList.filter{it.staticKeyword == null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             staticProperties = this.propertyList.filter{it.staticKeyword != null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             isStruct = this is JsTypeDefInterfaceElement,
+            isQuiet = isQuiet,
+            isSilent = isSilent,
             enclosingNameSpaceComponents = enclosingNamespaceComponents
     )
 }
