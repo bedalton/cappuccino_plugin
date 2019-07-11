@@ -221,7 +221,7 @@ interfaceElement
 		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 		]
@@ -248,7 +248,7 @@ classElement
 		pin = 2
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 		implements = [
-			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 		]
@@ -445,6 +445,9 @@ genericTypeTypes
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 		]
+		methods = [
+			asJsTypeListGenericType
+		]
 	}
 	;
 
@@ -557,9 +560,11 @@ function
 	        getDescription
 	        isQuiet
 	        isSilent
+	        getGenericsKeys
 		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
 	  	]

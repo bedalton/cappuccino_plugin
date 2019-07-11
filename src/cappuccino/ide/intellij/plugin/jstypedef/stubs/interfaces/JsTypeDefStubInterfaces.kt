@@ -2,12 +2,11 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces
 
 import cappuccino.ide.intellij.plugin.contributor.JsProperty
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefGenericsKey
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
@@ -38,6 +37,7 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
     val fileName:String
     val functionName:String
     val parameters:List<JsTypeDefFunctionArgument>
+    val genericsKeys:Set<JsTypeListGenericType>?
     val returnType: InferenceResult
     val global:Boolean
     val static:Boolean
@@ -112,15 +112,18 @@ interface JsTypeDefModuleNameStub : StubElement<JsTypeDefModuleNameImpl>, JsType
         get() = enclosingNamespaceComponents + moduleName
 }
 
-interface JsTypeDefClassDeclarationStub<PsiT:JsTypeDefClassDeclaration<*>> : StubElement<PsiT>, JsTypeDefNamespacedComponent {
+interface JsTypeDefClassDeclarationStub<PsiT:JsTypeDefClassDeclaration<*,*>> : StubElement<PsiT>, JsTypeDefNamespacedComponent {
     val fileName:String
     val className:String
     val isSilent:Boolean
     val isQuiet:Boolean
     val superTypes:Set<JsTypeListType>
+    val genericsKeys:Set<JsTypeListGenericType>
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + className
 }
+
+
 
 
 interface JsTypeDefClassStub : StubElement<JsTypeDefClassElementImpl>, JsTypeDefClassDeclarationStub<JsTypeDefClassElementImpl> {

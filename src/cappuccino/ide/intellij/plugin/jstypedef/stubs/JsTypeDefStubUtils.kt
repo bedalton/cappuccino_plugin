@@ -37,6 +37,7 @@ private fun StubInputStream.readType(): JsTypeListType? {
         TypeListType.FUNCTION -> readJsFunctionType()
         TypeListType.INTERFACE_BODY -> readInterfaceBodyType()
         TypeListType.UNION_TYPE -> readUnionType()
+        TypeListType.GENERIC_TYPE -> readGenericType()
     }
 }
 
@@ -73,6 +74,10 @@ private fun StubOutputStream.writeType(type: JsTypeListType) {
         is JsTypeListUnionType -> {
             writeInt(TypeListType.UNION_TYPE.id)
             writeUnionType(type)
+        }
+        is JsTypeListGenericType -> {
+            writeInt(TypeListType.GENERIC_TYPE.id)
+            writeGenericType(type)
         }
     }
 }
@@ -165,6 +170,17 @@ private fun StubOutputStream.writeUnionType(type:JsTypeListUnionType) {
     writeInt(type.typeNames.size)
     for(typeName in type.typeNames)
         writeName(typeName)
+}
+
+private fun StubInputStream.readGenericType() : JsTypeListGenericType {
+    val key = readNameString() ?: "K"
+    val types = readTypesList().ifEmpty { null }?.toSet()
+    return JsTypeListGenericType(key, types)
+}
+
+private fun StubOutputStream.writeGenericType(type:JsTypeListGenericType) {
+    writeName(type.key)
+    writeTypeList(type.types ?: emptySet())
 }
 
 fun StubInputStream.readPropertiesList(): List<JsTypeDefNamedProperty> {

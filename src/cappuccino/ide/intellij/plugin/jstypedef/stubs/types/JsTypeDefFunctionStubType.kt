@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
@@ -38,6 +39,7 @@ class JsTypeDefFunctionStubType internal constructor(
         }?.toList() ?: emptyList()
         val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
+        val genericsKeys = function.genericsKeys
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = function.isStatic
         val isSilent = function.isSilent
@@ -50,6 +52,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 functionName = functionName,
                 parameters = parameters,
                 returnType = returnType,
+                genericsKeys = genericsKeys,
                 global = isGlobal,
                 static = static,
                 isSilent = isSilent,
@@ -67,6 +70,7 @@ class JsTypeDefFunctionStubType internal constructor(
         stream.writeName(stub.functionName)
         stream.writeFunctionArgumentsList(stub.parameters)
         stream.writeInferenceResult(stub.returnType)
+        stream.writeTypeList(stub.genericsKeys ?: emptySet())
         stream.writeBoolean(stub.global)
         stream.writeBoolean(stub.static || stub.global)
     }
@@ -81,6 +85,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val functionName = stream.readNameString() ?: ""
         val parameters = stream.readFunctionArgumentsList()
         val returnType = stream.readInferenceResult()
+        val genericKeys = stream.readTypesList().ifEmpty { null }?.mapNotNull { it as? JsTypeListType.JsTypeListGenericType }?.toSet()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
         val isSilent = stream.readBoolean()
@@ -93,6 +98,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 functionName = functionName,
                 parameters = parameters,
                 returnType = returnType!!,
+                genericsKeys = genericKeys,
                 global = global,
                 static = static,
                 isSilent = isSilent,

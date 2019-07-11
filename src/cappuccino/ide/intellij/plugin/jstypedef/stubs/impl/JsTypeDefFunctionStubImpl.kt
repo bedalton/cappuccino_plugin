@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toFunctionArgumentList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
@@ -19,6 +20,7 @@ class JsTypeDefFunctionStubImpl(
         override val functionName: String,
         override val parameters: List<JsTypeDefFunctionArgument>,
         override val returnType: InferenceResult,
+        override val genericsKeys: Set<JsTypeListGenericType>?,
         override val global:Boolean,
         override val static: Boolean,
         override val isQuiet:Boolean,

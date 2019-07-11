@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.impl
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub
@@ -19,6 +20,9 @@ class JsTypeDefClassStubImpl(
 ) : JsTypeDefStubBaseImpl<JsTypeDefClassElementImpl>(parent, JsTypeDefStubTypes.JS_CLASS), JsTypeDefClassStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")
+    override val genericsKeys: Set<JsTypeListGenericType> by lazy {
+        superTypes.mapNotNull{ it as? JsTypeListGenericType }.toSet()
+    }
 }
 
 
@@ -33,4 +37,7 @@ class JsTypeDefInterfaceStubImpl(
 ) : JsTypeDefStubBaseImpl<JsTypeDefInterfaceElementImpl>(parent, JsTypeDefStubTypes.JS_INTERFACE), JsTypeDefInterfaceStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")
+    override val genericsKeys: Set<JsTypeListGenericType> by lazy {
+        superTypes.mapNotNull{ it as? JsTypeListGenericType }.toSet()
+    }
 }
