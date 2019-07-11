@@ -56,10 +56,16 @@ object ObjJFileUtil {
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
-                    ?: return null
+                    ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             val jar = libFolder.findChild("Cappuccino Plugin.jar")
-                    ?: return null
-            return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
+                    ?: return DEBUG_PLUGIN_HOME_DIRECTORY
+            return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
+        }
+
+    private val DEBUG_PLUGIN_HOME_DIRECTORY:VirtualFile?
+        get() {
+            val file = PLUGIN_HOME_FILE ?: return null
+            return VfsUtil.findFileByIoFile(file, true)?.findChild("classes")
         }
 
     private val PLUGIN_RESOURCES_DIRECTORY: VirtualFile?
