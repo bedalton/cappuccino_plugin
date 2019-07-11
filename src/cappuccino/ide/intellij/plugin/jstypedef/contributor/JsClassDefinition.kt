@@ -377,6 +377,7 @@ enum class TypeListType(val id: Int) {
                 INTERFACE_BODY.id -> INTERFACE_BODY
                 FUNCTION.id -> FUNCTION
                 UNION_TYPE.id -> UNION_TYPE
+                GENERIC_TYPE.id -> GENERIC_TYPE
                 else -> throw Exception("Invalid class type stub value <$key> encountered")
             }
         }

@@ -50,9 +50,8 @@ class JsTypeDefKeysListStubType internal constructor(
         val fileName = stream.readName()?.string ?: ""
         val keyListName = stream.readName()?.string ?: ""
         val numValues = stream.readInt()
-        val values = mutableListOf<String>()
-        for (i in 0 until numValues){
-            values.add(stream.readNameString() ?: "???")
+        val values = (0 until numValues).map {
+            stream.readNameString() ?: "???"
         }
         return JsTypeDefKeyListStubImpl(parent, fileName, keyListName, values)
     }

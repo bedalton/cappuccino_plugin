@@ -73,6 +73,8 @@ class JsTypeDefFunctionStubType internal constructor(
         stream.writeTypeList(stub.genericsKeys ?: emptySet())
         stream.writeBoolean(stub.global)
         stream.writeBoolean(stub.static || stub.global)
+        stream.writeBoolean(stub.isSilent)
+        stream.writeBoolean(stub.isQuiet)
     }
 
     @Throws(IOException::class)

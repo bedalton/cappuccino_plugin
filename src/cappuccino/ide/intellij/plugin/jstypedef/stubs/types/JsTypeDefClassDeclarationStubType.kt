@@ -53,9 +53,8 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
 
         val fileName = stream.readName()?.string ?: ""
         val numComponents = stream.readInt()
-        val namespaceComponents = mutableListOf<String>()
-        for (i in 0 until numComponents){
-            namespaceComponents.add(stream.readNameString() ?: "???")
+        val namespaceComponents = (0 until numComponents).map {
+            stream.readNameString() ?: "???"
         }
         val className = stream.readNameString() ?: ""
         val superTypes = stream.readTypesList().toSet()
