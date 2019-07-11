@@ -38,11 +38,10 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
 
     private fun annotateTypeIfNecessary(type:JsTypeDefType, problemsHolder: ProblemsHolder) {
         val typeName = type.typeName
-        if (typeName != null && !classExists(type.project, typeName.text)) {
+        if (typeName != null && !classExists(type.project, typeName.text) && typeName.text !in type.enclosingGenerics) {
             LOGGER.warning("JsTypeDef type does not exist")
             problemsHolder.registerProblem(typeName, JsTypeDefBundle.message("jstypedef.inspections.invalid-type.error.message", typeName.text))
         }
-        LOGGER.info("JsTypeDef type exists")
     }
 
     private fun classExists(project:Project, typeName:String) : Boolean {
