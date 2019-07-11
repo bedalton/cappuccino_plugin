@@ -18,7 +18,7 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.*
 import java.io.IOException
 
-abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<*>, StubT:JsTypeDefClassDeclarationStub<PsiT>> internal constructor(
+abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<PsiT,StubT>, StubT:JsTypeDefClassDeclarationStub<PsiT>> internal constructor(
         debugName: String, psiClass:Class<PsiT>) : JsTypeDefStubElementType<StubT, PsiT>(debugName, psiClass) {
 
     override fun createStub(declaration:PsiT, parent: StubElement<*>): StubT {
@@ -65,7 +65,7 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {
-        return (node?.psi as? JsTypeDefClassDeclaration<*>)?.className != null
+        return (node?.psi as? JsTypeDefClassDeclaration<*,*>)?.className != null
     }
 }
 

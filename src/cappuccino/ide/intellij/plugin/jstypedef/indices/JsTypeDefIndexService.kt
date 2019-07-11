@@ -56,20 +56,20 @@ class JsTypeDefIndexService : StubIndexService() {
     override fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
         if(stub.className.isBlank())
             return
-        sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
-        sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
     }
 
     override fun indexClass(stub:JsTypeDefClassStub, sink:IndexSink) {
         if(stub.className.isBlank())
             return
-        sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
-        sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
     }
 

@@ -5,16 +5,16 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import com.intellij.psi.stubs.StubIndexKey
 
-class JsTypeDefClassesByModuleNameIndex private constructor() : JsTypeDefStringStubIndexBase<JsTypeDefClassDeclaration<*>>() {
+class JsTypeDefClassesByModuleNameIndex private constructor() : JsTypeDefStringStubIndexBase<JsTypeDefClassDeclaration<*,*>>() {
 
-    override val indexedElementClass: Class<JsTypeDefClassDeclaration<*>>
+    override val indexedElementClass: Class<JsTypeDefClassDeclaration<*,*>>
         get() = JsTypeDefClassDeclaration::class.java
 
     override fun getVersion(): Int {
         return super.getVersion() + VERSION
     }
 
-    override fun getKey(): StubIndexKey<String, JsTypeDefClassDeclaration<*>> {
+    override fun getKey(): StubIndexKey<String, JsTypeDefClassDeclaration<*,*>> {
         return KEY
     }
 
