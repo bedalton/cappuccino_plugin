@@ -25,117 +25,136 @@ interface number:_primitive;
 interface float:number;
 interface double:number;
 interface char:string;
-class string: _primitive {
+interface String {
 
+    new(value?: any);
 
-	/**
-	 * @param charNum:number A sequence of numbers that are UTF-16 code units.
-	 * @returns A string of length N consisting of the N specified UTF-16 code units/ This method returns a string not and not a String object.
-	 */
-	static fromCharCode(...charNum:number) : string
+    static fromCharCode(...codes: number[]): string;
 
-	/**
-	 * Returns a string created by using the specified sequence of code points.
-	 * This method returns a string and not a String object.
-	 * @param charNum:number A sequence of code points.
-	 * @returns A string created by using the specified sequence of code points. This method returns a string not and not a String object.
-	 * @throws RangeError is thrown if an invalid Unicode code point is given
-	 */
-	static fromCodePoint(...charNum:number) : string
+    /** Returns a string representation of a string. */
+    toString(): string;
 
+    /**
+      * Returns the character at the specified index.
+      * @param pos The zero-based index of the desired character.
+      */
+    charAt(pos: number): string;
 
-	/**
-  	 * @deprecated
-     */
-  	anchor(name) : HTMLAnchorElement
+    /**
+      * Returns the Unicode value of the character at the specified location.
+      * @param index The zero-based index of the desired character. If there is no character at the specified index, NaN is returned.
+      */
+    charCodeAt(index: number): number;
 
-  	/**
-  	 * @deprecated
-  	 */
-  	big()
+    /**
+      * Returns a string that contains the concatenation of two or more strings.
+      * @param strings The strings to append to the end of the string.
+      */
+    concat(...strings: string[]): string;
 
-  	/*
-  	 * @deprecated
-  	 */
-  	blink()
+    /**
+      * Returns the position of the first occurrence of a substring.
+      * @param searchString The substring to search for in the string
+      * @param position The index at which to begin searching the String object. If omitted, search starts at the beginning of the string.
+      */
+    indexOf(searchString: string, position?: number): number;
 
-  	/*
-  	 * @returns A string containing a <b> HTML element.
-  	 * @deprecated
-  	 */
-  	bold()
+    /**
+      * Returns the last occurrence of a substring in the string.
+      * @param searchString The substring to search for.
+      * @param position The index at which to begin searching. If omitted, the search begins at the end of the string.
+      */
+    lastIndexOf(searchString: string, position?: number): number;
 
-  	/**
-  	 * returns a new string consisting of the single UTF-16 code unit located at the specified offset into the string.
-  	 */
-	charAt(index:number):char
+    /**
+      * Determines whether two strings are equivalent in the current locale.
+      * @param that String to compare to target string
+      */
+    localeCompare(that: string): number;
 
-	charCodeAt(index:number):number
+    /**
+      * Matches a string with a regular expression, and returns an array containing the results of that search.
+      * @param regexp A variable name or string literal containing the regular expression pattern and flags.
+      */
+    match(regexp: string | RegExp): RegExpMatchArray | null;
 
-	codePointAt(pos:number):number|null
+    /**
+      * Replaces text in a string, using a regular expression or search string.
+      * @param searchValue A string to search for.
+      * @param replaceValue A string containing the text to replace for every successful match of searchValue in this string.
+      */
+    replace(searchValue: string | RegExp, replaceValue: string): string;
 
-	concat(...string2:string) : string
+    /**
+      * Replaces text in a string, using a regular expression or search string.
+      * @param searchValue A string to search for.
+      * @param replacer A function that returns the replacement text.
+      */
+    replace(searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string;
 
-	endsWith(searchString, length:number|null):boolean
+    /**
+      * Finds the first substring match in a regular expression search.
+      * @param regexp The regular expression pattern and applicable flags.
+      */
+    search(regexp: string | RegExp): number;
 
-  	/*
-  	 * @returns A string containing a <tt> HTML element.
-  	 * @deprecated
-  	 */
-  	fixed():HTMLElement
+    /**
+      * Returns a section of a string.
+      * @param start The index to the beginning of the specified portion of stringObj.
+      * @param end The index to the end of the specified portion of stringObj. The substring includes the characters up to, but not including, the character indicated by end.
+      * If this value is not specified, the substring continues to the end of stringObj.
+      */
+    slice(start?: number, end?: number): string;
 
-	/**
-	 * @returns the length of a string
-	 */
-	readonly length:number;
+    /**
+      * Split a string into substrings using the specified separator and return them as an array.
+      * @param separator A string that identifies character or characters to use in separating the string. If omitted, a single-element array containing the entire string is returned.
+      * @param limit A value used to limit the number of elements returned in the array.
+      */
+    split(separator: string | RegExp, limit?: number): string[];
 
-	/** The indexOf() method returns the index of (the position of) the first occurrence of a specified text in a string */
-	indexOf(query:string);
+    /**
+      * Returns the substring at the specified location within a String object.
+      * @param start The zero-based index number indicating the beginning of the substring.
+      * @param end Zero-based index number indicating the end of the substring. The substring includes the characters up to, but not including, the character indicated by end.
+      * If end is omitted, the characters from start through the end of the original string are returned.
+      */
+    substring(start: number, end?: number): string;
 
-	/**
-	 * The indexOf() method returns the index of (the position of) the first occurrence of a specified text in a string */
-	 * @param query:string
-	 * @param startingPosition:number the starting position for the search
-	 */
-	indexOf(query:string, startingPosition:number);
+    /** Converts all the alphabetic characters in a string to lowercase. */
+    toLowerCase(): string;
 
-	/** The lastIndexOf() method returns the index of the last occurrence of a specified text in a string: */
-	lastIndexOf(query:string);
+    /** Converts all alphabetic characters to lowercase, taking into account the host environment's current locale. */
+    toLocaleLowerCase(): string;
 
-	/**
-	 * The lastIndexOf() method returns the index of the last occurrence of a specified text in a string:
-	 * If the second parameter is 15, the search starts at position 15, and searches to the beginning of the string.
-	 * @param query:string
-	 * @param startingPosition:number the starting position for the search
-	 */
-	lastIndexOf(query:string, startingPosition:number);
+    /** Converts all the alphabetic characters in a string to uppercase. */
+    toUpperCase(): string;
 
-	/** Searches a string for a specified value and returns the position of the match */
-	search(query:string);
+    /** Returns a string where all alphabetic characters have been converted to uppercase, taking into account the host environment's current locale. */
+    toLocaleUpperCase(): string;
 
-	/**
-	 * Extracts a part of a string and returns the extracted part in a new string
-	 * @param start:number start (can be negative)
-	 * @param end:number end (exclusive) - can be negative
-	 */
-	slice(start:number, end:number|null): string
+    /** Removes the leading and trailing white space and line terminator characters from a string. */
+    trim(): string;
 
-	/**
-	 * Extracts a part of a string and returns the extracted part in a new string
-	 * @param start:number start cannot be negative
-	 * @param end:number end (exclusive) - cannot be negative
-	 * if end is ommitted, it will slice the rest of the string
-	 */
-	substring(start:number, end:number|null): string
+    /** Returns the length of a String object. */
+    readonly length: number;
 
-	/**
-	 * @param start:number start position - can be negative
-	 * @param length:number specifies the length of the extracted part
-	 * If the first parameter is negative, the position counts from the end of the string
-	 * If length is ommited, slices out rest of string
-	 */
-	substr(start:number, length:number|null): string
+    // IE extensions
+    /**
+      * Gets a substring beginning at the specified location and having the specified length.
+      * @param from The starting position of the desired substring. The index of the first character in the string is zero.
+      * @param length The number of characters to include in the returned substring.
+      */
+    substr(from: number, length?: number): string;
+
+    /** Returns the primitive value of the specified object. */
+    valueOf(): string;
+
+    readonly [index: number]: string;
 }
+
+class String extends string;
+interface CPString extends string;
 interface String:string;
 
 
