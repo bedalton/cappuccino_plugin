@@ -37,7 +37,7 @@ private fun Iterable<JsTypeListType>.collapseAllSuperTypeNames(project:Project, 
         if (type in captured)
             return@forEach
         captured.add(type)
-        JsTypeDefClassesByNamespaceIndex.instance[type, project].flatMap { definition:JsTypeDefClassDeclaration<*> ->
+        JsTypeDefClassesByNamespaceIndex.instance[type, project].flatMap { definition:JsTypeDefClassDeclaration<*,*> ->
             definition.extendsStatement?.typeList?.toJsTypeDefTypeListTypes()?.collapseAllSuperTypeNames(project, captured, out).orEmpty()
         }
     }
