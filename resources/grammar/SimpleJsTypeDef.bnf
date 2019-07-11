@@ -102,7 +102,7 @@ private definition
 	|	functionDeclaration
 	|	typeMapElement
 	|	type
-	|	keyList eos
+	|	keyList eos?
 	|	';'
 	;
 
@@ -306,7 +306,7 @@ private interfacePropertyPrime
 	;
 
 extendsStatement
-	::= 'extends' typeList
+	::= ('extends'|':') typeList
 	{
 		pin = 1
 		implements = [
