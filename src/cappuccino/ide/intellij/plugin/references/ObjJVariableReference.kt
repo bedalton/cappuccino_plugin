@@ -216,7 +216,7 @@ class ObjJVariableReference(
             if (nullIfSelfReferencing.orFalse()) {
                 return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
             }
-            return@resolveFromCache result.firstOrNull()
+            return@resolveFromCache result.firstOrNull() ?: myElement
         }
     }
 

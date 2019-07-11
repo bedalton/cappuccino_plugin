@@ -165,6 +165,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
     /*if (level < 0) {
         return null
     }*/
+
     if (variableName.indexInQualifiedReference != 0) {
         return null
     }
@@ -178,7 +179,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
     }
 
     val referencedVariable = if (!DumbService.isDumb(variableName.project))
-        variableName.reference.resolve()
+        variableName.reference.resolve(nullIfSelfReferencing = true)
     else
         null
 
