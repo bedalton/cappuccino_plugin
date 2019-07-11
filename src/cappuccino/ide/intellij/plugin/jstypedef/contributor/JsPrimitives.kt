@@ -12,7 +12,8 @@ object JsPrimitives {
             "char", "Char",
             "byte", "Byte",
             "short", "short",
-            "null", "nil", "Nil", "undefined"
+            "null", "nil", "Nil", "undefined",
+            "Any", "any"
     )
 
     private val primitivesLowerCase = primitives.map { it.toLowerCase() }.toSet()
