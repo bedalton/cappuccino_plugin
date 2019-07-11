@@ -8,7 +8,10 @@ import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceBodyProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
@@ -17,6 +20,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 
 
 data class JsClassDefinition(
@@ -30,11 +34,11 @@ data class JsClassDefinition(
         val isObjJ: Boolean = false,
         val isStruct: Boolean = true,
         val static: Boolean = false,
-        val isSilent:Boolean = false,
-        val isQuiet:Boolean = false
+        val isSilent: Boolean = false,
+        val isQuiet: Boolean = false
 )
 
-fun getClassDefinitions(project: Project, className: String) : List<JsClassDefinition> {
+fun getClassDefinitions(project: Project, className: String): List<JsClassDefinition> {
     if (className.contains("&")) {
         return className.split("\\s*&\\s*".toRegex()).flatMap {
             getClassDefinitions(project, it)
@@ -52,11 +56,11 @@ fun getClassDefinition(project: Project, className: String): JsClassDefinition? 
     return getClassDefinitions(project, className).collapse()
 }
 
-fun JsTypeDefClassDeclaration<*>.withAllSuperClasses() : List<JsTypeDefClassDeclaration<*>>  {
-    return listOf(this.toJsClassDefinition()).withAllSuperClasses(project)
+fun JsTypeDefClassDeclaration<*, *>.withAllSuperClasses(): List<JsTypeDefClassDeclaration<*, *>> {
+    return listOf(this.toJsClassDefinition()).withAllSuperClasses((this as PsiElement).project)
 }
 
-fun Iterable<JsClassDefinition>.withAllSuperClassNames(project: Project) : Set<String> {
+fun Iterable<JsClassDefinition>.withAllSuperClassNames(project: Project): Set<String> {
     val parsed = this.map { it.className }.toMutableSet()
     val out = this.toMutableSet()
     val extends = flatMap { it.extends }.toMutableSet()
@@ -67,7 +71,7 @@ fun Iterable<JsClassDefinition>.withAllSuperClassNames(project: Project) : Set<S
     return out.map { it.className }.toSet()
 }
 
-fun Iterable<JsClassDefinition>.withAllSuperClasses(project: Project) : List<JsTypeDefClassDeclaration<*>> {
+fun Iterable<JsClassDefinition>.withAllSuperClasses(project: Project): List<JsTypeDefClassDeclaration<*, *>> {
     val parsed = this.map { it.className }.toMutableSet()
     val out = this.toMutableSet()
     val extends = flatMap { it.extends }.toMutableSet()
@@ -80,8 +84,8 @@ fun Iterable<JsClassDefinition>.withAllSuperClasses(project: Project) : List<JsT
     }
 }
 
-private fun JsClassDefinition.getAllInheritedClasses(project:Project, parsed:MutableSet<String>, out:MutableSet<JsClassDefinition>, addSelf:Boolean = false) : Set<JsClassDefinition> {
-    if (addSelf){
+private fun JsClassDefinition.getAllInheritedClasses(project: Project, parsed: MutableSet<String>, out: MutableSet<JsClassDefinition>, addSelf: Boolean = false): Set<JsClassDefinition> {
+    if (addSelf) {
         parsed.add(className)
         out.add(this)
     }
@@ -99,7 +103,7 @@ private fun JsClassDefinition.getAllInheritedClasses(project:Project, parsed:Mut
     return out
 }
 
-fun Iterable<JsClassDefinition>.collapseWithSuperType(project:Project): JsClassDefinition {
+fun Iterable<JsClassDefinition>.collapseWithSuperType(project: Project): JsClassDefinition {
     val parsed = this.map { it.className }.toMutableSet()
     val out = this.toMutableSet()
     val extends = flatMap { it.extends }.toMutableSet()
@@ -178,6 +182,7 @@ fun List<JsTypeDefArgument>.toFunctionArgumentList(): List<JsTypeDefFunctionArgu
         it.toJsNamedProperty()
     }
 }
+
 fun JsTypeDefArgument.toJsNamedProperty(): JsTypeDefFunctionArgument {
     val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
     val keyOfType = this.keyOfType?.toTypeListType()
@@ -217,12 +222,13 @@ data class JsTypeDefNamedProperty(
 ) : JsTypeDefPropertyBase, JsNamedProperty {
     override val nullable: Boolean get() = types.nullable
 }
+
 data class JsTypeDefFunctionArgument(
         val name: String,
         override val types: InferenceResult,
         override val comment: String? = null,
         override val default: String? = null,
-        val varArgs:Boolean = false
+        val varArgs: Boolean = false
 ) : JsTypeDefPropertyBase {
     override val nullable: Boolean get() = types.nullable
 }
@@ -236,7 +242,7 @@ interface JsTypeDefPropertyBase {
 
 interface JsNamedProperty {
     val name: String?
-    val static:Boolean
+    val static: Boolean
 }
 
 
@@ -246,7 +252,10 @@ sealed class JsTypeListType(open val typeName: String) {
     data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName")
     data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map")
     data class JsTypeListBasicType(override val typeName: String) : JsTypeListType(typeName)
-    data class JsTypeListUnionType(val typeNames:Set<String>) : JsTypeListType(typeNames.joinToString("&"))
+    data class JsTypeListUnionType(val typeNames: Set<String>) : JsTypeListType(typeNames.joinToString("&"))
+    data class JsTypeListGenericType(val key: String, val types: Set<JsTypeListType>?) : JsTypeListType("<$key : ${types?.joinToString("|")
+            ?: "Any?"} >")
+
     @Suppress("MemberVisibilityCanBePrivate", "unused")
     data class JsTypeListClass(
             val allProperties: Set<JsTypeDefNamedProperty>,
@@ -317,7 +326,7 @@ sealed class JsTypeListType(open val typeName: String) {
                 out.append(name)
             out.append("(")
             val parametersString = parameters.joinToString(", ") { property ->
-                property.name + ":" +  property.types.types.joinToString("|") { type -> type.typeName }
+                property.name + ":" + property.types.types.joinToString("|") { type -> type.typeName }
             }
             out.append(parametersString)
                     .append(")")
@@ -354,7 +363,8 @@ enum class TypeListType(val id: Int) {
     MAP(4),
     INTERFACE_BODY(5),
     FUNCTION(6),
-    UNION_TYPE(7);
+    UNION_TYPE(7),
+    GENERIC_TYPE(8);
 
     companion object {
         fun forKey(key: Int): TypeListType {
