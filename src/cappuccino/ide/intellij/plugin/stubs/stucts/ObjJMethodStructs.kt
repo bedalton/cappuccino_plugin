@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope.I
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope.SELECTOR_LITERAL
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
+import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct.Companion.Getter as Getter
@@ -68,12 +69,16 @@ data class ObjJSelectorStruct(val selector:String, val variableType:String?, val
     }
 }
 
+private val METHOD_STRUCT_KEY = Key<ObjJMethodStruct>("objj.userdata.structs.method")
+
 // ============================== //
 // ===== Extension Methods ====== //
 // ============================== //
 
 fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
-
+    val cached = getUserData(METHOD_STRUCT_KEY)
+    if (cached != null)
+        return cached
     val selectors = methodDeclarationSelectorList.map {
         it.toSelectorStruct()
     }
@@ -82,7 +87,9 @@ fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
         InferenceResult(types = returnTypeStrings)
     else
         null
-    return ObjJMethodStruct(selectors = selectors, returnType = returnType, methodScope = methodScope, containingClassName = containingClassName)
+    val out = ObjJMethodStruct(selectors = selectors, returnType = returnType, methodScope = methodScope, containingClassName = containingClassName)
+    putUserData(METHOD_STRUCT_KEY, out)
+    return out
 }
 
 fun ObjJInstanceVariableDeclaration.getMethodStructs() : List<ObjJMethodStruct> {

@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import cappuccino.ide.intellij.plugin.psi.*

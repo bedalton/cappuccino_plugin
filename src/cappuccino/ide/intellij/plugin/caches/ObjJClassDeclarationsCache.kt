@@ -120,19 +120,21 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
     }
 
     fun getMethodStructs(internalOnly: Boolean, tag: Long): List<ObjJMethodStruct> {
-        if(tag == myTreeChangeTracker.tag) {
-            return emptyList()
-        }
+
         return if (internalOnly) {
             if (internalMethodsCache.hasUpToDateValue() && internalAccessorProperties.hasUpToDateValue() && internalMethodStructs.isNotEmpty())
                 internalMethodStructs
             else {
-                myTreeChangeTracker.tag = tag
+                /*if(myTreeChangeTracker.tagged(tag))
+                    return emptyList()*/
                 internalMethodsCache.value.map { it.toMethodStruct(tag) } + internalAccessorProperties.value.flatMap { (it.parent.parent as? ObjJInstanceVariableDeclaration)?.getMethodStructs().orEmpty() }.toSet()
             }
         } else if (classMethodsCache.hasUpToDateValue() && allAccessorProperties.hasUpToDateValue() && classMethodStructs.isNotEmpty()) {
             classMethodStructs
         } else {
+            /*if (myTreeChangeTracker.tagged(tag)) {
+                return emptyList()
+            }*/
             classMethodsCache.value.map {
                 it.toMethodStruct(tag)
             } + allAccessorProperties.value
@@ -190,9 +192,8 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
     }
 
     fun getMethodReturnType(selector: String, tag: Long): InferenceResult? {
-        if (myTreeChangeTracker.tag == tag)
+        if (myTreeChangeTracker.tagged(tag))
             return null
-        myTreeChangeTracker.tag = tag
         return methodReturnValuesMap.value[selector]?.second ?: INFERRED_ANY_TYPE
     }
 

@@ -576,5 +576,5 @@ internal fun String.toIndexPatternString():String  {
     }
     return stringBuilder.append(queryBody).append(".*").toString()
      */
-    return "[_]?"+this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)")
+    return "[_]?"+this.replace(ObjJCompletionContributor.CARET_INDICATOR, "([^:]*)")
 }

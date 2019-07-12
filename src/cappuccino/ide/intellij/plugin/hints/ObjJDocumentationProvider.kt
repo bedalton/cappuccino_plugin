@@ -29,7 +29,6 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
-                    LOGGER.info("QuickInfo for variable name")
                     it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
@@ -93,7 +92,6 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
 
                 /// Only run after all other checks
                 .info(ObjJCompositeElement::class.java) {
-                    LOGGER.info("COMPOSITE ELEMENT")
                     ObjJDescriptionUtil.getDescriptiveText(it) + getLocationString(it)
                 }
                 .infoString

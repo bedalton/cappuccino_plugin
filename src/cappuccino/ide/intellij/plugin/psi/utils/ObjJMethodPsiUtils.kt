@@ -150,12 +150,14 @@ object ObjJMethodPsiUtils {
         if (stubHeaderType != null)
             return stubHeaderType
         return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
-                ?: methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.text
+                ?: methodHeader.methodHeaderReturnTypeElement?.text
                 ?: UNDETERMINED
     }
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         return methodHeader.getCachedInferredTypes(tag) {
+            if (methodHeader.tagged(tag))
+                return@getCachedInferredTypes null
             val commentReturnTypes = methodHeader.docComment?.getReturnTypes(methodHeader.project).orEmpty().withoutAnyType()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()

@@ -69,7 +69,6 @@ class ObjJImportInspection  : LocalInspectionTool() {
         }
         if (isValid)
             return
-        LOGGER.info("Framework <$frameworkName> does not contain file: <$fileName>")
         val rangeInElement = if (fileNameFromString != null) {
             TextRange(1, fileName.length + 1)
         } else

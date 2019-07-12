@@ -17,7 +17,7 @@ object ObjJVariableTypeResolver {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJCommentEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
             return resolveVariableTypeWithoutMethodParse(variableName, recurse, tag, withInheritance)
         }
-        return setOf()
+        return emptySet()
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -56,9 +56,12 @@ object ObjJVariableTypeResolver {
         }
 
         // Get call target from formal variable types
-        val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames.isNotNullOrEmpty()) {
-            return classNames!!
+        val className = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
+        if (className.isNotNullOrEmpty()) {
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(className!!, project).toSet()
+            else
+                setOf(className!!)
         }
 
         if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.containsKey(variableName.text, project)) {
@@ -78,13 +81,9 @@ object ObjJVariableTypeResolver {
         return if (out.isNotEmpty()) out else setOf()
     }
 
-    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName): Set<String>? {
+    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName):String? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        return if (formalVariableType.varTypeId?.className != null) {
-            setOf(formalVariableType.varTypeId!!.className!!.text)
-        } else {
-            setOf(formalVariableType.text)
-        }
+        return formalVariableType.varTypeId?.className?.text ?: formalVariableType.text
     }
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName:ObjJVariableName): ObjJFormalVariableType? {

@@ -233,9 +233,13 @@ object ObjJMethodCallCompletionContributor {
                     LOGGER.info("Possible type: $it")
                     ObjJClassDeclarationsIndex.instance[it, project]
                 }
-                .flatMap { it.getMethodStructs(true, createTag()) }
+                .flatMap {
+                    val constructs = it.getMethodStructs(true, createTag())
+                    LOGGER.info("Got <${constructs.size}> method structs in <${it.classNameString}>")
+                    constructs
+                }
                 .filter {
-                    LOGGER.info("Sel: ${it.selectorString}"
+                    LOGGER.info("Sel: ${it.selectorString}")
                     selectorRegex.containsMatchIn(it.selectorString)
                 }
                 .forEach {

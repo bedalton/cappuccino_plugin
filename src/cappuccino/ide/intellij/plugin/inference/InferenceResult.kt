@@ -26,7 +26,6 @@ data class InferenceResult(
     }
 
     val toIndexSearchString:String by lazy {
-        LOGGER.info("Classes: <$classes>")
         "(" + classes.joinToString("|") { Regex.escapeReplacement(it) } + ")"
     }
 

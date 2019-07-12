@@ -42,9 +42,8 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
 
 
     override fun getCachedReturnType(tag: Long): InferenceResult {
-        if (modificationTracker.tag == tag)
+        if (modificationTracker.tagged(tag))
             return INFERRED_ANY_TYPE
-        modificationTracker.tag = tag
         var types = returnTypesInternal
         if (types != null)
             return types

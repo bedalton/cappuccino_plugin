@@ -81,11 +81,9 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         }
 
         val found = multiResolve(false).mapNotNull { it.element }
-        LOGGER.info("Found: ${found.size} referenced elements")
         if (element in found)
             return true
         found.forEach {
-            LOGGER.info("Found ${it.text} in file: ${it.containingFile}")
             if (it.isEquivalentTo(element).orFalse())
                 return true
         }
@@ -125,10 +123,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         }
         val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
-        if (!isStatic) {
-            LOGGER.info("JsClassesByNamespace ($className):\n\t${JsTypeDefClassesByNamespaceIndex.instance.getAllKeys(project).joinToString("\n\t")}")
-        }
-
         // Get types if qualified
         val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
                 ?: return PsiElementResolveResult.EMPTY_ARRAY

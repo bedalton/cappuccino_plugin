@@ -28,9 +28,8 @@ import com.intellij.psi.util.PsiTreeUtil
 
 class ObjJVariableReference(
         element: ObjJVariableName,
-        private val follow:Boolean = true,
         private val nullIfSelfReferencing: Boolean? = null,
-        private val tag:Long? = null
+        private val tag: Long? = null
 ) : PsiPolyVariantReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
@@ -153,7 +152,7 @@ class ObjJVariableReference(
         }
     }
 
-    private fun multiResolve(tag:Long? = null, nullIfSelfReferencing: Boolean) : Array<ResolveResult> {
+    private fun multiResolve(tag:Long, nullIfSelfReferencing: Boolean) : Array<ResolveResult> {
         val element = resolveInternal(tag)
         if (element != null) {// && !element.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(listOf(element))
@@ -204,7 +203,7 @@ class ObjJVariableReference(
     }
 
     override fun multiResolve(partial:Boolean) : Array<ResolveResult> {
-        return multiResolve(tag, nullIfSelfReferencing.orFalse())
+        return multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse())
     }
 
     fun resolve(nullIfSelfReferencing: Boolean? = null, tag:Long? = null) : PsiElement? {

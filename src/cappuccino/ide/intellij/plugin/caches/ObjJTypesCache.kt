@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
@@ -104,10 +105,16 @@ private fun ObjJExpr.collectFunctionDeclarations() : List<ObjJFunctionDeclaratio
 
 class MyModificationTracker:ModificationTracker {
     private var myCount: Long = 0
-    internal var tag:Long = createTag()
+    internal var tagList:TagList = TagList()
     override fun getModificationCount(): Long {
-        return myCount + tag
+        return myCount + (tagList.tags.max().orElse(0))
     }
+    fun tagged(tag:Long, setTag:Boolean = true) : Boolean {
+        return tagList.tagged(tag, setTag)
+    }
+
+    val tag:Long get() = tagList.tags.max() ?: createTag()
+
     fun tick() {
         myCount++
     }

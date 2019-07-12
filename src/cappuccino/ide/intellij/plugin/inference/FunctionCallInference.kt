@@ -26,6 +26,8 @@ import com.intellij.psi.PsiElement
 
 internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
     return functionCall.getCachedInferredTypes(tag) {
+        if (functionCall.tagged(tag))
+            return@getCachedInferredTypes null
         internalInferFunctionCallReturnType(functionCall, tag)
     }
 }
@@ -56,6 +58,8 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
         if (cached != null)
             return cached
         resolved.getCachedInferredTypes(tag) {
+            if (resolved.tagged(tag))
+                return@getCachedInferredTypes null
             val function: ObjJFunctionDeclarationElement<*>? = (when (resolved) {
                 is ObjJVariableName -> resolved.parentFunctionDeclaration
                 is ObjJFunctionName -> resolved.parentFunctionDeclaration

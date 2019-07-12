@@ -73,7 +73,7 @@ class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, propert
     override fun applyFix(project: Project, file: PsiFile?, editor: Editor?) {
         if (applyFixActual(project, file, editor))
             return
-        LOGGER.info("Failed to combine variable declaration and interface element")
+        LOGGER.severe("Failed to combine variable declaration and interface element")
     }
 
     private fun applyFixActual(project: Project, file: PsiFile?, editor: Editor?) : Boolean {
