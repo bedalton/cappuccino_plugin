@@ -12,6 +12,7 @@ fun inferExpressionType(expr:ObjJExpr?, tag:Long) : InferenceResult? {
     if (expr == null)
         return null
     return expr.getCachedInferredTypes(tag) {
+        LOGGER.info("Inferring Expression type for <${expr.text}>; Tag <$tag>")
         internalInferExpressionType(expr, tag)
     }
 }
@@ -92,14 +93,21 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag:Long) : InferenceResul
 
     if (leftExpression.primary != null) {
         val primary = leftExpression.primary ?: return null
-        if (primary.integer != null || primary.decimalLiteral != null) {
+        if (primary.integer != null) {
             return InferenceResult(
-                    isNumeric = true
+                    isNumeric = true,
+                    types = setOf("int").toJsTypeList()
+            )
+        }
+        if (primary.decimalLiteral != null) {
+            return InferenceResult(
+                    isNumeric = true,
+                    types = setOf("number").toJsTypeList()
             )
         } else if (primary.booleanLiteral != null)
-            return InferenceResult(isBoolean = true)
+            return setOf("boolean").toInferenceResult()
         else if (primary.stringLiteral != null)
-            return InferenceResult(isString = true)
+            return setOf("string").toInferenceResult()
         else if (primary.nullLiterals != null)
             return null
     }

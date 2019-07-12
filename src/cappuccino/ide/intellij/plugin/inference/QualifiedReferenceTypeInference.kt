@@ -11,6 +11,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
@@ -30,6 +31,7 @@ internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceCompo
     }*/
     if (parts.isEmpty())
         return null
+    LOGGER.info("Inferring QR on ${parts.map { it.text }}; Tag: $tag")
     addStatusFileChangeListener(parts[0].project)
     return internalInferQualifiedReferenceType(parts, tag)
 }
@@ -174,6 +176,10 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
         "super" -> variableName.getContainingSuperClass()?.name
         else -> null
     }
+
+    if (containingClass != null)
+        return InferenceResult(types = setOf(containingClass).toJsTypeList())
+
     if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVarKeyword().orFalse()) {
         return internalInferVariableTypeAtIndexZero(variableName, variableName, containingClass, tag)
     }
@@ -245,10 +251,6 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         if (JsTypeDefClassesByNameIndex.instance.containsKey(variableNameString, project)) {
             return listOf(variableNameString).toInferenceResult()
         }
-    }
-
-    if (referencedVariable.tagged(tag)) {
-        return null
     }
 
     val staticVariablesUnfiltered = JsTypeDefPropertiesByNameIndex.instance[variableNameString, project]

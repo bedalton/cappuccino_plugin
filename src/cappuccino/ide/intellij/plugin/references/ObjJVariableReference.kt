@@ -6,19 +6,16 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamespacedComponent
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
@@ -158,7 +155,7 @@ class ObjJVariableReference(
 
     private fun multiResolve(tag:Long? = null, nullIfSelfReferencing: Boolean) : Array<ResolveResult> {
         val element = resolveInternal(tag)
-        if (element != null && !element.isEquivalentTo(myElement)) {
+        if (element != null) {// && !element.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
         val project = myElement.project
@@ -187,8 +184,8 @@ class ObjJVariableReference(
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
 
         if (classTypes.classes.isNotEmpty()) {
-            val allClassNames = classTypes.classes.flatMap { className ->
-                JsTypeDefClassesByNameIndex.instance[className, project].map {
+            val allClassNames = classTypes.classes.flatMap { jsClassName ->
+                JsTypeDefClassesByNameIndex.instance[jsClassName, project].map {
                     it.toJsClassDefinition()
                 }
             }.withAllSuperClassNames(project)
@@ -216,7 +213,7 @@ class ObjJVariableReference(
             if (nullIfSelfReferencing.orFalse()) {
                 return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
             }
-            return@resolveFromCache result.firstOrNull() ?: myElement
+            return@resolveFromCache result.firstOrNull()
         }
     }
 
@@ -234,7 +231,7 @@ class ObjJVariableReference(
 
         val variableDeclaration = myElement.parent?.parent as? ObjJVariableDeclaration
         if (variableDeclaration?.hasVarKeyword().orFalse())
-            return null
+            return myElement
 
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)
         if (myElement.indexInQualifiedReference > 0) {

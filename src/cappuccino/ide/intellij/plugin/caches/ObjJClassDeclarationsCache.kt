@@ -120,10 +120,14 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
     }
 
     fun getMethodStructs(internalOnly: Boolean, tag: Long): List<ObjJMethodStruct> {
+        if(tag == myTreeChangeTracker.tag) {
+            return emptyList()
+        }
         return if (internalOnly) {
             if (internalMethodsCache.hasUpToDateValue() && internalAccessorProperties.hasUpToDateValue() && internalMethodStructs.isNotEmpty())
                 internalMethodStructs
             else {
+                myTreeChangeTracker.tag = tag
                 internalMethodsCache.value.map { it.toMethodStruct(tag) } + internalAccessorProperties.value.flatMap { (it.parent.parent as? ObjJInstanceVariableDeclaration)?.getMethodStructs().orEmpty() }.toSet()
             }
         } else if (classMethodsCache.hasUpToDateValue() && allAccessorProperties.hasUpToDateValue() && classMethodStructs.isNotEmpty()) {

@@ -120,6 +120,7 @@ object ObjJMethodCallCompletionContributor {
             return
         }
 
+        LOGGER.info("Did not add completions")
         //Attempt other was to add completions
         didAddCompletions = addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
 
@@ -138,11 +139,7 @@ object ObjJMethodCallCompletionContributor {
 
         // Get selector strings, replacing the one in need of completion
         val selectorStrings = selectors.map {
-            val selector = it.getSelectorString(false)
-            if (selector.contains(CARET_INDICATOR))
-                selector.toIndexPatternString()
-            else
-                selector
+            it.getSelectorString(false)
         }
         // Get selector string
         return getSelectorStringFromSelectorStrings(selectorStrings)
@@ -228,13 +225,19 @@ object ObjJMethodCallCompletionContributor {
             return false
         // initialize base variables
         var didAddCompletions = false
-        val selectorRegex = "^selectorString".toRegex()
-
+        val selectorRegex = "${selectorString.toIndexPatternString()}?".toRegex()
+        LOGGER.info("Selector regex == <${selectorString.toIndexPatternString()}>")
         // Loop through all possible target classes and add appropriate completions
         possibleContainingClassNames
-                .flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
+                .flatMap {
+                    LOGGER.info("Possible type: $it")
+                    ObjJClassDeclarationsIndex.instance[it, project]
+                }
                 .flatMap { it.getMethodStructs(true, createTag()) }
-                .filter { selectorRegex.containsMatchIn(it.selectorString)}
+                .filter {
+                    LOGGER.info("Sel: ${it.selectorString}"
+                    selectorRegex.containsMatchIn(it.selectorString)
+                }
                 .forEach {
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
@@ -246,6 +249,8 @@ object ObjJMethodCallCompletionContributor {
                     )
                     didAddCompletions = true
                 }
+
+        LOGGER.info("DID ADD COMPLETIONS $didAddCompletions")
         val indexOfColon = selectorString.indexOf(":")
         if (targetScope.hasLocalScope && indexOfColon < 0 || indexOfColon == selectorString.lastIndex) {
             didAddCompletions = addAccessorLookupElements(resultSet, project, possibleContainingClassNames, selectorString) || didAddCompletions

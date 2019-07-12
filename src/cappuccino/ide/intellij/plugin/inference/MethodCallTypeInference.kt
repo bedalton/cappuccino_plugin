@@ -101,8 +101,6 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes(tag) {
-            if (methodDeclaration.tagged(tag))
-                return@getCachedInferredTypes null
             val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()

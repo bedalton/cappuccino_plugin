@@ -1,7 +1,9 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -44,22 +46,21 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     val timeSinceLastFileChange:Long
         get() {
             val now = now
-            if (now - internalTimeSinceLastFileChange < CACHE_EXPIRY * 3)
+            if (now - internalTimeSinceLastFileChange > CACHE_EXPIRY * 3) {
+                LOGGER.info("TimeDif: ${now - internalTimeSinceLastFileChange}")
                 internalTimeSinceLastFileChange = now
+            }
             return internalTimeSinceLastFileChange
         }
 
     internal val nextTag : Long get() {
-        val now = now
-        if (now - lastTag < CACHE_EXPIRY / 2)
-            return lastTag
-        lastTag = timeSinceLastFileChange
-        return lastTag
+        return timeSinceLastFileChange
     }
 
     override fun onChange(file: PsiFile?) {
-        if (file !is ObjJFile)
+        if (file !is ObjJFile && file !is JsTypeDefFile)
             return
+        LOGGER.info("FILE CHANGED")
         internalTimeSinceLastFileChange = now
     }
 
@@ -100,6 +101,9 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag:Long?, setTag:Boolean 
             return inferredTypes
         }
     }
+    if (tagged && !textMatches) {
+        LOGGER.info("Tagged but text <${this.text}> != <$lastText>")
+    }
 
     val inferredTypes = getIfNull?.invoke() ?: INFERRED_EMPTY_TYPE
     this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
@@ -121,25 +125,19 @@ internal fun PsiElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
         return false
 
     val currentTag = lastTagged
-
-    if (tag - currentTag >= CACHE_EXPIRY && setTag) {
-        this.putUserData(INFERENCE_LAST_RESOLVED, tag)
-    }
-    if (currentTag <= tag) {
-        return true
-    }
+    LOGGER.info("Tag<$tag>; LastTag<$currentTag>; Diff: <${tag - currentTag}>;")
+    if(currentTag <= tag)
+        return true;
     if (setTag)
         this.putUserData(INFERENCE_LAST_RESOLVED, tag)
-    return currentTag == tag
+    return false;
 }
 
 private val PsiElement.lastTagged:Long get() {
-    val now = now
     var lastTagged = this.getUserData(INFERENCE_LAST_RESOLVED)
     if (lastTagged == null) {
-        lastTagged = now
+        lastTagged = 0
         this.putUserData(INFERENCE_LAST_RESOLVED, lastTagged)
-    } else if (now - lastTagged < 2000)
-        return now + 1
+    }
     return lastTagged
 }

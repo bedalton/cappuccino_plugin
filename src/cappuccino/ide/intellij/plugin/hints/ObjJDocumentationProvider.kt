@@ -201,13 +201,14 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     } else {
         //// LOGGER.info("Check QNR")
         val prevSiblings = previousSiblings
+        val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
         if (prevSiblings.isEmpty()) {
             val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
                 it.toJsTypeListType()
             }.minBy { it.parameters.size }
             if (jsTypeDefFunctionResult != null)
                 return jsTypeDefFunctionResult.description.presentableText
-            val inferenceResult = inferQualifiedReferenceType(listOf(this), createTag() + 1)
+            val inferenceResult = inferQualifiedReferenceType(listOf(this), forwardTag)
             val functionType = inferenceResult?.functionTypes.orEmpty().minBy { it.parameters.size }
             if (functionType != null) {
                 out.append(functionType.descriptionWithName(text))
@@ -225,7 +226,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
             out.append(" in ").append(getLocationString(this))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(this.previousSiblings + this, createTag() + 1)
+        val inferredTypes = inferQualifiedReferenceType(this.previousSiblings + this, forwardTag)
         val name = this.text
         val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
