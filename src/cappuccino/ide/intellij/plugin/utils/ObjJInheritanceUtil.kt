@@ -52,7 +52,6 @@ object ObjJInheritanceUtil {
     }
 
     private fun appendAllInheritedProtocolsToSet(out: MutableSet<ObjJProtocolDeclaration>, className: String, project: Project) {
-        ProgressIndicatorProvider.checkCanceled()
         if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
             return
         }
@@ -74,14 +73,12 @@ object ObjJInheritanceUtil {
         out.add(thisProtocol)
         val protocolList = thisProtocol.inheritedProtocolList ?: return
         for (parentProtocolNameElement in protocolList.classNameList) {
-            ProgressIndicatorProvider.checkCanceled()
             appendAllInheritedProtocolsToSet(out, parentProtocolNameElement.text, project)
         }
     }
 
     private fun isProtocolInArray(protocolDeclarations: Set<ObjJProtocolDeclaration>, className: String): Boolean {
         for (protocolDeclaration in protocolDeclarations) {
-            ProgressIndicatorProvider.checkCanceled()
             if (protocolDeclaration.classNameString == className) {
                 return true
             }

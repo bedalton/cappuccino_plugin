@@ -989,7 +989,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun hasVarKeyword(declaration: ObjJVariableDeclaration): Boolean {
-        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.varModifier != null
     }
 
     // ============================== //

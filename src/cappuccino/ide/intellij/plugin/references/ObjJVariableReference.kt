@@ -157,6 +157,10 @@ class ObjJVariableReference(
         if (element != null) {// && !element.isEquivalentTo(myElement)) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
+
+        if (ObjJVariablePsiUtil.isNewVarDec(myElement))
+            return PsiElementResolveResult.createResults(listOf(myElement))
+
         val project = myElement.project
 
         val variableName = myElement.text

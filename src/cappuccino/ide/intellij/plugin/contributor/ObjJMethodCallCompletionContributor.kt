@@ -88,12 +88,12 @@ object ObjJMethodCallCompletionContributor {
         addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
 
         //Determine target scope
-        val scope: TargetScope = getTargetScope(elementsParentMethodCall)
+        val scope: MethodScope = getTargetScope(elementsParentMethodCall)
 
 
         //Determine possible containing class names
         val possibleContainingClassNames: List<String> = when {
-            scope == TargetScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
+            scope == MethodScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
             selectors.isNotEmpty() -> getClassConstraints(selectors[0], tag)
             else -> emptyList()
         }
@@ -105,7 +105,7 @@ object ObjJMethodCallCompletionContributor {
             if (addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, scope))
                 return
         }
-
+        LOGGER.info("Adding method call completions for types: <$possibleContainingClassNames>")
         var didAddCompletions = addCompletionsForKnownClasses(
                 resultSet = result,
                 project = project,
@@ -164,7 +164,7 @@ object ObjJMethodCallCompletionContributor {
             project: Project,
             fileName: String?,
             result: CompletionResultSet,
-            targetScope: TargetScope,
+            targetScope: MethodScope,
             selectorString: String,
             selectorIndex: Int,
             containingClass: String?
@@ -219,28 +219,26 @@ object ObjJMethodCallCompletionContributor {
     }
 
 
-    private fun addCompletionsForKnownClasses(resultSet: CompletionResultSet, project:Project, possibleContainingClassNames: List<String>, targetScope: TargetScope, selectorIndex: Int, selectorString: String): Boolean {
+    private fun addCompletionsForKnownClasses(resultSet: CompletionResultSet, project:Project, possibleContainingClassNames: List<String>, targetScope: MethodScope, selectorIndex: Int, selectorString: String): Boolean {
         // Check if class names are empty
         if (possibleContainingClassNames.isEmpty())
             return false
         // initialize base variables
         var didAddCompletions = false
-        val selectorRegex = "${selectorString.toIndexPatternString()}?".toRegex()
+        val selectorBefore = selectorString.split(CARET_INDICATOR).firstOrNull() ?: return false
+        val selectorRegex = "^${selectorBefore}".toRegex()
         LOGGER.info("Selector regex == <${selectorString.toIndexPatternString()}>")
         // Loop through all possible target classes and add appropriate completions
         possibleContainingClassNames
                 .flatMap {
-                    LOGGER.info("Possible type: $it")
                     ObjJClassDeclarationsIndex.instance[it, project]
                 }
                 .flatMap {
                     val constructs = it.getMethodStructs(true, createTag())
-                    LOGGER.info("Got <${constructs.size}> method structs in <${it.classNameString}>")
                     constructs
                 }
                 .filter {
-                    LOGGER.info("Sel: ${it.selectorString}")
-                    selectorRegex.containsMatchIn(it.selectorString)
+                    selectorRegex.containsMatchIn(it.selectorString) && it.methodScope == targetScope
                 }
                 .forEach {
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
@@ -269,7 +267,7 @@ object ObjJMethodCallCompletionContributor {
     }
 
 
-    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: TargetScope): Boolean {
+    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: MethodScope): Boolean {
         var didAdd = false
         collapseContainingClasses(project, possibleContainingClassNames).forEach {
             didAdd = addMethodDeclarationLookupElementsForClass(project, it, result, targetScope) || didAdd
@@ -277,10 +275,10 @@ object ObjJMethodCallCompletionContributor {
         return didAdd
     }
 
-    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: TargetScope): Boolean {
+    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: MethodScope): Boolean {
         var didAdd = false
         ObjJClassMethodIndex.instance[className, project].forEach {
-            if (!targetScope.equals(it.methodScope))
+            if (targetScope != it.methodScope)
                 return@forEach
             didAdd = true
             val selector = it.selectorStructs.getOrNull(0) ?: return@forEach
@@ -293,10 +291,10 @@ object ObjJMethodCallCompletionContributor {
         return didAdd
     }
 
-    private fun inScope(scope: TargetScope, methodHeader: ObjJMethodHeaderDeclaration<*>): Boolean {
+    private fun inScope(scope: MethodScope, methodHeader: ObjJMethodHeaderDeclaration<*>): Boolean {
         return when (scope) {
-            TargetScope.STATIC -> methodHeader.isStatic
-            TargetScope.INSTANCE -> !methodHeader.isStatic
+            MethodScope.STATIC -> methodHeader.isStatic
+            MethodScope.INSTANCE -> !methodHeader.isStatic
             else -> true
         }
     }
@@ -452,10 +450,10 @@ object ObjJMethodCallCompletionContributor {
     /**
      * Gets the scope for the suggested getMethods we should have
      */
-    private fun getTargetScope(methodCall: ObjJMethodCall): TargetScope {
+    private fun getTargetScope(methodCall: ObjJMethodCall): MethodScope {
         return when {
-            ObjJImplementationDeclarationsIndex.instance[methodCall.callTargetText, methodCall.project].isNotEmpty() -> TargetScope.STATIC
-            else -> TargetScope.ANY
+            ObjJImplementationDeclarationsIndex.instance[methodCall.callTargetText, methodCall.project].isNotEmpty() -> MethodScope.STATIC
+            else -> MethodScope.ANY
         }
     }
 
@@ -480,24 +478,6 @@ object ObjJMethodCallCompletionContributor {
             priorityIfNotTarget
         }
     }
-
-    internal enum class TargetScope {
-        STATIC,
-        INSTANCE,
-        ANY;
-
-        fun equals(scope: MethodScope): Boolean {
-            return when (this) {
-                ANY -> true
-                STATIC -> scope == MethodScope.STATIC
-                INSTANCE -> scope == MethodScope.INSTANCE
-            }
-        }
-
-        val hasLocalScope
-            get() = this == INSTANCE || this == ANY
-    }
-
     internal data class SelectorCompletionPriorityTuple(val selector: ObjJSelectorStruct, val priority: Double)
 
 }

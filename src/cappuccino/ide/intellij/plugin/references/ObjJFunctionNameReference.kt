@@ -167,7 +167,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         }.toMutableList()
 
         for (functionDeclaration in ObjJFunctionsIndex.instance[functionName, myElement.project]) {
-            ProgressIndicatorProvider.checkCanceled()
             allOut.add(functionDeclaration.functionNameNode!!)
             if (functionDeclaration.containingFile.isEquivalentTo(file)) {
                 return functionDeclaration.functionNameNode

@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -96,12 +95,17 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
     }
     //if (marks > MAXIMUM_ACCESS_MARKS)
       //  LOGGER.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
-    val inferredTypes = getIfNull?.invoke() ?: this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
-    this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
-    this.tagComplete(tag)
-    //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
-    this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
-    return inferredTypes
+    try {
+        val inferredTypes = getIfNull?.invoke() ?: this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
+        this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
+        this.tagComplete(tag)
+        //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
+        this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
+        return inferredTypes
+    } catch (e:Exception) {
+        this.clearTag(tag)
+        throw e
+    }
 }
 
 internal fun createTag():Long {
@@ -117,6 +121,18 @@ internal fun PsiElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
     val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()
     if (tagList.tagged(tag, setTag))
         return true
+    putUserData(INFERENCE_TAG_LIST, tagList)
+    return false
+}
+
+/**
+ * Returns true if this item has already been seen this loop
+ */
+internal fun PsiElement.clearTag(tag:Long?):Boolean {
+    if (tag == null)
+        return false
+    val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()
+    tagList.clearTag(tag)
     putUserData(INFERENCE_TAG_LIST, tagList)
     return false
 }
@@ -146,6 +162,10 @@ internal data class TagList(var tags:Set<Long> = setOf(), var completed:MutableS
         newTags.add(tag)
         tags = newTags
         return false
+    }
+
+    fun clearTag(tag:Long) {
+        tags = tags.filterNot {it == tag}.toSet()
     }
 
     fun tagCompleted(tag:Long) {

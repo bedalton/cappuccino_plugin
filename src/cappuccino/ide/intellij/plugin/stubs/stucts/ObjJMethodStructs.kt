@@ -33,6 +33,9 @@ data class ObjJMethodStruct(val selectors:List<ObjJSelectorStruct>, val returnTy
         }
         selectors.joinToString(":") { it.selector } + ":"
     }
+    val selectorStringWithColon:String by lazy {
+        selectors.joinToString(":") { it.selector } + ":"
+    }
 }
 
 data class ObjJSelectorStruct(val selector:String, val variableType:String?, val variableName:String?, val hasColon:Boolean = variableName != null, val containerName: String, val isContainerAClass:Boolean = true) {
@@ -83,12 +86,14 @@ fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
         it.toSelectorStruct()
     }
     val returnTypeStrings = getReturnTypes(tag).toJsTypeList()
+    LOGGER.info("Found <${returnTypeStrings.size}> types for method $text")
     val returnType = if (returnTypeStrings.isNotEmpty())
         InferenceResult(types = returnTypeStrings)
     else
         null
     val out = ObjJMethodStruct(selectors = selectors, returnType = returnType, methodScope = methodScope, containingClassName = containingClassName)
     putUserData(METHOD_STRUCT_KEY, out)
+    LOGGER.info("Method out == <$out>")
     return out
 }
 

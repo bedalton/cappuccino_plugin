@@ -78,7 +78,6 @@ object ObjJSelectorReferenceResolveUtil {
         val others = ArrayList<ObjJSelector>()
         var selectorElement: ObjJSelector?
         for (methodHeader in methodHeaders) {
-            ProgressIndicatorProvider.checkCanceled()
             selectorElement = ObjJPsiImplUtil.getThisOrPreviousNonNullSelector(methodHeader, subSelector, selectorIndex)
             if (selectorElement == null) {
                 LOGGER.log(Level.SEVERE, "Method header returned an empty selector in matched header")
@@ -122,7 +121,6 @@ object ObjJSelectorReferenceResolveUtil {
         val selectorLiterals = ObjJSelectorInferredMethodIndex.instance[fullSelector, selectorElement.project]
         val subSelector = selectorElement.getSelectorString(false)
         for (selectorLiteral in selectorLiterals) {
-            ProgressIndicatorProvider.checkCanceled()
             val selector = if (selectorIndex >= 0) selectorLiteral.selectorList[selectorIndex] else ObjJPsiImplUtil.findSelectorMatching(selectorLiteral, subSelector)
             if (selector != null) {
                 if (containingClasses == null || containingClasses.contains(selector.containingClassName)) {
@@ -152,7 +150,6 @@ object ObjJSelectorReferenceResolveUtil {
         val result = ArrayList<PsiElement>()
         val otherResult = ArrayList<PsiElement>()
         for (variableDeclaration in ObjJClassInstanceVariableAccessorMethodIndex.instance[fullSelector, selectorElement.project]) {
-            ProgressIndicatorProvider.checkCanceled()
             val atAccessors = variableDeclaration.accessor?.atAccessors
             if (sharesContainingClass(classConstraints, variableDeclaration)) {
                 result.add(atAccessors ?: variableDeclaration)
@@ -181,7 +178,6 @@ object ObjJSelectorReferenceResolveUtil {
             return EMPTY_RESULT
         }
         for (declaration in ObjJInstanceVariablesByNameIndex.instance[variableName, selectorElement.project]) {
-            ProgressIndicatorProvider.checkCanceled()
             val variableNameInLoop = declaration.variableName ?: continue
             if (classConstraints.contains(declaration.containingClassName)) {
                 result.add(variableNameInLoop)

@@ -414,7 +414,7 @@ object ObjJMethodPsiUtils {
         STATIC("+"),
         INSTANCE("-"),
         SELECTOR_LITERAL("::"),
-        INVALID(null);
+        ANY(null);
 
         companion object {
 
@@ -422,10 +422,14 @@ object ObjJMethodPsiUtils {
                 return when (scopeMarker) {
                     STATIC.scopeMarker -> STATIC
                     INSTANCE.scopeMarker -> INSTANCE
-                    else -> INVALID
+                    SELECTOR_LITERAL.scopeMarker -> SELECTOR_LITERAL
+                    else -> ANY
                 }
             }
         }
+
+        val hasLocalScope
+            get() = this != STATIC
 
     }
 

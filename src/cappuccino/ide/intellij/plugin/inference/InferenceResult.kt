@@ -179,7 +179,6 @@ fun Iterable<InferenceResult>.combine(): InferenceResult {
     return InferenceResult(
             types = this.flatMap { it.types }.toSet(),
             nullable = this.any { it.nullable }
-
     )
 }
 
