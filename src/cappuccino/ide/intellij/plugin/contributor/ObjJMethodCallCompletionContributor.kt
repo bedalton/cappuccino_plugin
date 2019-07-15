@@ -118,7 +118,7 @@ object ObjJMethodCallCompletionContributor {
                 possibleContainingClassNames = possibleContainingClassNames,
                 selectorIndex = selectorIndex,
                 targetScope = scope,
-                selectorString = selectorString
+                selectorString = selectors.subList(0, selectorIndex + 1).joinToString ("") { it.getSelectorString(true)}
         )
 
         // If completions added for known classes, return
@@ -242,6 +242,8 @@ object ObjJMethodCallCompletionContributor {
                 .flatMap {
                     val constructs = it.getMethodStructs(true, createTag())
                     constructs
+                } .filter {
+                    selectorString.isEmpty() || it.selectorStringWithColon.startsWith(selectorString)
                 }
                 .forEach {
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach

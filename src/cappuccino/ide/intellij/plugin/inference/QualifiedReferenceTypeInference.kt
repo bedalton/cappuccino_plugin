@@ -13,7 +13,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
@@ -25,6 +24,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType as JsTypeListArrayType
 
 internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
     /*val lastChild = parts.lastOrNull() ?: return null
@@ -128,7 +128,9 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             } else {
                 JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
                     classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType() }
-                }
+                } + (if (parentTypes.types.any { it is JsTypeListArrayType }) JsTypeDefClassesByNameIndex.instance["Array", project].flatMap { arrayClass ->
+                    arrayClass.propertyList.toNamedPropertiesList() + arrayClass.functionList.map { it.toJsTypeListType() }
+                } else emptyList())
             }
         }.filter { it.name == variableNameString && it.static == static }
                 .flatMap {
@@ -342,10 +344,10 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     val project = functionName.project
     //ProgressManager.checkCanceled()
     val functionNameString = functionName.text
-    val classes = parentTypes.classes.mapNotNull {
+    val classNames = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListArrayType}) "Array" else null)).filterNotNull()
+    val classes = classNames.mapNotNull {
         getClassDefinition(project, it)
     }
-
     val functions = classes.mapNotNull { jsClass ->
         ProgressManager.checkCanceled()
         (if (static)
@@ -422,7 +424,7 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     }
 
     var types =  parentTypes.types.flatMap {
-        (it as? JsTypeListType.JsTypeListArrayType)?.types.orEmpty()
+        (it as? JsTypeListArrayType)?.types.orEmpty()
     }.toSet()
     if (types.isNotNullOrEmpty()) {
         LOGGER.info("Found array types as $types")

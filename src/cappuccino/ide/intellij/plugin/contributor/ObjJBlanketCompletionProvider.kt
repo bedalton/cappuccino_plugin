@@ -34,6 +34,7 @@ import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType as JsTypeListArrayType
 
 /**
  * Completion provider providing the heavy lifting for all completions
@@ -502,7 +503,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val previousComponents = qualifiedNameComponent.previousSiblings
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         LOGGER.info("Converted <${previousComponents.map{it.text}}> -> ${inferred.types.size} types into ${inferred.classes.size} type strings")
-        val classes = inferred.classes.toMutableSet()
+        val classes = inferred.classes.toMutableSet() + (if (inferred.types.any { it is JsTypeListArrayType }) listOf("Array") else emptyList())
         val collapsedClass = classes.flatMap { className ->
             JsTypeDefClassesByNameIndex.instance[className, project].map {
                 it.toJsClassDefinition()

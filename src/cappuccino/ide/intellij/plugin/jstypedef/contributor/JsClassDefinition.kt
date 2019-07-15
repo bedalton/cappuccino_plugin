@@ -106,9 +106,9 @@ private fun JsClassDefinition.getAllInheritedClasses(project: Project, parsed: M
 fun Iterable<JsClassDefinition>.collapseWithSuperType(project: Project): JsClassDefinition {
     val parsed = this.map { it.className }.toMutableSet()
     val out = this.toMutableSet()
-    val extends = flatMap { it.extends }.toMutableSet()
+    val extends = flatMap { classDefinition -> classDefinition.extends.mapNotNull { it.typeName.split("<").firstOrNull() } }.toMutableSet()
     extends.toSet().forEach {
-        val classDec = getClassDefinition(project, it.typeName) ?: return@forEach
+        val classDec = getClassDefinition(project, it) ?: return@forEach
         classDec.getAllInheritedClasses(project, parsed, out, true)
     }
     return out.collapse()

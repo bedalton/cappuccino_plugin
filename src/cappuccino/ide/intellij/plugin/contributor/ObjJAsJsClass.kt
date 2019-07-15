@@ -43,7 +43,7 @@ internal fun objJClassAsJsClass(project: Project, className: String): JsClassDef
     return JsClassDefinition(
             className = className,
             properties = properties.toSet(),
-            extends = extends.map { JsTypeListType.JsTypeListBasicType(it) }.toSet(),
+            extends = (extends.map { JsTypeListType.JsTypeListBasicType(it) } ).toSet(),
             isObjJ = true,
             isStruct = false,
             static = false
