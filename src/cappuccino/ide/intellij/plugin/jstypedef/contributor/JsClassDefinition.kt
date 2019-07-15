@@ -247,14 +247,14 @@ interface JsNamedProperty {
 
 
 sealed class JsTypeListType(open val typeName: String) {
-    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType("Array")
+    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType(if (types.isNotEmpty()) "Array<${types.map { it.typeName }.toSet().joinToString("|")}>" else "Array[]")
     data class JsTypeListKeyOfType(val genericKey: String, val mapName: String) : JsTypeListType("KeyOf:$mapName")
     data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName")
     data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map")
     data class JsTypeListBasicType(override val typeName: String) : JsTypeListType(typeName)
     data class JsTypeListUnionType(val typeNames: Set<String>) : JsTypeListType(typeNames.joinToString("&"))
-    data class JsTypeListGenericType(val key: String, val types: Set<JsTypeListType>?) : JsTypeListType("<$key : ${types?.joinToString("|")
-            ?: "Any?"} >")
+    data class JsTypeListGenericType(val key: String, val types: Set<JsTypeListType>?)
+        : JsTypeListType("<$key : ${(types?.joinToString("|") { it.typeName } ?: "Any?")} >")
 
     @Suppress("MemberVisibilityCanBePrivate", "unused")
     data class JsTypeListClass(

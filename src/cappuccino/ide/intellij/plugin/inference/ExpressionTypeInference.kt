@@ -4,8 +4,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType as JsTypeListArrayType
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     if (expr == null)
@@ -127,7 +129,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
         if (leftExpression.arrayLiteral != null) {
             var types: Set<JsTypeListType> = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes.toJsTypeList()
             if (types.isNotNullOrEmpty())
-                types = types + JsTypeListType.JsTypeListArrayType(types, 1)
+                types = types + JsTypeListArrayType(types, 1)
             return@getCachedInferredTypes InferenceResult(
                     types = types
             )
@@ -207,6 +209,10 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
             current = resolveToNumberType(newTypes)
         }
         if (rightExpr.arrayIndexSelector != null) {
+            val types =  current.types.flatMap {
+                (it as? JsTypeListArrayType)?.types.orEmpty()
+            }
+            current = InferenceResult(types = types.toSet())
             //current = current.copy(classes = current.classes.plus(JS_ARRAY.className))
         }
     }

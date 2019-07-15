@@ -6,8 +6,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProper
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.toStubParameter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 
 
 fun Iterable<JsTypeDefType>?.toJsTypeDefTypeListTypes() : Set<JsTypeListType> {
@@ -81,8 +83,18 @@ fun JsTypeDefAnonymousFunction.toTypeListType() : JsTypeListFunctionType {
 }
 
 fun JsTypeDefArrayType.toTypeListType() : JsTypeListArrayType {
-    val types = typeList.toJsTypeDefTypeListTypes()
     val dimensions = if (arrayDimensions?.integer?.text.isNotNullOrBlank()) Integer.parseInt(arrayDimensions?.integer?.text) else 1
+    var types = typeList.toJsTypeDefTypeListTypes()
+    val genericTypesList = genericTypeTypes?.genericTypesTypeList
+    if (types.isEmpty() && genericTypesList.isNotNullOrEmpty()) {
+        val genericTypes = getParentOfType(JsTypeDefHasGenerics::class.java)?.genericsKeys.orEmpty()
+        types = genericTypesList!!.flatMap { genericType ->
+            genericTypes.firstOrNull {it.key == genericType.genericsKey?.text}?.types.orEmpty()
+        }.toSet()
+    }
+    if (types.isEmpty()) {
+        types = listOfNotNull(typeName?.toTypeListType(), anonymousFunction?.toTypeListType(), mapType?.toTypeListType()).toSet()
+    }
     return JsTypeListArrayType(types, dimensions)
 }
 

@@ -205,7 +205,16 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
     if (isJsObject)
         returnClasses.add("Object")
     if (arrayTypes.types.isNotNullOrEmpty()) {
-        returnClasses.addAll(arrayTypes.types.mapNotNull{ if (it.typeName != "Array" && it.typeName !in anyTypes) "$it[]" else null})
+        var arrayTypes = arrayTypes.types.mapNotNull {
+            if (it.typeName != "Array" && it.typeName !in anyTypes) {
+                "${it.typeName}[]".replace("[][]", "[]")
+            } else
+                null
+        }
+        if (arrayTypes.isEmpty()) {
+            arrayTypes = listOf("Array")
+        }
+        returnClasses.addAll(arrayTypes)
     }
     returnClasses.addAll(classes)
     return returnClasses.mapNotNull {
@@ -222,7 +231,7 @@ fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimite
     val functionTypes = this.functionTypes.map {
         it.toString()
     }
-    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes.types.map { "${it.typeName}[]".replace("[][]", "[]")}
+    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes //+ arrayTypes.types.map { "${it.typeName}[]".replace("[][]", "[]")}
     val typesString = types.joinToString(delimiter)
     return if (typesString.isNotBlank())
         typesString
