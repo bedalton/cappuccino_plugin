@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.CARET_INDICATOR
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.GENERIC_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_SUPERCLASS_METHOD_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.inference.createTag
@@ -91,10 +92,14 @@ object ObjJMethodCallCompletionContributor {
         val scope: MethodScope = getTargetScope(elementsParentMethodCall)
 
 
+        val strictType = mutableListOf<String>()
         //Determine possible containing class names
         val possibleContainingClassNames: List<String> = when {
-            scope == MethodScope.STATIC -> ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
-            selectors.isNotEmpty() -> getClassConstraints(selectors[0], tag)
+            scope == MethodScope.STATIC -> {
+                strictType.add(elementsParentMethodCall.callTargetText)
+                ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
+            }
+            selectors.isNotEmpty() -> getClassConstraints(selectors[0], tag, strictType)
             else -> emptyList()
         }
 
@@ -109,6 +114,7 @@ object ObjJMethodCallCompletionContributor {
         var didAddCompletions = addCompletionsForKnownClasses(
                 resultSet = result,
                 project = project,
+                strictTypes = strictType,
                 possibleContainingClassNames = possibleContainingClassNames,
                 selectorIndex = selectorIndex,
                 targetScope = scope,
@@ -219,7 +225,7 @@ object ObjJMethodCallCompletionContributor {
     }
 
 
-    private fun addCompletionsForKnownClasses(resultSet: CompletionResultSet, project:Project, possibleContainingClassNames: List<String>, targetScope: MethodScope, selectorIndex: Int, selectorString: String): Boolean {
+    private fun addCompletionsForKnownClasses(resultSet: CompletionResultSet, project:Project, possibleContainingClassNames: List<String>, targetScope: MethodScope, selectorIndex: Int, selectorString: String, strictTypes:List<String>? = null): Boolean {
         // Check if class names are empty
         if (possibleContainingClassNames.isEmpty())
             return false
@@ -237,9 +243,6 @@ object ObjJMethodCallCompletionContributor {
                     val constructs = it.getMethodStructs(true, createTag())
                     constructs
                 }
-                .filter {
-                    selectorRegex.containsMatchIn(it.selectorString) && it.methodScope == targetScope
-                }
                 .forEach {
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
@@ -247,7 +250,11 @@ object ObjJMethodCallCompletionContributor {
                             selectorStruct = selectorStruct,
                             addSpaceAfterColon = true,
                             icon = ObjJIcons.METHOD_ICON,
-                            priority = TARGETTED_METHOD_SUGGESTION_PRIORITY
+                            priority = if (strictTypes == null || it.containingClassName in strictTypes) {
+                                TARGETTED_METHOD_SUGGESTION_PRIORITY
+                            } else {
+                                TARGETTED_SUPERCLASS_METHOD_SUGGESTION_PRIORITY
+                            }
                     )
                     didAddCompletions = true
                 }

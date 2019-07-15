@@ -130,9 +130,9 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
                     classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType() }
                 }
             }
-        }.filter { it.name == variableNameString && it.static }
+        }.filter { it.name == variableNameString && it.static == static }
                 .flatMap {
-                    (it as? JsTypeDefNamedProperty)?.types?.types ?: listOfNotNull( it as? JsTypeListFunctionType)
+                    (it as? JsTypeDefNamedProperty)?.types?.types ?: listOfNotNull( it as? JsTypeListFunctionType )
                 }.toSet()
         return InferenceResult(types = types)
     }
@@ -420,10 +420,20 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     if (parentTypes == null) {
         return INFERRED_ANY_TYPE
     }
-    val types = parentTypes.arrayTypes.types
-    if (types.isNotEmpty()) {
+
+    var types =  parentTypes.types.flatMap {
+        (it as? JsTypeListType.JsTypeListArrayType)?.types.orEmpty()
+    }.toSet()
+    if (types.isNotNullOrEmpty()) {
+        LOGGER.info("Found array types as $types")
         return InferenceResult(types = types)
     }
+    types = parentTypes.arrayTypes.types
+    if (types.isNotEmpty()) {
+        LOGGER.info("Found array types as $types")
+        return InferenceResult(types = types)
+    }
+    LOGGER.info("Did not find array types")
     return INFERRED_ANY_TYPE
 }
 

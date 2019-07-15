@@ -567,14 +567,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 internal val PsiElement.textWithoutCaret:String get() = this.text?.replace(ObjJBlanketCompletionProvider.CARET_INDICATOR.toRegex(), "") ?: ""
 
 internal fun String.toIndexPatternString():String  {
-    /*
     val queryBody = "([^A-Z_]*?)"
     val stringBuilder = StringBuilder("[_]?")
     this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("(?<=[A-Z_])".toRegex()).forEach {
-        LOGGER.info("ToIndexWithPart: $it, making <$stringBuilder>")
         stringBuilder.append(queryBody).append(it)
     }
     return stringBuilder.append(queryBody).append(".*").toString()
-     */
-    return "[_]?"+this.replace(ObjJCompletionContributor.CARET_INDICATOR, "([^:]*?)")+"?(.*)"
+    //return "[_]?"+this.replace(ObjJCompletionContributor.CARET_INDICATOR, "([^:]*?)")+"?(.*)"
 }
