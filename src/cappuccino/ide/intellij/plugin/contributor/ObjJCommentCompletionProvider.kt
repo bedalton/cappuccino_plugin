@@ -297,7 +297,7 @@ object ObjJCommentCompletionProvider {
                     ?: element.expr?.leftExpr?.functionLiteral  as? ObjJFunctionDeclarationElement<*>)
                     ?.paramNames.orEmpty()
             else -> {
-                LOGGER.info("Unexpected element type <${element.elementType}> encountered for get Parameter names")
+                LOGGER.severe("Unexpected element type <${element.elementType}> encountered for get Parameter names")
                 emptyList()
             }
         }

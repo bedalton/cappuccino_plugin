@@ -86,14 +86,12 @@ fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
         it.toSelectorStruct()
     }
     val returnTypeStrings = getReturnTypes(tag).toJsTypeList()
-    LOGGER.info("Found <${returnTypeStrings.size}> types for method $text")
     val returnType = if (returnTypeStrings.isNotEmpty())
         InferenceResult(types = returnTypeStrings)
     else
         null
     val out = ObjJMethodStruct(selectors = selectors, returnType = returnType, methodScope = methodScope, containingClassName = containingClassName)
     putUserData(METHOD_STRUCT_KEY, out)
-    LOGGER.info("Method out == <$out>")
     return out
 }
 

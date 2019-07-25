@@ -99,12 +99,8 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         return null
     }
     val returnTypes = getReturnTypesFromKnownClasses(project, callTargetTypes, selector, tag)
-    LOGGER.info("Found <${returnTypes.classes.size}> class types from struct for method selector <$selector>")
     if (returnTypes.classes.withoutAnyType().isNotEmpty()) {
-        LOGGER.info("Returning ${returnTypes.classes.size} class types from struct for method selector <$selector>")
         return returnTypes
-    } else {
-        LOGGER.info("Failed to find class types from struct for method selector <$selector>")
     }
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance[selector, project]
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
@@ -161,8 +157,6 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
                     nullable = true
                 out?.types.orEmpty()
             }
-
-    LOGGER.info("Finished searching classes for selector <$selector>")
     return InferenceResult(
             types = types.toSet(),
             nullable = nullable
@@ -180,10 +174,8 @@ private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: S
         it.returnType?.types.orEmpty()
     }
     if (types.isNullOrEmpty()) {
-        LOGGER.info("Got <0> types")
         return null
     }
-    LOGGER.info("Got <${types.size}> types")
     return InferenceResult(types = types.toSet(), nullable = nullable)
 }
 
@@ -272,10 +264,8 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     }
     val isValidClass = ObjJImplementationDeclarationsIndex.instance.containsKey(className, methodCall.project)
     if (!isValidClass) {
-        LOGGER.info("Failed to get valid class from alloc statement")
         return null
     }
-    LOGGER.info("Found alloc statement type of <$className>")
     return InferenceResult(
             types = setOf(className).toJsTypeList()
     )
@@ -302,10 +292,8 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
         return inferFunctionCallReturnType(callTarget.functionCall!!, tag)
     }
     if (callTarget.qualifiedReference != null) {
-        LOGGER.info("Call target is for qualified reference")
         return inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)
     }
-    LOGGER.info("Call target expression is unexpected for element: <${callTarget.text}>")
     return null
 }
 

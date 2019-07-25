@@ -8,9 +8,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
-import com.intellij.openapi.project.Project
-import com.intellij.psi.impl.source.jsp.jspJava.JspClassLevelDeclarationStatement
-import com.intellij.psi.stubs.StubElement
 
 interface JsTypeDefClassDeclaration<PsiT:JsTypeDefClassDeclaration<PsiT,StubT>,StubT:JsTypeDefClassDeclarationStub<PsiT>> : JsTypeDefStubBasedElement<StubT>, JsTypeDefElement, JsTypeDefHasNamespace {
     val typeName: JsTypeDefTypeName?

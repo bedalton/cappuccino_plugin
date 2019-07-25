@@ -33,9 +33,8 @@ import com.intellij.openapi.roots.libraries.ui.RootDetector
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.DefaultLibraryRootsComponentDescriptor
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.LibraryEditor
 import com.intellij.openapi.vfs.VirtualFile
-
-import javax.swing.*
-import java.util.Arrays
+import java.util.*
+import javax.swing.JComponent
 
 class ObjJLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
     override fun getRootTypePresentation(type: OrderRootType): OrderRootTypePresentation? {

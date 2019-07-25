@@ -42,8 +42,6 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
         val editorVirtualFile = editor?.virtualFile ?: return
         if (editorVirtualFile.path != file.path)
             return
-        LOGGER.info("File opened is current file in current editor")
-
     }
 
     private fun registerProjectRootChangeListener(project: Project) {

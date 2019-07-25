@@ -106,11 +106,9 @@ object ObjJMethodCallCompletionContributor {
         // Attempt to add completions for known classes
         val project = psiElement.project
         if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
-            LOGGER.info("Adding all possible class methods. Classes: $possibleContainingClassNames")
             if (addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, scope))
                 return
         }
-        LOGGER.info("Adding method call completions for types: <$possibleContainingClassNames>")
         var didAddCompletions = addCompletionsForKnownClasses(
                 resultSet = result,
                 project = project,
@@ -126,7 +124,6 @@ object ObjJMethodCallCompletionContributor {
             return
         }
 
-        LOGGER.info("Did not add completions")
         //Attempt other was to add completions
         didAddCompletions = addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
 
@@ -231,9 +228,11 @@ object ObjJMethodCallCompletionContributor {
             return false
         // initialize base variables
         var didAddCompletions = false
-        val selectorBefore = selectorString.split(CARET_INDICATOR).firstOrNull() ?: return false
-        val selectorRegex = "^${selectorBefore}".toRegex()
-        LOGGER.info("Selector regex == <${selectorString.toIndexPatternString()}>")
+        var selectorStringBefore = selectorString.split(CARET_INDICATOR).firstOrNull() ?: return false
+        val lastColon = selectorStringBefore.lastIndexOf(":")
+        if (lastColon > 0) {
+            selectorStringBefore = selectorStringBefore.substring(0, lastColon - 1)
+        }
         // Loop through all possible target classes and add appropriate completions
         possibleContainingClassNames
                 .flatMap {
@@ -243,7 +242,7 @@ object ObjJMethodCallCompletionContributor {
                     val constructs = it.getMethodStructs(true, createTag())
                     constructs
                 } .filter {
-                    selectorString.isEmpty() || it.selectorStringWithColon.startsWith(selectorString)
+                    selectorStringBefore.isEmpty() || it.selectorStringWithColon.startsWith(selectorStringBefore)
                 }
                 .forEach {
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach

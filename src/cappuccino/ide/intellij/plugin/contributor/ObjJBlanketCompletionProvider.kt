@@ -502,7 +502,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val project = element.project
         val previousComponents = qualifiedNameComponent.previousSiblings
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
-        LOGGER.info("Converted <${previousComponents.map{it.text}}> -> ${inferred.types.size} types into ${inferred.classes.size} type strings")
         val classes = inferred.classes.toMutableSet() + (if (inferred.types.any { it is JsTypeListArrayType }) listOf("Array") else emptyList())
         val collapsedClass = classes.flatMap { className ->
             JsTypeDefClassesByNameIndex.instance[className, project].map {
@@ -513,13 +512,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val includeStatic = index == 1 && classes.any { it == firstItem}
 
         val classIndexString = inferred.toIndexSearchString
-        LOGGER.info("Class index string == <$classIndexString> for ${classes.size} classes.")
 
         val functions = if (includeStatic)
             collapsedClass.staticFunctions
         else
             collapsedClass.functions
-        LOGGER.info("Found <${functions.size}> functions. There are <${JsTypeDefFunctionsByClassNamesIndex.instance.getAllKeys(project).size}> classes in functions index")
 
         functions.forEach { classFunction ->
             val functionName = classFunction.name ?: return@forEach

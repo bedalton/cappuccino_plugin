@@ -32,7 +32,7 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
     val constructors = body.interfaceConstructorList
     if (constructors.isEmpty())
         return
-    val properties=body.propertyList
+    val properties= body.propertyList
     val functions = body.functionList
     if (properties.isEmpty())
         return
@@ -73,7 +73,6 @@ class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, propert
     override fun applyFix(project: Project, file: PsiFile?, editor: Editor?) {
         if (applyFixActual(project, file, editor))
             return
-        LOGGER.severe("Failed to combine variable declaration and interface element")
     }
 
     private fun applyFixActual(project: Project, file: PsiFile?, editor: Editor?) : Boolean {
@@ -110,7 +109,6 @@ class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, propert
                 out.append("\n\tstatic self").append(it.text)
             }
             out.append(interfaceText.substring(bodyStartOffset))
-            LOGGER.info("WouldWrite:\n$out")
             val document = interfaceElement.document ?: return@runWriteAction false
             EditorUtil.deleteText(document, textRange)
             EditorUtil.insertText(document, out.toString(), textRange.startOffset)

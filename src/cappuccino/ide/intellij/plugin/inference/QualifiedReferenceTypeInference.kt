@@ -288,8 +288,6 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         if (JsTypeDefClassesByNameIndex.instance.containsKey(className, project)) {
             return InferenceResult(types = setOf(className).toJsTypeList())
         }
-    } else {
-        LOGGER.info("$variableNameString is variable declaration")
     }
     val assignedExpressions = getAllVariableNameAssignmentExpressions(variableName)
     val out = getInferredTypeFromExpressionArray(assignedExpressions, tag)
@@ -427,15 +425,12 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
         (it as? JsTypeListArrayType)?.types.orEmpty()
     }.toSet()
     if (types.isNotNullOrEmpty()) {
-        LOGGER.info("Found array types as $types")
         return InferenceResult(types = types)
     }
     types = parentTypes.arrayTypes.types
     if (types.isNotEmpty()) {
-        LOGGER.info("Found array types as $types")
         return InferenceResult(types = types)
     }
-    LOGGER.info("Did not find array types")
     return INFERRED_ANY_TYPE
 }
 

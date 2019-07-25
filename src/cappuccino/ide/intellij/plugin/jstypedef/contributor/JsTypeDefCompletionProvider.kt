@@ -57,10 +57,6 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
                 resultSet.stopHere()
             }
         }
-        LOGGER.info("CompletionText: ${element.elementType}(${element.textWithoutCaret});" +
-                "Parent: <${element.parent?.elementType}>; " +
-                "PrevSibling: <${prevSibling?.elementType}>; " +
-                "SearchString: <$indexSearchString>")
     }
 
 

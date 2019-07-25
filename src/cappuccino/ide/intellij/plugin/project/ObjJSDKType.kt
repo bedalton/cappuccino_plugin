@@ -81,7 +81,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         val modificator = sdk.sdkModificator
         setupSdkPaths(sdk.homeDirectory, modificator)
         modificator.commitChanges()
-        LOGGER.info("Setup paths")
     }
 
     private fun setupSdkPaths(sdkRoot: VirtualFile?, sdkModificator: SdkModificator) {
@@ -93,7 +92,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         sdkModificator.versionString = getVersionString(sdkRoot.path)
         val frameworkDirectories = findFrameworkFolders(sdkRoot.path)
         for ((frameworkName, directory) in frameworkDirectories) {
-            LOGGER.info("Adding Framework: $frameworkName")
             findAndAddSourceRoots(directory, sdkModificator)
         }
     }
@@ -107,7 +105,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         return file.children.filter { it.exists() && it.isDirectory }.mapNotNull {directory ->
             val plist = directory.children.firstOrNull { it.exists() && !it.isDirectory && it.name.toLowerCase() == INFO_PLIST_FILE_NAME_TO_LOWER_CASE } ?: return@mapNotNull null
             val frameworkName = findFrameworkNameInPlistText(plist.contents) ?: return@mapNotNull null
-            LOGGER.info("Found Framework: $frameworkName")
             Pair(frameworkName, directory)
         }
     }
