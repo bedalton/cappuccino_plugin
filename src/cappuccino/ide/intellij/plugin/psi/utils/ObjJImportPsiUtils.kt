@@ -84,7 +84,7 @@ object ObjJImportPsiUtils {
     }
 
     fun multiResolve(importIncludeElement: ObjJImportIncludeStatement) : List<ObjJFile> {
-        val reference = importIncludeElement.reference
+        val reference = getReference(importIncludeElement)
         return if (reference is PsiPolyVariantReference)
             reference.multiResolve(true).mapNotNull { it.element as? ObjJFile }
         else {

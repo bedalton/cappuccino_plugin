@@ -360,6 +360,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImportsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImportInstancesIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>

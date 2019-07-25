@@ -10,12 +10,12 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import com.intellij.openapi.diagnostic.Logger
 
 import java.util.ArrayList
-import java.util.logging.Logger
 
 object ObjJElementFactory {
-    private val LOGGER = Logger.getLogger(ObjJElementFactory::class.java.name)
+    private val LOGGER = Logger.getInstance(ObjJElementFactory::class.java)
     const val PlaceholderClassName = "_XXX__"
 
     fun createClassName(project:Project, className:String) : ObjJClassName? {
@@ -176,6 +176,24 @@ object ObjJElementFactory {
         val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.getChildOfType(ObjJProtocolDeclaration::class.java)?.getChildOfType(ObjJMethodHeader::class.java)?.methodHeaderReturnTypeElement
         com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
         return returnTypeElement!!
+    }
+
+    fun createImportFileElement(project:Project, fileName:String) : PsiElement {
+        if (fileName.isEmpty())
+            throw Exception("Cannot create import element with empty filename")
+        val script = "@import \"$fileName\"".trimIndent()
+        val file = createFileFromText(project, script)
+        return file.firstChild ?: throw Exception("Import filename element should not be null")
+    }
+
+    fun createImportFrameworkFileElement(project:Project, frameworkName:String, fileName:String) : PsiElement {
+        if (frameworkName.isEmpty())
+            throw Exception("Cannot create import element with empty framework name")
+        if (fileName.isEmpty())
+            throw Exception("Cannot create import element with empty file name")
+        val script = "@import <$frameworkName/$fileName>".trimIndent()
+        val file = createFileFromText(project, script)
+        return file.firstChild ?: throw Exception("Import framework element should not be null")
     }
 
 }

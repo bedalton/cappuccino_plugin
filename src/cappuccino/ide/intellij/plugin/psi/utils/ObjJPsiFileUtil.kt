@@ -52,13 +52,12 @@ object ObjJPsiFileUtil {
     }
 
     fun getImportedClassNames(fileIn:ObjJFile) : List<String> {
-        val out = fileIn.getImportedFiles(
+        return fileIn.getImportedFiles(
                 recursive = true,
                 cache = true
-        ).flatMap {file ->
+        ).flatMap { file ->
             file.classDeclarations.map { it.classNameString }
         }
-        return out
     }
 }
 

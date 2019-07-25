@@ -15,6 +15,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 
 object EditorUtil {
@@ -128,6 +130,9 @@ object EditorUtil {
         return tabSize
     }
 
+    fun formatRange(file:PsiFile, textRange: TextRange) {
+        CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(textRange))
+    }
 }
 
 val PsiElement.document : Document? get() {

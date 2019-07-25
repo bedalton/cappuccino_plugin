@@ -1083,8 +1083,10 @@ object ObjJPsiImplUtil {
         return fileName
     }
 
+    /*
     @JvmStatic
     fun getReference(statement: ObjJImportIncludeStatement): PsiReference? = ObjJImportPsiUtils.getReference(statement)
+    */
 
     @JvmStatic
     fun resolve(statement: ObjJImportIncludeStatement): ObjJFile? = ObjJImportPsiUtils.resolve(statement)
