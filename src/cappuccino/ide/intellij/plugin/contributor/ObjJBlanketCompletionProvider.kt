@@ -300,6 +300,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             if (type.isNotNullOrBlank())
                 lookupElement = lookupElement.withPresentableText("${it.text} : $type")
             val asFunctionDeclaration = it.parentFunctionDeclaration
+            val priority = ObjJCompletionContributor.TARGETTED_VARIABLE_SUGGESTION_PRIORITY
             lookupElement = if (asFunctionDeclaration != null) {
                 lookupElement
                         .withInsertHandler(ObjJFunctionNameInsertHandler)
@@ -308,7 +309,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 lookupElement.withInsertHandler(ObjJVariableInsertHandler)
             }
             lookupElement = lookupElement.withBoldness(true)
-            resultSet.addElement(lookupElement)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, priority))
         }
     }
 
