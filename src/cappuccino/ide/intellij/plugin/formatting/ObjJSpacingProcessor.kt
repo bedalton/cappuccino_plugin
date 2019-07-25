@@ -63,7 +63,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(0, 0, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
-        if (type1 == ObjJ_SINGLE_LINE_COMMENT) {
+        if (type1 in ObjJTokenSets.COMMENTS) {
             return Spacing.createSpacing(0, 0, 1, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
