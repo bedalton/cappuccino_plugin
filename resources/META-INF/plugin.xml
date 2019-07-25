@@ -59,18 +59,11 @@
       <li>Added import statement name suggestions</li>
       <li>Added Objective-J SDK and Library type
         <ul>
-          <li>This allows for easier definition and reuse of framework source</li>
+          <li>This allows for easier definition and reuse of framework sources</li>
           <li>This also causes the IDE to alert a user when making changes to the framework files<br/>Which may be undesireable</li>
         </ul>
       </li>
-      <li>Added simple javascript type definition language
-        <ul>
-          <li>Previously javascript classes were hard coded and there were expensive parsing operations to figure out unknown types</li>
-          <li>Type definition language will allow for easier definitions of built in javascript classes</li>
-          <li>Language is simple and will allow for definition of custom classes</li>
-          <li>Definitions are defined with a .jstypedef file extension</li>
-          <li>See tutorial on how to create your own definitions <a href="...">...</a></li>
-        </ul></li>
+      <li>Extended javascript function comletions</li>
     </ul>
 
     <h4>Version: 0.3.05</h4>
