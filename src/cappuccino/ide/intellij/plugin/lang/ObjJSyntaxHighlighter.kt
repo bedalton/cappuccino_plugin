@@ -63,6 +63,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_TRY ||
                 tokenType == ObjJTypes.ObjJ_VAR ||
                 tokenType == ObjJTypes.ObjJ_WHILE ||
+                tokenType == ObjJTypes.ObjJ_IF ||
                 //tokenType.equals(ObjJTypes.ObjJ_WITH) ||
                 tokenType == ObjJTypes.ObjJ_NULL_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_NEW ||
