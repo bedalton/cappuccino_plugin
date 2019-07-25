@@ -31,6 +31,8 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     override fun annotate(
             psiElement: PsiElement,
             annotationHolder: AnnotationHolder) {
+        if (DumbService.isDumb(psiElement.project))
+            return
         when (psiElement) {
             is ObjJFormalVariableType -> annotateFormalVariableType(psiElement, annotationHolder)
             is ObjJClassName -> highlightClassName(psiElement, annotationHolder)
@@ -144,7 +146,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     }
 
     private fun stripLoopWordsIfInSelector(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
-        if (psiElement.hasParentOfType(ObjJMethodCall::class.java)) {
+        if (psiElement.isOrHasParentOfType(ObjJSelector::class.java)) {
             stripAnnotation(psiElement, annotationHolder)
         }
     }
