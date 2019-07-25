@@ -21,8 +21,6 @@ object ObjJSdkProjectRootsChangeListener : ModuleRootListener {
             LOGGER.severe("SdkRootsChangeListener: Failed to get project on roots change. Object is of type: ${event.source.javaClass.canonicalName}")
             return
         }
-        project
-
     }
 
 }
