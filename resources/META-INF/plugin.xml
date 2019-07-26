@@ -450,11 +450,11 @@
             class="cappuccino.ide.intellij.plugin.actions.ObjJCreateFileAction">
       <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
     </action>
-    <action
+    <!--action
         id="JsTypeDef.NewFile"
         icon="ObjJIcons.JSDEF_DOCUMENT_ICON"
         class="cappuccino.ide.intellij.plugin.jstypedef.actions.JsTypeDefCreateFileAction">
       <add-to-group group-id="NewGroup" anchor="after" relative-to-action="ObjJ.NewFile"/>
-    </action>
+    </action -->
   </actions>
 </idea-plugin>
