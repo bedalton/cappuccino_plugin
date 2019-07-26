@@ -23,8 +23,10 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
+import javafx.scene.control.ProgressIndicator
 
 class ObjJVariableReference(
         element: ObjJVariableName,
@@ -86,6 +88,9 @@ class ObjJVariableReference(
 
     override fun isReferenceTo(otherElement: PsiElement): Boolean {
 
+        if (DumbService.isDumb(myElement.project)) {
+            return false
+        }
         // Element is in compiled objective-j document
         try {
             if (otherElement.containingFile.text.startsWith("@STATIC;") || myElement.containingFile.text.startsWith("@STATIC;")) {
@@ -144,6 +149,9 @@ class ObjJVariableReference(
 
     override fun resolve(): PsiElement? {
         return myElement.resolveFromCache {
+            if (DumbService.isDumb(myElement.project)) {
+                return@resolveFromCache null
+            }
             val result = multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse()).mapNotNull { it.element }
             if (nullIfSelfReferencing.orFalse()) {
                 return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
@@ -212,6 +220,9 @@ class ObjJVariableReference(
 
     fun resolve(nullIfSelfReferencing: Boolean? = null, tag:Long? = null) : PsiElement? {
         return myElement.resolveFromCache {
+            if (DumbService.isDumb(myElement.project)) {
+                return@resolveFromCache null
+            }
             val result = multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse()).mapNotNull { it.element }
             if (nullIfSelfReferencing.orFalse()) {
                 return@resolveFromCache  result.filterNot { it == myElement }.firstOrNull()
