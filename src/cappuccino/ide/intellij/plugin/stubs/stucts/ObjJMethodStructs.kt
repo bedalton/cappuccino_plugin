@@ -108,7 +108,7 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
     val variableType = getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.variableType ?: return emptyList()
     if (getter != null) {
         if (getter.endsWith(":"))
-            getter = getter.substring(0, getter.lastIndex - 1)
+            getter = getter.substring(0, getter.lastIndex)
         methods.add(
                 ObjJMethodStruct(
                         selectors = listOf(Getter(getter, containingClassName)),
@@ -120,8 +120,6 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
     }
     var setter = setter
     if (setter != null) {
-        if (setter.endsWith(":"))
-            setter = setter.substring(0, setter.lastIndex - 1)
         val prefix = if (startsWithVowelRegex.containsMatchIn(variableType)) "an" else "a"
         val variableName = prefix + variableType.capitalize()
         methods.add(
