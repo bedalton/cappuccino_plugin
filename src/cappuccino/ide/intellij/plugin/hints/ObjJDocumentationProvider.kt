@@ -228,7 +228,6 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         val name = this.text
         val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
         if (propertyTypes.isNotNullOrBlank()) {
-
             val classNames = inferredTypes?.toClassListString(null)
             if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
                 out.append("property ").append(name)
