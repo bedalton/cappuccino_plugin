@@ -125,18 +125,15 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (type2 == ObjJ_INSTANCE_VARIABLE_LIST) {
-            if (objJSettings.INSTANCE_VARIABLE_LIST_BRACE_FORCE == CommonCodeStyleSettings.DO_NOT_FORCE)
-                return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return if (objJSettings.INSTANCE_VARIABLE_LIST_BRACE_FORCE == CommonCodeStyleSettings.DO_NOT_FORCE)
+                Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             else
-                return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+                Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (type1 == ObjJ_STATEMENT_OR_BLOCK && type2 == ObjJ_ELSE_IF_STATEMENT) {
-            if (mySettings.ELSE_ON_NEW_LINE) {
-                return Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-            } else {
-                return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-            }
+            val spacing = if(mySettings.SPACE_BEFORE_ELSE_KEYWORD) 1 else 0
+            return getSpacingIfNewLine(mySettings.ELSE_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_WHILE && elementType == ObjJ_DO_WHILE_STATEMENT) {
@@ -157,11 +154,11 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type2 == ObjJ_FINALLY || type2 == ObjJ_FINALLY_PRODUCTION) {
             val spacing = if (mySettings.SPACE_BEFORE_FINALLY_KEYWORD) 1 else 0
-            return getSpacingIfNewLine(mySettings.FINALLY_ON_NEW_LINE)
+            return getSpacingIfNewLine(mySettings.FINALLY_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_ELSE_STATEMENT || type2 == ObjJ_ELSE_IF_STATEMENT) {
-            val spacing = if (type2 == ObjJ_ELSE_STATEMENT && mySettings.SPACE_BEFORE_ELSE_LBRACE) 1 else 0
+            val spacing = if (type2 == ObjJ_ELSE_STATEMENT && mySettings.SPACE_BEFORE_ELSE_KEYWORD) 1 else 0
             val lines = if (mySettings.ELSE_ON_NEW_LINE) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
 

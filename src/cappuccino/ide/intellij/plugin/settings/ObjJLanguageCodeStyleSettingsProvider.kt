@@ -42,7 +42,10 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     "SPACE_BEFORE_TRY_LBRACE",
                     "SPACE_BEFORE_CATCH_LBRACE",
                     "SPACE_BEFORE_FINALLY_LBRACE",
-                    "SPACE_BEFORE_CATCH_KEYWORD"
+                    "SPACE_BEFORE_CATCH_KEYWORD",
+                    "SPACE_BEFORE_FINALLY_KEYWORD",
+                    "SPACE_BEFORE_ELSE_KEYWORD",
+                    "SPACE_BEFORE_WHILE_KEYWORD"
             )
         } else if (settingsType == SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
