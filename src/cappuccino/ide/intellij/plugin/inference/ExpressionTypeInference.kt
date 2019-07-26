@@ -210,7 +210,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
         }
         if (rightExpr.arrayIndexSelector != null) {
             val types =  current.types.flatMap {
-                (it as? JsTypeListArrayType)?.types.orEmpty()
+                (it as? JsTypeListArrayType)?.types ?: (it as? JsTypeListType.JsTypeListMapType)?.valueTypes.orEmpty()
             }
             current = InferenceResult(types = types.toSet())
             //current = current.copy(classes = current.classes.plus(JS_ARRAY.className))
