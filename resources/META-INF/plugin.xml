@@ -421,6 +421,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex"/>
 
 
     <!-- Annotators -->
