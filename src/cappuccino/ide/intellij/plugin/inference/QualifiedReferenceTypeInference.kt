@@ -7,11 +7,11 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTyp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
@@ -19,6 +19,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -130,7 +131,9 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
                     classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType() }
                 } + (if (parentTypes.types.any { it is JsTypeListArrayType }) JsTypeDefClassesByNameIndex.instance["Array", project].flatMap { arrayClass ->
                     arrayClass.propertyList.toNamedPropertiesList() + arrayClass.functionList.map { it.toJsTypeListType() }
-                } else emptyList())
+                } else emptyList()) + (JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
+                    typeAlias.typesList.functionTypes + typeAlias.typesList.interfaceTypes.flatMap { it.staticProperties } + typeAlias.typesList.interfaceTypes.flatMap { it.staticFunctions }
+                })
             }
         }.filter { it.name == variableNameString && it.static == static }
                 .flatMap {
@@ -139,10 +142,29 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
         return InferenceResult(types = types)
     }
 
+
+
+    val others:List<JsTypeListType> = parentTypes.types.mapNotNull{ it as? JsTypeListType.JsTypeListBasicType }.flatMap { type ->
+        (JsTypeDefTypeAliasIndex.instance[type.typeName, project].flatMap { typeAlias ->
+            typeAlias.typesList.functionTypes + typeAlias.typesList.interfaceTypes.flatMap { it.staticProperties } + typeAlias.typesList.interfaceTypes.flatMap { it.staticFunctions }
+        })
+    }.filter {
+        it.name == variableNameString
+    }.flatMap {
+        if (it is JsTypeDefNamedProperty)
+            it.types.types
+        if (it is JsTypeListType)
+            listOf(it as JsTypeListType)
+        else
+            emptyList()
+    }
+
     val classes = parentTypes.classes.mapNotNull {
         ProgressManager.checkCanceled()
         getClassDefinition(project, it)
     }.collapseWithSuperType(project)
+
+
     val classNames = classes.properties.filter {
             it.name == variableNameString
         }.flatMap { it.types.types }.toSet()
@@ -157,7 +179,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     else
         classNames
     val out = InferenceResult(
-            types = outTypes,
+            types = outTypes + others,
             nullable = true
     )
 
@@ -223,14 +245,29 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     }
 
     if (referencedVariable is ObjJVariableName) {
-        val out = ObjJVariableTypeResolver.resolveVariableType(
+        val outTemp = ObjJVariableTypeResolver.resolveVariableType(
                 variableName = referencedVariable,
                 recurse = false,
                 withInheritance = false,
-                tag = tag
+                tag = tag,
+                withGeneric = true
         )
-        if (out.isNotEmpty()) {
-            return InferenceResult(types = out.toJsTypeList())
+        if (outTemp.isNotEmpty()) {
+            val out = outTemp.map {
+                val parts = it.split("<")
+                when {
+                    parts.size == 1 -> JsTypeListType.JsTypeListBasicType(it)
+                    parts[0].toLowerCase() in arrayTypes -> {
+                        val className = if (parts[1].endsWith(">"))
+                            parts[1].substringFromEnd(0,1)
+                        else
+                            parts[1]
+                        JsTypeListArrayType(types = setOf(className).toJsTypeList())
+                    }
+                    else -> JsTypeListType.JsTypeListBasicType(it)
+                }
+            }
+            return InferenceResult(types = out.toSet())
         }
         if (!referencedVariable.isEquivalentTo(variableName)) {
             return inferQualifiedReferenceType(listOf(referencedVariable), tag)
