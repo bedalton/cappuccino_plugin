@@ -181,9 +181,9 @@ object ObjJElementFactory {
     fun createImportFileElement(project:Project, fileName:String) : PsiElement {
         if (fileName.isEmpty())
             throw Exception("Cannot create import element with empty filename")
-        val script = "@import \"$fileName\"".trimIndent()
+        val script = "@import \"$fileName\""
         val file = createFileFromText(project, script)
-        return file.firstChild ?: throw Exception("Import filename element should not be null")
+        return file.firstChild.firstChild ?: throw Exception("Import filename element should not be null")
     }
 
     fun createImportFrameworkFileElement(project:Project, frameworkName:String, fileName:String) : PsiElement {
@@ -193,7 +193,7 @@ object ObjJElementFactory {
             throw Exception("Cannot create import element with empty file name")
         val script = "@import <$frameworkName/$fileName>".trimIndent()
         val file = createFileFromText(project, script)
-        return file.firstChild ?: throw Exception("Import framework element should not be null")
+        return file.firstChild.firstChild ?: throw Exception("Import framework element should not be null")
     }
 
 }

@@ -29,7 +29,7 @@ class ObjJImportFileForFunctionQuickFix(thisFramework:String, private val functi
             val file = it.containingObjJFile ?: return@mapNotNull null
             val framework = file.frameworkName
             val text = "${it.description} in ${file.name}"
-            FrameworkFileNode(framework, file.virtualFile, text, null)
+            FrameworkFileNodeImpl(framework, file.virtualFile, text, null)
         }
     }
 }

@@ -34,9 +34,12 @@ class ObjJImportFileForClassQuickFix(thisFramework:String, private val className
             = ObjJBundle.message("objective-j.inspections.not-imported.fix.file-chooser-description", "class", className)
 
     override fun getPossibleFiles(project: Project) : List<FrameworkFileNode> {
-        var classes= ObjJClassDeclarationsIndex.instance[className, project].filter {
+        val classesTemp= ObjJClassDeclarationsIndex.instance[className, project]
+        var classes = classesTemp.filter {
             withSelector == null || it.hasMethod(withSelector)
         }
+        if (classes.isEmpty())
+            classes = classesTemp
         var files = classes.mapNotNull {
             it.containingObjJFile
         }
@@ -51,22 +54,8 @@ class ObjJImportFileForClassQuickFix(thisFramework:String, private val className
             }
         }
         val included = mutableListOf<VirtualFile>()
-
-        // Import Framework imports
-        val frameworkNames = classes.map {
-            it.enclosingFrameworkName
-        }.distinct().filterNot { it == EMPTY_FRAMEWORK_NAME }.flatMap{ frameworkName ->
-            FilenameIndex.getFilesByName(project, "$frameworkName.j",  GlobalSearchScope.everythingScope(project))
-                    .filter {
-                        frameworkName == it.enclosingFrameworkName
-                    }.distinct()
-                    .map { file ->
-                        FrameworkFileNode(frameworkName, file.virtualFile, "<$frameworkName/$frameworkName.j>", null)
-                    }
-        }
-
         // Format class importing files
-        val classesOut = classes.sortedBy {
+        return classes.sortedBy {
             when {
                 it is ObjJImplementationDeclaration && !it.isCategory -> "0${it.classNameString}"
                 it is ObjJProtocolDeclaration -> "1${it.classNameString}"
@@ -79,7 +68,6 @@ class ObjJImportFileForClassQuickFix(thisFramework:String, private val className
             included.add(node.file)
             node
         }
-        return frameworkNames + classesOut
     }
 
     private fun createNode(containingClass: ObjJClassDeclarationElement<*>) : FrameworkFileNode? {
@@ -87,7 +75,7 @@ class ObjJImportFileForClassQuickFix(thisFramework:String, private val className
         val frameworkName = file.frameworkName
         val text = formatClassName(containingClass)
         val icon = getIcon(text)
-        return FrameworkFileNode(frameworkName = frameworkName, file = file.virtualFile, text = text, icon = icon)
+        return FrameworkFileNodeImpl(frameworkName = frameworkName, file = file.virtualFile, text = text, icon = icon)
     }
 
 

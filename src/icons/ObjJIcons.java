@@ -10,6 +10,7 @@ public interface ObjJIcons {
     Icon CATEGORY_ICON = IconLoader.getIcon("/icons/category-icon.png");
     Icon PROTOCOL_ICON = IconLoader.getIcon("/icons/protocol-icon.png");
     Icon FUNCTION_ICON = IconLoader.getIcon("/icons/function-icon.png");
+    Icon FRAMEWORK_ICON = IconLoader.getIcon("/icons/sdk.png");
     Icon METHOD_ICON = IconLoader.getIcon("/icons/method-icon.png");
     Icon ACCESSOR_ICON = IconLoader.getIcon("/icons/accessor-icon.png");
     Icon SELECTOR_ICON = IconLoader.getIcon("/icons/selector-icon.png");

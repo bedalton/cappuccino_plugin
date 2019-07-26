@@ -754,13 +754,14 @@ elseIfStatement
 	}
 	;
 
-private elseStatement
+elseStatement
 	::= 'else' statementOrBlock
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
 		pin=1
 		methods=[
 			block="statementOrBlock"
+			getBlockList
 		]
 	}
 	;

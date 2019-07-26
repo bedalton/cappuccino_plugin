@@ -6,15 +6,14 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJImportBlock
+import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
+import cappuccino.ide.intellij.plugin.psi.ObjJImportStatementElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getChildOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySibling
-import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.utils.editor
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -31,8 +30,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.TokenType
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.ui.components.JBList
 import com.intellij.util.FileContentUtil
+import icons.ObjJIcons
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.layout.FlowPane
@@ -45,6 +47,7 @@ import kotlin.math.min
 abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseIntentionAction(), LocalQuickFix {
 
     private var selectedForImport: VirtualFile? = null
+    private var isFrameworkFileNode: Boolean = false
 
     override fun getFamilyName(): String {
         return ObjJInspectionProvider.GROUP_DISPLAY_NAME
@@ -71,18 +74,18 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
         if (files.isEmpty())
             return "No files found to import"
         if (files.size == 1) {
-            return if (addImport(project, file, files.first().file))
+            return if (addImport(project, file, files.first().file, isFrameworkFileNode))
                 null
             else
                 "Failed to add import"
         }
-        val dialog:DialogBuilder = createFileChooserDialog(files) { selectedForImport, dialogWrapper ->
+        val dialog: DialogBuilder = createFileChooserDialog(project, files) { selectedForImport, isFrameworkNode: Boolean, dialogWrapper ->
             if (selectedForImport == null) {
                 dialogWrapper.close(0)
                 return@createFileChooserDialog
             }
             TransactionGuardImpl.getInstance().submitTransaction(dialogWrapper.disposable, null, Runnable {
-                addImport(project, file, selectedForImport)
+                addImport(project, file, selectedForImport, isFrameworkNode)
                 dialogWrapper.close(0)
             })
         } ?: return "Failed to create dialog."
@@ -93,25 +96,37 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
         return null
     }
 
-    private fun createFileChooserDialog(fileDescriptors: List<FrameworkFileNode>, callback: (fileToImport: VirtualFile?, dialog:DialogWrapper) -> Unit): DialogBuilder? {
-        if (fileDescriptors.isEmpty())
+    private fun createFileChooserDialog(project: Project, fileDescriptorsIn: List<FrameworkFileNode>, callback: (fileToImport: VirtualFile?, isFrameworkNode: Boolean, dialog: DialogWrapper) -> Unit): DialogBuilder? {
+        if (fileDescriptorsIn.isEmpty())
             return null
+        val fileDescriptors = getFullFrameworkButtons(project, fileDescriptorsIn) + fileDescriptorsIn
         val mainLayout = JBList(fileDescriptors)
         mainLayout.cellRenderer = object : DefaultListCellRenderer() {
-            override fun getListCellRendererComponent(list: JList<*>?, valueIn: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
-                val label = super.getListCellRendererComponent(list, valueIn, index, isSelected, cellHasFocus) as JLabel
-                val value = valueIn as FrameworkFileNode
-                label.text = value.text
-                if (value.icon != null)
-                    label.icon = value.icon
+            override fun getListCellRendererComponent(list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean): Component {
+                val label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) as JLabel
+                when (value) {
+                    is FrameworkFileNode -> {
+                        label.text = value.text
+                        if (value.icon != null)
+                            label.icon = value.icon
+                    }
+                    is FrameworkMasterFileNode -> {
+                        label.text = value.text
+                        if (value.icon != null)
+                            label.icon = value.icon
+                    }
+                    else -> label.text = "{UNDEF}"
+                }
                 return label
             }
         }
-        mainLayout.selectedIndex = 0
         mainLayout.addListSelectionListener {
-            selectedForImport = fileDescriptors.getOrNull(mainLayout.selectedIndex)?.file
+            val selected = fileDescriptors.getOrNull(mainLayout.selectedIndex)
+            selectedForImport = selected?.file
+            isFrameworkFileNode = selected is FrameworkMasterFileNode
         }
 
+        mainLayout.selectedIndex = 0
         val buttons = FlowPane(Orientation.HORIZONTAL)
         buttons.alignment = Pos.CENTER_RIGHT
 
@@ -119,13 +134,13 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
                 .setNorthPanel(JLabel(ObjJBundle.message("objective-j.inspections.not-imported.fix.add-import-title")))
                 .centerPanel(mainLayout)
         dialog.setOkOperation {
-            invokeAndWaitIfNeeded { callback(selectedForImport, dialog.dialogWrapper) }
+            invokeAndWaitIfNeeded { callback(selectedForImport, isFrameworkFileNode, dialog.dialogWrapper) }
         }
         dialog.addOkAction()
         dialog.addCancelAction()
         dialog.okAction.setText("Add Import")
         dialog.setCancelOperation {
-            callback(null, dialog.dialogWrapper)
+            callback(null, isFrameworkFileNode, dialog.dialogWrapper)
         }
         dialog.setPreferredFocusComponent(mainLayout)
         return dialog
@@ -135,16 +150,22 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
 
     protected abstract fun getFileChooserDescription(): String
 
-    private fun addImport(project: Project, fileToAlter: PsiFile, virtualFileToImport: VirtualFile): Boolean {
+    private fun addImport(project: Project, fileToAlter: PsiFile, virtualFileToImport: VirtualFile, simplifyImports: Boolean): Boolean {
         return runUndoTransparentWriteAction {
             val fileToImport = PsiManager.getInstance(project).findFile(virtualFileToImport) as? ObjJFile
-                    ?: return@runUndoTransparentWriteAction false
+            if (fileToImport == null) {
+                LOGGER.severe("Cannot add import for non-ObjJFile")
+                return@runUndoTransparentWriteAction false
+            }
             val containingFramework = fileToImport.frameworkName
-            LOGGER.severe("ThisFramework: $thisFramework; ImportFileFramework: $containingFramework;")
-            val element = if (containingFramework == thisFramework && containingFramework != EMPTY_FRAMEWORK_NAME)
+
+            // Get import element
+            val element = if (containingFramework == thisFramework || containingFramework == EMPTY_FRAMEWORK_NAME)
                 ObjJElementFactory.createImportFileElement(project, fileToImport.name)
             else
                 ObjJElementFactory.createImportFrameworkFileElement(project, containingFramework, fileToImport.name)
+
+            // Find Sibling element to add import statement after
             var siblingElement = addAfter(fileToAlter)
             val added = if (siblingElement == null) {
                 siblingElement = fileToAlter.firstChild
@@ -156,6 +177,10 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
                 siblingElement.add(element)
             } else {
                 fileToAlter.addAfter(element, siblingElement)
+            }
+
+            if (simplifyImports) {
+                reduceFrameworksImports(fileToAlter as ObjJFile, containingFramework, fileToImport.containingFile.name)
             }
 
             if (siblingElement == null) {
@@ -170,6 +195,24 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
             return@runUndoTransparentWriteAction added != null
         }
 
+    }
+
+    private fun reduceFrameworksImports(file: ObjJFile, frameworkName: String, skipName: String): List<ObjJImportStatementElement> {
+        val imports = file.getChildrenOfType(ObjJImportBlock::class.java)
+                .flatMap {
+                    it.getChildrenOfType(ObjJImportStatementElement::class.java)
+                }
+                .filter {
+                    it.frameworkNameString == frameworkName && it.fileNameString != skipName
+                }
+
+        imports.forEach {
+            try {
+                it.parent.node.removeChild(it.node)
+            } catch (_: Exception) {
+            }
+        }
+        return imports
     }
 
     private fun addAfter(fileToAlter: PsiFile): PsiElement? {
@@ -203,6 +246,30 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
         }
     }
 
-    protected data class FrameworkFileNode(internal val frameworkName: String, internal val file: VirtualFile, internal val text: String, internal val icon: Icon? = null)
+    private fun getFullFrameworkButtons(project: Project, nodes: List<FrameworkFileNode>): List<FrameworkMasterFileNode> {
+        // Import Framework imports
+        return nodes.map {
+            it.frameworkName
+        }.distinct().filterNot { it == EMPTY_FRAMEWORK_NAME }.flatMap { frameworkName ->
+            FilenameIndex.getFilesByName(project, "$frameworkName.j", GlobalSearchScope.everythingScope(project))
+                    .filter {
+                        frameworkName == it.enclosingFrameworkName
+                    }.distinct()
+                    .map { file ->
+                        FrameworkMasterFileNode(frameworkName, file.virtualFile, "<$frameworkName/$frameworkName.j>", ObjJIcons.FRAMEWORK_ICON)
+                    }
+        }
+    }
+
+    interface FrameworkFileNode {
+        val frameworkName: String
+        val file: VirtualFile
+        val text: String
+        val icon: Icon?
+    }
+
+    protected data class FrameworkFileNodeImpl(override val frameworkName: String, override val file: VirtualFile, override val text: String, override val icon: Icon? = null) : FrameworkFileNode
+
+    protected data class FrameworkMasterFileNode(override val frameworkName: String, override val file: VirtualFile, override val text: String, override val icon: Icon? = null) : FrameworkFileNode
 
 }
