@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
@@ -13,6 +12,8 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 
 object ObjJInheritanceUtil {
+
+    private val STRIP_GENERIC_REGEX = "[^<]+(<[^>]+)".toRegex()
 
     fun getAllInheritedClasses(className: String, project: Project, withProtocols: Boolean = true): MutableSet<String> {
         val inheritedClasses = mutableSetOf<String>()
@@ -86,8 +87,8 @@ object ObjJInheritanceUtil {
         return false
     }
 
-    private fun appendAllInheritedClassesToSet(classNames: MutableSet<String>, className: String, project: Project, withProtocols:Boolean = true) {
-        if (className == UNDETERMINED || className == ID || className == ObjJClassType.CLASS || ObjJClassType.isPrimitive(className)) {
+    private fun appendAllInheritedClassesToSet(classNames: MutableSet<String>, classNameIn: String, project: Project, withProtocols:Boolean = true) {
+        if (classNameIn == UNDETERMINED || classNameIn == ID || classNameIn == ObjJClassType.CLASS || ObjJClassType.isPrimitive(classNameIn)) {
             return
         }
 
@@ -95,6 +96,7 @@ object ObjJInheritanceUtil {
             classNames.add(UNDETERMINED)
             return
         }
+        val className = classNameIn.replace(STRIP_GENERIC_REGEX, "")
         val classesDeclarations = ObjJClassDeclarationsIndex.instance[className, project]
         if (classesDeclarations.isEmpty()) {
             return
