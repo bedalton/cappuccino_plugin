@@ -19,18 +19,6 @@ interface JsProperty {
     val callback: JsTypeListFunctionType?
 }
 
-class CollapsedClassType(project:Project, typesList: InferenceResult) {
-    private val collapsedClasses:Set<JsClassDefinition> by lazy {
-        typesList.types.collapseToDefinitions(project)
-    }
-
-    private val collapsedArrayTypes by lazy {
-        typesList.arrayTypes.types.collapseToDefinitions(project)
-    }
-
-
-}
-
 private fun Iterable<JsTypeListType>.collapseAllSuperTypeNames(project:Project, captured:MutableSet<String> = mutableSetOf(), out:MutableSet<String> = mutableSetOf()) : Set<String> {
     this.filter { it is JsTypeListType.JsTypeListBasicType }.forEach {basicType ->
         val type = basicType.typeName

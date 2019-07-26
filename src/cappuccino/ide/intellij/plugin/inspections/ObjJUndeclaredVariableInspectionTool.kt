@@ -182,7 +182,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
         private fun isJsStandardVariable(variableName: ObjJVariableName): Boolean {
             val variableNameText = variableName.text
-            return ObjJBuiltInJsProperties.propertyExists(variableNameText) || ObjJBuiltInJsProperties.funcExists(variableNameText)
+            return JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(variableNameText, variableName.project) || JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(variableNameText, variableName.project)
         }
 
         private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
