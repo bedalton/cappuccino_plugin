@@ -183,6 +183,7 @@ fun Iterable<InferenceResult>.combine(): InferenceResult {
 }
 
 internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<String> {
+    var hadSpecificArrayTypes = true
     if (this == INFERRED_ANY_TYPE) {
         return if (simplifyAnyTypeTo != null)
             setOf(simplifyAnyTypeTo)
@@ -205,14 +206,16 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
     if (isJsObject)
         returnClasses.add("Object")
     if (arrayTypes.types.isNotNullOrEmpty()) {
-        var arrayTypes = arrayTypes.types.mapNotNull {
-            if (it.typeName != "Array" && it.typeName !in anyTypes) {
+        var arrayTypes = arrayTypes.types.map {
+            if (it.typeName != "Array" && it.typeName !in anyTypes)
                 "${it.typeName}[]".replace("[][]", "[]")
-            } else
-                null
-        }
-        if (arrayTypes.isEmpty()) {
-            arrayTypes = listOf("Array")
+            else if (it.typeName !in anyTypes)
+                "Array<?>"
+            else
+                "Array"
+        }.toSet()
+        if (arrayTypes.size > 1) {
+            arrayTypes = arrayTypes - "Array"
         }
         returnClasses.addAll(arrayTypes)
     }
@@ -220,6 +223,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
     return returnClasses.mapNotNull {
         when (it) {
             in anyTypes -> simplifyAnyTypeTo
+            in arrayClassNames -> if (hadSpecificArrayTypes) null else it
             "string" -> "CPString"
             else -> it
         }
@@ -259,6 +263,8 @@ internal val booleanTypes = listOf("bool", "boolean")
 internal val stringTypes = listOf("string", "cpstring")
 internal val numberTypes = listOf("number", "int", "integer", "float", "long", "long long", "double")
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
+internal val arrayTypes = listOf("array", "cparray", "cpmutablearray")
+internal val arrayClassNames = arrayTypes
 internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
 
 internal fun Iterable<String>.withoutAnyType(): Set<String> {

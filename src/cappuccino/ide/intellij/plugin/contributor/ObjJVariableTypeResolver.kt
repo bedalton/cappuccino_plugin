@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -13,15 +14,15 @@ import com.intellij.psi.PsiElement
 
 object ObjJVariableTypeResolver {
 
-    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
+    fun resolveVariableType(variableName: ObjJVariableName, withGeneric:Boolean, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJCommentEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
-            return resolveVariableTypeWithoutMethodParse(variableName, recurse, tag, withInheritance)
+            return resolveVariableTypeWithoutMethodParse(variableName, withGeneric, recurse, tag, withInheritance)
         }
         return emptySet()
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
+    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, withGeneric:Boolean, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
 
@@ -56,7 +57,7 @@ object ObjJVariableTypeResolver {
         }
 
         // Get call target from formal variable types
-        val className = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
+        val className = getPossibleCallTargetTypesFromFormalVariableTypes(variableName, withGeneric)
         if (className.isNotNullOrEmpty()) {
             return if (withInheritance)
                 ObjJInheritanceUtil.getAllInheritedClasses(className!!, project).toSet()
@@ -81,9 +82,13 @@ object ObjJVariableTypeResolver {
         return if (out.isNotEmpty()) out else setOf()
     }
 
-    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName):String? {
+    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName, withGeneric: Boolean):String? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        return formalVariableType.varTypeId?.className?.text ?: formalVariableType.text
+        var genericClass = if (withGeneric) formalVariableType.classNameGeneric?.text.orEmpty() else ""
+        if (genericClass.isNotNullOrEmpty()) {
+            genericClass = "<$genericClass>"
+        }
+        return formalVariableType.varTypeId?.className?.text ?: formalVariableType.text + genericClass
     }
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName:ObjJVariableName): ObjJFormalVariableType? {
