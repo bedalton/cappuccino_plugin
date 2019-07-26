@@ -220,8 +220,14 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
         if (targetElement != null)
             return targetElement
         targetElement = fileToAlter.firstChild
-        if (targetElement.elementType == TokenType.WHITE_SPACE)
-            targetElement = targetElement.getNextNonEmptySibling(true)
+        while (targetElement.elementType == TokenType.WHITE_SPACE || targetElement.elementType in ObjJTokenSets.COMMENTS) {
+            val temp = targetElement?.getNextNonEmptySibling(true)
+            if (temp.elementType in ObjJTokenSets.COMMENTS)
+                targetElement = temp
+            else {
+                break
+            }
+        }
         return if (targetElement.elementType in ObjJTokenSets.COMMENTS)
             targetElement
         else
