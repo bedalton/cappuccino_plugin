@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.TypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
@@ -19,6 +20,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameRefe
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
@@ -494,6 +497,21 @@ object JsTypeDefPsiImplUtil {
     fun isNullable(keyValuePair: JsTypeDefKeyValuePair) : Boolean {
         return keyValuePair.typeList.any { it.nullType != null }
     }
+
+    // ============================== //
+    // ========= TypeAlias ========== //
+    // ============================== //
+
+    @JvmStatic
+    fun getTypeNameString(typeAlias:JsTypeDefTypeAlias) : String {
+        return typeAlias.stub?.typeName ?: typeAlias.typeName?.text ?: UNDEF_CLASS_NAME
+    }
+
+    @JvmStatic
+    fun getTypesList(typeAlias:JsTypeDefTypeAlias) : InferenceResult {
+        return typeAlias.stub?.types ?: InferenceResult(types = typeAlias.typeList.toJsTypeDefTypeListTypes())
+    }
+
 
     // ============================== //
     // ====== Class/Interface ======= //

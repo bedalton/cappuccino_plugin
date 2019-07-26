@@ -13,7 +13,7 @@
 	generateTokenAccessors=true
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
 	consumeTokenMethod("interfaceBody")="consumeTokenFast"
-	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeMapElement|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
+	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeAlias|typeMapElement|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
 	implements(".*")="cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 	name("eos") = "semi-colon"
 	name("stringLiteral") = "String"
@@ -101,7 +101,7 @@ private definition
 	|	variableDeclaration
 	|	functionDeclaration
 	|	typeMapElement
-	|	type
+	|	typeAlias
 	|	keyList eos?
 	|	';'
 	;
@@ -149,6 +149,7 @@ variableDeclaration
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 		]
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
 	    methods = [
 	        isNullable
 	        getPropertyTypes
@@ -161,7 +162,6 @@ variableDeclaration
 	        isQuiet
 	        isSilent
 	    ]
-	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
 	}
 	;
 private variableDeclarationPrefix
@@ -388,6 +388,23 @@ mapType
 	::= MAP '<' keyTypes ',' valueTypes '>'
 	{
 	    pin=1
+	}
+	;
+
+typeAlias
+	::= ALIAS typeName '?'? ':' types eos?
+	{
+		pin=1
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeAliasStub"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInModule"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+		methods = [
+			getTypesList
+			getTypeNameString
+		]
 	}
 	;
 

@@ -247,7 +247,7 @@ interface JsNamedProperty {
 
 
 sealed class JsTypeListType(open val typeName: String) {
-    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType(if (types.isNotEmpty()) "Array<${types.map { it.typeName }.toSet().joinToString("|")}>" else "Array[]")
+    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType(if (types.isNotEmpty()) "Array<${types.map { it.typeName }.toSet().joinToString("|")}>" else "Array")
     data class JsTypeListKeyOfType(val genericKey: String, val mapName: String) : JsTypeListType("KeyOf:$mapName")
     data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName")
     data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map")

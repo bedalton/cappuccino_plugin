@@ -15,7 +15,6 @@ class JsTypeDefIndexService : StubIndexService() {
             }
     }
 
-
     override fun indexFunction(stub: JsTypeDefFunctionStub, sink:IndexSink) {
         if (stub.functionName.isBlank())
             return
@@ -75,6 +74,10 @@ class JsTypeDefIndexService : StubIndexService() {
 
     override fun indexKeyList(stub:JsTypeDefKeysListStub, sink: IndexSink) {
         sink.occurrence(JsTypeDefKeyListsByNameIndex.instance.key, stub.listName)
+    }
+
+    override fun indexTypeAlias(stub: JsTypeDefTypeAliasStub, sink: IndexSink) {
+        sink.occurrence(JsTypeDefTypeAliasIndex.KEY, stub.typeName)
     }
 
     override fun indexTypeMap(stub:JsTypeDefTypeMapStub, sink:IndexSink) {

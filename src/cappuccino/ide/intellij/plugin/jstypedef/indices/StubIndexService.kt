@@ -19,6 +19,9 @@ open class StubIndexService {
         throw NotImplementedError("index functions method must be overridden")
     }
 
+    open fun indexTypeAlias(stub:JsTypeDefTypeAliasStub, sink:IndexSink) {
+        throw NotImplementedError("index typealias method must be overridden")
+    }
 
     open fun indexProperty(stub: JsTypeDefPropertyStub, sink: IndexSink) {
         throw NotImplementedError("index property method must be overridden")
