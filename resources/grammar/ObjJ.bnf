@@ -1064,12 +1064,17 @@ methodDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 		]
 		methods = [
 			block="/methodBlock"
 			getBlockList
 			createTreeStructureElement
 			createFoldingDescriptor
+			getContainingClassName
+			getContainingClass
+			getContainingSuperClass
+			getContainingSuperClassName
 			//getMethodHeaderCache
 		]
 	}
@@ -1664,6 +1669,8 @@ propertyName
 	|	stringLiteral
     | 	integer
     |	variableName
+    | 	DELETE
+    | 	keyword
     {
 
 	 	extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -1999,26 +2006,33 @@ nullLiterals
 
 formalVariableType
 	::= varTypeId
-	| VAR_TYPE_CHAR
-	| VAR_TYPE_BYTE
-	| VAR_TYPE_SHORT
-	| VAR_TYPE_INT
-	| VAR_TYPE_LONG_LONG
-	| VAR_TYPE_LONG
-	| VAR_TYPE_FLOAT
-	| VAR_TYPE_DOUBLE
-	| VAR_TYPE_IBOUTLET
-	| VAR_TYPE_IBACTION
-	| VAR_TYPE_BOOL
-	| VAR_TYPE_SEL
-	| VAR_TYPE_UNSIGNED
-	| VAR_TYPE_SIGNED
-	| <<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
-	| className
+	| 	VAR_TYPE_CHAR
+	| 	VAR_TYPE_BYTE
+	| 	VAR_TYPE_SHORT
+	| 	VAR_TYPE_INT
+	| 	VAR_TYPE_LONG_LONG
+	| 	VAR_TYPE_LONG
+	| 	VAR_TYPE_FLOAT
+	| 	VAR_TYPE_DOUBLE
+	| 	VAR_TYPE_IBOUTLET
+	| 	VAR_TYPE_IBACTION
+	| 	VAR_TYPE_BOOL
+	| 	VAR_TYPE_SEL
+	| 	VAR_TYPE_UNSIGNED
+	| 	VAR_TYPE_SIGNED
+	| 	<<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
+	| 	className classNameGeneric?
 	{
 		methods = [
 			getVariableType
 		]
+	}
+	;
+
+classNameGeneric
+	::= '<' className '>'
+	{
+		pin = 1;
 	}
 	;
 
