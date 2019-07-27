@@ -45,7 +45,7 @@ object ObjJCommentEvaluatorUtil {
         val varName = element.text
         element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
                 .sortedByDescending { it.textRange.startOffset }
-                .map { it.text }
+                .flatMap { it.text.split("\n") }
                 .forEach { comment ->
                     val matcher = VARIABLE_TYPE_REGEX.matcher(comment)
                     if (matcher.find()) {
