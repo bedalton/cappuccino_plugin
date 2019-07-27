@@ -42,7 +42,7 @@ internal class InterfaceShouldBeTypeMapFix(interfaceElement: JsTypeDefInterfaceE
     override fun applyFix(project: Project, file: PsiFile?, editor: Editor?) {
         if (applyFixActual(project))
             return
-        LOGGER.info("Failed to transform interface to typemap")
+        LOGGER.severe("Failed to transform interface to typemap")
     }
 
     private fun applyFixActual(project: Project) : Boolean {

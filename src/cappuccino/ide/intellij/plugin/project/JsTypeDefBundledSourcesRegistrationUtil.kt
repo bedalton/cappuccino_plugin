@@ -37,7 +37,6 @@ object JsTypeDefBundledSourcesRegistrationUtil {
                 && JsTypeDefClassesByNameIndex.instance.containsKey("Window", project)
                 && JsTypeDefPropertiesByNamespaceIndex.instance.containsKey("Window.document", project)
         ) {
-            LOGGER.info("Project already has typedef definitions")
             return
         }
         val moduleScope = module.moduleContentWithDependenciesScope
@@ -80,7 +79,6 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
         // Check if same version
         if (isSourceCurrent(libraryPath, modifiableModel)) {
-            LOGGER.info("Source jstypedef files are current")
             return true
         }
 

@@ -169,7 +169,6 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
 private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: String, tag: Long) : InferenceResult? {
     var nullable = false
     val types = getMethodStructs(true, tag).filter {
-        LOGGER.info("<$selector> == <${it.selectorStringWithColon}>")
         selector == it.selectorStringWithColon
     }.flatMap {
         if (it.returnType?.nullable.orFalse())

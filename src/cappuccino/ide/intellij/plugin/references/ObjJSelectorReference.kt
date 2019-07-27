@@ -15,7 +15,10 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReferenceResolveUtil.SelectorResolveResult
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.ui.DialogWrapper
 
 import java.util.ArrayList
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassName as getContainingClassName
@@ -146,5 +149,7 @@ class ObjJSelectorReference(element: ObjJSelector) : PsiPolyVariantReferenceBase
     override fun handleElementRename(selectorString: String): PsiElement {
         return ObjJPsiImplUtil.setName(myElement, selectorString)
     }
+
+    
 
 }

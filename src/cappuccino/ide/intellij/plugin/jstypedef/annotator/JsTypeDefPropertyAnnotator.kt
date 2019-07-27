@@ -43,7 +43,7 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
     if (interfaceElements.isEmpty())
         return
     if (interfaceElements.size > 1) {
-        LOGGER.info("Too many implementations exist")
+        LOGGER.warning("Too many implementations exist")
     }
 
     val interfaceElement = interfaceElements.firstOrNull() ?: return

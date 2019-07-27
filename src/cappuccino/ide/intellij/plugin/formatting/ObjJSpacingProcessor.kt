@@ -59,7 +59,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 ObjJ_FUNCTION_DECLARATION -> objJSettings.FUNCTION_BRACE_FORCE
                 ObjJ_TRY_STATEMENT -> if (objJSettings.TRY_ON_NEW_LINE) CommonCodeStyleSettings.FORCE_BRACES_ALWAYS else CommonCodeStyleSettings.DO_NOT_FORCE
                 else -> {
-                    LOGGER.info("Failed to match parentType($elementType) for element: $type1")
+                    LOGGER.severe("Failed to match parentType($elementType) for element: $type1")
                     CommonCodeStyleSettings.DO_NOT_FORCE
                 }
             }

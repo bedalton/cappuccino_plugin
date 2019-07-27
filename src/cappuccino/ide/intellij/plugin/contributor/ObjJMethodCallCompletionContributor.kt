@@ -260,7 +260,6 @@ object ObjJMethodCallCompletionContributor {
                     didAddCompletions = true
                 }
 
-        LOGGER.info("DID ADD COMPLETIONS $didAddCompletions")
         val indexOfColon = selectorString.indexOf(":")
         if (targetScope.hasLocalScope && indexOfColon < 0 || indexOfColon == selectorString.lastIndex) {
             didAddCompletions = addAccessorLookupElements(resultSet, project, possibleContainingClassNames, selectorString) || didAddCompletions

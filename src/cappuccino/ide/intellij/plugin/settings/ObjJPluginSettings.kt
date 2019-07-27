@@ -242,7 +242,7 @@ object ObjJPluginSettings {
     // ======== Experimental ======== //
     // ============================== //
     private val experimental_allowSelectorRenameSetting:BooleanSetting = BooleanSetting("objj.experimental.allowSelectorRename", false)
-    var allowSelectorRename:Boolean get() {
+    var experimental_allowSelectorRename:Boolean get() {
         return experimental_allowSelectorRenameSetting.value.orFalse()
     } set(value) {
         experimental_allowSelectorRenameSetting.value = value
@@ -254,7 +254,7 @@ object ObjJPluginSettings {
         experimental_didAskAboutAllowSelectorRenameSetting.value = value
     }
     private val experimental_allowFrameworkSelectorRenameSetting:BooleanSetting = BooleanSetting("objj.experimental.allowFrameworkSelectorRename", false)
-    var allowFrameworkSelectorRename:Boolean get() {
+    var experimental_allowFrameworkSelectorRename:Boolean get() {
         return experimental_allowFrameworkSelectorRenameSetting.value.orFalse()
     } set(value) {
         experimental_allowFrameworkSelectorRenameSetting.value = value

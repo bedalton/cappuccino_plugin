@@ -679,6 +679,7 @@ accessorProperty
 
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			]
 		methods=[

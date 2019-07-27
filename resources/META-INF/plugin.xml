@@ -191,6 +191,8 @@
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJMethodParameterInfoHandler" />
     <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider" />
     <editorNotificationProvider implementation="cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification" />
+    <!-- automaticRenamerFactory implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorAutomaticRenamerFactory"/ -->
+    <renamePsiElementProcessor implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorRenameElementProcessor" />
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
