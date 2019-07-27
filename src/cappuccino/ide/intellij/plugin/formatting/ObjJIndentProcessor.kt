@@ -13,6 +13,7 @@ import com.intellij.psi.tree.TokenSet
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.formatting.Spacing
 import com.intellij.psi.TokenType.WHITE_SPACE
 import java.util.logging.Logger
 
@@ -221,7 +222,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if ((parentType == ObjJ_CASE_CLAUSE || parentType == ObjJ_DEFAULT_CLAUSE) && elementType == ObjJ_BRACKET_LESS_BLOCK) {
-            return Indent.getNoneIndent()
+            return Indent.getNormalIndent()
         }
 
         if (parentType == ObjJ_WHILE_STATEMENT && prevSiblingType == ObjJ_CLOSE_PAREN && !ObjJTokenSets.INDENT_CHILDREN.contains(elementType)) {
