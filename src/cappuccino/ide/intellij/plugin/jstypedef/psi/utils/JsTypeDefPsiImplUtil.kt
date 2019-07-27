@@ -97,11 +97,13 @@ object JsTypeDefPsiImplUtil {
         return oldModuleName.replace(newModuleName)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun setName(name:JsTypeDefTypeMapName, newName:String) : PsiElement {
         return name
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun setName(key:JsTypeDefGenericsKey, newName:String) : PsiElement {
         return key
@@ -564,7 +566,7 @@ object JsTypeDefPsiImplUtil {
             }
             is JsTypeDefPropertyName -> {
                 val escapedId = psiElement.escapedId?.text
-                val propertyName = escapedId?.substring(1, escapedId.length - 2) ?: (psiElement as JsTypeDefPropertyName).text
+                val propertyName = escapedId?.substring(1, escapedId.length - 2) ?: psiElement.text
 
                 "property $propertyName"
             }

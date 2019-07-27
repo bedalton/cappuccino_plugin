@@ -140,7 +140,7 @@ internal fun PsiElement.clearTag(tag:Long?):Boolean {
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun PsiElement.tagComplete(tag:Long?, setTag: Boolean = true):Boolean {
+internal fun PsiElement.tagComplete(tag: Long?):Boolean {
     if (tag == null)
         return false
     val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()

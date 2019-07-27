@@ -512,8 +512,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val firstItem = previousComponents[0].text.orEmpty()
         val includeStatic = index == 1 && classes.any { it == firstItem}
 
-        val classIndexString = inferred.toIndexSearchString
-
         val functions = if (includeStatic)
             collapsedClass.staticFunctions
         else

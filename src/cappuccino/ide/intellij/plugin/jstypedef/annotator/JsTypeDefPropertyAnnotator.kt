@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import cappuccino.ide.intellij.plugin.utils.document
-import com.intellij.codeInspection.BatchQuickFix
 import com.intellij.codeInspection.IntentionAndQuickFixAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
@@ -26,6 +25,7 @@ internal fun annotateProperty(property:JsTypeDefProperty, annotationHolder: Anno
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration:JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
     val className = property.propertyNameString
     val body = property.interfaceBodyProperty ?: return
@@ -33,7 +33,6 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
     if (constructors.isEmpty())
         return
     val properties= body.propertyList
-    val functions = body.functionList
     if (properties.isEmpty())
         return
     if (properties.none { it.propertyNameString == "prototype"})
@@ -48,7 +47,6 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
     }
 
     val interfaceElement = interfaceElements.firstOrNull() ?: return
-    val afterIndex = interfaceElement.openBrace ?: return
     val textRange = property.propertyName?.textRange ?: return
 
     val annotation = annotationHolder.createAnnotation(
@@ -71,11 +69,11 @@ class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, propert
     }
 
     override fun applyFix(project: Project, file: PsiFile?, editor: Editor?) {
-        if (applyFixActual(project, file, editor))
+        if (applyFixActual(project))
             return
     }
 
-    private fun applyFixActual(project: Project, file: PsiFile?, editor: Editor?) : Boolean {
+    private fun applyFixActual(project: Project) : Boolean {
 
         return runWriteAction {val interfaceElement = interfaceElement.element ?: return@runWriteAction false
 

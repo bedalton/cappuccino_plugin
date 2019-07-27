@@ -26,7 +26,6 @@ import com.intellij.psi.util.PsiTreeUtil
 object ObjJFunctionNameCompletionProvider {
 
     fun appendCompletionResults(resultSet: CompletionResultSet, element: PsiElement) {
-        val functionNamePattern = element.text.toIndexPatternString()
         addAllGlobalJSFunctionNames(resultSet, element.project, (element.textWithoutCaret.length > 5))
         addAllLocalFunctionNames(resultSet, element)
         addIndexBasedCompletions(resultSet, element)

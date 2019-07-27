@@ -136,7 +136,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
             val found = JsTypeDefFunctionsByNamespaceIndex.instance.getByPatternFlat(searchString, project).filter {
                 it.isStatic == isStatic
             }.map {
-                it.functionName ?: it
+                it.functionName
             }
             return PsiElementResolveResult.createResults(found)
         }
