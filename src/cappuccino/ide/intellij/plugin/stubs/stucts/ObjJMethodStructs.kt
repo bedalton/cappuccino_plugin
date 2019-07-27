@@ -255,7 +255,8 @@ fun StubInputStream.readSelectorStruct() : ObjJSelectorStruct {
             selector = selector,
             variableType = type,
             variableName = variableName,
-            hasColon = hasColon
+            hasColon = hasColon,
+            isContainerAClass = isContainerAClass
     )
 }
 
