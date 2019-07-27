@@ -4,6 +4,7 @@ package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
 import cappuccino.ide.intellij.plugin.utils.orDefault
+import cappuccino.ide.intellij.plugin.utils.orFalse
 
 object ObjJPluginSettings {
 
@@ -229,8 +230,6 @@ object ObjJPluginSettings {
         ignoreMissingClassNamesSetting.ignoreKeywords(value)
     }
 
-
-
     fun ignoreOvershadowedVariables() : Boolean {
         return ignoreOvershadowedVariablesSetting.value ?: IGNORE_OVERSHADOWED_VARIABLES_DEFAULT
     }
@@ -239,6 +238,26 @@ object ObjJPluginSettings {
         ignoreOvershadowedVariablesSetting.value = shouldIgnore
     }
 
-
+    // ============================== //
+    // ======== Experimental ======== //
+    // ============================== //
+    private val experimental_allowSelectorRenameSetting:BooleanSetting = BooleanSetting("objj.experimental.allowSelectorRename", false)
+    var allowSelectorRename:Boolean get() {
+        return experimental_allowSelectorRenameSetting.value.orFalse()
+    } set(value) {
+        experimental_allowSelectorRenameSetting.value = value
+    }
+    val experimental_didAskAboutAllowSelectorRenameSetting:BooleanSetting = BooleanSetting("objj.experimental.didAskAboutAllowSelectorRename", false)
+    var experimental_didAskAboutAllowSelectorRename:Boolean get() {
+        return experimental_didAskAboutAllowSelectorRenameSetting.value.orFalse()
+    } set(value) {
+        experimental_didAskAboutAllowSelectorRenameSetting.value = value
+    }
+    private val experimental_allowFrameworkSelectorRenameSetting:BooleanSetting = BooleanSetting("objj.experimental.allowFrameworkSelectorRename", false)
+    var allowFrameworkSelectorRename:Boolean get() {
+        return experimental_allowFrameworkSelectorRenameSetting.value.orFalse()
+    } set(value) {
+        experimental_allowFrameworkSelectorRenameSetting.value = value
+    }
 
 }

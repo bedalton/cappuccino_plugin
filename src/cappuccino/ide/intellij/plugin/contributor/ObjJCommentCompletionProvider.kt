@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -112,9 +113,12 @@ object ObjJCommentCompletionProvider {
             when (commentTokenParts.size - indexAfter) {
                 // Add class names if first token after @var
                 0, 1 -> {
-                    if (!isPrevSiblingClassName(lastPart, project))
+                    if (!isPrevSiblingClassName(lastPart)) {
                         ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
-                    else {
+                        JsTypeDefClassesByNameIndex.instance.getAllKeys(project).forEach {
+                            resultSet.addElement(LookupElementBuilder.create(it))
+                        }
+                    } else {
                         val variableNames = ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
                             it.text
                         }
@@ -184,7 +188,7 @@ object ObjJCommentCompletionProvider {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
-        val project: Project = element.project
+        
         var lastPart: String? = null
         for (part in commentTokenParts) {
             // Increment index at start to allow for simpler index calculations
@@ -204,7 +208,7 @@ object ObjJCommentCompletionProvider {
             when (commentTokenParts.size - indexAfter) {
                 // Add class names if first token after @var
                 0, 1 -> {
-                    if (!isPrevSiblingClassName(lastPart, project))
+                    if (!isPrevSiblingClassName(lastPart))
                         ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
                     lastPart = part
                 }
@@ -303,8 +307,8 @@ object ObjJCommentCompletionProvider {
         }
     }
 
-    private fun isPrevSiblingClassName(prevSiblingText: String?, project: Project): Boolean {
-        return prevSiblingText != null && ObjJClassDeclarationsIndex.instance.containsKey(prevSiblingText, project)
+    private fun isPrevSiblingClassName(prevSiblingText: String?): Boolean {
+        return prevSiblingText != null && prevSiblingText == "|"
     }
 
 }
