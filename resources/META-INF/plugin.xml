@@ -63,7 +63,8 @@
           <li>This also causes the IDE to alert a user when making changes to the framework files<br/>Which may be undesireable</li>
         </ul>
       </li>
-      <li>Extended javascript function comletions</li>
+      <li>Re-enabled the very buggy, and very experimental method selector rename</li>
+      <li>Extended javascript function completions</li>
     </ul>
 
     <h4>Version: 0.3.05</h4>
@@ -325,7 +326,7 @@
     />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJClassIsImportedInspection"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReferencedElementIsImportedInspection"
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
