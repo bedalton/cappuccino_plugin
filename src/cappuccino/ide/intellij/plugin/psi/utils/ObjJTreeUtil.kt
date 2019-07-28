@@ -216,6 +216,11 @@ fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
     return elementStartOffset - elementLineStartOffset
 }
 
+val PsiElement.lineNumber:Int? get() {
+    val elementStartOffset = this.textRange.startOffset
+    return document?.getLineNumber(elementStartOffset)
+}
+
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
     var node: ASTNode? = this.treePrev ?: getPrevInTreeParent(this) ?: return false

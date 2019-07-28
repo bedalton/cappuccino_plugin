@@ -1,5 +1,9 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferCallTargetType
+import cappuccino.ide.intellij.plugin.inference.toClassList
+import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
@@ -46,9 +50,20 @@ object ObjJDescriptionUtil {
         }
         val methodCall = selector.getParentOfType(ObjJMethodCall::class.java)
         var selectorString: String? = null
+        var className = "*"
         if (methodCall != null) {
             selectorString = methodCall.selectorString
+            val classes = inferCallTargetType(methodCall.callTarget, createTag())?.toClassList(null)?.withoutAnyType().orEmpty()
+            if (classes.isNotEmpty()) {
+                if (classes.size == 1)
+                    className = classes.first()
+                else if (classes.size <= 3)
+                    className = "(" + classes.joinToString("|") + ")"
+            }
+        } else if (!selector.hasParentOfType(ObjJSelectorLiteral::class.java)) {
+            className = selector.containingClassName
         }
+
         if (selectorString == null) {
             val methodHeader = selector.getParentOfType(ObjJMethodHeaderDeclaration::class.java)
             if (methodHeader != null) {
@@ -58,7 +73,7 @@ object ObjJDescriptionUtil {
             }
         }
         selectorString = selectorString ?: selector.getSelectorString(true)
-        return "[* $selectorString]"
+        return "[$className $selectorString]"
     }
 
     private fun getFormattedSelector(methodHeader: ObjJMethodHeader): String {

@@ -53,14 +53,11 @@ class ObjJSelectorAutomaticRenamerFactory : AutomaticRenamerFactory {
 
 internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCollection<UsageInfo>, newName: String?, allowRenameOutsideOfFramework: Boolean) : AutomaticRenamer() {
 
-    val forceShowPreview:Boolean
-
     init {
         val tag = createTag()
         val frameworkName = selector.enclosingFrameworkName
         val selectorString = selector.getParentOfType(ObjJHasMethodSelector::class.java)?.selectorString
                 ?: throw UnsupportedOperationException("Cannot rename selector out of expected context: "+ selector.parent?.elementType)
-        val declaredIn = getDeclaredIn(selector)
         val selectorDirectTypes = getTargetClass(selector, tag)
         val allPossibleClassTypes = if (selectorDirectTypes != null && selectorDirectTypes.isNotEmpty())
             getAllPossibleClassTypes(selector.project, selectorDirectTypes, selectorString)
@@ -76,7 +73,6 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
                 hasUnknownCallingClass = selectorsWithUnknownTypes,
                 matchesClasses = selectorsWithMatchingTypes
         )
-        forceShowPreview = selectorsWithUnknownTypes.isNotEmpty()
         var namedElements: List<PsiNamedElement> = if (selectorsWithUnknownTypes.isNotEmpty()) {
             usages.mapNotNull { it.element as? PsiNamedElement }
         } else {
@@ -90,25 +86,6 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
         }
         myElements.addAll(namedElements)
         suggestAllNames(selector.name, newName)
-    }
-
-    fun forceShowPreview(): Boolean {
-        return forceShowPreview
-    }
-
-    private fun getDeclaredIn(selector: ObjJSelector): DeclaredIn {
-        val parent = selector.getParentOfType(ObjJHasMethodSelector::class.java)!!
-        if (parent is ObjJMethodCall)
-            return DeclaredIn.USAGE
-        if (parent is ObjJSelector)
-            return DeclaredIn.SELECTOR_LITERAL
-        if (parent is ObjJPropertyAssignment)
-            return DeclaredIn.ACCESSOR
-        val containingClass = parent.containingClass ?: return DeclaredIn.UNKNOWN
-        return if (containingClass is ObjJProtocolDeclaration)
-            DeclaredIn.PROTOCOL
-        else
-            DeclaredIn.IMPLEMENTATION
     }
 
     private fun getTargetClass(selector: ObjJSelector, tag: Long): Set<String>? {
@@ -170,16 +147,6 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
 
     override fun entityName(): String {
         return "Selector"
-    }
-
-
-    internal enum class DeclaredIn {
-        IMPLEMENTATION,
-        PROTOCOL,
-        SELECTOR_LITERAL,
-        USAGE,
-        ACCESSOR,
-        UNKNOWN
     }
 
 
