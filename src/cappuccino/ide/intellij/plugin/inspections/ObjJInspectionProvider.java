@@ -13,7 +13,7 @@ public class ObjJInspectionProvider implements InspectionToolProvider {
                 ObjJVariableKeyWordScopeInspection.class,
                 ObjJVariableOvershadowInspection.class,
                 ObjJPossiblyUnintendedGlobalVariableInspectionTool.class,
-                ObjJClassIsImportedInspection.class
+                ObjJReferencedElementIsImportedInspection.class
         };
     }
 }
