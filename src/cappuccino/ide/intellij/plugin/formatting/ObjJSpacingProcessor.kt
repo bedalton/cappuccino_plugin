@@ -85,7 +85,53 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
-        if (elementType == ObjJ_STATEMENT_OR_BLOCK && type1 is )
+
+        if (elementType == ObjJ_STATEMENT_OR_BLOCK) {
+            val braceType = when (parentType) {
+                ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
+                ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
+                ObjJ_ELSE_STATEMENT -> mySettings.IF_BRACE_FORCE
+                ObjJ_FOR_STATEMENT -> mySettings.FOR_BRACE_FORCE
+                ObjJ_WHILE_STATEMENT -> mySettings.WHILE_BRACE_FORCE
+                ObjJ_DO_WHILE_STATEMENT -> mySettings.DOWHILE_BRACE_FORCE
+                ObjJ_FORMAL_PARAMETER_LIST -> objJSettings.FUNCTION_BRACE_FORCE
+                ObjJ_CATCH_PRODUCTION -> objJSettings.CATCH_BRACE_FORCE
+                ObjJ_FINALLY_PRODUCTION -> objJSettings.FINALLY_BRACE_FORCE
+                ObjJ_FUNCTION_LITERAL -> objJSettings.FUNCTION_BRACE_FORCE
+                ObjJ_FUNCTION_DECLARATION -> objJSettings.FUNCTION_BRACE_FORCE
+                ObjJ_TRY_STATEMENT -> if (objJSettings.TRY_ON_NEW_LINE) CommonCodeStyleSettings.FORCE_BRACES_ALWAYS else CommonCodeStyleSettings.DO_NOT_FORCE
+                else -> {
+                    LOGGER.severe("Failed to match parentType($elementType) for element: $type1")
+                    CommonCodeStyleSettings.DO_NOT_FORCE
+                }
+            }
+            val force = braceType == CommonCodeStyleSettings.FORCE_BRACES_ALWAYS
+                    || (braceType == CommonCodeStyleSettings.FORCE_BRACES_IF_MULTILINE && node2.psi.getChildrenOfType(ObjJCompositeElement::class.java).size > 1)
+            val needsSpace = when (parentType) {
+                ObjJ_IF_STATEMENT -> mySettings.SPACE_BEFORE_IF_LBRACE
+                ObjJ_ELSE_IF_STATEMENT -> mySettings.SPACE_BEFORE_ELSE_LBRACE
+                ObjJ_ELSE_STATEMENT -> mySettings.SPACE_BEFORE_ELSE_LBRACE
+                ObjJ_FOR_STATEMENT -> mySettings.SPACE_BEFORE_FOR_LBRACE
+                ObjJ_WHILE_STATEMENT -> mySettings.SPACE_BEFORE_WHILE_LBRACE
+                ObjJ_DO_WHILE_STATEMENT -> mySettings.SPACE_BEFORE_DO_LBRACE
+                ObjJ_FORMAL_PARAMETER_LIST -> mySettings.SPACE_BEFORE_METHOD_LBRACE
+                ObjJ_TRY_STATEMENT -> mySettings.SPACE_BEFORE_TRY_LBRACE
+                ObjJ_CATCH_PRODUCTION -> mySettings.SPACE_BEFORE_CATCH_LBRACE
+                ObjJ_FINALLY_PRODUCTION -> mySettings.SPACE_BEFORE_FINALLY_LBRACE
+                ObjJ_FUNCTION_LITERAL -> mySettings.SPACE_BEFORE_METHOD_LBRACE
+                ObjJ_FUNCTION_DECLARATION -> mySettings.SPACE_BEFORE_METHOD_LBRACE
+                ObjJ_TRY_STATEMENT -> mySettings.SPACE_BEFORE_TRY_LBRACE
+                else -> false
+            } && !force
+            val spacing = if (needsSpace) 1 else 0
+            val lines = if (force) 1 else 0
+            return if (type2 == ObjJ_CLOSE_BRACE)
+                Spacing.createSpacing(0, 0, 1, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            else if (type2 == ObjJ_OPEN_BRACE)
+                Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            else
+                Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
 
         if (type1 == ObjJ_SWITCH) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_PARENTHESES) 1 else 0
