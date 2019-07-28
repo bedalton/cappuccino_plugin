@@ -177,6 +177,7 @@
     <langCodeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJLanguageCodeStyleSettingsProvider"/>
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
     <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
+    <quoteHandler fileType="cappuccino.ide.intellij.plugin.lang.ObjJFileType" className="cappuccino.ide.intellij.plugin.formatting.ObjJSimpleQuoteHandler" />
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>

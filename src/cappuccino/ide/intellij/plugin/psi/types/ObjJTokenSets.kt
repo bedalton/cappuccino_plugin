@@ -12,6 +12,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SING
 
 object ObjJTokenSets {
 
+    val QUOTE_CHARS = create(ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO)
+
     val INDENT_CHILDREN = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK , ObjJ_INSTANCE_VARIABLE_LIST)
 
