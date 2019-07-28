@@ -3,6 +3,8 @@
 package cappuccino.ide.intellij.plugin.settings
 
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.BooleanSetting
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsUtil.IntegerSetting
+import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.utils.orDefault
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
@@ -258,6 +260,17 @@ object ObjJPluginSettings {
         return experimental_allowFrameworkSelectorRenameSetting.value.orFalse()
     } set(value) {
         experimental_allowFrameworkSelectorRenameSetting.value = value
+    }
+
+    private val messages_didSend_RestartNormallyAfterIndexUpdateSetting: IntegerSetting = IntegerSetting("objj.messages.restart-normally-after-index-update.did-send", -1)
+    var messages_didSend_RestartNormallyAfterIndexUpdate:Boolean get()
+            = messages_didSend_RestartNormallyAfterIndexUpdateSetting.value == ObjJStubVersions.SOURCE_STUB_VERSION
+    set(value) {
+        if (value) {
+            messages_didSend_RestartNormallyAfterIndexUpdateSetting.value == ObjJStubVersions.SOURCE_STUB_VERSION
+        } else {
+            messages_didSend_RestartNormallyAfterIndexUpdateSetting.value == -1
+        }
     }
 
 }
