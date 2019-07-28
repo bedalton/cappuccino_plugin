@@ -30,9 +30,9 @@ fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> 
         return out
     }
     for (child in children) {
-        //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
+        ////LOGGER.info("Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
         if (child.node.elementType === iElementType) {
-            //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
+            ////LOGGER.info("Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
             out.add(child)
         }
     }
@@ -122,7 +122,7 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
         if (out == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
+        ////LOGGER.info("<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }

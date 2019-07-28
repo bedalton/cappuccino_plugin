@@ -95,7 +95,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (isVariableDeclaredBeforeUse(variableName)) {
-                //LOGGER.log(Level.INFO, "Variable is <" + variableName.getText() + "> declared before use.");
+                ////LOGGER.info("Variable is <" + variableName.getText() + "> declared before use.");
                 return
             }
 

@@ -94,7 +94,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
         }
     }
     //if (marks > MAXIMUM_ACCESS_MARKS)
-      //  LOGGER.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
+      //LOGGER.warning(.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
     try {
         val inferredTypes = getIfNull?.invoke() ?: this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)

@@ -80,7 +80,7 @@ object ObjJSelectorReferenceResolveUtil {
         for (methodHeader in methodHeaders) {
             selectorElement = ObjJPsiImplUtil.getThisOrPreviousNonNullSelector(methodHeader, subSelector, selectorIndex)
             if (selectorElement == null) {
-                LOGGER.log(Level.SEVERE, "Method header returned an empty selector in matched header")
+               //LOGGER.severe("Method header returned an empty selector in matched header")
                 continue
             }
             if (sharesContainingClass(classConstraints, methodHeader)) {

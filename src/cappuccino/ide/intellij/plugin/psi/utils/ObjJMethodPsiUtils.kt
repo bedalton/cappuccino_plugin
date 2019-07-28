@@ -109,11 +109,11 @@ object ObjJMethodPsiUtils {
         if (hasMethodSelector == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
+        ////LOGGER.info("Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
         val selectorList = hasMethodSelector.selectorList
-        //LOGGER.log(Level.INFO, "Got selector list.");
+        ////LOGGER.info("Got selector list.");
         if (selectorList.isEmpty()) {
-            //LOGGER.log(Level.WARNING, "Cannot get this or previous non null selector when selector list is empty");
+            ////LOGGER.warning("Cannot get this or previous non null selector when selector list is empty");
             return null
         }
         var thisSelectorIndex: Int
@@ -137,7 +137,7 @@ object ObjJMethodPsiUtils {
                 return currentSelector
             }
         }
-        //LOGGER.log(Level.WARNING, "Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
+        ////LOGGER.warning("Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
         return null
     }
 
@@ -233,9 +233,9 @@ object ObjJMethodPsiUtils {
         }
         /*
         if (returnType != null) {
-            LOGGER.log(Level.INFO, !returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
+            //LOGGER.info(!returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
         } else {
-            LOGGER.log(Level.INFO, "VarTypeId: getTypeFromReturnStatements returned null");
+            //LOGGER.info("VarTypeId: getTypeFromReturnStatements returned null");
         }*/
         return returnType ?: varTypeId.text
     }
@@ -308,7 +308,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun getRangeInElement(selector: ObjJSelector): TextRange {
-        //LOGGER.log(Level.INFO,"Getting selector range for full selector text of <"+selector.getText()+">");
+        ////LOGGER.info("Getting selector range for full selector text of <"+selector.getText()+">");
         return selector.textRange
     }
 

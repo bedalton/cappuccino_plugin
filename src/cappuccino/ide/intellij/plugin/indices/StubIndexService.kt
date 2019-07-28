@@ -16,27 +16,27 @@ import java.util.logging.Logger
 open class StubIndexService internal constructor() {
 
     open fun indexMethod(methodHeaderStub: ObjJMethodHeaderStub, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexMethod()> method")
+       //LOGGER.warning("Using empty stub indexes <indexMethod()> method")
     }
 
     open fun indexMethodCall(methodCallStub: ObjJMethodCallStub, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexMethodCall()> method")
+       //LOGGER.warning("Using empty stub indexes <indexMethodCall()> method")
     }
 
     open fun indexClassDeclaration(stub: ObjJClassDeclarationStub<*>, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexImplementationClassDeclaration()> method")
+       //LOGGER.warning("Using empty stub indexes <indexImplementationClassDeclaration()> method")
     }
 
     open fun indexAccessorProperty(property: ObjJAccessorPropertyStub, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexAccessorProperty()> method")
+       //LOGGER.warning("Using empty stub indexes <indexAccessorProperty()> method")
     }
 
     open fun indexInstanceVariable(variableDeclarationStub: ObjJInstanceVariableDeclarationStub, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexInstanceVariable()> method")
+       //LOGGER.warning("Using empty stub indexes <indexInstanceVariable()> method")
     }
 
     open fun indexFunctionDeclaration(functionDeclarationStub: ObjJFunctionDeclarationElementStub<*>, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub indexes <indexFunctionDeclaration()> method")
+       //LOGGER.warning("Using empty stub indexes <indexFunctionDeclaration()> method")
     }
 
     /**
@@ -46,7 +46,7 @@ open class StubIndexService internal constructor() {
      */
     open fun indexSelectorLiteral(selectorLiteral: ObjJSelectorLiteralStub, indexSink: IndexSink) {
 
-        LOGGER.log(Level.WARNING, "Using empty stub index method <indexSelectorLiteral()>")
+       //LOGGER.warning("Using empty stub index method <indexSelectorLiteral()>")
     }
 
     /**
@@ -56,11 +56,11 @@ open class StubIndexService internal constructor() {
      */
     open fun indexGlobalVariableDeclaration(globalVariableDeclaration: ObjJGlobalVariableDeclarationStub, indexSink: IndexSink) {
 
-        LOGGER.log(Level.WARNING, "Using empty stub index method <globalVariableDeclaration()>")
+       //LOGGER.warning("Using empty stub index method <globalVariableDeclaration()>")
     }
 
     open fun indexImport(stub: ObjJImportStub<*>, indexSink: IndexSink) {
-        LOGGER.log(Level.WARNING, "Using empty stub index method <indexImport()>")
+       //LOGGER.warning("Using empty stub index method <indexImport()>")
     }
 
     open fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {

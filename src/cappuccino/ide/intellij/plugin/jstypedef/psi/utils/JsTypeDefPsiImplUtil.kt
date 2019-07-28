@@ -741,7 +741,7 @@ object JsTypeDefPsiImplUtil {
 
     fun eosToken(ahead: IElementType?, hadLineTerminator: Boolean): Boolean {
         if (ahead == null) {
-            //LOGGER.log(Level.INFO, "EOS assumed as ahead == null")
+            ////LOGGER.info("EOS assumed as ahead == null")
             return true
         }
         return ahead in EOS_TOKENS || hadLineTerminator

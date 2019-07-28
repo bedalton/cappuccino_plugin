@@ -12,13 +12,13 @@ interface JsTypeDefElement : ObjJUniversalPsiElement {
         get() {
             val file = containingFile
             if (file == null) {
-                LOGGER.log(Level.SEVERE, "Cannot get JsTypeDef file, as containing file is null.")
+               //LOGGER.severe("Cannot get JsTypeDef file, as containing file is null.")
                 return null
             }
             if (file is JsTypeDefFile) {
                 return file
             }
-            LOGGER.log(Level.SEVERE, "JsTypeDef file is actually of type: " + this.containingFile.javaClass.simpleName)
+           //LOGGER.severe("JsTypeDef file is actually of type: " + this.containingFile.javaClass.simpleName)
             return null
         }
     companion object {

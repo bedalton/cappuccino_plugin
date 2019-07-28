@@ -43,7 +43,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         try {
             indexSink.occurrence(ObjJUnifiedMethodIndex.KEY, selector)
         } catch (e: Exception) {
-            LOGGER.log(Level.SEVERE, "Failed to index selector with error: ${e.localizedMessage}")
+           //LOGGER.severe("Failed to index selector with error: ${e.localizedMessage}")
         }
         val className = methodHeaderStub.containingClassName
         indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassAndSelectorMethodIndex.KEY, ObjJClassAndSelectorMethodIndex.getClassMethodKey(className, selector))
@@ -58,7 +58,7 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         try {
             indexSink.occurrence<ObjJMethodHeaderDeclaration<*>, String>(ObjJClassMethodIndex.KEY, className)
         } catch (e: Exception) {
-            LOGGER.log(Level.SEVERE, "Failed to index class&selector tuple with error: ${e.localizedMessage}")
+           //LOGGER.severe("Failed to index class&selector tuple with error: ${e.localizedMessage}")
         }
 
     }

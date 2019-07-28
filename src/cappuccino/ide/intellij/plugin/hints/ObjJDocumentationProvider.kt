@@ -32,32 +32,32 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     it.quickInfo(comment)
                 }
                 .info(ObjJSelector::class.java) {
-                    // LOGGER.info("QuickInfo for method selector")
+                    //LOGGER.warning(.info("QuickInfo for method selector")
                     it.getParentOfType(ObjJMethodHeaderDeclaration::class.java)?.text ?: it.description?.presentableText
                 }
                 .info(ObjJMethodHeaderDeclaration::class.java, orParent = true) {
-                    // LOGGER.info("QuickInfo for methodHeaderDeclaration")
+                    //LOGGER.warning(.info("QuickInfo for methodHeaderDeclaration")
                     it.text
                 }
                 .info(ObjJMethodCall::class.java) { methodCall ->
-                    // LOGGER.info("QuickInfo for method call")
+                    //LOGGER.warning(.info("QuickInfo for method call")
                     methodCall.referencedHeaders.mapNotNull { it.text }.joinToString { "\n" }
                 }
                 .info(ObjJFunctionCall::class.java, orParent = true) {
-                    // LOGGER.info("QuickInfo for function call")
+                    //LOGGER.warning(.info("QuickInfo for function call")
                     it.functionDescription
                 }
                 .info(ObjJFunctionName::class.java, orParent = true) {
-                    // LOGGER.info("QuickInfo for function name")
+                    //LOGGER.warning(.info("QuickInfo for function name")
                     (it.parent as? ObjJFunctionCall)?.functionDeclarationReference?.description?.presentableText
                             ?: it.functionDescription
                 }
                 .info(ObjJQualifiedMethodCallSelector::class.java, orParent = true) {
-                    // LOGGER.info("QuickInfo for qualified method call selector")
+                    //LOGGER.warning(.info("QuickInfo for qualified method call selector")
                     it.quickInfo(comment)
                 }
                 .info(ObjJMethodDeclarationSelector::class.java, orParent = true) {
-                    // LOGGER.info("QuickInfo for method declaration selector")
+                    //LOGGER.warning(.info("QuickInfo for method declaration selector")
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
@@ -126,7 +126,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         //val doc = StringBuilder()
         val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
-        //// LOGGER.info("Generating doc comment from comment <${comment.commentText}>")
+        ////LOGGER.warning(.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
 }
@@ -197,7 +197,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
     } else {
-        //// LOGGER.info("Check QNR")
+        ////LOGGER.warning(.info("Check QNR")
         val prevSiblings = previousSiblings
         val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
         if (prevSiblings.isEmpty()) {
@@ -213,7 +213,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
                 return out.toString()
             }
             val classNames = inferenceResult?.toClassListString("<Any?>")
-            //// LOGGER.info("Tried to infer types. Found: [$inferredTypes]")
+            ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
             if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
                 out.append("parameter")
             else

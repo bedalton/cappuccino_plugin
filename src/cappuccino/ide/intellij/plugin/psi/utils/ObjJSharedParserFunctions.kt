@@ -34,12 +34,12 @@ object ObjJSharedParserFunctions {
     fun eosToken(ahead: IElementType?, hadLineTerminator: Boolean): Boolean {
 
         if (ahead == null) {
-            //LOGGER.log(Level.INFO, "EOS assumed as ahead == null")
+            ////LOGGER.info("EOS assumed as ahead == null")
             return true
         }
 
         // Check if the token is, or contains a line terminator.
-        //LOGGER.log(Level.INFO, String.format("LineTerminatorAheadToken: <%s>; CurrentToken <%s> Is Line Terminator?:  <%b>", ahead, builder_.getTokenText(), isLineTerminator));
+        ////LOGGER.info(String.format("LineTerminatorAheadToken: <%s>; CurrentToken <%s> Is Line Terminator?:  <%b>", ahead, builder_.getTokenText(), isLineTerminator));
         var isLineTerminator = ahead === ObjJTypes.ObjJ_BLOCK_COMMENT ||
                 ahead === ObjJTypes.ObjJ_SINGLE_LINE_COMMENT ||
                 ahead === ObjJTypes.ObjJ_ELSE ||
@@ -55,7 +55,7 @@ object ObjJSharedParserFunctions {
                 ahead === ObjJTypes.ObjJ_SEMI_COLON
         if (isLineTerminator || !ObjJPluginSettings.inferEOS()) {
             if (!isLineTerminator) {
-                //LOGGER.log(Level.INFO, "Failed EOS check. Ahead token is <"+ahead.toString()+">");
+                ////LOGGER.info("Failed EOS check. Ahead token is <"+ahead.toString()+">");
             }
             return isLineTerminator
         }

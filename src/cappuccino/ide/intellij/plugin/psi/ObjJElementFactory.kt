@@ -39,7 +39,7 @@ object ObjJElementFactory {
 
     fun createFunctionName(project: Project, functionName: String): ObjJFunctionName? {
         val scriptText = String.format("function %s(){}", functionName)
-        //LOGGER.log(Level.INFO, "Script text: <$scriptText>")
+        ////LOGGER.info("Script text: <$scriptText>")
         val file = createFileFromText(project, scriptText)
         val functionDeclaration = file.getChildOfType( ObjJFunctionDeclaration::class.java)
         return functionDeclaration!!.functionName
@@ -67,7 +67,7 @@ object ObjJElementFactory {
             for (child in file.children) {
                 childElementTypes.add(child.node.elementType.toString())
             }
-            //LOGGER.log(Level.INFO, "createSemiColonErrorElement(Project project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
+            ////LOGGER.info("createSemiColonErrorElement(Project project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
         }
         return errorElement
     }

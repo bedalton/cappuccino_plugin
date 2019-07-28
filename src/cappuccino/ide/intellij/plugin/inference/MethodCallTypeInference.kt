@@ -239,7 +239,6 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
         instanceVariable ->
         instanceVariable.getCachedInferredTypes(tag) {
-            LOGGER.info("Getting instance variable type information from <${instanceVariable.text}>")
             return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
         }?.classes.orEmpty()
     }

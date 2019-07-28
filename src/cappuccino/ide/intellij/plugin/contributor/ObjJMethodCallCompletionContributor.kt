@@ -43,7 +43,7 @@ object ObjJMethodCallCompletionContributor {
             result: CompletionResultSet,
             psiElement: PsiElement?) {
         if (psiElement == null) {
-            LOGGER.log(Level.SEVERE, "Cannot add selector lookup elements. Selector element is null")
+           //LOGGER.severe("Cannot add selector lookup elements. Selector element is null")
             return
         }
         val selectorLiteral = psiElement.getSelfOrParentOfType(ObjJSelectorLiteral::class.java)
@@ -52,7 +52,7 @@ object ObjJMethodCallCompletionContributor {
             return
         }
         val methodCall = psiElement.getParentOfType(ObjJMethodCall::class.java)
-                ?: //LOGGER.log(Level.INFO, "Cannot get completion parameters. Method call is null.");
+                ?: ////LOGGER.info("Cannot get completion parameters. Method call is null.");
                 return
         addMethodCallCompletions(result, psiElement, methodCall)
     }
@@ -60,7 +60,7 @@ object ObjJMethodCallCompletionContributor {
     private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?, useAllSelectors: Boolean = true) {
         // Check for null parent method call
         if (elementsParentMethodCall == null) {
-            LOGGER.log(Level.SEVERE, "Cannot add method call completions. Method call parent element is null")
+           //LOGGER.severe("Cannot add method call completions. Method call parent element is null")
             result.stopHere()
             return
         }
