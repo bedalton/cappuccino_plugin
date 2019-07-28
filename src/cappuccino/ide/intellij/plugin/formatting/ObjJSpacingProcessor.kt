@@ -44,7 +44,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         val node2 = child2.node
         val type2 = node2.elementType
 
-        if (type2 == ObjJ_STATEMENT_OR_BLOCK || type2 == ObjJ_BLOCK_ELEMENT) {
+        if (type2 == ObjJ_BLOCK_ELEMENT) {
             val braceType = when (elementType) {
                 ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
                 ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
@@ -85,6 +85,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
+        if (elementType == ObjJ_STATEMENT_OR_BLOCK && type1 is )
 
         if (type1 == ObjJ_SWITCH) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_PARENTHESES) 1 else 0
