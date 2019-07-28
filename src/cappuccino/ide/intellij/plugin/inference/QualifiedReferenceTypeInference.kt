@@ -257,6 +257,7 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
                 val parts = it.split("<")
                 when {
                     parts.size == 1 -> JsTypeListType.JsTypeListBasicType(it)
+                    parts[0].toLowerCase() == "jsobject" -> JsTypeListType.JsTypeListBasicType(parts[1])
                     parts[0].toLowerCase() in arrayTypes -> {
                         val className = if (parts[1].endsWith(">"))
                             parts[1].substringFromEnd(0,1)
