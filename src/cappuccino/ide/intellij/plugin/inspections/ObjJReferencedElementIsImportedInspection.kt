@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJImportFileForClassQuickFix
 import cappuccino.ide.intellij.plugin.fixes.ObjJImportFileForFunctionOrVariableQuickFix
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
@@ -45,6 +46,8 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
         val containingFile = functionCall.containingFile as? ObjJFile ?: return
         val importedFiles = containingFile.getImportedFiles(true)
         val referenced = functionCall.functionDeclarationReference?.containingFile ?: return
+        if (referenced is JsTypeDefFile)
+            return
         if (referenced in importedFiles)
             return
 
@@ -59,6 +62,8 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
         val containingFile = variableName.containingFile as? ObjJFile ?: return
         val importedFiles = containingFile.getImportedFiles(true)
         val referenced = variableName.reference.resolve(true)?.containingFile ?: return
+        if (referenced is JsTypeDefFile)
+            return
         if (referenced == containingFile)
             return
         if (referenced in importedFiles)
