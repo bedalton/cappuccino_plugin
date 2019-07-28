@@ -2,7 +2,9 @@ package cappuccino.ide.intellij.plugin.utils
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -96,6 +98,21 @@ object ObjJFrameworkUtils {
         }.map {
             it.containingDirectory
         }
+    }
+
+    fun getFileNamesInEnclosingDirectory(file:PsiFile, recursive:Boolean = true): List<String> {
+        var directory:PsiDirectory? = file.originalFile.containingDirectory ?: return emptyList()
+        val files = mutableListOf<String>()
+        val projectDirectory = file.project.guessProjectDir()
+        while(directory != null) {
+            files.addAll(getFileNamesInDirectory(directory, false))
+            if (!recursive)
+                break
+            if (directory.findSubdirectory("Framework") != null || directory == projectDirectory)
+                break
+            directory = directory.parent ?: return files
+        }
+        return files
     }
 
     fun getFileNamesInDirectory(directory: PsiDirectory?, recursive:Boolean = true) : List<String> {
