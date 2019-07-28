@@ -9,10 +9,13 @@ import com.intellij.psi.tree.TokenSet.create
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
+import com.intellij.psi.TokenType
 
 object ObjJTokenSets {
 
-    val QUOTE_CHARS = create(ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO)
+    val QUOTE_CHARS = create(ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO, TokenType.BAD_CHARACTER)
+
+    val STRING_COMPLETION_LITERALS = create(ObjJ_SINGLE_QUOTE_STRING_LITERAL, ObjJ_DOUBLE_QUOTE_STRING_LITERAL, ObjJ_QUO_TEXT)
 
     val INDENT_CHILDREN = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK , ObjJ_INSTANCE_VARIABLE_LIST)
