@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.getModule
 import cappuccino.ide.intellij.plugin.utils.virtualFile
 import com.intellij.ProjectTopics
@@ -20,6 +21,7 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
     init {
         registerFileOpenHandler(project)
         registerProjectRootChangeListener(project)
+        notifyUpdate(project)
     }
 
     private fun registerFileOpenHandler(project: Project) {
@@ -51,6 +53,17 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
     override fun projectOpened() {
         super.projectOpened()
 
+    }
+
+    private fun notifyUpdate(project: Project) {
+        if (ObjJPluginSettings.pluginUpdated) {
+            ObjJPluginSettings.pluginUpdated = false
+            //ObjJNotify.showUpdate(project)
+        }
+        if (ObjJPluginSettings.stubVersionsUpdated) {
+            ObjJPluginSettings.stubVersionsUpdated = false
+            ObjJNotify.showUpdateIndexWarning(project)
+        }
     }
 
     companion object {
