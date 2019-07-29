@@ -494,26 +494,27 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 .map { it.name }
         val files = ObjJFrameworkUtils.getFrameworkFileNames(element.project, framework).ifEmpty {
             ObjJFrameworkUtils.getFileNamesInEnclosingDirectory(element.containingFile, true)
-        }
-                .filter { it !in alreadyImported}
+        }.filter { it !in alreadyImported }
         val quoteType = element.getPreviousNonEmptySibling(false).elementType
         val quoteChar = when (quoteType) {
             ObjJTypes.ObjJ_SINGLE_QUO -> "'"
-            ObjJTypes.ObjJ_DOUBLE_QUO -> "'"
+            ObjJTypes.ObjJ_DOUBLE_QUO -> "\""
             else -> ""
         }
         val isNextTokenClosingQuote = element.getNextNonEmptySibling(false).elementType == quoteType
         val completionHandler = if (!isNextTokenClosingQuote) {
-            InsertHandler { context: InsertionContext, _: LookupElement ->
-                EditorUtil.insertText(context.editor, quoteChar, element.textRange.endOffset, true)
+            InsertHandler { context: InsertionContext, lookupElement: LookupElement ->
+                EditorUtil.insertText(context.editor, quoteChar, (lookupElement.psiElement?:element).textRange.startOffset + lookupElement.lookupString.length, true)
             }
         } else null
         for (file in files) {
-            if (completionHandler != null) {
-                val lookupElement = LookupElementBuilder.create(file)
+            val lookupElement = if (completionHandler != null) {
+                LookupElementBuilder.create(file)
                         .withInsertHandler(completionHandler)
-                resultSet.addElement(lookupElement)
+            } else {
+                LookupElementBuilder.create(file)
             }
+            resultSet.addElement(lookupElement)
         }
     }
 
