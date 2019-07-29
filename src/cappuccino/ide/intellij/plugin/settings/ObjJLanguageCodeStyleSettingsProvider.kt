@@ -79,7 +79,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
 
 
 /*
-    A Block Comment
+A Block Comment
 */
 @implementation MyClass : SuperClass <HasProtocol>{
 id _reference;
@@ -89,7 +89,7 @@ CPColor _backgroundColor;
 }
 
 -(void) setBackgroundColor:(CPColor)aColor{
-    //A Line Comment
+//A Line Comment
 var i = 0;
 i++;
 _backgroundColor = aColor;
@@ -98,16 +98,16 @@ _backgroundColor = aColor;
 -(void) setBackgroundColor:(CPColor)aColor
 forType:(DomType)clazz
 withFilter:(Function)type{
-    //A Line Comment
+//A Line Comment
 var i = 0;
 i++;
 _backgroundColor = aColor;
 }
 
 -(CPString)colorHex{
-    if(_backgroundColor){
-        return [_backgroundColor hexString];
-    }
+if(_backgroundColor){
+return [_backgroundColor hexString];
+}
 else{
 return Nil
 }
@@ -133,20 +133,25 @@ var element=document.getElementById("tagName");
 element.innerHTML=@"21";
 
 var isValidName = function(aName){
-    if(!aName){
-        return NO;
-    }else if(aName.length > 0){
-        return YES;
-    }else{
-        return NO;
-    }
+if(!aName){
+return NO;
+}else if(aName.length > 0){
+return YES;
+}else{
+return NO;
+}
 }
 
 function sayHello(aName,var2){
-    while(isValidName(aName,var2)){
-        return [CPString stringWithFormat:globalGreeting,aName,var2];
-    }
-    return null;
+while(isValidName(aName,var2)){
+return [CPString stringWithFormat:globalGreeting,aName,var2];
+}
+return null;
+}
+var i;
+
+for(i=0;i<100;i++){
+console.log("i="+i);
 }
 
 do{
