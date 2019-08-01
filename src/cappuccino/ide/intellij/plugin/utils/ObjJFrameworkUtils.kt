@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -110,7 +109,7 @@ object ObjJFrameworkUtils {
                 break
             if (directory.findSubdirectory("Framework") != null || directory == projectDirectory)
                 break
-            directory = directory.parent ?: return files
+            directory = directory.parent ?: break
         }
         return files
     }

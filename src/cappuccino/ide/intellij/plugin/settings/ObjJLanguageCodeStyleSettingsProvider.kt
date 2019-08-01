@@ -80,7 +80,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
 
 
 /*
-    A Block Comment
+A Block Comment
 */
 @implementation MyClass : SuperClass <HasProtocol>{
 id _reference;

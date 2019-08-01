@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 package cappuccino.ide.intellij.plugin.project
+
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.utils.PLUGIN_VERSION
-import com.intellij.notification.*;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindowId;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.notification.*
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowId
 
 /**
  * Wrapper function for showing {@link Notification}.
@@ -37,14 +36,14 @@ import org.jetbrains.annotations.Nullable;
  * @since 1.7
  */
 object ObjJNotify {
-    private val NOTIFICATION_GROUP:NotificationGroup  = NotificationGroup(
+    private val NOTIFICATION_GROUP: NotificationGroup = NotificationGroup(
             ObjJBundle.message("objj.notification.group"),
             NotificationDisplayType.BALLOON,
             true,
             ToolWindowId.PROJECT_VIEW
     );
 
-    private val NOTIFICATION_GROUP_UPDATE:NotificationGroup = NotificationGroup(
+    private val NOTIFICATION_GROUP_UPDATE: NotificationGroup = NotificationGroup(
             ObjJBundle.message("objj.notification.group.update"),
             NotificationDisplayType.STICKY_BALLOON,
             true
@@ -55,7 +54,23 @@ object ObjJNotify {
      *
      * @param project  current project
      */
-    public fun showUpdate(project:Project) {
+    public fun showUpdateIndexWarning(project: Project) {
+        show(
+                project,
+                ObjJBundle.message("objj.notification.update-index-warning.title", PLUGIN_VERSION),
+                ObjJBundle.message("objj.notification.update-index-warning.content"),
+                NOTIFICATION_GROUP_UPDATE,
+                NotificationType.WARNING,
+                null
+        );
+    }
+
+    /**
+     * Shows {@link Notification} in IGNORE_GROUP_UPDATE group.
+     *
+     * @param project  current project
+     */
+    public fun showUpdate(project: Project) {
         show(
                 project,
                 ObjJBundle.message("objj.notification.update.title", PLUGIN_VERSION),
@@ -74,8 +89,8 @@ object ObjJNotify {
      * @param content   notification text
      * @param type      notification type
      */
-    public fun show(project:Project, title:String, content:String,
-                            type:NotificationType) {
+    public fun show(project: Project, title: String, content: String,
+                    type: NotificationType) {
         show(project, title, content, NOTIFICATION_GROUP, type, null);
     }
 
@@ -88,8 +103,8 @@ object ObjJNotify {
      * @param type      notification type
      * @param listener  optional listener
      */
-    public fun show(project:Project, title:String, content:String,
-                            type:NotificationType, listener:NotificationListener?) {
+    public fun show(project: Project, title: String, content: String,
+                    type: NotificationType, listener: NotificationListener?) {
         show(project, title, content, NOTIFICATION_GROUP, type, listener);
     }
 
@@ -103,10 +118,10 @@ object ObjJNotify {
      * @param type     notification type
      * @param listener optional listener
      */
-    public fun show(project:Project, title:String, content:String,
-                            group:NotificationGroup, type:NotificationType,
-                            listener:NotificationListener?) {
-        val notification:Notification = group.createNotification(title, content, type, listener);
+    public fun show(project: Project, title: String, content: String,
+                    group: NotificationGroup, type: NotificationType,
+                    listener: NotificationListener?) {
+        val notification: Notification = group.createNotification(title, content, type, listener);
         Notifications.Bus.notify(notification, project);
     }
 }

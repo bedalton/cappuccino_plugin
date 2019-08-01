@@ -89,7 +89,8 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             val spacing = if (needsSpace) 1 else 0
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
-        }
+        }*/
+        LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
 
         if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
             var firstChild = node2.firstChildNode
@@ -138,6 +139,11 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
+        if (type2 == ObjJ_CLOSE_BRACE)
+            return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+
+        if (elementType == ObjJ_STATEMENT_OR_BLOCK)
+            return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
 
         if (type1 == ObjJ_SWITCH) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_PARENTHESES) 1 else 0
