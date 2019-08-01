@@ -22,6 +22,7 @@ public class ObjJCodeStyleSettings extends CustomCodeStyleSettings {
     public boolean ALIGN_SELECTORS_IN_METHOD_DECLARATION = false;
     public boolean ALIGN_PROPERTIES = false;
     public int FUNCTION_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int FUNCTION_IN_EXPRESSION_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
     public int INSTANCE_VARIABLE_LIST_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
     public boolean TRY_ON_NEW_LINE = true;
     public int CATCH_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;

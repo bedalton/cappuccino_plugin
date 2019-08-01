@@ -62,6 +62,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     )
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "INSTANCE_VARIABLE_LIST_BRACE_FORCE", "Force Braces", "instance variable list", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_BRACE_FORCE", "Force Braces", "'function' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_IN_EXPRESSION_BRACE_FORCE", "Force Braces", "'function' in expression",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' in expression", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "TRY_ON_NEW_LINE", "'try' on new line", "'try' statement", CodeStyleSettingsCustomizable.OptionAnchor.BEFORE, "'try' statement")
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "CATCH_BRACE_FORCE", "'catch' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FINALLY_BRACE_FORCE", "'finally' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
@@ -89,7 +90,7 @@ CPColor _backgroundColor;
 }
 
 -(void) setBackgroundColor:(CPColor)aColor{
-    //A Line Comment
+//A Line Comment
 var i = 0;
 i++;
 _backgroundColor = aColor;
@@ -98,16 +99,16 @@ _backgroundColor = aColor;
 -(void) setBackgroundColor:(CPColor)aColor
 forType:(DomType)clazz
 withFilter:(Function)type{
-    //A Line Comment
+//A Line Comment
 var i = 0;
 i++;
 _backgroundColor = aColor;
 }
 
 -(CPString)colorHex{
-    if(_backgroundColor){
-        return [_backgroundColor hexString];
-    }
+if(_backgroundColor){
+return [_backgroundColor hexString];
+}
 else{
 return Nil
 }
@@ -133,20 +134,25 @@ var element=document.getElementById("tagName");
 element.innerHTML=@"21";
 
 var isValidName = function(aName){
-    if(!aName){
-        return NO;
-    }else if(aName.length > 0){
-        return YES;
-    }else{
-        return NO;
-    }
+if(!aName){
+return NO;
+}else if(aName.length > 0){
+return YES;
+}else{
+return NO;
+}
 }
 
 function sayHello(aName,var2){
-    while(isValidName(aName,var2)){
-        return [CPString stringWithFormat:globalGreeting,aName,var2];
-    }
-    return null;
+while(isValidName(aName,var2)){
+return [CPString stringWithFormat:globalGreeting,aName,var2];
+}
+
+for (var temp in [1,2,3]) {
+i += temp;
+}
+
+return null;
 }
 
 do{
@@ -159,6 +165,16 @@ throw new Error();
 console.log(e);
 }finally{
 // ignore
+}
+
+while(true){
+update();
+}
+
+switch(var1){
+case 1:return YES;
+case 2:return NO;
+default:throw new Error("var1 value out of bounds");
 }
 
 """.trimIndent()
