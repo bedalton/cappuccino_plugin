@@ -3,10 +3,7 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -21,6 +18,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
+import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.psi.formatter.common.AbstractBlock
 import java.util.logging.Logger
 import kotlin.math.max
@@ -44,20 +42,37 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         val node2 = child2.node
         val type2 = node2.elementType
 
-        /*if (type2 == ObjJ_BLOCK_ELEMENT) {
+        if (type2 == ObjJ_SEMI_COLON) {
+            return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if (type1 == ObjJ_COMMA) {
+            val spaces = if (mySettings.SPACE_AFTER_COMMA) 1 else 0;
+            return Spacing.createSpacing(spaces, 1, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+        if (type2 == ObjJ_COMMA) {
+            val spaces = if (mySettings.SPACE_BEFORE_COMMA) 1 else 0;
+            //return Spacing.createSpacing(spaces, 1, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if (type2 == ObjJ_BLOCK_ELEMENT &&  (elementType == ObjJ_FUNCTION_LITERAL)) {
+            val braceType = objJSettings.FUNCTION_IN_EXPRESSION_BRACE_FORCE;
+            val force = braceType == CommonCodeStyleSettings.FORCE_BRACES_ALWAYS
+                    || (braceType == CommonCodeStyleSettings.FORCE_BRACES_IF_MULTILINE && node2.psi.getChildrenOfType(ObjJCompositeElement::class.java).size > 1)
+            val needsSpace = !force && mySettings.SPACE_BEFORE_METHOD_LBRACE
+            val spacing = if (needsSpace) 1 else 0
+            val lines = if (force) 1 else 0
+            return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if (type2 == ObjJ_BRACKET_LESS_BLOCK) {
+            return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
+
+        if ((elementType == ObjJ_CATCH_PRODUCTION || elementType == ObjJ_FINALLY_PRODUCTION) && type2 == ObjJ_BLOCK_ELEMENT) {
             val braceType = when (elementType) {
-                ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_ELSE_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_FOR_STATEMENT -> mySettings.FOR_BRACE_FORCE
-                ObjJ_WHILE_STATEMENT -> mySettings.WHILE_BRACE_FORCE
-                ObjJ_DO_WHILE_STATEMENT -> mySettings.DOWHILE_BRACE_FORCE
-                ObjJ_FORMAL_PARAMETER_LIST -> objJSettings.FUNCTION_BRACE_FORCE
                 ObjJ_CATCH_PRODUCTION -> objJSettings.CATCH_BRACE_FORCE
                 ObjJ_FINALLY_PRODUCTION -> objJSettings.FINALLY_BRACE_FORCE
-                ObjJ_FUNCTION_LITERAL -> objJSettings.FUNCTION_BRACE_FORCE
-                ObjJ_FUNCTION_DECLARATION -> objJSettings.FUNCTION_BRACE_FORCE
-                ObjJ_TRY_STATEMENT -> if (objJSettings.TRY_ON_NEW_LINE) CommonCodeStyleSettings.FORCE_BRACES_ALWAYS else CommonCodeStyleSettings.DO_NOT_FORCE
                 else -> {
                     LOGGER.severe("Failed to match parentType($elementType) for element: $type1")
                     CommonCodeStyleSettings.DO_NOT_FORCE
@@ -65,22 +80,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             }
             val force = braceType == CommonCodeStyleSettings.FORCE_BRACES_ALWAYS
                     || (braceType == CommonCodeStyleSettings.FORCE_BRACES_IF_MULTILINE && node2.psi.getChildrenOfType(ObjJCompositeElement::class.java).size > 1)
+
             val needsSpace = when (elementType) {
-                ObjJ_IF_STATEMENT -> mySettings.SPACE_BEFORE_IF_LBRACE
-                ObjJ_ELSE_IF_STATEMENT -> mySettings.SPACE_BEFORE_ELSE_LBRACE
-                ObjJ_ELSE_STATEMENT -> mySettings.SPACE_BEFORE_ELSE_LBRACE
-                ObjJ_FOR_STATEMENT -> mySettings.SPACE_BEFORE_FOR_LBRACE
-                ObjJ_WHILE_STATEMENT -> mySettings.SPACE_BEFORE_WHILE_LBRACE
-                ObjJ_DO_WHILE_STATEMENT -> mySettings.SPACE_BEFORE_DO_LBRACE
-                ObjJ_FORMAL_PARAMETER_LIST -> mySettings.SPACE_BEFORE_METHOD_LBRACE
-                ObjJ_TRY_STATEMENT -> mySettings.SPACE_BEFORE_TRY_LBRACE
                 ObjJ_CATCH_PRODUCTION -> mySettings.SPACE_BEFORE_CATCH_LBRACE
                 ObjJ_FINALLY_PRODUCTION -> mySettings.SPACE_BEFORE_FINALLY_LBRACE
-                ObjJ_FUNCTION_LITERAL -> mySettings.SPACE_BEFORE_METHOD_LBRACE
-                ObjJ_FUNCTION_DECLARATION -> mySettings.SPACE_BEFORE_METHOD_LBRACE
-                ObjJ_TRY_STATEMENT -> mySettings.SPACE_BEFORE_TRY_LBRACE
                 else -> false
-            } && !force
+            }
             val spacing = if (needsSpace) 1 else 0
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -88,6 +93,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         //LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
 
         if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
+            var firstChild = node2.firstChildNode
+            if (firstChild != null && firstChild.text.isBlank() || FormatterUtil.containsWhiteSpacesOnly(firstChild))
+                firstChild = firstChild.getNextNonEmptyNode(true)
+            if (firstChild?.elementType in ObjJTokenSets.STATEMENTS)
+                return Spacing.createSpacing(0, 1, 1, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+
             val braceType = when (elementType) {
                 ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
                 ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE

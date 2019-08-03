@@ -16,7 +16,6 @@ class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, overr
     }
 
     companion object {
-
         private val LOGGER = Logger.getLogger("ObjJFileStubImpl")
         private val IMPORT_FILENAME_REGEX = Pattern.compile("(.*)?::(.*)")
     }

@@ -46,6 +46,7 @@ object ObjJTokenSets {
             ObjJ_INSTANCE_VARIABLE_LIST)
 
     val STATEMENTS = create(
+            ObjJ_PREPROCESSOR_IF_STATEMENT,
             ObjJ_RETURN_STATEMENT,
             ObjJ_IF_STATEMENT,
             ObjJ_FOR_STATEMENT,
@@ -59,8 +60,9 @@ object ObjJTokenSets {
             ObjJ_INCLUDE_FRAMEWORK,
             ObjJ_EXPR,
             ObjJ_BODY_VARIABLE_ASSIGNMENT,
-            ObjJ_BLOCK_ELEMENT,
-            ObjJ_COMMENT
+            ObjJ_COMMENT,
+            ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_WHILE_STATEMENT
     )
 
     val EXPRESSIONS = create(
@@ -346,4 +348,12 @@ object ObjJTokenSets {
             ObjJ_CONDITION_EXPRESSION,
             ObjJ_ELSE
     )
+
+    val CAN_BE_FOLLOWED_BY_CURLY_BRACE = create(
+            ObjJ_CONDITION_EXPRESSION,
+            ObjJ_ELSE,
+            ObjJ_DO,
+            ObjJ_FOR_LOOP_HEADER
+    )
+
 }

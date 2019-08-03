@@ -62,6 +62,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     )
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "INSTANCE_VARIABLE_LIST_BRACE_FORCE", "Force Braces", "instance variable list", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_BRACE_FORCE", "Force Braces", "'function' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_IN_EXPRESSION_BRACE_FORCE", "Force Braces", "'function' in expression",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' in expression", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "TRY_ON_NEW_LINE", "'try' on new line", "'try' statement", CodeStyleSettingsCustomizable.OptionAnchor.BEFORE, "'try' statement")
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "CATCH_BRACE_FORCE", "'catch' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FINALLY_BRACE_FORCE", "'finally' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
@@ -146,12 +147,12 @@ function sayHello(aName,var2){
 while(isValidName(aName,var2)){
 return [CPString stringWithFormat:globalGreeting,aName,var2];
 }
-return null;
-}
-var i;
 
-for(i=0;i<100;i++){
-console.log("i="+i);
+for (var temp in [1,2,3]) {
+i += temp;
+}
+
+return null;
 }
 
 do{
@@ -164,6 +165,16 @@ throw new Error();
 console.log(e);
 }finally{
 // ignore
+}
+
+while(true){
+update();
+}
+
+switch(var1){
+case 1:return YES;
+case 2:return NO;
+default:throw new Error("var1 value out of bounds");
 }
 
 """.trimIndent()
