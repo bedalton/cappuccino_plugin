@@ -7,18 +7,23 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 
 import java.util.Arrays
+
+private val startsWithVowelRegex = "^[aAeEiIoOuU]".toRegex()
 
 class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containingClass: String,
                                    varType: String?, variableName: String?,
                                    getter: String?, setter: String?,
+                                   override val selectorStructs: List<ObjJSelectorStruct>,
                                    private val shouldResolve: Boolean
 ) : ObjJStubBaseImpl<ObjJAccessorPropertyImpl>(parent, ObjJStubTypes.ACCESSOR_PROPERTY), ObjJAccessorPropertyStub {
     override val variableName: String? = if (variableName != null && variableName.isEmpty()) variableName else null
-    override val getter: String? = if (getter != null && !getter.isEmpty()) getter else null
-    override val setter: String? = if (setter != null && !setter.isEmpty()) setter else null
-    override val varType: String? = if (varType != null && !varType.isEmpty()) varType else null
+    override val getter: String? = if (getter != null && getter.isNotEmpty()) getter else null
+    override val setter: String? = if (setter != null && setter.isNotEmpty()) setter else null
+    override val varType: String? = if (varType != null && varType.isNotEmpty()) varType else null
     override val containingClassName: String = containingClass
 
     override val ignored:Boolean = false
@@ -30,7 +35,7 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
         get() = Arrays.asList(*selectorString.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
 
     override val selectorString: String
-        get() = getter ?: (setter ?: ObjJMethodPsiUtils.EMPTY_SELECTOR)
+        get() = getter ?: setter ?: EMPTY_SELECTOR
 
     override val isRequired: Boolean
         get() = false

@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.hints
 
-import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -8,7 +7,6 @@ import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.util.TextRange

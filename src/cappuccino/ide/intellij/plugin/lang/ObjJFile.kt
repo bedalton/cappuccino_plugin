@@ -8,13 +8,21 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.collectImports
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
 import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
+import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
+import cappuccino.ide.intellij.plugin.utils.ifEquals
+import cappuccino.ide.intellij.plugin.utils.nullIfEquals
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -27,11 +35,39 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         ObjJFileCache(this)
     }
 
-    val frameworkName: String
-        get() = fileCache.frameworkName ?: EMPTY_FRAMEWORK_NAME
+    val frameworkName: String get() {
+        return fileCache.frameworkName.nullIfEquals(EMPTY_FRAMEWORK_NAME)
+                ?: ObjJFrameworkUtils.getEnclosingFrameworkName(this)
+    }
 
     val cachedImportFileList: List<ObjJFile>?
         get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = true)
+
+    val asImportStruct : ObjJImportInfoStub get() = ObjJImportInfoStub(frameworkName, name)
+
+    private val importedFilesInternal : List<ObjJImportInfoStub> by lazy {
+        if (DumbService.isDumb(project))
+            throw IndexNotReadyException.create()
+        val thisFrameworkName = frameworkName
+        stub?.imports?.map {
+            if (it.framework == EMPTY_FRAMEWORK_NAME)
+                it.copy(framework = thisFrameworkName, fileName = it.fileName)
+            else
+                it
+        } ?: (collectImports(this).map {
+            val frameworkName = it.frameworkNameString.ifEquals(EMPTY_FRAMEWORK_NAME) { thisFrameworkName }
+            ObjJImportInfoStub(frameworkName, it.fileNameString)
+        })
+    }
+
+    val importedFiles : List<ObjJImportInfoStub> get() {
+        if (DumbService.isDumb(project)) {
+            return stub?.imports ?: collectImports(this).map {
+                ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
+            }
+        }
+        return importedFilesInternal
+    }
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>
         get() = fileCache.classDeclarations
@@ -74,6 +110,10 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         }
         children.addAll(blockChildren)
         return children
+    }
+
+    override fun getStub(): ObjJFileStub? {
+        return super.getStub() as? ObjJFileStub
     }
 
     override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? =

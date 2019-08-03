@@ -48,6 +48,13 @@
     </value>
   </option>
 
+  <option name="ObjJ_JS_TYPEDEF_FUNCTION_NAME">
+    <value>
+      <option name="FOREGROUND" value="E8876B"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+
   <option name="ObjJ_INSTANCE_VARS">
     <value>
       <option name="FOREGROUND" value="A17797"/>
@@ -63,6 +70,13 @@
   </option>
 
   <option name="ObjJ_GLOBAL_VARIABLE">
+    <value>
+      <option name="FOREGROUND" value="E36173"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+
+  <option name="ObjJ_JS_TYPEDEF_VARIABLE">
     <value>
       <option name="FOREGROUND" value="E36173"/>
       <option name="FONT_TYPE" value="1"/>

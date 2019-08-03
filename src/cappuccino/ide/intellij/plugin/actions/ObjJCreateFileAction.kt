@@ -35,7 +35,6 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
      * Builds the dialog object
      */
     override fun buildDialog(project: Project, directory: PsiDirectory, builder: CreateFileFromTemplateDialog.Builder) {
-        Logger.getLogger(ObjJCreateFileAction::class.java.canonicalName).info("Called build dialog")
         builder.setTitle(ObjJBundle.message("objective-j.actions.new-file.title"))
                 .setValidator(object : InputValidatorEx {
                     override fun canClose(inputString: String?) = checkInput(inputString)

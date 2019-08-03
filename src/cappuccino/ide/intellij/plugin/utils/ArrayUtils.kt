@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import com.intellij.openapi.util.MultiValuesMap
 import java.util.ArrayList
 
 typealias Filter<T> = (T) -> Boolean
@@ -93,6 +94,27 @@ fun List<String>.startsWithAny(prefixes:List<String>) : Boolean {
 
 fun <T> getFirstMatchOrNull(variableNameElements: List<T>, filter: Filter<T>): T? {
     return variableNameElements.firstOrNull(filter)
+}
+/*
+fun <T> List<T>.plus(element:T) : List<T> {
+    val list = toMutableList()
+    list.add(element)
+    return list
+}
+
+fun <T> List<T>.minus(element:T) : List<T> {
+    if (!contains(element))
+        return this
+    val list = toMutableList()
+    list.remove(element)
+    return list
+}*/
+
+fun <Key, Type> MutableMap<Key, MutableList<Type>>.put(key:Key, item:Type) {
+    if (!this.containsKey(key)) {
+        this[key] = mutableListOf()
+    }
+    this[key]!!.add(item)
 }
 
 fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean

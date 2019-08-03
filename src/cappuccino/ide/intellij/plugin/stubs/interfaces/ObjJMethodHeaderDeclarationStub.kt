@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.stubs.interfaces
 
 import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import com.intellij.psi.PsiElement
 
 interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT> {
@@ -21,4 +22,7 @@ interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT>
     val isStatic: Boolean
 
     val ignored: Boolean
+
+    val selectorStructs:List<ObjJSelectorStruct>
+
 }

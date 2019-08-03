@@ -141,7 +141,7 @@ object ObjJVariableNameResolveUtil {
 
     private fun isMatchingElement(variableNameQualifiedString: String, variableToCheck: ObjJVariableName?, hasContainingClass: Boolean, startOffset: Int, qualifiedIndex: Int): Boolean {
         if (variableToCheck == null) {
-            LOGGER.log(Level.SEVERE, "Variable name to check should not be null")
+           //LOGGER.severe("Variable name to check should not be null")
             return false
         }
         val thisVariablesFqName = ObjJQualifiedReferenceUtil.getQualifiedNameAsString(variableToCheck, qualifiedIndex)

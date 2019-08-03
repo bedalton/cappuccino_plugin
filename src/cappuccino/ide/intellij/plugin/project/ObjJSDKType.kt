@@ -13,10 +13,13 @@ import javax.swing.Icon
 import com.intellij.openapi.projectRoots.SdkModificator
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.util.PathUtil
 import com.intellij.openapi.projectRoots.SdkType
 import com.intellij.openapi.roots.JavadocOrderRootType
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.psi.PsiElement
 
 
 class ObjJSDKType : SdkType(SDK_TYPE_ID) {
@@ -78,7 +81,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         val modificator = sdk.sdkModificator
         setupSdkPaths(sdk.homeDirectory, modificator)
         modificator.commitChanges()
-        LOGGER.info("Setup paths")
     }
 
     private fun setupSdkPaths(sdkRoot: VirtualFile?, sdkModificator: SdkModificator) {
@@ -90,7 +92,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         sdkModificator.versionString = getVersionString(sdkRoot.path)
         val frameworkDirectories = findFrameworkFolders(sdkRoot.path)
         for ((frameworkName, directory) in frameworkDirectories) {
-            LOGGER.info("Adding Framework: $frameworkName")
             findAndAddSourceRoots(directory, sdkModificator)
         }
     }
@@ -104,7 +105,6 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         return file.children.filter { it.exists() && it.isDirectory }.mapNotNull {directory ->
             val plist = directory.children.firstOrNull { it.exists() && !it.isDirectory && it.name.toLowerCase() == INFO_PLIST_FILE_NAME_TO_LOWER_CASE } ?: return@mapNotNull null
             val frameworkName = findFrameworkNameInPlistText(plist.contents) ?: return@mapNotNull null
-            LOGGER.info("Found Framework: $frameworkName")
             Pair(frameworkName, directory)
         }
     }
@@ -127,6 +127,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         return type === OrderRootType.CLASSES || type === OrderRootType.SOURCES || type === JavadocOrderRootType.getInstance()
     }
 
+
     companion object {
         private const val SDK_TYPE_ID = "ObjJ.Framework"
         private val SDK_NAME:String by lazy {
@@ -137,6 +138,10 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         private const val LAST_SELECTED_SDK_HOME_KEY = "objj.sdk.LAST_HOME_PATH"
         val instance by lazy {
             findInstance(ObjJSDKType::class.java)
+        }
+        fun getSDK(element:PsiElement) : Sdk? {
+            val module = ModuleUtilCore.findModuleForPsiElement(element) ?: return null
+            return ModuleRootManager.getInstance(module).sdk
         }
     }
 }

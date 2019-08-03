@@ -16,6 +16,7 @@ import javax.swing.*
 
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.codeInsight.lookup.LookupElementRenderer
@@ -217,6 +218,43 @@ object ObjJSelectorLookupUtil {
             elementBuilder = elementBuilder.withIcon(icon)
         }
         if (useInsertHandler) {
+            elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler(addSpaceAfterColon))
+        }
+        return elementBuilder
+    }
+
+
+    fun addSelectorLookupElement(
+            resultSet: CompletionResultSet,
+            selectorStruct:ObjJSelectorStruct,
+            addSpaceAfterColon:Boolean,
+            priority: Double? = null,
+            icon: Icon? = null
+    ) {
+        val lookupElement = createSelectorLookupElement(selectorStruct, addSpaceAfterColon, icon)
+        if (priority != null) {
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, priority))
+        } else {
+            resultSet.addElement(lookupElement)
+        }
+    }
+    /**
+     * Creates a lookup element builder base for a selector
+     */
+    fun createSelectorLookupElement(selectorStruct:ObjJSelectorStruct, addSpaceAfterColon:Boolean, icon: Icon? = null): LookupElementBuilder {
+        var elementBuilder = LookupElementBuilder
+                .create(selectorStruct.selector)
+        val tailText = selectorStruct.tail
+        if (tailText != null) {
+            elementBuilder = elementBuilder.withTailText(tailText)
+        }
+        if (selectorStruct.isContainerAClass) {
+            elementBuilder = elementBuilder.withTypeText("in ${selectorStruct.containerName}")
+        }
+        if (icon != null) {
+            elementBuilder = elementBuilder.withIcon(icon)
+        }
+        if (selectorStruct.hasColon) {
             elementBuilder = elementBuilder.withInsertHandler(ObjJSelectorInsertHandler(addSpaceAfterColon))
         }
         return elementBuilder

@@ -1,11 +1,12 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.VOID
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJMethodHeaderStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
+import cappuccino.ide.intellij.plugin.stubs.stucts.startsWithVowelRegex
 import cappuccino.ide.intellij.plugin.utils.Strings
 import cappuccino.ide.intellij.plugin.utils.upperCaseFirstLetter
 
@@ -84,7 +85,8 @@ object ObjJAccessorPropertyPsiUtil {
         if (variableDeclaration.variableName == null) {
             return null
         }
-        val varType = variableDeclaration.formalVariableType.text
+        val containingClassName = variableDeclaration.containingClassName
+        val variableType = variableDeclaration.formalVariableType.text
         val variableName = variableDeclaration.variableName!!.text
         val variableNameUpperCaseFirst = Strings.upperCaseFirstLetter(variableName)
         var setter: String? = null
@@ -97,7 +99,7 @@ object ObjJAccessorPropertyPsiUtil {
                 setter = if (accessor == null) {
                     "set" + variableNameUpperCaseFirst!!
                 } else {
-                    if (varType == "BOOL" && accessor.length > 2 && accessor.substring(0, 2) == "is") {
+                    if (variableType == "BOOL" && accessor.length > 2 && accessor.substring(0, 2) == "is") {
                         "set" + accessor.substring(2)
                     } else {
                         "set" + accessor.upperCaseFirstLetter()
@@ -107,8 +109,27 @@ object ObjJAccessorPropertyPsiUtil {
         }
         if (setter != null) {
             val selectorStrings = listOf(setter)
-            val paramTypes = listOf(varType)
-            return ObjJMethodHeaderStubImpl(null, variableDeclaration.containingClassName, false, selectorStrings, paramTypes, "void",true, variableDeclaration.shouldResolve(), false)
+            val paramTypes = listOf(variableType)
+            return ObjJMethodHeaderStubImpl(
+                    parent = null,
+                    className = containingClassName,
+                    isStatic = false,
+                    selectorStrings = selectorStrings,
+                    paramTypes = paramTypes,
+                    explicitReturnType = "void",
+                    isRequired = true,
+                    shouldResolve = variableDeclaration.shouldResolve(),
+                    ignored = false,
+                    selectorStructs = listOf(
+                            ObjJSelectorStruct(
+                                    selector = setter,
+                                    variableType = variableType,
+                                    variableName = variableName,
+                                    hasColon = true,
+                                    containerName = containingClassName
+                            )
+                    )
+            )
         }
         return null
     }
@@ -125,7 +146,7 @@ object ObjJAccessorPropertyPsiUtil {
      * @return method header stub
      */
     fun getGetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
-        val varType = variableDeclaration.stub?.varType ?: variableDeclaration.formalVariableType.text
+        val varType = variableDeclaration.stub?.variableType ?: variableDeclaration.formalVariableType.text
         val getter: String = variableDeclaration.stub?.getter
                 ?: getGetterFromAccessorPropertyList(variableDeclaration.accessorPropertyList)
                 ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text
@@ -141,7 +162,11 @@ object ObjJAccessorPropertyPsiUtil {
                 explicitReturnType = varType,
                 isRequired = true,
                 shouldResolve = variableDeclaration.shouldResolve(),
-                ignored = false)
+                ignored = false,
+                selectorStructs = listOf(
+                        ObjJSelectorStruct.Getter(getter, variableDeclaration.containingClassName)
+                )
+        )
     }
 
     /**
@@ -254,5 +279,37 @@ object ObjJAccessorPropertyPsiUtil {
         }
     }
 
-    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration) : List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList ?: emptyList()
+    fun getSelectorStructs(accessorProperty: ObjJAccessorProperty): List<ObjJSelectorStruct> {
+        val out = accessorProperty.stub?.selectorStructs.orEmpty().toMutableList()
+        if (out.isNotEmpty())
+            return out
+
+        val containingClassName = accessorProperty.containingClassName
+        var getter = accessorProperty.getter
+        val variableType = accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.variableType
+                ?: return emptyList()
+        if (getter != null) {
+            if (getter.endsWith(":"))
+                getter = getter.substring(0, getter.lastIndex - 1)
+            out.add(ObjJSelectorStruct.Getter(getter, containingClassName))
+        }
+        var setter = accessorProperty.setter
+        if (setter != null) {
+            if (setter.endsWith(":"))
+                setter = setter.substring(0, setter.lastIndex - 1)
+            val prefix = if (startsWithVowelRegex.containsMatchIn(variableType)) "an" else "a"
+            val variableName = prefix + variableType.capitalize()
+            out.add(ObjJSelectorStruct(
+                    selector = setter,
+                    variableType = variableType,
+                    variableName = variableName,
+                    hasColon = true,
+                    containerName = containingClassName
+            ))
+        }
+        return out
+    }
+
+    fun getAccessorPropertiesList(declaration: ObjJInstanceVariableDeclaration): List<ObjJAccessorProperty> = declaration.accessor?.accessorPropertyList
+            ?: emptyList()
 }

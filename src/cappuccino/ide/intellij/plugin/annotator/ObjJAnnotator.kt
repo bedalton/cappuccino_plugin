@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonIntention
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveSemiColonIntention
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
@@ -30,6 +31,8 @@ class ObjJAnnotator : Annotator {
             element: PsiElement,
             annotationHolder: AnnotationHolder) {
 
+        if (element.containingFile !is ObjJFile)
+            return
         // Ensure index is not dumb
         if (DumbService.getInstance(element.project).isDumb) {
             return

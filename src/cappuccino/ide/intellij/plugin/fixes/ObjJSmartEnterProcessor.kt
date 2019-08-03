@@ -30,29 +30,23 @@ private class ClassImplementationEnterHandler: FixEnterProcessor() {
     override fun doEnter(psiElementIn: PsiElement, psiFile: PsiFile?, editor: Editor, afterCompletion: Boolean): Boolean {
         val psiElement = if (psiElementIn.text.trim().isNotEmpty()) psiElementIn else psiElementIn.getPreviousNonEmptySibling(true) ?: return false
         val classDeclaration: ObjJClassDeclarationElement<*>? = psiElement as? ObjJClassDeclarationElement<*>
-                ?: psiElement.getParentOfType(ObjJClassDeclarationElement::class.java) ?: return {
-                    Logger.getLogger("ClassImplementationSmartEnterFixer").info("Element not in class declaration")
-                    false
-                }()
-        //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "In class declaration")
+                ?: psiElement.getParentOfType(ObjJClassDeclarationElement::class.java) ?: return false
         val hasEnd: Boolean
         hasEnd = when (classDeclaration) {
             is ObjJImplementationDeclaration -> classDeclaration.atEnd != null
             is ObjJProtocolDeclaration -> classDeclaration.atEnd != null
             else -> {
-                Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration not of expected type")
+                Logger.getLogger("ClassImplementationSmartEnterFixer").severe("Class declaration not of expected type")
                 return false
             }
         }
 
         if (!hasEnd) {
-            Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration does not have end")
             EditorUtil.insertText(editor, "\n", true)
             EditorUtil.insertText(editor, "\n@end\n\n", false)
 
             return true
         }
-        //Logger.getLogger("ClassImplementationSmartEnterFixer").log(Level.INFO, "Class declaration has @end statement")
         return false
     }
 }

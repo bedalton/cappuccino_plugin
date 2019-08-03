@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.3.06</version>
+  <version>0.4.00</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -34,7 +34,7 @@
     <h3>Please report issues to our <a href="https://github.com/bedalton/cappuccino_plugin/issues">GitHub issues page</a></h3>
     <h2>Working</h2>
     <ul>
-      <li>Non-Intelligent method call selector completion</li>
+      <li>Method call selector completion</li>
       <li>Variable name completion</li>
       <li>Variable, Function and Method declaration resolution</li>
       <li>Syntax Highlighting</li>
@@ -51,13 +51,20 @@
 
   <change-notes><![CDATA[
 
-    <h4>Version: 0.3.06</h4>
+    <h4>Version: 0.4.0</h4>
     <ul>
       <li>Added cmd+hover information for known types and functions</li>
       <li>Extended type inferences</li>
       <li>Improved Autocomplete suggestions</li>
       <li>Added import statement name suggestions</li>
-      <li>Added Objective-J SDK type</li>
+      <li>Added Objective-J SDK and Library type
+        <ul>
+          <li>This allows for easier definition and reuse of framework sources</li>
+          <li>This also causes the IDE to alert a user when making changes to the framework files</li>
+        </ul>
+      </li>
+      <li>Re-enabled the very buggy, and very experimental method selector rename</li>
+      <li>Extended javascript function completions</li>
     </ul>
 
     <h4>Version: 0.3.05</h4>
@@ -138,6 +145,9 @@
     <!--component>
       <implementation-class>cappuccino.intellij.plugin.support.ObjectiveJPluginController</implementation-class>
     </component-->
+    <component>
+      <implementation-class>cappuccino.ide.intellij.plugin.project.ObjJProjectComponent</implementation-class>
+    </component>
   </project-components>
 
   <actions>
@@ -167,6 +177,7 @@
     <langCodeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJLanguageCodeStyleSettingsProvider"/>
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
     <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
+    <quoteHandler fileType="Objective-J Script" className="cappuccino.ide.intellij.plugin.formatting.ObjJSimpleQuoteHandler"/>
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
@@ -181,6 +192,9 @@
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJFunctionParameterInfoHandler" />
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJMethodParameterInfoHandler" />
     <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider" />
+    <editorNotificationProvider implementation="cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification" />
+    <!-- automaticRenamerFactory implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorAutomaticRenamerFactory"/ -->
+    <renamePsiElementProcessor implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorRenameElementProcessor" />
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
@@ -313,7 +327,7 @@
     />
 
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJClassIsImportedInspection"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReferencedElementIsImportedInspection"
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
@@ -350,6 +364,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationCategoryDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImportsIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJImportInstancesIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJMethodCallIndex"/>
@@ -373,6 +388,64 @@
     <lang.syntaxHighlighterFactory key="ObjJPlist"
                                    implementationClass="cappuccino.ide.intellij.plugin.extensions.plist.ObjJPlistSyntaxHighlighterFactory"/>
                                    -->
+
+    <!-- =============================== -->
+    <!-- ========= JsTypeDef =========== -->
+    <!-- =============================== -->
+    <lang.parserDefinition language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParserDefinition"/>
+    <lang.findUsagesProvider language="JsTypeDef"
+                             implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFindUsagesProvider"/>
+
+    <!-- Highlighting -->
+    <lang.syntaxHighlighterFactory key="JsTypeDef"
+                                   language="JsTypeDef"
+                                   implementationClass="cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefSyntaxHighlighterFactory"/>
+
+    <!-- Formatting and Completion -->
+    <lang.braceMatcher language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefBraceMatcher"/>
+    <completion.contributor language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefCompletionContributor" />
+
+
+    <!-- STUBS AND INDICES -->
+    <applicationService serviceInterface="cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService"
+                        serviceImplementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefIndexService" />
+    <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesBySuperClassIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModuleNamesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModuleNamesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModulesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModulesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByClassNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex"/>
+
+
+    <!-- Annotators -->
+    <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefAnnotator" />
+    <annotator language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.annotator.JsTypeDefSyntaxHighlighterAnnotator" />
+
+    <!-- Inspections -->
+    <localInspection language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.inspections.JsTypeDefUnknownTypeInspection"
+                     level="ERROR"
+                     shortName="UnknownTypeInFile"
+                     groupName="JsTypeDef Inspections"
+                     displayName="Unknown Javascript Type Inspection"
+                     enabledByDefault="true"
+                     />
+
+    <!-- File Template -->
+    <internalFileTemplate name="jstypedef.file" />
+
+
+
   </extensions>
 
   <actions>
@@ -382,5 +455,11 @@
             class="cappuccino.ide.intellij.plugin.actions.ObjJCreateFileAction">
       <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
     </action>
+    <!--action
+        id="JsTypeDef.NewFile"
+        icon="ObjJIcons.JSDEF_DOCUMENT_ICON"
+        class="cappuccino.ide.intellij.plugin.jstypedef.actions.JsTypeDefCreateFileAction">
+      <add-to-group group-id="NewGroup" anchor="after" relative-to-action="ObjJ.NewFile"/>
+    </action -->
   </actions>
 </idea-plugin>

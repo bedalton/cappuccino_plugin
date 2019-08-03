@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
+import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.util.io.StringRef
@@ -8,10 +9,11 @@ import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
+import cappuccino.ide.intellij.plugin.utils.nullIfEquals
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.*
 
 import java.io.IOException
-import java.util.ArrayList
 
 class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.instance) {
 
@@ -49,6 +51,9 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
         return ObjJFileStubImpl(null, fileName, imports)
     }
 
+    override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {
+        ServiceManager.getService(StubIndexService::class.java).indexFile(stub as? ObjJFileStub, sink)
+    }
 
     companion object {
 

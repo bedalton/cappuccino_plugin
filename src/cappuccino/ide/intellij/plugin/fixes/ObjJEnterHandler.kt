@@ -7,8 +7,8 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.DataKeys
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -29,7 +29,7 @@ class ObjJEnterHandler : EnterHandlerDelegateAdapter() {
         if (file !is ObjJFile) {
             return EnterHandlerDelegate.Result.Continue
         }
-        val caretOffset:Int = dataContext.getData(DataKeys.CARET)?.offset ?: return EnterHandlerDelegate.Result.Continue
+        val caretOffset:Int = dataContext.getData(CommonDataKeys.CARET)?.offset ?: return EnterHandlerDelegate.Result.Continue
         val pointer = getPointer(file, caretOffset) ?: return EnterHandlerDelegate.Result.Continue
         if (pointer.element?.text?.trim().isNullOrBlank())
             return EnterHandlerDelegate.Result.Continue

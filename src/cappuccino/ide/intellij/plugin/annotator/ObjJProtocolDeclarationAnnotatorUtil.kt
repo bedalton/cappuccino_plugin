@@ -40,7 +40,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         if (duplicates.isEmpty()) {
             return
         }
-        val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJPsiFileUtil.getContainingFileName(protocolDeclaration) ?: "" }
+        val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJPsiFileUtil.getContainingFileName(protocolDeclaration) }
         val errorMessage = ObjJBundle.message("objective-j.annotator-messages.protocol-declaration.duplicate-declaration.message", className, duplicatedInFileNameList)
         annotationHolder.createErrorAnnotation(classNameElement, errorMessage)
 

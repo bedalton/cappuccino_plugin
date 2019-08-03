@@ -67,16 +67,14 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
     }
 
     fun getMethods(tag:Long):List<ObjJMethodHeaderDeclaration<*>> {
-        if (myTreeChangeTracker.tag == tag)
+        if (myTreeChangeTracker.tagged(tag))
             return emptyList()
-        myTreeChangeTracker.tag = tag
         return possibleMethodsCache.value ?: emptyList()
     }
 
     fun getClassTypes(tag:Long) : InferenceResult? {
-        if (myTreeChangeTracker.tag == tag)
+        if (myTreeChangeTracker.tagged(tag))
             return null
-        myTreeChangeTracker.tag = tag
         return classTypesCache.value
     }
 

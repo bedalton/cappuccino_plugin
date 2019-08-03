@@ -6,8 +6,16 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.tree.TokenSet.create
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
+import com.intellij.psi.TokenType
 
 object ObjJTokenSets {
+
+    val QUOTE_CHARS = create(ObjJ_SINGLE_QUO, ObjJ_DOUBLE_QUO, TokenType.BAD_CHARACTER)
+
+    val STRING_COMPLETION_LITERALS = create(ObjJ_SINGLE_QUOTE_STRING_LITERAL, ObjJ_DOUBLE_QUOTE_STRING_LITERAL, ObjJ_QUO_TEXT)
 
     val INDENT_CHILDREN = create(ObjJ_BLOCK_ELEMENT, ObjJ_BRACKET_LESS_BLOCK, ObjJ_METHOD_BLOCK,
             ObjJ_STATEMENT_OR_BLOCK , ObjJ_INSTANCE_VARIABLE_LIST)
@@ -20,7 +28,7 @@ object ObjJTokenSets {
 
     val CLASS_DECLARATIONS = create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION)
 
-    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT)
+    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT, JS_BLOCK_COMMENT, JS_SINGLE_LINE_COMMENT)
 
     val STRING_LITERALS = create(ObjJ_SINGLE_QUOTE_STRING_LITERAL, ObjJ_DOUBLE_QUOTE_STRING_LITERAL)
 
@@ -38,6 +46,7 @@ object ObjJTokenSets {
             ObjJ_INSTANCE_VARIABLE_LIST)
 
     val STATEMENTS = create(
+            ObjJ_PREPROCESSOR_IF_STATEMENT,
             ObjJ_RETURN_STATEMENT,
             ObjJ_IF_STATEMENT,
             ObjJ_FOR_STATEMENT,
@@ -51,8 +60,9 @@ object ObjJTokenSets {
             ObjJ_INCLUDE_FRAMEWORK,
             ObjJ_EXPR,
             ObjJ_BODY_VARIABLE_ASSIGNMENT,
-            ObjJ_BLOCK_ELEMENT,
-            ObjJ_COMMENT
+            ObjJ_COMMENT,
+            ObjJ_DO_WHILE_STATEMENT,
+            ObjJ_WHILE_STATEMENT
     )
 
     val EXPRESSIONS = create(
@@ -274,12 +284,20 @@ object ObjJTokenSets {
             ObjJ_OPEN_PAREN,
             ObjJ_CALL_TARGET,
             ObjJ_QUALIFIED_METHOD_CALL_SELECTOR,
+            ObjJ_IMPORT_STATEMENT_ELEMENT,
+            ObjJ_IMPORT_BLOCK,
+            ObjJ_INCLUDE_STATEMENT_ELEMENT,
+            ObjJ_INCLUDE_BLOCK,
+            ObjJ_CLASS_DEPENDENCY_STATEMENT,
+            ObjJ_TYPE_DEF,
             ObjJ_ID,
             ObjJ_NOT,
             ObjJ_RETURN,
             ObjJ_IN,
             ObjJ_AT_CLASS,
             ObjJ_AT_IMPLEMENTATION,
+            ObjJ_PROTOCOL_DECLARATION,
+            ObjJ_IMPLEMENTATION_DECLARATION,
             ObjJ_QUESTION_MARK,
             ObjJ_ASSIGN,
             ObjJ_MULTIPLY_ASSIGN,
@@ -324,6 +342,18 @@ object ObjJTokenSets {
             ObjJ_CASE_CLAUSE,
             ObjJ_DEFAULT_CLAUSE,
             ObjJ_CASE,
-            ObjJ_AT_END
+            ObjJ_AT_END,
+            ObjJ_BLOCK_COMMENT,
+            ObjJ_SINGLE_LINE_COMMENT,
+            ObjJ_CONDITION_EXPRESSION,
+            ObjJ_ELSE
     )
+
+    val CAN_BE_FOLLOWED_BY_CURLY_BRACE = create(
+            ObjJ_CONDITION_EXPRESSION,
+            ObjJ_ELSE,
+            ObjJ_DO,
+            ObjJ_FOR_LOOP_HEADER
+    )
+
 }

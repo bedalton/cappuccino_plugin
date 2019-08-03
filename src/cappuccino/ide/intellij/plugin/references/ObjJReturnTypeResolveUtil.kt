@@ -11,12 +11,12 @@ import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 /**
  * Attempts to get possible variable types from a selector
  */
-fun getClassConstraints(element: ObjJSelector, tag:Long): List<String> {
-    return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java), tag)
+fun getClassConstraints(element: ObjJSelector, tag:Long, strict:MutableList<String>? = null): List<String> {
+    return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java), tag, strict)
 }
 
 
-private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long): List<String> {
+private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long, strict:MutableList<String>?): List<String> {
     if (element !is ObjJMethodCall) {
         return emptyList()
     }
@@ -25,6 +25,7 @@ private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long): List
     if (callTarget != null) {
 
         val out = getPossibleClassTypesForCallTarget(callTarget, tag).flatMap {
+            strict?.add(it)
             ObjJInheritanceUtil.getAllInheritedClasses(it, element.project)
         }
         if (out.isNotEmpty()) {

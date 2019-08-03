@@ -34,7 +34,7 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
 
         @JvmStatic
         fun inMode(builder_: PsiBuilder, level: Int, mode: String): Boolean {
-            //LOGGER.log(Level.INFO, String.format("In Mode: <%s>: <%b>", mode, getParsingModes(builder_).get(mode) > 0));
+            ////LOGGER.info(String.format("In Mode: <%s>: <%b>", mode, getParsingModes(builder_).get(mode) > 0));
             return getParsingModes(builder_).get(mode) > 0
         }
 

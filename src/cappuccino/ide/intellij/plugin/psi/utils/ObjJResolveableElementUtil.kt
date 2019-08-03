@@ -49,7 +49,7 @@ object ObjJResolveableElementUtil {
         val shouldResolveThisElement = !comment.text.contains("@ignore")
         if (!shouldResolveThisElement) {
             if (shouldNotResolveLoggingStatement != null) {
-                //LOGGER.log(Level.INFO, shouldNotResolveLoggingStatement)
+                ////LOGGER.info(shouldNotResolveLoggingStatement)
             }
             return false
         }

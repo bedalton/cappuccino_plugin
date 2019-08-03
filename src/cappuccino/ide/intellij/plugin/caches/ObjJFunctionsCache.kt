@@ -48,12 +48,11 @@ class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationEl
     private var returnTypesInternal: InferenceResult? = null
 
     fun returnTypes(tag:Long): InferenceResult {
-        if (modificationTracker.tag == tag)
+        if (modificationTracker.tagged(tag))
             return INFERRED_ANY_TYPE
-        modificationTracker.tag = tag
         val types = returnStatementsCache.value?.values?.filterNotNull()
         return if (types.isNotNullOrEmpty()) {
-            types!!.collapse()
+            types!!.combine()
         } else
             INFERRED_VOID_TYPE
     }
@@ -83,7 +82,7 @@ class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationEl
                     null
                 map[it] = type
             }
-            returnTypesInternal = map.values.filterNotNull().collapse()
+            returnTypesInternal = map.values.filterNotNull().combine()
             CachedValueProvider.Result.create(map, dependencies)
         }
         return manager.createCachedValue(provider)

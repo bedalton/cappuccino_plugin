@@ -10,6 +10,8 @@ import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJSelectorLiteralImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJSelectorLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.readSelectorStructList
+import cappuccino.ide.intellij.plugin.stubs.stucts.writeSelectorStructList
 
 import java.io.IOException
 import java.util.ArrayList
@@ -24,7 +26,13 @@ class ObjJSelectorLiteralStubType internal constructor(
 
     override fun createStub(
             selectorLiteral: ObjJSelectorLiteralImpl, stubParent: StubElement<*>): ObjJSelectorLiteralStub {
-        return ObjJSelectorLiteralStubImpl(stubParent, selectorLiteral.containingClassName, selectorLiteral.selectorStrings, selectorLiteral.shouldResolve())
+        return ObjJSelectorLiteralStubImpl(
+                parent = stubParent,
+                containingClassName = selectorLiteral.containingClassName,
+                selectorStrings = selectorLiteral.selectorStrings,
+                selectorStructs = selectorLiteral.selectorStructs,
+                shouldResolve = selectorLiteral.shouldResolve()
+        )
     }
 
     @Throws(IOException::class)
@@ -36,6 +44,7 @@ class ObjJSelectorLiteralStubType internal constructor(
         for (selector in stub.selectorStrings) {
             stream.writeName(selector)
         }
+        stream.writeSelectorStructList(stub.selectorStructs)
         stream.writeBoolean(stub.shouldResolve())
     }
 
@@ -48,8 +57,15 @@ class ObjJSelectorLiteralStubType internal constructor(
         for (i in 0 until numSelectorStrings) {
             selectorStrings.add(StringRef.toString(stream.readName()))
         }
+        val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()
-        return ObjJSelectorLiteralStubImpl(stubParent, containingClassName, selectorStrings, shouldResolve)
+        return ObjJSelectorLiteralStubImpl(
+                parent = stubParent,
+                containingClassName = containingClassName,
+                selectorStrings = selectorStrings,
+                selectorStructs = selectorStructs,
+                shouldResolve = shouldResolve
+        )
     }
 
     override fun indexStub(stub: ObjJSelectorLiteralStub, sink: IndexSink) {

@@ -1,29 +1,28 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 
 
 object ObjJVariableTypeResolver {
 
-    fun resolveVariableType(variableName: ObjJVariableName, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
-        if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJIgnoreEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
-            return resolveVariableTypeWithoutMethodParse(variableName, recurse, tag, withInheritance)
+    fun resolveVariableType(variableName: ObjJVariableName, withGeneric:Boolean, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
+        if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJCommentEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
+            return resolveVariableTypeWithoutMethodParse(variableName, withGeneric, recurse, tag, withInheritance)
         }
-        return setOf()
+        return emptySet()
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
+    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, withGeneric:Boolean, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
 
@@ -45,7 +44,7 @@ object ObjJVariableTypeResolver {
         }
 
         // Get annotation based variable type
-        val annotationBasedVariableType = ObjJIgnoreEvaluatorUtil.getVariableTypesInParent(variableName)
+        val annotationBasedVariableType = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
         if (annotationBasedVariableType != null) {
             return if (withInheritance)
                 ObjJInheritanceUtil.getAllInheritedClasses(annotationBasedVariableType, project).toSet()
@@ -58,9 +57,12 @@ object ObjJVariableTypeResolver {
         }
 
         // Get call target from formal variable types
-        val classNames = getPossibleCallTargetTypesFromFormalVariableTypes(variableName)
-        if (classNames.isNotNullOrEmpty()) {
-            return classNames!!
+        val className = getPossibleCallTargetTypesFromFormalVariableTypes(variableName, withGeneric)
+        if (className.isNotNullOrEmpty()) {
+            return if (withInheritance)
+                ObjJInheritanceUtil.getAllInheritedClasses(className!!, project).toSet()
+            else
+                setOf(className!!)
         }
 
         if (!DumbService.isDumb(project) && ObjJImplementationDeclarationsIndex.instance.containsKey(variableName.text, project)) {
@@ -80,99 +82,13 @@ object ObjJVariableTypeResolver {
         return if (out.isNotEmpty()) out else setOf()
     }
 
-    private fun getVariableTypeFromAssignments(variableName:ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
-        val fromBodyVariableAssignments = getVariableTypeFromBodyVariableAssignments(variableName, recurse, tag)
-        if (fromBodyVariableAssignments?.isNotEmpty().orFalse()) {
-            return fromBodyVariableAssignments
-        }
-        val fromExpressionAssignments = getVariableTypeFromExpressionAssignments(variableName, recurse, tag)
-        if (fromExpressionAssignments?.isNotEmpty().orFalse()) {
-            return fromExpressionAssignments
-        }
-        return null
-    }
-
-    private fun getVariableTypeFromBodyVariableAssignments(variableName: ObjJVariableName, recurse: Boolean, tag: Long) : Set<String>? {
-        if (variableName.indexInQualifiedReference != 0) {
-            return null
-        }
-        val variableNameText = variableName.text
-        val assignmentsRaw = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
-                .flatMap { it.variableDeclarationList?.variableDeclarationList ?: emptyList() }
-                .filter { it.qualifiedReferenceList.any { q -> q.text == variableNameText } }
-
-        val out = mutableSetOf<String>()
-        for (variableDeclaration in assignmentsRaw) {
-            val set = getVariableTypeFromAssignment(variableDeclaration, recurse, tag) ?: continue
-            out.addAll(set)
-        }
-        return out.toSet()
-    }
-
-    private fun getVariableTypeFromExpressionAssignments(variableName: ObjJVariableName, recurse: Boolean, tag:Long) : Set<String>? {
-        val variableNameString = variableName.text
-        val assignmentsRaw:List<ObjJVariableDeclaration> = variableName
-                .getParentBlockChildrenOfType(ObjJExpr::class.java, true)
-                .mapNotNull {expr ->  expr.leftExpr?.variableDeclaration }
-                // Convoluted check to ensure that any of the qualified references listed in a compound expression
-                // contain a variable with this name
-                .filter {
-                    it.qualifiedReferenceList.any { qRef ->
-                        qRef.variableNameList.size == 1 && qRef.variableNameList.getOrNull(0)?.text == variableNameString
-                    }
-                }
-
-        val out = mutableSetOf<String>()
-        assignmentsRaw.forEach {
-            val set = getVariableTypeFromAssignment(it, recurse, tag) ?: return@forEach
-            out.addAll(set)
-        }
-        return out
-    }
-
-    private fun getVariableTypeFromAssignment(variableDeclaration:ObjJVariableDeclaration, recurse: Boolean, tag:Long) : Set<String>? {
-        val expression = variableDeclaration.expr
-        val leftExpr = expression?.leftExpr ?: return null
-        var out:Set<String>? = getTypeFromMethodCall(leftExpr, tag)
-        if (out != null) {
-            return out
-        }
-        out = getTypeFromQualifiedReferenceAssignment(leftExpr, recurse, tag)
-        if (out != null) {
-            return out
-        }
-        return null
-    }
-
-    private fun getTypeFromMethodCall(leftExpression: ObjJLeftExpr, tag:Long) : Set<String>? {
-        val methodCall = leftExpression.methodCall ?: return null
-        val selector = methodCall.selectorString
-        val skipIf = listOf(
-                "null",
-                "nil"
-        )
-        val out = ObjJUnifiedMethodIndex.instance[selector, methodCall.project].flatMap { it.getReturnTypes(tag) }.toSet().filterNot{ returnType ->
-            returnType.toLowerCase() in skipIf ||returnType == "id" || returnType.contains("<")
-        }.toSet()
-        return if (out.isNotEmpty()) out else null
-    }
-
-    private fun getTypeFromQualifiedReferenceAssignment(leftExpression: ObjJLeftExpr, recurse:Boolean, tag:Long) : Set<String>? {
-        if (!recurse) {
-            return null
-        }
-        val qualifiedAssignment = leftExpression.qualifiedReference ?: return null
-        val lastVar = qualifiedAssignment.lastVar ?: return null
-        return resolveVariableType(lastVar, false, tag)
-    }
-
-    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName): Set<String>? {
+    private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName, withGeneric: Boolean):String? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        return if (formalVariableType.varTypeId?.className != null) {
-            setOf(formalVariableType.varTypeId!!.className!!.text)
-        } else {
-            setOf(formalVariableType.text)
+        var genericClass = if (withGeneric) formalVariableType.classNameGeneric?.text.orEmpty() else ""
+        if (genericClass.isNotNullOrEmpty()) {
+            genericClass = "<$genericClass>"
         }
+        return formalVariableType.varTypeId?.className?.text ?: formalVariableType.text + genericClass
     }
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName:ObjJVariableName): ObjJFormalVariableType? {
@@ -199,15 +115,4 @@ object ObjJVariableTypeResolver {
         }
         return null
     }
-
-    // @todo implement checks for call assignments
-    /*
-    fun getCallTargetTypeIfAllocStatement(callTarget:ObjJCallTarget): String {
-        val subMethodCall = callTarget.qualifiedReference?.methodCall ?: return callTarget.text
-        val subMethodCallSelectorString = subMethodCall.selectorString
-        if (subMethodCallSelectorString == "alloc:" || subMethodCallSelectorString == "new:") {
-            return subMethodCall.getCallTargetText()
-        }
-        return callTarget.text
-    }*/
 }

@@ -1,0 +1,234 @@
+
+
+typemap AbstractWorkerEventMap {
+    "error": ErrorEvent;
+}
+/** The CacheStorage interface represents the storage for Cache objects. */
+class CacheStorage {
+    new();
+    delete(cacheName: string): Promise<boolean>;
+    has(cacheName: string): Promise<boolean>;
+    keys(): Promise<string[]>;
+    match(request: RequestInfo, options?: CacheQueryOptions): Promise<Response | undefined>;
+    open(cacheName: string): Promise<Cache>;
+}
+
+
+
+typemap NotificationEventMap {
+    "click": Event;
+    "close": Event;
+    "error": Event;
+    "show": Event;
+}
+
+/** The Notification interface of the Notifications API is used to configure and display desktop notifications to the user. */
+class Notification extends EventTarget {
+	new(title: string, options?: NotificationOptions)
+	static readonly maxActions: number
+	static readonly permission: NotificationPermission
+	static requestPermission(deprecatedCallback?: NotificationPermissionCallback): Promise<NotificationPermission>
+    readonly actions: ReadonlyArray<NotificationAction>;
+    readonly badge: string;
+    readonly body: string;
+    readonly data: any;
+    readonly dir: NotificationDirection;
+    readonly icon: string;
+    readonly image: string;
+    readonly lang: string;
+    onclick: ((this: Notification, ev: Event) => any) | null;
+    onclose: ((this: Notification, ev: Event) => any) | null;
+    onerror: ((this: Notification, ev: Event) => any) | null;
+    onshow: ((this: Notification, ev: Event) => any) | null;
+    readonly renotify: boolean;
+    readonly requireInteraction: boolean;
+    readonly silent: boolean;
+    readonly tag: string;
+    readonly timestamp: number;
+    readonly title: string;
+    readonly vibrate: ReadonlyArray<number>;
+    close(): void;
+    addEventListener(type: K keyof NotificationEventMap, listener: (this: Notification, ev: NotificationEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof NotificationEventMap, listener: (this: Notification, ev: NotificationEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface NotificationAction {
+    action: string;
+    icon?: string;
+    title: string;
+}
+
+interface NotificationOptions {
+    actions?: NotificationAction[];
+    badge?: string;
+    body?: string;
+    data?: any;
+    dir?: NotificationDirection;
+    icon?: string;
+    image?: string;
+    lang?: string;
+    renotify?: boolean;
+    requireInteraction?: boolean;
+    silent?: boolean;
+    tag?: string;
+    timestamp?: number;
+    vibrate?: VibratePattern;
+}
+
+
+/** The PushManager interface of the Push API provides a way to receive notifications from third-party servers as well as request URLs for push notifications. */
+class PushManager {
+	new()
+	static readonly supportedContentEncodings: ReadonlyArray<string>
+    getSubscription(): Promise<PushSubscription | null>;
+    permissionState(options?: PushSubscriptionOptionsInit): Promise<PushPermissionState>;
+    subscribe(options?: PushSubscriptionOptionsInit): Promise<PushSubscription>;
+}
+
+/** The PushSubscription interface of the Push API provides a subcription's URL endpoint and allows unsubscription from a push service. */
+class PushSubscription {
+	new()
+    readonly endpoint: string;
+    readonly expirationTime: number | null;
+    readonly options: PushSubscriptionOptions;
+    getKey(name: PushEncryptionKeyName): ArrayBuffer | null;
+    toJSON(): PushSubscriptionJSON;
+    unsubscribe(): Promise<boolean>;
+}
+
+class PushSubscriptionOptions {
+    new();
+    readonly applicationServerKey: ArrayBuffer | null;
+    readonly userVisibleOnly: boolean;
+}
+
+class ScopedCredential {
+    new();
+    readonly id: ArrayBuffer;
+    readonly type: ScopedCredentialType;
+}
+
+class ScopedCredentialInfo {
+    new();
+    readonly credential: ScopedCredential;
+    readonly publicKey: CryptoKey;
+}
+
+typemap ServiceWorkerEventMap extends AbstractWorkerEventMap {
+    "statechange": Event;
+}
+
+/** The ServiceWorker interface of the ServiceWorker API provides a reference to a service worker. Multiple browsing contexts (e.g. pages, workers, etc.) can be associated with the same service worker, each through a unique ServiceWorker object. */
+class ServiceWorker extends EventTarget, AbstractWorker {
+    new();
+    onstatechange: ((this: ServiceWorker, ev: Event) => any) | null;
+    readonly scriptURL: string;
+    readonly state: ServiceWorkerState;
+    postMessage(message: any, transfer?: Transferable[]): void;
+    addEventListener(type: K keyof ServiceWorkerEventMap, listener: (this: ServiceWorker, ev: ServiceWorkerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof ServiceWorkerEventMap, listener: (this: ServiceWorker, ev: ServiceWorkerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap ServiceWorkerContainerEventMap {
+    "controllerchange": Event;
+    "message": MessageEvent;
+    "messageerror": MessageEvent;
+}
+
+/** The ServiceWorkerContainer interface of the ServiceWorker API provides an object representing the service worker as an overall unit in the network ecosystem, including facilities to register, unregister and update service workers, and access the state of service workers and their registrations. */
+class ServiceWorkerContainer extends EventTarget {
+    new();
+    readonly controller: ServiceWorker | null;
+    oncontrollerchange: ((this: ServiceWorkerContainer, ev: Event) => any) | null;
+    onmessage: ((this: ServiceWorkerContainer, ev: MessageEvent) => any) | null;
+    onmessageerror: ((this: ServiceWorkerContainer, ev: MessageEvent) => any) | null;
+    readonly ready: Promise<ServiceWorkerRegistration>;
+    getRegistration(clientURL?: string): Promise<ServiceWorkerRegistration | undefined>;
+    getRegistrations(): Promise<ReadonlyArray<ServiceWorkerRegistration>>;
+    register(scriptURL: string, options?: RegistrationOptions): Promise<ServiceWorkerRegistration>;
+    startMessages(): void;
+    addEventListener(type: K keyof ServiceWorkerContainerEventMap, listener: (this: ServiceWorkerContainer, ev: ServiceWorkerContainerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof ServiceWorkerContainerEventMap, listener: (this: ServiceWorkerContainer, ev: ServiceWorkerContainerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The ServiceWorkerMessageEvent interface of the ServiceWorker API contains information about an event sent to a ServiceWorkerContainer target. This extends the default message event to allow setting a ServiceWorker object as the source of a message. The event object is accessed via the handler function of a message event, when fired by a message received from a service worker. */
+class ServiceWorkerMessageEvent extends Event {
+    new(type: string, eventInitDict?: ServiceWorkerMessageEventInit);
+    readonly data: any;
+    readonly lastEventId: string;
+    readonly origin: string;
+    readonly ports: ReadonlyArray<MessagePort> | null;
+    readonly source: ServiceWorker | MessagePort | null;
+}
+
+typemap ServiceWorkerRegistrationEventMap {
+    "updatefound": Event;
+}
+
+/** The ServiceWorkerRegistration interface of the ServiceWorker API represents the service worker registration. You register a service worker to control one or more pages that share the same origin. */
+class ServiceWorkerRegistration extends EventTarget {
+    new();
+    readonly active: ServiceWorker | null;
+    readonly installing: ServiceWorker | null;
+    readonly navigationPreload: NavigationPreloadManager;
+    onupdatefound: ((this: ServiceWorkerRegistration, ev: Event) => any) | null;
+    readonly pushManager: PushManager;
+    readonly scope: string;
+    readonly sync: SyncManager;
+    readonly updateViaCache: ServiceWorkerUpdateViaCache;
+    readonly waiting: ServiceWorker | null;
+    getNotifications(filter?: GetNotificationOptions): Promise<Notification[]>;
+    showNotification(title: string, options?: NotificationOptions): Promise<void>;
+    unregister(): Promise<boolean>;
+    update(): Promise<void>;
+    addEventListener(type: K keyof ServiceWorkerRegistrationEventMap, listener: (this: ServiceWorkerRegistration, ev: ServiceWorkerRegistrationEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof ServiceWorkerRegistrationEventMap, listener: (this: ServiceWorkerRegistration, ev: ServiceWorkerRegistrationEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The SyncManager interface of the the ServiceWorker API provides an interface for registering and listing sync registrations. */
+interface SyncManager {
+    new();
+    getTags(): Promise<string[]>;
+    register(tag: string): Promise<void>;
+}
+
+class Worklet {
+    new();
+    addModule(moduleURL: string, options?: WorkletOptions): Promise<void>;
+}
+interface WorkletOptions {
+    credentials?: RequestCredentials;
+}
+
+
+typemap WorkerEventMap extends AbstractWorkerEventMap {
+    "message": MessageEvent;
+}
+
+/** The Worker interface of the Web Workers API represents a background task that can be easily created and can send messages back to its creator. Creating a worker is as simple as calling the Worker() constructor and specifying a script to be run in the worker thread. */
+interface Worker extends EventTarget, AbstractWorker {
+    new(stringUrl: string | URL, options?: WorkerOptions);
+    onmessage: ((this: Worker, ev: MessageEvent) => any) | null;
+    postMessage(message: any, transfer?: Transferable[]): void;
+    terminate(): void;
+    addEventListener(type: K keyof WorkerEventMap, listener: (this: Worker, ev: WorkerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof WorkerEventMap, listener: (this: Worker, ev: WorkerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+
+interface WorkerOptions {
+    credentials?: RequestCredentials;
+    name?: string;
+    type?: WorkerType;
+}
+

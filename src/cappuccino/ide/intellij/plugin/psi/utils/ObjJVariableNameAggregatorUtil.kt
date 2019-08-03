@@ -83,7 +83,7 @@ object ObjJVariableNameAggregatorUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val containingFile = element.containingFile
-        val fileName = ObjJPsiFileUtil.getContainingFileName(containingFile)!!
+        val fileName = ObjJPsiFileUtil.getContainingFileName(containingFile)
         return ObjJVariableNameByScopeIndex.instance.getInRange(fileName, containingBlock.textRange, element.project)
     }
 
@@ -196,7 +196,7 @@ object ObjJVariableNameAggregatorUtil {
         var out: ObjJVariableName?
         for (bodyVariableAssignment in bodyVariableAssignments) {
             if (bodyVariableAssignment notInSameFile element) {
-                LOGGER.log(Level.SEVERE, "BodyVariableAssignment is not in same parent as element")
+               //LOGGER.severe("BodyVariableAssignment is not in same parent as element")
                 continue
             }
             ProgressIndicatorProvider.checkCanceled()
@@ -234,15 +234,25 @@ object ObjJVariableNameAggregatorUtil {
 
     fun getAllContainingClassInstanceVariables(containingClassName:String?, project:Project): List<ObjJVariableName> {
         val result = ArrayList<ObjJVariableName>()
-        //LOGGER.log(Level.INFO, "Getting all containing class instance variables: $containingClassName")
+        ////LOGGER.info("Getting all containing class instance variables: $containingClassName")
         if (DumbService.getInstance(project).isDumb) {
-            //LOGGER.log(Level.INFO, "Cannot get instance variable as project is in dumb mode");
+            ////LOGGER.info("Cannot get instance variable as project is in dumb mode");
             return EMPTY_VARIABLE_NAME_LIST
         }
         if (containingClassName == null || isUniversalMethodCaller(containingClassName)) {
             return EMPTY_VARIABLE_NAME_LIST
         }
+        for (declaration in ObjJInstanceVariablesByClassIndex.instance[containingClassName, project]) {
+            ProgressIndicatorProvider.checkCanceled()
+            if (declaration.variableName != null) {
+                result.add(declaration.variableName!!)
+            }
+        }
+
         for (variableHoldingClassName in ObjJInheritanceUtil.getAllInheritedClasses(containingClassName, project)) {
+            // Item was already pulled outside of list
+            if (variableHoldingClassName == containingClassName)
+                continue
             ProgressIndicatorProvider.checkCanceled()
             for (declaration in ObjJInstanceVariablesByClassIndex.instance[variableHoldingClassName, project]) {
                 ProgressIndicatorProvider.checkCanceled()
@@ -261,21 +271,21 @@ object ObjJVariableNameAggregatorUtil {
             for (methodDeclarationSelector in declaration.methodHeader.methodDeclarationSelectorList) {
                 ProgressIndicatorProvider.checkCanceled()
                 if (methodDeclarationSelector.variableName == null || methodDeclarationSelector.variableName!!.text.isEmpty()) {
-                    //LOGGER.log(Level.INFO, "Selector variable name is null");
+                    ////LOGGER.info("Selector variable name is null");
                     continue
                 }
-                //LOGGER.log(Level.INFO, "Adding method header selector: "+methodDeclarationSelector.getVariableName().getText());
+                ////LOGGER.info("Adding method header selector: "+methodDeclarationSelector.getVariableName().getText());
                 result.add(methodDeclarationSelector.variableName!!)
             }
         } else {
-            //LOGGER.log(Level.INFO, "Psi element is not within a variable declaration");
+            ////LOGGER.info("Psi element is not within a variable declaration");
         }
         return result
     }
 
     fun getAllFileScopedVariables(file: PsiFile?, qualifiedNameIndex: Int): List<ObjJVariableName> {
         if (file == null) {
-            //LOGGER.log(Level.INFO, "Cannot get all file scoped variables. File is null");
+            ////LOGGER.info("Cannot get all file scoped variables. File is null");
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
@@ -355,7 +365,7 @@ object ObjJVariableNameAggregatorUtil {
         val result = ArrayList<ObjJVariableName>()
         for (bodyVariableAssignment in bodyVariableAssignments) {
             ProgressIndicatorProvider.checkCanceled()
-            //LOGGER.log(Level.INFO, "Body variable assignment: <"+bodyVariableAssignment.getText()+">");
+            ////LOGGER.info("Body variable assignment: <"+bodyVariableAssignment.getText()+">");
             result.addAll(getAllVariablesFromBodyVariableAssignment(bodyVariableAssignment, qualifiedNameIndex))
         }
         return result

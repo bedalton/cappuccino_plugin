@@ -62,7 +62,6 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                     if (classes.isNullOrEmpty() || classes.all { it in anyTypes })
                         return
                     val selectors = onlyVariable.getMethodSelectors(tag)
-                    LOGGER.info("$selectorString !in $selectors for classes: $classes")
                     if (selectors.isNotEmpty()) {
                         if (selectorString !in selectors && selectorString.substringFromEnd(0, 1) !in selectors) {
 

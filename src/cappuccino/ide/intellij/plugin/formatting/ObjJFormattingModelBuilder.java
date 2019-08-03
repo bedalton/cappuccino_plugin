@@ -29,7 +29,9 @@ public class ObjJFormattingModelBuilder implements FormattingModelBuilder {
                     FormattingMode mode) {
         // element can be DartFile, DartEmbeddedContent, DartExpressionCodeFragment
         final PsiFile psiFile = element.getContainingFile();
-        final ASTNode rootNode = psiFile instanceof ObjJFile ? psiFile.getNode() : element.getNode();
+        if (!(psiFile instanceof ObjJFile))
+            return null;
+        final ASTNode rootNode = element instanceof ObjJFile ? psiFile.getNode() : element.getNode();
         final ObjJBlockContext context = new ObjJBlockContext(settings, mode);
         final ObjJFormattedBlock rootBlock = new ObjJFormattedBlock(rootNode, null, null, settings, context);
         return new DocumentBasedFormattingModel(rootBlock, element.getProject(), settings, psiFile.getFileType(), psiFile);

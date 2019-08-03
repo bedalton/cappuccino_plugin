@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
@@ -16,12 +17,15 @@ object ObjJHasContainingClassPsiUtil {
     }
 
     fun getContainingClassName(methodHeader: ObjJMethodHeader): String {
-        val stub = methodHeader.stub
-        if (stub != null) {
-            return stub.containingClassName
-        }
-        val containingClass = methodHeader.containingClass
-        return containingClass?.classType?.className ?: ObjJClassType.UNDEF_CLASS_NAME
+        return methodHeader.stub?.containingClassName
+                ?: getContainingClass(methodHeader)?.classNameString
+                ?: ObjJClassType.UNDEF_CLASS_NAME
+    }
+
+    fun getContainingClassName(variableDeclaration:ObjJInstanceVariableDeclaration) : String {
+        return variableDeclaration.stub?.containingClass
+                ?: getContainingClass(variableDeclaration)?.classNameString
+                ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {

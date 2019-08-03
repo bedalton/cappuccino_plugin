@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -11,7 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySiblingIgnoringComments
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.trimFromBeginning
@@ -112,9 +113,12 @@ object ObjJCommentCompletionProvider {
             when (commentTokenParts.size - indexAfter) {
                 // Add class names if first token after @var
                 0, 1 -> {
-                    if (!isPrevSiblingClassName(lastPart, project))
+                    if (!isPrevSiblingClassName(lastPart)) {
                         ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
-                    else {
+                        JsTypeDefClassesByNameIndex.instance.getAllKeys(project).forEach {
+                            resultSet.addElement(LookupElementBuilder.create(it))
+                        }
+                    } else {
                         val variableNames = ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
                             it.text
                         }
@@ -184,7 +188,7 @@ object ObjJCommentCompletionProvider {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
-        val project: Project = element.project
+        
         var lastPart: String? = null
         for (part in commentTokenParts) {
             // Increment index at start to allow for simpler index calculations
@@ -204,7 +208,7 @@ object ObjJCommentCompletionProvider {
             when (commentTokenParts.size - indexAfter) {
                 // Add class names if first token after @var
                 0, 1 -> {
-                    if (!isPrevSiblingClassName(lastPart, project))
+                    if (!isPrevSiblingClassName(lastPart))
                         ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
                     lastPart = part
                 }
@@ -264,7 +268,7 @@ object ObjJCommentCompletionProvider {
         // Add DO_NOT_RESOLVE completion if there is no other text
         if (commentTokenParts.isEmpty()) {
             addCompletionElementsSimple(resultSet, listOf(
-                    ObjJIgnoreEvaluatorUtil.DO_NOT_RESOLVE
+                    ObjJCommentEvaluatorUtil.DO_NOT_RESOLVE
             ))
         }
         // Add @var and @ignore keywords to completion, if first character is @
@@ -297,14 +301,14 @@ object ObjJCommentCompletionProvider {
                     ?: element.expr?.leftExpr?.functionLiteral  as? ObjJFunctionDeclarationElement<*>)
                     ?.paramNames.orEmpty()
             else -> {
-                LOGGER.info("Unexpected element type <${element.elementType}> encountered for get Parameter names")
+                LOGGER.severe("Unexpected element type <${element.elementType}> encountered for get Parameter names")
                 emptyList()
             }
         }
     }
 
-    private fun isPrevSiblingClassName(prevSiblingText: String?, project: Project): Boolean {
-        return prevSiblingText != null && ObjJClassDeclarationsIndex.instance.containsKey(prevSiblingText, project)
+    private fun isPrevSiblingClassName(prevSiblingText: String?): Boolean {
+        return prevSiblingText != null && prevSiblingText == "|"
     }
 
 }

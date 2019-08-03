@@ -1,89 +1,148 @@
 package cappuccino.ide.intellij.plugin.inference
 
-import cappuccino.ide.intellij.plugin.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
-import cappuccino.ide.intellij.plugin.utils.*
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.orElse
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.project.Project
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
 
-data class InferenceResult (
-        val classes:Set<String> = emptySet(),
-        val isNumeric:Boolean = isNumeric(classes),
-        val isBoolean:Boolean = isBoolean(classes),
-        val isString:Boolean = isString(classes),
-        val isDictionary:Boolean = isDictionary(classes),
-        val isSelector:Boolean = isSelector(classes),
-        val isRegex:Boolean = isRegex(classes),
-        val jsObjectKeys:PropertiesMap? = null,
-        val functionTypes:List<JsFunctionType>? = null,
-        val arrayTypes:Set<String>? = null
-) {
-    private var globalClasses:Set<GlobalJSClass>? = null
-    private var allClassesExpanded:Set<String>? = null
+data class InferenceResult(
+        val types: Set<JsTypeListType> = emptySet(),
+        val nullable: Boolean = true,
+        val isNumeric: Boolean = isNumeric(types),
+        val isBoolean: Boolean = isBoolean(types),
+        val isString: Boolean = isString(types),
+        val isDictionary: Boolean = isDictionary(types),
+        val isSelector: Boolean = isSelector(types),
+        val isRegex: Boolean = isRegex(types)
+) : Iterable<String> {
 
-    val isJsObject:Boolean by lazy {
-        jsObjectKeys?.isNotEmpty().orFalse() || "Object" in classes || "?" in classes
+    val classes:Set<String> by lazy {
+        types.map { it.typeName }.toSet()
     }
 
-    @Suppress("unused")
-    fun toClassListExtended(project:Project): Set<String> {
-        var classes = allClassesExpanded
-        if (classes != null)
-            return classes
-
-        val classList = toClassList(null).withoutAnyType().plus("CPObject")
-        classes = classList.flatMap {
-                ObjJInheritanceUtil.getAllInheritedClasses(it, project)
-        }.toSet()// + classList.flattenNestedSuperClasses()
-        allClassesExpanded = classes
-        return classes
+    val toIndexSearchString:String by lazy {
+        "(" + classes.joinToString("|") { Regex.escapeReplacement(it) } + ")"
     }
 
-    fun jsClasses(project:Project):Iterable<GlobalJSClass> {
-        var out = globalClasses
-        if (out != null)
-            return out
-        out = toClassList().mapNotNull { getJsClassObject(project, it) }.toSet()
-        globalClasses = out
-        return out
+    val properties: List<JsNamedProperty> by lazy {
+        interfaceTypes.flatMap {
+            it.allProperties + it.allFunctions
+        }
     }
+
+    fun toJsClasses(project:Project) : List<JsClassDefinition> {
+        return classes.flatMap {
+            getClassDefinitions(project, it)
+        }
+    }
+
+    fun propertyForKey(name: String): JsNamedProperty? {
+        return properties.firstOrNull {
+            it.name == name
+        }
+    }
+
+    val jsObjectKeys: Set<String> by lazy {
+        val out = mutableSetOf<String>()
+        interfaceTypes.forEach {
+            for (property in it.allProperties) {
+                out.add(property.name)
+            }
+            it.allFunctions.forEach { function ->
+                if (function.name != null)
+                    out.add(function.name)
+            }
+        }
+        out
+    }
+
+    val isJsObject: Boolean by lazy {
+        interfaceTypes.isNotNullOrEmpty() || "Object" in classes || "?" in classes
+    }
+
+    val mapTypes: List<JsTypeListType.JsTypeListMapType> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListMapType }
+    }
+
+    val arrayTypes: JsTypeListType.JsTypeListArrayType by lazy {
+        val all = types.mapNotNull { it as? JsTypeListType.JsTypeListArrayType }
+        val typesOut = all.flatMap {
+            it.types
+        }.toSet()
+        val maxDimensions = all.map { it.dimensions }.max().orElse(1)
+        JsTypeListType.JsTypeListArrayType(typesOut, maxDimensions)
+    }
+
+    val keyOfTypes: List<JsTypeListType.JsTypeListKeyOfType> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListKeyOfType }
+    }
+
+    val valueOfKeyTypes: List<JsTypeListType.JsTypeListValueOfKeyType> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListValueOfKeyType }
+    }
+
+    val basicTypes: List<JsTypeListType.JsTypeListBasicType> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListBasicType }
+    }
+
+    val interfaceTypes: List<JsTypeListType.JsTypeListClass> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListClass }
+    }
+
+    val functionTypes: List<JsTypeListType.JsTypeListFunctionType> by lazy {
+        types.mapNotNull { it as? JsTypeListType.JsTypeListFunctionType }
+    }
+
+    override fun iterator(): Iterator<String> {
+        return types.map { it.typeName }.iterator()
+    }
+
+    override fun toString(): String {
+        return types.joinToString("|") { it.typeName }
+    }
+
 }
 
-private fun isNumeric(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in numberTypes}
+private fun isNumeric(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in numberTypes }
 }
 
-private fun isBoolean(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in booleanTypes}
+private fun isBoolean(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in booleanTypes }
 }
 
-private fun isString(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in stringTypes }
+private fun isString(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in stringTypes }
 }
 
-private fun isRegex(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "regex"}
+private fun isRegex(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() == "regex" }
 }
 
-private fun isDictionary(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() in dictionaryTypes}
+private fun isDictionary(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() in dictionaryTypes }
 }
 
-private fun isSelector(classes:Iterable<String>) : Boolean {
-    return classes.any { it.toLowerCase() == "sel"}
+private fun isSelector(types:Iterable<JsTypeListType>): Boolean {
+    return types.map { it.typeName }.any { it.toLowerCase() == "sel" }
 }
 
-data class JsFunctionType (
-        val parameters:Map<String, InferenceResult> = mutableMapOf(),
-        val returnType:InferenceResult = INFERRED_VOID_TYPE,
-        val comment: String? = null
+open class JsFunctionType(
+        open val parameters: List<JsTypeDefNamedProperty> = mutableListOf(),
+        open val returnType: InferenceResult = INFERRED_VOID_TYPE,
+        open val comment: String? = null
 ) {
 
     override fun toString(): String {
         val out = StringBuilder("(")
-        val parametersString = parameters.joinToString(false)
+        val parametersString = parameters.joinToString(", ") { property ->
+            property.name + property.types.types.joinToString("|") { type -> type.typeName }
+        }
         out.append(parametersString)
                 .append(")")
         val returnTypes = this.returnType.toClassListString()
@@ -95,15 +154,7 @@ data class JsFunctionType (
 
 typealias PropertiesMap = Map<String, InferenceResult>
 
-fun Map<String, InferenceResult?>.toPropertiesMap() : PropertiesMap {
-    val out = mutableMapOf<String, InferenceResult>()
-    forEach { (key, value) ->
-        out[key] = value ?: INFERRED_ANY_TYPE
-    }
-    return out
-}
-
-fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
+fun PropertiesMap.joinToString(enclose: Boolean = true): String {
     val parameters = this.map {
         val parameterString = StringBuilder(it.key)
         val types = it.value.toClassList(null).joinToString(TYPES_DELIM)
@@ -117,96 +168,22 @@ fun PropertiesMap.joinToString(enclose:Boolean = true) : String {
         parameters
 }
 
-operator fun InferenceResult.plus(other:InferenceResult):InferenceResult {
-    val arrayTypes= combine(arrayTypes, other.arrayTypes)
-    val jsObjectKeys = combine(jsObjectKeys, other.jsObjectKeys)
-    val functionTypes = combine(functionTypes, other.functionTypes)
+operator fun InferenceResult.plus(other: InferenceResult): InferenceResult {
     return InferenceResult(
-            isNumeric = isNumeric || other.isNumeric,
-            isBoolean = isBoolean || other.isBoolean,
-            isSelector = isSelector || other.isSelector,
-            isString = isString || other.isString,
-            isDictionary = isDictionary || other.isDictionary,
-            isRegex = isRegex || other.isRegex,
-            arrayTypes = if (arrayTypes.isNotNullOrEmpty()) arrayTypes else null,
-            jsObjectKeys = jsObjectKeys ,
-            functionTypes = functionTypes,
-            classes = (classes + other.classes)
+            types = (types + other.types),
+            nullable = nullable || other.nullable
     )
 }
 
-fun List<InferenceResult>.collapse() : InferenceResult {
-    val isNumeric = this.any { it.isNumeric}
-    val isDictionary = this.any { it.isDictionary }
-    val isBoolean = this.any { it.isBoolean }
-    val isString = this.any { it.isString }
-    val isSelector = this.any { it.isSelector }
-    val isRegex = this.any { it.isRegex }
-    val functionTypes = this.flatMap { it.functionTypes ?: emptyList()  }
-    val classes = this.flatMap { it.classes }.toSet()
-    var jsObjectKeys:Map<String, InferenceResult> = emptyMap()
-    this.mapNotNull { it.jsObjectKeys }.forEach {
-        jsObjectKeys = combine(jsObjectKeys, it) ?: jsObjectKeys
-    }
+fun Iterable<InferenceResult>.combine(): InferenceResult {
     return InferenceResult(
-            isNumeric = isNumeric,
-            isBoolean = isBoolean,
-            isString = isString,
-            isDictionary = isDictionary,
-            isSelector = isSelector,
-            isRegex = isRegex,
-            functionTypes = if (functionTypes.isNotEmpty()) functionTypes else null,
-            classes = classes,
-            jsObjectKeys = if (jsObjectKeys.isNotEmpty()) jsObjectKeys else null
-
+            types = this.flatMap { it.types }.toSet(),
+            nullable = this.any { it.nullable }
     )
 }
 
-private fun <T> combine (thisList:List<T>?, otherList:List<T>?) : List<T>? {
-    return if (thisList.isNullOrEmpty() && otherList.isNullOrEmpty())
-        null
-    else if (thisList.isNullOrEmpty())
-        otherList
-    else if (otherList.isNullOrEmpty())
-        thisList
-    else
-        (otherList + thisList).toSet().toList()
-}
-
-
-private fun <T> combine (thisList:Set<T>?, otherList:Set<T>?) : Set<T>? {
-    return if (thisList.isNullOrEmpty() && otherList.isNullOrEmpty())
-        null
-    else if (thisList.isNullOrEmpty())
-        otherList
-    else if (otherList.isNullOrEmpty())
-        thisList
-    else
-        (otherList + thisList).toSet()
-}
-
-internal fun combine (thisList:Map<String, InferenceResult>?, otherList:Map<String, InferenceResult>?) : Map<String, InferenceResult>? {
-    return if (thisList.isNullOrEmpty() && otherList.isNullOrEmpty())
-        null
-    else if (thisList.isNullOrEmpty())
-        otherList
-    else if (otherList.isNullOrEmpty())
-        thisList
-    else {
-        val out = otherList.toMutableMap()
-        for ((key, value) in otherList) {
-            //ProgressManager.checkCanceled()
-            if (out.containsKey(key))
-                out[key] = value + out[key]!!
-            else
-                out[key] = value
-        }
-        out
-    }
-}
-
-
-internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<String> {
+internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<String> {
+    var hadSpecificArrayTypes = true
     if (this == INFERRED_ANY_TYPE) {
         return if (simplifyAnyTypeTo != null)
             setOf(simplifyAnyTypeTo)
@@ -216,7 +193,7 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
     val returnClasses = mutableListOf<String>()
     if (isNumeric && numberTypes.intersect(classes).isEmpty())
         returnClasses.add("number")
-    if (isBoolean && booleanTypes.intersect(classes).isEmpty() && classes.isEmpty())
+    if (isBoolean && booleanTypes.intersect(classes).isEmpty())
         returnClasses.add("BOOL")
     if (isRegex)
         returnClasses.add("regex")
@@ -228,31 +205,37 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo:String? = "?") : Set<
         returnClasses.add("SEL")
     if (isJsObject)
         returnClasses.add("Object")
-    if (arrayTypes.isNotNullOrEmpty()) {
-        returnClasses.addAll(arrayTypes!!.mapNotNull { if (it != "Array") "$it[]" else null })
+    if (arrayTypes.types.isNotNullOrEmpty()) {
+        var arrayTypes = arrayTypes.types.map {
+            if (it.typeName != "Array" && it.typeName !in anyTypes)
+                "${it.typeName}[]".replace("[][]", "[]")
+            else if (it.typeName !in anyTypes)
+                "Array<?>"
+            else
+                "Array"
+        }.toSet()
+        if (arrayTypes.size > 1) {
+            arrayTypes = arrayTypes - "Array"
+        }
+        returnClasses.addAll(arrayTypes)
     }
     returnClasses.addAll(classes)
     return returnClasses.mapNotNull {
         when (it) {
             in anyTypes -> simplifyAnyTypeTo
+            in arrayClassNames -> if (hadSpecificArrayTypes) null else it
             "string" -> "CPString"
             else -> it
         }
-        }.toSet()
+    }.toSet()
 }
 
 
-fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimiter:String = TYPES_DELIM) : String? {
-    val functionTypes = this.functionTypes?.map {
+fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimiter: String = TYPES_DELIM): String? {
+    val functionTypes = this.functionTypes.map {
         it.toString()
-    }.orEmpty()
-    val arrayTypes = this.arrayTypes?.map {
-        if (it in anyTypes)
-            "Array<Any>"
-        else
-            "Array<$it>"
-    }.orEmpty()
-    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes + arrayTypes
+    }
+    val types = this.toClassList(simplifyAnyTypeTo) + functionTypes //+ arrayTypes.types.map { "${it.typeName}[]".replace("[][]", "[]")}
     val typesString = types.joinToString(delimiter)
     return if (typesString.isNotBlank())
         typesString
@@ -262,146 +245,49 @@ fun InferenceResult.toClassListString(simplifyAnyTypeTo: String? = "?", delimite
 
 
 internal fun Iterable<String>.toInferenceResult(): InferenceResult {
-    val classes = this.toSet()
-    val arrayClasses = this.filter { it.endsWith("[]") }.map { it.substringFromEnd(0, 2) }
+    val classes = this.toJsTypeList()
+    val arrayClasses = this.filter { it.endsWith("[]") }.map { it.substringFromEnd(0, 2) }.map {
+        JsTypeListType.JsTypeListArrayType(listOf(it).toJsTypeList(), 1)
+    }
     return InferenceResult(
-            isString = this.any { it.toLowerCase() in stringTypes },
-            isBoolean = this.any { it.toLowerCase() in booleanTypes },
-            isNumeric = this.any { it.toLowerCase() in numberTypes },
-            isRegex = this.any { it.toLowerCase() == "regex"},
-            isDictionary = this.any { it.toLowerCase() in dictionaryTypes},
-            isSelector = this.any { it.toLowerCase() == "sel" },
-            arrayTypes = if (arrayClasses.isNotEmpty()) arrayClasses.toSet() else null,
-            classes = classes
+            types = classes + arrayClasses,
+            nullable = true
     )
+}
+
+fun Iterable<String>.toJsTypeList() : Set<JsTypeListType.JsTypeListBasicType> {
+    return map { JsTypeListType.JsTypeListBasicType(it) }.toSet()
 }
 
 internal val booleanTypes = listOf("bool", "boolean")
 internal val stringTypes = listOf("string", "cpstring")
 internal val numberTypes = listOf("number", "int", "integer", "float", "long", "long long", "double")
 internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cpmutabledictionary", "cfmutabledictionary")
+internal val arrayTypes = listOf("array", "cparray", "cpmutablearray")
+internal val arrayClassNames = arrayTypes
 internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
 
-internal fun Iterable<String>.withoutAnyType() : Set<String> {
-    return this.filterNot { it in anyTypes}.toSet()
+internal fun Iterable<String>.withoutAnyType(): Set<String> {
+    return this.filterNot { it in anyTypes }.toSet()
 }
 
 
-internal val InferenceResult.anyType : Boolean get() {
-    return classes.any { it in anyTypes}
-}
+internal val InferenceResult.anyType: Boolean
+    get() {
+        return classes.any { it in anyTypes }
+    }
 
 internal val INFERRED_ANY_TYPE = InferenceResult(
-        isString = true,
-        isBoolean = true,
-        isRegex = true,
-        isSelector = true,
-        isDictionary = true,
-        isNumeric = true,
-        classes = setOf("?"),
-        arrayTypes = null
+        types = setOf(JsTypeListType.JsTypeListBasicType("?"))
 )
 
 internal val INFERRED_VOID_TYPE = InferenceResult(
-        classes = setOf("void")
+        types = setOf(JsTypeListType.JsTypeListBasicType("void"))
 )
 
 
-internal val INFERRED_EMPTY_TYPE:InferenceResult by lazy {
+internal val INFERRED_EMPTY_TYPE: InferenceResult by lazy {
     InferenceResult(
-            classes = setOf()
+            types = setOf()
     )
-}
-
-fun StubOutputStream.writeJsFunctionType(function:JsFunctionType?) {
-    writeBoolean(function != null)
-    if (function == null)
-        return
-    writePropertiesMap(function.parameters)
-    writeInferenceResult(function.returnType)
-    writeUTFFast(function.comment ?: "")
-}
-
-fun StubInputStream.readJsFunctionType() : JsFunctionType? {
-    if (!readBoolean())
-        return null
-    val parameters = readPropertiesMap()
-    val returnType = readInferenceResult()
-    val comment = readUTFFast()
-    return JsFunctionType(
-            parameters = parameters,
-            returnType = returnType,
-            comment = if (comment.isNotBlank()) comment else null
-    )
-}
-
-fun StubOutputStream.writePropertiesMap(map:PropertiesMap) {
-    writeInt(map.size)
-    map.forEach { (key, value) ->
-        writeName(key)
-        writeInferenceResult(value)
-    }
-}
-
-fun StubInputStream.readPropertiesMap() : PropertiesMap {
-    val numProperties = readInt()
-    val out = mutableMapOf<String, InferenceResult>()
-    for (i in 0 until numProperties) {
-        val name = readNameString() ?: "?"
-        out[name] = readInferenceResult()
-    }
-    return out
-}
-
-
-fun StubOutputStream.writeInferenceResult(result:InferenceResult) {
-    writeName(result.toClassListString(null))
-    writeJsFunctionList(result.functionTypes)
-    writeBoolean(result.jsObjectKeys != null)
-    if (result.jsObjectKeys != null)
-        writePropertiesMap(result.jsObjectKeys)
-    writeBoolean(result.arrayTypes != null)
-    if (result.arrayTypes != null)
-        writeName(result.arrayTypes.joinToString(TYPES_DELIM))
-}
-
-fun StubInputStream.readInferenceResult() : InferenceResult {
-    val classes = readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    val functions = readJsFunctionList()
-    val objectKeys = if (readBoolean())
-        readPropertiesMap()
-    else
-        null
-
-    val arrayTypes = if (readBoolean()) {
-        readNameString().orEmpty().split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toSet()
-    } else
-        null
-
-    return InferenceResult(
-            classes = classes,
-            functionTypes = functions,
-            jsObjectKeys = objectKeys,
-            arrayTypes = arrayTypes
-    )
-}
-
-internal fun StubOutputStream.writeJsFunctionList(functions:List<JsFunctionType>?) {
-    writeBoolean(functions != null)
-    if (functions == null)
-        return
-    writeInt(functions.size)
-    functions.forEach {
-        writeJsFunctionType(it)
-    }
-}
-
-
-internal fun StubInputStream.readJsFunctionList() : List<JsFunctionType>? {
-    if (!readBoolean())
-        return null
-    val numFunctions = readInt()
-    return (0 until numFunctions).mapNotNull {
-        readJsFunctionType()
-    }
 }

@@ -644,6 +644,7 @@ instanceVariableDeclaration
 			createTreeStructureElement
 			getAccessorPropertyList
 			getVariableType
+			getVariableNameString
 		]
 		pin=2
 		recoverWhile=recover_instanceVariableDeclaration
@@ -678,6 +679,7 @@ accessorProperty
 
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub>"
 			]
 		methods=[
@@ -700,6 +702,7 @@ accessorProperty
 			getSetter
 			shouldResolve
 			getMethodHeaderCache
+			getSelectorStructs
 		]
 	}
 	;
@@ -752,13 +755,14 @@ elseIfStatement
 	}
 	;
 
-private elseStatement
+elseStatement
 	::= 'else' statementOrBlock
 	{
 		implements=["cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"]
 		pin=1
 		methods=[
 			block="statementOrBlock"
+			getBlockList
 		]
 	}
 	;
@@ -1028,13 +1032,14 @@ functionDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
 		methods=[
 			getName
 			setName
 			functionNameNode="/functionName"
-			getFunctionNameAsString
+			getFunctionNameString
 			getParamNames
 			getReturnType
 			shouldResolve
@@ -1045,6 +1050,7 @@ functionDeclaration
 			block="blockElement"
 			getFunctionScope
 			getCache
+			getDescription
 		]
 
 	}
@@ -1059,12 +1065,17 @@ methodDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFoldable"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 		]
 		methods = [
 			block="/methodBlock"
 			getBlockList
 			createTreeStructureElement
 			createFoldingDescriptor
+			getContainingClassName
+			getContainingClass
+			getContainingSuperClass
+			getContainingSuperClassName
 			//getMethodHeaderCache
 		]
 	}
@@ -1103,6 +1114,7 @@ methodHeader
 			isRequired
 			createTreeStructureElement
 			getMethodHeaderCache
+			getSelectorStructs
 		]
 	}
 	;
@@ -1307,6 +1319,7 @@ preprocessorDefineFunction
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJPreprocessorDefineFunctionImpl>"
@@ -1314,7 +1327,7 @@ preprocessorDefineFunction
 			getName
 			setName
 			functionNameNode="/functionName"
-			getFunctionNameAsString
+			getFunctionNameString
 			getParamNames
 			getReturnType
 			shouldResolve
@@ -1325,6 +1338,7 @@ preprocessorDefineFunction
 			getIterationStatementList
 			getFunctionScope
 			getCache
+			getDescription
 		]
 	}
 	;
@@ -1656,6 +1670,8 @@ propertyName
 	|	stringLiteral
     | 	integer
     |	variableName
+    | 	DELETE
+    | 	keyword
     {
 
 	 	extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -1810,6 +1826,7 @@ leftExpr
     |	regularExpressionLiteral
 	;
 
+
 refExpression
 	::= '@ref' '(' variableName ')'
 	{
@@ -1863,6 +1880,7 @@ functionCall
 			getExprList
 			getCloseParen
 			getOpenParen
+			getFunctionNameString
 		]
 
 	}
@@ -1989,22 +2007,34 @@ nullLiterals
 
 formalVariableType
 	::= varTypeId
-	| VAR_TYPE_CHAR
-	| VAR_TYPE_BYTE
-	| VAR_TYPE_SHORT
-	| VAR_TYPE_INT
-	| VAR_TYPE_LONG_LONG
-	| VAR_TYPE_LONG
-	| VAR_TYPE_FLOAT
-	| VAR_TYPE_DOUBLE
-	| VAR_TYPE_IBOUTLET
-	| VAR_TYPE_IBACTION
-	| VAR_TYPE_BOOL
-	| VAR_TYPE_SEL
-	| VAR_TYPE_UNSIGNED
-	| VAR_TYPE_SIGNED
-	| <<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
-	| className
+	| 	VAR_TYPE_CHAR
+	| 	VAR_TYPE_BYTE
+	| 	VAR_TYPE_SHORT
+	| 	VAR_TYPE_INT
+	| 	VAR_TYPE_LONG_LONG
+	| 	VAR_TYPE_LONG
+	| 	VAR_TYPE_FLOAT
+	| 	VAR_TYPE_DOUBLE
+	| 	VAR_TYPE_IBOUTLET
+	| 	VAR_TYPE_IBACTION
+	| 	VAR_TYPE_BOOL
+	| 	VAR_TYPE_SEL
+	| 	VAR_TYPE_UNSIGNED
+	| 	VAR_TYPE_SIGNED
+	| 	<<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
+	| 	className classNameGeneric?
+	{
+		methods = [
+			getVariableType
+		]
+	}
+	;
+
+classNameGeneric
+	::= '<' className '>'
+	{
+		pin = 1;
+	}
 	;
 
 varTypeId
@@ -2055,10 +2085,11 @@ functionLiteral
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl>>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 		]
 		methods = [
 			getFunctionNameNode
-			getFunctionNameAsString
+			getFunctionNameString
 			getFunctionNamesAsString
 			getReturnType
 			getParamNameElements
@@ -2072,6 +2103,7 @@ functionLiteral
 			block="blockElement"
 			getFunctionScope
 			getCache
+			getDescription
 		]
 	}
 	;
@@ -2102,6 +2134,7 @@ selectorLiteral
 			shouldResolve
 			getContainingSuperClass
 			getMethodHeaderCache
+			getSelectorStructs
 		]
 	}
 	;
@@ -2199,6 +2232,7 @@ stringLiteral
 	{
 		methods=[
 			getStringValue
+			getReference
 		]
 	}
 	;

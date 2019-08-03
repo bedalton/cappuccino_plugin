@@ -16,11 +16,14 @@ class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, overr
     }
 
     companion object {
-
         private val LOGGER = Logger.getLogger("ObjJFileStubImpl")
         private val IMPORT_FILENAME_REGEX = Pattern.compile("(.*)?::(.*)")
     }
 }
 
 
-data class ObjJImportInfoStub(val framework:String?, val fileName:String?)
+data class ObjJImportInfoStub(val framework:String?, val fileName:String?) {
+    override fun toString(): String {
+        return "<$framework/$fileName>"
+    }
+}

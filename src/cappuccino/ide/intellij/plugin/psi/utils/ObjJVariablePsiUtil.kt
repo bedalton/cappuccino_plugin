@@ -17,12 +17,17 @@ object ObjJVariablePsiUtil {
     }
 
     fun isNewVarDec(psiElement: PsiElement): Boolean {
-        val reference = psiElement.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
-        if (reference.parent !is ObjJVariableDeclaration && reference.parent !is ObjJBodyVariableAssignment) {
-            return false
+        val variableName = psiElement.getSelfOrParentOfType(ObjJVariableName::class.java)
+        if (variableName != null) {
+            return when {
+                variableName.parent is ObjJGlobalVariableDeclaration -> true
+                variableName.parent.parent is ObjJVariableDeclaration -> (variableName.parent.parent as ObjJVariableDeclaration).hasVarKeyword()
+                variableName.parent is ObjJFormalParameterArg -> true
+                variableName.parent is ObjJMethodDeclarationSelector -> true
+                else -> false
+            }
         }
-        val bodyVariableAssignment = reference.getParentOfType(ObjJBodyVariableAssignment::class.java)
-        return bodyVariableAssignment != null && bodyVariableAssignment.varModifier != null
+        return false
     }
 
     fun getVariableType(variable: ObjJGlobalVariableDeclaration): String? {
@@ -34,7 +39,7 @@ object ObjJVariablePsiUtil {
     }
 
     fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String {
-        return variable.stub?.varType
+        return variable.stub?.variableType
                 ?: variable.formalVariableType.varTypeId?.className?.text
                 ?: variable.formalVariableType.text
     }

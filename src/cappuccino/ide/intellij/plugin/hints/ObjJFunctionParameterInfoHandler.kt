@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.hints
 
-import cappuccino.ide.intellij.plugin.contributor.globalJsFunctions
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJArguments
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
@@ -25,16 +26,10 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
     }
 
     override fun getParametersForLookup(lookupElement: LookupElement?, context: ParameterInfoContext?): Array<Any>? {
-        val element = lookupElement?.`object` as? ObjJCompositeElement
-        if (element == null) {
-            //LOGGER.info("Lookup element did not return composite element")
-            return emptyArray()
-        }
+        val element = lookupElement?.`object` as? ObjJCompositeElement ?: return emptyArray()
         if (element is ObjJFunctionDeclarationElement<*>) {
-            //LOGGER.info("Element is a function declaration element")
             return arrayOf(element)
         }
-        //LOGGER.info("Element is not a function declaration element")
         return emptyArray()
     }
 
@@ -63,10 +58,7 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
     private fun getCallExpression(offset:Int, fileIn:PsiFile) : ObjJFunctionCall? {
         val file = fileIn as? ObjJFile ?: return null
         val arguments = PsiTreeUtil.findElementOfClassAtOffset(file, offset, ObjJArguments::class.java, false)
-        if (arguments == null) {
-            //LOGGER.info("Failed to find function arguments at offset")
-            return null
-        }
+                ?: return null
         return arguments.parent as? ObjJFunctionCall
     }
 
@@ -84,12 +76,10 @@ class ObjJFunctionParameterInfoHandler : ParameterInfoHandler<ObjJFunctionCall, 
         val description = (if (functionDeclaration != null) {
             functionDeclaration.description
         } else {
-            val jsFunction = globalJsFunctions.firstOrNull { it.name == element.functionName?.text }
+            val functionName = element.functionName?.text
+            val jsFunction = if(functionName != null) JsTypeDefFunctionsByNameIndex.instance[functionName, element.project].firstOrNull()?.toJsTypeListType() else null
             jsFunction?.description
-        }) ?: return {
-           //LOGGER.info ("Failed to find function descriptor for function: ${element.functionName?.text ?: "UNDEF"}")
-        }()
-
+        }) ?: return
         context.itemsToShow = arrayOf(description)
         context.showHint(element, element.textRange.startOffset, this)
     }
