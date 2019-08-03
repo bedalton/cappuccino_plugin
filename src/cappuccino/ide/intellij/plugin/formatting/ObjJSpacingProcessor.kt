@@ -85,7 +85,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             val lines = if (force) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }*/
-        LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
+        //LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
 
         if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
             val braceType = when (elementType) {
