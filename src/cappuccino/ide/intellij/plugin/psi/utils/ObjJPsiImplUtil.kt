@@ -1,35 +1,41 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.caches.*
+import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
+import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
-import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
-import com.intellij.psi.tree.IElementType
-import com.intellij.util.IncorrectOperationException
-import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
-import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.references.*
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.impl.ObjJFileNameAsImportStringImpl
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
-import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
+import cappuccino.ide.intellij.plugin.references.*
+import cappuccino.ide.intellij.plugin.references.presentation.ObjJSelectorItemPresentation
+import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
+import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.types.toQualifiedNamePaths
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
+import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.FoldingGroup
-
-import javax.swing.*
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiPolyVariantReference
+import com.intellij.psi.PsiReference
+import com.intellij.psi.PsiReferenceService
+import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
+import com.intellij.psi.tree.IElementType
+import com.intellij.util.IncorrectOperationException
 import java.util.*
+import javax.swing.Icon
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJPsiImplUtil {
@@ -55,13 +61,13 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getName(propertyName:ObjJPropertyName) : String {
+    fun getName(propertyName: ObjJPropertyName): String {
         return propertyName.key
     }
 
     @JvmStatic
     fun getName(defineFunction: ObjJPreprocessorDefineFunction): String {
-        return defineFunction.functionNameAsString
+        return defineFunction.functionNameString
     }
 
     @JvmStatic
@@ -76,7 +82,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getName(variableDeclaration: ObjJInstanceVariableDeclaration): String {
-        return if (variableDeclaration.variableName != null) variableDeclaration.variableName!!.text else ""
+        return variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: ""
+    }
+
+    @JvmStatic
+    fun getVariableNameString(variableDeclaration: ObjJInstanceVariableDeclaration): String {
+        return variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text ?: ""
     }
 
     @JvmStatic
@@ -102,6 +113,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getRangeInElement(variableName: ObjJVariableName): TextRange {
         return TextRange(0, variableName.textLength)
+    }
+
+    @JvmStatic
+    fun getFunctionNameString(functionCall: ObjJFunctionCall): String? {
+        return functionCall.functionName?.text
     }
 
     @JvmStatic
@@ -131,7 +147,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun setName(propertyName:ObjJPropertyName, name:String) : ObjJPropertyName {
+    fun setName(propertyName: ObjJPropertyName, name: String): ObjJPropertyName {
         return propertyName
     }
 
@@ -196,12 +212,12 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.isCategory(declaration)
 
     @JvmStatic
-    fun getCache(protocol:ObjJProtocolDeclaration) : ObjJProtocolDeclarationCache {
+    fun getCache(protocol: ObjJProtocolDeclaration): ObjJProtocolDeclarationCache {
         return ObjJProtocolDeclarationCache(protocol)
     }
 
     @JvmStatic
-    fun getCache(declaration:ObjJImplementationDeclaration): ObjJImplementationDeclarationCache {
+    fun getCache(declaration: ObjJImplementationDeclaration): ObjJImplementationDeclarationCache {
         return ObjJImplementationDeclarationCache(declaration)
     }
 
@@ -293,15 +309,14 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJMethodHeaderDeclarationCache
-        = createMethodHeaderCache(methodHeader)
+    fun getMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>): ObjJMethodHeaderDeclarationCache = createMethodHeaderCache(methodHeader)
 
     // ============================== //
     // ======= Return Types ========= //
     // ============================== //
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, tag:Long): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, tag: Long): Set<String> {
         return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true, tag)
     }
 
@@ -343,7 +358,7 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
 
     @JvmStatic
-    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget, tag:Long): List<String> {
+    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget, tag: Long): List<String> {
         return getPossibleClassTypesForCallTarget(callTarget, tag).toList()
     }
 
@@ -438,16 +453,13 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun respondsToSelectors(variableName: ObjJVariableName) : List<ObjJSelectorLiteral>
-        = ObjJVariablePsiUtil.respondsToSelectors(variableName)
+    fun respondsToSelectors(variableName: ObjJVariableName): List<ObjJSelectorLiteral> = ObjJVariablePsiUtil.respondsToSelectors(variableName)
 
     @JvmStatic
-    fun respondsToSelector(variableName: ObjJVariableName, selector:String) : Boolean
-            = ObjJVariablePsiUtil.respondsToSelector(variableName, selector)
+    fun respondsToSelector(variableName: ObjJVariableName, selector: String): Boolean = ObjJVariablePsiUtil.respondsToSelector(variableName, selector)
 
     @JvmStatic
-    fun respondsToSelectorStrings(variableName: ObjJVariableName): Set<String>
-        = ObjJVariablePsiUtil.respondsToSelectorStrings(variableName)
+    fun respondsToSelectorStrings(variableName: ObjJVariableName): Set<String> = ObjJVariablePsiUtil.respondsToSelectorStrings(variableName)
 
     @JvmStatic
     fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType?> {
@@ -458,6 +470,23 @@ object ObjJPsiImplUtil {
     fun getParamTypesAsStrings(methodHeader: ObjJMethodHeader): List<String> {
         return ObjJMethodPsiUtils.getParamTypesAsString(methodHeader.methodDeclarationSelectorList)
     }
+
+    @JvmStatic
+    fun getSelectorStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorStructs(selectorLiteral)
+    }
+
+
+    @JvmStatic
+    fun getSelectorStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+        return ObjJMethodPsiUtils.getSelectorStructs(header)
+    }
+
+    @JvmStatic
+    fun getSelectorStructs(accessorProperty: ObjJAccessorProperty) : List<ObjJSelectorStruct> {
+        return ObjJAccessorPropertyPsiUtil.getSelectorStructs(accessorProperty)
+    }
+
 
     @JvmStatic
     fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
@@ -473,13 +502,18 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getVariableType(type:ObjJFormalVariableType) : String {
+        return type.varTypeId?.className?.text ?: type.text
+    }
+
+    @JvmStatic
     fun isRequired(methodHeader: ObjJMethodHeader): Boolean =
             ObjJMethodPsiUtils.isRequired(methodHeader)
 
+
     @JvmStatic
-    fun getSingleVariableNameElementOrNull(callTarget: ObjJCallTarget) : ObjJVariableName? {
-        val qualifiedReferenceComponents
-                = callTarget.qualifiedReference?.qualifiedNameParts
+    fun getSingleVariableNameElementOrNull(callTarget: ObjJCallTarget): ObjJVariableName? {
+        val qualifiedReferenceComponents = callTarget.qualifiedReference?.qualifiedNameParts
                 ?: return null
         if (qualifiedReferenceComponents.size != 1 && qualifiedReferenceComponents[0] !is ObjJVariableName)
             return null
@@ -554,7 +588,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(functionName: ObjJFunctionName): PsiReference {
+    fun getReference(functionName: ObjJFunctionName): PsiPolyVariantReference {
         return ObjJFunctionNameReference(functionName)
     }
 
@@ -565,13 +599,18 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getReference(fileName:ObjJFrameworkFileName) : PsiReference {
+    fun getReference(fileName: ObjJFrameworkFileName): PsiReference {
         return ObjJImportFileNameReference(fileName)
     }
 
     @JvmStatic
-    fun getReference(fileName:ObjJFileNameAsImportStringImpl) : PsiReference {
+    fun getReference(fileName: ObjJFileNameAsImportString): PsiPolyVariantReference {
         return ObjJFileNameAsStringLiteralReference(fileName)
+    }
+
+    @JvmStatic
+    fun getReference(fileName: ObjJStringLiteral): PsiPolyVariantReference {
+        return ObjJStringLiteralReference(fileName)
     }
 
 
@@ -600,6 +639,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getContainingClassName(compositeElement: ObjJCompositeElement): String {
         return ObjJHasContainingClassPsiUtil.getContainingClassName(compositeElement)
+    }
+
+    @JvmStatic
+    fun getContainingClassName(variableDeclaration: ObjJInstanceVariableDeclaration): String {
+        return ObjJHasContainingClassPsiUtil.getContainingClassName(variableDeclaration)
     }
 
     @JvmStatic
@@ -665,7 +709,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getIndexInQualifiedReference(enclosedExpression:ObjJParenEnclosedExpr) : Int {
+    fun getIndexInQualifiedReference(enclosedExpression: ObjJParenEnclosedExpr): Int {
         return 0
     }
 
@@ -680,23 +724,23 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String
-        = ObjJVariablePsiUtil.getVariableType(variable)
+    fun getVariableType(variable: ObjJInstanceVariableDeclaration): String = ObjJVariablePsiUtil.getVariableType(variable)
 
 
     @JvmStatic
-    fun getMethods(variableName:ObjJVariableName, tag:Long) : List<ObjJMethodHeaderDeclaration<*>> {
+    fun getMethods(variableName: ObjJVariableName, tag: Long): List<ObjJMethodHeaderDeclaration<*>> {
         return variableName.getCachedMethods(tag)
     }
 
     @JvmStatic
-    fun getMethodSelectors(variableName:ObjJVariableName, tag:Long) : Set<String> {
+    fun getMethodSelectors(variableName: ObjJVariableName, tag: Long): Set<String> {
         return getMethods(variableName, tag).map { it.selectorString }.toSet()
     }
 
     @JvmStatic
-    fun getVariableType(variableName: ObjJVariableName, tag:Long) : InferenceResult? {
-        return variableName.getClassTypes(tag) ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
+    fun getVariableType(variableName: ObjJVariableName, tag: Long): InferenceResult? {
+        return variableName.getClassTypes(tag)
+                ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
     }
 
     // ============================== //
@@ -830,22 +874,22 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFunctionNameAsString(functionLiteral: ObjJFunctionLiteral): String {
-        return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
-    }
-
-    @JvmStatic
     fun getFunctionNamesAsString(functionLiteral: ObjJFunctionLiteral): List<String> {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNamesAsString(functionLiteral)
     }
 
     @JvmStatic
-    fun getFunctionNameAsString(functionDeclaration: ObjJFunctionDeclaration): String {
+    fun getFunctionNameString(functionLiteral: ObjJFunctionLiteral): String {
+        return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionLiteral)
+    }
+
+    @JvmStatic
+    fun getFunctionNameString(functionDeclaration: ObjJFunctionDeclaration): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
     }
 
     @JvmStatic
-    fun getFunctionNameAsString(functionDeclaration: ObjJPreprocessorDefineFunction): String {
+    fun getFunctionNameString(functionDeclaration: ObjJPreprocessorDefineFunction): String {
         return ObjJFunctionDeclarationPsiUtil.getFunctionNameAsString(functionDeclaration)
     }
 
@@ -868,17 +912,17 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnType(functionDeclaration: ObjJFunctionDeclaration, tag:Long): String? {
+    fun getReturnType(functionDeclaration: ObjJFunctionDeclaration, tag: Long): String? {
         return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDeclaration, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionLiteral: ObjJFunctionLiteral, tag:Long): String? {
+    fun getReturnType(functionLiteral: ObjJFunctionLiteral, tag: Long): String? {
         return ObjJFunctionDeclarationPsiUtil.getReturnType(functionLiteral, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction, tag:Long): String? =
+    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction, tag: Long): String? =
             ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition, tag)
 
     @JvmStatic
@@ -888,23 +932,22 @@ object ObjJPsiImplUtil {
 
     @Suppress("unused")
     @JvmStatic
-    fun getOpenBraceOrAtOpenBrace(element:PsiElement) : PsiElement? {
+    fun getOpenBraceOrAtOpenBrace(element: PsiElement): PsiElement? {
         return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE) ?: element.getChildByType(ObjJTypes.ObjJ_AT_OPEN_BRACE)
     }
 
     @JvmStatic
-    fun getOpenBrace(element:PsiElement) : PsiElement? {
+    fun getOpenBrace(element: PsiElement): PsiElement? {
         return element.getChildByType(ObjJTypes.ObjJ_OPEN_BRACE)
     }
 
     @JvmStatic
-    fun getCloseBrace(element:PsiElement) : PsiElement? {
+    fun getCloseBrace(element: PsiElement): PsiElement? {
         return element.getChildByType(ObjJTypes.ObjJ_CLOSE_BRACE)
     }
 
     @JvmStatic
-    fun getCache(functionDeclaration:ObjJFunctionDeclarationElement<*>) : ObjJFunctionDeclarationCache
-        = ObjJFunctionDeclarationCache(functionDeclaration)
+    fun getCache(functionDeclaration: ObjJFunctionDeclarationElement<*>): ObjJFunctionDeclarationCache = ObjJFunctionDeclarationCache(functionDeclaration)
 
     // ============================== //
     // ===== QualifiedReference ===== //
@@ -921,21 +964,32 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getDescription(functionDeclaration: ObjJFunctionDeclarationElement<*>): ObjJFunctionDescription {
+        val name = functionDeclaration.functionNameString
+        val returnType = functionDeclaration.getReturnType(createTag())
+        val description = ObjJFunctionDescription(name, returnType)
+        functionDeclaration.formalParameterArgList.forEach {
+            description.addParameter(it.description)
+        }
+        return description
+    }
+
+    @JvmStatic
     fun getDescriptiveText(psiElement: PsiElement): String? =
             ObjJDescriptionUtil.getDescriptiveText(psiElement)
 
     @JvmStatic
-    fun getQualifiedNamePath(qualifiedReference:ObjJQualifiedReference) : QualifiedReferenceStubComponents {
+    fun getQualifiedNamePath(qualifiedReference: ObjJQualifiedReference): QualifiedReferenceStubComponents {
         return qualifiedReference.stub?.components ?: qualifiedReference.toStubParts()
     }
 
     @JvmStatic
-    fun getQualifiedNamePaths(declaration:ObjJVariableDeclaration) : List<QualifiedReferenceStubComponents>
-            = declaration.stub?.qualifiedNamesList ?: declaration.toQualifiedNamePaths()
+    fun getQualifiedNamePaths(declaration: ObjJVariableDeclaration): List<QualifiedReferenceStubComponents> = declaration.stub?.qualifiedNamesList
+            ?: declaration.toQualifiedNamePaths()
 
     @JvmStatic
-    fun hasVarKeyword(declaration:ObjJVariableDeclaration):Boolean {
-        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
+    fun hasVarKeyword(declaration: ObjJVariableDeclaration): Boolean {
+        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.varModifier != null
     }
 
     // ============================== //
@@ -948,7 +1002,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFileNameString(fileNameAsImportString: ObjJFileNameAsImportString) : String {
+    fun getFileNameString(fileNameAsImportString: ObjJFileNameAsImportString): String {
         return ObjJImportPsiUtils.getFileNameString(fileNameAsImportString)
     }
 
@@ -973,8 +1027,8 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFileNameString(importIncludeStatement: ObjJImportIncludeStatement) : String
-        = importIncludeStatement.importIncludeElement?.fileNameString ?: ""
+    fun getFileNameString(importIncludeStatement: ObjJImportIncludeStatement): String = importIncludeStatement.importIncludeElement?.fileNameString
+            ?: ""
 
     @JvmStatic
     fun getFrameworkNameString(descriptor: ObjJFrameworkDescriptor): String? {
@@ -1003,50 +1057,45 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getFrameworkNameString(importIncludeStatement: ObjJImportIncludeStatement) : String?
-            = importIncludeStatement.importIncludeElement?.frameworkNameString
+    fun getFrameworkNameString(importIncludeStatement: ObjJImportIncludeStatement): String? = importIncludeStatement.importIncludeElement?.frameworkNameString
 
     @JvmStatic
     fun getImportAsUnifiedString(importElement: ObjJImportElement<*>) =
             (importElement.frameworkNameString ?: "") + ObjJImportElement.DELIMITER + importElement.fileNameString
 
     @JvmStatic
-    fun getName(fileName:ObjJFileNameAsImportString) : String
-    {
+    fun getName(fileName: ObjJFileNameAsImportString): String {
         return fileName.stringLiteral.stringValue
     }
 
     @JvmStatic
-    fun setName(fileName:ObjJFileNameAsImportString, newName:String) : PsiElement {
+    fun setName(fileName: ObjJFileNameAsImportString, newName: String): PsiElement {
         return fileName
     }
 
     @JvmStatic
-    fun getName(fileName:ObjJFrameworkFileName, newName:String) : String
-    {
+    fun getName(fileName: ObjJFrameworkFileName, newName: String): String {
         return fileName.text
     }
 
     @JvmStatic
-    fun setName(fileName:ObjJFrameworkFileName, newName:String) : PsiElement {
+    fun setName(fileName: ObjJFrameworkFileName, newName: String): PsiElement {
         return fileName
     }
 
+    /*
     @JvmStatic
-    fun getReference(statement:ObjJImportIncludeStatement) : PsiReference?
-            = ObjJImportPsiUtils.getReference(statement)
+    fun getReference(statement: ObjJImportIncludeStatement): PsiReference? = ObjJImportPsiUtils.getReference(statement)
+    */
 
     @JvmStatic
-    fun resolve(statement:ObjJImportIncludeStatement) : ObjJFile?
-            = ObjJImportPsiUtils.resolve(statement)
+    fun resolve(statement: ObjJImportIncludeStatement): ObjJFile? = ObjJImportPsiUtils.resolve(statement)
 
     @JvmStatic
-    fun multiResolve(statement:ObjJImportIncludeStatement) : List<ObjJFile>
-            = ObjJImportPsiUtils.multiResolve(statement)
+    fun multiResolve(statement: ObjJImportIncludeStatement): List<ObjJFile> = ObjJImportPsiUtils.multiResolve(statement)
 
     @JvmStatic
-    fun getImportIncludeElement(importIncludeStatement:ObjJImportIncludeStatement) : ObjJImportElement<*>?
-        = ObjJImportPsiUtils.getImportIncludeElement(importIncludeStatement)
+    fun getImportIncludeElement(importIncludeStatement: ObjJImportIncludeStatement): ObjJImportElement<*>? = ObjJImportPsiUtils.getImportIncludeElement(importIncludeStatement)
 
     // ============================== //
     // ===== VariableAssignments ==== //
@@ -1256,32 +1305,32 @@ object ObjJPsiImplUtil {
     // ======= Object Literal ======= //
     // ============================== //
     @JvmStatic
-    fun toJsObjectTypeSimple(element:ObjJObjectLiteral) : JsObjectType {
+    fun toJsObjectTypeSimple(element: ObjJObjectLiteral): JsTypeListClass {
         return ObjJObjectPsiUtils.toJsObjectTypeSimple(element)
     }
 
     @JvmStatic
-    fun toJsObjectType(element:ObjJObjectLiteral, tag:Long) : JsObjectType {
+    fun toJsObjectType(element: ObjJObjectLiteral, tag: Long): JsTypeListClass {
         return ObjJObjectPsiUtils.toJsObjectType(element, tag)
     }
 
     @JvmStatic
-    fun getKey(assignment:ObjJPropertyAssignment) : String {
+    fun getKey(assignment: ObjJPropertyAssignment): String {
         return ObjJObjectPsiUtils.getKey(assignment)
     }
 
     @JvmStatic
-    fun getKey(propertyName:ObjJPropertyName) : String {
+    fun getKey(propertyName: ObjJPropertyName): String {
         return ObjJObjectPsiUtils.getKey(propertyName)
     }
 
     @JvmStatic
-    fun getNamespacedName(assignment:ObjJPropertyAssignment) : String {
+    fun getNamespacedName(assignment: ObjJPropertyAssignment): String {
         return getNamespacedName(assignment.propertyName)
     }
 
     @JvmStatic
-    fun getNamespacedName(propertyName:ObjJPropertyName) : String {
+    fun getNamespacedName(propertyName: ObjJPropertyName): String {
         return propertyName.stub?.namespacedName ?: ObjJObjectPsiUtils.getNamespacedName(propertyName)
     }
 

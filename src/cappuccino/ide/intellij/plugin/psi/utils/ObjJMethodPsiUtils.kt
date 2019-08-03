@@ -17,6 +17,9 @@ import org.jetbrains.annotations.Contract
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
+import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -106,11 +109,11 @@ object ObjJMethodPsiUtils {
         if (hasMethodSelector == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
+        ////LOGGER.info("Getting thisOrPreviousNonNullSelector: from element of type: <"+hasMethodSelector.getNode().getElementType().toString() + "> with text: <"+hasMethodSelector.getText()+"> ");//declared in <" + getFileNameString(hasMethodSelector)+">");
         val selectorList = hasMethodSelector.selectorList
-        //LOGGER.log(Level.INFO, "Got selector list.");
+        ////LOGGER.info("Got selector list.");
         if (selectorList.isEmpty()) {
-            //LOGGER.log(Level.WARNING, "Cannot get this or previous non null selector when selector list is empty");
+            ////LOGGER.warning("Cannot get this or previous non null selector when selector list is empty");
             return null
         }
         var thisSelectorIndex: Int
@@ -134,7 +137,7 @@ object ObjJMethodPsiUtils {
                 return currentSelector
             }
         }
-        //LOGGER.log(Level.WARNING, "Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
+        ////LOGGER.warning("Failed to find selector matching <"+subSelector+"> or any selector before foldingDescriptors of <"+selectorList.size()+"> selectors");
         return null
     }
 
@@ -147,16 +150,22 @@ object ObjJMethodPsiUtils {
         if (stubHeaderType != null)
             return stubHeaderType
         return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
-                ?: methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.text
+                ?: methodHeader.methodHeaderReturnTypeElement?.text
                 ?: UNDETERMINED
     }
 
     fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
         return methodHeader.getCachedInferredTypes(tag) {
+            if (methodHeader.tagged(tag))
+                return@getCachedInferredTypes null
+            val commentReturnTypes = methodHeader.docComment?.getReturnTypes(methodHeader.project).orEmpty().withoutAnyType()
+            if (commentReturnTypes.isNotEmpty()) {
+                return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
+            }
             val returnTypes = internalGetReturnTypes(methodHeader, follow, tag)
             if (returnTypes.isEmpty())
                 return@getCachedInferredTypes null
-            InferenceResult(classes = returnTypes)
+            InferenceResult(types = returnTypes.toJsTypeList())
         }?.toClassList().orEmpty()
     }
 
@@ -187,7 +196,7 @@ object ObjJMethodPsiUtils {
         val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
         val simpleOut = selfExpressionTypes + superExpressionTypes
         if (simpleOut.isNotEmpty()) {
-            return InferenceResult(classes = simpleOut.toSet()).toClassList()
+            return InferenceResult(types = simpleOut.toJsTypeList()).toClassList()
         }
         var out = INFERRED_EMPTY_TYPE
         expressions.forEach {
@@ -224,9 +233,9 @@ object ObjJMethodPsiUtils {
         }
         /*
         if (returnType != null) {
-            LOGGER.log(Level.INFO, !returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
+            //LOGGER.info(!returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
         } else {
-            LOGGER.log(Level.INFO, "VarTypeId: getTypeFromReturnStatements returned null");
+            //LOGGER.info("VarTypeId: getTypeFromReturnStatements returned null");
         }*/
         return returnType ?: varTypeId.text
     }
@@ -299,7 +308,7 @@ object ObjJMethodPsiUtils {
     }
 
     fun getRangeInElement(selector: ObjJSelector): TextRange {
-        //LOGGER.log(Level.INFO,"Getting selector range for full selector text of <"+selector.getText()+">");
+        ////LOGGER.info("Getting selector range for full selector text of <"+selector.getText()+">");
         return selector.textRange
     }
 
@@ -333,6 +342,29 @@ object ObjJMethodPsiUtils {
             hasMethodSelector.stub?.isStatic ?: getMethodScope(hasMethodSelector) == MethodScope.STATIC
         } else false
     }
+
+    // ============================== //
+    // ========== Structs =========== //
+    // ============================== //
+    fun getSelectorStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+        return header.stub?.selectorStructs ?: header.methodDeclarationSelectorList.map {
+            it.toSelectorStruct()
+        }
+    }
+
+    fun getSelectorStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+        return selectorLiteral.stub?.selectorStructs ?: selectorLiteral.selectorList.map {
+            ObjJSelectorStruct(
+                    selector = it.getSelectorString(false),
+                    variableType = null,
+                    variableName = null,
+                    hasColon = it.getNextNonEmptyNode(true)?.elementType == ObjJTypes.ObjJ_COLON,
+                    containerName = selectorLiteral.containingFileName,
+                    isContainerAClass = false
+            )
+        }
+    }
+
 
     fun isRequired(methodHeader: ObjJMethodHeader) =
             methodHeader.getParentOfType(ObjJProtocolScopedMethodBlock::class.java)?.atOptional == null
@@ -378,11 +410,11 @@ object ObjJMethodPsiUtils {
      * Method scope enum.
      * Flags method as either static or instance
      */
-    enum class MethodScope(private val scopeMarker: String?) {
+    enum class MethodScope(val scopeMarker: String?) {
         STATIC("+"),
         INSTANCE("-"),
-        INVALID(null);
-
+        SELECTOR_LITERAL("::"),
+        ANY(null);
 
         companion object {
 
@@ -390,10 +422,14 @@ object ObjJMethodPsiUtils {
                 return when (scopeMarker) {
                     STATIC.scopeMarker -> STATIC
                     INSTANCE.scopeMarker -> INSTANCE
-                    else -> INVALID
+                    SELECTOR_LITERAL.scopeMarker -> SELECTOR_LITERAL
+                    else -> ANY
                 }
             }
         }
+
+        val hasLocalScope
+            get() = this != STATIC
 
     }
 

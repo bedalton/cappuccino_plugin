@@ -13,7 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
@@ -43,7 +43,7 @@ class ObjJMethodReturnsAValueInspection : LocalInspectionTool() {
     companion object {
 
         private fun validateMethodReturn(methodDeclaration: ObjJMethodDeclaration, problemsHolder: ProblemsHolder) {
-            if (ObjJIgnoreEvaluatorUtil.isIgnored(methodDeclaration, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
+            if (ObjJCommentEvaluatorUtil.isIgnored(methodDeclaration, ObjJSuppressInspectionFlags.IGNORE_RETURN_STATEMENT, true)) {
                 return
             }
             val returnType = methodDeclaration.methodHeader.explicitReturnType

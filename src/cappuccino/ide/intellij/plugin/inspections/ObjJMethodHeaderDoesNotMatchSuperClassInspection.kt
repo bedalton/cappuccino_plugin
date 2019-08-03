@@ -14,7 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.codeInspection.LocalInspectionTool
@@ -41,7 +41,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
     companion object {
         private fun validateMethodHeader(header: ObjJMethodHeader, problemsHolder: ProblemsHolder) {
 
-            if (ObjJIgnoreEvaluatorUtil.isIgnored(header, ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE)) {
+            if (ObjJCommentEvaluatorUtil.isIgnored(header, ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE)) {
                 return
             }
             val inheritedClasses = ObjJInheritanceUtil.getAllInheritedClasses(header.containingClassName, header.project, true)
@@ -67,7 +67,7 @@ class ObjJMethodHeaderDoesNotMatchSuperClassInspection : LocalInspectionTool() {
         }
 
         private fun matches(thisHeader: ObjJMethodHeader, thatHeader: ObjJMethodHeader, problemsHolder: ProblemsHolder): Boolean {
-            if (ObjJIgnoreEvaluatorUtil.isIgnored(thisHeader, ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE)) {
+            if (ObjJCommentEvaluatorUtil.isIgnored(thisHeader, ObjJSuppressInspectionFlags.IGNORE_INCOMPATIBLE_METHOD_OVERRIDE)) {
                 return true
             }
             if (!ObjJMethodPsiUtils.hasSimilarDisposition(thisHeader, thatHeader))

@@ -1,0 +1,72 @@
+
+
+/** The Storage interface of the Web Storage API provides access to a particular domain's session or local storage. It allows, for example, the addition, modification, or deletion of stored data items. */
+class Storage {
+    new();
+    /**
+     * Returns the number of key/value pairs currently present in the list associated with the
+     * object.
+     */
+    readonly length: number;
+    /**
+     * Empties the list associated with the object of all key/value pairs, if there are any.
+     */
+    clear(): void;
+    /**
+     * value = storage[key]
+     */
+    getItem(key: string): string | null;
+    /**
+     * Returns the name of the nth key in the list, or null if n is greater
+     * than or equal to the number of key/value pairs in the object.
+     */
+    key(index: number): string | null;
+    /**
+     * delete storage[key]
+     */
+    removeItem(key: string): void;
+    /**
+     * storage[key] = value
+     */
+    setItem(key: string, value: string): void;
+    [name: string]: any;
+}
+
+/** A StorageEvent is sent to a window when a storage area it has access to is changed within the context of another document. */
+class StorageEvent extends Event {
+    new(type: string, eventInitDict?: StorageEventInit);
+    /**
+     * Returns the key of the storage item being changed.
+     */
+    readonly key: string | null;
+    /**
+     * Returns the new value of the key of the storage item whose value is being changed.
+     */
+    readonly newValue: string | null;
+    /**
+     * Returns the old value of the key of the storage item whose value is being changed.
+     */
+    readonly oldValue: string | null;
+    /**
+     * Returns the Storage object that was affected.
+     */
+    readonly storageArea: Storage | null;
+    /**
+     * Returns the URL of the document whose storage item changed.
+     */
+    readonly url: string;
+}
+
+class StorageManager {
+    new();
+    estimate(): Promise<StorageEstimate>;
+    persist(): Promise<boolean>;
+    persisted(): Promise<boolean>;
+}
+
+interface WindowLocalStorage {
+    readonly localStorage: Storage;
+}
+interface WindowSessionStorage {
+    readonly sessionStorage: Storage;
+}

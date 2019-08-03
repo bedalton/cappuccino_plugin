@@ -13,9 +13,7 @@ object ObjJNamedPsiUtil {
     }
 
     fun getName(variableName: ObjJVariableName): String {
-        return if (variableName.stub != null) {
-            variableName.stub.variableName
-        } else variableName.text
+        return variableName.stub?.variableName ?: variableName.text
     }
 
     fun setName(variableName: ObjJVariableName, newName: String): PsiElement {

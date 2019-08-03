@@ -1,0 +1,149 @@
+
+
+class MSAssertion {
+	new()
+    readonly id: string;
+    readonly type: MSCredentialType;
+}
+
+class MSBlobBuilder {
+	new()
+    append(data: any, endings?: string): void;
+    getBlob(contentType?: string): Blob;
+}
+
+class MSFIDOCredentialAssertion extends MSAssertion {
+	new()
+    readonly algorithm: string | Algorithm;
+    readonly attestation: any;
+    readonly publicKey: string;
+    readonly transportHints: MSTransportType[];
+}
+
+class MSFIDOSignature {
+	new()
+    readonly authnrData: string;
+    readonly clientData: string;
+    readonly signature: string;
+}
+
+class MSFIDOSignatureAssertion extends MSAssertion {
+	new()
+    readonly signature: MSFIDOSignature;
+}
+
+interface MSFileSaver {
+    msSaveBlob(blob: any, defaultName?: string): boolean;
+    msSaveOrOpenBlob(blob: any, defaultName?: string): boolean;
+}
+
+class MSGesture {
+	new()
+    target: Element;
+    addPointer(pointerId: number): void;
+    stop(): void;
+}
+
+/** The MSGestureEvent is a proprietary interface specific to Internet Explorer and Microsoft Edge which represents events that occur due to touch gestures. Events using this interface include MSGestureStart, MSGestureEnd, MSGestureTap, MSGestureHold, MSGestureChange, and MSInertiaStart. */
+class MSGestureEvent extends UIEvent {
+	new()
+	static readonly MSGESTURE_FLAG_BEGIN: number
+	static readonly MSGESTURE_FLAG_CANCEL: number
+	static readonly MSGESTURE_FLAG_END: number
+	static readonly MSGESTURE_FLAG_INERTIA: number
+	static readonly MSGESTURE_FLAG_NONE: number
+    readonly clientX: number;
+    readonly clientY: number;
+    readonly expansion: number;
+    readonly gestureObject: any;
+    readonly hwTimestamp: number;
+    readonly offsetX: number;
+    readonly offsetY: number;
+    readonly rotation: number;
+    readonly scale: number;
+    readonly screenX: number;
+    readonly screenY: number;
+    readonly translationX: number;
+    readonly translationY: number;
+    readonly velocityAngular: number;
+    readonly velocityExpansion: number;
+    readonly velocityX: number;
+    readonly velocityY: number;
+    initGestureEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, viewArg: Window, detailArg: number, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, offsetXArg: number, offsetYArg: number, translationXArg: number, translationYArg: number, scaleArg: number, expansionArg: number, rotationArg: number, velocityXArg: number, velocityYArg: number, velocityExpansionArg: number, velocityAngularArg: number, hwTimestampArg: number): void;
+    readonly MSGESTURE_FLAG_BEGIN: number;
+    readonly MSGESTURE_FLAG_CANCEL: number;
+    readonly MSGESTURE_FLAG_END: number;
+    readonly MSGESTURE_FLAG_INERTIA: number;
+    readonly MSGESTURE_FLAG_NONE: number;
+}
+
+/** The msGraphicsTrust() constructor returns an object that provides properties for info on protected video playback. */
+class MSGraphicsTrust {
+	new()
+    readonly constrictionActive: boolean;
+    readonly status: string;
+}
+
+interface MSInputMethodContextEventMap {
+    "MSCandidateWindowHide": Event;
+    "MSCandidateWindowShow": Event;
+    "MSCandidateWindowUpdate": Event;
+}
+
+class MSInputMethodContext extends EventTarget {
+	new()
+    readonly compositionEndOffset: number;
+    readonly compositionStartOffset: number;
+    oncandidatewindowhide: ((this: MSInputMethodContext, ev: Event) => any) | null;
+    oncandidatewindowshow: ((this: MSInputMethodContext, ev: Event) => any) | null;
+    oncandidatewindowupdate: ((this: MSInputMethodContext, ev: Event) => any) | null;
+    readonly target: HTMLElement;
+    getCandidateWindowClientRect(): ClientRect;
+    getCompositionAlternatives(): string[];
+    hasComposition(): boolean;
+    isCandidateWindowVisible(): boolean;
+    addEventListener(type: K keyof MSInputMethodContextEventMap, listener: (this: MSInputMethodContext, ev: MSInputMethodContextEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MSInputMethodContextEventMap, listener: (this: MSInputMethodContext, ev: MSInputMethodContextEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+
+interface MSNavigatorDoNotTrack {
+    confirmSiteSpecificTrackingException(args: ConfirmSiteSpecificExceptionsInformation): boolean;
+    confirmWebWideTrackingException(args: ExceptionInformation): boolean;
+    removeSiteSpecificTrackingException(args: ExceptionInformation): void;
+    removeWebWideTrackingException(args: ExceptionInformation): void;
+    storeSiteSpecificTrackingException(args: StoreSiteSpecificExceptionsInformation): void;
+    storeWebWideTrackingException(args: StoreExceptionsInformation): void;
+}
+
+class MSPointerEvent extends MouseEvent {
+	new(typeArg: string, eventInitDict?: PointerEventInit)
+    readonly currentPoint: any;
+    readonly height: number;
+    readonly hwTimestamp: number;
+    readonly intermediatePoints: any;
+    readonly isPrimary: boolean;
+    readonly pointerId: number;
+    readonly pointerType: any;
+    readonly pressure: number;
+    readonly rotation: number;
+    readonly tiltX: number;
+    readonly tiltY: number;
+    readonly width: number;
+    getCurrentPoint(element: Element): void;
+    getIntermediatePoints(element: Element): void;
+    initPointerEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, viewArg: Window, detailArg: number, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, ctrlKeyArg: boolean, altKeyArg: boolean, shiftKeyArg: boolean, metaKeyArg: boolean, buttonArg: number, relatedTargetArg: EventTarget, offsetXArg: number, offsetYArg: number, widthArg: number, heightArg: number, pressure: number, rotation: number, tiltX: number, tiltY: number, pointerIdArg: number, pointerType: any, hwTimestampArg: number, isPrimary: boolean): void;
+}
+
+class MSStream {
+	new()
+    readonly type: string;
+    msClose(): void;
+    msDetachStream(): any;
+}
+
+interface MSLaunchUriCallback {
+    (): void;
+}

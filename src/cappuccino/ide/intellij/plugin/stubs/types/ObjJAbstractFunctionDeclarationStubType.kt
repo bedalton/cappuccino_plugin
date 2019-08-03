@@ -8,18 +8,10 @@ import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
-import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionLiteral
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
-import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.psi.util.parentOfType
 
 import java.io.IOException
 import java.util.ArrayList
@@ -30,7 +22,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
     override fun createStub(
             element: PsiT, stubParent: StubElement<*>): ObjJFunctionDeclarationElementStub<PsiT> {
         val fileName = if (element.containingFile != null && element.containingFile.virtualFile != null) element.containingFile.virtualFile.name else "undefined"
-        val functionNameString = element.functionNameAsString
+        val functionNameString = element.functionNameString
         val paramNames = element.paramNames
         val returnType = null
         val shouldResolve = element.shouldResolve()

@@ -30,9 +30,9 @@ fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> 
         return out
     }
     for (child in children) {
-        //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
+        ////LOGGER.info("Child element <"+child.getText()+">, is of type  <"+child.getNode().getElementType().toString()+">");
         if (child.node.elementType === iElementType) {
-            //LOGGER.log(Level.INFO, "Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
+            ////LOGGER.info("Child element <"+child.getText()+">is of token type: <"+iElementType.toString()+">");
             out.add(child)
         }
     }
@@ -89,18 +89,20 @@ fun PsiElement.getNextNonEmptyNodeType(ignoreLineTerminator: Boolean): IElementT
     return next?.elementType
 }
 
+fun ASTNode.getNextNonEmptyNodeIgnoringComments(): ASTNode? {
+    var node = this.getNextNonEmptyNode(true)
+    while (node != null && (node.text.isBlank() || node.elementType in ObjJTokenSets.COMMENTS)) {
+        node = node.getNextNonEmptyNode(true)
+    }
+    return node
+}
+
+
 fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
     val node = getPreviousNonEmptyNode(ignoreLineTerminator)
     return node?.psi
 }
 
-fun ASTNode.getPreviousNonEmptySiblingIgnoringComments(): ASTNode? {
-    var node = this.getPreviousNonEmptyNode(true)
-    while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
-        node = node.getPreviousNonEmptyNode(true)
-    }
-    return node
-}
 fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     var node = this.getPreviousNonEmptyNode(true)
     while (node != null && (node.text.trim().isEmpty() || node.elementType in ObjJTokenSets.COMMENTS)) {
@@ -108,6 +110,7 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     }
     return node
 }
+
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treePrev ?: getPrevInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
@@ -119,7 +122,7 @@ fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
         if (out == null) {
             return null
         }
-        //LOGGER.log(Level.INFO, "<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
+        ////LOGGER.info("<"+compositeElement.getText()+">NextNode "+foldingDescriptors.getText()+" ElementType is <"+foldingDescriptors.getElementType().toString()+">");
     }
     return out
 }
@@ -211,6 +214,11 @@ fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
     val elementLineStartOffset = document.getLineStartOffset(elementLineNumber)
     //val elementLineStartOffset = StringUtil.lastIndexOf(document.text, '\n', 0, elementStartOffset)
     return elementStartOffset - elementLineStartOffset
+}
+
+val PsiElement.lineNumber:Int? get() {
+    val elementStartOffset = this.textRange.startOffset
+    return document?.getLineNumber(elementStartOffset)
 }
 
 

@@ -41,7 +41,7 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
 
     //Check to ensure this element is part of a method
     if (selectorParentMethodCall == null) {
-        //LOGGER.log(Level.INFO, "PsiElement is not a selector in a method call element");
+        ////LOGGER.info("PsiElement is not a selector in a method call element");
         return listOf()
     }
 

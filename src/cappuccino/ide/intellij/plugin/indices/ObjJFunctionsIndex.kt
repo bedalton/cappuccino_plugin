@@ -11,7 +11,7 @@ class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFun
 
     operator fun get(fileName: String, functionName: String, project: Project): ObjJFunctionDeclarationElement<*>? {
         for (declarationElement in get(fileName, project)) {
-            if (declarationElement.functionNameAsString == functionName) {
+            if (declarationElement.functionNameString == functionName) {
                 return declarationElement
             }
         }

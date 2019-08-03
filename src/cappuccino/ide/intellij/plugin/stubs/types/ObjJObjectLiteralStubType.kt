@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.inference.readPropertiesMap
-import cappuccino.ide.intellij.plugin.inference.writePropertiesMap
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readJsFunctionList
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJObjectLiteralStubImpl
 import com.intellij.lang.ASTNode
 
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJObjectLiteralImpl
-import cappuccino.ide.intellij.plugin.psi.utils.JsObjectType
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJObjectLiteralStub
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -37,17 +37,22 @@ class ObjJObjectLiteralStubType(debugName:String) : ObjJStubElementType<ObjJObje
     }
 }
 
-fun StubOutputStream.writeObject(ob:JsObjectType?) {
+fun StubOutputStream.writeObject(ob: JsTypeListClass?) {
     writeBoolean(ob != null)
     if (ob == null)
         return
-    writePropertiesMap(ob.properties)
+    writePropertiesList(ob.allProperties)
+    writeJsFunctionList(ob.allFunctions)
 }
 
 
-fun StubInputStream.readObject() : JsObjectType? {
+fun StubInputStream.readObject() : JsTypeListClass? {
     if (!readBoolean())
         return null
-    val properties = readPropertiesMap()
-    return JsObjectType(properties)
+    val properties = readPropertiesList().toSet()
+    val functions = readJsFunctionList() ?: emptySet()
+    return JsTypeListClass(
+            allProperties = properties,
+            allFunctions = functions
+    )
 }

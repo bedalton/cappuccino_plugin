@@ -1,15 +1,15 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
-import cappuccino.ide.intellij.plugin.contributor.globalJsFunctionNames
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredFunctionNames
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags.*
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
@@ -62,8 +62,8 @@ class ObjJInvalidFunctionNameInspection : LocalInspectionTool() {
 
     private fun isIgnored(functionCall: ObjJFunctionCall) : Boolean {
         return ObjJPluginSettings.isIgnoredFunctionName(functionCall.functionName?.text ?: "#_#_#") ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_FUNCTION) ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_VAR) ||
+                ObjJCommentEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_FUNCTION) ||
+                ObjJCommentEvaluatorUtil.isIgnored(functionCall, IGNORE_UNDECLARED_VAR) ||
                 ObjJPluginSettings.isIgnoredVariableName(functionCall.functionName?.text ?: "#_#_#")
 
     }
@@ -75,7 +75,7 @@ class ObjJInvalidFunctionNameInspection : LocalInspectionTool() {
 
     private fun functionWithNameExists(functionCall:ObjJFunctionCall) : Boolean {
         val functionName = functionCall.functionName ?: return true // Ignore function calls without a name
-        return functionName.reference.resolve() != null || functionName.text in globalJsFunctionNames || functionName.text in globalJsClassNames
+        return functionName.reference.resolve() != null || JsTypeDefFunctionsByNameIndex.instance.containsKey(functionName.text, functionCall.project) || JsTypeDefClassesByNameIndex.instance.containsKey(functionName.text, functionCall.project)
     }
 
     private fun annotateInvalidFunctionName(functionCall: ObjJFunctionCall, problemsHolder: ProblemsHolder) {

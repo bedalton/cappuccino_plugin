@@ -2,15 +2,16 @@ package cappuccino.ide.intellij.plugin.caches
 
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.plus
-import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
-import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
-import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.getAllMethodHeaders
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
+import cappuccino.ide.intellij.plugin.stubs.stucts.getMethodStructs
+import cappuccino.ide.intellij.plugin.stubs.stucts.toMethodStruct
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
@@ -20,7 +21,7 @@ import com.intellij.psi.util.PsiModificationTracker
 /**
  * Base class for class declarations Cache
  */
-abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElement<*>) {
+abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationElement<*>) {
     /**
      * Cached values manager
      */
@@ -33,56 +34,58 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
     /**
      * Cache dependencies object
      */
-    protected val dependencies:Array<Any> by lazy { listOf(myTreeChangeTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray() }
+    protected val dependencies: Array<Any> by lazy { listOf(myTreeChangeTracker, PsiModificationTracker.MODIFICATION_COUNT).toTypedArray() }
 
     /**
      * A cached value for all inherited protocol elements
      */
-    protected val inheritedProtocolsCache:CachedValue<List<ObjJProtocolDeclaration>> by lazy {
+    protected val inheritedProtocolsCache: CachedValue<List<ObjJProtocolDeclaration>> by lazy {
         createInheritedProtocolsCachedValue(declaration, manager, dependencies)
     }
 
-    val inheritedProtocols:List<ObjJProtocolDeclaration>
-            get() = inheritedProtocolsCache.value
+    val inheritedProtocols: List<ObjJProtocolDeclaration>
+        get() = inheritedProtocolsCache.value
 
     /**
      * A cache value for all methods defined in this class declaration element only
      */
-    private val internalMethodsCache:CachedValue<List<ObjJMethodHeader>> by lazy {
+    private val internalMethodsCache: CachedValue<List<ObjJMethodHeader>> by lazy {
         createInternalMethodsCachedValue(declaration, manager, dependencies)
     }
 
+    private var internalMethodStructs: List<ObjJMethodStruct> = emptyList()
+
+    private var classMethodStructs: List<ObjJMethodStruct> = emptyList()
 
     /**
      * A cached value for all accessors in this and inherited classes
      */
-    abstract val allAccessorProperties:CachedValue<List<ObjJAccessorProperty>>
+    abstract val allAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
 
     /**
      * A cache value for accessors defined in this class declaration element only
      */
-    abstract val internalAccessorProperties:CachedValue<List<ObjJAccessorProperty>>
-
+    abstract val internalAccessorProperties: CachedValue<List<ObjJAccessorProperty>>
 
     /**
      * A cache of all methods defined in this and inherited classes
      */
-    abstract val classMethodsCache:CachedValue<List<ObjJMethodHeader>>
+    abstract val classMethodsCache: CachedValue<List<ObjJMethodHeader>>
 
     /**
      * A map of selectors to their respective method elements
      */
-    protected abstract val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>>
+    protected abstract val methodReturnValuesMap: CachedValue<Map<String, Pair<ObjJCompositeElement, InferenceResult?>>>
 
 
     /**
      * Creates cache value for all inherited protocol elements
      */
     protected fun createInheritedProtocolsCachedValue(
-            declaration:ObjJClassDeclarationElement<*>,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<List<ObjJProtocolDeclaration>> {
+            declaration: ObjJClassDeclarationElement<*>,
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<List<ObjJProtocolDeclaration>> {
         val provider = CachedValueProvider<List<ObjJProtocolDeclaration>> {
             val protocols = ObjJInheritanceUtil.getAllProtocols(declaration)
             CachedValueProvider.Result.create(protocols, dependencies)
@@ -94,10 +97,10 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
      * Creates cache value for internal method declarations defined in this class element only
      */
     private fun createInternalMethodsCachedValue(
-            declaration:ObjJClassDeclarationElement<*>,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<List<ObjJMethodHeader>> {
+            declaration: ObjJClassDeclarationElement<*>,
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<List<ObjJMethodHeader>> {
         val provider = CachedValueProvider<List<ObjJMethodHeader>> {
             val internalMethods = getAllMethods(declaration)
             CachedValueProvider.Result.create(internalMethods, dependencies)
@@ -105,35 +108,61 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
         return manager.createCachedValue(provider)
     }
 
+
     /**
      * Gets methods for this class, filtering by internal only if needed
      */
-    fun getMethods(internalOnly:Boolean = false) : List<ObjJMethodHeader> {
+    fun getMethods(internalOnly: Boolean = false): List<ObjJMethodHeader> {
         return if (internalOnly)
             internalMethodsCache.value
         else
             classMethodsCache.value
     }
 
+    fun getMethodStructs(internalOnly: Boolean, tag: Long): List<ObjJMethodStruct> {
+
+        return if (internalOnly) {
+            if (internalMethodsCache.hasUpToDateValue() && internalAccessorProperties.hasUpToDateValue() && internalMethodStructs.isNotEmpty())
+                internalMethodStructs
+            else {
+                /*if(myTreeChangeTracker.tagged(tag))
+                    return emptyList()*/
+                internalMethodsCache.value.map { it.toMethodStruct(tag) } + internalAccessorProperties.value.flatMap { (it.parent.parent as? ObjJInstanceVariableDeclaration)?.getMethodStructs().orEmpty() }.toSet()
+            }
+        } else if (classMethodsCache.hasUpToDateValue() && allAccessorProperties.hasUpToDateValue() && classMethodStructs.isNotEmpty()) {
+            classMethodStructs
+        } else {
+            /*if (myTreeChangeTracker.tagged(tag)) {
+                return emptyList()
+            }*/
+            classMethodsCache.value.map {
+                it.toMethodStruct(tag)
+            } + allAccessorProperties.value
+                    .mapNotNull { it.parent.parent as? ObjJInstanceVariableDeclaration }.toSet()
+                    .flatMap {
+                        it.getMethodStructs()
+                    }.toSet()
+        }
+    }
+
     /**
      * Gets accessor properties for this class, filtering by internal if needed
      */
-    fun getAccessorProperties(internalOnly:Boolean = false) : List<ObjJAccessorProperty> {
+    fun getAccessorProperties(internalOnly: Boolean = false): List<ObjJAccessorProperty> {
         return if (internalOnly)
             internalAccessorProperties.value
         else
             allAccessorProperties.value
     }
 
-    fun getAllSelectors(internalOnly: Boolean) : Set<String> {
-        return (getMethods(internalOnly).map { it.selectorString } +
-                getAccessorProperties(internalOnly).flatMap { listOfNotNull(it.setter, it.getter) }).toSet()
+    fun getAllSelectors(internalOnly: Boolean): Set<String> {
+        return getMethodStructs(internalOnly, createTag()).map { it.selectorString }.toSet()
     }
 
-    protected fun createMethodReturnValuesMap(manager: CachedValuesManager, dependencies: Array<Any>) : CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> {
-        val provider = CachedValueProvider<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> {
+    protected fun createMethodReturnValuesMap(manager: CachedValuesManager, dependencies: Array<Any>): CachedValue<Map<String, Pair<ObjJCompositeElement, InferenceResult?>>> {
+        val provider = CachedValueProvider<Map<String, Pair<ObjJCompositeElement, InferenceResult?>>> {
             val allMethodHeaders: List<ObjJMethodHeaderDeclaration<*>> = this.classMethodsCache.value
-            val map:MutableMap<String,Pair<ObjJCompositeElement, InferenceResult?>> = mutableMapOf()
+            val map: MutableMap<String, Pair<ObjJCompositeElement, InferenceResult?>> = mutableMapOf()
             allMethodHeaders.forEach {
                 val parent = it.parent as? ObjJCompositeElement ?: return@forEach
                 val existing = map[it.selectorString]?.second
@@ -162,10 +191,9 @@ abstract class ObjJClassDeclarationsCache(declaration:ObjJClassDeclarationElemen
         return manager.createCachedValue(provider)
     }
 
-    fun getMethodReturnType(selector:String, tag:Long) : InferenceResult? {
-        if (myTreeChangeTracker.tag == tag)
+    fun getMethodReturnType(selector: String, tag: Long): InferenceResult? {
+        if (myTreeChangeTracker.tagged(tag))
             return null
-        myTreeChangeTracker.tag = tag
         return methodReturnValuesMap.value[selector]?.second ?: INFERRED_ANY_TYPE
     }
 
@@ -178,7 +206,7 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
     /**
      * Gets all super classes for this class
      */
-    val superClassCachedValue:CachedValue<List<ObjJImplementationDeclaration>> by lazy {
+    val superClassCachedValue: CachedValue<List<ObjJImplementationDeclaration>> by lazy {
         createSuperClassCachedValue(classDeclaration, manager, dependencies)
     }
 
@@ -206,21 +234,21 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
     /**
      * Cache of method return types by selector
      */
-    override val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> by lazy {
+    override val methodReturnValuesMap: CachedValue<Map<String, Pair<ObjJCompositeElement, InferenceResult?>>> by lazy {
         createMethodReturnValuesMap(manager, dependencies)
     }
 
-    val superClassDeclarations:List<ObjJImplementationDeclaration>
+    val superClassDeclarations: List<ObjJImplementationDeclaration>
         get() = superClassCachedValue.value
 
     /**
      * Creates cache value for super classes
      */
     private fun createSuperClassCachedValue(
-            declaration:ObjJImplementationDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<List<ObjJImplementationDeclaration>> {
+            declaration: ObjJImplementationDeclaration,
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<List<ObjJImplementationDeclaration>> {
         val provider = CachedValueProvider<List<ObjJImplementationDeclaration>> {
             val protocols = ObjJInheritanceUtil.getAllSuperClasses(declaration)
             CachedValueProvider.Result.create(protocols, dependencies)
@@ -233,11 +261,11 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
      */
     private fun createClassMethodsCache(
             classDeclaration: ObjJImplementationDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<List<ObjJMethodHeader>> {
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<List<ObjJMethodHeader>> {
         val provider = CachedValueProvider<List<ObjJMethodHeader>> {
-            val classes:MutableList<ObjJClassDeclarationElement<*>> = mutableListOf()
+            val classes: MutableList<ObjJClassDeclarationElement<*>> = mutableListOf()
             classes.addAll(superClassCachedValue.value)
             classes.addAll(inheritedProtocolsCache.value)
             classes.add(classDeclaration)
@@ -252,8 +280,8 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
      */
     private fun createInternalAccessorPropertiesCache(
             classDeclaration: ObjJImplementationDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
     ): CachedValue<List<ObjJAccessorProperty>> {
         val provider = CachedValueProvider<List<ObjJAccessorProperty>> {
             CachedValueProvider.Result.create(getAccessors(classDeclaration), dependencies)
@@ -267,8 +295,8 @@ class ObjJImplementationDeclarationCache(classDeclaration: ObjJImplementationDec
      */
     private fun createAccessorPropertiesCache(
             classDeclaration: ObjJImplementationDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
     ): CachedValue<List<ObjJAccessorProperty>> {
 
         val provider = CachedValueProvider<List<ObjJAccessorProperty>> {
@@ -312,7 +340,7 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
     /**
      * Takes method list and creates a value map
      */
-    override val methodReturnValuesMap:CachedValue<Map<String,Pair<ObjJCompositeElement, InferenceResult?>>> by lazy {
+    override val methodReturnValuesMap: CachedValue<Map<String, Pair<ObjJCompositeElement, InferenceResult?>>> by lazy {
         createMethodReturnValuesMap(manager, dependencies)
     }
 
@@ -321,11 +349,11 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
      */
     private fun createClassMethodsCache(
             classDeclaration: ObjJProtocolDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
-    ) : CachedValue<List<ObjJMethodHeader>> {
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
+    ): CachedValue<List<ObjJMethodHeader>> {
         val provider = CachedValueProvider<List<ObjJMethodHeader>> {
-            val classes:MutableList<ObjJClassDeclarationElement<*>> = mutableListOf()
+            val classes: MutableList<ObjJClassDeclarationElement<*>> = mutableListOf()
             classes.addAll(inheritedProtocolsCache.value)
             classes.add(classDeclaration)
             val methods = getAllMethods(classes)
@@ -339,8 +367,8 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
      */
     private fun createInternalAccessorPropertiesCache(
             classDeclaration: ObjJProtocolDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
     ): CachedValue<List<ObjJAccessorProperty>> {
         val provider = CachedValueProvider<List<ObjJAccessorProperty>> {
             CachedValueProvider.Result.create(getAccessors(classDeclaration), dependencies)
@@ -354,8 +382,8 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
      */
     private fun createAccessorPropertiesCache(
             classDeclaration: ObjJProtocolDeclaration,
-            manager:CachedValuesManager,
-            dependencies:Array<Any>
+            manager: CachedValuesManager,
+            dependencies: Array<Any>
     ): CachedValue<List<ObjJAccessorProperty>> {
         val provider = CachedValueProvider<List<ObjJAccessorProperty>> {
             val classes: MutableList<ObjJClassDeclarationElement<*>> = mutableListOf()
@@ -371,7 +399,7 @@ class ObjJProtocolDeclarationCache(classDeclaration: ObjJProtocolDeclaration) : 
 /**
  * Gets all methods from a list of declarations
  */
-private fun getAllMethods(declarations:List<ObjJClassDeclarationElement<*>>) : List<ObjJMethodHeader> {
+private fun getAllMethods(declarations: List<ObjJClassDeclarationElement<*>>): List<ObjJMethodHeader> {
     return declarations.flatMap {
         getAllMethods(it)
     }
@@ -380,7 +408,7 @@ private fun getAllMethods(declarations:List<ObjJClassDeclarationElement<*>>) : L
 /**
  * Gets all method for a declaration
  */
-private fun getAllMethods(declaration:ObjJClassDeclarationElement<*>) : List<ObjJMethodHeader> {
+private fun getAllMethods(declaration: ObjJClassDeclarationElement<*>): List<ObjJMethodHeader> {
     if (declaration is ObjJImplementationDeclaration) {
         return getAllMethodHeaders(declaration)
     }
@@ -393,14 +421,14 @@ private fun getAllMethods(declaration:ObjJClassDeclarationElement<*>) : List<Obj
 /**
  * Gets accessors for a list of class declaration elements
  */
-private fun getAccessors(declarations:List<ObjJClassDeclarationElement<*>>) : List<ObjJAccessorProperty> {
+private fun getAccessors(declarations: List<ObjJClassDeclarationElement<*>>): List<ObjJAccessorProperty> {
     return declarations.flatMap { getAccessors(it) }
 }
 
 /**
  * Gets accessors for a single class declaration element
  */
-private fun getAccessors(declaration:ObjJClassDeclarationElement<*>) : List<ObjJAccessorProperty>  {
+private fun getAccessors(declaration: ObjJClassDeclarationElement<*>): List<ObjJAccessorProperty> {
     if (declaration is ObjJProtocolDeclaration)
         return getAccessors(declaration)
     if (declaration is ObjJImplementationDeclaration)
@@ -411,7 +439,7 @@ private fun getAccessors(declaration:ObjJClassDeclarationElement<*>) : List<ObjJ
 /**
  * Gets accessors for a protocol element
  */
-private fun getAccessors(declaration:ObjJProtocolDeclaration) : List<ObjJAccessorProperty> {
+private fun getAccessors(declaration: ObjJProtocolDeclaration): List<ObjJAccessorProperty> {
     return declaration.instanceVariableDeclarationList.flatMap {
         it.accessorPropertyList
     } + declaration.protocolScopedMethodBlockList.flatMap { scopedMethodBlock ->
@@ -423,7 +451,7 @@ private fun getAccessors(declaration:ObjJProtocolDeclaration) : List<ObjJAccesso
 /**
  * Gets accessors for an implementation element
  */
-private fun getAccessors(declaration:ObjJImplementationDeclaration) : List<ObjJAccessorProperty> {
+private fun getAccessors(declaration: ObjJImplementationDeclaration): List<ObjJAccessorProperty> {
     return declaration.instanceVariableList?.instanceVariableDeclarationList?.flatMap {
         it.accessorPropertyList
     }.orEmpty()

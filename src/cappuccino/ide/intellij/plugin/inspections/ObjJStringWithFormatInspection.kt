@@ -68,7 +68,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 return
             }*/
             if (format.leftExpr == null || format.leftExpr!!.primary == null || format.leftExpr!!.primary!!.stringLiteral == null) {
-                //   LOGGER.log(Level.INFO, "[CPString initWithFormat] should have string expression first, but does not. Actual text: <"+format.getText()+">");
+                //   //LOGGER.info("[CPString initWithFormat] should have string expression first, but does not. Actual text: <"+format.getText()+">");
                 return
             }
             val formatString = format.leftExpr!!.primary!!.stringLiteral!!.text
@@ -95,7 +95,7 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                     if (i < numExpressions) {
                         continue
                     }
-                    //LOGGER.log(Level.INFO, "Current substring = <"+builder.toString()+">");
+                    ////LOGGER.info("Current substring = <"+builder.toString()+">");
                     problemsHolder.registerProblem(methodCall, TextRange.create(offset, offset + 2), ObjJBundle.message("objective-j.inspection.string-format.not-enough-values.message", numMatches, numExpressions))
                 }
             } else if (numMatches < numExpressions) {

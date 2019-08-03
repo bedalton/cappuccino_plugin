@@ -1,11 +1,5 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.psi.ObjJExpr
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 
 object ObjJKeywordsList {

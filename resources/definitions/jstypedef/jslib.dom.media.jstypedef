@@ -1,0 +1,1065 @@
+
+
+/** The HTMLAudioElement interface provides access to the properties of <audio> elements, as well as getMethods to manipulate them. It derives from the HTMLMediaElement interface. */
+class HTMLAudioElement extends HTMLMediaElement {
+	new()
+    addEventListener(type: K keyof HTMLMediaElementEventMap, listener: (this: HTMLAudioElement, ev: HTMLMediaElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof HTMLMediaElementEventMap, listener: (this: HTMLAudioElement, ev: HTMLMediaElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap HTMLMediaElementEventMap extends HTMLElementEventMap {
+    "encrypted": MediaEncryptedEvent;
+    "msneedkey": Event;
+    "waitingforkey": Event;
+}
+
+/** The HTMLMediaElement interface adds to HTMLElement the properties and getMethods needed to support basic media-related capabilities that are common to audio and video. */
+class HTMLMediaElement extends HTMLElement {
+	new()
+	static readonly HAVE_CURRENT_DATA: number
+	static readonly HAVE_ENOUGH_DATA: number
+	static readonly HAVE_FUTURE_DATA: number
+	static readonly HAVE_METADATA: number
+	static readonly HAVE_NOTHING: number
+	static readonly NETWORK_EMPTY: number
+	static readonly NETWORK_IDLE: number
+	static readonly NETWORK_LOADING: number
+	static readonly NETWORK_NO_SOURCE: number
+    /**
+     * Returns an AudioTrackList object with the audio tracks for a given video element.
+     */
+    readonly audioTracks: AudioTrackList;
+    /**
+     * Gets or sets a value that indicates whether to start playing the media automatically.
+     */
+    autoplay: boolean;
+    /**
+     * Gets a collection of buffered time ranges.
+     */
+    readonly buffered: TimeRanges;
+    /**
+     * Gets or sets a flag that indicates whether the client provides a set of controls for the media (in case the developer does not include controls for the player).
+     */
+    controls: boolean;
+    crossOrigin: string | null;
+    /**
+     * Gets the address or URL of the current media resource that is selected by IHTMLMediaElement.
+     */
+    readonly currentSrc: string;
+    /**
+     * Gets or sets the current playback position, in seconds.
+     */
+    currentTime: number;
+    defaultMuted: boolean;
+    /**
+     * Gets or sets the default playback rate when the user is not using fast forward or reverse for a video or audio resource.
+     */
+    defaultPlaybackRate: number;
+    /**
+     * Returns the duration in seconds of the current media resource. A NaN value is returned if duration is not available, or Infinity if the media resource is streaming.
+     */
+    readonly duration: number;
+    /**
+     * Gets information about whether the playback has ended or not.
+     */
+    readonly ended: boolean;
+    /**
+     * Returns an object representing the current error state of the audio or video element.
+     */
+    readonly error: MediaError | null;
+    /**
+     * Gets or sets a flag to specify whether playback should restart after it completes.
+     */
+    loop: boolean;
+    readonly mediaKeys: MediaKeys | null;
+    /**
+     * Specifies the purpose of the audio or video media, such as background audio or alerts.
+     */
+    msAudioCategory: string;
+    /**
+     * Specifies the output device id that the audio will be sent to.
+     */
+    msAudioDeviceType: string;
+    readonly msGraphicsTrustStatus: MSGraphicsTrust;
+    /**
+     * Gets the MSMediaKeys object, which is used for decrypting media data, that is associated with this media element.
+     */
+    /** @deprecated */
+    readonly msKeys: MSMediaKeys;
+    /**
+     * Gets or sets whether the DLNA PlayTo device is available.
+     */
+    msPlayToDisabled: boolean;
+    /**
+     * Gets or sets the path to the preferred media source. This enables the Play To target device to stream the media content, which can be DRM protected, from a different location, such as a cloud media server.
+     */
+    msPlayToPreferredSourceUri: string;
+    /**
+     * Gets or sets the primary DLNA PlayTo device.
+     */
+    msPlayToPrimary: boolean;
+    /**
+     * Gets the source associated with the media element for use by the PlayToManager.
+     */
+    readonly msPlayToSource: any;
+    /**
+     * Specifies whether or not to enable low-latency playback on the media element.
+     */
+    msRealTime: boolean;
+    /**
+     * Gets or sets a flag that indicates whether the audio (either audio or the audio track on video media) is muted.
+     */
+    muted: boolean;
+    /**
+     * Gets the current network activity for the element.
+     */
+    readonly networkState: number;
+    onencrypted: ((this: HTMLMediaElement, ev: MediaEncryptedEvent) => any) | null;
+    /** @deprecated */
+    onmsneedkey: ((this: HTMLMediaElement, ev: Event) => any) | null;
+    onwaitingforkey: ((this: HTMLMediaElement, ev: Event) => any) | null;
+    /**
+     * Gets a flag that specifies whether playback is paused.
+     */
+    readonly paused: boolean;
+    /**
+     * Gets or sets the current rate of speed for the media resource to play. This speed is expressed as a multiple of the normal speed of the media resource.
+     */
+    playbackRate: number;
+    /**
+     * Gets TimeRanges for the current media resource that has been played.
+     */
+    readonly played: TimeRanges;
+    /**
+     * Gets or sets the current playback position, in seconds.
+     */
+    preload: string;
+    readonly readyState: number;
+    /**
+     * Returns a TimeRanges object that represents the ranges of the current media resource that can be seeked.
+     */
+    readonly seekable: TimeRanges;
+    /**
+     * Gets a flag that indicates whether the client is currently moving to a new playback position in the media resource.
+     */
+    readonly seeking: boolean;
+    /**
+     * The address or URL of the a media resource that is to be considered.
+     */
+    src: string;
+    srcObject: MediaStream | MediaSource | Blob | null;
+    readonly textTracks: TextTrackList;
+    readonly videoTracks: VideoTrackList;
+    /**
+     * Gets or sets the volume level for audio portions of the media element.
+     */
+    volume: number;
+    addTextTrack(kind: TextTrackKind, label?: string, language?: string): TextTrack;
+    /**
+     * Returns a string that specifies whether the client can play a given media resource type.
+     */
+    canPlayType(type: string): CanPlayTypeResult;
+    /**
+     * Resets the audio or video object and loads a new media resource.
+     */
+    load(): void;
+    /**
+     * Clears all effects from the media pipeline.
+     */
+    msClearEffects(): void;
+    msGetAsCastingSource(): any;
+    /**
+     * Inserts the specified audio effect into media pipeline.
+     */
+    msInsertAudioEffect(activatableClassId: string, effectRequired: boolean, config?: any): void;
+    /** @deprecated */
+    msSetMediaKeys(mediaKeys: MSMediaKeys): void;
+    /**
+     * Specifies the media protection manager for a given media pipeline.
+     */
+    msSetMediaProtectionManager(mediaProtectionManager?: any): void;
+    /**
+     * Pauses the current playback and sets paused to TRUE. This can be used to test whether the media is playing or paused. You can also use the pause or play events to tell whether the media is playing or not.
+     */
+    pause(): void;
+    /**
+     * Loads and starts playback of a media resource.
+     */
+    play(): Promise<void>;
+    setMediaKeys(mediaKeys: MediaKeys | null): Promise<void>;
+    readonly HAVE_CURRENT_DATA: number;
+    readonly HAVE_ENOUGH_DATA: number;
+    readonly HAVE_FUTURE_DATA: number;
+    readonly HAVE_METADATA: number;
+    readonly HAVE_NOTHING: number;
+    readonly NETWORK_EMPTY: number;
+    readonly NETWORK_IDLE: number;
+    readonly NETWORK_LOADING: number;
+    readonly NETWORK_NO_SOURCE: number;
+    addEventListener(type: K keyof HTMLMediaElementEventMap, listener: (this: HTMLMediaElement, ev: HTMLMediaElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof HTMLMediaElementEventMap, listener: (this: HTMLMediaElement, ev: HTMLMediaElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The HTMLSourceElement interface provides special properties (beyond the regular HTMLElement object interface it also has available to it by inheritance) for manipulating <source> elements. */
+class HTMLSourceElement extends HTMLElement {
+	new()
+    /**
+     * Gets or sets the intended media type of the media source.
+     */
+    media: string;
+    sizes: string;
+    /**
+     * The address or URL of the a media resource that is to be considered.
+     */
+    src: string;
+    srcset: string;
+    /**
+     * Gets or sets the MIME type of a media resource.
+     */
+    type: string;
+    addEventListener(type: K keyof HTMLElementEventMap, listener: (this: HTMLSourceElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof HTMLElementEventMap, listener: (this: HTMLSourceElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+/** The HTMLTrackElement */
+class HTMLTrackElement extends HTMLElement {
+	new()
+	static readonly ERROR: number
+	static readonly LOADED: number
+	static readonly LOADING: number
+	static readonly NONE: number
+    default: boolean;
+    kind: string;
+    label: string;
+    readonly readyState: number;
+    src: string;
+    srclang: string;
+    readonly track: TextTrack;
+    readonly ERROR: number;
+    readonly LOADED: number;
+    readonly LOADING: number;
+    readonly NONE: number;
+    addEventListener(type: K keyof HTMLElementEventMap, listener: (this: HTMLTrackElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof HTMLElementEventMap, listener: (this: HTMLTrackElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface HTMLVideoElementEventMap extends HTMLMediaElementEventMap {
+    "MSVideoFormatChanged": Event;
+    "MSVideoFrameStepCompleted": Event;
+    "MSVideoOptimalLayoutChanged": Event;
+}
+
+/** The HTMLVideoElement interface provides special properties and getMethods for manipulating video objects. It also inherits properties and getMethods of HTMLMediaElement and HTMLElement. */
+class HTMLVideoElement extends HTMLMediaElement {
+	new()
+    /**
+     * Gets or sets the height of the video element.
+     */
+    height: number;
+    msHorizontalMirror: boolean;
+    readonly msIsLayoutOptimalForPlayback: boolean;
+    readonly msIsStereo3D: boolean;
+    msStereo3DPackingMode: string;
+    msStereo3DRenderMode: string;
+    msZoom: boolean;
+    onMSVideoFormatChanged: ((this: HTMLVideoElement, ev: Event) => any) | null;
+    onMSVideoFrameStepCompleted: ((this: HTMLVideoElement, ev: Event) => any) | null;
+    onMSVideoOptimalLayoutChanged: ((this: HTMLVideoElement, ev: Event) => any) | null;
+    /**
+     * Gets or sets a URL of an image to display, for example, like a movie poster. This can be a still frame from the video, or another image if no video data is available.
+     */
+    poster: string;
+    /**
+     * Gets the intrinsic height of a video in CSS pixels, or zero if the dimensions are not known.
+     */
+    readonly videoHeight: number;
+    /**
+     * Gets the intrinsic width of a video in CSS pixels, or zero if the dimensions are not known.
+     */
+    readonly videoWidth: number;
+    readonly webkitDisplayingFullscreen: boolean;
+    readonly webkitSupportsFullscreen: boolean;
+    /**
+     * Gets or sets the width of the video element.
+     */
+    width: number;
+    getVideoPlaybackQuality(): VideoPlaybackQuality;
+    msFrameStep(forward: boolean): void;
+    msInsertVideoEffect(activatableClassId: string, effectRequired: boolean, config?: any): void;
+    msSetVideoRectangle(left: number, top: number, right: number, bottom: number): void;
+    webkitEnterFullScreen(): void;
+    webkitEnterFullscreen(): void;
+    webkitExitFullScreen(): void;
+    webkitExitFullscreen(): void;
+    addEventListener(type: K keyof HTMLVideoElementEventMap, listener: (this: HTMLVideoElement, ev: HTMLVideoElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof HTMLVideoElementEventMap, listener: (this: HTMLVideoElement, ev: HTMLVideoElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The MediaDevicesInfo interface contains information that describes a single media input or output device. */
+class MediaDeviceInfo {
+	new()
+    readonly deviceId: string;
+    readonly groupId: string;
+    readonly kind: MediaDeviceKind;
+    readonly label: string;
+}
+
+interface MediaDevicesEventMap {
+    "devicechange": Event;
+}
+
+/** The MediaDevices interface provides access to connected media input devices like cameras and microphones, as well as screen sharing. In essence, it lets you obtain access to any hardware source of media data. */
+class MediaDevices extends EventTarget {
+	new()
+    ondevicechange: ((this: MediaDevices, ev: Event) => any) | null;
+    enumerateDevices(): Promise<MediaDeviceInfo[]>;
+    getSupportedConstraints(): MediaTrackSupportedConstraints;
+    getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;
+    addEventListener(type: K keyof MediaDevicesEventMap, listener: (this: MediaDevices, ev: MediaDevicesEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaDevicesEventMap, listener: (this: MediaDevices, ev: MediaDevicesEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** A MediaElementSourceNode has no inputs and exactly one output, and is created using the AudioContext.createMediaElementSource method. The amount of channels in the output equals the number of channels of the audio referenced by the HTMLMediaElement used in the creation of the node, or is 1 if the HTMLMediaElement has no audio. */
+class MediaElementAudioSourceNode extends AudioNode {
+	new(context: AudioContext, options: MediaElementAudioSourceOptions)
+    readonly mediaElement: HTMLMediaElement;
+}
+
+class MediaEncryptedEvent extends Event {
+	new(type: string, eventInitDict?: MediaEncryptedEventInit)
+    readonly initData: ArrayBuffer | null;
+    readonly initDataType: string;
+}
+
+/** The MediaError interface represents an error which occurred while handling media in an HTML media element based on HTMLMediaElement, such as <audio> or <video>. */
+class MediaError {
+	new()
+	static readonly MEDIA_ERR_ABORTED: number
+	static readonly MEDIA_ERR_DECODE: number
+	static readonly MEDIA_ERR_NETWORK: number
+	static readonly MEDIA_ERR_SRC_NOT_SUPPORTED: number
+	static readonly MS_MEDIA_ERR_ENCRYPTED: number
+    readonly code: number;
+    readonly message: string;
+    readonly msExtendedCode: number;
+    readonly MEDIA_ERR_ABORTED: number;
+    readonly MEDIA_ERR_DECODE: number;
+    readonly MEDIA_ERR_NETWORK: number;
+    readonly MEDIA_ERR_SRC_NOT_SUPPORTED: number;
+    readonly MS_MEDIA_ERR_ENCRYPTED: number;
+}
+
+/** The MediaKeyMessageEvent interface of the EncryptedMediaExtensions API contains the content and related data when the content decryption module generates a message for the session. */
+class MediaKeyMessageEvent extends Event {
+	new(type: string, eventInitDict: MediaKeyMessageEventInit)
+    readonly message: ArrayBuffer;
+    readonly messageType: MediaKeyMessageType;
+}
+
+typemap MediaKeySessionEventMap {
+    "keystatuseschange": Event;
+    "message": MessageEvent;
+}
+
+/** The MediaKeySession interface of the EncryptedMediaExtensions API represents a context for message exchange with a content decryption module (CDM). */
+class MediaKeySession extends EventTarget {
+	new()
+    readonly closed: Promise<void>;
+    readonly expiration: number;
+    readonly keyStatuses: MediaKeyStatusMap;
+    onkeystatuseschange: ((this: MediaKeySession, ev: Event) => any) | null;
+    onmessage: ((this: MediaKeySession, ev: MessageEvent) => any) | null;
+    readonly sessionId: string;
+    close(): Promise<void>;
+    generateRequest(initDataType: string, initData: BufferSource): Promise<void>;
+    load(sessionId: string): Promise<boolean>;
+    remove(): Promise<void>;
+    update(response: BufferSource): Promise<void>;
+    addEventListener(type: K keyof MediaKeySessionEventMap, listener: (this: MediaKeySession, ev: MediaKeySessionEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaKeySessionEventMap, listener: (this: MediaKeySession, ev: MediaKeySessionEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+/** The MediaKeyStatusMap interface of the EncryptedMediaExtensions API is a read-only map of media key statuses by key IDs. */
+class MediaKeyStatusMap {
+	new()
+    readonly size: number;
+    get(keyId: BufferSource): any;
+    has(keyId: BufferSource): boolean;
+    forEach(callbackfn: (value: MediaKeyStatus, key: BufferSource, parent: MediaKeyStatusMap) => void, thisArg?: any): void;
+}
+
+/** The MediaKeySystemAccess interface of the EncryptedMediaExtensions API provides access to a Key System for decryption and/or a content protection provider. You can request an instance of this object using the Navigator.requestMediaKeySystemAccess method. */
+class MediaKeySystemAccess {
+	new()
+    readonly keySystem: string;
+    createMediaKeys(): Promise<MediaKeys>;
+    getConfiguration(): MediaKeySystemConfiguration;
+}
+
+/** The MediaKeys interface of EncryptedMediaExtensions API the represents a set of keys that an associated HTMLMediaElement can use for decryption of media data during playback. */
+class MediaKeys {
+	new()
+    createSession(sessionType?: MediaKeySessionType): MediaKeySession;
+    setServerCertificate(serverCertificate: BufferSource): Promise<boolean>;
+}
+
+class MediaList {
+	new()
+    readonly length: number;
+    mediaText: string;
+    appendMedium(medium: string): void;
+    deleteMedium(medium: string): void;
+    item(index: number): string | null;
+    toString(): number;
+    [index: number]: string;
+}
+typemap MediaSourceEventMap {
+    "sourceclose": Event;
+    "sourceended": Event;
+    "sourceopen": Event;
+}
+
+/** The MediaSource interface of the Media Source Extensions API represents a source of media data for an HTMLMediaElement object. A MediaSource object can be attached to a HTMLMediaElement to be played in the user agent. */
+class MediaSource extends EventTarget {
+	new()
+	static isTypeSupported(type: string): boolean
+    readonly activeSourceBuffers: SourceBufferList;
+    duration: number;
+    onsourceclose: ((this: MediaSource, ev: Event) => any) | null;
+    onsourceended: ((this: MediaSource, ev: Event) => any) | null;
+    onsourceopen: ((this: MediaSource, ev: Event) => any) | null;
+    readonly readyState: ReadyState;
+    readonly sourceBuffers: SourceBufferList;
+    addSourceBuffer(type: string): SourceBuffer;
+    clearLiveSeekableRange(): void;
+    endOfStream(error?: EndOfStreamError): void;
+    removeSourceBuffer(sourceBuffer: SourceBuffer): void;
+    setLiveSeekableRange(start: number, end: number): void;
+    addEventListener(type: K keyof MediaSourceEventMap, listener: (this: MediaSource, ev: MediaSourceEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaSourceEventMap, listener: (this: MediaSource, ev: MediaSourceEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap MediaStreamEventMap {
+    "active": Event;
+    "addtrack": MediaStreamTrackEvent;
+    "inactive": Event;
+    "removetrack": MediaStreamTrackEvent;
+}
+
+/** The MediaStream interface represents a stream of media content. A stream consists of several tracks such as video or audio tracks. Each track is specified as an instance of MediaStreamTrack. */
+class MediaStream extends EventTarget {
+	new()
+	new(stream: MediaStream)
+	new(tracks: MediaStreamTrack[])
+    readonly active: boolean;
+    readonly id: string;
+    onactive: ((this: MediaStream, ev: Event) => any) | null;
+    onaddtrack: ((this: MediaStream, ev: MediaStreamTrackEvent) => any) | null;
+    oninactive: ((this: MediaStream, ev: Event) => any) | null;
+    onremovetrack: ((this: MediaStream, ev: MediaStreamTrackEvent) => any) | null;
+    addTrack(track: MediaStreamTrack): void;
+    clone(): MediaStream;
+    getAudioTracks(): MediaStreamTrack[];
+    getTrackById(trackId: string): MediaStreamTrack | null;
+    getTracks(): MediaStreamTrack[];
+    getVideoTracks(): MediaStreamTrack[];
+    removeTrack(track: MediaStreamTrack): void;
+    stop(): void;
+    addEventListener(type: K keyof MediaStreamEventMap, listener: (this: MediaStream, ev: MediaStreamEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaStreamEventMap, listener: (this: MediaStream, ev: MediaStreamEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class MediaStreamAudioDestinationNode extends AudioNode {
+	new(context: AudioContext, options?: AudioNodeOptions)
+    readonly stream: MediaStream;
+}
+
+/** A MediaStreamAudioSourceNode has no inputs and exactly one output, and is created using the AudioContext.createMediaStreamSource method. The number of channels in the output equals the number of channels in AudioMediaStreamTrack. If there is no valid media stream, then the number of output channels will be one silent channel. */
+class MediaStreamAudioSourceNode extends AudioNode {
+	new(context: AudioContext, options: MediaStreamAudioSourceOptions)
+    readonly mediaStream: MediaStream;
+}
+
+class MediaStreamError {
+	new()
+    readonly constraintName: string | null;
+    readonly message: string | null;
+    readonly name: string;
+}
+
+class MediaStreamErrorEvent extends Event {
+	new(typeArg: string, eventInitDict?: MediaStreamErrorEventInit)
+    readonly error: MediaStreamError | null;
+}
+
+/** The MediaStreamEvent interface represents events that occurs in relation to a MediaStream. Two events of this type can be thrown: addstream and removestream. */
+class MediaStreamEvent extends Event {
+	new(type: string, eventInitDict: MediaStreamEventInit)
+    readonly stream: MediaStream | null;
+}
+
+typemap MediaStreamTrackEventMap {
+    "ended": MediaStreamErrorEvent;
+    "isolationchange": Event;
+    "mute": Event;
+    "overconstrained": MediaStreamErrorEvent;
+    "unmute": Event;
+}
+
+/** The MediaStreamTrack interface represents a single media track within a stream; typically, these are audio or video tracks, but other track types may exist as well. */
+class MediaStreamTrack extends EventTarget {
+	new()
+    enabled: boolean;
+    readonly id: string;
+    readonly isolated: boolean;
+    readonly kind: string;
+    readonly label: string;
+    readonly muted: boolean;
+    onended: ((this: MediaStreamTrack, ev: MediaStreamErrorEvent) => any) | null;
+    onisolationchange: ((this: MediaStreamTrack, ev: Event) => any) | null;
+    onmute: ((this: MediaStreamTrack, ev: Event) => any) | null;
+    onoverconstrained: ((this: MediaStreamTrack, ev: MediaStreamErrorEvent) => any) | null;
+    onunmute: ((this: MediaStreamTrack, ev: Event) => any) | null;
+    readonly `readonly`: boolean;
+    readonly readyState: MediaStreamTrackState;
+    readonly remote: boolean;
+    applyConstraints(constraints: MediaTrackConstraints): Promise<void>;
+    clone(): MediaStreamTrack;
+    getCapabilities(): MediaTrackCapabilities;
+    getConstraints(): MediaTrackConstraints;
+    getSettings(): MediaTrackSettings;
+    stop(): void;
+    addEventListener(type: K keyof MediaStreamTrackEventMap, listener: (this: MediaStreamTrack, ev: MediaStreamTrackEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof MediaStreamTrackEventMap, listener: (this: MediaStreamTrack, ev: MediaStreamTrackEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class MediaStreamTrackAudioSourceNode extends AudioNode {
+	new(context: AudioContext, options: MediaStreamTrackAudioSourceOptions)
+}
+
+/** The MediaStreamTrackEvent interface represents events which indicate that a MediaStream has had tracks added to or removed from the stream through calls to Media Stream API getMethods. These events are sent to the stream when these changes occur. */
+class MediaStreamTrackEvent extends Event {
+	new(typeArg: string, eventInitDict?: MediaStreamTrackEventInit)
+    readonly track: MediaStreamTrack;
+}
+
+typemap TextTrackEventMap {
+    "cuechange": Event;
+    "error": Event;
+    "load": Event;
+}
+
+/** This interface also inherits properties from EventTarget. */
+class TextTrack extends EventTarget {
+    new();
+    static readonly DISABLED: number;
+    static readonly ERROR: number;
+    static readonly HIDDEN: number;
+    static readonly LOADED: number;
+    static readonly LOADING: number;
+    static readonly NONE: number;
+    static readonly SHOWING: number;
+    readonly activeCues: TextTrackCueList;
+    readonly cues: TextTrackCueList;
+    readonly inBandMetadataTrackDispatchType: string;
+    readonly kind: string;
+    readonly label: string;
+    readonly language: string;
+    mode: TextTrackMode | number;
+    oncuechange: ((this: TextTrack, ev: Event) => any) | null;
+    onerror: ((this: TextTrack, ev: Event) => any) | null;
+    onload: ((this: TextTrack, ev: Event) => any) | null;
+    readonly readyState: number;
+    readonly sourceBuffer: SourceBuffer | null;
+    addCue(cue: TextTrackCue): void;
+    removeCue(cue: TextTrackCue): void;
+    readonly DISABLED: number;
+    readonly ERROR: number;
+    readonly HIDDEN: number;
+    readonly LOADED: number;
+    readonly LOADING: number;
+    readonly NONE: number;
+    readonly SHOWING: number;
+    addEventListener(type: K keyof TextTrackEventMap, listener: (this: TextTrack, ev: TextTrackEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof TextTrackEventMap, listener: (this: TextTrack, ev: TextTrackEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap TextTrackCueEventMap {
+    "enter": Event;
+    "exit": Event;
+}
+
+/** TextTrackCues represent a string of text that will be displayed for some duration of time on a TextTrack. This includes the start and end times that the cue will be displayed. A TextTrackCue cannot be used directly, instead one of the derived types (e.g. VTTCue) must be used. */
+class TextTrackCue extends EventTarget {
+    new(startTime: number, endTime: number, text: string);
+    endTime: number;
+    id: string;
+    onenter: ((this: TextTrackCue, ev: Event) => any) | null;
+    onexit: ((this: TextTrackCue, ev: Event) => any) | null;
+    pauseOnExit: boolean;
+    startTime: number;
+    text: string;
+    readonly track: TextTrack;
+    getCueAsHTML(): DocumentFragment;
+    addEventListener(type: K keyof TextTrackCueEventMap, listener: (this: TextTrackCue, ev: TextTrackCueEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof TextTrackCueEventMap, listener: (this: TextTrackCue, ev: TextTrackCueEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class TextTrackCueList {
+    new();
+    readonly length: number;
+    getCueById(id: string): TextTrackCue;
+    item(index: number): TextTrackCue;
+    [index: number]: TextTrackCue;
+}
+
+typemap TextTrackListEventMap {
+    "addtrack": TrackEvent;
+}
+
+class TextTrackList extends EventTarget {
+    new();
+    readonly length: number;
+    onaddtrack: ((this: TextTrackList, ev: TrackEvent) => any) | null;
+    item(index: number): TextTrack;
+    addEventListener(type: K keyof TextTrackListEventMap, listener: (this: TextTrackList, ev: TextTrackListEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof TextTrackListEventMap, listener: (this: TextTrackList, ev: TextTrackListEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    [index: number]: TextTrack;
+}
+
+/** The TimeRanges interface is used to represent a set of time ranges, primarily for the purpose of tracking which portions of media have been buffered when loading it for use by the <audio> and <video> elements. */
+class TimeRanges {
+    new();
+    readonly length: number;
+    end(index: number): number;
+    start(index: number): number;
+}
+/** The VRDisplay interface of the WebVR API represents any VR device supported by this API. It includes generic information such as device IDs and descriptions, as well as getMethods for starting to present a VR scene, retrieving eye parameters and display capabilities, and other important functionality. */
+class VRDisplay extends EventTarget {
+    new();
+    readonly capabilities: VRDisplayCapabilities;
+    depthFar: number;
+    depthNear: number;
+    readonly displayId: number;
+    readonly displayName: string;
+    readonly isConnected: boolean;
+    readonly isPresenting: boolean;
+    readonly stageParameters: VRStageParameters | null;
+    cancelAnimationFrame(handle: number): void;
+    exitPresent(): Promise<void>;
+    getEyeParameters(whichEye: string): VREyeParameters;
+    getFrameData(frameData: VRFrameData): boolean;
+    getLayers(): VRLayer[];
+    /** @deprecated */
+    getPose(): VRPose;
+    requestAnimationFrame(callback: FrameRequestCallback): number;
+    requestPresent(layers: VRLayer[]): Promise<void>;
+    resetPose(): void;
+    submitFrame(pose?: VRPose): void;
+}
+
+/** The VRDisplayCapabilities interface of the WebVR API describes the capabilities of a VRDisplay — its features can be used to perform VR device capability tests, for example can it return position information. */
+class VRDisplayCapabilities {
+    new();
+    readonly canPresent: boolean;
+    readonly hasExternalDisplay: boolean;
+    readonly hasOrientation: boolean;
+    readonly hasPosition: boolean;
+    readonly maxLayers: number;
+}
+
+/** The VRDisplayEvent interface of the WebVR API represents represents the event object of WebVR-related events (see the list of WebVR window extensions). */
+class VRDisplayEvent extends Event {
+    new(type: string, eventInitDict: VRDisplayEventInit);
+    readonly display: VRDisplay;
+    readonly reason: VRDisplayEventReason | null;
+}
+
+/** The VREyeParameters interface of the WebVR API represents all the information required to correctly render a scene for a given eye, including field of view information. */
+class VREyeParameters {
+    new();
+    /** @deprecated */
+    readonly fieldOfView: VRFieldOfView;
+    readonly offset: Float32Array;
+    readonly renderHeight: number;
+    readonly renderWidth: number;
+}
+
+/** The VRFieldOfView interface of the WebVR API represents a field of view defined by 4 different degree values describing the view from a center point. */
+class VRFieldOfView {
+    new();
+    readonly downDegrees: number;
+    readonly leftDegrees: number;
+    readonly rightDegrees: number;
+    readonly upDegrees: number;
+}
+
+/** The VRFrameData interface of the WebVR API represents all the information needed to render a single frame of a VR scene; constructed by VRDisplay.getFrameData(). */
+class VRFrameData {
+    new();
+    readonly leftProjectionMatrix: Float32Array;
+    readonly leftViewMatrix: Float32Array;
+    readonly pose: VRPose;
+    readonly rightProjectionMatrix: Float32Array;
+    readonly rightViewMatrix: Float32Array;
+    readonly timestamp: number;
+}
+
+/** The VRPose interface of the WebVR API represents the state of a VR sensor at a given timestamp (which includes orientation, position, velocity, and acceleration information.) */
+class VRPose {
+    new();
+    readonly angularAcceleration: Float32Array | null;
+    readonly angularVelocity: Float32Array | null;
+    readonly linearAcceleration: Float32Array | null;
+    readonly linearVelocity: Float32Array | null;
+    readonly orientation: Float32Array | null;
+    readonly position: Float32Array | null;
+    readonly timestamp: number;
+}
+
+class VTTCue extends TextTrackCue {
+    new(startTime: number, endTime: number, text: string);
+    align: AlignSetting;
+    line: LineAndPositionSetting;
+    lineAlign: LineAlignSetting;
+    position: LineAndPositionSetting;
+    positionAlign: PositionAlignSetting;
+    region: VTTRegion | null;
+    size: number;
+    snapToLines: boolean;
+    text: string;
+    vertical: DirectionSetting;
+    getCueAsHTML(): DocumentFragment;
+    addEventListener(type: K keyof TextTrackCueEventMap, listener: (this: VTTCue, ev: TextTrackCueEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof TextTrackCueEventMap, listener: (this: VTTCue, ev: TextTrackCueEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+class VTTRegion {
+    new();
+    id: string;
+    lines: number;
+    regionAnchorX: number;
+    regionAnchorY: number;
+    scroll: ScrollSetting;
+    viewportAnchorX: number;
+    viewportAnchorY: number;
+    width: number;
+}
+
+/** The ValidityState interface represents the validity states that an element can be in, with respect to constraint validation. Together, they help explain why an element's value fails to validate, if it's not valid. */
+class ValidityState {
+    new();
+    readonly badInput: boolean;
+    readonly customError: boolean;
+    readonly patternMismatch: boolean;
+    readonly rangeOverflow: boolean;
+    readonly rangeUnderflow: boolean;
+    readonly stepMismatch: boolean;
+    readonly tooLong: boolean;
+    readonly tooShort: boolean;
+    readonly typeMismatch: boolean;
+    readonly valid: boolean;
+    readonly valueMissing: boolean;
+}
+
+/** A VideoPlaybackQuality object is returned by the HTMLVideoElement.getVideoPlaybackQuality() method and contains metrics that can be used to determine the playback quality of a video. */
+class VideoPlaybackQuality {
+    new();
+    readonly corruptedVideoFrames: number;
+    readonly creationTime: number;
+    readonly droppedVideoFrames: number;
+    readonly totalFrameDelay: number;
+    readonly totalVideoFrames: number;
+}
+
+/** The VideoTrack interface represents a single video track from a <video> element. */
+class VideoTrack {
+    new();
+    readonly id: string;
+    kind: string;
+    readonly label: string;
+    language: string;
+    selected: boolean;
+    readonly sourceBuffer: SourceBuffer | null;
+}
+
+typemap VideoTrackListEventMap {
+    "addtrack": TrackEvent;
+    "change": Event;
+    "removetrack": TrackEvent;
+}
+
+/** The VideoTrackList interface is used to represent a list of the video tracks contained within a <video> element, with each track represented by a separate VideoTrack object in the list. */
+class VideoTrackList extends EventTarget {
+    new();
+    readonly length: number;
+    onaddtrack: ((this: VideoTrackList, ev: TrackEvent) => any) | null;
+    onchange: ((this: VideoTrackList, ev: Event) => any) | null;
+    onremovetrack: ((this: VideoTrackList, ev: TrackEvent) => any) | null;
+    readonly selectedIndex: number;
+    getTrackById(id: string): VideoTrack | null;
+    item(index: number): VideoTrack;
+    addEventListener(type: K keyof VideoTrackListEventMap, listener: (this: VideoTrackList, ev: VideoTrackListEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof VideoTrackListEventMap, listener: (this: VideoTrackList, ev: VideoTrackListEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    [index: number]: VideoTrack;
+}
+
+
+class MSMediaKeyError {
+	new()
+	static readonly MS_MEDIA_KEYERR_CLIENT: number
+	static readonly MS_MEDIA_KEYERR_DOMAIN: number
+	static readonly MS_MEDIA_KEYERR_HARDWARECHANGE: number
+	static readonly MS_MEDIA_KEYERR_OUTPUT: number
+	static readonly MS_MEDIA_KEYERR_SERVICE: number
+	static readonly MS_MEDIA_KEYERR_UNKNOWN: number
+    readonly code: number;
+    readonly systemCode: number;
+    readonly MS_MEDIA_KEYERR_CLIENT: number;
+    readonly MS_MEDIA_KEYERR_DOMAIN: number;
+    readonly MS_MEDIA_KEYERR_HARDWARECHANGE: number;
+    readonly MS_MEDIA_KEYERR_OUTPUT: number;
+    readonly MS_MEDIA_KEYERR_SERVICE: number;
+    readonly MS_MEDIA_KEYERR_UNKNOWN: number;
+}
+
+class MSMediaKeyMessageEvent extends Event {
+	new()
+    readonly destinationURL: string | null;
+    readonly message: Uint8Array;
+}
+
+class MSMediaKeyNeededEvent extends Event {
+	new()
+    readonly initData: Uint8Array | null;
+}
+
+class MSMediaKeySession extends EventTarget {
+	new()
+    readonly error: MSMediaKeyError | null;
+    readonly keySystem: string;
+    readonly sessionId: string;
+    close(): void;
+    update(key: Uint8Array): void;
+}
+
+class MSMediaKeys {
+	new(keySystem: string)
+	static isTypeSupported(keySystem: string, type?: string | null): boolean
+	static isTypeSupportedWithFeatures(keySystem: string, type?: string | null): string
+    readonly keySystem: string;
+    createSession(type: string, initData: Uint8Array, cdmData?: Uint8Array | null): MSMediaKeySession;
+}
+
+typemap SourceBufferEventMap {
+    "abort": Event;
+    "error": Event;
+    "update": Event;
+    "updateend": Event;
+    "updatestart": Event;
+}
+
+
+/** The SourceBuffer interface represents a chunk of media to be passed into an HTMLMediaElement and played, via a MediaSource object. This can be made up of one or several media segments. */
+class SourceBuffer extends EventTarget {
+    new();
+    appendWindowEnd: number;
+    appendWindowStart: number;
+    readonly audioTracks: AudioTrackList;
+    readonly buffered: TimeRanges;
+    mode: AppendMode;
+    onabort: ((this: SourceBuffer, ev: Event) => any) | null;
+    onerror: ((this: SourceBuffer, ev: Event) => any) | null;
+    onupdate: ((this: SourceBuffer, ev: Event) => any) | null;
+    onupdateend: ((this: SourceBuffer, ev: Event) => any) | null;
+    onupdatestart: ((this: SourceBuffer, ev: Event) => any) | null;
+    readonly textTracks: TextTrackList;
+    timestampOffset: number;
+    readonly updating: boolean;
+    readonly videoTracks: VideoTrackList;
+    abort(): void;
+    appendBuffer(data: BufferSource): void;
+    remove(start: number, end: number): void;
+    addEventListener(type: K keyof SourceBufferEventMap, listener: (this: SourceBuffer, ev: SourceBufferEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SourceBufferEventMap, listener: (this: SourceBuffer, ev: SourceBufferEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+typemap SourceBufferListEventMap {
+    "addsourcebuffer": Event;
+    "removesourcebuffer": Event;
+}
+
+/** The SourceBufferList interface represents a simple container list for multiple SourceBuffer objects. */
+class SourceBufferList extends EventTarget {
+    new();
+    readonly length: number;
+    onaddsourcebuffer: ((this: SourceBufferList, ev: Event) => any) | null;
+    onremovesourcebuffer: ((this: SourceBufferList, ev: Event) => any) | null;
+    addEventListener(type: K keyof SourceBufferListEventMap, listener: (this: SourceBufferList, ev: SourceBufferListEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof SourceBufferListEventMap, listener: (this: SourceBufferList, ev: SourceBufferListEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    [index: number]: SourceBuffer;
+}
+
+/** The TrackEvent interface, part of the HTML DOM specification, is used for events which represent changes to the set of available tracks on an HTML media element; these events are addtrack and removetrack. */
+class TrackEvent extends Event {
+    new(typeArg: string, eventInitDict?: TrackEventInit);
+    readonly track: VideoTrack | AudioTrack | TextTrack | null;
+}
+
+
+interface MediaElementAudioSourceOptions {
+    mediaElement: HTMLMediaElement;
+}
+
+interface MediaEncryptedEventInit extends EventInit {
+    initData?: ArrayBuffer | null;
+    initDataType?: string;
+}
+
+interface MediaKeyMessageEventInit extends EventInit {
+    message: ArrayBuffer;
+    messageType: MediaKeyMessageType;
+}
+
+interface MediaKeySystemConfiguration {
+    audioCapabilities?: MediaKeySystemMediaCapability[];
+    distinctiveIdentifier?: MediaKeysRequirement;
+    initDataTypes?: string[];
+    label?: string;
+    persistentState?: MediaKeysRequirement;
+    sessionTypes?: string[];
+    videoCapabilities?: MediaKeySystemMediaCapability[];
+}
+
+interface MediaKeySystemMediaCapability {
+    contentType?: string;
+    robustness?: string;
+}
+
+interface MediaQueryListEventInit extends EventInit {
+    matches?: boolean;
+    media?: string;
+}
+
+interface MediaStreamAudioSourceOptions {
+    mediaStream: MediaStream;
+}
+
+interface MediaStreamConstraints {
+    audio?: boolean | MediaTrackConstraints;
+    peerIdentity?: string;
+    video?: boolean | MediaTrackConstraints;
+}
+
+interface MediaStreamErrorEventInit extends EventInit {
+    error?: MediaStreamError | null;
+}
+
+interface MediaStreamEventInit extends EventInit {
+    stream?: MediaStream;
+}
+
+interface MediaStreamTrackAudioSourceOptions {
+    mediaStreamTrack: MediaStreamTrack;
+}
+
+interface MediaStreamTrackEventInit extends EventInit {
+    track?: MediaStreamTrack | null;
+}
+
+interface MediaTrackCapabilities {
+    aspectRatio?: number | DoubleRange;
+    deviceId?: string;
+    echoCancellation?: boolean[];
+    facingMode?: string;
+    frameRate?: number | DoubleRange;
+    groupId?: string;
+    height?: number | LongRange;
+    sampleRate?: number | LongRange;
+    sampleSize?: number | LongRange;
+    volume?: number | DoubleRange;
+    width?: number | LongRange;
+}
+
+interface MediaTrackConstraintSet {
+    aspectRatio?: number | ConstrainDoubleRange;
+    channelCount?: number | ConstrainLongRange;
+    deviceId?: string | string[] | ConstrainDOMStringParameters;
+    displaySurface?: string | string[] | ConstrainDOMStringParameters;
+    echoCancellation?: boolean | ConstrainBooleanParameters;
+    facingMode?: string | string[] | ConstrainDOMStringParameters;
+    frameRate?: number | ConstrainDoubleRange;
+    groupId?: string | string[] | ConstrainDOMStringParameters;
+    height?: number | ConstrainLongRange;
+    latency?: number | ConstrainDoubleRange;
+    logicalSurface?: boolean | ConstrainBooleanParameters;
+    sampleRate?: number | ConstrainLongRange;
+    sampleSize?: number | ConstrainLongRange;
+    volume?: number | ConstrainDoubleRange;
+    width?: number | ConstrainLongRange;
+}
+
+interface MediaTrackConstraints extends MediaTrackConstraintSet {
+    advanced?: MediaTrackConstraintSet[];
+}
+
+interface MediaTrackSettings {
+    aspectRatio?: number;
+    deviceId?: string;
+    echoCancellation?: boolean;
+    facingMode?: string;
+    frameRate?: number;
+    groupId?: string;
+    height?: number;
+    sampleRate?: number;
+    sampleSize?: number;
+    volume?: number;
+    width?: number;
+}
+
+interface MediaTrackSupportedConstraints {
+    aspectRatio?: boolean;
+    deviceId?: boolean;
+    echoCancellation?: boolean;
+    facingMode?: boolean;
+    frameRate?: boolean;
+    groupId?: boolean;
+    height?: boolean;
+    sampleRate?: boolean;
+    sampleSize?: boolean;
+    volume?: boolean;
+    width?: boolean;
+}

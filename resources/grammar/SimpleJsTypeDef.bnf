@@ -1,0 +1,850 @@
+{
+	parserClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParser"
+	parserUtilClass="cappuccino.ide.intellij.plugin.jstypedef.parser.JsTypeDefParserUtil"
+	extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefElementImpl"
+	elementTypeHolderClass="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes"
+	elementTypePrefix="JS_"
+	elementTypeClass="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTokenType"
+	psiClassPrefix="JsTypeDef"
+	psiImplClassSuffix="Impl"
+	psiPackage="cappuccino.ide.intellij.plugin.jstypedef.psi"
+	psiImplPackage="cappuccino.ide.intellij.plugin.jstypedef.psi.impl"
+	generateTokenAccessors=true
+	psiImplUtilClass="cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil"
+	consumeTokenMethod("interfaceBody")="consumeTokenFast"
+	elementTypeFactory("classElement|function|interfaceElement|keyList|module|moduleName|property|typeAlias|typeMapElement|variableDeclaration")="cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypeFactory.factory"
+	implements(".*")="cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+	name("eos") = "semi-colon"
+	name("stringLiteral") = "String"
+	name("integer") = "Int"
+	//Tokens
+	tokens = [
+		//Line Terminator
+		LINE_TERMINATOR =                 	'___LINE_TERM__'//'regexp:[\r\n\u2028\u2029]'
+		WS = 								'regexp:\s+'
+
+		FUNCTION_ARROW						'=>'
+		EG =								'='
+		COLON =								':'
+		SEMI_COLON =						';'
+		PIPE =								'|'
+		OPEN_ARROW =						'<'
+		CLOSE_ARROW =						'>'
+		NULLABLE =							'?'
+		COMMA =								','
+		OPEN_BRACE =						'{'
+		CLOSE_BRACE =						'}'
+		OPEN_BRACKET = 						'['
+		CLOSE_BRACKET =						']'
+		OPEN_PAREN =						'('
+		CLOSE_PAREN =						')'
+		DOT =								'.'
+		SINGLE_QUOTE =						"'"
+		DOUBLE_QUOTE =						'"'
+		ELLIPSIS = 							'...'
+		UNION = 							'&'
+
+		//KeyWords
+		READONLY =							'readonly'
+		VAR =								'var'
+		ARRAY =								'Array'
+		INTERFACE =							'interface'
+		EXTENDS =							'extends'
+		CONST =								'constructor'
+		FUNCTION_KEYWORD =					'function'
+		VOID = 								'void'
+		NULL_TYPE =							'null'
+		MODULE_KEYWORD =					'module'
+		MAP =								'Map'
+		TYPE_MAP_KEYWORD = 					'typemap'
+		KEYOF = 							'keyof'
+		KEYS_KEYWORD =						'keyset'
+		ALIAS = 							'alias'
+		INTERNAL =							'internal'
+		STATIC_KEYWORD =                    'static'
+		CLASS_KEYWORD = 					'class'
+		AT_SILENT =                         '@silent'
+		AT_QUIET =                          '@quiet'
+		FILE_KEYWORD =                      '@file'
+		DECLARE =                           'declare'
+
+		BLOCK_COMMENT_START = 				'/*'
+		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
+		BLOCK_COMMENT_END =					'*/'
+		BLOCK_COMMENT =             		'regexp:/\*([^*]|\*[^/])*\*/'
+		SINGLE_LINE_COMMENT =       		'regexp://[^\r\n\u2028\u2029]*'
+		LINE_TERMINATOR =					'LINETERMINATOR'
+		SINGLE_QUOTE_STRING	=				"regexp:'([^\\'\r\n]|\\[\\'brfntvuU0])*'"
+		DOUBLE_QUOTE_STRING	= 				'regexp:"([^\\"\r\n]|\\[\\"brfntvuU0])*"'
+		INCOMPLETE_STRING =					'_______INCOM____STRING'
+		INTEGER_LITERAL =					'regexp:[0-9]+'
+		ESCAPED_ID =						'regexp:`\s*[_a-zA-Z][_a-zA-Z0-9]*\s*`'
+		ID = 								'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+	]
+}
+
+defFile ::= fileDirective? fileRootElement*
+
+fileDirective
+    ::= FILE_KEYWORD ':' completionModifier
+    ;
+
+private fileRootElement
+	::= !<<eof>> definition
+	;
+
+private definition
+	::=	module
+	|	interfaceElement
+	|	classElement
+	|	variableDeclaration
+	|	functionDeclaration
+	|	typeMapElement
+	|	typeAlias
+	|	keyList eos?
+	|	';'
+	;
+
+module
+	::= MODULE_KEYWORD namespacedModuleName '{' moduleElements? '}'
+	{
+		pin = 1
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleStub>"
+        ]
+        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleStub"
+		methods = [
+		    getEnclosingNamespaceComponents
+	        getNamespacedName
+			getNamespaceComponents
+			getAllSubModules
+			getEnclosingNamespace
+			getCollapsedNamespaceComponents
+			getNamespaceComponent
+		]
+	}
+	;
+
+private moduleElements
+	::= fileRootElement+
+	{
+		recoverWhile = moduleElements_recover
+	}
+	;
+
+private moduleElements_recover
+	::= !('}')
+	;
+
+variableDeclaration
+	::= completionModifier? variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/<<enterMode "inOuterCompletionModifier">> property <<exitMode "inOuterCompletionModifier">>/*<<exitMode "variableDeclaration">>*/ eos?
+	{
+		pin = 3
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+		]
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
+	    methods = [
+	        isNullable
+	        getPropertyTypes
+	        getPropertyNameString
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+	        getNamespacedName
+	        getNamespaceComponents
+	        getNamespaceComponent
+	        isQuiet
+	        isSilent
+	    ]
+	}
+	;
+private variableDeclarationPrefix
+    ::= 'declare' READONLY
+    |   READONLY 'declare'
+    |   'declare'
+    |   READONLY
+    |
+    ;
+
+functionDeclaration
+	::= <<enterMode "inOuterCompletionModifier">>completionModifier?'declare'? FUNCTION_KEYWORD function eos? <<exitMode "inOuterCompletionModifier">>
+	{
+		pin = 4
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+		]
+		methods = [
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+	        getNamespacedName
+	        getNamespaceComponents
+	        getNamespaceComponent
+	        isStatic
+	        isQuiet
+	        isSilent
+	        getGenericsKeys
+		]
+	}
+	;
+
+keyList
+	::= KEYS_KEYWORD keyName '=' stringLiteral ( '|' stringLiteral)*
+	{
+		pin = 1
+		extends = "cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInModule"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefKeysListStub>"
+	  	]
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefKeysListStub"
+	};
+
+anonymousFunction
+	::= '(' anonymousFunction ')'
+	|	'(' argumentsList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
+	{
+		pin(".*") = 2
+	}
+	;
+
+interfaceElement
+	::= completionModifier? 'interface' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
+	{
+		pin = 2
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+		]
+		stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
+		methods = [
+			//getConstructors
+			getClassName
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+			getNamespaceComponents
+			getNamespaceComponent
+			getNamespacedName
+			isStatic
+			isQuiet
+			isSilent
+			getGenericsKeys
+		]
+	}
+	;
+
+classElement
+	::= completionModifier? 'class' typeName genericTypeTypes? extendsStatement? (interfaceBody | ';')
+	{
+		pin = 2
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+		]
+        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
+		methods = [
+			//getConstructors
+			getClassName
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+	        getNamespaceComponents
+	        getNamespaceComponent
+	        getNamespacedName
+	        isStatic
+			isQuiet
+			isSilent
+			getGenericsKeys
+		]
+	}
+	;
+
+private interfaceBody
+	::= '{' interfaceProperties? '}'
+	{
+		pin = 1
+	}
+	;
+
+interfaceBodyProperty
+	::= interfaceBody
+	{
+		pin = 1
+	}
+	;
+
+private interfaceProperties
+	::= interfaceProperty+
+	{
+		recoverWhile = interfaceProperties_recover
+	}
+	;
+
+private interfaceProperties_recover
+	::= !('}')
+	;
+
+private interfaceProperty
+	::= interfacePropertyPrime (','|eos?)
+	;
+
+private interfacePropertyPrime
+	::= property
+	|	interfaceConstructor
+	|	function
+	| 	namelessFunction
+	;
+
+extendsStatement
+	::= ('extends'|':') typeList
+	{
+		pin = 1
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+	}
+	;
+
+private typeList
+	::= type ("," type)*
+	{
+		pin=2
+	}
+	;
+
+
+
+private types
+	::= type ("|" type)*
+	{
+		pin = 2
+	}
+	;
+
+type
+	::= typeUnion
+	|	arrayType
+	|	typeLeft
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+
+		methods = [
+			getEnclosingGenerics
+		]
+	}
+	;
+
+private typeLeft
+	::= anonymousFunction
+	|	mapType
+	|   qualifiedTypeName
+	| 	typeName genericTypeTypes?
+	|	'null'
+	|	stringLiteral
+	|   VOID
+	;
+
+qualifiedTypeName
+    ::= (typeName '.')+ typeName
+    ;
+
+typeUnion
+	::= typeName typeUnionPrime+
+	{
+		pin=2
+	}
+	;
+
+private typeUnionPrime
+	::= '&' typeName
+	{
+		pin=1
+	}
+	;
+
+keyOfType
+	::= genericsKey KEYOF typeMapName
+	{
+		pin=2
+	}
+	;
+
+mapType
+	::= MAP '<' keyTypes ',' valueTypes '>'
+	{
+	    pin=1
+	}
+	;
+
+typeAlias
+	::= ALIAS typeName '?'? ':' types eos?
+	{
+		pin=1
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+        stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeAliasStub"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInModule"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+		methods = [
+			getTypesList
+			getTypeNameString
+		]
+	}
+	;
+
+keyTypes ::= types
+
+valueTypes ::= types
+
+typeMapElement
+	::= TYPE_MAP_KEYWORD typeMapName extendsStatement? '{' typeMapBody? '}'
+	{
+		pin = 1
+		extends = "cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInModule"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeMapStub>"
+	  	]
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefTypeMapStub"
+	  	methods = [
+	  		getMapName
+	  		getKeys
+	  		getTypesForKey
+	  		getKeyValuePairs
+	  	]
+	}
+	;
+
+private typeMapBody
+	::= keyValuePair+
+	{
+		recoverWhile = typeMapBody_recover
+	}
+	;
+
+private typeMapBody_recover
+	::= !("}")
+	;
+
+keyValuePair
+	::= stringLiteral ':' types eos
+	{
+	    pin = 2
+		methods = [
+			getKey
+			getTypesList
+			isNullable
+		]
+	}
+	;
+genericTypeTypes
+	::= '<' genericsTypeList '>'
+	{
+		pin = 1
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+		methods = [
+			asJsTypeListGenericType
+		]
+	}
+	;
+
+private genericsTypeList
+	::= genericTypesType (',' genericTypesType)*
+	{
+		recoverWhile=genericsTypeList_recover
+	}
+	;
+
+private genericsTypeList_recover
+	::= !(">")
+	;
+
+
+genericTypesType
+	::= genericsKeyWithType
+	|	valueOfKeyType
+	|	types
+	|	VOID
+	;
+
+private genericsKeyWithType
+	::= genericsKey (':'|'=') types
+	{
+		pin=2
+	}
+	;
+
+private arrayGenericTypeTypes
+	::= '<' types '>'
+	{
+		pin = 1
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoNull"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+		]
+	}
+	;
+
+arrayType
+	::= arrayTypes arrayLimit?
+	{
+		pin = 1
+	}
+	;
+
+arrayLimit
+    ::= '{' integer '}'
+    ;
+
+private arrayTypes
+	::= arrayTypeInParens
+	|	arrayTypeSimple
+	|	arrayTypeWithArrayKeyword
+	;
+
+private arrayTypeWithArrayKeyword
+	::= ARRAY arrayDimensions? arrayGenericTypeTypes
+	{
+		pin=1
+	}
+	;
+
+private arrayTypeInParens
+	::='(' types ')' arrayDimensions
+	{
+		pin=4
+	}
+	;
+
+private arrayTypeSimple
+	::= typeLeft arrayDimensions
+	{
+		pin=2
+	}
+	;
+
+arrayDimensions
+	::= ('[' ']')+
+	|	'[' integer ']'
+	{
+	    pin(".*")=2
+	}
+	;
+
+interfaceConstructor
+	::= CONST '(' argumentsList? ')'
+	{
+	    pin=1
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNotInInterface"
+	}
+	;
+
+function
+	::= (<<notInMode "inOuterCompletionModifier">>completionModifier)? 'static'? functionName genericTypeTypes?'(' argumentsList? ')' (':' functionReturnType)?
+	{
+		pin = 4
+		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+	    methods = [
+	        isNullableReturnType
+	        getNamespacedName
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+	        getNamespaceComponents
+	        getNamespaceComponent
+	        isStatic
+	        getFunctionNameString
+	        getDescription
+	        isQuiet
+	        isSilent
+	        getGenericsKeys
+		]
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
+	  	]
+	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub"
+	}
+	;
+
+namelessFunction
+	::= '(' argumentsList? ')' (':' functionReturnType)?
+	{
+		pin=2
+	}
+	;
+
+functionName
+	::= CONST
+	|	ESCAPED_ID
+	|	ID
+	|	KEYOF
+	|	KEYS_KEYWORD
+	|	MAP
+	|	ARRAY
+	|   'declare'
+	|	'extends'
+	|	'module'
+	|	'alias'
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+		]
+		methods = [
+			getName
+			setName
+	        getNamespacedName
+			getEnclosingNamespace
+			getEnclosingNamespaceComponents
+	        getNamespaceComponents
+	        getNamespaceComponent
+		]
+
+	}
+	;
+
+argumentsList
+	::= argument (',' argument)*
+	{
+		pin=2
+		methods = [
+	        arguments = "argument"
+		]
+		recoverWhile=argumentsList_recover
+	}
+	;
+
+private argumentsList_recover
+    ::= !(')')
+    ;
+
+argument
+	::= '...'? propertyName '?'? ':' (keyOfType|valueOfKeyType|types|interfaceBodyProperty)
+	{
+		pin=2
+		methods = [
+			getVarArgs
+		    isNullable
+	        getArgumentNameString
+        ]
+	}
+	;
+
+
+property
+	::= propertyElement
+	| 	propertyAccess
+	{
+	extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+    	    methods = [
+    	        isNullable
+    	        getPropertyTypes
+    	        getPropertyNameString
+    			getEnclosingNamespace
+    			getEnclosingNamespaceComponents
+    	        getNamespacedName
+    	        getNamespaceComponents
+    	        getNamespaceComponent
+    	        isStatic
+    	        isQuiet
+    	        isSilent
+    	    ]
+    		implements = [
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyMapReturn"
+    			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub>"
+    	  	]
+    	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub"
+	}
+	;
+
+
+private propertyElement
+	::= (<<notInMode "inOuterCompletionModifier">>completionModifier)? readonlyStatic?  propertyName ('?'? ':') (types|interfaceBodyProperty|stringLiteral)
+	{
+	    pin = 4
+
+	}
+	;
+
+propertyAccess
+	::= readonlyStatic? '[' propertyName ':' typeName ']' ':' types
+	{
+		pin=3
+	}
+	;
+
+private readonlyStatic
+    ::= READONLY STATIC_KEYWORD
+    |   STATIC_KEYWORD READONLY
+    |   STATIC_KEYWORD
+    |   READONLY
+    ;
+
+propertyName
+	::= stringLiteral
+	|	ESCAPED_ID
+	|	ID
+	|	KEYOF
+	|	KEYS_KEYWORD
+	|	MAP
+	|   'declare'
+	|   ARRAY
+	|	'extends'
+	|	'module'
+	|	'alias'
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		]
+		methods = [
+			getName
+			setName
+		]
+	}
+	;
+
+functionReturnType
+	::= (valueOfKeyType|types|VOID)
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyOfTypes"
+		]
+	    methods = [
+	        isNullable
+	    ]
+	}
+	;
+
+valueOfKeyType
+	::= typeMapName '[' genericsKey ']'
+	{
+		pin = 3
+	}
+	;
+
+typeName
+	::= ID
+	|	ARRAY
+	|	MAP
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		]
+		methods = [
+			getReference
+			getName
+			setName
+		]
+	}
+	;
+
+namespacedModuleName
+	::= namespace moduleName
+	;
+
+namespace
+    ::= (moduleName '.')*
+    ;
+
+moduleName
+	::= ID
+	{
+		extends = "cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleNameStub>"
+		]
+		stubClass = "cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleNameStub"
+		methods = [
+			getName
+			setName
+			getNamespaceComponent
+			getNamespaceComponents
+			getNamespacedName
+			getEnclosingNamespaceComponents
+			getEnclosingNamespace
+			getIndexInDirectNamespace
+			getIndexInNamespace
+			getFullyNamespacedName
+	        getReference
+		]
+	}
+	;
+
+typeMapName
+	::= ID
+	{
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		methods = [
+	        getReference
+	        getName
+	        setName
+		]
+	}
+	;
+
+genericsKey
+	::= ID
+	{
+		implements = "cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
+		methods = [
+			getReference
+			getName
+			setName
+		]
+	}
+	;
+
+stringLiteral
+	::= SINGLE_QUOTE_STRING
+	|	DOUBLE_QUOTE_STRING
+	{
+		methods = [
+			getStringValue
+		]
+	}
+	;
+
+private completionModifier
+    ::= AT_SILENT
+    |   AT_QUIET
+    ;
+
+integer
+	::= INTEGER_LITERAL
+	;
+
+keyName ::= ID ;
+
+private eos
+	::= LINE_TERMINATOR ';'?
+	|	<<lineTerminatorAhead>> ';'?
+	| 	';'
+	;

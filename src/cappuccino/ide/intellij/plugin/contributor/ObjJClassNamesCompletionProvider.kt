@@ -11,7 +11,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.NoIndex
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -121,11 +121,11 @@ object ObjJClassNamesCompletionProvider {
      * Determines whether or not an implementation declaration is ignored
      */
     private fun isIgnoredImplementationDeclaration(element: PsiElement, declaration: ObjJImplementationDeclaration): Boolean {
-        return ObjJIgnoreEvaluatorUtil.isIgnored(declaration) ||
-                ObjJIgnoreEvaluatorUtil.shouldIgnoreUnderscore(element) ||
-                ObjJIgnoreEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS) ||
-                ObjJIgnoreEvaluatorUtil.noIndex(declaration, NoIndex.CLASS) ||
-                ObjJIgnoreEvaluatorUtil.noIndex(declaration, NoIndex.ANY)
+        return ObjJCommentEvaluatorUtil.isIgnored(declaration) ||
+                ObjJCommentEvaluatorUtil.shouldIgnoreUnderscore(element) ||
+                ObjJCommentEvaluatorUtil.isIgnored(element, ObjJSuppressInspectionFlags.IGNORE_CLASS) ||
+                ObjJCommentEvaluatorUtil.noIndex(declaration, NoIndex.CLASS) ||
+                ObjJCommentEvaluatorUtil.noIndex(declaration, NoIndex.ANY)
     }
 
     /**

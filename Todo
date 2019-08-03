@@ -1,1 +1,3 @@
-Clear methods to allow for assumed global variables. Keep nesting only one level from root. Ignore resolved variables.
+Merge CPString and string in js type results
+Take Null parameter out of service and apply a '?' to the property name
+Fix method call completions to force selectors matching previous. Right now all selectors are suggested, limit it to those that came before

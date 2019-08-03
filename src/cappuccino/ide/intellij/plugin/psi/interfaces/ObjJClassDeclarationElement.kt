@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
 
 interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : ObjJStubBasedElement<StubT>, ObjJIsOfClassType, ObjJHasProtocolList, ObjJCompositeElement, ObjJResolveableElement<StubT> {
 
@@ -12,6 +13,8 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
     val internalMethodHeaders : List<ObjJMethodHeader>
 
     fun getMethodHeaders(internalOnly:Boolean) : List<ObjJMethodHeader>
+
+    fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct>
 
     fun getAccessors(internalOnly: Boolean) : List<ObjJAccessorProperty>
 

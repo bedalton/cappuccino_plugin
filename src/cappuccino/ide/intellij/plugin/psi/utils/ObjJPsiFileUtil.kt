@@ -3,11 +3,15 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement
-import cappuccino.ide.intellij.plugin.utils.frameworkName
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
+import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
@@ -18,7 +22,7 @@ object ObjJPsiFileUtil {
      * Gets containing file name in a safe way
      * @todo see if file name does need to be safely retrieved
      */
-    fun getContainingFileName(psiElement: PsiElement?): String? {
+    fun getContainingFileName(psiElement: PsiElement?): String {
         return getFileNameSafe(psiElement?.containingFile)
     }
 
@@ -28,9 +32,9 @@ object ObjJPsiFileUtil {
      * might still be necessary though
      */
     @JvmOverloads
-    fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String? = null, includePath: Boolean = false): String? {
+    fun getFileNameSafe(psiFile: PsiFile?, defaultValue: String? = null, includePath: Boolean = false): String {
         if (psiFile == null) {
-            return defaultValue
+            return defaultValue ?: ""
         }
 
         if (!includePath) {
@@ -41,24 +45,23 @@ object ObjJPsiFileUtil {
             psiFile.virtualFile.path
         }
         val fileName = psiFile.name
-        return if (fileName.isNotEmpty()) fileName else defaultValue
+        return if (fileName.isNotEmpty()) fileName else defaultValue ?: ""
     }
 
     /**
      * Checks if a given file is a definition element
      */
     fun isDefinitionElement(psiElement: PsiElement): Boolean {
-        return getFileNameSafe(psiElement.containingFile)?.endsWith(".d.j") == true
+        return getFileNameSafe(psiElement.containingFile).endsWith(".d.j")
     }
 
     fun getImportedClassNames(fileIn:ObjJFile) : List<String> {
-        val out = fileIn.getImportedFiles(
+        return fileIn.getImportedFiles(
                 recursive = true,
                 cache = true
-        ).flatMap {file ->
+        ).flatMap { file ->
             file.classDeclarations.map { it.classNameString }
         }
-        return out
     }
 }
 
@@ -89,7 +92,7 @@ fun sharesSameFile(element1: PsiElement?, element2: PsiElement?): Boolean {
 /**
  * Helper extension function to get containing file name from any element
  */
-val PsiElement.containingFileName: String?
+val PsiElement.containingFileName: String
     get() = ObjJPsiFileUtil.getContainingFileName(this)
 
 
@@ -186,7 +189,7 @@ fun collectImports(psiFile: PsiFile): Collection<ObjJImportIncludeStatement> {
 }
 
 val PsiFile.fileNameAsImportString:String get(){
-    val frameworkName:String = frameworkName
+    val frameworkName:String = (this as? ObjJFile)?.frameworkName ?: ObjJFrameworkUtils.getEnclosingFrameworkName(this)
     val fileName = name
     return "<$frameworkName/$fileName>"
 }
@@ -197,4 +200,58 @@ fun <PsiT:PsiElement>PsiFile.collectElementsOfType(classType:Class<PsiT>) : List
     }.mapNotNull {
         classType.cast(it)
     }
+}
+
+fun collectImports(thisFile:ObjJFile, collected:MutableList<ObjJImportInfoStub>) : List<ObjJImportInfoStub> {
+    val uniqueImports = thisFile.importedFiles.toSet().minus(collected.toSet())
+    for (import in uniqueImports) {
+        collected.add(import)
+        val anImportedFile = import.getPsiFile(thisFile.project) ?: continue
+        collected.addAll(collectImports(anImportedFile, collected))
+    }
+    return collected
+}
+
+
+fun isImported(thisFile:ObjJFile, import:ObjJImportInfoStub, searched:MutableList<ObjJImportInfoStub> = mutableListOf()) : Boolean {
+    val project = thisFile.project
+    val thisImports = thisFile.importedFiles.toSet()
+    if (import in thisImports)
+        return true
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        searched.add(anImport)
+        val importedFile = anImport.getPsiFile(project)
+        if (importedFile != null && isImported(importedFile, import, searched)) {
+            return true
+        }
+    }
+    return false
+}
+
+fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf()) : Boolean {
+    val project:Project = thisFile.project
+    val thisImports = thisFile.importedFiles.toSet()
+    if (thisImports.intersect(imports).isNotEmpty())
+        return true
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        searched.add(anImport)
+        val importedFile = anImport.getPsiFile(project) ?: continue
+        if (hasImportedAny(importedFile, imports, searched))
+            return true
+    }
+    return false
+}
+
+fun ObjJImportInfoStub.getPsiFile(project: Project) : ObjJFile? {
+    if (fileName == null)
+        return null
+    val filesWithName = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project))
+    for(file in filesWithName) {
+        if (file is ObjJFile && framework == file.frameworkName) {
+            return file
+        }
+    }
+    return null
 }

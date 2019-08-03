@@ -46,7 +46,6 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
             return ResolveResult.EMPTY_ARRAY
         }
         val project = myElement.project
-        ProgressIndicatorProvider.checkCanceled()
         if (DumbService.isDumb(project)) {
             return ResolveResult.EMPTY_ARRAY
         }

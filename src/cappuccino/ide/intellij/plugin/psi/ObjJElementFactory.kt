@@ -10,12 +10,12 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import com.intellij.openapi.diagnostic.Logger
 
 import java.util.ArrayList
-import java.util.logging.Logger
 
 object ObjJElementFactory {
-    private val LOGGER = Logger.getLogger(ObjJElementFactory::class.java.name)
+    private val LOGGER = Logger.getInstance(ObjJElementFactory::class.java)
     const val PlaceholderClassName = "_XXX__"
 
     fun createClassName(project:Project, className:String) : ObjJClassName? {
@@ -39,7 +39,7 @@ object ObjJElementFactory {
 
     fun createFunctionName(project: Project, functionName: String): ObjJFunctionName? {
         val scriptText = String.format("function %s(){}", functionName)
-        //LOGGER.log(Level.INFO, "Script text: <$scriptText>")
+        ////LOGGER.info("Script text: <$scriptText>")
         val file = createFileFromText(project, scriptText)
         val functionDeclaration = file.getChildOfType( ObjJFunctionDeclaration::class.java)
         return functionDeclaration!!.functionName
@@ -67,7 +67,7 @@ object ObjJElementFactory {
             for (child in file.children) {
                 childElementTypes.add(child.node.elementType.toString())
             }
-            //LOGGER.log(Level.INFO, "createSemiColonErrorElement(Project project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
+            ////LOGGER.info("createSemiColonErrorElement(Project project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
         }
         return errorElement
     }
@@ -168,16 +168,32 @@ object ObjJElementFactory {
 
     fun createMethodReturnTypeElement(project: Project, returnType:String) : ObjJMethodHeaderReturnTypeElement {
         val script = """
-            @implementation XX
-            +($returnType) sel1 {
-                return;
-            }
+            @protocol XX
+            +($returnType) sel1;
             @end
         """.trimIndent()
         val file = createFileFromText(project, script)
-        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.classDeclarations.getOrNull(0)?.internalMethodHeaders?.getOrNull(0)?.methodHeaderReturnTypeElement
+        val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.getChildOfType(ObjJProtocolDeclaration::class.java)?.getChildOfType(ObjJMethodHeader::class.java)?.methodHeaderReturnTypeElement
         com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
         return returnTypeElement!!
+    }
+
+    fun createImportFileElement(project:Project, fileName:String) : PsiElement {
+        if (fileName.isEmpty())
+            throw Exception("Cannot create import element with empty filename")
+        val script = "@import \"$fileName\""
+        val file = createFileFromText(project, script)
+        return file.firstChild.firstChild ?: throw Exception("Import filename element should not be null")
+    }
+
+    fun createImportFrameworkFileElement(project:Project, frameworkName:String, fileName:String) : PsiElement {
+        if (frameworkName.isEmpty())
+            throw Exception("Cannot create import element with empty framework name")
+        if (fileName.isEmpty())
+            throw Exception("Cannot create import element with empty file name")
+        val script = "@import <$frameworkName/$fileName>".trimIndent()
+        val file = createFileFromText(project, script)
+        return file.firstChild.firstChild ?: throw Exception("Import framework element should not be null")
     }
 
 }

@@ -1,24 +1,16 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.*
 import cappuccino.ide.intellij.plugin.fixes.*
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.references.ObjJIgnoreEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.*
-import com.intellij.openapi.project.DumbService
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
 class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool() {
@@ -58,8 +50,9 @@ class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool()
                 return
             }
 
+            val project = variableNameIn.project
             val text = variableNameIn.text
-            if (text in ObjJGlobalJSVariablesNames || text in globalJsFunctionNames || text in globalJsClassNames)
+            if (JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(text, project) || JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(text, project) || JsTypeDefClassesByNameIndex.instance.containsKey(text, project))
                 return
             if (ObjJPluginSettings.isIgnoredVariableName(variableNameIn.text)) {
                 problemsHolder.registerProblem(

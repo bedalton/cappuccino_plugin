@@ -15,6 +15,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 
 object EditorUtil {
@@ -36,9 +38,15 @@ object EditorUtil {
         }
     }
 
+    fun deleteText(document:Document, range: TextRange) {
+        com.intellij.openapi.application.runWriteAction {
+            document.deleteString(range.startOffset, range.endOffset)
+        }
+    }
+
     fun isTextAtOffset(context: InsertionContext, text: String): Boolean {
         if (context.selectionEndOffset == context.document.textLength) {
-            return true
+            return false
         }
         val range = TextRange.create(context.selectionEndOffset, context.selectionEndOffset + text.length)
         return isTextAtOffset(context.document, range, text)
@@ -122,6 +130,9 @@ object EditorUtil {
         return tabSize
     }
 
+    fun formatRange(file:PsiFile, textRange: TextRange) {
+        CodeStyleManager.getInstance(file.project).reformatTextWithContext(file, listOf(textRange))
+    }
 }
 
 val PsiElement.document : Document? get() {

@@ -2,17 +2,21 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toInferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
-internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSClass? {
+
+internal fun objJClassAsJsClass(project: Project, className: String): JsClassDefinition? {
     if (DumbService.isDumb(project))
         return null
     val implementations = ObjJImplementationDeclarationsIndex.instance[className, project]
-    val properties: MutableList<JsNamedProperty> = mutableListOf()
+    val properties: MutableList<JsTypeDefNamedProperty> = mutableListOf()
     val extends = mutableListOf<String>()
     for (objClass in implementations) {
         //ProgressManager.checkCanceled()
@@ -21,7 +25,7 @@ internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSCla
             extends.add(superClassName)
         extends.addAll(objClass.getInheritedProtocols())
         for (instanceVar in objClass.instanceVariableList?.instanceVariableDeclarationList ?: emptyList()) {
-           val property = instanceVar.toJsProperty() ?: continue
+            val property = instanceVar.toJsProperty() ?: continue
             properties.add(property)
         }
     }
@@ -36,17 +40,17 @@ internal fun objJClassAsJsClass(project:Project, className:String) : GlobalJSCla
     }
     if (protocols.isEmpty() && implementations.isEmpty())
         return null
-    return GlobalJSClass(
+    return JsClassDefinition(
             className = className,
-            properties = properties.toSet().toList(),
-            extends = extends.toSet().toList(),
+            properties = properties.toSet(),
+            extends = (extends.map { JsTypeListType.JsTypeListBasicType(it) } ).toSet(),
             isObjJ = true,
             isStruct = false,
             static = false
     )
 }
 
-private fun ObjJInstanceVariableDeclaration.toJsProperty() : JsNamedProperty? {
+private fun ObjJInstanceVariableDeclaration.toJsProperty(): JsTypeDefNamedProperty? {
     val propertyName = this.variableName?.text ?: return null
     val formalVariableType = this.formalVariableType
     val type = if (this.formalVariableType.varTypeId?.className != null)
@@ -60,13 +64,12 @@ private fun ObjJInstanceVariableDeclaration.toJsProperty() : JsNamedProperty? {
             else -> typeName
         }
     }
-    return JsNamedProperty(
+    return JsTypeDefNamedProperty(
             name = propertyName,
-            type = type,
-            isPublic = !(propertyName.startsWith("_") && ObjJPluginSettings.ignoreUnderscoredClasses),
-            nullable = true,
-            deprecated = false,
-            ignore = false,
-            readonly = false
+            readonly = false,
+            static = false,
+            comment = null,
+            types = listOf(type).toInferenceResult()
     )
 }
+

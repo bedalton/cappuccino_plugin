@@ -1,0 +1,307 @@
+
+
+typemap WindowEventMap extends GlobalEventHandlersEventMap, WindowEventHandlersEventMap {
+    "abort": UIEvent;
+    "afterprint": Event;
+    "beforeprint": Event;
+    "beforeunload": BeforeUnloadEvent;
+    "blur": FocusEvent;
+    "canplay": Event;
+    "canplaythrough": Event;
+    "change": Event;
+    "click": MouseEvent;
+    "compassneedscalibration": Event;
+    "contextmenu": MouseEvent;
+    "dblclick": MouseEvent;
+    "devicelight": DeviceLightEvent;
+    "devicemotion": DeviceMotionEvent;
+    "deviceorientation": DeviceOrientationEvent;
+    "drag": DragEvent;
+    "dragend": DragEvent;
+    "dragenter": DragEvent;
+    "dragleave": DragEvent;
+    "dragover": DragEvent;
+    "dragstart": DragEvent;
+    "drop": DragEvent;
+    "durationchange": Event;
+    "emptied": Event;
+    "ended": Event;
+    "error": ErrorEvent;
+    "focus": FocusEvent;
+    "hashchange": HashChangeEvent;
+    "input": Event;
+    "invalid": Event;
+    "keydown": KeyboardEvent;
+    "keypress": KeyboardEvent;
+    "keyup": KeyboardEvent;
+    "load": Event;
+    "loadeddata": Event;
+    "loadedmetadata": Event;
+    "loadstart": Event;
+    "message": MessageEvent;
+    "mousedown": MouseEvent;
+    "mouseenter": MouseEvent;
+    "mouseleave": MouseEvent;
+    "mousemove": MouseEvent;
+    "mouseout": MouseEvent;
+    "mouseover": MouseEvent;
+    "mouseup": MouseEvent;
+    "mousewheel": Event;
+    "MSGestureChange": Event;
+    "MSGestureDoubleTap": Event;
+    "MSGestureEnd": Event;
+    "MSGestureHold": Event;
+    "MSGestureStart": Event;
+    "MSGestureTap": Event;
+    "MSInertiaStart": Event;
+    "MSPointerCancel": Event;
+    "MSPointerDown": Event;
+    "MSPointerEnter": Event;
+    "MSPointerLeave": Event;
+    "MSPointerMove": Event;
+    "MSPointerOut": Event;
+    "MSPointerOver": Event;
+    "MSPointerUp": Event;
+    "offline": Event;
+    "online": Event;
+    "orientationchange": Event;
+    "pagehide": PageTransitionEvent;
+    "pageshow": PageTransitionEvent;
+    "pause": Event;
+    "play": Event;
+    "playing": Event;
+    "popstate": PopStateEvent;
+    "progress": ProgressEvent;
+    "ratechange": Event;
+    "readystatechange": ProgressEvent;
+    "reset": Event;
+    "resize": UIEvent;
+    "scroll": Event;
+    "seeked": Event;
+    "seeking": Event;
+    "select": Event;
+    "stalled": Event;
+    "storage": StorageEvent;
+    "submit": Event;
+    "suspend": Event;
+    "timeupdate": Event;
+    "unload": Event;
+    "volumechange": Event;
+    "vrdisplayactivate": Event;
+    "vrdisplayblur": Event;
+    "vrdisplayconnect": Event;
+    "vrdisplaydeactivate": Event;
+    "vrdisplaydisconnect": Event;
+    "vrdisplayfocus": Event;
+    "vrdisplaypointerrestricted": Event;
+    "vrdisplaypointerunrestricted": Event;
+    "vrdisplaypresentchange": Event;
+    "waiting": Event;
+}
+
+/** The Window interface represents a window containing a DOM document; the document property points to the DOM document loaded in that window. */
+class Window extends EventTarget, WindowTimers, WindowSessionStorage, WindowLocalStorage, WindowConsole, GlobalEventHandlers, IDBEnvironment, WindowBase64, GlobalFetch, WindowOrWorkerGlobalScope, WindowEventHandlers {
+    new();
+    Blob: Blob;
+    URL: URL;
+    URLSearchParams: URLSearchParams;
+    readonly applicationCache: ApplicationCache;
+    readonly caches: CacheStorage;
+    readonly clientInformation: Navigator;
+    readonly closed: boolean;
+    readonly crypto: Crypto;
+    customElements: CustomElementRegistry;
+    defaultStatus: string;
+    readonly devicePixelRatio: number;
+    readonly doNotTrack: string;
+    readonly document: Document;
+    /** @deprecated */
+    readonly event: Event | undefined;
+    /** @deprecated */
+    readonly external: External;
+    readonly frameElement: Element;
+    readonly frames: Window;
+    readonly history: History;
+    readonly innerHeight: number;
+    readonly innerWidth: number;
+    readonly isSecureContext: boolean;
+    readonly length: number;
+    location: Location;
+    readonly locationbar: BarProp;
+    readonly menubar: BarProp;
+    readonly msContentScript: ExtensionScriptApis;
+    name: string;
+    readonly navigator: Navigator;
+    offscreenBuffering: string | boolean;
+    oncompassneedscalibration: ((this: Window, ev: Event) => any) | null;
+    ondevicelight: ((this: Window, ev: DeviceLightEvent) => any) | null;
+    ondevicemotion: ((this: Window, ev: DeviceMotionEvent) => any) | null;
+    ondeviceorientation: ((this: Window, ev: DeviceOrientationEvent) => any) | null;
+    onmousewheel: ((this: Window, ev: Event) => any) | null;
+    onmsgesturechange: ((this: Window, ev: Event) => any) | null;
+    onmsgesturedoubletap: ((this: Window, ev: Event) => any) | null;
+    onmsgestureend: ((this: Window, ev: Event) => any) | null;
+    onmsgesturehold: ((this: Window, ev: Event) => any) | null;
+    onmsgesturestart: ((this: Window, ev: Event) => any) | null;
+    onmsgesturetap: ((this: Window, ev: Event) => any) | null;
+    onmsinertiastart: ((this: Window, ev: Event) => any) | null;
+    onmspointercancel: ((this: Window, ev: Event) => any) | null;
+    onmspointerdown: ((this: Window, ev: Event) => any) | null;
+    onmspointerenter: ((this: Window, ev: Event) => any) | null;
+    onmspointerleave: ((this: Window, ev: Event) => any) | null;
+    onmspointermove: ((this: Window, ev: Event) => any) | null;
+    onmspointerout: ((this: Window, ev: Event) => any) | null;
+    onmspointerover: ((this: Window, ev: Event) => any) | null;
+    onmspointerup: ((this: Window, ev: Event) => any) | null;
+    /** @deprecated */
+    onorientationchange: ((this: Window, ev: Event) => any) | null;
+    onreadystatechange: ((this: Window, ev: ProgressEvent) => any) | null;
+    onvrdisplayactivate: ((this: Window, ev: Event) => any) | null;
+    onvrdisplayblur: ((this: Window, ev: Event) => any) | null;
+    onvrdisplayconnect: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaydeactivate: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaydisconnect: ((this: Window, ev: Event) => any) | null;
+    onvrdisplayfocus: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaypointerrestricted: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaypointerunrestricted: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaypresentchange: ((this: Window, ev: Event) => any) | null;
+    opener: any;
+    /** @deprecated */
+    readonly orientation: string | number;
+    readonly outerHeight: number;
+    readonly outerWidth: number;
+    readonly pageXOffset: number;
+    readonly pageYOffset: number;
+    readonly parent: Window;
+    readonly performance: Performance;
+    readonly personalbar: BarProp;
+    readonly screen: Screen;
+    readonly screenLeft: number;
+    readonly screenTop: number;
+    readonly screenX: number;
+    readonly screenY: number;
+    readonly scrollX: number;
+    readonly scrollY: number;
+    readonly scrollbars: BarProp;
+    readonly self: Window;
+    readonly speechSynthesis: SpeechSynthesis;
+    status: string;
+    readonly statusbar: BarProp;
+    readonly styleMedia: StyleMedia;
+    readonly toolbar: BarProp;
+    readonly top: Window;
+    readonly window: Window;
+    alert(message?: any): void;
+    blur(): void;
+    cancelAnimationFrame(handle: number): void;
+    /** @deprecated */
+    captureEvents(): void;
+    close(): void;
+    confirm(message?: string): boolean;
+    departFocus(navigationReason: NavigationReason, origin: FocusNavigationOrigin): void;
+    focus(): void;
+    getComputedStyle(elt: Element, pseudoElt?: string | null): CSSStyleDeclaration;
+    getMatchedCSSRules(elt: Element, pseudoElt?: string | null): CSSRuleList;
+    getSelection(): Selection | null;
+    matchMedia(query: string): MediaQueryList;
+    moveBy(x: number, y: number): void;
+    moveTo(x: number, y: number): void;
+    msWriteProfilerMark(profilerMarkName: string): void;
+    open(url?: string, target?: string, features?: string, replace?: boolean): Window | null;
+    postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
+    print(): void;
+    prompt(message?: string, _default?: string): string | null;
+    /** @deprecated */
+    releaseEvents(): void;
+    requestAnimationFrame(callback: FrameRequestCallback): number;
+    resizeBy(x: number, y: number): void;
+    resizeTo(x: number, y: number): void;
+    scroll(options?: ScrollToOptions): void;
+    scroll(x: number, y: number): void;
+    scrollBy(options?: ScrollToOptions): void;
+    scrollBy(x: number, y: number): void;
+    scrollTo(options?: ScrollToOptions): void;
+    scrollTo(x: number, y: number): void;
+    stop(): void;
+    webkitCancelAnimationFrame(handle: number): void;
+    webkitConvertPointFromNodeToPage(node: Node, pt: WebKitPoint): WebKitPoint;
+    webkitConvertPointFromPageToNode(node: Node, pt: WebKitPoint): WebKitPoint;
+    webkitRequestAnimationFrame(callback: FrameRequestCallback): number;
+    addEventListener(type: K keyof WindowEventMap, listener: (this: Window, ev: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof WindowEventMap, listener: (this: Window, ev: WindowEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface WindowBase64 {
+    atob(encodedString: string): string;
+    btoa(rawString: string): string;
+}
+
+interface WindowConsole {
+    readonly console: Console;
+}
+
+typemap WindowEventHandlersEventMap {
+    "afterprint": Event;
+    "beforeprint": Event;
+    "beforeunload": BeforeUnloadEvent;
+    "hashchange": HashChangeEvent;
+    "languagechange": Event;
+    "message": MessageEvent;
+    "messageerror": MessageEvent;
+    "offline": Event;
+    "online": Event;
+    "pagehide": PageTransitionEvent;
+    "pageshow": PageTransitionEvent;
+    "popstate": PopStateEvent;
+    "rejectionhandled": Event;
+    "storage": StorageEvent;
+    "unhandledrejection": PromiseRejectionEvent;
+    "unload": Event;
+}
+
+interface WindowEventHandlers {
+    onafterprint: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    onbeforeprint: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    onbeforeunload: ((this: WindowEventHandlers, ev: BeforeUnloadEvent) => any) | null;
+    onhashchange: ((this: WindowEventHandlers, ev: HashChangeEvent) => any) | null;
+    onlanguagechange: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    onmessage: ((this: WindowEventHandlers, ev: MessageEvent) => any) | null;
+    onmessageerror: ((this: WindowEventHandlers, ev: MessageEvent) => any) | null;
+    onoffline: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    ononline: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    onpagehide: ((this: WindowEventHandlers, ev: PageTransitionEvent) => any) | null;
+    onpageshow: ((this: WindowEventHandlers, ev: PageTransitionEvent) => any) | null;
+    onpopstate: ((this: WindowEventHandlers, ev: PopStateEvent) => any) | null;
+    onrejectionhandled: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    onstorage: ((this: WindowEventHandlers, ev: StorageEvent) => any) | null;
+    onunhandledrejection: ((this: WindowEventHandlers, ev: PromiseRejectionEvent) => any) | null;
+    onunload: ((this: WindowEventHandlers, ev: Event) => any) | null;
+    addEventListener(type: K keyof WindowEventHandlersEventMap, listener: (this: WindowEventHandlers, ev: WindowEventHandlersEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: K keyof WindowEventHandlersEventMap, listener: (this: WindowEventHandlers, ev: WindowEventHandlersEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+interface WindowOrWorkerGlobalScope {
+    readonly caches: CacheStorage;
+    readonly crypto: Crypto;
+    readonly indexedDB: IDBFactory;
+    readonly origin: string;
+    readonly performance: Performance;
+    atob(data: string): string;
+    btoa(data: string): string;
+    clearInterval(handle?: number): void;
+    clearTimeout(handle?: number): void;
+    createImageBitmap(image: ImageBitmapSource): Promise<ImageBitmap>;
+    createImageBitmap(image: ImageBitmapSource, sx: number, sy: number, sw: number, sh: number): Promise<ImageBitmap>;
+    fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
+    queueMicrotask(callback: Function): void;
+    setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
+    setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
+}
+
+
+interface WindowTimers {
+}

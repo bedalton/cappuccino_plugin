@@ -1,29 +1,13 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.contributor.globalJsClassNames
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-
-fun PsiElement.getContainingComment() : PsiElement? {
-    var parentNode:ASTNode? = this.node
-    // Loop through parent nodes checking if previous node is a comment node
-    while(parentNode != null) {
-        // Get previous node
-        val prevNode = parentNode.getPreviousNonEmptyNode(true)
-        // Check if prev node is comment
-        if (prevNode != null && prevNode.elementType in ObjJTokenSets.COMMENTS) {
-            return prevNode.psi
-        }
-        // Get parent element for checking prev node
-        parentNode = parentNode.treeParent
-    }
-    return null
-}
 
 fun PsiElement.getContainingComments() : List<String> {
     val out:MutableList<String> = mutableListOf()
@@ -67,6 +51,7 @@ private val newLineRegex = "\n".toRegex()
 /**
  * Wrapper class for organizing and parsing doc comments
  */
+@Suppress("MemberVisibilityCanBePrivate")
 data class CommentWrapper(val commentText:String) {
     private val lines:List<String> by lazy {
         commentText.split(newLineRegex)
@@ -98,8 +83,6 @@ data class CommentWrapper(val commentText:String) {
             null
         }
     }
-
-    private var returnTypes:Set<String>? = null
 
     fun getReturnTypes(project: Project):Set<String>? {
         return returnParameterComment?.getTypes(project)
@@ -141,7 +124,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
     }
 
     val paramCommentFormatted:String? by lazy {
-        val pattern = """\s*\\c\s+([^ \$]+)""".toRegex()
+        val pattern = """\s*\\c\s+([^ $]+)""".toRegex()
         paramCommentIn?.replace(pattern) {
             "<strong>$it</strong>"
         }
@@ -165,14 +148,6 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
     }
 
     /**
-     * Gets the first class type found in comment
-     */
-    private fun getType(project:Project) : String? {
-        val classMatches = getTypes(project, ClassMatchType.OBJJ) ?: getTypes(project, ClassMatchType.JS) ?: return null
-        return classMatches.firstOrNull()
-    }
-
-    /**
      * Gets class types if matching, null otherwise
      */
     fun getTypes(project:Project, matchTypeFilter:ClassMatchType? = null):Set<String>? {
@@ -185,7 +160,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
             emptySet()
 
         val jsClasses = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.JS)
-            globalJsClassNames.withoutAnyType().toSet()
+            JsTypeDefClassesByNamespaceIndex.instance.getAllKeys(project).toSet()
         else
             emptySet()
 
@@ -221,18 +196,17 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
     }
 }
 
-val jsTypesMinusCPPrefix by lazy { globalJsClassNames.map { it.removePrefix("CP").removePrefix("CF")} }
+fun jsTypesMinusCPPrefix(jsClassNames:Set<String>):Set<String>
+        = jsClassNames.map { it.removePrefix("CP").removePrefix("CF")}.toSet()
 
 
-private val SIMPLE_TYPE_REGEX_1 = "([a-zA-Z0-9_|])".toPattern()
 private val CLASS_NAME_REGEX = "([a-zA-Z_$][a-zA-Z0-9_]*)".toPattern()
-private val SIMPLE_TYPE_REGEX_2 = "[^ ]*\\s+([a-zA-Z0-9_$|]*?).*".toPattern()
 
 private fun matchType(className:String, objjClassNames:Set<String>, jsClassNames:Set<String>) : ClassMatchType? {
     return when (className) {
         in objjClassNames -> ClassMatchType.OBJJ
         in jsClassNames -> ClassMatchType.JS
-        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix) ClassMatchType.JS else null
+        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix(jsClassNames)) ClassMatchType.JS else null
     }
 
 }

@@ -9,7 +9,6 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.AbstractQualifiedReference
 
 object ObjJVariableDeclarationAnnotator {
 

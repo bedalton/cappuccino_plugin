@@ -8,8 +8,9 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 
-class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containingClassName: String, override val selectorStrings: List<String>, private val shouldResolve: Boolean) : ObjJStubBaseImpl<ObjJSelectorLiteralImpl>(parent, ObjJStubTypes.SELECTOR_LITERAL), ObjJSelectorLiteralStub {
+class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containingClassName: String, override val selectorStrings: List<String>, private val shouldResolve: Boolean, override val selectorStructs: List<ObjJSelectorStruct>) : ObjJStubBaseImpl<ObjJSelectorLiteralImpl>(parent, ObjJStubTypes.SELECTOR_LITERAL), ObjJSelectorLiteralStub {
     override val selectorString: String = ArrayUtils.join(selectorStrings, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true)
 
 

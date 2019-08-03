@@ -12,6 +12,8 @@ import cappuccino.ide.intellij.plugin.psi.impl.ObjJAccessorPropertyImpl
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJAccessorPropertyPsiUtil
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJAccessorPropertyStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
+import cappuccino.ide.intellij.plugin.stubs.stucts.readSelectorStructList
+import cappuccino.ide.intellij.plugin.stubs.stucts.writeSelectorStructList
 import cappuccino.ide.intellij.plugin.utils.Strings
 
 import java.io.IOException
@@ -32,7 +34,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         val variableType: String?
         if (variableDeclaration != null) {
             val variableDeclarationStub = variableDeclaration.stub
-            variableType = variableDeclarationStub?.varType ?: variableDeclaration.formalVariableType.text
+            variableType = variableDeclarationStub?.variableType ?: variableDeclaration.formalVariableType.text
             variableName = variableDeclarationStub?.variableName ?: if (variableDeclaration.variableName != null) variableDeclaration.variableName!!.text else null
         } else {
             variableName = null
@@ -40,7 +42,17 @@ class ObjJAccessorPropertyStubType internal constructor(
         }
         val getter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getGetterSelector(variableName, variableType, accessorProperty) else null
         val setter = if (variableName != null && variableType != null) ObjJAccessorPropertyPsiUtil.getSetterSelector(variableName, variableType, accessorProperty) else null
-        return ObjJAccessorPropertyStubImpl(parentStub, containingClass, variableType, variableName, getter, setter, shouldResolve(accessorProperty.node))
+        val selectorStructs = accessorProperty.selectorStructs
+        return ObjJAccessorPropertyStubImpl(
+                parent = parentStub,
+                containingClass = containingClass,
+                varType = variableType,
+                variableName = variableName,
+                getter = getter,
+                setter = setter,
+                selectorStructs = selectorStructs,
+                shouldResolve = shouldResolve(accessorProperty.node)
+        )
     }
 
     @Throws(IOException::class)
@@ -52,6 +64,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         stream.writeName(Strings.notNull(stub.variableName))
         stream.writeName(Strings.notNull(stub.getter))
         stream.writeName(Strings.notNull(stub.setter))
+        stream.writeSelectorStructList(stub.selectorStructs)
         stream.writeBoolean(stub.shouldResolve())
     }
 
@@ -63,8 +76,18 @@ class ObjJAccessorPropertyStubType internal constructor(
         val variableName = StringRef.toString(stream.readName())
         val getter = StringRef.toString(stream.readName())
         val setter = StringRef.toString(stream.readName())
+        val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()
-        return ObjJAccessorPropertyStubImpl(parentStub, containingClass, varType, variableName, getter, setter, shouldResolve)
+        return ObjJAccessorPropertyStubImpl(
+                parent = parentStub,
+                containingClass = containingClass,
+                varType = varType,
+                variableName = variableName,
+                getter = getter,
+                setter = setter,
+                selectorStructs = selectorStructs,
+                shouldResolve = shouldResolve
+        )
     }
 
     override fun indexStub(stub: ObjJAccessorPropertyStub, sink: IndexSink) {
