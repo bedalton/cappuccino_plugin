@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.impl
 
-import cappuccino.ide.intellij.plugin.indices.ObjJFilesByFrameworkAndFileNameIndex
 import com.intellij.psi.stubs.PsiFileStubImpl
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
@@ -10,7 +9,7 @@ import com.intellij.psi.tree.IStubFileElementType
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
-class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, override val framework: String?, override val imports: List<ObjJImportInfoStub>) : PsiFileStubImpl<ObjJFile>(objJFile), ObjJFileStub {
+class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, override val imports: List<ObjJImportInfoStub>) : PsiFileStubImpl<ObjJFile>(objJFile), ObjJFileStub {
 
     override fun getType(): IStubFileElementType<out ObjJFileStub> {
         return ObjJStubTypes.FILE
@@ -24,5 +23,7 @@ class ObjJFileStubImpl(objJFile: ObjJFile?, override val fileName: String, overr
 
 
 data class ObjJImportInfoStub(val framework:String?, val fileName:String?) {
-    val indexKey:String get() = ObjJFilesByFrameworkAndFileNameIndex.getIndexKey(this)
+    override fun toString(): String {
+        return "<$framework/$fileName>"
+    }
 }

@@ -7,13 +7,9 @@ import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
 import cappuccino.ide.intellij.plugin.utils.doesNotMatch
-import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 import icons.ObjJIcons
 import javax.swing.Icon
 

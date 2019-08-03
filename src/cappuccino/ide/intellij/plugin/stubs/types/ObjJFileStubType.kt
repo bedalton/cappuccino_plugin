@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.tree.IStubFileElementType
@@ -10,6 +9,7 @@ import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
+import cappuccino.ide.intellij.plugin.utils.nullIfEquals
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.*
 
@@ -33,7 +33,6 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
     override fun serialize(stub: ObjJFileStub, stream: StubOutputStream) {
         super.serialize(stub, stream)
         stream.writeName(stub.fileName)
-        stream.writeName(stub.framework)
         stream.writeInt(stub.imports.size)
         for (importStatement in stub.imports) {
             stream.writeImportInfo(importStatement)
@@ -44,13 +43,12 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): ObjJFileStub {
         super.deserialize(stream, parentStub)
         val fileName = StringRef.toString(stream.readName())
-        val frameworkName = stream.readNameString()
         val numImports = stream.readInt()
         val imports = mutableListOf<ObjJImportInfoStub>()
         for (i in 0 until numImports) {
             imports.add(stream.readImportInfo())
         }
-        return ObjJFileStubImpl(null, fileName, frameworkName, imports)
+        return ObjJFileStubImpl(null, fileName, imports)
     }
 
     override fun indexStub(stub: PsiFileStub<*>, sink: IndexSink) {

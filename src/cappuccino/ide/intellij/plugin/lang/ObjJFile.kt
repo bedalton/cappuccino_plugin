@@ -15,10 +15,14 @@ import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
 import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
-import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
+import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
+import cappuccino.ide.intellij.plugin.utils.ifEquals
+import cappuccino.ide.intellij.plugin.utils.nullIfEquals
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -31,21 +35,38 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         ObjJFileCache(this)
     }
 
-    val frameworkName: String by lazy {
-        stub?.framework ?: fileCache.frameworkName ?: enclosingFrameworkName
+    val frameworkName: String get() {
+        return fileCache.frameworkName.nullIfEquals(EMPTY_FRAMEWORK_NAME)
+                ?: ObjJFrameworkUtils.getEnclosingFrameworkName(this)
     }
 
     val cachedImportFileList: List<ObjJFile>?
         get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = true)
 
-    val asImportStruct : ObjJImportInfoStub by lazy {
-        ObjJImportInfoStub(frameworkName, name)
+    val asImportStruct : ObjJImportInfoStub get() = ObjJImportInfoStub(frameworkName, name)
+
+    private val importedFilesInternal : List<ObjJImportInfoStub> by lazy {
+        if (DumbService.isDumb(project))
+            throw IndexNotReadyException.create()
+        val thisFrameworkName = frameworkName
+        stub?.imports?.map {
+            if (it.framework == EMPTY_FRAMEWORK_NAME)
+                it.copy(framework = thisFrameworkName, fileName = it.fileName)
+            else
+                it
+        } ?: (collectImports(this).map {
+            val frameworkName = it.frameworkNameString.ifEquals(EMPTY_FRAMEWORK_NAME) { thisFrameworkName }
+            ObjJImportInfoStub(frameworkName, it.fileNameString)
+        })
     }
 
-    val getImportedFiles : List<ObjJImportInfoStub> by lazy {
-        stub?.imports ?: collectImports(this).map {
-            ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
+    val importedFiles : List<ObjJImportInfoStub> get() {
+        if (DumbService.isDumb(project)) {
+            return stub?.imports ?: collectImports(this).map {
+                ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
+            }
         }
+        return importedFilesInternal
     }
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>

@@ -254,10 +254,10 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     override fun indexFile(stub:ObjJFileStub?, indexSink: IndexSink) {
         if (stub == null)
             return
-        LOGGER.info("Indexing File: <${stub.framework}/${stub.fileName}>")
-        val framework = stub.framework ?: return
-        indexSink.occurrence(ObjJFilesByFrameworkIndex.KEY, framework);
-        indexSink.occurrence(ObjJFilesByFrameworkAndFileNameIndex.KEY, ObjJFilesByFrameworkAndFileNameIndex.getIndexKey(framework, stub.fileName))
+        //val framework = stub.framework ?: return
+        //LOGGER.info("Indexing File: <$framework/${stub.fileName}>")
+        //indexSink.occurrence(ObjJFilesByFrameworkIndex.KEY, framework);
+        //indexSink.occurrence(ObjJFilesByFrameworkAndFileNameIndex.KEY, ObjJFilesByFrameworkAndFileNameIndex.getIndexKey(framework, stub.fileName))
     }
 
     companion object {

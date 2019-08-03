@@ -1,16 +1,17 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.indices.ObjJFilesByFrameworkAndFileNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
-import cappuccino.ide.intellij.plugin.utils.frameworkName
+import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
@@ -51,7 +52,7 @@ object ObjJPsiFileUtil {
      * Checks if a given file is a definition element
      */
     fun isDefinitionElement(psiElement: PsiElement): Boolean {
-        return getFileNameSafe(psiElement.containingFile)?.endsWith(".d.j") == true
+        return getFileNameSafe(psiElement.containingFile).endsWith(".d.j")
     }
 
     fun getImportedClassNames(fileIn:ObjJFile) : List<String> {
@@ -188,7 +189,7 @@ fun collectImports(psiFile: PsiFile): Collection<ObjJImportIncludeStatement> {
 }
 
 val PsiFile.fileNameAsImportString:String get(){
-    val frameworkName:String = frameworkName
+    val frameworkName:String = (this as? ObjJFile)?.frameworkName ?: ObjJFrameworkUtils.getEnclosingFrameworkName(this)
     val fileName = name
     return "<$frameworkName/$fileName>"
 }
@@ -202,55 +203,55 @@ fun <PsiT:PsiElement>PsiFile.collectElementsOfType(classType:Class<PsiT>) : List
 }
 
 fun collectImports(thisFile:ObjJFile, collected:MutableList<ObjJImportInfoStub>) : List<ObjJImportInfoStub> {
-    val next = mutableListOf<ObjJImportInfoStub>()
-    thisFile.getImportedFiles.forEach { thisImported ->
-        if (thisImported in collected)
-            return@forEach
-        collected.add(thisImported)
-        val thisImports =
-                ObjJFilesByFrameworkAndFileNameIndex.instance[thisImported.indexKey, thisFile.project]
-                        .flatMap {
-                            collectImports(it, collected)
-                        }
-        collected.addAll(thisImports)
+    val uniqueImports = thisFile.importedFiles.toSet().minus(collected.toSet())
+    for (import in uniqueImports) {
+        collected.add(import)
+        val anImportedFile = import.getPsiFile(thisFile.project) ?: continue
+        collected.addAll(collectImports(anImportedFile, collected))
     }
     return collected
 }
 
 
 fun isImported(thisFile:ObjJFile, import:ObjJImportInfoStub, searched:MutableList<ObjJImportInfoStub> = mutableListOf()) : Boolean {
-    val thisImports = thisFile.getImportedFiles
+    val project = thisFile.project
+    val thisImports = thisFile.importedFiles.toSet()
     if (import in thisImports)
         return true
-    thisImports.forEach { importedStub ->
-        ObjJFilesByFrameworkAndFileNameIndex.instance[importedStub.indexKey, thisFile.project].forEach {
-            val aKey = it.asImportStruct
-            if (import == aKey)
-                return true
-            searched.add(aKey)
-            if (isImported(it, import, searched))
-                return true
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        searched.add(anImport)
+        val importedFile = anImport.getPsiFile(project)
+        if (importedFile != null && isImported(importedFile, import, searched)) {
+            return true
         }
     }
     return false
 }
 
-fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>) : Boolean {
-    return hasImportedAny(thisFile.asImportStruct, imports, mutableListOf(), thisFile.project)
+fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf()) : Boolean {
+    val project:Project = thisFile.project
+    val thisImports = thisFile.importedFiles.toSet()
+    if (thisImports.intersect(imports).isNotEmpty())
+        return true
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        searched.add(anImport)
+        val importedFile = anImport.getPsiFile(project) ?: continue
+        if (hasImportedAny(importedFile, imports, searched))
+            return true
+    }
+    return false
 }
 
-fun hasImportedAny(thisFile: ObjJImportInfoStub, imports:Collection<ObjJImportInfoStub>, searched:MutableList<ObjJImportInfoStub>, project:Project) : Boolean {
-    val next = mutableListOf<ObjJImportInfoStub>()
-    ObjJFilesByFrameworkAndFileNameIndex.instance[thisFile.indexKey, project].forEach {
-        val itAsStruct = it.asImportStruct
-        if (itAsStruct in searched)
-            return@forEach
-        if (itAsStruct in imports)
-            return true
-        next.add(itAsStruct)
+fun ObjJImportInfoStub.getPsiFile(project: Project) : ObjJFile? {
+    if (fileName == null)
+        return null
+    val filesWithName = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project))
+    for(file in filesWithName) {
+        if (file is ObjJFile && framework == file.frameworkName) {
+            return file
+        }
     }
-    return next.any {
-        searched.add(it)
-        hasImportedAny(it, imports, searched, project)
-    }
+    return null
 }
