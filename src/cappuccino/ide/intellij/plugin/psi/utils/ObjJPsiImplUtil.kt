@@ -24,6 +24,7 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubCom
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.types.toQualifiedNamePaths
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
+import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.util.TextRange
@@ -168,6 +169,15 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getClassNameString(genericType:ObjJClassNameGeneric) : String {
+        return if (genericType.greaterThan != null) {
+            genericType.text.substringFromEnd(1, 1)
+        } else {
+            genericType.text.substring(1)
+        }
+    }
+
+    @JvmStatic
     fun getClassType(classDeclaration: ObjJClassDeclarationElement<*>): ObjJClassTypeName {
         val classNameString = classDeclaration.classNameString
         return if (!isUniversalMethodCaller(classNameString)) ObjJClassType.getClassType(classNameString) else ObjJClassType.UNDEF
@@ -206,20 +216,6 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getContainingSuperClass(hasContainingClass: ObjJHasContainingClass, returnDefault: Boolean = false): ObjJClassName? =
             cappuccino.ide.intellij.plugin.psi.utils.getContainingSuperClass(hasContainingClass, returnDefault)
-
-    @JvmStatic
-    fun isCategory(declaration: ObjJImplementationDeclaration): Boolean =
-            cappuccino.ide.intellij.plugin.psi.utils.isCategory(declaration)
-
-    @JvmStatic
-    fun getCache(protocol: ObjJProtocolDeclaration): ObjJProtocolDeclarationCache {
-        return ObjJProtocolDeclarationCache(protocol)
-    }
-
-    @JvmStatic
-    fun getCache(declaration: ObjJImplementationDeclaration): ObjJImplementationDeclarationCache {
-        return ObjJImplementationDeclarationCache(declaration)
-    }
 
     // ============================== //
     // ====== Navigation Items ====== //
@@ -678,6 +674,19 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getInheritedProtocols(typedef: ObjJTypeDef): List<String> = listOf()
 
+    @JvmStatic
+    fun isCategory(declaration: ObjJImplementationDeclaration): Boolean =
+            cappuccino.ide.intellij.plugin.psi.utils.isCategory(declaration)
+
+    @JvmStatic
+    fun getCache(protocol: ObjJProtocolDeclaration): ObjJProtocolDeclarationCache {
+        return ObjJProtocolDeclarationCache(protocol)
+    }
+
+    @JvmStatic
+    fun getCache(declaration: ObjJImplementationDeclaration): ObjJImplementationDeclarationCache {
+        return ObjJImplementationDeclarationCache(declaration)
+    }
 
     // ============================== //
     // ========= Variables ========== //
