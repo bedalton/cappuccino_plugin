@@ -6,5 +6,6 @@ import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 
 interface ObjJFileStub : PsiFileStub<ObjJFile> {
     val imports: List<ObjJImportInfoStub>
+    val framework:String?
     val fileName: String
 }

@@ -8,10 +8,14 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
+import cappuccino.ide.intellij.plugin.psi.utils.collectImports
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFileStub
 import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
+import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.fileTypes.FileType
@@ -27,11 +31,22 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         ObjJFileCache(this)
     }
 
-    val frameworkName: String
-        get() = fileCache.frameworkName ?: EMPTY_FRAMEWORK_NAME
+    val frameworkName: String by lazy {
+        stub?.framework ?: fileCache.frameworkName ?: enclosingFrameworkName
+    }
 
     val cachedImportFileList: List<ObjJFile>?
         get() = fileCache.importedFiles ?: getImportedFiles(recursive = false, cache = true)
+
+    val asImportStruct : ObjJImportInfoStub by lazy {
+        ObjJImportInfoStub(frameworkName, name)
+    }
+
+    val getImportedFiles : List<ObjJImportInfoStub> by lazy {
+        stub?.imports ?: collectImports(this).map {
+            ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
+        }
+    }
 
     val classDeclarations: List<ObjJClassDeclarationElement<*>>
         get() = fileCache.classDeclarations
@@ -74,6 +89,10 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         }
         children.addAll(blockChildren)
         return children
+    }
+
+    override fun getStub(): ObjJFileStub? {
+        return super.getStub() as? ObjJFileStub
     }
 
     override fun <PsiT : PsiElement> getParentOfType(parentClass: Class<PsiT>): PsiT? =

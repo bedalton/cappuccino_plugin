@@ -8,9 +8,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.isNotCategory
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
-import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
-import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
+import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -44,15 +42,17 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
 
     private fun annotateIfNecessary(problemsHolder: ProblemsHolder, functionCall:ObjJFunctionCall) {
         val containingFile = functionCall.containingFile as? ObjJFile ?: return
-        val importedFiles = containingFile.getImportedFiles(true)
         val referenced = functionCall.functionDeclarationReference?.containingFile ?: return
+        if (referenced == containingFile)
+            return
         if (referenced is JsTypeDefFile)
             return
-        if (referenced in importedFiles)
+        if (referenced !is ObjJFile) {
             return
-
+        }
+        if (isImported(containingFile, referenced.asImportStruct))
+            return
         val functionNameElement = functionCall.functionName ?: return
-
         problemsHolder.registerProblem(functionNameElement, ObjJBundle.message("objective-j.inspections.not-imported.message", "function", functionNameElement.text), ObjJImportFileForFunctionOrVariableQuickFix(functionCall.enclosingFrameworkName, "function", functionNameElement.text, includeTests(functionNameElement)))
     }
 
@@ -60,13 +60,15 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
         if (variableName.text in listOf( "super", "this", "self"))
             return
         val containingFile = variableName.containingFile as? ObjJFile ?: return
-        val importedFiles = containingFile.getImportedFiles(true)
         val referenced = variableName.reference.resolve(true)?.containingFile ?: return
         if (referenced is JsTypeDefFile)
             return
         if (referenced == containingFile)
             return
-        if (referenced in importedFiles)
+        if (referenced !is ObjJFile) {
+            return
+        }
+        if (isImported(containingFile, referenced.asImportStruct))
             return
         problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspections.not-imported.message", "variable", variableName.text), ObjJImportFileForFunctionOrVariableQuickFix(variableName.enclosingFrameworkName, "variable", variableName.text, includeTests(variableName)))
     }
@@ -78,11 +80,17 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
         if ((psiElement.parent as? ObjJImplementationDeclaration)?.isNotCategory.orFalse())
             return
         val className = psiElement.text
-        if (!ObjJClassDeclarationsIndex.instance.containsKey(className, psiElement.project) || className in ObjJPluginSettings.ignoredClassNames())
+        if (className in ObjJPluginSettings.ignoredClassNames())
             return
+
+        val declaredIn = ObjJClassDeclarationsIndex.instance[className, psiElement.project].mapNotNull {
+            (it.containingFile as? ObjJFile)?.asImportStruct
+        }.toSet()
+        if (declaredIn.isEmpty())
+            return
+
         val containingFile = (psiElement.containingFile as? ObjJFile) ?: return
-        val importedClassNames = ObjJPsiFileUtil.getImportedClassNames(containingFile) + containingFile.definedClassNames
-        if (className in importedClassNames)
+        if (hasImportedAny(containingFile, declaredIn))
             return
         problemsHolder.registerProblem(psiElement, ObjJBundle.message("objective-j.inspections.not-imported.message", "class", className), ObjJImportFileForClassQuickFix(psiElement.enclosingFrameworkName, className, withSelector, includeTests(psiElement)))
     }

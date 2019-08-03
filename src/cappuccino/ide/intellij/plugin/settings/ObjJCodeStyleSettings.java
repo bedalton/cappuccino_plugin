@@ -31,17 +31,6 @@ public class ObjJCodeStyleSettings extends CustomCodeStyleSettings {
     public int SWITCH_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
 
     ObjJCodeStyleSettings(CodeStyleSettings container) {
-        super(ObjJLanguage.getInstance().getID(), initContainer(container));
-    }
-
-    private static CodeStyleSettings initContainer(CodeStyleSettings container) {
-        container.FOR_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-        container.DOWHILE_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-        container.WHILE_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-        container.IF_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-        container.ELSE_ON_NEW_LINE = true;
-        container.CATCH_ON_NEW_LINE = true;
-        container.FINALLY_ON_NEW_LINE = true;
-        return container;
+        super(ObjJLanguage.getInstance().getID(), container);
     }
 }

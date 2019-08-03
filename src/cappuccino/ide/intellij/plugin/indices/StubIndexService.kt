@@ -10,7 +10,6 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.collectImports
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
-import java.util.logging.Level
 import java.util.logging.Logger
 
 open class StubIndexService internal constructor() {
@@ -86,10 +85,15 @@ open class StubIndexService internal constructor() {
 
     fun createFileStub(file: ObjJFile): ObjJFileStub {
         val fileName = ObjJPsiFileUtil.getContainingFileName(file)
+        val frameworkName = file.frameworkName
         val  fileImportStrings = collectImports(file).map {
             ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
         }
-        return ObjJFileStubImpl(file, fileName ?: "{?}", fileImportStrings)
+        return ObjJFileStubImpl(file, fileName ?: "{?}", frameworkName, fileImportStrings)
+    }
+
+   open fun indexFile(stub:ObjJFileStub?, indexSink: IndexSink) {
+        throw NotImplementedError("Index file must be overridden")
     }
 
     companion object {
