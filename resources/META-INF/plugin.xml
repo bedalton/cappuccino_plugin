@@ -34,7 +34,7 @@
     <h3>Please report issues to our <a href="https://github.com/bedalton/cappuccino_plugin/issues">GitHub issues page</a></h3>
     <h2>Working</h2>
     <ul>
-      <li>Non-Intelligent method call selector completion</li>
+      <li>Method call selector completion</li>
       <li>Variable name completion</li>
       <li>Variable, Function and Method declaration resolution</li>
       <li>Syntax Highlighting</li>
@@ -60,7 +60,7 @@
       <li>Added Objective-J SDK and Library type
         <ul>
           <li>This allows for easier definition and reuse of framework sources</li>
-          <li>This also causes the IDE to alert a user when making changes to the framework files<br/>Which may be undesireable</li>
+          <li>This also causes the IDE to alert a user when making changes to the framework files</li>
         </ul>
       </li>
       <li>Re-enabled the very buggy, and very experimental method selector rename</li>
