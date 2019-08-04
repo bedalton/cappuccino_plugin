@@ -2034,6 +2034,9 @@ classNameGeneric
 	::= '<' className '>'
 	{
 		pin = 1;
+		methods = [
+			getClassNameString
+		]
 	}
 	;
 

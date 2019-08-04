@@ -84,7 +84,7 @@ object ObjJVariableTypeResolver {
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypes(callTargetVariableName:ObjJVariableName, withGeneric: Boolean):String? {
         val formalVariableType = getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName) ?: return null
-        var genericClass = if (withGeneric) formalVariableType.classNameGeneric?.text.orEmpty() else ""
+        var genericClass = if (withGeneric) formalVariableType.classNameGeneric?.classNameString.orEmpty() else ""
         if (genericClass.isNotNullOrEmpty()) {
             genericClass = "<$genericClass>"
         }
