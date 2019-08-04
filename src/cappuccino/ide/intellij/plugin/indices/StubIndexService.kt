@@ -85,11 +85,10 @@ open class StubIndexService internal constructor() {
 
     fun createFileStub(file: ObjJFile): ObjJFileStub {
         val fileName = ObjJPsiFileUtil.getContainingFileName(file)
-        val frameworkName = file.frameworkName
         val  fileImportStrings = collectImports(file).map {
             ObjJImportInfoStub(it.frameworkNameString, it.fileNameString)
         }
-        return ObjJFileStubImpl(file, fileName ?: "{?}", fileImportStrings)
+        return ObjJFileStubImpl(file, fileName, fileImportStrings)
     }
 
    open fun indexFile(stub:ObjJFileStub?, indexSink: IndexSink) {
