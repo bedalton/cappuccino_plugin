@@ -595,12 +595,12 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getReference(fileName: ObjJFrameworkFileName): PsiReference {
-        return ObjJImportFileNameReference(fileName)
+    fun getReference(fileName: ObjJFrameworkFileName): ObjJFrameworkFileNameReference {
+        return ObjJFrameworkFileNameReference(fileName)
     }
 
     @JvmStatic
-    fun getReference(fileName: ObjJFileNameAsImportString): PsiPolyVariantReference {
+    fun getReference(fileName: ObjJFileNameAsImportString): ObjJFileNameAsStringLiteralReference {
         return ObjJFileNameAsStringLiteralReference(fileName)
     }
 
@@ -1079,17 +1079,19 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun setName(fileName: ObjJFileNameAsImportString, newName: String): PsiElement {
-        return fileName
+        val newFileNameString = ObjJElementFactory.createString(fileName.project, newName)
+        return fileName.stringLiteral.replace(newFileNameString)
     }
 
     @JvmStatic
-    fun getName(fileName: ObjJFrameworkFileName, newName: String): String {
+    fun getName(fileName: ObjJFrameworkFileName): String {
         return fileName.text
     }
 
     @JvmStatic
     fun setName(fileName: ObjJFrameworkFileName, newName: String): PsiElement {
-        return fileName
+        val newFileName = ObjJElementFactory.createFrameworkFileNameElement(fileName.project, newName)
+        return fileName.replace(newFileName)
     }
 
     /*

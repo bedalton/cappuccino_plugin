@@ -9,7 +9,8 @@ class ObjJNameValidator : NamesValidator {
 
     override fun isKeyword(
             string: String, project: Project): Boolean {
-        return ObjJKeywordsList.keywords.indexOf(string) >= 0 || !validNamePattern.matcher(string).matches()
+        return ObjJKeywordsList.keywords.indexOf(string) >= 0
+                || !validNamePattern.matcher(string).matches()
     }
 
     override fun isIdentifier(
@@ -20,6 +21,6 @@ class ObjJNameValidator : NamesValidator {
     companion object {
 
 
-        private val validNamePattern = Pattern.compile("(^[a-zA-Z0-9_$]*)$")
+        private val validNamePattern = Pattern.compile("(^[a-zA-Z0-9_$.]+)$")
     }
 }

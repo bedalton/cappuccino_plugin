@@ -9,7 +9,9 @@ import com.intellij.psi.PsiFileFactory
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.diagnostic.Logger
 
 import java.util.ArrayList
@@ -194,6 +196,24 @@ object ObjJElementFactory {
         val script = "@import <$frameworkName/$fileName>".trimIndent()
         val file = createFileFromText(project, script)
         return file.firstChild.firstChild ?: throw Exception("Import framework element should not be null")
+    }
+
+    fun createString(project:Project, string:String) : ObjJStringLiteral {
+        val file = createFileFromText(project, "\"$string\";")
+        return (file.firstChild as ObjJExpr).leftExpr!!.primary!!.stringLiteral!!
+    }
+
+    fun createFrameworkFileNameElement(project:Project, fileNameIn:String) : ObjJFrameworkFileName {
+        assert (fileNameIn.isNotNullOrBlank()) { "Filename cannot be blank;" }
+        val fileName = if (fileNameIn.endsWith(".j")) fileNameIn else "$fileNameIn.j"
+        val script = "@import <framework/$fileName>";
+        val file = createFileFromText(project, script)
+        val frameworkImportStatement = file.getChildOfType(ObjJImportBlock::class.java)!!.importStatementElementList[0]!!
+        val framework = frameworkImportStatement.importFramework!!
+        val frameworkDescriptor = framework.frameworkDescriptor
+        val frameworkFileName = frameworkDescriptor.frameworkFileName
+        assert (frameworkFileName != null) { "Framework name element cannot be null. Target filename = <$fileName>" }
+        return frameworkFileName!!
     }
 
 }
