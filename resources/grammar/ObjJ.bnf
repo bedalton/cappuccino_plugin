@@ -295,6 +295,7 @@ importFile
 			getImportAsUnifiedString
 		]
 		pin=2
+		name = "file import"
 	}
 	;
 
@@ -308,6 +309,7 @@ fileNameAsImportString
 			getReference
 			getFileNameString
 		]
+		name = "filename"
 	}
 	;
 
@@ -324,6 +326,7 @@ importFramework
 			getFileNameString
 			getImportAsUnifiedString
 		]
+		name = "framework import"
 	}
 	;
 
@@ -364,6 +367,7 @@ includeFile
 			getImportAsUnifiedString
 		]
 		pin=2
+		name = "include file"
 	}
 	;
 
@@ -379,6 +383,7 @@ includeFramework
 			getImportAsUnifiedString
 		]
 		pin=2
+		name = "framework include"
 	}
 	;
 
@@ -390,6 +395,7 @@ frameworkDescriptor
 			getFrameworkNameString
 			getFileNameString
 		]
+		name = "framework reference"
 	}
 	;
 
@@ -403,6 +409,7 @@ frameworkFileName
 			setName
 			getReference
 		]
+		name = "Framework filename"
 	}
 	;
 
