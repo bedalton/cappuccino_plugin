@@ -14,7 +14,6 @@ import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.psi.PsiDirectory
 import java.util.*
-import java.util.logging.Logger
 
 /**
  * Creates a file
@@ -40,7 +39,7 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
                     override fun canClose(inputString: String?) = checkInput(inputString)
                     override fun getErrorText(inputString: String?) = ObjJBundle.message("objective-j.actions.new-file.invalid", inputString.orEmpty())
                     override fun checkInput(inputString: String?) = inputString?.run {
-                        all { it.isLetterOrDigit() || it in "_!" || it in '\u0100'..'\uFFFF' } && firstOrNull() != '!'
+                        this.indexOf(".") < 0 || this.endsWith(".j")
                     }?.or(false) ?: false
                 })
                 .addKind("File", ObjJIcons.DOCUMENT_ICON, "file")
