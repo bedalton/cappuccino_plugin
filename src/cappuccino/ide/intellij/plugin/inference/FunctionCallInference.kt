@@ -33,7 +33,22 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
-    val resolves = functionCall.functionName?.reference?.multiResolve(false).orEmpty().map { it.element }
+    val functionName = functionCall.functionName ?: return null
+    val functionNameString = functionName.text ?: return null
+
+    // Get Type from JsTypeDef if possible
+    val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionNameString, functionCall.project]
+    val lastOut = functionSet.flatMap {
+        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+    }.toSet()
+    if (lastOut.isNotEmpty()) {
+        return InferenceResult(types = lastOut)
+    }
+
+    // Resolve according to reference
+    // If resolved to objj function, parse objects as necessary
+    val resolvesRaw = functionName.reference.multiResolve(false).orEmpty()
+    val resolves = resolvesRaw.map { it.element }
     val jsTypeDefResolves = resolves.mapNotNull { it as? JsTypeDefElement }
     val typeDefOut = jsTypeDefResolves
             .mapNotNull {
@@ -42,7 +57,8 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
                 it.functionReturnType?.toTypeListType()?.toJsTypeList().orEmpty()
             } +
             jsTypeDefResolves.mapNotNull {
-                it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty ?: (it as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)
+                it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty
+                ?: (it as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)
             }.flatMap {
                 it.typeList.toJsTypeDefTypeListTypes()
             }
@@ -50,7 +66,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
         return InferenceResult(types = typeDefOut.toSet())
     }
 
-    val out = functionCall.functionName?.reference?.multiResolve(false)?.mapNotNull {
+    val out = resolvesRaw.mapNotNull {
         val resolved = it.element ?: return@mapNotNull null
         val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
                 ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)
@@ -93,16 +109,6 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
     }.orEmpty().combine()
     if (out.types.isNotEmpty()) {
         return out
-    }
-    val functionName = functionCall.functionName?.text
-    if (functionName != null) {
-        val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionName, functionCall.project]
-        val lastOut = functionSet.flatMap {
-            it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
-        }.toSet()
-        if (lastOut.isNotEmpty()) {
-            return InferenceResult(types = lastOut)
-        }
     }
     return null
 
