@@ -692,7 +692,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(name:JsTypeDefTypeName) : PsiPolyVariantReference {
+    fun getReference(name:JsTypeDefTypeName) : JsTypeDefTypeNameReference {
         return JsTypeDefTypeNameReference(name)
     }
 
