@@ -602,7 +602,7 @@ internal val PsiElement.textWithoutCaret: String
 
 internal fun String.toIndexPatternString(): String {
     val queryBody = "([^A-Z_]*?)"
-    val stringBuilder = StringBuilder("[_]?")
+    val stringBuilder = StringBuilder("[_]?[A-Z_$]*?")
     this.replace(ObjJCompletionContributor.CARET_INDICATOR, "(.*)").split("(?<=[A-Z_])".toRegex()).forEach {
         stringBuilder.append(queryBody).append(it)
     }
