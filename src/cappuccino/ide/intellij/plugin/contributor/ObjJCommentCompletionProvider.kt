@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
@@ -116,7 +117,7 @@ object ObjJCommentCompletionProvider {
                     if (!isPrevSiblingClassName(lastPart)) {
                         ObjJClassNamesCompletionProvider.getClassNameCompletions(resultSet, element)
                         JsTypeDefClassesByNameIndex.instance.getAllKeys(project).forEach {
-                            resultSet.addElement(LookupElementBuilder.create(it))
+                            resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJTrackInsertionHandler))
                         }
                     } else {
                         val variableNames = ObjJVariableNameAggregatorUtil.getSiblingVariableAssignmentNameElements(element, 0).map {
@@ -188,7 +189,7 @@ object ObjJCommentCompletionProvider {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
-        
+
         var lastPart: String? = null
         for (part in commentTokenParts) {
             // Increment index at start to allow for simpler index calculations

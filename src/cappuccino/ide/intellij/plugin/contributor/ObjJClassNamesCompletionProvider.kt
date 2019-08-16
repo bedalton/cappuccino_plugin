@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
@@ -15,6 +16,7 @@ import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
 
@@ -113,7 +115,10 @@ object ObjJClassNamesCompletionProvider {
         ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
             ObjJPluginSettings.ignoreUnderscoredClasses && it.startsWith("_")
         }.toSet().forEach {
-            resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+            val priority = ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY)
+            val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler)
+            val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, priority)
+            resultSet.addElement(prioritizedLookupElement)
         }
     }
 

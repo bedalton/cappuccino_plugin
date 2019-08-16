@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
@@ -15,6 +16,7 @@ class ObjJSelectorInsertHandler(private val insertSpace:Boolean) : InsertHandler
      * Handle insertion entry point
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
+        ObjJInsertionTracker.hit(lookupElement.lookupString)
         insertColon(insertionContext, lookupElement)
         if (insertSpace)
             insertSpaceBefore(insertionContext) // must be after colon is inserted, otherwise the colon would be inserted in the wrong spot

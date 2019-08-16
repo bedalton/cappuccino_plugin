@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
@@ -14,6 +15,7 @@ object ObjJFunctionNameInsertHandler : InsertHandler<LookupElement> {
      * Actually handle the insertion
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
+        ObjJInsertionTracker.hit(lookupElement.lookupString)
         if (!EditorUtil.isTextAtOffset(insertionContext, "(")) {
             EditorUtil.insertText(insertionContext, "()", true)
             EditorUtil.offsetCaret(insertionContext, -1)

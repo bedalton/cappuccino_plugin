@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
@@ -34,7 +33,9 @@ object ObjJFunctionNameCompletionProvider {
             JsTypeDefClassesByNamespaceIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).mapNotNull{
                 (it as? JsTypeDefClassElement)?.className
             }.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJFunctionNameInsertHandler))
+                val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJFunctionNameInsertHandler)
+                val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.TYPEDEF_PRIORITY))
+                resultSet.addElement(prioritizedLookupElement)
             }
         }
     }
@@ -61,7 +62,7 @@ object ObjJFunctionNameCompletionProvider {
                     .create(functionName)
                     .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, priority)))
         }
     }
 
@@ -74,7 +75,7 @@ object ObjJFunctionNameCompletionProvider {
                     .create(functionName)
                     .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.TYPEDEF_PRIORITY ))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.TYPEDEF_PRIORITY)))
         }
     }
 
@@ -112,7 +113,7 @@ object ObjJFunctionNameCompletionProvider {
                     .create(functionName)
                     .withTailText("(" + argumentsString + ") in [" + ObjJPsiImplUtil.getFileName(functionIn)+"]")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY)))
 
         }
     }
@@ -121,6 +122,6 @@ object ObjJFunctionNameCompletionProvider {
         val lookupElementBuilder = LookupElementBuilder
                 .create(functionName)
                 .withInsertHandler(ObjJFunctionNameInsertHandler)
-        resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, priority))
+        resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, priority)))
     }
 }

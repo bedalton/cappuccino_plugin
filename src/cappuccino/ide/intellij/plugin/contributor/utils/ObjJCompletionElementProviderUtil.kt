@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -18,7 +20,9 @@ object ObjJCompletionElementProviderUtil {
     fun addCompletionElementsSimple(resultSet: CompletionResultSet, completionOptions: List<String>) {
         for (completionOption in completionOptions) {
             ProgressIndicatorProvider.checkCanceled()
-            resultSet.addElement(LookupElementBuilder.create(completionOption).withInsertHandler(ObjJVariableInsertHandler))
+            val priority = ObjJInsertionTracker.getPoints(completionOption, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY)
+            val prioritizedLookupElement = PrioritizedLookupElement.withPriority(LookupElementBuilder.create(completionOption).withInsertHandler(ObjJVariableInsertHandler), priority)
+            resultSet.addElement(prioritizedLookupElement)
         }
     }
     /**
@@ -28,7 +32,7 @@ object ObjJCompletionElementProviderUtil {
         for (completionOption in completionOptions) {
             ProgressIndicatorProvider.checkCanceled()
             val lookupElement = LookupElementBuilder.create(completionOption).withInsertHandler(ObjJVariableInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, priority))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(completionOption, priority)))
         }
     }
 }

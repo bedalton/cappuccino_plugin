@@ -1,6 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.textWithoutCaret
 import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
@@ -97,8 +99,8 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
      * Adds a string value as a lookup element
      */
     private fun addLookupElementSimple(resultSet: CompletionResultSet, lookupString: String, priority: Double) {
-        val lookupElementBuilder = LookupElementBuilder.create(lookupString)
-        val lookupElement = PrioritizedLookupElement.withPriority(lookupElementBuilder, priority)
+        val lookupElementBuilder = LookupElementBuilder.create(lookupString).withInsertHandler(ObjJTrackInsertionHandler)
+        val lookupElement = PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(lookupString,priority))
         resultSet.addElement(lookupElement)
     }
 }

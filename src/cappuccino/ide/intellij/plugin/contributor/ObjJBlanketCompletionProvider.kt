@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
@@ -229,7 +230,9 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .mapNotNull {
                         (it as? JsTypeDefClassElement)?.className
                     }.forEach {
-                        resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+                        val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler)
+                        val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.TYPEDEF_PRIORITY))
+                        resultSet.addElement(prioritizedLookupElement)
                     }
         }
     }
@@ -309,7 +312,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 lookupElement.withInsertHandler(ObjJVariableInsertHandler)
             }
             lookupElement = lookupElement.withBoldness(true)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, priority))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it.text,priority)))
         }
     }
 
@@ -320,7 +323,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString)
             } else {
                 val lookupElement = LookupElementBuilder.create(it.variableNameString).withInsertHandler(ObjJVariableInsertHandler)
-                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY))
+                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it.variableNameString, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY)))
             }
         }
     }
@@ -555,7 +558,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .create(functionName)
                     .withTailText("(" + ArrayUtils.join(classFunction.parameters.map { it.name }, ",") + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY)))
         }
 
         val properties = if (includeStatic)
@@ -567,14 +570,14 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             val lookupElementBuilder = LookupElementBuilder
                     .create(it.name)
                     .withTailText(":" + it.types.toClassListString("?"))
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(it.name, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY)))
         }
         inferred.functionTypes.forEach { jsFunction ->
             val lookupElementBuilder = LookupElementBuilder
                     .create("()")
                     .withTailText("(" + jsFunction.parameters.joinToString(", ") { it.name + ":" + it.types.toClassListString() } + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY))
+            resultSet.addElement(lookupElementBuilder)
         }
         inferred.properties.forEach {
             val propertyName = it.name ?: return@forEach
@@ -587,7 +590,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .create(propertyName)
                     .withTailText(":" + propertyType?.toClassListString())
                     .withBoldness(true)
-            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY))
+                    .withInsertHandler(ObjJTrackInsertionHandler)
+            resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(propertyName, ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY)))
 
         }
     }

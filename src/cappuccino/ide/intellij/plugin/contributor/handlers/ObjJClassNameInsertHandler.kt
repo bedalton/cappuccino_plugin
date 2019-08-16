@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
@@ -23,6 +24,7 @@ object ObjJClassNameInsertHandler : InsertHandler<LookupElement> {
      * Handles the aftermath of inserting a class name
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
+        ObjJInsertionTracker.hit(lookupElement.lookupString)
         val thisElement: PsiElement = lookupElement.psiElement ?: return
         when {
             thisElement.hasParentOfType(ObjJMethodDeclarationSelector::class.java) ->

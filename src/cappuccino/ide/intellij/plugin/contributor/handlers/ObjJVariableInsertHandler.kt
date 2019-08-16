@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
@@ -25,6 +26,7 @@ object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
      * Entry point for insertion
      */
     override fun handleInsert(insertionContext: InsertionContext, lookupElement: LookupElement) {
+        ObjJInsertionTracker.hit(lookupElement.lookupString)
         handleInsert(lookupElement.psiElement, insertionContext.editor)
 
     }
