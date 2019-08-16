@@ -1,27 +1,51 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
+import kotlin.math.max
 
 object ObjJInsertionTracker {
 
-    private const val pointsForRecent = 5
-    private val insertions:MutableMap<String, InsertionData> = mutableMapOf()
+    private const val pointsForRecent = 500
+    private const val pointsForHit = 50
+    private val insertions: MutableMap<String, InsertionData> = mutableMapOf()
 
-    fun hit(text:String) {
-        val data = insertions.getOrDefault(text, InsertionData(text,0, 0))
-        data.lastInsertionTime = now
-        data.timesHit += 1
-        insertions[text] = data
+    fun hit(text: String) {
+        val data = insertions.getOrDefault(text, InsertionData(text, 0, 0))
+        val newData = data
+                .copy(
+                        lastInsertionTime = now,
+                        timesHit = data.timesHit + 1
+                )
+        insertions[text] = newData
+        LOGGER.info("Hits For: $text: ${insertions[text]}")
+        reduce()
     }
 
-    fun getPoints(text:String, defaultPriority:Double = 0.0) : Double {
-        return defaultPriority + (insertions.get(text)?.timesHit ?: 0)
+    fun getPoints(text: String, defaultPriority: Double = 0.0): Double {
+        val data = insertions[text] ?: return defaultPriority
+        var points = defaultPriority
+        points += data.timesHit * pointsForHit
+        val recentIfGreaterThan = insertions.map { it.value.lastInsertionTime }.max()?.minus(6000) ?: 0
+        if (data.lastInsertionTime > recentIfGreaterThan)
+            points += pointsForRecent
+        LOGGER.info("Hits($text) = ${insertions[text]?.timesHit ?: 0}; Out -> $points")
+        return points
     }
 
-    fun getPoints():Map<String, Int> {
-        var mostRecent:InsertionData? = null
-        val out:MutableMap<String, Int> = mutableMapOf()
+    private fun reduce() {
+        val now = now;
+        for ((text, data) in insertions) {
+            if (data.lastInsertionTime < now - 60000 && data.timesHit > 2) {
+                insertions[text] = data.copy(timesHit = max(data.timesHit - 1, 2))
+            }
+        }
+    }
+
+    fun getPoints(): Map<String, Int> {
+        var mostRecent: InsertionData? = null
+        val out: MutableMap<String, Int> = mutableMapOf()
         insertions.map { (key, data) ->
             if (mostRecent?.lastInsertionTime.orElse(0) < data.lastInsertionTime)
                 mostRecent = data
@@ -34,4 +58,4 @@ object ObjJInsertionTracker {
     }
 }
 
-private data class InsertionData(internal val text:String, internal var lastInsertionTime:Long, internal var timesHit:Int)
+private data class InsertionData(internal val text: String, internal val lastInsertionTime: Long, internal val timesHit: Int)
