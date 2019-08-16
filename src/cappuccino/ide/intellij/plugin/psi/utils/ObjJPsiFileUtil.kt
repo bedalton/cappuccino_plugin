@@ -178,10 +178,6 @@ private fun addToImportsList(file: ObjJFile, recursive: Boolean, cache: Boolean?
  * @param psiFile file to search
  */
 fun collectImports(psiFile: PsiFile): Collection<ObjJImportIncludeStatement> {
-    val collectedImports = psiFile.collectElementsOfType(ObjJImportIncludeStatement::class.java)
-    if (collectedImports.isNotEmpty()) {
-        return collectedImports
-    }
     return psiFile.getChildrenOfType(ObjJImportBlock::class.java).flatMap { block ->
         block.getChildrenOfType(ObjJImportIncludeStatement::class.java)
     }
