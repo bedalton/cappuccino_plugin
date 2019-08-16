@@ -59,7 +59,7 @@ ID=[$_a-zA-Z][_a-zA-Z0-9]*
 <BLOCK_COMMENT> {
 	"*/"								 { yybegin(YYINITIAL); return ObjJ_BLOCK_COMMENT_END; }
   	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
- 	'.*'/'\n'							 { return ObjJ_BLOCK_COMMENT_LINE; }
+ 	'.*'/('\n'|'\*\/')							 { return ObjJ_BLOCK_COMMENT_LINE; }
 }
 
 <YYINITIAL> {
