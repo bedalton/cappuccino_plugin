@@ -45,21 +45,21 @@ ID=[$_a-zA-Z][_a-zA-Z0-9]*
 
 
 <SINGLE_QUOTE_STRING> {
-	"'" 								 { yybegin(YYINITIAL); return JS_SINGLE_QUOTE_STRING; }
-	{LINE_TERMINATOR}					 { return JS_INCOMPLETE_STRING; }
-	{SINGLE_QUOTE_TEXT}				 	 {  }
+	"'" 								{ yybegin(YYINITIAL); return JS_SINGLE_QUOTE_STRING; }
+	{LINE_TERMINATOR}					{ return JS_INCOMPLETE_STRING; }
+	{SINGLE_QUOTE_TEXT}				 	{  }
 }
 
 <DOUBLE_QUOTE_STRING> {
-	"\"" 								 { yybegin(YYINITIAL); return JS_DOUBLE_QUOTE_STRING; }
-	{LINE_TERMINATOR}					 { return JS_INCOMPLETE_STRING; }
-	{DOUBLE_QUOTE_TEXT}				 	 {  }
+	"\"" 								{ yybegin(YYINITIAL); return JS_DOUBLE_QUOTE_STRING; }
+	{LINE_TERMINATOR}					{ return JS_INCOMPLETE_STRING; }
+	{DOUBLE_QUOTE_TEXT}				 	{  }
 }
 
 <BLOCK_COMMENT> {
-	"*/"								 { yybegin(YYINITIAL); return ObjJ_BLOCK_COMMENT_END; }
-  	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
- 	'.*'/('\n'|'\*\/')							 { return ObjJ_BLOCK_COMMENT_LINE; }
+	"*/"								{ yybegin(YYINITIAL); return ObjJ_BLOCK_COMMENT_END; }
+  	"*"									{ return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
+ 	'.*'/("\n"|"*/")					{ return ObjJ_BLOCK_COMMENT_LINE; }
 }
 
 <YYINITIAL> {
