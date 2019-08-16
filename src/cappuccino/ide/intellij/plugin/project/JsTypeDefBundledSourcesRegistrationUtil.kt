@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.contents
 import com.intellij.openapi.application.runWriteAction
@@ -77,8 +78,11 @@ object JsTypeDefBundledSourcesRegistrationUtil {
             return false
         }
 
+        val newVersion = libraryPath.findFileByRelativePath("version.txt")?.contents
+                ?: throw Exception("JsTypeDef library versions cannot be null")
+
         // Check if same version
-        if (isSourceCurrent(libraryPath, modifiableModel)) {
+        if (newVersion == ObjJPluginSettings.typedefVersion) {
             return true
         }
 
@@ -89,17 +93,9 @@ object JsTypeDefBundledSourcesRegistrationUtil {
         libModel.commit()
         modifiableModel.commit()
         rootModel.commit()
+        ObjJPluginSettings.typedefVersion = newVersion
         return true
     }
-
-    private fun isSourceCurrent(newLibraryPath: VirtualFile?, model:ModifiableModel) : Boolean {
-        val versionString = newLibraryPath?.findFileByRelativePath("version.txt")?.contents
-        val oldVersionString = currentLibraryVersion(model)
-        if (versionString == null && oldVersionString == null)
-            throw Exception("JsTypeDef library versions cannot be null")
-        return versionString == oldVersionString
-    }
-
 
     private fun cleanAndReturnLibrary(modifiableModel: ModifiableModel) : Library? {
         val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return null

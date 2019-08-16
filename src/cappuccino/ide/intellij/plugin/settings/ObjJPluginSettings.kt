@@ -312,6 +312,13 @@ object ObjJPluginSettings {
                 messages_didSend_stubVersionSetting.value = -1
             }
         }
+    private val typedefVersionSetting: StringSetting = StringSetting("jstypedef.version", "")
+    var typedefVersion: String
+        get()
+        = typedefVersionSetting.value ?: ""
+        set(value) {
+            typedefVersionSetting.value = value
+        }
 
     private val lastLoadedVersionSetting: StringSetting = StringSetting("objj.messages.restart-normally-after-index-update.did-send", "")
     var pluginUpdated: Boolean

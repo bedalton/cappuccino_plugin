@@ -1,0 +1,1016 @@
+/*-- @framework:AppKit --*/
+
+/*-- @file: CPCompatibility --*/
+function CPFeatureIsCompatible(aFeature:Any):boolean
+
+function CPPlatformHasBug(aBug:Any):boolean
+
+function CPBrowserIsEngine(anEngine:Any):boolean
+
+function CPBrowserIsOperatingSystem(anOperatingSystem:Any):boolean
+
+/*!
+    Sets a feature with the given value.
+*/
+function CPSetPlatformFeature(aFeature:Any, aBool:boolean)
+
+/*!
+    Return the properly prefixed JS property for the given name. E.g. in a webkit browser,
+    CPBrowserStyleProperty('transition') -> WebkitTransition
+
+    While technically not a style property, style related event handler names are also supported.
+    CPBrowserStyleProperty('transitionend') -> 'webkitTransitionEnd'
+
+    CSS is only available in platform(dom), so don't rely too heavily on it.
+*/
+function CPBrowserStyleProperty(aProperty:Any)
+
+function CPBrowserCSSProperty(aProperty:string):string
+
+function CPBrowserBackingStorePixelRatio(context:Any):boolean
+
+function CPAppKitImage(aFilename:string, aSize:CGSize):CPImage
+
+/*-- @file: CPGraphics.j --*/
+function CPDrawTiledRects(boundsRect:CGRect, clipRect:CGRect,sides:CGRectEdge[], grays:float[])
+function CPDrawColorTiledRects(boundsRect:CGRect, clipRect:CGRect,sides:CGRectEdge[], colors:CPColor[])
+
+/*-- @file: CGAffineTransform.j --*/
+
+/**
+ * An affine transformation matrix is used to rotate, scale, translate, or skew the objects you draw in a graphics context
+ */
+interface CGAffineTransform {
+    /** The entry at position [1,1] in the matrix. */
+    a:number,
+    /** The entry at position [1,2] in the matrix. */
+    b:number,
+    /** The entry at position [2,1] in the matrix. */
+    c:number,
+    /** The entry at position [2,2] in the matrix. */
+    d:number,
+    /* The entry at position [3,1] in the matrix. */
+    tx:number,
+    /* The entry at position [3,2] in the matrix. */
+    ty:number
+}
+
+
+function CGAffineTransformMake(a:number, b:number, c:number, d:number, tx:number, ty:number) : CGAffineTransform
+
+/**
+ * @returns the identity affine transformation.
+ */
+function CGAffineTransformMakeIdentity()  : CGAffineTransform
+
+/**
+ * Creates copy of an affine transform
+ */
+function CGAffineTransformMakeCopy(anAffineTransform:CGAffineTransform) : CGAffineTransform
+/**
+ * @param sx:number Scale x
+ * @param sy:number Scale y
+ */
+function CGAffineTransformMakeScale(sx:number, sy:number) : CGAffineTransform
+
+function CGAffineTransformMakeTranslation(tx:number, ty:number) : CGAffineTransform
+
+function CGAffineTransformTranslate(aTransform:CGAffineTransform, tx:number, ty:number);
+
+/**
+ * @param aTransform:AffineTransform
+ * @param sx:number Scale x
+ * @param sy:number Scale y
+ */
+function CGAffineTransformScale(aTransform:CGAffineTransform, sx:number, sy:number)
+
+/**
+ * @param lhs The first affine transform.
+ * @param rhs The second affine transform. This affine transform is concatenated to the first affine transform.
+ */
+function CGAffineTransformConcat(lhs:number, rhs:number) : CGAffineTransform
+
+
+/**
+ * @param lhs The first affine transform.
+ * @param rhs The second affine transform. This affine transform is concatenated to the first affine transform.
+ * @param to transform to write the result to
+ */
+function CGAffineTransformConcatTo(lhs:CGAffineTransform, rhs:CGAffineTransform, to:CGAffineTransform) : CGAffineTransform
+
+function CGPointApplyAffineTransform(aPoint:CGPoint, aTransform:CGAffineTransform) : CGPoint
+
+function CGSizeApplyAffineTransform(aSize:CGSize, aTransform:CGAffineTransform) : CGSize
+
+function CGAffineTransformIsIdentity(aTransform:CGAffineTransform): BOOL
+
+function CGAffineTransformEqualToTransform(lhs:CGAffineTransform, rhs:CGAffineTransform)
+
+function CGStringCreateWithCGAffineTransform(aTransform:CGAffineTransform):String
+
+declare var CGAffineTransformCreateCopy:(anAffineTransform:CGAffineTransform) => CGAffineTransform
+
+
+/*!
+    Returns a transform that rotates a coordinate system.
+    @param anAngle the amount in radians for the transform
+    to rotate a coordinate system
+    @return CGAffineTransform the transform with a specified
+    rotation
+    @group CGAffineTransform
+*/
+function CGAffineTransformMakeRotation(anAngle:number) : CGAffineTransform
+
+/*!
+    Rotates a transform.
+    @param aTransform the transform to rotate
+    @param anAngle the amount to rotate in radians
+    @return void
+    @group CGAffineTransform
+*/
+function CGAffineTransformRotate(aTransform:CGAffineTransform, anAngle:number) : CGAffineTransform
+
+
+/*!
+    Inverts a transform.
+    @param aTransform the transform to invert
+    @return CGAffineTransform an inverted transform
+    @group CGAffineTransform
+*/
+function CGAffineTransformInvert(aTransform:CGAffineTransform): CGAffineTransform
+
+
+/*!
+    Applies a transform to the rectangle's points. The transformed rectangle
+    will be the smallest box that contains the transformed points.
+    @param aRect the rectangle to transform
+    @param anAffineTransform the transform to apply
+    @return CGRect the new transformed rectangle
+    @group CGAffineTransform
+*/
+function CGRectApplyAffineTransform(aRect:CGRect, anAffineTransform:CGAffineTransform) : CGRect
+
+
+/*!
+    Creates and returns a string representation of an affine transform.
+    @param anAffineTransform the transform to represent as a string
+    @return CPString a string describing the transform
+    @group CGAffineTransform
+*/
+function CPStringFromCGAffineTransform(anAffineTransform:CGAffineTransform):String
+
+
+/*-- @file: CGColor.j --*/
+
+interface CGColor {
+    colorspace:CGColorSpace
+    pattern:Any
+    components:number[]
+}
+
+@quiet
+function CGColorGetConstantColor(aColorName:string);
+
+/*!
+    This function is for source compatibility.
+*/
+function CGColorRetain(aColor:CGColor):CGColor
+
+
+/*!
+    This function is for source compatibility.
+*/
+function CGColorRelease()
+
+
+/*!
+    Creates a new CGColor.
+    @param aColorSpace the CGColorSpace of the color
+    @param components the color's intensity values plus alpha
+    @return CGColor the new color object
+    @group CGColor
+*/
+function CGColorCreate(aColorSpace:CGColorSpace, components:number[])
+
+/*!
+    Creates a gray color object.
+    @param gray the value to use for the color intensities [0.0 - 1.0]
+    @param alpha the gray's alpha value [0.0 - 1.0].
+    @return CGColor the new gray color object
+    @group CGColor
+*/
+function CGColorCreateGenericGray(gray:number, alpha:number):CGColor
+
+/*!
+    Creates an RGB color.
+    @param red the red component [0.0 - 1.0]
+    @param green the green component [0.0 - 1.0]
+    @param blue the blue component [0.0 - 1.0]
+    @param alpha the alpha component [0.0 - 1.0]
+    @return CGColor the RGB based color
+    @group CGColor
+*/
+function CGColorCreateGenericRGB(red:number, green:number, blue:number, alpha:number):CGColor
+
+/*!
+    Creates a CMYK color.
+    @param cyan the cyan component (\c 0.\c 0-\c 1.\c 0).
+    @param magenta the magenta component (\c 0.\c 0-\c 1.\c 0).
+    @param yellow the yellow component (\c 0.\c 0-\c 1.\c 0).
+    @param black the black component (\c 0.\c 0-\c 1.\c 0).
+    @param alpha the alpha component (\c 0.\c 0-\c 1.\c 0).
+    @return CGColor the CMYK based color
+    @group CGColor
+*/
+function CGColorCreateGenericCMYK(cyan:number, magenta:number, yellow:number, black:number, alpha:number):CGColor
+
+/*!
+    Creates a copy of the color with a specified alpha.
+    @param aColor the color object to copy
+    @param anAlpha the new alpha component for the copy (\c 0.\c 0-\c 1.\c 0).
+    @return CGColor the new copy
+    @group CGColor
+*/
+function CGColorCreateCopyWithAlpha(aColor:CGColor, anAlpha:number): CGColor
+
+/*!
+    Creates a color using the specified pattern.
+    @param aColorSpace the CGColorSpace
+    @param aPattern the pattern image
+    @param components the color components plus the alpha component
+    @return CGColor the patterned color
+    @group CGColor
+*/
+function CGColorCreateWithPattern(aColorSpace:CGColorSpace, aPattern:Any, components:number[])
+
+/*!
+    Determines if two colors are the same.
+    @param lhs the first CGColor
+    @param rhs the second CGColor
+    @return \c YES if the two colors are equal.
+    \c NO otherwise.
+*/
+function CGColorEqualToColor(lhs:CGColor, rhs:CGColor):BOOL
+
+/*!
+    Returns the color's alpha component.
+    @param aColor the color
+    @return float the alpha component [0.0 - 1.0]
+    @group CGColor
+*/
+function CGColorGetAlpha(aColor:CGColor):number;
+
+/*!
+    Returns the CGColor's color space.
+    @return CGColorSpace
+    @group CGColor
+*/
+function CGColorGetColorSpace(aColor:CGColor):CGColorSpace
+
+/*!
+    Returns the CGColor's components
+    including the alpha in an array.
+    @param aColor the color
+    @return CPArray the color's components
+*/
+function CGColorGetComponents(aColor:CGColor):number[]
+
+/*!
+    Returns the number of color components
+    (including alpha) in the specified color.
+    @param aColor the CGColor
+    @return CPNumber the number of components
+    @group CGColor
+*/
+function CGColorGetNumberOfComponents(aColor:CGColor):CPNumber
+
+/*!
+    Gets the CGColor's pattern.
+    @param a CGColor
+    @return CGPatternFIXME the pattern image
+    @group CGColor
+*/
+function CGColorGetPattern(aColor:CGColor):Any
+
+/*-- CGContext.j --*/
+
+alias CGLineCap:number
+readonly var kCGLineCapButt:CGLineCap
+readonly var kCGLineCapRound:CGLineCap
+readonly var kCGLineCapSquare:CGLineCap
+
+
+alias CGLineJoin:number
+readonly var kCGLineJoinMiter:CGLineJoin
+readonly var kCGLineJoinRound:CGLineJoin
+readonly var kCGLineJoinBevel:CGLineJoin
+
+alias CGPathFillMode:number
+readonly var kCGPathFill:CGPathFillMode
+readonly var kCGPathEOFill:CGPathFillMode
+readonly var kCGPathStroke:CGPathFillMode
+readonly var kCGPathFillStroke:CGPathFillMode
+readonly var kCGPathEOFillStroke:CGPathFillMode;
+
+alias CGBlendMode:number;
+readonly var kCGBlendModeNormal:CGBlendMode
+readonly var kCGBlendModeMultiply:CGBlendMode
+readonly var kCGBlendModeScreen:CGBlendMode
+readonly var kCGBlendModeOverlay:CGBlendMode
+readonly var kCGBlendModeDarken:CGBlendMode
+readonly var kCGBlendModeLighten:CGBlendMode
+readonly var kCGBlendModeColorDodge:CGBlendMode
+readonly var kCGBlendModeColorBurn:CGBlendMode
+readonly var kCGBlendModeSoftLight:CGBlendMode
+readonly var kCGBlendModeHardLight:CGBlendMode
+readonly var kCGBlendModeDifference:CGBlendMode
+readonly var kCGBlendModeExclusion:CGBlendMode
+readonly var kCGBlendModeHue:CGBlendMode
+readonly var kCGBlendModeSaturation:CGBlendMode
+readonly var kCGBlendModeColor:CGBlendMode
+readonly var kCGBlendModeLuminosity:CGBlendMode
+readonly var kCGBlendModeClear:CGBlendMode
+readonly var kCGBlendModeCopy:CGBlendMode
+readonly var kCGBlendModeSourceIn:CGBlendMode
+readonly var kCGBlendModeSourceOut:CGBlendMode
+readonly var kCGBlendModeSourceAtop:CGBlendMode
+readonly var kCGBlendModeDestinationOver:CGBlendMode
+readonly var kCGBlendModeDestinationIn:CGBlendMode
+readonly var kCGBlendModeDestinationOut:CGBlendMode
+readonly var kCGBlendModeDestinationAtop:CGBlendMode
+readonly var kCGBlendModeXOR:CGBlendMode
+readonly var kCGBlendModePlusDarker:CGBlendMode
+readonly var kCGBlendModePlusLighter:CGBlendMode
+
+/*!
+    This function is just here for source compatibility.
+    It does nothing.
+    @group CGContext
+*/
+function CGContextRelease()
+
+/*!
+    This function is just here for source compatibility.
+    It does nothing.
+    @param aContext a CGContext
+    @return CGContext the context
+*/
+function CGContextRetain(aContext:CGContext):CGContext
+
+interface CGGState {
+    alpha:number
+    strokeStyle:string
+    fillStyle:string
+    lineWidth:number
+    lineJoin:CGLineJoin
+    lineCap:CGLineCap
+    lineDashes?:number[]
+    lineDashesPhase?:number
+    miterLimit:number
+    globalAlpha:number
+    blendMode:CGBlendMode
+    shadowOffset:CGSize
+    shadowBlur:number
+    shadowColor?:NULL
+    CTM:CGAffineTransform
+}
+
+/*!
+    Creates a new graphics state, which describes all the current values for drawing.
+    @return a graphics state
+*/
+function CGGStateCreate():CGGState
+
+/*!
+    Creates a copy of the given graphics state.
+    @param aGState the graphics state to copy
+    @return a copy of the given graphics state
+*/
+function CGGStateCreateCopy(aGState:CGGState): CGGState
+
+interface CGBitmapGraphicsContext {
+    DOMElement:HTMLElement,
+    path?:CGPath
+    gState:CGGState,
+    gStateStack:CGSGtate[]
+}
+
+
+/*!
+    Returns a new graphics context.
+    @return CGContext a new graphics context which can be drawn into
+*/
+function CGBitmapGraphicsContextCreate():CGBitmapGraphicsContext
+
+/*!
+    Pushes the current graphics state of aContext onto the top of a stack.
+    @param aContext the CGContext to edit
+    @return void
+*/
+function CGContextSaveGState(aContext:CGContext)
+
+/*!
+    Pops the most recent graphics state of the top of the graphics stack and restores it.
+    @param aContext the CGContext to edit
+    @return void
+*/
+function CGContextRestoreGState(aContext:CGContext):CGGState
+
+function CGContextSetLineCap(aContext:CGContext, aLineCap:CGLineCap)
+
+function CGContextSetLineDash(aContext:CGContext, aPhase:number, someDashes:number[])
+
+function CGContextSetLineJoin(aContext:CGContext, aLineJoin:CGLineJoin)
+
+function CGContextSetLineWidth(aContext:CGContext, aLineWidth:number)
+
+function CGContextSetMiterLimit(aContext:CGContext, aMiterLimit:number)
+
+function CGContextSetBlendMode(aContext:CGContext, aBlendMode:CGBlendMode)
+
+function CGContextAddArc(aContext:CGContext, x:number, y:number, radius:number, startAngle:number, endAngle:number, clockwise:BOOL)
+
+/*!
+    Adds an arc to the current context that ends in the specified point.
+    @param aContext the CGContext to edit
+    @param x1 the x coordinate of the beginning of the arc
+    @param y1 the y coordinate of the beginning of the arc
+    @param x2 the x coordinate of the end of the arc
+    @param y2 the y coordinate of the end of the arc
+    @param radius the radius of the arc to be drawn
+    @return void
+*/
+function CGContextAddArcToPoint(aContext:CGContext, x1:number, y1:number, x2:number, y2:number, radius:number)
+
+/*!
+    Adds a cubic curve to the current context
+    @param aContext the CGContext to edit
+    @param cp1x the x coordinate of the first control point
+    @param cp1y the y coordinate of the first control point
+    @param cp2x the x coordinate of the second control point
+    @param cp2y the y coordinate of the second control point
+    @param x the x coordinate of the end of the curve
+    @param y the y coordinate of the end of the curve
+    @return void
+*/
+function CGContextAddCurveToPoint(aContext:CGContext, cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number)
+
+/*!
+    Adds a line to each element in the points array
+    @param aContext the CGContext to move
+    @param points an array of points that are to be consecutively executed as if they were individual addToPoint calls
+    @param count an upper bound on the number of points to use
+    @return void
+*/
+function CGContextAddLines(aContext:CGContext, points:CGPoint[], count:number)
+
+/*!
+    Adds a line from the current point to the x/y
+    @param aContext the CGContext to move
+    @param x the x coordinate of the end point of the line
+    @param y the y coordinate of the end point of the line
+    @return void
+*/
+function CGContextAddLineToPoint(aContext:CGContext, x:number, y:number)
+
+/*!
+    Adds aPath to the current path in aContext
+    @param aContext the CGContext to add to
+    @param aPath the path to be added
+    @return void
+*/
+function CGContextAddPath(aContext:CGContext, aPath:CGPath)
+
+/*!
+    Adds a quadratic curve from the current point to the point specified by x/y, using the control point specified by cpx/cpy
+    @param aContext the CGContext to add the curve to
+    @param cpx the x coordinate for the curve's control point
+    @param cpy the y coordinate for the curve's control point
+    @param x the x coordinate for the end point of the curve
+    @param y the y coordinate for the end point of the curve
+    @return void
+*/
+function CGContextAddQuadCurveToPoint(aContext:CGContext, cpx:number, cpy:number, x:number, y:number)
+/*!
+    Adds aRect to the current path in the given context
+    @param aContext the CGContext to add to
+    @param aRect the dimensions of the rectangle to add
+    @return void
+*/
+function CGContextAddRect(aContext:CGContext, aRect:CGRect)
+
+/*!
+    Adds up to count elements from rects to the current path in aContext
+    @param aContext the CGContext to add to
+    @param rects an array of CGRects to be added to the context's path
+    @param the upper bound of elements to be added
+    @return void
+*/
+function CGContextAddRects(aContext:CGContext, rects:CGRect[], count:number)
+
+/*!
+    Begins a new subpath in the given context
+    @param aContext the CGContext to create a new path in
+    @return void
+*/
+function CGContextBeginPath(aContext:CGContext)
+
+/*!
+    Closes the currently open subpath, if any, in aContext
+    @param aContext the CGContext to close a path in
+    @return void
+*/
+function CGContextClosePath(aContext:CGContext)
+
+/*!
+    Return YES if the current path in the given context is empty.
+    @param aContext the CGContext to examine
+    @return BOOL
+*/
+function CGContextIsPathEmpty(aContext:CGContext):BOOL
+
+/*!
+    Moves the current location of aContext to the given x and y coordinates
+    @param aContext the CGContext to move
+    @param x the x location to move the context to
+    @param y the y location to move the context to
+    @return void
+*/
+function CGContextMoveToPoint(aContext:CGContext, x:number, y:number)
+
+/*!
+    Fills a rectangle in the given context with aRect dimensions, using the context's current fill color
+    @param aContext the CGContext to draw into
+    @param aRect the dimensions of the rectangle to fill
+    @return void
+*/
+function CGContextFillRect(aContext:CGContext, aRect:CGRect)
+/*!
+    Fills a rectangle in the given context for each CGRect in the given array, up to a total of count rects
+    @param aContext the CGContext to draw into
+    @param rects an array of rects to fill
+    @param count the maximum number of rects from the given array to fill
+    @return void
+*/
+function CGContextFillRects(aContext:CGContext, rects:CGRect, count:number)
+
+/*!
+    Strokes a rectangle with the given location into the given context, using the context's current width and color
+    @param aContext the CGContext to draw into
+    @param aRect a CGRect indicating the dimensions of the rectangle to be drawn
+    @return void
+*/
+function CGContextStrokeRect(aContext:CGContext, aRect:CGRect)
+
+/*!
+    Strokes a rectangle with the given dimensions and the given stroke width
+    @param aContext the CGContext to draw into
+    @param aRect the CGRect indicating the bounds of the rect to be drawn
+    @param aWidth the width with which to stroke the rect
+    @return void
+*/
+function CGContextStrokeRectWithWidth(aContext:CGContext, aRect:CGRect, aWidth:number)
+
+/*!
+    Concatenates the given transformation matrix onto the current transformation matrix in aContext
+    @param aContext the CGContext to transform
+    @param aTransform the CGAffineTransform to apply to the given context
+    @return void
+*/
+function CGContextConcatCTM(aContext:CGContext, aTransform:CGAffineTransform)
+
+/*!
+    Returns the current transformation matrix for the given context
+    @param aContext the CGContext for which we are asking for the transform
+    @return CGAffineTransform the current transformation matrix of the given context
+*/
+function CGContextGetCTM(aContext:CGContext):CGAffineTransform
+
+
+/*!
+    Rotates the current context by anAngle radians
+    @param aContext the CGContext to rotate
+    @param anAngle the amount to rotate, in radians
+    @return void
+*/
+function CGContextRotateCTM(aContext:CGContext, anAngle:number)
+
+
+/*!
+    Scales the current context by sx/sy
+    @param aContext the CGContext to scale
+    @param sx the amount to scale in the x direction
+    @param sy the amount to scale in the y direction
+    @return void
+*/
+function CGContextScaleCTM(aContext:CGContext, sx:number, sy:number)
+
+/*!
+    Translates the given context by tx in the x direction and ty in the y direction
+    @param aContext the CGContext to translate
+    @param tx the amount to move in the x direction
+    @param ty the amount to move in the y direction
+    @return void
+*/
+function CGContextTranslateCTM(aContext:CGContext, tx:number, ty:number)
+
+/*!
+    Sets the current offset, and blur for shadows in core graphics drawing operations
+    @param aContext the CGContext of the shadow
+    @param aSize a CGSize indicating the offset of the shadow
+    @param aBlur a float indicating the blur radius
+    @return void
+*/
+function CGContextSetShadow(aContext:CGContext, aSize:CGSize, aBlur:number)
+
+/*!
+    Sets the current offset, blur, and color for shadows in core graphics drawing operations
+    @param aContext the CGContext of the shadow
+    @param aSize a CGSize indicating the offset of the shadow
+    @param aBlur a float indicating the blur radius
+    @param aColor a CPColor object indicating the color of the shadow
+    @return void
+*/
+function CGContextSetShadowWithColor(aContext:CGContext, aSize:CGSize, aBlur:number, aColor:CPColor)
+
+/*!
+    Sets the current alpha value for core graphics drawing operations in the given context .
+    @param aContext the CGContext who's alpha value should be updated
+    @param anAlpha the new alpha value. 1.0 is completely opaque, 0.0 is completely transparent.
+    @return void
+*/
+function CGContextSetAlpha(aContext:CGContext, anAlpha:number)
+
+/*!
+    Fills in the area of the current path, using the even-odd fill rule.
+    @param aContext the CGContext of the path
+    @return void
+*/
+function CGContextEOFillPath(aContext:CGContext)
+
+/*!
+    Fills in the area of the current path, using  the non-zero winding number rule.
+    @param aContext the CGContext of the path
+    @return void
+*/
+function CGContextFillPath(aContext:CGContext)
+
+/*!
+    Strokes a rectangle with the given dimensions and the given stroke width
+    @param aContext the CGContext to draw into
+    @param aRect the CGRect indicating the bounds of the rect to be drawn
+    @param aWidth the width with which to stroke the rect
+    @return void
+*/
+function CGContextStrokeRectWithWidth(aContext:CGContext, aRect:CGRect, aWidth:number)
+
+/*!
+    Draws the outline of an ellipse bounded by a rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+*/
+function CGContextAddEllipseInRect(aContext:CGContext, aRect:CGRect)
+
+/*!
+    Fills an ellipse bounded by a rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+*/
+function CGContextFillEllipseInRect(aContext:CGContext, aRect:CGRect)
+
+/*!
+    Strokes an ellipse bounded by the specified rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+*/
+function CGContextStrokeEllipseInRect(aContext:CGContext, aRect:CGRect)
+
+
+/*!
+    Paints a line in the current path of the current context.
+    @param aContext CGContext to draw on
+    @return void
+*/
+function CGContextStrokePath(aContext:CGContext)
+
+/*!
+    Strokes multiple line segments.
+    @param aContext CGContext to draw on
+    @param points an array with an even number of points. The
+    first point is the beginning of the first line segment, the second
+    is the end of the first line segment. The third point is
+    the beginning of second line segment, etc.
+    @param count the number of points in the array
+    @return void
+*/
+function CGContextStrokeLineSegments(aContext:CGContext, points:CGPoint[], count:number)
+
+/*!
+    Sets the current fill color.
+    @param aContext the CGContext
+    @param aColor the new color for the fill
+    @return void
+*/
+function CGContextSetFillColor(aContext:CGContext, aColor:CPColor)
+
+/*!
+    Sets the current stroke color.
+    @param aContext the CGContext
+    @param aColor the new color for the stroke
+    @return void
+*/
+function CGContextSetStrokeColor(aContext:CGContext, aColor:CPColor)
+
+/*!
+    Fills a rounded rectangle.
+    @param aContext the CGContext to draw into
+    @param aRect the base rectangle
+    @param aRadius the distance from the rectangle corner to the rounded corner
+    @param ne set it to \c YES for a rounded northeast corner
+    @param se set it to \c YES for a rounded southeast corner
+    @param sw set it to \c YES for a rounded southwest corner
+    @param nw set it to \c YES for a rounded northwest corner
+    @return void
+*/
+function CGContextFillRoundedRectangleInRect(aContext:CGContext, aRect:CGRect, aRadius:number, ne:BOOL, se:BOOL, sw:BOOL, nw:BOOL)
+
+/*!
+    Strokes a rounded rectangle.
+    @param aContext the CGContext to draw into
+    @param aRect the base rectangle
+    @param aRadius the distance from the rectangle corner to the rounded corner
+    @param ne set it to \c YES for a rounded northeast corner
+    @param se set it to \c YES for a rounded southeast corner
+    @param sw set it to \c YES for a rounded southwest corner
+    @param nw set it to \c YES for a rounded northwest corner
+    @return void
+*/
+function CGContextStrokeRoundedRectangleInRect(aContext:CGContext, aRect:CGRect, aRadius:number, ne:BOOL, se:BOOL, sw:BOOL, nw:BOOL)
+
+
+
+function CGPathWithEllipseInRect(aRect:CGRect):CGPath
+
+function CGPathWithRoundedRectangleInRect(aRect:CGRect, xRadius:number, yRadius:number, ne:BOOL, se:BOOL, sw:BOOL, nw:BOOL):CGPath
+
+function CGPathCloseSubpath(aPath:CGPath)
+
+function CGPathEqualToPath(aPath:CGPath, anotherPath:CGPath):BOOL
+
+function CGPathGetCurrentPoint(aPath:CGPath):CGPoint
+
+function CGPathIsEmpty(aPath:CGPath):BOOL
+/*!
+    Calculate the smallest rectangle to contain both the path of the receiver and all control points.
+*/
+function CGPathGetBoundingBox(aPath:CGPath):CGRect
+
+function CGPathContainsPoint(aPath:CGPath, aTransform:CGAffineTransform, point:CGPoint, eoFill?:BOOL):BOOL
+
+
+function CGContextClearRect(aContext:CGContext, aRect:CGRect)
+
+function CGContextDrawLinearGradient(aContext:CGContext, aGradient:CGGradient, aStartPoint:CGPoint, anEndPoint:CGPoint, options:Any)
+
+function CGContextDrawRadialGradient(aContext:CGContext, aGradient:CGGradient, aStartCenter:CGPoint, aStartRadius:number, anEndCenter:CGPoint, anEndRadius:number, options?:Any)
+
+function CGContextClip(aContext:CGContext)
+
+function CGContextClipToRect(aContext:CGContext, aRect:CGRect)
+
+function CGContextClipToRects(aContext:CGContext, rects:CGRect[], count:number)
+
+function CGContextDrawImage(aContext:CGContext, aRect:CGRect, anImage:CPImage)
+
+function CGContextDrawPath(aContext:CGContext, aMode:CGPathFillMode)
+
+/*!
+    Creates a context into which you can render a fill pattern
+    of the given size. Once the pattern is rendered, you can
+    set the fill or stroke pattern to the rendered pattern
+    with CGContextSetFillPattern or CGContextSetStrokePattern.
+*/
+function CGContextCreatePatternContext(aContext:CGContext, aSize:CGSize)
+
+/*!
+    Sets the fill pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetFillPattern(aContext:CGContext, aPatternContext:CGContext)
+
+
+/*!
+    Sets the stroke pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetStrokePattern(aContext:CGContext, aPatternContext:CGContext)
+
+/*-- @file: CoreGraphics/CGContextText.j --*/
+function CGContextGetTextMatrix(aContext:CGContext):CGAffineTransform
+
+function CGContextSetTextMatrix(aContext:CGContext, aTransform:CGAffineTransform)
+
+function CGContextGetTextPosition(aContext:CGContext):CGPoint
+
+function CGContextSetTextPosition(aContext:CGContext, x:number, y:number)
+
+function CGContextGetFont(aContext:CGContext):CPFont
+
+function CGContextSelectFont(aContext:CGContext, aFont:CPFont)
+
+alias CGTextDrawingMode:number
+readonly var kCGTextFill:CGTextDrawingMode;
+readonly var kCGTextStroke:CGTextDrawingMode;
+readonly var kCGTextFillStroke:CGTextDrawingMode;
+readonly var kCGTextInvisible:CGTextDrawingMode;
+
+function CGContextSetTextDrawingMode(aContext:CGContext, aMode:CGTextDrawingMode)
+
+function CGContextShowText(/* CGContext */ aContext:CGContext, /* CPString */ aString:CPString)
+
+function CGContextShowTextAtPoint(/* CGContext */ aContext:CGContext, /* float */ x:number, /* float */ y:number, /* CPString */ aString:CPString)
+
+/*-- @file: CoreGraphics/CGGradient.j --*/
+function CGGradientCreateWithColorComponents(aColorSpace:CGColorSpace, components:number[], locations:number[], count:number)
+
+interface CGGradient {
+    colorspace:CGColorSpace
+    colors:number[]
+    locations:number[]
+}
+
+function CGGradientCreateWithColors(aColorSpace:CGColorSpace, colors:number[], locations:number[]):CGGradient
+
+function CGGradientRetain(aGradient:CGGradient):CGGradient
+
+/*-- @file: CoreGraphics/CGPath.j --*/
+interface CGPath {
+    count:number,
+    elements:Any[],
+    start:CGPoint,
+    current:CGPoint
+}
+
+/*!
+    Returns a new CGPath object.
+*/
+function CGPathCreateMutable() : CGPath
+
+/*!
+    Returns a copy of the given path object.
+*/
+function CGPathCreateMutableCopy(aPath:CGPath) : CGPath
+
+/*!
+    Returns a copy of the given path object.
+*/
+function CGPathCreateCopy(aPath:CGPath) : CGPath;
+
+function CGPathRelease(aPath:CGPath);
+
+function CGPathRetain(aPath:CGPath) : CGPath
+
+function CGPathAddArc(aPath:CGPath, aTransform:CGAffineTransform, x:number, y:number, aRadius:number, aStartAngle:number, anEndAngle:number, isClockwise:BOOL)
+
+function CGPathAddArcToPoint(aPath:CGPath, aTransform:CGAffineTransform, x1:number, y1:number, x2:number, y2:number, aRadius:number)
+
+
+/**
+ * @param aPath:CGPath
+ * @param aTransform:CGAffineTransform
+ * @param cp1x:number point 1's x
+ * @param cp1y:number point 1's y
+ * @param cp2x:number point 2's x
+ * @param cp2x:number point 2's y
+ * @param x:number end x
+ * @param y:number end y
+ */
+function CGPathAddCurveToPoint(aPath:CGPath, aTransform:CGAffineTransform, cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number)
+
+function CGPathAddLines(aPath:CGPath, aTransform:CGAffineTransform, points:Array<CGPoint>, count:number)
+
+function CGPathAddLineToPoint(aPath:CGPath, aTransform:CGAffineTransform, x:number, y:number)
+
+function CGPathAddQuadCurveToPoint(aPath:CGPath, aTransform:CGAffineTransform, cpx:number, cpy:number, x:number, y:number)
+
+function CGPathAddRect(aPath:CGPath, aTransform:CGAffineTransform, aRect:CGRect)
+
+function CGPathMoveToPoint(aPath:CGPath, aTransform:CGAffineTransform, x:number, y:number)
+
+function CGPathWithEllipseInRect(aRect:CGRect):CGPath
+
+/**
+ * @param yRadius:number !not currently supported!
+ */
+function CGPathWithRoundedRectangleInRect(aRect:CGRect, xRadius:number, yRadius:number, ne:BOOL, se:BOOL, sw:BOOL, nw:BOOL)
+
+function CGPathCloseSubpath(aPath:CGPath)
+
+function CGPathEqualToPath(aPath:CGPath, anotherPath:CGPath):BOOL
+
+function CGPathGetCurrentPoint(aPath:CGPath) : CGPoint
+
+function CGPathIsEmpty(aPath:CGPath):BOOL
+
+/*!
+    Calculate the smallest rectangle to contain both the path of the receiver and all control points.
+*/
+function CGPathGetBoundingBox(aPath:CGPath):CGRect
+
+function CGPathContainsPoint(aPath:CGPath, aTransform:CGAffineTransform, point:CGPath, eoFill:Any):BOOL
+
+
+/*-- @file:CPDocument.j --*/
+alias CPSaveOperationType:number
+readonly var CPSaveOperation:CPSaveOperationType
+readonly var CPSaveAsOperation:CPSaveOperationType
+readonly var CPSaveToOperation:CPSaveOperationType
+readonly var CPAutosaveOperation:CPSaveOperationType
+
+alias CPDocumentChangeType:number
+readonly var CPChangeDone:CPDocumentChangeType
+readonly var CPChangeUndone:CPDocumentChangeType
+readonly var CPChangeCleared:CPDocumentChangeType
+readonly var CPChangeReadOtherContents:CPDocumentChangeType
+readonly var CPChangeAutosaved:CPDocumentChangeType
+
+
+/*-- @file: CPRuleEditor/CPPredicateEditorRowTemplate --*/
+
+alias CPAttributeType:number;
+readonly var CPUndefinedAttributeType:CPAttributeType
+readonly var CPInteger16AttributeType:CPAttributeType
+readonly var CPInteger32AttributeType:CPAttributeType
+readonly var CPInteger64AttributeType:CPAttributeType
+readonly var CPDecimalAttributeType:CPAttributeType
+readonly var CPDoubleAttributeType:CPAttributeType
+readonly var CPFloatAttributeType:CPAttributeType
+readonly var CPStringAttributeType:CPAttributeType
+readonly var CPBooleanAttributeType:CPAttributeType
+readonly var CPDateAttributeType:CPAttributeType
+readonly var CPBinaryDataAttributeType:CPAttributeType
+readonly var CPTransformableAttributeType:CPAttributeType
+
+/*-- @file:CPTheme.j --*/
+class ThemeState {
+    new(stateNames:string[]);
+    toString():string
+    hasThemeState(aState:ThemeState):BOOL
+    isSubsetOf(aState:ThemeState):BOOL
+    without(aState:ThemeState):ThemeState
+    and(aState:ThemeState):ThemeState
+}
+
+function CPThemeState(states:(string|ThemeState)[]):ThemeState
+
+/*-- @file: CPTextView/CPFontDescriptor.j --*/
+/*
+    Typeface information
+*/
+alias CPFontSymbolicTraits:number;
+readonly var CPFontItalicTrait:CPFontSymbolicTraits;
+readonly var CPFontBoldTrait:CPFontSymbolicTraits;
+readonly var CPFontExpandedTrait:CPFontSymbolicTraits;
+readonly var CPFontCondensedTrait:CPFontSymbolicTraits;
+readonly var CPFontSmallCapsTrait:CPFontSymbolicTraits;
+
+/*-- @file: CPTextView/CPParagraphStyle.j --*/
+alias CPTabStopType:number
+readonly var CPLeftTabStopType:CPTabStopType
+
+/*-- @file: CPTextView/CPTextContainer.j --*/
+alias CPLineSweepDirection:number
+readonly var CPLineSweepLeft:CPLineSweepDirection;
+readonly var CPLineSweepRight:CPLineSweepDirection;
+readonly var CPLineSweepDown:CPLineSweepDirection;
+readonly var CPLineSweepUp:CPLineSweepDirection;
+
+alias CPLineMovementDirection:number
+readonly var CPLineDoesntMoves:CPLineMovementDirection
+readonly var CPLineMovesLeft:CPLineMovementDirection
+readonly var CPLineMovesRight:CPLineMovementDirection
+readonly var CPLineMovesDown:CPLineMovementDirection
+readonly var CPLineMovesUp:CPLineMovementDirection
+
+/*-- @file: Platform/Dom/CPDOMDisplayServer.h --*/
+function CPDOMDisplayServerSetStyleLeftTop(aDOMElement:DOMElement, aTransform:CGAffineTransform, aLeft:number, aTop:number)
+function CPDOMDisplayServerSetStyleRightTop(aDOMElement:DOMElement, aTransform:CGAffineTransform, aRight:number, aTop:number)
+function CPDOMDisplayServerSetStyleLeftBottom(aDOMElement:DOMElement, aTransform:CGAffineTransform, aLeft:number, aBottom:number)
+function CPDOMDisplayServerSetStyleRightBottom(aDOMElement:DOMElement, aTransform:CGAffineTransform, aRight:number, aBottom:number)
+function CPDOMDisplayServerSetStyleSize(aDOMElement:DOMElement, aWidth:number, aHeight:number)
+function CPDOMDisplayServerSetSize(aDOMElement:DOMElement, aWidth:number, aHeight:number)
+function CPDOMDisplayServerSetStyleBackgroundSize(aDOMElement:DOMElement, aWidth:number, aHeight:number)
+function CPDOMDisplayServerAppendChild(aParentElement:DOMElement, aChildElement:DOMElement)
+function CPDOMDisplayServerInsertBefore(aParentElement:DOMElement, aChildElement:DOMElement, aBeforeElement:DOMElement)
+function CPDOMDisplayServerRemoveChild(aParentElement:DOMElement, aChildElement:DOMElement)
+function PREPARE_DOM_OPTIMIZATION()
+function EXECUTE_DOM_INSTRUCTIONS()
+
+/*-- @file: Platform/DOM/Platform.h --*/
+function PLATFORM(FEATURE:Any)
+
+/*-- @file: CPBrowser.j --*/
+alias CPTableViewDropOperation:number

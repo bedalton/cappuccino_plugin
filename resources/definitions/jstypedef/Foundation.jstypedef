@@ -1,0 +1,442 @@
+/*-- @framework: Foundation --*/
+/*-- @file: _CGGeometry.j --*/
+interface CGSize {
+    width:number
+    height:number
+}
+
+interface CGPoint {
+    x:number
+    y:number
+}
+
+interface CGRect {
+    size:CGSize,
+    origin:CGPoint
+}
+
+function CGPointMake(x:number, y:number):CGPoint;
+
+function CGPointMakeZero():CGPoint;
+
+function CGPointCreateCopy(aPoint:CGPoint):CGPoint;
+
+function CGPointEqualToPoint(lhsPoint:CGPoint, rhsPoint:CGPoint):boolean;
+
+function CGStringFromPoint(aPoint:CGPoint):string;
+
+function CGSizeMake(width:number, height:number):CGSize;
+
+function CGSizeMakeZero():CGSize;
+
+function CGSizeMakeCopy(aSize:CGSize):CGSize;
+
+function CGSizeEqualToSize(lhsSize:CGSize, rhsSize:CGSize):boolean
+
+function CGStringFromSize(aSize:CGSize):string
+
+function CGRectMake(x:number, y:number, width:number, height:number):CGRect
+
+function CGRectMakeZero():CGRect
+
+function CGRectMakeCopy(aRect:CGRect):CGRect
+
+function CGRectCreateCopy(aRect:CGRect):CGRect
+
+function CGRectEqualToRect(lhsRect:CGRect, rhsRect:CGRect):boolean
+
+function CGStringFromRect(aRect:CGRect):string;
+
+function CGRectOffset(aRect:CGRect, dX:number, dY:number):CGRect;
+
+function CGRectInset(aRect:CGRect, dX:number, dY:number):CGRect;
+
+function CGRectGetHeight(aRect:CGRect):number
+
+function CGRectGetMaxX(aRect:CGRect):number
+
+function CGRectGetMaxY(aRect:CGRect):number
+
+function CGRectGetMidX(aRect:CGRect):number
+
+function CGRectGetMidY(aRect:CGRect):number
+
+function CGRectGetMinX(aRect:CGRect):number
+
+function CGRectGetMinY(aRect:CGRect):number;
+
+function CGRectGetWidth(aRect:CGRect):number;
+
+function CGRectIsEmpty(aRect:CGRect):boolean
+
+function CGRectIsNull(aRect:CGRect):boolean;
+
+function CGRectContainsPoint(aRect:CGRect, aPoint:CGPoint):boolean;
+
+interface CGInset {
+    top:number
+    right:number
+    bottom:number
+    left:number
+}
+
+function CGInsetMake(top:number, right:number, bottom:number, left:number):CGInset
+
+function CGInsetMakeZero():CGInset
+
+function CGInsetMakeCopy(anInset:CGInset):CGInset
+
+function CGInsetMakeInvertedCopy(anInset:CGInset):CGInset
+
+function CGInsetIsEmpty(anInset:CGInset):boolean
+
+function CGInsetEqualToInset(lhsInset:CGInset, rhsInset:CGInset):boolean
+
+readonly var CGRectNull:CGRect;
+
+interface CGRectEdge:number;
+readonly var CGMinXEdge:CGRectEdge;
+readonly var CGMinYEdge:CGRectEdge;
+readonly var CGMaxXEdge:CGRectEdge;
+readonly var CGMaxYEdge:CGRectEdge;
+
+/*!
+    Creates two rectangles -- slice and rem -- from inRect, by dividing inRect
+    with a line that's parallel to the side of inRect specified by edge.
+    The size of slice is determined by amount, which specifies the distance from edge.
+
+    slice and rem must not be NULL, must not be the same object, and must not be the
+    same object as inRect.
+
+    @group CGRect
+*/
+function CGRectDivide(inRect:CGRect, slice:CGRect, rem:CGRect, amount:number, edge:CGRectEdge)
+
+/*!
+    Returns a \c BOOL indicating whether CGRect \c lhsRect
+    contains CGRect \c rhsRect.
+    @group CGRect
+    @param lhsRect the CGRect to test if \c rhsRect is inside of
+    @param rhsRect the CGRect to test if it fits inside \c lhsRect.
+    @return BOOL \c YES if \c rhsRect fits inside \c lhsRect.
+*/
+function CGRectContainsRect(lhsRect:CGRect, rhsRect:CGRect):boolean
+
+/*!
+    Returns \c YES if the two rectangles intersect
+    @group CGRect
+    @param lhsRect the first CGRect
+    @param rhsRect the second CGRect
+    @return BOOL \c YES if the two rectangles have any common spaces, and \c NO, otherwise.
+*/
+function CGRectIntersectsRect(lhsRect:CGRect, rhsRect:CGRect):boolean
+
+/*!
+    Makes the origin and size of a CGRect all integers. Specifically, by making
+    the southwest corner the origin (rounded down), and the northeast corner a CGSize (rounded up).
+    @param aRect the rectangle to operate on
+    @return CGRect the modified rectangle (same as the input)
+    @group CGRect
+*/
+function CGRectIntegral(aRect:CGRect):CGRect;
+
+/*!
+    Returns the intersection of the two provided rectangles as a new rectangle.
+    @param lhsRect the first rectangle used for calculation
+    @param rhsRect the second rectangle used for calculation
+    @return CGRect the intersection of the two rectangles
+    @group CGRect
+*/
+function CGRectIntersection(lhsRect:CGRect, rhsRect:CGRect):CGRect
+
+/*
+ * Returns a rectangle with a positive width and height.
+ */
+function CGRectStandardize(aRect:CGRect):CGRect
+
+/*
+ * Returns the smallest rectangle that contains the two source rectangles.
+ */
+function CGRectUnion(lhsRect:CGRect, rhsRect:CGRect):CGRect
+
+/*!
+    Returns the specified rectangle inset by the given CGInset as a new rectangle.
+    @param aRect the rect to inset
+    @param anInset a CGInset to inset by
+    @return CGRect aRect inset by anInset
+*/
+function CGRectInsetByInset(aRect:CGRect, anInset:CGInset):CGRect
+
+function CGPointFromString(aString:string):CGPoint
+
+function CGSizeFromString(aString:string):CGSize
+
+function CGRectFromString(aString:string):CGRect
+
+function CGPointFromEvent(anEvent:Event):CGPoint
+
+/*!
+    Combines two insets by adding their individual elements and returns the result.
+
+    @group CGInset
+*/
+function CGInsetUnion(lhsInset:CGInset, rhsInset:CGInset)
+
+/*!
+    Subtract one inset from another by subtracting their individual elements and returns the result.
+
+    @group CGInset
+*/
+function CGInsetDifference(lhsInset:CGInset, rhsInset:CGInset)
+
+function CGInsetFromString(aString:string):CGInset
+
+function CGInsetFromCPString(aString:string):CGInset
+
+/*!
+    When drawing lines in a canvas, they have to be aligned to half the stroke width.
+    This function aligns an x or y coordinate so that drawing a line along the opposite
+    coordinate will draw correctly.
+*/
+function CGAlignStroke(coord:number, strokeWidth:number):number
+
+/*!
+    Ensure a coordinate falls exactly on a pixel boundary.
+*/
+function CGAlignCoordinate(coord:number):number
+
+
+/*-- @file: CPDecimal.j --*/
+/*!
+    @ingroup foundation
+    Creates a CPDecimal object from a string representation of the decimal number.
+    @param decimalString CPString of number
+    @param roundingMode Rounding mode for when number is too large to fit in mantissa.
+    @return A CPDecimal object, or nil on error.
+*/
+function CPDecimalMakeWithString(string:string, locale:Any):CPDecimal|null
+
+/*!
+    @ingroup foundation
+    Creates a CPDecimal object from a given mantissa and exponent. The sign is taken from the sign of the mantissa. This cant do a full 34 digit mantissa representation as JS's 32 bits or 64bit binary FP numbers cant represent that. So use the CPDecimalMakeWithString if you want longer mantissa.
+    @param mantissa the mantissa (though see above note)
+    @param exponent the exponent
+    @return A CPDecimal object, or nil on error.
+*/
+function CPDecimalMakeWithParts(mantissa:number, exponent:number):CPDecimal|null
+
+/*!
+    @ingroup foundation
+    Creates a CPDecimal 0.
+    @return A CPDecimal object containing the value 0.
+*/
+function CPDecimalMakeZero():CPDecimal
+
+/*!
+    @ingroup foundation
+    Creates a CPDecimal 1.
+    @return A CPDecimal object containing the value 1.
+*/
+function CPDecimalMakeOne():CPDecimal
+
+/*!
+    @ingroup foundation
+    Creates a CPDecimal NaN.
+    @return A CPDecimal object containing the value NaN
+*/
+function CPDecimalMakeNaN():CPDecimal
+
+/*!
+    @ingroup foundation
+    Checks to see if a CPDecimal is zero. Can handle uncompacted strings.
+    @return TRUE on zero.
+*/
+function CPDecimalIsZero(dcm:CPDecimal):BOOL
+
+/*!
+    @ingroup foundation
+    Checks to see if a CPDecimal is 1. Can handle uncompacted strings (it compacts them).
+    @return TRUE on 1.
+*/
+function CPDecimalIsOne(dcm:CPDecimal):BOOL
+
+/*!
+    @ingroup foundation
+    Checks to see if a CPDecimal is Not A Number.
+    @return TRUE on NaN.
+*/
+function CPDecimalIsNotANumber(dcm:CPDecimal):BOOL
+
+/*!
+    @ingroup foundation
+    Create a copy of a CPDecimal object
+    @param dcm the CPDecimal number to copy.
+    @return a new CPDecimal.
+*/
+function CPDecimalCopy(dcm:CPDecimal):CPDecimal
+
+alias CPOrder:number;
+
+/*!
+    @ingroup foundation
+    Compare two CPDecimal objects. Order is left to right (i.e. Ascending would
+    mean left is smaller than right operand).
+    @param leftOperand the left CPDecimal
+    @param rightOperand the right CPDecimal
+    @return CPOrderedAscending, CPOrderedDescending or CPOrderedSame.
+*/
+function CPDecimalCompare(leftOperand:CPDecimal, rightOperand:CPDecimal):CPOrder
+
+alias CPCalculationErrorCode:number;
+
+/*!
+    @ingroup foundation
+    Performs the addition of 2 CPDecimal numbers.
+    @param result the CPDecimal object in which to put the result
+    @param leftOperand the left CPDecimal operand
+    @param rightOperand the right CPDecimal operand
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalAdd(result:CPDecimal, leftOperand:CPDecimal, rightOperand:CPDecimal, roundingMode:CPRoundingMode, longMode:BOOL):CPCalculationErrorCode
+
+/*!
+    @ingroup foundation
+    Performs the subtraction of 2 CPDecimal numbers.
+    @param result the CPDecimal object in which to put the result
+    @param leftOperand the left CPDecimal operand
+    @param rightOperand the right CPDecimal operand
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalSubtract(result:CPDecimal, leftOperand:CPDecimal, rightOperand:CPDecimal, roundingMode:CPRoundingMode):CPCalculationErrorCode
+
+/*!
+    @ingroup foundation
+    Performs a division of 2 CPDecimal numbers.
+    @param result the CPDecimal object in which to put the result
+    @param leftOperand the left CPDecimal operand
+    @param rightOperand the right CPDecimal operand
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalDivide(result:CPDecimal, leftOperand:CPDecimal, rightOperand:CPDecimal, roundingMode:CPRoundingMode):CPCalculationErrorCode
+
+/*!
+    @ingroup foundation
+    Performs multiplication of 2 CPDecimal numbers.
+    @param result the CPDecimal object in which to put the result
+    @param leftOperand the left CPDecimal operand
+    @param rightOperand the right CPDecimal operand
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalMultiply(result:CPDecimal, leftOperand:CPDecimal, rightOperand:CPDecimal, roundingMode:CPRoundingMode, powerMode:BOOL):CPCalculationErrorCode
+
+
+/*!
+    @ingroup foundation
+    Raises a CPDecimal number to a power of 10.
+    @param result the CPDecimal object in which to put the result
+    @param dcm the CPDecimal operand
+    @param power the power to raise to
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalMultiplyByPowerOf10(result:CPDecimal, dcm:CPDecimal, power:number, roundingMode:CPRoundingMode):CPCalculationErrorCode
+
+
+/*!
+    @ingroup foundation
+    Raises a CPDecimal number to the given power.
+    @param result the CPDecimal object in which to put the result
+    @param dcm the CPDecimal operand
+    @param power the power to raise to
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalPower(result:CPDecimal, dcm:CPDecimal, power:number, roundingMode:CPRoundingMode):CPCalculationErrorCode
+
+/*!
+    @ingroup foundation
+    Normalises 2 CPDecimals. Normalisation is the process of modifying a
+    numbers mantissa to ensure that both CPDecimals have the same exponent.
+    @param dcm1 the first CPDecimal
+    @param dcm2 the second CPDecimal
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalNormalize(dcm1:CPDecimal, dcm2:CPDecimal, roundingMode:CPRoundingMode, longMode:BOOL):CPCalculationErrorCode
+
+
+/*!
+    @ingroup foundation
+    Rounds a CPDecimal off at a given decimal position. scale specifies the
+    position. Negative values of scale imply rounding in the whole numbers and
+    positive values rounding in the decimal places. A scale of 0 rounds to
+    the first whole number.
+    @param result the CPDecimal object in which to put the result
+    @param dcm the CPDecimal operand
+    @param scale the position to round to
+    @param roundingMode the rounding mode for the operation
+    @return a CPCalculationError status value.
+*/
+function CPDecimalRound(result:CPDecimal, dcm:CPDecimal, scale:number, roundingMode:CPRoundingMode)
+
+
+/*!
+    @ingroup foundation
+    Remove trailing and leading zeros from mantissa.
+    @param dcm the CPDecimal operand
+*/
+function CPDecimalCompact(dcm:CPDecimal)
+
+/*!
+    @ingroup foundation
+    Convert a CPDecimal to a string representation.
+    @param dcm the CPDecimal operand
+    @param locale the locale to use for the conversion
+    @return a CPString
+*/
+function CPDecimalString(dcm:CPDecimal, locale?:Any):CPString
+
+/*-- @file: CPRange.j --*/
+
+interface CPRange {
+    location:number
+    length:number
+}
+
+/*!
+    Makes a CPRange.
+    @param location the location for new range
+    @param length the length of the new range
+    @group CPRange
+    @return CPRange the new range object
+*/
+function CPMakeRange(location:number, length:number):CPRange
+
+/*-- @file: CFRunLoop.j --*/
+
+class CFRunLoopObserver {
+    new(activities:number, repeats:BOOL, order:number, callout:()=>void, context:number);
+    activities:number;
+    repeats:BOOL;
+    order:number;
+    callout:()=>void;
+    context:number;
+    isvalid:BOOL;
+}
+
+function CFRunLoopAddObserver(runloop:CPRunLoop, observer:CFRunLoopObserver, mode?:Any)
+
+function CFRunLoopObserverInvalidate(runloop:CPRunLoop, observer:CFRunLoopObserver, mode?:Any)
+
+function CFRunLoopRemoveObserver(runloop:CPRunLoop, observer:CFRunLoopObserver, mode?:Any)
+
+/*-- @file: CPValue.j --*/
+
+function CPJSObjectCreateJSON(aJSObject:Object):string;
+
+function CPJSObjectCreateWithJSON(aString:string):Any
+
