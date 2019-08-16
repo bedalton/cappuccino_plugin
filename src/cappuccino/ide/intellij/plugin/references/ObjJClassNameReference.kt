@@ -4,8 +4,11 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefType
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
+import cappuccino.ide.intellij.plugin.psi.ObjJTypeDef
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -31,9 +34,13 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
             return false
         }
 
+
         if (super.isReferenceTo(element)) {
             return true
         }
+
+        if (element is JsTypeDefType)
+            return true;
 
         if (isClassDeclarationName) {
             //return element.parent !is ObjJClassDeclarationElement<*>
@@ -52,7 +59,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         if (isClassDeclarationName) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val classNames = ArrayList<ObjJClassName>()
+        val classNames = ArrayList<PsiElement>()
         val classDeclarations = if (inProtocol) ObjJProtocolDeclarationsIndex.instance[className, project] else ObjJClassDeclarationsIndex.instance[className, myElement.project]
         if (classDeclarations.isEmpty()) {
             return ResolveResult.EMPTY_ARRAY
@@ -60,11 +67,20 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
 
         for (classDec in classDeclarations) {
             val classDecName = classDec.getClassName() ?: continue
-            if (!classDecName.text.isEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
+            if (classDecName.text.isNotEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
                 classNames.add(classDecName)
             }
         }
+        classNames.addAll(getJsTypedefClasses())
         return PsiElementResolveResult.createResults(classNames)
+    }
+
+    private fun getJsTypedefClasses():List<PsiElement> {
+        if (className.isNullOrBlank())
+            return emptyList<PsiElement>()
+        return JsTypeDefClassesByNameIndex.instance[className, myElement.project].mapNotNull {
+            it.typeName
+        }
     }
 
     override fun getVariants(): Array<Any> {
