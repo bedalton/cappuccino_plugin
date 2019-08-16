@@ -59,6 +59,10 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
     private fun annotateIfNecessary(problemsHolder: ProblemsHolder, variableName:ObjJVariableName) {
         if (variableName.text in listOf( "super", "this", "self"))
             return
+        if (variableName.parent is ObjJGlobalVariableDeclaration)
+            return
+        if (variableName.parent is ObjJGlobal)
+            return
         val containingFile = variableName.containingFile as? ObjJFile ?: return
         val referenced = variableName.reference.resolve(true)?.containingFile ?: return
         if (referenced is JsTypeDefFile)
