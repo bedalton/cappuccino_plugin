@@ -220,8 +220,8 @@ private sourceElement
 	| 	functionDeclaration
 	|	importBlock
 	|	globalVariableDeclaration eos?
-	|	expr eos?
     | 	bodyVariableAssignment eos?
+	|	expr eos?
 	| 	ifStatement
 	|	iterationStatement
 	| 	switchStatement
@@ -1910,7 +1910,7 @@ rightExpr
 	|	arguments
 	|	parenEnclosedExpr
 	|   arrayIndexSelector
-	//|	assignmentExprPrime
+	|	assignmentExprPrime
 	| 	inExprPrime
 	;
 
@@ -1971,6 +1971,9 @@ private comparisonOperators
 
 assignmentExprPrime
 	::= assignmentOperator expr
+	{
+		pin=1
+	}
 	;
 
 mathExprPrime
@@ -2195,7 +2198,7 @@ callTarget
 qualifiedReference
 	::= (variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
 	{
-
+		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceStub"
 		implements= [

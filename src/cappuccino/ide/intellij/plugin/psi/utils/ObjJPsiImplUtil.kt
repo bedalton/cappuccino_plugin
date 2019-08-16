@@ -1113,7 +1113,7 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr {
+    fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr? {
         return ObjJVariableAssignmentsPsiUtil.getAssignedValue(assignmentLogical)
     }
 

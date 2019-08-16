@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 
 object ObjJVariableAssignmentsPsiUtil {
 
-    fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr {
+    fun getAssignedValue(assignmentLogical: ObjJVariableAssignmentLogical): ObjJExpr? {
         return assignmentLogical.assignmentExprPrime.expr
     }
 
