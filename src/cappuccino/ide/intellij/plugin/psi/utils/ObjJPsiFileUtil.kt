@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.FilenameIndex
@@ -241,13 +242,30 @@ fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, s
 }
 
 fun ObjJImportInfoStub.getPsiFile(project: Project) : ObjJFile? {
-    if (fileName == null)
-        return null
-    val filesWithName = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project))
-    for(file in filesWithName) {
-        if (file is ObjJFile && framework == file.frameworkName) {
-            return file
+    return getFileWithFramework(fileName, framework, project).mapNotNull { it as? ObjJFile }.getOrNull(0)
+}
+
+fun getFileWithFramework(fileName:String?, frameworkName:String?, project: Project) : List<PsiFile> {
+    if (fileName == null || fileName.trim().isBlank())
+        return emptyList()
+    val parts = fileName.split("/")
+
+    val filesWithName = FilenameIndex.getFilesByName(project, parts.last(), GlobalSearchScope.everythingScope(project))
+    if (frameworkName == null)
+        return filesWithName.toList()
+    file@for(file in filesWithName) {
+        if (file is ObjJFile && frameworkName == file.frameworkName) {
+            if (parts.isEmpty()) {
+                return listOf(file)
+            }
+            var parent: PsiDirectory?
+            for (i in 0 until parts.lastIndex) {
+                parent = file.parent
+                if (parent == null || parent.name != parts[i])
+                    continue@file
+            }
+            return listOf(file)
         }
     }
-    return null
+    return emptyList()
 }
