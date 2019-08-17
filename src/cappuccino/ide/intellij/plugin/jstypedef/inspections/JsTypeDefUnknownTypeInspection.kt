@@ -7,13 +7,12 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIn
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArrayType
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefExtendsStatement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefType
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVisitor
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.references.ObjJClassNameReference
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
@@ -55,7 +54,13 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
                 && !classExists(type.project, typeName.text)
                 && typeName.text !in type.enclosingGenerics
         ) {
-            LOGGER.warning("JsTypeDef type does not exist")
+            val typesParent = type.getParentOfType(JsTypeDefGenericTypeTypes::class.java)?.parent
+            if (typesParent != null
+                    && (typesParent is JsTypeDefClassDeclaration<*,*> || typesParent is JsTypeDefFunction)
+                    && type.getPreviousNonEmptyNode(true)?.elementType != JsTypeDefTypes.JS_COLON
+            ) {
+                return
+            }
             problemsHolder.registerProblem(typeName, JsTypeDefBundle.message("jstypedef.inspections.invalid-type.error.message", typeName.text))
         }
     }
