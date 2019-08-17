@@ -25,6 +25,7 @@ interface number:_primitive;
 interface float:number;
 interface double:number;
 interface char:string;
+interface symbol:_primitive;
 interface String {
 
     new(value?: any);
@@ -157,7 +158,12 @@ class String extends string;
 interface CPString extends string;
 interface String:string;
 
-
+/**
+ * Construct a type with a set of properties K of type T
+ */
+interface Record<K, T> {
+    [P:K]: T;
+};
 
 interface Account {
     displayName: string;
@@ -1141,7 +1147,7 @@ interface AbstractWorker {
     onerror: (this: AbstractWorker, ev: ErrorEvent) => any | null;
     addEventListener(type: K keyof AbstractWorkerEventMap, listener: (this: AbstractWorker, ev: AbstractWorkerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-    removeEventListener(type: K keyof AbstractWorkerEventMap, listener: (this: AbstractWorker, ev: AbstractWorkerEventMap) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: K keyof AbstractWorkerEventMap, listener: (this: AbstractWorker, ev: AbstractWorkerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 

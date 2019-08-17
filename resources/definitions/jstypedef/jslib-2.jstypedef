@@ -36,7 +36,7 @@ declare var location: Location;
 declare var locationbar: BarProp;
 declare var menubar: BarProp;
 declare var msContentScript: ExtensionScriptApis;
-declare readonly var name: never;
+declare readonly var name: Any;
 declare var navigator: Navigator;
 declare var offscreenBuffering: string | boolean;
 declare var oncompassneedscalibration: ((this: Window, ev: Event) => any) | null;

@@ -116,6 +116,11 @@ interface PropertyDescriptorMap {
     [s: string]: PropertyDescriptor;
 }
 
+/**
+ * Standin object for readonly return type in object
+ */
+interface Readonly<T>:Object;
+
 class Object {
     new(value?: any);
     self(): any;
@@ -146,14 +151,14 @@ class Object {
      * Creates an object that has the specified prototype or that has null prototype.
      * @param o Object to use as a prototype. May be null.
      */
-    static create(o: object | null): any;
+    static create(o: Object | null): any;
 
     /**
      * Creates an object that has the specified prototype, and that optionally contains specified properties.
      * @param o Object to use as a prototype. May be null
      * @param properties JavaScript object that contains one or more property descriptors.
      */
-    static create(o: object | null, properties: PropertyDescriptorMap & ThisType): any;
+    static create(o: Object | null, properties: PropertyDescriptorMap & ThisType): any;
 
     /**
      * Adds a property to an object, or modifies attributes of an existing property.

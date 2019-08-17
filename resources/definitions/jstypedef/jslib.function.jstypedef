@@ -61,7 +61,7 @@ interface CallableFunction extends Function {
      * @param thisArg The object to be used as the this object.
      * @param args Arguments to bind to the parameters of the function.
      */
-    bind<T>(this: T, thisArg: ThisParameterType<T>): OmitThisParameter<T>;
+    bind<T>(this: T, thisArg: this<T>): Any
     bind<T, A0, A:any[], R>(this: (this: T, arg0: A0, ...args: A) => R, thisArg: T, arg0: A0): (...args: A) => R;
     bind<T, A0, A1, A : any[], R>(this: (this: T, arg0: A0, arg1: A1, ...args: A) => R, thisArg: T, arg0: A0, arg1: A1): (...args: A) => R;
     bind<T, A0, A1, A2, A:any[], R>(this: (this: T, arg0: A0, arg1: A1, arg2: A2, ...args: A) => R, thisArg: T, arg0: A0, arg1: A1, arg2: A2): (...args: A) => R;

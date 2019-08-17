@@ -481,14 +481,14 @@ private genericsTypeList_recover
 
 
 genericTypesType
-	::= arrayType
-	|	genericsKeyWithType
+	::= genericsKeyWithType
 	|	valueOfKeyType
+	|	types
 	|	VOID
 	;
 
 private genericsKeyWithType
-	::= genericsKey ((':'|'=') types)?
+	::= genericsKey (':'|'=') types
 	{
 		pin=2
 	}
