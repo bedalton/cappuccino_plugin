@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.lang
 
 import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
+import cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighter
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
@@ -71,6 +72,7 @@ class JsTypeDefSyntaxHighlighter : SyntaxHighlighterBase() {
         val FUNCTION_NAME: TextAttributesKey = createTextAttributesKey("JsTypeDef_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         val GLOBAL_FUNCTION_NAME: TextAttributesKey = createTextAttributesKey("JsTypeDef_GLOBAL_FUNCTION_NAME", DefaultLanguageHighlighterColors.FUNCTION_CALL)
         val FILE_LEVEL_VARIABLE: TextAttributesKey = createTextAttributesKey("JsTypeDef_FILE_LEVEL_VARIABLE", DefaultLanguageHighlighterColors.FUNCTION_CALL)
+        val FILE_IN_COMMENT:TextAttributesKey = createTextAttributesKey("JsTypeDef_FILE_IN_COMMENT", ObjJSyntaxHighlighter.AT_STATEMENT)
 
     }
 }
