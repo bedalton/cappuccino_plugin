@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJImportBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils

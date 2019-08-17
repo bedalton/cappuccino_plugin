@@ -2,12 +2,11 @@
 
 package cappuccino.ide.intellij.plugin.psi.types
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyInterruptingException
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import java.util.*
 
 data class ObjJClassTypeName(val className: String)

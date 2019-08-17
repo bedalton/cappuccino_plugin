@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
 import com.intellij.psi.scope.PsiScopeProcessor
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 
 
 object ObjJResolveUtil {

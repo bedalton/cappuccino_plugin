@@ -4,13 +4,13 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
-import com.intellij.lang.ASTNode
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImplementationDeclarationElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.lang.ASTNode
 
 
 abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProtocolDeclarationStub>, ObjJProtocolDeclaration {
