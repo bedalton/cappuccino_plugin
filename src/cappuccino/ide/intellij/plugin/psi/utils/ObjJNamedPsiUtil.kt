@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import com.intellij.psi.PsiElement
 
 object ObjJNamedPsiUtil {
 

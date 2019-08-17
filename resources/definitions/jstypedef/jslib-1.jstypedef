@@ -18,7 +18,7 @@ Modified for Objetive-J plugin use by Daniel Badal
 
 
 // Primitive types
-interface _primitive
+interface _primitive;
 interface boolean : _primitive;
 interface BOOL : _primitive;
 interface number:_primitive;

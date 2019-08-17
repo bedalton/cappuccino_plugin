@@ -2,14 +2,12 @@
 
 package cappuccino.ide.intellij.plugin.psi.types
 
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
-
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import com.intellij.psi.tree.TokenSet.create
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.psi.TokenType
+import com.intellij.psi.tree.TokenSet.create
 
 object ObjJTokenSets {
 

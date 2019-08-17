@@ -15,19 +15,18 @@
  */
 package cappuccino.ide.intellij.plugin.psi.impl
 
-import com.intellij.extapi.psi.StubBasedPsiElementBase
-import com.intellij.lang.ASTNode
-import com.intellij.lang.Language
-import com.intellij.psi.*
-import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
 import cappuccino.ide.intellij.plugin.psi.utils.getScope
-import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalStubBasedElement
+import com.intellij.extapi.psi.StubBasedPsiElementBase
+import com.intellij.lang.ASTNode
+import com.intellij.lang.Language
+import com.intellij.psi.PsiElement
+import com.intellij.psi.stubs.IStubElementType
+import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
 
 open class ObjJStubBasedElementImpl<StubT : StubElement<out PsiElement>> : StubBasedPsiElementBase<StubT>, ObjJCompositeElement, ObjJStubBasedElement<StubT> {
