@@ -23,7 +23,10 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.tree.IElementType
@@ -814,3 +817,30 @@ object JsTypeDefPsiImplUtil {
 val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()
+
+private val FILE_PATH_REGEX = "^[a-zA-Z0-9_+.]([ -]*[a-zA-Z0-9_+.]+)*".toRegex()
+private const val AT_FILE = "@file"
+
+fun PsiComment.getFileReferenceRangeInComment(includeAtFile:Boolean = false) :TextRange? {
+    val text = text
+    val shift = if (includeAtFile)
+        -(AT_FILE.length + 1)
+    else
+        0
+    var offset= 0
+    val parts = text.split(AT_FILE)
+    if (parts.size < 2)
+        return null
+    offset += AT_FILE.length
+    offset += parts[0].length
+    val startOf = "^(:|\\s)+".toRegex().find(parts[1])?.value?.length.orElse(0)
+    offset += startOf
+    val fileNameParts = parts[1].substring(startOf).trim()
+    val endOf = FILE_PATH_REGEX.find(fileNameParts)?.range?.last?.plus(1) ?: return null
+    if (endOf < 0)
+        return null
+    val startOffset = offset + shift
+    if (startOffset < 0)
+        return null
+    return TextRange.create(startOffset, offset + endOf)
+}
