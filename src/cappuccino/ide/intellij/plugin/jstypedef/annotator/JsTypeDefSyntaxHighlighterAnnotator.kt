@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceRangeInComment
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
@@ -91,20 +92,10 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
     /**
      * Highlights comment text for keywords
      */
-    private fun highlightComment(element: PsiElement, annotationHolder: AnnotationHolder) {
-        val lines = element.text.split("\n")
-        var currentTextPos = element.textRange.startOffset
-        for(line in lines) {
-            val atFileStart = line.indexOf(AT_FILE)
-            if (atFileStart > 0) {
-                var endPosition = """[a-zA-Z0-9\-/._ :+]*""".toRegex().find(line, atFileStart)?.range?.last ?: -1
-                if (endPosition <= atFileStart)
-                    endPosition = atFileStart + AT_FILE.length
-                val range = TextRange.create(currentTextPos + atFileStart, currentTextPos + endPosition)
-                colorize(range, annotationHolder, JsTypeDefSyntaxHighlighter.FILE_IN_COMMENT)
-            }
-            currentTextPos += line.length + 1
-        }
+    private fun highlightComment(comment: PsiComment, annotationHolder: AnnotationHolder) {
+        val rangeInComment = comment.getFileReferenceRangeInComment(true) ?: return
+        val startOffset = comment.textRange.startOffset
+        colorize(TextRange.create(startOffset + rangeInComment.startOffset, startOffset+rangeInComment.endOffset), annotationHolder, JsTypeDefSyntaxHighlighter.FILE_IN_COMMENT)
     }
 
     /**
@@ -141,8 +132,6 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
                 "module",
                 "alias"
         )
-
-        val AT_FILE = "@file"
     }
 
 }
