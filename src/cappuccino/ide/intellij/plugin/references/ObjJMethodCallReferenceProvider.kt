@@ -1,16 +1,14 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
-import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-
-import java.util.*
 
 class ObjJMethodCallReferenceProvider(psiElement: ObjJHasMethodSelector) : PsiPolyVariantReferenceBase<ObjJHasMethodSelector>(psiElement, TextRange.create(0, psiElement.textLength)) {
 

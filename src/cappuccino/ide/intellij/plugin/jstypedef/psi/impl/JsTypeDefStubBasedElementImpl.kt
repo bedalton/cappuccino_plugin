@@ -17,14 +17,14 @@ package cappuccino.ide.intellij.plugin.jstypedef.psi.impl
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement
 import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil

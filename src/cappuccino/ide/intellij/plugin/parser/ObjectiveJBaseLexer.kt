@@ -1,10 +1,9 @@
 package cappuccino.ide.intellij.plugin.parser
 
-import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-
-import java.util.Stack
+import com.intellij.psi.tree.IElementType
+import java.util.*
 
 abstract class ObjectiveJBaseLexer : ObjJLexer() {
     /**

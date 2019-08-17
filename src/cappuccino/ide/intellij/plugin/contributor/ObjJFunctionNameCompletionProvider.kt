@@ -7,7 +7,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamesp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils

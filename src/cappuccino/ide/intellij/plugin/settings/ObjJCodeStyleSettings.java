@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.settings;
 
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.codeStyle.CodeStyleSettingsCustomizable;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.codeStyle.CustomCodeStyleSettings;
 

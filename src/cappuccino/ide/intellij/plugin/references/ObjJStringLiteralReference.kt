@@ -1,14 +1,19 @@
 package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyValuePair
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
 
 class ObjJStringLiteralReference(stringLiteral:ObjJStringLiteral)  : PsiPolyVariantReferenceBase<ObjJStringLiteral>(stringLiteral, TextRange(0, stringLiteral.textLength)) {
 

@@ -4,7 +4,10 @@ import cappuccino.ide.intellij.plugin.psi.ObjJDerefExpression
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableDeclarationImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableDeclarationStubImpl
-import cappuccino.ide.intellij.plugin.stubs.interfaces.*
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableDeclarationStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream

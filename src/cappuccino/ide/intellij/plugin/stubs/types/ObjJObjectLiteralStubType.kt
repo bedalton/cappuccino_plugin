@@ -1,13 +1,14 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readJsFunctionList
-import cappuccino.ide.intellij.plugin.stubs.impl.ObjJObjectLiteralStubImpl
-import com.intellij.lang.ASTNode
-
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readPropertiesList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeJsFunctionList
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.writePropertiesList
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJObjectLiteralImpl
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJObjectLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJObjectLiteralStub
+import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream

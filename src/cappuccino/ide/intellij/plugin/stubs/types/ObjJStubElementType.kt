@@ -1,17 +1,16 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.ReflectionUtil
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJStubBasedElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import com.intellij.openapi.components.ServiceManager
 import org.jetbrains.annotations.NonNls
-
 import java.lang.reflect.Constructor
 
 

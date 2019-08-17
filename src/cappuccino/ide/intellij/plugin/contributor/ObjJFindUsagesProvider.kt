@@ -1,17 +1,19 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import com.intellij.lang.HelpID
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner
 import com.intellij.lang.cacheBuilder.WordsScanner
 import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.TokenSet
-import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 
 class ObjJFindUsagesProvider : FindUsagesProvider {
 

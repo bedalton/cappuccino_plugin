@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJPropertyNameImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub

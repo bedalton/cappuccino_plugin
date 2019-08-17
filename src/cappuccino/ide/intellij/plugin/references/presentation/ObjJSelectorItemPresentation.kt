@@ -1,13 +1,12 @@
 package cappuccino.ide.intellij.plugin.references.presentation
 
 import cappuccino.ide.intellij.plugin.hints.description
-import com.intellij.navigation.ItemPresentation
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.containingFileName
 import cappuccino.ide.intellij.plugin.psi.utils.lineNumber
-
-import javax.swing.*
+import com.intellij.navigation.ItemPresentation
+import javax.swing.Icon
 
 class ObjJSelectorItemPresentation(private val selector: ObjJSelector) : ItemPresentation {
 

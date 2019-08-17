@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage

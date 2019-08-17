@@ -4,8 +4,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefAnonymousFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionReturnType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefValueOfKeyType
-import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
+import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 
 /**

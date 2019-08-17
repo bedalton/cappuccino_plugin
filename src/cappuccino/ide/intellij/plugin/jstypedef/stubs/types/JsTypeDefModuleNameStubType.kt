@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefModuleNameImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefModuleNameStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleNameStub
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode

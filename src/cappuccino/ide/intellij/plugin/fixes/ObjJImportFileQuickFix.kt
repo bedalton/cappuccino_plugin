@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJImportBlock
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
 import cappuccino.ide.intellij.plugin.psi.ObjJImportStatementElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER

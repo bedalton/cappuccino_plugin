@@ -7,10 +7,9 @@ import com.intellij.openapi.roots.libraries.ui.LibraryEditorComponent
 import com.intellij.openapi.roots.libraries.ui.LibraryPropertiesEditor
 import com.intellij.openapi.roots.libraries.ui.LibraryRootsComponentDescriptor
 import com.intellij.openapi.vfs.VirtualFile
-import javax.swing.JComponent
 import icons.ObjJIcons
 import javax.swing.Icon
-import com.intellij.openapi.roots.libraries.LibraryType
+import javax.swing.JComponent
 
 /**
  * Libarary type for an objective-j frameworkName

@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.indices.IndexKeyUtil
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import com.intellij.psi.stubs.StubIndexKey
 

@@ -1,8 +1,11 @@
 package cappuccino.ide.intellij.plugin.structure;
+
 import cappuccino.ide.intellij.plugin.lang.ObjJFile;
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil;
 import com.intellij.ide.projectView.PresentationData;
-import com.intellij.ide.structureView.*;
+import com.intellij.ide.structureView.StructureViewModel;
+import com.intellij.ide.structureView.StructureViewModelBase;
+import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.Sorter;
 import com.intellij.psi.PsiFile;
 import icons.ObjJIcons;

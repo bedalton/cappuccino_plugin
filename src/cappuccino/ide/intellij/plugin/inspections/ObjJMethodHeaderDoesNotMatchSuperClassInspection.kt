@@ -3,11 +3,7 @@ package cappuccino.ide.intellij.plugin.inspections
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJChangeVarTypeToMatchQuickFix
 import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.CLASS
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FUNCTION
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FILE
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.METHOD
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.STATEMENT
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader

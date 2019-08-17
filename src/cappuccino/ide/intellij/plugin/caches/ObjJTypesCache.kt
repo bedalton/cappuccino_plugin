@@ -1,20 +1,9 @@
 package cappuccino.ide.intellij.plugin.caches
 
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
-import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.inferMethodCallType
-import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.inference.TagList
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.util.ModificationTracker
-import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
-import com.intellij.psi.util.PsiModificationTracker
 
 /*
 class ObjJExprTypesCache(expr:ObjJExpr) {

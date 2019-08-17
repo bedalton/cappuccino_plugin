@@ -9,15 +9,11 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
-import cappuccino.ide.intellij.plugin.utils.orElse
-import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElementVisitor
-import java.util.ArrayList
+import java.util.*
 import java.util.regex.Pattern
 
 class ObjJStringWithFormatInspection : LocalInspectionTool() {

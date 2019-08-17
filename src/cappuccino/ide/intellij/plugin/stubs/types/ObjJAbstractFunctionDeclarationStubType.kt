@@ -1,5 +1,10 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
+import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
@@ -7,14 +12,8 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
-import cappuccino.ide.intellij.plugin.indices.StubIndexService
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
-
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
 abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclarationElement<out ObjJFunctionDeclarationElementStub<*>>> internal constructor(
         debugName: String, functionDecClass: Class<PsiT>) : ObjJStubElementType<ObjJFunctionDeclarationElementStub<PsiT>, PsiT>(debugName, functionDecClass) {

@@ -1,15 +1,21 @@
 package cappuccino.ide.intellij.plugin.parser
 
-import com.intellij.lang.*
-import com.intellij.lexer.Lexer
-import com.intellij.openapi.project.Project
-import com.intellij.psi.*
-import com.intellij.psi.tree.*
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
+import com.intellij.lang.ASTNode
+import com.intellij.lang.ParserDefinition
+import com.intellij.lang.PsiParser
+import com.intellij.lexer.Lexer
+import com.intellij.openapi.project.Project
+import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IFileElementType
+import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.EMPTY
 import com.intellij.psi.tree.TokenSet.create
 

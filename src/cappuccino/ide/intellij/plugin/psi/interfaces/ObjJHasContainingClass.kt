@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
-import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import com.intellij.psi.util.PsiTreeUtil
 
 interface ObjJHasContainingClass : ObjJCompositeElement {
 

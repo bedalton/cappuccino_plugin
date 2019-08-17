@@ -1,15 +1,12 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.openapi.project.DumbService
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
-import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.startsAndEndsWith
-import com.intellij.psi.PsiElement
-
 import java.util.*
 import java.util.logging.Logger
 import java.util.regex.Pattern

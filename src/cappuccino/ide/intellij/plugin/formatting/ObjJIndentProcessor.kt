@@ -1,20 +1,24 @@
 package cappuccino.ide.intellij.plugin.formatting
 
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
+import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJRightExpr
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNodeIgnoringComments
+import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
+import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiFile
+import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.psi.tree.TokenSet
-
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
-import com.intellij.formatting.Spacing
-import com.intellij.psi.TokenType.WHITE_SPACE
 import java.util.logging.Logger
 
 class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private val objjSettings:ObjJCodeStyleSettings) {

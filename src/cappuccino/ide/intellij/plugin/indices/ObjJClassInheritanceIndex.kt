@@ -1,12 +1,11 @@
 package cappuccino.ide.intellij.plugin.indices
 
+import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.StubIndexKey
-import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-
-import java.util.ArrayList
+import java.util.*
 
 
 class ObjJClassInheritanceIndex private constructor() : ObjJStringStubIndexBase<ObjJClassDeclarationElement<*>>() {

@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJFileNameAsImportString
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName

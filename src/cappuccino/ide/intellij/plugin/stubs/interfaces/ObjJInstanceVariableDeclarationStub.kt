@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.stubs.interfaces
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJInstanceVariableDeclarationImpl
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
+import com.intellij.psi.stubs.StubElement
 
 
 interface ObjJInstanceVariableDeclarationStub : StubElement<ObjJInstanceVariableDeclarationImpl>, ObjJResolveableStub<ObjJInstanceVariableDeclarationImpl> {

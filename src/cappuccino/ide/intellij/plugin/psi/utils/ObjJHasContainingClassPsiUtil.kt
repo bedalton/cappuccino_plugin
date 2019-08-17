@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -9,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import com.intellij.psi.PsiElement
 
 object ObjJHasContainingClassPsiUtil {
 

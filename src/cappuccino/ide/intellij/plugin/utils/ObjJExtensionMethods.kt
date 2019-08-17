@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import kotlin.contracts.contract
-
 
 fun Boolean?.orDefault(defaultValue:Boolean) : Boolean {
     return this ?: defaultValue

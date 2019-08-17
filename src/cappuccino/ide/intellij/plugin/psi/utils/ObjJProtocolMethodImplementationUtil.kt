@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.caches.ObjJImplementationDeclarationCache
-import cappuccino.ide.intellij.plugin.caches.ObjJProtocolDeclarationCache
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName

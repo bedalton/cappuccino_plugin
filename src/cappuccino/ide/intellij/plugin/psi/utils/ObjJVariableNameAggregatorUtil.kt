@@ -1,19 +1,22 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.indices.*
-import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbService
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
+import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.utils.*
+import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import cappuccino.ide.intellij.plugin.utils.Filter
+import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.getFirstMatchOrNull
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-
-import java.util.ArrayList
-import java.util.logging.Level
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
+import java.util.*
 import java.util.logging.Logger
 
 @Suppress("UNUSED_PARAMETER")

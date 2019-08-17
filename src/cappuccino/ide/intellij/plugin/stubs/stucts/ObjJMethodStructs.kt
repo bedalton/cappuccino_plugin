@@ -14,10 +14,10 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope.I
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope.SELECTOR_LITERAL
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
+import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct.Companion.Getter
 import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct.Companion.Getter as Getter
 
 val startsWithVowelRegex = "^[aAeEiIoOuU]".toRegex()
 

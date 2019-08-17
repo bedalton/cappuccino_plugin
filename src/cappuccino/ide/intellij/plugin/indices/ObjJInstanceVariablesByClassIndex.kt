@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
+import com.intellij.psi.stubs.StubIndexKey
+
 class ObjJInstanceVariablesByClassIndex : ObjJStringStubIndexBase<ObjJInstanceVariableDeclaration>() {
 
     override val indexedElementClass: Class<ObjJInstanceVariableDeclaration>

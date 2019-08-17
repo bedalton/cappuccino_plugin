@@ -1,20 +1,22 @@
 package cappuccino.ide.intellij.plugin.references
 
-import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbService
-import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.indices.*
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-
-import java.util.logging.Level
+import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
 import java.util.logging.Logger
-import kotlin.collections.ArrayList
 
 object ObjJSelectorReferenceResolveUtil {
 

@@ -4,28 +4,25 @@ import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.TypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SEMI_COLON
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefModuleNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenericsKeyReference
-import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
@@ -756,9 +753,11 @@ object JsTypeDefPsiImplUtil {
         val out = mutableListOf<String>()
         var parent:JsTypeDefHasGenerics? = element.getParentOfType(JsTypeDefHasGenerics::class.java) ?: return emptyList()
         while (parent != null) {
+            LOGGER.info("Has Generic parent")
             out.addAll(parent.genericsKeys.orEmpty().map { it.key })
             parent = parent.getParentOfType(JsTypeDefHasGenerics::class.java)
         }
+        LOGGER.info("Enclosing Generic Keys($out)")
         return out
     }
 
@@ -770,20 +769,20 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getGenericsKeys(function:JsTypeDefFunction) : Set<JsTypeListGenericType>? {
         val genericsKeys = function.stub?.genericsKeys
-        if (genericsKeys != null)
+        if (genericsKeys != null &&  genericsKeys.isNotEmpty())
             return genericsKeys.ifEmpty { null }
         return function.genericTypeTypes?.asJsTypeListGenericType()
     }
 
     @JvmStatic
     fun getGenericsKeys(declaration: JsTypeDefClassDeclaration<*,*>) : Set<JsTypeListGenericType>? {
-        val stub = declaration.stub
+        val genericsKeys = declaration.stub?.genericsKeys.orEmpty()
         // If Stub is not null, then the element would know whether or not
         // to keep the list null or empty.
         // Cannot check for null or empty on list
         // As null is a valid return value
-        if (stub != null)
-            return stub.genericsKeys
+        if (genericsKeys.isNotEmpty())
+            return genericsKeys
         val baseGenerics = declaration.genericTypeTypes?.asJsTypeListGenericType().orEmpty().toSet()
         val superTypes = declaration.extendsStatement?.typeList.toJsTypeDefTypeListTypes()
         val includedGenerics = superTypes.mapNotNull { it as? JsTypeListGenericType }.toSet()
@@ -798,9 +797,14 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun asJsTypeListGenericType(genericTypeTypes: JsTypeDefGenericTypeTypes) : Set<JsTypeListGenericType>? {
         return genericTypeTypes.genericTypesTypeList.mapNotNull {
-            val key = it.genericsKey?.text ?: return@mapNotNull null
-            val types = it.typeList.toJsTypeDefTypeListTypes().ifEmpty { null }
-            JsTypeListGenericType(key, types)
+            var key = it.genericsKey?.text
+            val types= it.typeList.toJsTypeDefTypeListTypes()
+            if (key == null && types.size == 1) {
+                key = types.firstOrNull()?.typeName
+            }
+            if (key == null)
+                return null
+            JsTypeListGenericType(key, types.ifEmpty { null })
         }.toSet().ifEmpty { null }
     }
 

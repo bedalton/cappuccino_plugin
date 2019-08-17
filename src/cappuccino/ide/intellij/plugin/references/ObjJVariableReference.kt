@@ -1,16 +1,16 @@
 package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
-import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.indices.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
@@ -19,14 +19,17 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
-import cappuccino.ide.intellij.plugin.psi.utils.*
-
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
+import cappuccino.ide.intellij.plugin.psi.utils.getContainingScope
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
-import javafx.scene.control.ProgressIndicator
+import com.intellij.util.IncorrectOperationException
 
 class ObjJVariableReference(
         element: ObjJVariableName,

@@ -10,20 +10,16 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import com.intellij.formatting.*
+import com.intellij.formatting.templateLanguages.BlockWithParent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
-import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.tree.TokenSet
-import com.intellij.formatting.Wrap
-import java.util.ArrayList
-import com.intellij.formatting.templateLanguages.BlockWithParent
-import com.intellij.formatting.ChildAttributes
-import com.intellij.formatting.WrapType
-import com.intellij.psi.formatter.FormatterUtil
-import com.intellij.formatting.Spacing
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsManager
+import com.intellij.psi.formatter.FormatterUtil
+import com.intellij.psi.formatter.common.AbstractBlock
 import com.intellij.psi.impl.source.tree.ElementType
+import com.intellij.psi.tree.TokenSet
+import java.util.*
 import java.util.logging.Logger
 
 class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignment: Alignment?, private val mySettings: CodeStyleSettings, private val myContext: ObjJBlockContext) : AbstractBlock(node, wrap, alignment), BlockWithParent {

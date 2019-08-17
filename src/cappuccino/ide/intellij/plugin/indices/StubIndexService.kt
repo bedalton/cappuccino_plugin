@@ -1,15 +1,14 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
-import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
-import cappuccino.ide.intellij.plugin.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.collectImports
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.*
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
 import java.util.logging.Logger
 
 open class StubIndexService internal constructor() {

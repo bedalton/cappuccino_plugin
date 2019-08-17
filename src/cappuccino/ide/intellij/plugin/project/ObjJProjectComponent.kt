@@ -35,6 +35,8 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
                 if (module != null) {
                     JsTypeDefBundledSourcesRegistrationUtil.register(module, project)
                     initFrameworkDefaults(project, module, editorManager.selectedTextEditor, file)
+                } else {
+                    LOGGER.info("Module is null for Cappuccino file.")
                 }
             }
         })

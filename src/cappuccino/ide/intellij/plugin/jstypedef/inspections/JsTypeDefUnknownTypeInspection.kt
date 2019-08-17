@@ -11,9 +11,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNode
-import cappuccino.ide.intellij.plugin.references.ObjJClassNameReference
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project

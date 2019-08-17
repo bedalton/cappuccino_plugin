@@ -1,8 +1,14 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.fixes.*
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoreClassNamesWithSuffixRefOrPointer
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredClassNames
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJFirstMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings

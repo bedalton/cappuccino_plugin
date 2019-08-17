@@ -1,12 +1,11 @@
 package cappuccino.ide.intellij.plugin.annotator
 
-import com.intellij.lang.annotation.AnnotationHolder
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
-
-import java.util.ArrayList
+import com.intellij.lang.annotation.AnnotationHolder
+import java.util.*
 
 /**
  * Annotates protocol declarations

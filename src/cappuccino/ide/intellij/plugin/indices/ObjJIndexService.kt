@@ -1,23 +1,18 @@
 package cappuccino.ide.intellij.plugin.indices
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import com.intellij.psi.stubs.IndexSink
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.stubs.interfaces.*
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
-
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.SELECTOR_SYMBOL
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import cappuccino.ide.intellij.plugin.psi.utils.fileNameAsImportString
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
-import java.util.logging.Level
+import cappuccino.ide.intellij.plugin.stubs.interfaces.*
+import com.intellij.psi.stubs.IndexSink
 import java.util.logging.Logger
 
 class ObjJIndexService

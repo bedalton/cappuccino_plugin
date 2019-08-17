@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.project
 
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.contents
@@ -9,12 +7,10 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import java.util.logging.Logger
 
@@ -25,19 +21,17 @@ object JsTypeDefBundledSourcesRegistrationUtil {
     private const val ROOT_FOLDER = "jstypedef"
     private const val LIBRARY_NAME = "JsTypeDef-Std-Lib"
     private const val VERSION_TEXT_FILE_NAME = "version.txt"
+    private var didInit = false
 
     fun register(module:Module, project:Project) {
 
+        if (didInit)
+            return
+        didInit = true
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
                 register(module, project)
             }
-            return
-        }
-        if (JsTypeDefClassesByNameIndex.instance.containsKey("Document", project)
-                && JsTypeDefClassesByNameIndex.instance.containsKey("Window", project)
-                && JsTypeDefPropertiesByNamespaceIndex.instance.containsKey("Window.document", project)
-        ) {
             return
         }
         val moduleScope = module.moduleContentWithDependenciesScope
@@ -83,6 +77,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
         // Check if same version
         if (newVersion == ObjJPluginSettings.typedefVersion) {
+            LOGGER.info("JsTypeDef lib has same version")
             return true
         }
 
@@ -94,6 +89,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
         modifiableModel.commit()
         rootModel.commit()
         ObjJPluginSettings.typedefVersion = newVersion
+        LOGGER.info("Updated JsTypeDef version to $newVersion")
         return true
     }
 

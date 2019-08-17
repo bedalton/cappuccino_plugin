@@ -1,21 +1,20 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import com.intellij.util.io.StringRef
-import com.intellij.openapi.util.Pair
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameImpl
 import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlock
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableNameStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub
-
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.util.Pair
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
+import com.intellij.util.io.StringRef
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
 class ObjJVariableNameStubType internal constructor(
         debugName: String) : ObjJStubElementType<ObjJVariableNameStub, ObjJVariableNameImpl>(debugName, ObjJVariableNameImpl::class.java) {

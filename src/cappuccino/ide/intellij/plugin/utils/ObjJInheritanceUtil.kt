@@ -1,15 +1,17 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.CannotDetermineException
-import cappuccino.ide.intellij.plugin.indices.*
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 
 object ObjJInheritanceUtil {
 

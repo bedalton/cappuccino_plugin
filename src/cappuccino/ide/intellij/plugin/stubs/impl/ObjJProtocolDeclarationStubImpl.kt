@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.stubs.impl
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJProtocolDeclarationImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJProtocolDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.psi.stubs.StubElement
 
 open class ObjJProtocolDeclarationStubImpl internal constructor(
         parent: StubElement<*>,

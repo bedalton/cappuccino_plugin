@@ -5,10 +5,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
-import cappuccino.ide.intellij.plugin.psi.ObjJBlockComment
-import cappuccino.ide.intellij.plugin.psi.ObjJBlockCommentBody
-import cappuccino.ide.intellij.plugin.psi.ObjJComment
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey

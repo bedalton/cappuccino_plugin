@@ -1,15 +1,14 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
+import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
+import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.completion.*
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJVariableInsertHandler
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
-import cappuccino.ide.intellij.plugin.utils.*
-
 import java.util.logging.Logger
 
 class ObjJCompletionContributor : CompletionContributor() {

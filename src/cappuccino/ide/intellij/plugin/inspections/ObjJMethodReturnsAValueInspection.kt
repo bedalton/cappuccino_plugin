@@ -1,21 +1,18 @@
 package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
-
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.CLASS
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.FILE
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.METHOD
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJRemoveMethodReturnTypeFix
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement

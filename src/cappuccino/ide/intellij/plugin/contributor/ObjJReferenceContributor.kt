@@ -1,14 +1,16 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import com.intellij.psi.*
-import com.intellij.util.ProcessingContext
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.references.ObjJClassNameReference
 import cappuccino.ide.intellij.plugin.references.ObjJFunctionNameReference
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
-
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.psi.*
+import com.intellij.util.ProcessingContext
 
 class ObjJReferenceContributor : PsiReferenceContributor() {
 

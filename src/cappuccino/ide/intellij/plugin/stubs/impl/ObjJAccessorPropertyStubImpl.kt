@@ -1,16 +1,14 @@
 package cappuccino.ide.intellij.plugin.stubs.impl
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJAccessorPropertyImpl
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassTypeName
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.EMPTY_SELECTOR
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
-
-import java.util.Arrays
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.psi.stubs.StubElement
+import java.util.*
 
 private val startsWithVowelRegex = "^[aAeEiIoOuU]".toRegex()
 

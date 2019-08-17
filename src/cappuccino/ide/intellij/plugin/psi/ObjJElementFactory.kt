@@ -2,19 +2,17 @@
 
 package cappuccino.ide.intellij.plugin.psi
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.elementType
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
-import com.intellij.openapi.diagnostic.Logger
-
-import java.util.ArrayList
+import java.util.*
 
 object ObjJElementFactory {
     private val LOGGER = Logger.getInstance(ObjJElementFactory::class.java)

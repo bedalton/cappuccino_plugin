@@ -6,7 +6,10 @@ import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -19,7 +22,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import icons.ObjJIcons
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object ObjJSelectorLiteralCompletionContributor {

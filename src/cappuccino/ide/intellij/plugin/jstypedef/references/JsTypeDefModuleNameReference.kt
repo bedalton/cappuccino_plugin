@@ -1,12 +1,14 @@
 package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModulesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModuleName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
 
 class JsTypeDefModuleNameReference(element:JsTypeDefModuleName)  : PsiPolyVariantReferenceBase<JsTypeDefModuleName>(element, TextRange(0, element.text.length - 1)) {
 

@@ -1,11 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import java.util.logging.Level
+import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
 import java.util.logging.Logger
 
 object ObjJVariableNameResolveUtil {

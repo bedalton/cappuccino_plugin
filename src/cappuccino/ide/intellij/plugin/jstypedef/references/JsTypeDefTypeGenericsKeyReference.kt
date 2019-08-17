@@ -1,8 +1,10 @@
 package cappuccino.ide.intellij.plugin.jstypedef.references
 
-import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefGenericTypesType
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefGenericsKey
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyOfType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement

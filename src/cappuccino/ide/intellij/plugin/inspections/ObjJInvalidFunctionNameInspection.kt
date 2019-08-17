@@ -2,14 +2,15 @@ package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
 import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredFunctionNames
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags.*
-import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope.*
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_FUNCTION
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_VAR
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType

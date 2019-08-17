@@ -2,8 +2,7 @@ package cappuccino.ide.intellij.plugin.lang
 
 import com.intellij.openapi.fileTypes.LanguageFileType
 import icons.ObjJIcons
-
-import javax.swing.*
+import javax.swing.Icon
 
 class ObjJFileType private constructor() : LanguageFileType(ObjJLanguage.instance) {
 

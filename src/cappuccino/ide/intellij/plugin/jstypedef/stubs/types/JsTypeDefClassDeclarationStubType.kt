@@ -15,7 +15,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeTypeList
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.*
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
 import java.io.IOException
 
 abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<PsiT,StubT>, StubT:JsTypeDefClassDeclarationStub<PsiT>> internal constructor(

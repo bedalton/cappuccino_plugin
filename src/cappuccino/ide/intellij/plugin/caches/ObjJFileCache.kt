@@ -6,10 +6,15 @@ import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.collectElementsOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getImportedFiles
-import cappuccino.ide.intellij.plugin.utils.*
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME_TO_LOWER_CASE
+import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlist
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.*
+import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 
 class ObjJFileCache(file:ObjJFile) {
     private val manager by lazy { CachedValuesManager.getManager(file.project) }

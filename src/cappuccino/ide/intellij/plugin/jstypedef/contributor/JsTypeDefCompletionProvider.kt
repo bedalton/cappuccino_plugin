@@ -3,14 +3,12 @@ package cappuccino.ide.intellij.plugin.jstypedef.contributor
 import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
 import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
-import cappuccino.ide.intellij.plugin.contributor.textWithoutCaret
 import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
