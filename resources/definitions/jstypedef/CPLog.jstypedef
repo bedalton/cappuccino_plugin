@@ -1,0 +1,42 @@
+declare var CPLogDisable:Boolean
+
+interface CPLogFormatter {
+    (aString:string, aLevel:string, aTitle:string)
+}
+
+/**
+ * ["fatal", "error", "warn", "info", "debug", "trace"]
+ */
+readonly var CPLogLevels:string[]
+
+keyset CPLogLevelValue = "fatal"| "error" | "warn" | "info" | "debug" | "trace";
+
+
+/**
+ * @default: "info"
+ */
+var CPLogDefaultLevel:CPLogLevelValue
+
+@quiet
+function CPLogRegister(aProvider:Any, aMaxLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogRegisterRange(aProvider:Any, aMinLevel:CPLogLevelValue, aMaxLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogRegisterSingle(aProvider:Any, aLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogUnregister(aProvider:Any)
+
+function CPLog(...args:Any)
+
+function CPLogConsole(aString:String, aLevel:CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
+
+function CPLogColorize(aString:String, aLevel:CPLogLevelValue)
+
+function CPLogPrint(aString:string, aLevel: CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
+
+function CPLogColorize(aString:string, aLevel:CPLogLevelValue)
+
+function CPLogPopup(aString:string, aLevel:CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
