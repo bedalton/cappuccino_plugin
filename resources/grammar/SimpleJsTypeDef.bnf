@@ -66,7 +66,8 @@
 		CLASS_KEYWORD = 					'class'
 		AT_SILENT =                         '@silent'
 		AT_QUIET =                          '@quiet'
-		FILE_KEYWORD =                      '@file'
+		AT_FILE =                      		'@file'
+		AT_SUGGEST =                  		'@suggest'
 		DECLARE =                           'declare'
 
 		BLOCK_COMMENT_START = 				'/*'
@@ -87,12 +88,45 @@
 defFile ::= fileDirective? fileRootElement*
 
 fileDirective
-    ::= FILE_KEYWORD ':' completionModifier
+    ::= AT_FILE ':' completionModifier
+    {
+    	pin = 1
+		methods = [
+			getCompletionModifier
+			isSilent
+			isQuiet
+			isSuggest
+		]
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
+		]
+    }
     ;
 
 private fileRootElement
-	::= !<<eof>> definition
+	::= !<<eof>> (completionModifiedBlock|definition)
 	;
+
+completionModifiedBlock
+	::= completionModifier '{' completionModifiedBlockProperties? '}'
+	{
+		pin = 2
+		methods = [
+			getCompletionModifier
+			isSilent
+			isQuiet
+			isSuggest
+		]
+		implements = [
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
+		]
+	}
+	;
+
+private completionModifiedBlockProperties
+	::= definition+
+	;
+
 
 private definition
 	::=	module
@@ -105,6 +139,8 @@ private definition
 	|	keyList eos?
 	|	';'
 	;
+
+
 
 module
 	::= MODULE_KEYWORD namespacedModuleName '{' moduleElements? '}'
@@ -147,6 +183,7 @@ variableDeclaration
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
 		]
 		extends="cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
 	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub"
@@ -159,8 +196,10 @@ variableDeclaration
 	        getNamespacedName
 	        getNamespaceComponents
 	        getNamespaceComponent
-	        isQuiet
+	        getCompletionModifier
 	        isSilent
+	        isQuiet
+	        isSuggest
 	    ]
 	}
 	;
@@ -180,6 +219,7 @@ functionDeclaration
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
 		]
 		methods = [
 			getEnclosingNamespace
@@ -188,9 +228,11 @@ functionDeclaration
 	        getNamespaceComponents
 	        getNamespaceComponent
 	        isStatic
+	        getGenericsKeys
+	        getCompletionModifier
 	        isQuiet
 	        isSilent
-	        getGenericsKeys
+	        isSuggest
 		]
 	}
 	;
@@ -224,6 +266,7 @@ interfaceElement
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub"
 		methods = [
@@ -235,8 +278,10 @@ interfaceElement
 			getNamespaceComponent
 			getNamespacedName
 			isStatic
+			getCompletionModifier
 			isQuiet
 			isSilent
+			isSuggest
 			getGenericsKeys
 		]
 	}
@@ -251,6 +296,7 @@ classElement
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration<cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl, cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub>"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
 		]
         stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub"
 		methods = [
@@ -262,8 +308,10 @@ classElement
 	        getNamespaceComponent
 	        getNamespacedName
 	        isStatic
-			isQuiet
+			getCompletionModifier
 			isSilent
+			isQuiet
+			isSuggest
 			getGenericsKeys
 		]
 	}
@@ -575,13 +623,16 @@ function
 	        isStatic
 	        getFunctionNameString
 	        getDescription
+	        getCompletionModifier
 	        isQuiet
 	        isSilent
+	        isSuggest
 	        getGenericsKeys
 		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics"
+			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub>"
 	  	]
@@ -669,13 +720,16 @@ property
     	        getNamespacedName
     	        getNamespaceComponents
     	        getNamespaceComponent
+    	        getCompletionModifier
     	        isStatic
     	        isQuiet
     	        isSilent
+    	        isSuggest
     	    ]
     		implements = [
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoKeyMapReturn"
+				"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasCompletionModifiers"
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefStubBasedElement<cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub>"
     	  	]
     	  	stubClass="cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub"
@@ -835,6 +889,7 @@ stringLiteral
 private completionModifier
     ::= AT_SILENT
     |   AT_QUIET
+    |	AT_SUGGEST
     ;
 
 integer

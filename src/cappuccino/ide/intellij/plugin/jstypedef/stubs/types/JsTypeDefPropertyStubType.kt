@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefPropertyImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefPropertyStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefPropertyStub
@@ -37,22 +38,20 @@ class JsTypeDefPropertyStubType internal constructor(
         val propertyName = property.propertyNameString
         val typeList = InferenceResult(property.typeList.toJsTypeDefTypeListTypes(), property.isNullable)
         val static = property.parent is JsTypeDefVariableDeclaration
-        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingClass, property.namespaceComponents, propertyName, typeList, static, property.isSilent, property.isQuiet)
+        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingClass, property.namespaceComponents, propertyName, typeList, static, property.completionModifier)
     }
 
     @Throws(IOException::class)
     override fun serialize(
             stub: JsTypeDefPropertyStub,
             stream: StubOutputStream) {
-
         stream.writeName(stub.fileName)
         stream.writeName(stub.enclosingNamespace)
         stream.writeName(stub.enclosingClass)
         stream.writeName(stub.propertyName)
         stream.writeInferenceResult(stub.types)
         stream.writeBoolean(stub.static)
-        stream.writeBoolean(stub.isSilent)
-        stream.writeBoolean(stub.isQuiet)
+        stream.writeName(stub.completionModifier.tag)
     }
 
     @Throws(IOException::class)
@@ -65,8 +64,7 @@ class JsTypeDefPropertyStubType internal constructor(
         val propertyName = stream.readNameString() ?: "???"
         val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
         val static = stream.readBoolean()
-        val isSilent = stream.readBoolean()
-        val isQuiet = stream.readBoolean()
+        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
         return JsTypeDefPropertyStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -76,8 +74,7 @@ class JsTypeDefPropertyStubType internal constructor(
                 propertyName = propertyName,
                 types = types,
                 static = static,
-                isSilent = isSilent,
-                isQuiet = isQuiet
+                completionModifier = completionModifier
         )
     }
 

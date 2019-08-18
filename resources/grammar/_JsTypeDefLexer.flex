@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.lexer;
 
-import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
+import com.intellij.lexer.FlexLexer;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*;
@@ -38,6 +38,11 @@ ESCAPED_ID=`[ \t\n\x0B\f\r]*[_a-zA-Z][_a-zA-Z0-9]*[ \t\n\x0B\f\r]*`
 
 INTEGER_LITERAL=[0-9]+
 ID=[$_a-zA-Z][_a-zA-Z0-9]*
+
+AT_SUGGEST = [@][sS][uU][gG][gG][eE][sS][tT]
+AT_QUIET = [@][qQ][uU][iI][eE][tT]
+AT_SILENT = [@][sS][iI][lL][eE][nN][tT]
+AT_FILE = [@][fF][iI][lL][eE]
 
 %state DOUBLE_QUOTE_STRING SINGLE_QUOTE_STRING BLOCK_COMMENT
 
@@ -99,9 +104,10 @@ ID=[$_a-zA-Z][_a-zA-Z0-9]*
   	"alias"                    	{ return JS_ALIAS; }
   	"internal"                 	{ return JS_INTERNAL; }
   	"static"                   	{ return JS_STATIC_KEYWORD; }
-  	"@quiet"                   	{ return JS_AT_QUIET; }
-  	"@silent"                  	{ return JS_AT_SILENT; }
-    "@file"                     { return JS_FILE_KEYWORD; }
+  	{AT_QUIET}                 	{ return JS_AT_QUIET; }
+  	{AT_SILENT}               	{ return JS_AT_SILENT; }
+    {AT_FILE}                   { return JS_AT_FILE; }
+    {AT_SUGGEST}                { return JS_AT_SUGGEST; }
     "declare"                   { return JS_DECLARE; }
 
  	{BLOCK_COMMENT}            	{ return JS_BLOCK_COMMENT; }

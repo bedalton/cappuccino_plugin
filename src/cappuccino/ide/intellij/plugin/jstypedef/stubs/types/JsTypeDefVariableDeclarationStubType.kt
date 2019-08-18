@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.INFERRED_VOID_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefVariableDeclarationImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub
@@ -36,6 +37,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val readOnly = declaration.readonly != null
         val comment = null
         val default = null
+        val completionModifier = declaration.completionModifier
         return JsTypeDefVariableDeclarationStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -46,8 +48,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
                 readonly = readOnly,
                 comment = comment,
                 default = default,
-                isSilent = declaration.isSilent,
-                isQuiet = declaration.isQuiet
+                completionModifier = completionModifier
         )
     }
 
@@ -62,8 +63,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         stream.writeBoolean(stub.readonly)
         stream.writeName(stub.comment)
         stream.writeName(stub.default)
-        stream.writeBoolean(stub.isSilent)
-        stream.writeBoolean(stub.isQuiet)
+        stream.writeName(stub.completionModifier.tag)
     }
 
     @Throws(IOException::class)
@@ -77,8 +77,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val readonly: Boolean = stream.readBoolean()
         val comment: String? = stream.readNameString()
         val default: String? = stream.readNameString()
-        val isSilent = stream.readBoolean()
-        val isQuiet = stream.readBoolean()
+        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
         return JsTypeDefVariableDeclarationStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -89,8 +88,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
                 types = types,
                 comment = comment,
                 default = default,
-                isSilent = isSilent,
-                isQuiet = isQuiet
+                completionModifier = completionModifier
         )
     }
 

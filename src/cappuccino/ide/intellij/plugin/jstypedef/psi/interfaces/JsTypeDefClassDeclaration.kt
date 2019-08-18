@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toNamedPropertiesList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -18,8 +19,10 @@ interface JsTypeDefClassDeclaration<PsiT:JsTypeDefClassDeclaration<PsiT,StubT>,S
     val propertyList: List<JsTypeDefProperty>
     val genericsKeys:Set<JsTypeListType.JsTypeListGenericType>
     val isStatic:Boolean
+    val completionModifier:CompletionModifier
     val isSilent:Boolean
     val isQuiet:Boolean
+    val isSuggest:Boolean
     val className:String
     val stub:StubT?
 }
@@ -40,8 +43,7 @@ fun JsTypeDefClassDeclaration<*,*>.toJsClassDefinition() : JsClassDefinition {
             properties = this.propertyList.filter{it.staticKeyword == null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             staticProperties = this.propertyList.filter{it.staticKeyword != null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             isStruct = this is JsTypeDefInterfaceElement,
-            isQuiet = isQuiet,
-            isSilent = isSilent,
+            completionModifier = this.completionModifier,
             enclosingNameSpaceComponents = enclosingNamespaceComponents
     )
 }

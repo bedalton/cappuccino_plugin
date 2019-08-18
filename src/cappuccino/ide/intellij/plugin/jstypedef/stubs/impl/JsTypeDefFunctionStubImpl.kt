@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArg
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
 import com.intellij.psi.stubs.StubElement
@@ -20,8 +21,7 @@ class JsTypeDefFunctionStubImpl(
         override val genericsKeys: Set<JsTypeListGenericType>?,
         override val global:Boolean,
         override val static: Boolean,
-        override val isQuiet:Boolean,
-        override val isSilent:Boolean
+        override val completionModifier: CompletionModifier
 ) : JsTypeDefStubBaseImpl<JsTypeDefFunctionImpl>(parent, JsTypeDefStubTypes.JS_FUNCTION), JsTypeDefFunctionStub {
 
     override val asJsFunctionType: JsTypeListType.JsTypeListFunctionType by lazy {

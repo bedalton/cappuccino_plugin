@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toInferenceResult
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.project.DumbService
@@ -46,7 +47,8 @@ internal fun objJClassAsJsClass(project: Project, className: String): JsClassDef
             extends = (extends.map { JsTypeListType.JsTypeListBasicType(it) } ).toSet(),
             isObjJ = true,
             isStruct = false,
-            static = false
+            static = false,
+            completionModifier = if (className.startsWith("_")) CompletionModifier.AT_QUIET else CompletionModifier.AT_SUGGEST
     )
 }
 

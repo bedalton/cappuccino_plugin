@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefClassElementImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefInterfaceElementImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefInterfaceStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
@@ -15,8 +16,7 @@ class JsTypeDefClassStubImpl(
         override val enclosingNamespaceComponents: List<String>,
         override val className: String,
         override val superTypes: Set<JsTypeListType>,
-        override val isSilent: Boolean,
-        override val isQuiet: Boolean
+        override val completionModifier: CompletionModifier
 ) : JsTypeDefStubBaseImpl<JsTypeDefClassElementImpl>(parent, JsTypeDefStubTypes.JS_CLASS), JsTypeDefClassStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")
@@ -32,8 +32,7 @@ class JsTypeDefInterfaceStubImpl(
         override val enclosingNamespaceComponents: List<String>,
         override val className: String,
         override val superTypes: Set<JsTypeListType>,
-        override val isSilent: Boolean,
-        override val isQuiet: Boolean
+        override val completionModifier: CompletionModifier
 ) : JsTypeDefStubBaseImpl<JsTypeDefInterfaceElementImpl>(parent, JsTypeDefStubTypes.JS_INTERFACE), JsTypeDefInterfaceStub {
     override val enclosingNamespace: String
         get() = enclosingNamespaceComponents.joinToString(".")
