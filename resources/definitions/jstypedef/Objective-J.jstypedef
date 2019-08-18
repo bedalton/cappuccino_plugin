@@ -1,201 +1,174 @@
-readonly var E:number;
-readonly var LN2:number;
-readonly var LN10:number
-readonly var LOG:number
-readonly var LOG2E:number
-readonly var PI:number
-readonly var PI2:number
-readonly var PI_2:number
-readonly var SQRT1_2:number
-readonly var SQRT2:number
-readonly var CPLogDisable:BOOL
-/**
- * Returns the absolute value of a number (the value without regard to whether it is positive or negative).
- * For example, the absolute value of -5 is the same as the absolute value of 5.
- * @param x A numeric expression for which the absolute value is needed.
- */
-function ABS(x: number): number;
-/**
- * Returns the arc cosine (or inverse cosine) of a number.
- * @param x A numeric expression.
- */
-function ACOS(x: number): number;
-/**
- * Returns the arcsine of a number.
- * @param x A numeric expression.
- */
-function ASIN(x: number): number;
-/**
- * Returns the arctangent of a number.
- * @param x A numeric expression for which the arctangent is needed.
- */
-function ATAN(x: number): number;
-/**
- * Returns the angle (in radians) from the X axis to a point.
- * @param y A numeric expression representing the cartesian y-coordinate.
- * @param x A numeric expression representing the cartesian x-coordinate.
- */
-function ATAN2(y: number, x: number): number;
-/**
- * Returns the smallest integer greater than or equal to its numeric argument.
- * @param x A numeric expression.
- */
-function CEIL(x: number): number;
-/**
- * Returns the cosine of a number.
- * @param x A numeric expression that contains an angle measured in radians.
- */
-function COS(x: number): number;
-/**
- * Returns e (the base of natural logarithms) raised to a power.
- * @param x A numeric expression representing the power of e.
- */
-function EXP(x: number): number;
-/**
- * Returns the greatest integer less than or equal to its numeric argument.
- * @param x A numeric expression.
- */
-function FLOOR(x: number): number;
-/**
- * Returns the natural logarithm (base e) of a number.
- * @param x A numeric expression.
- */
-function LOG(x: number): number;
-/**
- * Returns the larger of a set of supplied numeric expressions.
- * @param values Numeric expressions to be evaluated.
- */
-function MAX(...values: number[]): number;
-/**
- * Returns the smaller of a set of supplied numeric expressions.
- * @param values Numeric expressions to be evaluated.
- */
-function MIN(...values: number[]): number;
-/**
- * Returns the value of a base expression taken to a specified power.
- * @param x The base value of the expression.
- * @param y The exponent value of the expression.
- */
-function POW(x: number, y: number): number;
-/** Returns a pseudorandom number between 0 and 1. */
-function RAND(): number;
-/**
- * Returns a supplied numeric expression rounded to the nearest number.
- * @param x The value to be rounded to the nearest number.
- */
-function ROUND(x: number): number;
-/**
- * Returns the sine of a number.
- * @param x A numeric expression that contains an angle measured in radians.
- */
-function SIN(x: number): number;
-/**
- * Returns the square root of a number.
- * @param x A numeric expression.
- */
-function SQRT(x: number): number;
-/**
- * Returns the tangent of a number.
- * @param x A numeric expression that contains an angle measured in radians.
- */
-function TAN(x: number): number;
-@quiet
+@file:@quiet
+/*-- @file: Constants.js --*/
 readonly var kCFErrorLocalizedDescriptionKey:string
-@quiet
 readonly var kCFErrorLocalizedFailureReasonKey:string
-@quiet
 readonly var kCFErrorLocalizedRecoverySuggestionKey:string
-@quiet
 readonly var kCFErrorDescriptionKey:string
-@quiet
 readonly var kCFErrorUnderlyingErrorKey:string
-@quiet
 readonly var kCFErrorURLKey:string
-@quiet
 readonly var kCFErrorFilePathKey:string
-@quiet
 readonly var kCFErrorDomainCappuccino:string
-@quiet
 readonly var kCFErrorDomainCocoa:string
-@quiet
 readonly var kCFURLErrorUnknown:number
-@quiet
 readonly var kCFURLErrorCancelled:number
-@quiet
 readonly var kCFURLErrorBadURL:number
-@quiet
 readonly var kCFURLErrorTimedOut:number
-@quiet
 readonly var kCFURLErrorUnsupportedURL:number
-@quiet
 readonly var kCFURLErrorCannotFindHost:number
-@quiet
 readonly var kCFURLErrorCannotConnectToHost:number
-@quiet
 readonly var kCFURLErrorNetworkConnectionLost:number
-@quiet
 readonly var kCFURLErrorDNSLookupFailed:number
-@quiet
 readonly var kCFURLErrorHTTPTooManyRedirects:number
-@quiet
 readonly var kCFURLErrorResourceUnavailable:number
-@quiet
 readonly var kCFURLErrorNotConnectedToInternet:number
-@quiet
 readonly var kCFURLErrorRedirectToNonExistentLocation:number
-@quiet
 readonly var kCFURLErrorBadServerResponse:number
-@quiet
 readonly var kCFURLErrorUserCancelledAuthentication:number
-@quiet
 readonly var kCFURLErrorUserAuthenticationRequired:number
-@quiet
 readonly var kCFURLErrorZeroByteResource:number
-@quiet
 readonly var kCFURLErrorCannotDecodeRawData:number
-@quiet
 readonly var kCFURLErrorCannotDecodeContentData:number
-@quiet
 readonly var kCFURLErrorCannotParseResponse:number
-@quiet
 readonly var kCFURLErrorRequestBodyStreamExhausted:number
-@quiet
 readonly var kCFURLErrorFileDoesNotExist:number
-@quiet
 readonly var kCFURLErrorFileIsDirectory:number
-@quiet
 readonly var kCFURLErrorNoPermissionsToReadFile:number
-@quiet
 readonly var kCFURLErrorDataLengthExceedsMaximum:number
- @quiet
-readonly var kCFPropertyListOpenStepFormat:number
-@quiet
+ readonly var kCFPropertyListOpenStepFormat:number
 readonly var kCFPropertyListXMLFormat_v1_0:number
-@quiet
 readonly var kCFPropertyListBinaryFormat_v1_0:number
-@quiet
 readonly var kCFPropertyList280NorthFormat_v1_0:number
-@quiet
 readonly var DEBUG:BOOL
 
 
-/*-- @file: objective-j.js --*/
-@quiet
+/*-- @file: /objective-j/lib/objective-j.js --*/
+
+function run(...args:Any)
+
+function sprintf(format:string, ...args:Any)
+
+function justify(sign:string, prefix:string, string:string, suffix:string, width:number, leftJustify:BOOL, padZeros:BOOL)
+
+interface EventDispatcher {
+    new(anOwner:Object)
+    addEventListener(anEventName:string, anEventListener:EventListener)
+    removeEventListener(anEventName:string, anEventListener:EventListener):EventListener
+    dispatchEvent(anEvent:Event)
+}
+
+function Asynchronous(aFunction:Function)
+
+alias CFHTTPRequestStatusCode:number
+
+interface CFHTTPRequest {
+    new()
+    self:CFHTTPRequest
+    status():CFHTTPRequestStatusCode
+    statusText():string
+    readyState:CFHTTPRequestStatusCode
+    success():BOOL
+    responseXML():XMLDocument
+    responsePropertyList:CFPropertyList
+    responseText:string
+    setRequestHeader(aHeader:string, aValue:string)
+    getResponseHeader(aHeader:string)
+    overrideMimeType(aMimeType:string)
+    setTimeout(aTimeout:number)
+    getTimeout():number
+    getAllResponseHeaders():string
+    open(aMethod:string, aURL:string, isAsynchronous:BOOL, aUser?:string, aPassword?:string)
+    send(aBody?:string)
+    abort():undefined
+    addEventListener(anEventName:string, anEventListener:EventListener)
+    removeEventListener(anEventName:string, anEventListener:EventListener)
+    isTimeoutRequest():BOOL
+    setWithCredentials(willSendWithCredentials:BOOL)
+    withCredentials():BOOL
+    static readonly UninitializedState:CFHTTPRequestStatusCode;
+    static readonly LoadingState:CFHTTPRequestStatusCode;
+    static readonly LoadedState:CFHTTPRequestStatusCode;
+    static readonly InteractiveState:CFHTTPRequestStatusCode;
+    static readonly CompleteState:CFHTTPRequestStatusCode;
+    static AuthenticationDelegate?:Any
+}
+
+function dispatchTimeoutHTTPRequestEvents(aRequest:CFHTTPRequest)
+function determineAndDispatchHTTPRequestEvents(aRequest:CFHTTPRequest)
+
+function FileRequest(aURL:string, onsuccess:(anEvent:Event)=>void, onfailure:(anEvent:Event)=>void, onprogress:(delta:number)=>void)
+
+function objj_generateObjectUID():number
+
+alias CFPropertyListFormat:number
+
+interface CFPropertyList {
+    static readonly DTDRE:regex
+    static readonly XMLRE:regex
+    static readonly FormatXMLDTD:string
+    static readonly Format280NorthMagicNumber:string
+    static readonly FormatOpenStep:CFPropertyListFormat
+    static readonly FormatBinary_v1_0:CFPropertyListFormat
+    static readonly FormatXML_v1_0:CFPropertyListFormat
+    static readonly Format280North_v1_0:CFPropertyListFormat
+    static sniffedFormatOfString(aString:string):CFPropertyListFormat|null
+    static dataFromPropertyList(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):CFMutableData
+    static stringFromPropertyList(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):string
+    static readPropertyListFromFile(aFilePath:string):CFPropertyList
+    static writePropertyListToFile(aPropertyList:CFPropertyList, aFilePath:string, aFormat:CFPropertyListFormat):BOOL
+    static modifyPlist(aFilePath:string, aCallback:(pList:CFPropertyList)=>void, aFormat:CFPropertyListFormat)
+    static serializePropertyList(aPropertyList:CFPropertyList, serializers:Any[])
+    static propertyListFromXML(aStringOrXMLNode:string|XMLDocument):CFPropertyList
+}
+
+interface CFPropertyListSerializer {
+    start():string
+    finish():string
+    string(aString:string):string
+    boolean(aBoolean:BOOL):string
+    integer(anInteger:Int):string
+    real(aReal:number):string
+    array(anArray:Any[], serializers:CFPropertyListSerializer)
+    dictionary(aDictionary:CFDictionary, serializers:CFPropertyListSerializer)
+}
+
+function propertyListFromData(aData:CFMutableData, aFormat:CFPropertyListFormat);
+function propertyListFromString(aString:string, aFormat:CFPropertyListFormat)
+function propertyListFrom280NorthString(aString:string):CFPropertyList
+function decodeHTMLComponent(aString:string):string
+function encodeHTMLComponent(aString:string):string
+
+function parseXML(aString:string):XMLDocument
+function CFPropertyListCreate():CFPropertyList
+function CFPropertyListCreateFromXMLData(aData:CFData):CFPropertyList
+function CFPropertyListCreateXMLData(aPropertyList:CFPropertyList):CFData
+function CFPropertyListCreateFrom280NorthData(data:CFData):CFPropertyList
+function CFPropertyListCreate280NorthData(aPropertyList:CFPropertyList):CFData
+function CPPropertyListCreateFromData(data:CFData, aFormat:CFPropertyListFormat)
+function CPPropertyListCreateData(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):CFData
+
+readonly var kCFPropertyListOpenStepFormat:CFPropertyListFormat
+readonly var kCFPropertyListXMLFormat_v1_0:CFPropertyListFormat
+readonly var kCFPropertyListBinaryFormat_v1_0:CFPropertyListFormat
+readonly var kCFPropertyList280NorthFormat_v1_0:CFPropertyListFormat
+
+
+
+@quiet var asyncLoader:BOOL
+var objj_frameworks:Any[]
+
+var objj_debug_frameworks:Any[]
+
 interface objj_ivar {
     new(aName:string, aType:string)
     name:string
     type:string
 }
 
-@quiet
 function objj_ivar(aName:string, aType:string):objj_ivar
 
 @silent
-interface allocator {
+function Allocator(aFunction:Function)
 
-}
-
-@quiet
 interface objj_class {
     new(displayName:string)
     isa?:Any
@@ -213,14 +186,12 @@ interface objj_class {
     _UID:number;
 
 }
-@quiet
 interface objj_protocol {
     new(name:string)
     name:string
     instance_methods:Any[]
     class_methods:Any[]
 }
-@quiet
 interface objj_object {
     isa?:Any
     _UID:number
@@ -237,6 +208,4 @@ function class_setSuperclass(aClass:objj_class, aSuperClass:string)
 function class_addIvar(aClass:objj_class, aName:string, aType:string)
 
 function class_addIvars(aClass:objj_class, ivars:objj_ivar[])
-
-
 
