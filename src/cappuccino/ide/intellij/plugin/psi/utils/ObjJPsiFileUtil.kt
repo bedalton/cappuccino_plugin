@@ -245,28 +245,48 @@ fun ObjJImportInfoStub.getPsiFile(project: Project) : ObjJFile? {
     return getFileWithFramework(fileName, framework, project).mapNotNull { it as? ObjJFile }.getOrNull(0)
 }
 
-fun getFileWithFramework(fileName:String?, frameworkName:String?, project: Project) : List<PsiFile> {
-    if (fileName == null || fileName.trim().isBlank())
+fun getFileWithFramework(path:String?, frameworkName:String?, project: Project) : List<PsiFile> {
+    if (path == null || path.trim().isBlank())
         return emptyList()
-    val parts = fileName.split("/")
 
-    val filesWithName = FilenameIndex.getFilesByName(project, parts.last(), GlobalSearchScope.everythingScope(project))
-    if (frameworkName == null)
+    // Check if is root based or should ignore framework
+    val isRootBased = path.startsWith("/")
+
+    // Get parts
+    val pathComponents = path.split("/")
+    val partsIsEmpty = pathComponents.isEmpty() || (pathComponents.size == 2 && pathComponents[0].isBlank())
+
+    // Get files with name
+    val fileName = pathComponents.last()
+    val filesWithName = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project))
+
+    // Check if framework is null and should be used.
+    if (frameworkName == null && !isRootBased)
         return filesWithName.toList()
+
+    // Check if is root and unqualified
+    if (partsIsEmpty && isRootBased)
+        return filesWithName.toList()
+
+    val out = mutableListOf<PsiFile>()
+    // Check all files
     file@for(file in filesWithName) {
         val thisFrameworkName = if (file is ObjJFile) file.frameworkName else ObjJFrameworkUtils.getEnclosingFrameworkName(file)
-        if (frameworkName == thisFrameworkName) {
-            if (parts.isEmpty()) {
-                return listOf(file)
+        if (isRootBased || frameworkName == thisFrameworkName) {
+            // If parts is empty, return what has been found
+            if (partsIsEmpty) {
+                out.add(file)
+                //return listOf(file)
+                continue@file
             }
             var parent: PsiDirectory? = file.parent
-            for (i in parts.lastIndex until 0 ) {
-                if (parent == null || parent.name != parts[i])
+            for (i in pathComponents.lastIndex until 0) {
+                if (parent == null || (pathComponents[i].isNotBlank() && parent.name != pathComponents[i]))
                     continue@file
                 parent = parent.parent
             }
-            return listOf(file)
+            out.add(file)
         }
     }
-    return emptyList()
+    return out
 }
