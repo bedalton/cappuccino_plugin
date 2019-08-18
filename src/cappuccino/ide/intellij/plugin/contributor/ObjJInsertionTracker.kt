@@ -19,7 +19,6 @@ object ObjJInsertionTracker {
                         timesHit = data.timesHit + 1
                 )
         insertions[text] = newData
-        LOGGER.info("Hits For: $text: ${insertions[text]}")
         reduce()
     }
 
@@ -30,7 +29,6 @@ object ObjJInsertionTracker {
         val recentIfGreaterThan = insertions.map { it.value.lastInsertionTime }.max()?.minus(6000) ?: 0
         if (data.lastInsertionTime > recentIfGreaterThan)
             points += pointsForRecent
-        LOGGER.info("Hits($text) = ${insertions[text]?.timesHit ?: 0}; Out -> $points")
         return points
     }
 
