@@ -2,9 +2,11 @@ package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import javafx.scene.control.ProgressIndicator
 
 class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange) : PsiPolyVariantReferenceBase<PsiComment>(comment, rangeInComment) {
 
@@ -24,7 +26,6 @@ class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange
             return PsiElementResolveResult.EMPTY_ARRAY
         val fileName = fileName ?: return emptyArray()
         val frameworkName = frameworkName
-        LOGGER.info("@fileReference: <$frameworkName/$fileName>")
         val files = getFileWithFramework(fileName, frameworkName, myElement.project)
         if (files.isEmpty())
             return PsiElementResolveResult.EMPTY_ARRAY
@@ -35,12 +36,14 @@ class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange
         var frameworkName:String? = null
         var previousSibling:PsiElement? =  myElement.getPreviousNonEmptySibling(true)
         while(previousSibling != null) {
+            ProgressIndicatorProvider.checkCanceled()
             if (previousSibling is PsiComment) {
                 frameworkName = getFrameworkInComment(previousSibling)
-                if (frameworkName != null)
+                if (frameworkName != null) {
                     return frameworkName
+                }
             }
-            previousSibling = myElement.getPreviousNonEmptySibling(true)
+            previousSibling = previousSibling.getPreviousNonEmptySibling(true)
         }
         return null
     }
