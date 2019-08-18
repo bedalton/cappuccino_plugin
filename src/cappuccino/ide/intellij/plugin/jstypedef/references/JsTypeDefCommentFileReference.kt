@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.jstypedef.references
 
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFrameworkTextRangeInComment
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.utils.isInvalid
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
-import javafx.scene.control.ProgressIndicator
 
 class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange) : PsiPolyVariantReferenceBase<PsiComment>(comment, rangeInComment) {
 
@@ -33,8 +33,8 @@ class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange
     }
 
     private fun getFrameworkNameInComment():String? {
-        var frameworkName:String? = null
-        var previousSibling:PsiElement? =  myElement.getPreviousNonEmptySibling(true)
+        var frameworkName: String?
+        var previousSibling:PsiElement? =  myElement
         while(previousSibling != null) {
             ProgressIndicatorProvider.checkCanceled()
             if (previousSibling is PsiComment) {
@@ -50,20 +50,13 @@ class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange
 
 
     private fun getFrameworkInComment(comment:PsiComment):String? {
-        val atFramework = "@framework:"
-        val text = comment.text
-        val parts = text.split(atFramework)
-        if (parts.size < 2)
+        val range = comment.getFrameworkTextRangeInComment(false) ?: return null
+        if (range.isInvalid()) {
             return null
-        val after = parts[0].length + atFramework.length
-        val frameworkPart = parts[1].trim()
-        val frameworkMatch = "^([ -]*[a-zA-Z0-9_+.])+".toRegex().find(frameworkPart) ?: return null
-        val frameworkName = frameworkMatch.value
-        if (frameworkName.isBlank())
+        }
+        if (range.endOffset >= comment.textLength) {
             return null
-        LOGGER.info("FrameworkNameIsNotNullInJsTypeDefComment: $frameworkName")
-        return frameworkName
+        }
+        return comment.text.substring(range.startOffset, range.endOffset)
     }
-
-
 }
