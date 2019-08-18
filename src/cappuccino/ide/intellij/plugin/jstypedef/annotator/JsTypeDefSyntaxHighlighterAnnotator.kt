@@ -6,6 +6,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceRangeInComment
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceWithPrefix
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFrameworkTextRangeInComment
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
@@ -93,7 +95,18 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
      * Highlights comment text for keywords
      */
     private fun highlightComment(comment: PsiComment, annotationHolder: AnnotationHolder) {
+        highlightFileNameInComment(comment, annotationHolder)
+        highlightFrameworkNameInComment(comment, annotationHolder)
+    }
+
+    private fun highlightFileNameInComment(comment: PsiComment, annotationHolder: AnnotationHolder) {
         val rangeInComment = comment.getFileReferenceRangeInComment(true) ?: return
+        val startOffset = comment.textRange.startOffset
+        colorize(TextRange.create(startOffset + rangeInComment.startOffset, startOffset+rangeInComment.endOffset), annotationHolder, JsTypeDefSyntaxHighlighter.FILE_IN_COMMENT)
+    }
+
+    private fun highlightFrameworkNameInComment(comment: PsiComment, annotationHolder: AnnotationHolder) {
+        val rangeInComment = comment.getFrameworkTextRangeInComment(true) ?: return
         val startOffset = comment.textRange.startOffset
         colorize(TextRange.create(startOffset + rangeInComment.startOffset, startOffset+rangeInComment.endOffset), annotationHolder, JsTypeDefSyntaxHighlighter.FILE_IN_COMMENT)
     }

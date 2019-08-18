@@ -38,6 +38,7 @@ class JsTypeDefSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == JS_DECLARE ||
                 tokenType == JS_AT_QUIET ||
                 tokenType == JS_AT_SILENT ||
+                tokenType == JS_AT_FILE ||
                 tokenType == JS_ALIAS ||
                 tokenType == JS_VAR
                 ) {
