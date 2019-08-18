@@ -1,0 +1,115 @@
+/*-- @file: /Constants.js --*/
+/**
+ * Returns the absolute value of a number (the value without regard to whether it is positive or negative).
+ * For example, the absolute value of -5 is the same as the absolute value of 5.
+ * @param x A numeric expression for which the absolute value is needed.
+ */
+function ABS(x: number): number;
+/**
+ * Returns the arc cosine (or inverse cosine) of a number.
+ * @param x A numeric expression.
+ */
+function ACOS(x: number): number;
+/**
+ * Returns the arcsine of a number.
+ * @param x A numeric expression.
+ */
+function ASIN(x: number): number;
+/**
+ * Returns the arctangent of a number.
+ * @param x A numeric expression for which the arctangent is needed.
+ */
+function ATAN(x: number): number;
+/**
+ * Returns the angle (in radians) from the X axis to a point.
+ * @param y A numeric expression representing the cartesian y-coordinate.
+ * @param x A numeric expression representing the cartesian x-coordinate.
+ */
+function ATAN2(y: number, x: number): number;
+/**
+ * Returns the smallest integer greater than or equal to its numeric argument.
+ * @param x A numeric expression.
+ */
+function CEIL(x: number): number;
+/**
+ * Returns the cosine of a number.
+ * @param x A numeric expression that contains an angle measured in radians.
+ */
+function COS(x: number): number;
+/**
+ * Returns e (the base of natural logarithms) raised to a power.
+ * @param x A numeric expression representing the power of e.
+ */
+function EXP(x: number): number;
+/**
+ * Returns the greatest integer less than or equal to its numeric argument.
+ * @param x A numeric expression.
+ */
+function FLOOR(x: number): number;
+/**
+ * Returns the natural logarithm (base e) of a number.
+ * @param x A numeric expression.
+ */
+function LOG(x: number): number;
+/**
+ * Returns the larger of a set of supplied numeric expressions.
+ * @param values Numeric expressions to be evaluated.
+ */
+function MAX(...values: number[]): number;
+/**
+ * Returns the smaller of a set of supplied numeric expressions.
+ * @param values Numeric expressions to be evaluated.
+ */
+function MIN(...values: number[]): number;
+/**
+ * Returns the value of a base expression taken to a specified power.
+ * @param x The base value of the expression.
+ * @param y The exponent value of the expression.
+ */
+function POW(x: number, y: number): number;
+/** Returns a pseudorandom number between 0 and 1. */
+function RAND(): number;
+/**
+ * Returns a supplied numeric expression rounded to the nearest number.
+ * @param x The value to be rounded to the nearest number.
+ */
+function ROUND(x: number): number;
+/**
+ * Returns the sine of a number.
+ * @param x A numeric expression that contains an angle measured in radians.
+ */
+function SIN(x: number): number;
+/**
+ * Returns the square root of a number.
+ * @param x A numeric expression.
+ */
+function SQRT(x: number): number;
+/**
+ * Returns the tangent of a number.
+ * @param x A numeric expression that contains an angle measured in radians.
+ */
+function TAN(x: number): number;
+
+/** The mathematical constant e. This is Euler's number, the base of natural logarithms. */
+declare readonly var E: number;
+/** The natural logarithm of 10. */
+declare readonly var LN10: number;
+/** The natural logarithm of 2. */
+declare readonly var LN2: number;
+/** The base-2 logarithm of e. */
+declare readonly var LOG2E: number;
+/** The base-10 logarithm of e. */
+declare readonly var LOG10E: number;
+/** Pi. This is the ratio of the circumference of a circle to its diameter. */
+declare readonly var PI: number;
+declare readonly var PI2:number;
+declare readonly var PI_2:number;
+
+/** The square root of 0.5, or, equivalently, one divided by the square root of 2. */
+declare readonly var SQRT1_2: number;
+
+/** The square root of 2. */
+declare readonly var SQRT2: number;
+
+
+
