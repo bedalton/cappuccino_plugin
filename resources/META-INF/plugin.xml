@@ -404,7 +404,7 @@
     <!-- Formatting and Completion -->
     <lang.braceMatcher language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefBraceMatcher"/>
     <completion.contributor language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefCompletionContributor" />
-
+    <enterBetweenBracesDelegate language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefEnterBetweenBracesDelegate" />
 
     <!-- STUBS AND INDICES -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService"

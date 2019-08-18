@@ -27,7 +27,7 @@ class JsTypeDefBraceMatcher : PairedBraceMatcher {
 
     companion object {
         private val PAIRS = arrayOf(
-                BracePair(JS_OPEN_BRACE, JS_CLOSE_PAREN, false),
+                BracePair(JS_OPEN_PAREN, JS_CLOSE_PAREN, false),
                 BracePair(JS_OPEN_BRACKET, JS_CLOSE_BRACKET, false),
                 BracePair(JS_OPEN_BRACE, JS_CLOSE_BRACE, false),
                 BracePair(JS_OPEN_ARROW, JS_CLOSE_ARROW, true),
