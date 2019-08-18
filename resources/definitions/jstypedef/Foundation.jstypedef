@@ -416,7 +416,7 @@ interface CPRange {
 */
 function CPMakeRange(location:number, length:number):CPRange
 
-/*-- @file: CFRunLoop.j --*/
+/*-- @file: CPRunLoop.j --*/
 
 class CFRunLoopObserver {
     new(activities:number, repeats:BOOL, order:number, callout:()=>void, context:number);
