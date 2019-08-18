@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import com.intellij.openapi.util.TextRange
+
 
 fun Boolean?.orDefault(defaultValue:Boolean) : Boolean {
     return this ?: defaultValue
@@ -64,4 +66,12 @@ fun CharSequence?.isNotNullOrBlank(): Boolean {
  */
 fun CharSequence?.isNotNullOrEmpty(): Boolean {
     return this != null && this.isNotEmpty()
+}
+
+fun TextRange.isValid(): Boolean {
+    return startOffset in 0..endOffset
+}
+
+fun TextRange.isInvalid(): Boolean {
+    return !isValid()
 }
