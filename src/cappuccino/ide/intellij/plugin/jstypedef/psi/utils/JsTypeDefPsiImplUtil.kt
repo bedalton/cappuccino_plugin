@@ -818,7 +818,7 @@ val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()
 
-private val FILE_PATH_REGEX = "^[a-zA-Z0-9_+.]([ -]*[a-zA-Z0-9_+.]+)*".toRegex()
+private val FILE_PATH_REGEX = "^[a-zA-Z0-9_+.]([ -]*[a-zA-Z0-9_+./]+)*".toRegex()
 private const val AT_FILE = "@file"
 
 fun PsiComment.getFileReferenceRangeInComment(includeAtFile:Boolean = false) :TextRange? {
