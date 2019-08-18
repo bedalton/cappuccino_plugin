@@ -177,3 +177,66 @@ readonly var kCFPropertyListBinaryFormat_v1_0:number
 readonly var kCFPropertyList280NorthFormat_v1_0:number
 @quiet
 readonly var DEBUG:BOOL
+
+
+/*-- @file: objective-j.js --*/
+@quiet
+interface objj_ivar {
+    new(aName:string, aType:string)
+    name:string
+    type:string
+}
+
+@quiet
+function objj_ivar(aName:string, aType:string):objj_ivar
+
+@silent
+interface allocator {
+
+}
+
+@quiet
+interface objj_class {
+    new(displayName:string)
+    isa?:Any
+    version:number
+    super_class?:string
+    name?:string
+    info:number
+    ivar_list:objj_ivar[]
+    ivar_store:Any
+    ivar_dtable:Any
+    method_list:Any[]
+    method_dtable:Any
+    protocol_list:string[]
+    allocator:Any
+    _UID:number;
+
+}
+@quiet
+interface objj_protocol {
+    new(name:string)
+    name:string
+    instance_methods:Any[]
+    class_methods:Any[]
+}
+@quiet
+interface objj_object {
+    isa?:Any
+    _UID:number
+}
+
+function getName(aClass:objj_class):string
+
+function class_isMetaClass(aClass:objj_class):BOOL
+
+function class_getSuperclass(aClass:objj_class):string
+
+function class_setSuperclass(aClass:objj_class, aSuperClass:string)
+
+function class_addIvar(aClass:objj_class, aName:string, aType:string)
+
+function class_addIvars(aClass:objj_class, ivars:objj_ivar[])
+
+
+
