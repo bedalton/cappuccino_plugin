@@ -77,7 +77,6 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
         // Check if same version
         if (newVersion == ObjJPluginSettings.typedefVersion) {
-            LOGGER.info("JsTypeDef lib has same version")
             return true
         }
 

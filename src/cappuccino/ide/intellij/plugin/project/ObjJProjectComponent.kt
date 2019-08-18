@@ -10,7 +10,6 @@ import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.logging.Logger
@@ -34,15 +33,13 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
                 val module = file.getModule(project)
                 if (module != null) {
                     JsTypeDefBundledSourcesRegistrationUtil.register(module, project)
-                    initFrameworkDefaults(project, module, editorManager.selectedTextEditor, file)
-                } else {
-                    LOGGER.info("Module is null for Cappuccino file.")
+                    initFrameworkDefaults(editorManager.selectedTextEditor, file)
                 }
             }
         })
     }
 
-    private fun initFrameworkDefaults(project: Project, module: Module, editor: Editor?, file: VirtualFile) {
+    private fun initFrameworkDefaults(editor: Editor?, file: VirtualFile) {
         val editorVirtualFile = editor?.virtualFile ?: return
         if (editorVirtualFile.path != file.path)
             return
