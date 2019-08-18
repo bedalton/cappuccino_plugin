@@ -254,15 +254,16 @@ fun getFileWithFramework(fileName:String?, frameworkName:String?, project: Proje
     if (frameworkName == null)
         return filesWithName.toList()
     file@for(file in filesWithName) {
-        if (file is ObjJFile && frameworkName == file.frameworkName) {
+        val thisFrameworkName = if (file is ObjJFile) file.frameworkName else ObjJFrameworkUtils.getEnclosingFrameworkName(file)
+        if (frameworkName == thisFrameworkName) {
             if (parts.isEmpty()) {
                 return listOf(file)
             }
-            var parent: PsiDirectory?
-            for (i in 0 until parts.lastIndex) {
-                parent = file.parent
+            var parent: PsiDirectory? = file.parent
+            for (i in parts.lastIndex until 0 ) {
                 if (parent == null || parent.name != parts[i])
                     continue@file
+                parent = parent.parent
             }
             return listOf(file)
         }
