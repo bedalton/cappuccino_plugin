@@ -69,6 +69,11 @@ class JsTypeDefIndexService : StubIndexService() {
         for (superType in stub.superTypes) {
             sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
+        val enclosingNamespaceComponents = stub.namespaceComponents
+        for (i in 0 .. enclosingNamespaceComponents.lastIndex) {
+            val namespace = enclosingNamespaceComponents.subList(0, i).joinToString(".")
+            sink.occurrence(JsTypeDefClassesByPartialNamespaceIndex.KEY, namespace)
+        }
     }
 
     override fun indexKeyList(stub:JsTypeDefKeysListStub, sink: IndexSink) {

@@ -412,6 +412,7 @@
     <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesBySuperClassIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex"/>

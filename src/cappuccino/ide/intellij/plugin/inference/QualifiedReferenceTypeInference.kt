@@ -5,10 +5,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
@@ -19,10 +16,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.utils.substringFromEnd
+import cappuccino.ide.intellij.plugin.utils.*
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -47,9 +41,19 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
     }
     val project: Project = parts[0].project
     //ProgressManager.checkCanceled()
-    var parentTypes: InferenceResult? = null
     var isStatic = false
-    for (i in 0 until parts.size) {
+    // Get namespaced name for a start
+    val baseNamespacedName = getBaseNamespacedName(parts, project)
+    val startIndex = baseNamespacedName?.count { it == '.' }?.plus(1).orElse(0)
+
+    // Get parent types if namespaced else null
+    var parentTypes: InferenceResult? = if (startIndex > 0) getNamespacedType(project, baseNamespacedName) else null
+    if (parentTypes?.types.isNullOrEmpty()) {
+        parentTypes = null
+    }
+
+    // Loop through all parts, to find the true type.
+    for (i in startIndex until parts.size) {
         //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
@@ -71,9 +75,19 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
                                 ?: return@getCachedInferredTypes null
                 inferExpressionType(variableDeclarationExpr, tag)
             } else if (i == 0)
-                getPartTypes(part, thisParentTypes, false, tag)
+                getPartTypes(
+                        part = part,
+                        parentTypes = thisParentTypes,
+                        static = false,
+                        tag = tag
+                )
             else
-                getPartTypes(part, thisParentTypes, isStatic, tag)
+                getPartTypes(
+                        part = part,
+                        parentTypes = thisParentTypes,
+                        static = isStatic,
+                        tag = tag
+                )
         }
         if (isStatic) {
             isStatic = false
@@ -92,6 +106,30 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
 
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
 
+internal fun getNamespacedType(project: Project, namespacedName: String?): InferenceResult? {
+    if (namespacedName == null)
+        return null
+    val types = mutableListOf<JsTypeListType>()
+    val classes = JsTypeDefClassesByNamespaceIndex.instance[namespacedName, project].map {
+        JsTypeListType.JsTypeListBasicType(it.className)
+    }
+    types.addAll(classes)
+    val functions = JsTypeDefFunctionsByNamespaceIndex.instance[namespacedName, project]
+            .map {
+                it.toJsTypeListType()
+            }
+    types.addAll(functions)
+    val properties = JsTypeDefPropertiesByNamespaceIndex.instance[namespacedName, project]
+            .flatMap {
+                it.typeList.toJsTypeDefTypeListTypes()
+            }
+    types.addAll(properties)
+    return if (types.isNotEmpty())
+        InferenceResult(types = types.toSet())
+    else
+        null
+}
+
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, static, tag)
@@ -105,7 +143,7 @@ internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: In
 }
 
 
-fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, static:Boolean, tag: Long): InferenceResult? {
+fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
     //ProgressManager.checkCanceled()
     if (variableName.tagged(tag, false))
         return null
@@ -125,7 +163,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             if (className.contains("&")) {
                 className.split("\\s*&\\s*".toRegex()).flatMap {
                     JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
-                        classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType()}
+                        classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType() }
                     }
                 }
             } else {
@@ -139,14 +177,13 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             }
         }.filter { it.name == variableNameString && it.static == static }
                 .flatMap {
-                    (it as? JsTypeDefNamedProperty)?.types?.types ?: listOfNotNull( it as? JsTypeListFunctionType )
+                    (it as? JsTypeDefNamedProperty)?.types?.types ?: listOfNotNull(it as? JsTypeListFunctionType)
                 }.toSet()
         return InferenceResult(types = types)
     }
 
 
-
-    val others:List<JsTypeListType> = parentTypes.types.mapNotNull{ it as? JsTypeListType.JsTypeListBasicType }.flatMap { type ->
+    val others: List<JsTypeListType> = parentTypes.types.mapNotNull { it as? JsTypeListType.JsTypeListBasicType }.flatMap { type ->
         (JsTypeDefTypeAliasIndex.instance[type.typeName, project].flatMap { typeAlias ->
             typeAlias.typesList.functionTypes + typeAlias.typesList.interfaceTypes.flatMap { it.staticProperties } + typeAlias.typesList.interfaceTypes.flatMap { it.staticFunctions }
         })
@@ -168,8 +205,8 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
 
 
     val classNames = classes.properties.filter {
-            it.name == variableNameString
-        }.flatMap { it.types.types }.toSet()
+        it.name == variableNameString
+    }.flatMap { it.types.types }.toSet()
     var functions: List<JsTypeListFunctionType> = classes.functions.filter {
         it.name == variableNameString
     }
@@ -224,7 +261,7 @@ internal fun inferVariableNameType(variableName: ObjJVariableName, tag: Long): I
     }
 }
 
-private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long, isVarDec:Boolean): InferenceResult? {
+private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long, isVarDec: Boolean): InferenceResult? {
     val project = variableName.project
     val variableNameString: String = variableName.text
     val varDefType = if (referencedVariable is ObjJNamedElement)
@@ -261,13 +298,13 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
                     parts.size == 1 -> JsTypeListType.JsTypeListBasicType(it)
                     parts[0].toLowerCase() == "jsobject" -> {
                         if (parts[1].endsWith(">"))
-                            JsTypeListType.JsTypeListBasicType(parts[1].substringFromEnd(0,1))
+                            JsTypeListType.JsTypeListBasicType(parts[1].substringFromEnd(0, 1))
                         else
                             JsTypeListType.JsTypeListBasicType(parts[1])
                     }
                     parts[0].toLowerCase() in arrayTypes -> {
                         val className = if (parts[1].endsWith(">"))
-                            parts[1].substringFromEnd(0,1)
+                            parts[1].substringFromEnd(0, 1)
                         else
                             parts[1]
                         JsTypeListArrayType(types = setOf(className).toJsTypeList())
@@ -313,7 +350,7 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         }
     }
 
-    var staticVariableTypes:Set<JsTypeListType>? = null
+    var staticVariableTypes: Set<JsTypeListType>? = null
     if (!isVarDec) {
 
         val staticVariablesUnfiltered = JsTypeDefPropertiesByNameIndex.instance[variableNameString, project]
@@ -387,7 +424,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     val project = functionName.project
     //ProgressManager.checkCanceled()
     val functionNameString = functionName.text
-    val classNames = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListArrayType}) "Array" else null)).filterNotNull()
+    val classNames = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListArrayType }) "Array" else null)).filterNotNull()
     val classes = classNames.mapNotNull {
         getClassDefinition(project, it)
     }
@@ -412,7 +449,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
 }
 
 private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: Long): InferenceResult? {
-    val project:Project = functionName.project
+    val project: Project = functionName.project
     if (functionName.indexInQualifiedReference != 0) {
         return null
     }
@@ -449,7 +486,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
     if (basicReturnTypes.isNullOrEmpty() && functionDeclaration != null) {
         basicReturnTypes = inferFunctionDeclarationReturnType(functionDeclaration, tag)?.classes ?: emptySet()
     }
-    val types:MutableSet<JsTypeListType> = basicReturnTypes.orEmpty().toJsTypeList().toMutableSet()
+    val types: MutableSet<JsTypeListType> = basicReturnTypes.orEmpty().toJsTypeList().toMutableSet()
     val returnTypes = functionTypes.flatMap {
         it.returnType?.types ?: emptySet()
     }
@@ -466,7 +503,7 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
         return INFERRED_ANY_TYPE
     }
 
-    var types =  parentTypes.types.flatMap {
+    var types = parentTypes.types.flatMap {
         (it as? JsTypeListArrayType)?.types.orEmpty()
     }.toSet()
     if (types.isNotNullOrEmpty()) {
@@ -541,4 +578,39 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
 fun ObjJVariableName.getAssignmentExprOrNull(): ObjJExpr? {
     return (this.parent as? ObjJGlobalVariableDeclaration)?.expr
             ?: (this.parent.parent as? ObjJVariableDeclaration)?.expr
+}
+
+/**
+ * @retuns a qualified string, containing at least one qualified part
+ */
+private fun getBaseNamespacedName(parts: List<ObjJQualifiedReferenceComponent>, project: Project): String? {
+    if (parts.size < 2)
+        return null
+    if (parts[0] is ObjJMethodCall)
+        return null
+    var namespace = parts[0].text
+    for (i in 1..parts.lastIndex) {
+        val part = parts[i]
+        val partText = if (part is ObjJFunctionCall) part.functionNameString else part.text
+        val tempNamespace = "$namespace.$partText"
+        when {
+            namespaceExists(tempNamespace, project) -> namespace = tempNamespace
+            i > 1 ->
+                // Namespace must actually be qualified to be useful
+                return namespace
+            // Namespace is not qualified so return null to ignore it
+            else -> return null
+        }
+    }
+    // Return null if contains no namespace
+    // This will allow qualified type search to continue as
+    // normal if not namespaced
+    return if (namespace.contains(".")) namespace else null
+}
+
+private fun namespaceExists(namespace: String, project: Project): Boolean {
+    return JsTypeDefClassesByNamespaceIndex.instance.containsKey(namespace, project)
+            || JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(namespace, project)
+            || JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(namespace, project)
+            || JsTypeDefModulesByNamespaceIndex.instance.containsKey(namespace, project)
 }

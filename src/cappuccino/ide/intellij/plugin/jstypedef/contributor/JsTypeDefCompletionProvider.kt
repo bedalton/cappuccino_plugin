@@ -6,9 +6,10 @@ import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHan
 import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefQualifiedTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
@@ -23,6 +24,8 @@ import com.intellij.util.ProcessingContext
 import java.util.logging.Logger
 
 object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() {
+
+    private val DOT_REPLACEMENT = "______DOT_____";
 
     private val LOGGER by lazy {
         Logger.getLogger(ObjJBlanketCompletionProvider::class.java.name)
@@ -45,16 +48,21 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
             resultSet: CompletionResultSet) {
         val element = parameters.position
         val project = element.project
-        val prevSibling = element.getPreviousNonEmptySibling(true)
-        val prevSiblingType = prevSibling?.elementType
-        val indexSearchString = element.text?.toIndexPatternString() ?: return
         when {
+            element.parent is JsTypeDefQualifiedTypeName || element.parent.parent is JsTypeDefQualifiedTypeName -> {
+                val qualifiedTypeName = (element.parent as? JsTypeDefQualifiedTypeName) ?: (element.parent.parent as JsTypeDefQualifiedTypeName)
+                val qualifiedNameSearchString = qualifiedTypeName.text
+                addTypeNameCompletions(resultSet, project, qualifiedNameSearchString)
+                resultSet.stopHere()
+            }
             element.parent is JsTypeDefTypeName -> {
+                val prevSibling = element.getPreviousNonEmptySibling(true)
+                val prevSiblingType = prevSibling?.elementType
                 if (prevSiblingType in doNotCompleteAfter) {
                     resultSet.stopHere()
                     return
                 }
-                addTypeNameCompletions(resultSet, project, indexSearchString)
+                addTypeNameCompletions(resultSet, project, element.text)
                 resultSet.stopHere()
             }
         }
@@ -64,9 +72,16 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
     /**
      * Add Completions for class types
      */
-    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, indexSearchString: String) {
+    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, inputString:String) {
         // Add Js Completions
-        val jsCompletions = JsTypeDefClassesByNameIndex.instance.getKeysByPattern(indexSearchString, project) + JsPrimitives.primitives
+        val isQualified = inputString.contains(".")
+        val indexSearchString = if (isQualified)
+            inputString.replace(".", DOT_REPLACEMENT).toIndexPatternString().replace(DOT_REPLACEMENT, "\\.")
+        else
+            inputString.toIndexPatternString()
+        LOGGER.info(indexSearchString)
+        val primitives =  if (isQualified) emptyList() else JsPrimitives.primitives
+        val jsCompletions = JsTypeDefClassesByNamespaceIndex.instance.getKeysByPattern(indexSearchString, project) + inputString
         addLookupElementsSimple(resultSet, jsCompletions, JsTypeDefCompletionContributor.JS_CLASS_NAME_COMPLETIONS)
 
         // Add Js Completions

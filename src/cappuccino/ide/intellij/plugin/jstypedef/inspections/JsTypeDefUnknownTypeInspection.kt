@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsPrimitives
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
@@ -38,10 +39,18 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
                 super.visitType(type)
                 annotateTypeIfNecessary(type, problemsHolder)
             }
+
+            override fun visitQualifiedTypeName(o: JsTypeDefQualifiedTypeName) {
+                super.visitQualifiedTypeName(o)
+                annotateIfNecessary(o, problemsHolder)
+            }
         }
     }
 
     private fun annotateTypeIfNecessary(type:JsTypeDefType, problemsHolder: ProblemsHolder) {
+        if (type.parent is JsTypeDefQualifiedTypeName) {
+            return
+        }
         val typeName = type.typeName
         if (
                 type.parent !is JsTypeDefExtendsStatement
@@ -63,8 +72,22 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
         }
     }
 
+    private fun annotateIfNecessary(qualifiedTypeName: JsTypeDefQualifiedTypeName, problemsHolder: ProblemsHolder) {
+        val project = qualifiedTypeName.project
+        val typeNames = qualifiedTypeName.typeNameList
+        if (typeNames.size < 1)
+            return
+        for (i in 0 .. typeNames.lastIndex) {
+            val qualifiedName = typeNames.subList(0, i).joinToString(".")
+            if (JsTypeDefClassesByNamespaceIndex.instance.getKeysByPattern("$qualifiedName.*", project).isEmpty()) {
+                val typeName = typeNames[i]
+                problemsHolder.registerProblem(typeName, JsTypeDefBundle.message("jstypedef.inspections.invalid-type.error.message", typeName.text))
+            }
+        }
+    }
+
     private fun classExists(project:Project, typeName:String) : Boolean {
-        return JsTypeDefClassesByNameIndex.instance.containsKey(typeName, project)
+        return  JsTypeDefClassesByNameIndex.instance.containsKey(typeName, project)
                 || JsTypeDefTypeAliasIndex.instance.containsKey(typeName, project)
                 || ObjJClassDeclarationsIndex.instance.containsKey(typeName, project)
                 || JsTypeDefKeyListsByNameIndex.instance.containsKey(typeName, project)
@@ -72,6 +95,7 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
                 || ObjJTypeDefIndex.instance.containsKey(typeName, project)
 
     }
+
 
     companion object {
         val LOGGER:Logger by lazy {

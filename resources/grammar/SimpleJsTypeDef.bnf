@@ -393,6 +393,7 @@ type
 
 		methods = [
 			getEnclosingGenerics
+			previousSiblings
 		]
 	}
 	;
@@ -814,6 +815,7 @@ typeName
 			getReference
 			getName
 			setName
+			getPreviousSiblings
 		]
 	}
 	;

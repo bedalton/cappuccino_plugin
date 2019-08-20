@@ -14,10 +14,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenerics
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -672,6 +670,7 @@ object JsTypeDefPsiImplUtil {
         return JsTypeDefTypeGenericsKeyReference(name)
     }
 
+
     // ============================== //
     // ========== Literals ========== //
     // ============================== //
@@ -833,6 +832,24 @@ object JsTypeDefPsiImplUtil {
                 return null
             JsTypeListGenericType(key, types.ifEmpty { null })
         }.toSet().ifEmpty { null }
+    }
+
+    // ============================== //
+    // ========== TypeName ========== //
+    // ============================== //
+
+    @JvmStatic
+    fun getPreviousSiblings(thisType:JsTypeDefTypeName) : List<JsTypeDefTypeName> {
+        val parent = (thisType.parent as? JsTypeDefQualifiedTypeName) ?: return emptyList()
+        val allTypeNamesInParent = parent.typeNameList
+        val out = mutableListOf<JsTypeDefTypeName>()
+        for (i in 0 .. allTypeNamesInParent.lastIndex) {
+            val aType = allTypeNamesInParent[i]
+            if (aType.isEquivalentTo(thisType))
+                return out
+            out.add(aType)
+        }
+        return emptyList()
     }
 
 }
