@@ -10,12 +10,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamesp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefQualifiedTypeName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
-import cappuccino.ide.intellij.plugin.psi.utils.elementType
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -55,7 +51,7 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
                 val typeName = element as? JsTypeDefTypeName ?: element.parent as JsTypeDefTypeName
                 val previousSiblings = typeName.previousSiblings
                 if (previousSiblings.isNotEmpty()) {
-                    addQualifiedNameCompletions(resultSet, project, typeName, previousSiblings)
+                    addQualifiedNameCompletions(resultSet, project, previousSiblings)
                     return
                 }
                 else {
@@ -89,7 +85,7 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
         addLookupElementsSimple(resultSet, aliases, JsTypeDefCompletionContributor.JS_KEYSET_NAME_COMPLETIONS + 10)
     }
 
-    private fun addQualifiedNameCompletions(resultSet: CompletionResultSet, project: Project, typeName:JsTypeDefTypeName, previousSiblings:List<JsTypeDefTypeName>) {
+    private fun addQualifiedNameCompletions(resultSet: CompletionResultSet, project: Project, previousSiblings: List<JsTypeDefTypeName>) {
         val namespacePrefix = previousSiblings.joinToString(".") { it.text }
         val classes = JsTypeDefClassesByPartialNamespaceIndex.instance[namespacePrefix, project]
         val index = previousSiblings.size

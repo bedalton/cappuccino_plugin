@@ -24,7 +24,6 @@ object JsTypeDefBundledSourcesRegistrationUtil {
     private var didInit = false
 
     fun register(module:Module, project:Project) {
-
         if (didInit)
             return
         didInit = true

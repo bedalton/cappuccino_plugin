@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlist
-import cappuccino.ide.intellij.plugin.utils.getModule
 import com.intellij.ProjectTopics
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
@@ -44,7 +43,7 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile == null || psiFile.language != ObjJLanguage.instance) return null
 
-        val module = file.getModule(project) ?: return null
+        //val module = file.getModule(project) ?: return null
         var needed:NeededFrameworks? = NeededFrameworks.BOTH
         listOf(GlobalSearchScope.everythingScope(project)).forEach { searchScope ->
             needed = getNeeded(project, searchScope, needed)

@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import kotlin.math.max

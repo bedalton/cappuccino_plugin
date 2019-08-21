@@ -6,11 +6,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
-import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
-import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*

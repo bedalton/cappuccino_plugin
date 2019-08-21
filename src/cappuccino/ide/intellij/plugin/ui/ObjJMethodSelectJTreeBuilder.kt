@@ -18,10 +18,10 @@ object ObjJMethodSelectJTreeBuilder {
         val treeRoot = getRootNodeForFiles(files)
         val tree = Tree(treeRoot)
         tree.isRootVisible = false
-        tree.addTreeSelectionListener {event ->
-            val selected = tree.selectionPaths.mapNotNull {
+        tree.addTreeSelectionListener {
+            val selected = tree.selectionPaths?.mapNotNull {
                 (it.lastPathComponent as? MethodNode)?.method
-            }
+            } ?: return@addTreeSelectionListener
             onSelect(selected)
         }
         tree.cellRenderer = CustomTreeCellRenderer

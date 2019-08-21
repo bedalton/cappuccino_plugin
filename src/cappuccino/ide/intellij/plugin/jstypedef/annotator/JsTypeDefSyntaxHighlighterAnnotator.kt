@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceRangeInComment
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceWithPrefix
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFrameworkTextRangeInComment
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator

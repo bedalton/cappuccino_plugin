@@ -2,12 +2,9 @@ package cappuccino.ide.intellij.plugin.refactoring
 
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
 import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project

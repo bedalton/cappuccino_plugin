@@ -22,7 +22,7 @@ fun getPresentation(declaration: ObjJImplementationDeclaration): ItemPresentatio
         }
 
         override fun getLocationString(): String {
-            return fileName ?: ""
+            return fileName
         }
 
         override fun getIcon(b: Boolean): Icon {
@@ -42,7 +42,7 @@ fun getPresentation(declaration: ObjJProtocolDeclaration): ItemPresentation {
         }
 
         override fun getLocationString(): String {
-            return fileName ?: ""
+            return fileName
         }
 
         override fun getIcon(b: Boolean): Icon {
@@ -76,7 +76,7 @@ private fun getDummyPresenter(psiElement: ObjJCompositeElement) : ItemPresentati
         }
 
         override fun getLocationString(): String? {
-            return fileName ?: ""
+            return fileName
         }
 
         override fun getPresentableText(): String? {

@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFrameworkTextRangeInComment
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.getFileWithFramework
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import cappuccino.ide.intellij.plugin.utils.isInvalid
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService

@@ -393,7 +393,6 @@ type
 
 		methods = [
 			getEnclosingGenerics
-			previousSiblings
 		]
 	}
 	;
