@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub
@@ -59,6 +60,11 @@ class JsTypeDefIndexService : StubIndexService() {
         for (superType in stub.superTypes) {
             sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
+        val namespaceComponents = stub.namespaceComponents
+        for (i in 1 .. namespaceComponents.size) {
+            val namespace = namespaceComponents.subList(0, i).joinToString(".")
+            sink.occurrence(JsTypeDefClassesByPartialNamespaceIndex.KEY, namespace)
+        }
     }
 
     override fun indexClass(stub:JsTypeDefClassStub, sink:IndexSink) {
@@ -69,9 +75,9 @@ class JsTypeDefIndexService : StubIndexService() {
         for (superType in stub.superTypes) {
             sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
-        val enclosingNamespaceComponents = stub.namespaceComponents
-        for (i in 0 .. enclosingNamespaceComponents.lastIndex) {
-            val namespace = enclosingNamespaceComponents.subList(0, i).joinToString(".")
+        val namespaceComponents = stub.namespaceComponents
+        for (i in 1 .. namespaceComponents.size) {
+            val namespace = namespaceComponents.subList(0, i).joinToString(".")
             sink.occurrence(JsTypeDefClassesByPartialNamespaceIndex.KEY, namespace)
         }
     }

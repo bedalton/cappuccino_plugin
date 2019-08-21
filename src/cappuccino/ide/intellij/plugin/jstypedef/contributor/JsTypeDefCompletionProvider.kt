@@ -7,9 +7,11 @@ import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefQualifiedTypeName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
@@ -49,21 +51,16 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
         val element = parameters.position
         val project = element.project
         when {
-            element.parent is JsTypeDefQualifiedTypeName || element.parent.parent is JsTypeDefQualifiedTypeName -> {
-                val qualifiedTypeName = (element.parent as? JsTypeDefQualifiedTypeName) ?: (element.parent.parent as JsTypeDefQualifiedTypeName)
-                val qualifiedNameSearchString = qualifiedTypeName.text
-                addTypeNameCompletions(resultSet, project, qualifiedNameSearchString)
-                resultSet.stopHere()
-            }
-            element.parent is JsTypeDefTypeName -> {
-                val prevSibling = element.getPreviousNonEmptySibling(true)
-                val prevSiblingType = prevSibling?.elementType
-                if (prevSiblingType in doNotCompleteAfter) {
-                    resultSet.stopHere()
+            element is JsTypeDefTypeName || element.parent is JsTypeDefTypeName -> {
+                val typeName = element as? JsTypeDefTypeName ?: element.parent as JsTypeDefTypeName
+                val previousSiblings = typeName.previousSiblings
+                if (previousSiblings.isNotEmpty()) {
+                    addQualifiedNameCompletions(resultSet, project, typeName, previousSiblings)
                     return
                 }
-                addTypeNameCompletions(resultSet, project, element.text)
-                resultSet.stopHere()
+                else {
+                    addTypeNameCompletions(resultSet, project, typeName.text.toIndexPatternString())
+                }
             }
         }
     }
@@ -72,16 +69,9 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
     /**
      * Add Completions for class types
      */
-    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, inputString:String) {
+    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, indexSearchString:String) {
         // Add Js Completions
-        val isQualified = inputString.contains(".")
-        val indexSearchString = if (isQualified)
-            inputString.replace(".", DOT_REPLACEMENT).toIndexPatternString().replace(DOT_REPLACEMENT, "\\.")
-        else
-            inputString.toIndexPatternString()
-        LOGGER.info(indexSearchString)
-        val primitives =  if (isQualified) emptyList() else JsPrimitives.primitives
-        val jsCompletions = JsTypeDefClassesByNamespaceIndex.instance.getKeysByPattern(indexSearchString, project) + inputString
+        val jsCompletions = JsTypeDefClassesByNamespaceIndex.instance.getKeysByPattern(indexSearchString, project) + JsPrimitives.primitives
         addLookupElementsSimple(resultSet, jsCompletions, JsTypeDefCompletionContributor.JS_CLASS_NAME_COMPLETIONS)
 
         // Add Js Completions
@@ -97,6 +87,21 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
 
         val aliases = JsTypeDefTypeAliasIndex.instance.getAllKeys(project).mapNotNull { it }
         addLookupElementsSimple(resultSet, aliases, JsTypeDefCompletionContributor.JS_KEYSET_NAME_COMPLETIONS + 10)
+    }
+
+    private fun addQualifiedNameCompletions(resultSet: CompletionResultSet, project: Project, typeName:JsTypeDefTypeName, previousSiblings:List<JsTypeDefTypeName>) {
+        val namespacePrefix = previousSiblings.joinToString(".") { it.text }
+        val classes = JsTypeDefClassesByPartialNamespaceIndex.instance[namespacePrefix, project]
+        val index = previousSiblings.size
+        val out = classes.mapNotNull {
+            val namespaceComponents = it.namespaceComponents
+            if (namespaceComponents.size > index) {
+                namespaceComponents.get(index)
+            } else {
+                namespaceComponents.lastOrNull()
+            }
+        }
+        addLookupElementsSimple(resultSet, out, JsTypeDefCompletionContributor.JS_CLASS_NAME_COMPLETIONS)
     }
 
     /**
