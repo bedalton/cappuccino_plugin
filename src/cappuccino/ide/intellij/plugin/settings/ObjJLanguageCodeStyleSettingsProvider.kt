@@ -26,7 +26,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "ALIGN_PROPERTIES", "Align object properties colons", "General")
             consumer.showStandardOptions(
                     "SPACE_BEFORE_METHOD_CALL_PARENTHESES",
-                    "SPACE_BEFORE_METHOD_PARENTHESES",
+                    "SPACE_BEFORE_METHOD_CALL_PARENTHESES",
                     "SPACE_BEFORE_IF_PARENTHESES",
                     "SPACE_BEFORE_WHILE_PARENTHESES",
                     "SPACE_BEFORE_FOR_PARENTHESES",
@@ -39,6 +39,7 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     "SPACE_BEFORE_FOR_LBRACE",
                     "SPACE_BEFORE_DO_LBRACE",
                     "SPACE_BEFORE_SWITCH_LBRACE",
+                    "SPACE_BEFORE_METHOD_LBRACE",
                     "SPACE_BEFORE_TRY_LBRACE",
                     "SPACE_BEFORE_CATCH_LBRACE",
                     "SPACE_BEFORE_FINALLY_LBRACE",
@@ -47,6 +48,10 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     "SPACE_BEFORE_ELSE_KEYWORD",
                     "SPACE_BEFORE_WHILE_KEYWORD"
             )
+
+            consumer.renameStandardOption("SPACE_BEFORE_METHOD_LBRACE", "'function' left brace")
+            consumer.renameStandardOption("SPACE_BEFORE_METHOD_CALL_PARENTHESES", "'function' call parentheses")
+            consumer.renameStandardOption( "SPACE_BEFORE_METHOD_PARENTHESES", "'function' parentheses")
         } else if (settingsType == SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
         } else if (settingsType == SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
