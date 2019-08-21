@@ -5,14 +5,19 @@ import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
+import cappuccino.ide.intellij.plugin.inference.createTag
+import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
+import cappuccino.ide.intellij.plugin.inference.toClassList
+import cappuccino.ide.intellij.plugin.inference.withoutAnyType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
@@ -62,7 +67,24 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (variableName?.parent is ObjJQualifiedReference) {
-                variableName = (variableName.parent!! as ObjJQualifiedReference).primaryVar
+                val qualifiedReference = variableName.parent as ObjJQualifiedReference
+                val lastSibling = qualifiedReference.lastVar
+                if (lastSibling == variableName) {
+                    val parts = variableName.previousSiblings + variableName
+                    val result = inferQualifiedReferenceType(parts, createTag()) ?: INFERRED_EMPTY_TYPE
+                    if (result.toClassList(null).withoutAnyType().isNotEmpty())
+                        return
+                } else {
+                    val project = variableName.project
+                    val parts = variableName.previousSiblings + variableName
+                    val namespace = parts.joinToString(".") { it.text }
+                    val isValid = JsTypeDefFunctionsByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
+                            JsTypeDefPropertiesByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
+                            JsTypeDefClassesByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
+                            JsTypeDefModuleNamesByNamespaceIndex.instance.containsKey(namespace, project)
+                    if (isValid)
+                        return
+                }
             }
             if (variableName == null) {
                 return
