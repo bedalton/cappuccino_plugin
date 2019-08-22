@@ -158,6 +158,7 @@
     <!-- ObjJLang -->
     <fileTypeFactory implementation="cappuccino.ide.intellij.plugin.lang.ObjJFileTypeFactory"/>
     <lang.parserDefinition language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition"/>
+
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
                                    implementationClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
@@ -165,9 +166,12 @@
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
     <applicationConfigurable instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
-    <!-- ObjJ Libraries -->
+
+    <!-- ObjJ SDK,Libraries and Modules -->
     <sdkType implementation="cappuccino.ide.intellij.plugin.project.ObjJSDKType" />
     <library.type implementation="cappuccino.ide.intellij.plugin.project.ObjJLibraryType" />
+    <moduleType implementationClass="cappuccino.ide.intellij.plugin.project.ObjJModuleType" id="ObjJ_MODULE"/>
+    <moduleBuilder builderClass="cappuccino.ide.intellij.plugin.project.ObjJModuleBuilder" id="ObjJ_MODULE"/>
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
@@ -426,6 +430,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex"/>
+
 
 
     <!-- Annotators -->
