@@ -6,7 +6,6 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
-import com.intellij.openapi.roots.libraries.LibraryTable
 import com.intellij.openapi.roots.libraries.LibraryTable.ModifiableModel
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScopes
@@ -15,7 +14,7 @@ import java.util.logging.Logger
 internal const val BUNDLE_DEFINITIONS_FOLDER = "definitions"
 private val LOGGER:Logger = Logger.getLogger("#BundledLibraryUtil")
 
-internal fun canRegisterSourcesAsLibrary(module:Module, directories: List<String>) : Boolean {
+internal fun canRegisterSourcesAsLibrary(directories: List<String>) : Boolean {
     if (!ObjJFileUtil.PLUGIN_HOME_DIRECTORY?.exists().orFalse()) {
         LOGGER.severe("Failed to find plugin home directory")
         return false

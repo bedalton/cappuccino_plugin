@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlist
 import cappuccino.ide.intellij.plugin.utils.getModule
 import com.intellij.ProjectTopics
@@ -54,7 +53,7 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
         if (needed == null)
             return null
 
-        if (!canRegisterSourcesAsLibrary(module, needed!!.missing))
+        if (!canRegisterSourcesAsLibrary(needed!!.missing))
             return null
 
         return createPanel(project, psiFile, needed!!)
