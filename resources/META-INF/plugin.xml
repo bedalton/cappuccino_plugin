@@ -172,6 +172,7 @@
     <library.type implementation="cappuccino.ide.intellij.plugin.project.ObjJLibraryType" />
     <moduleType implementationClass="cappuccino.ide.intellij.plugin.project.ObjJModuleType" id="ObjJ_MODULE"/>
     <moduleBuilder builderClass="cappuccino.ide.intellij.plugin.project.ObjJModuleBuilder" id="ObjJ_MODULE"/>
+    <projectStructureDetector implementation="cappuccino.ide.intellij.plugin.project.ObjJProjectStructureDetector"/>
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
