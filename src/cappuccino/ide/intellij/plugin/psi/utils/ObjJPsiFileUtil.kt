@@ -226,6 +226,10 @@ fun isImported(thisFile:ObjJFile, import:ObjJImportInfoStub, searched:MutableLis
     return false
 }
 
+/**
+ * @param thisFile a possibly imported file, containing an item of interest
+ * @param imports a list of files that may have imported the 'thisFile' file of interest
+ */
 fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf()) : Boolean {
     val project:Project = thisFile.project
     val thisImports = thisFile.importedFiles.toSet()
@@ -236,6 +240,21 @@ fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, s
         searched.add(anImport)
         val importedFile = anImport.getPsiFile(project) ?: continue
         if (hasImportedAny(importedFile, imports, searched))
+            return true
+    }
+    return false
+}
+
+
+fun hasImportedAny(startingFile: ObjJFile, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf(), check:(file:ObjJFile)->Boolean) : Boolean {
+    if (check(startingFile))
+        return true
+    val project:Project = startingFile.project
+    val thisImports = startingFile.importedFiles.toSet()
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        val importedFile = anImport.getPsiFile(project) ?: continue
+        if (hasImportedAny(importedFile, searched, check))
             return true
     }
     return false

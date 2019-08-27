@@ -102,6 +102,11 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
             return
         if (hasImportedAny(containingFile, declaredIn))
             return
+        val hasClassReference = hasImportedAny(containingFile) { importedFile ->
+            importedFile.getChildrenOfType(ObjJClassDependencyStatement::class.java).any { it.className?.text == className }
+        }
+        if (hasClassReference)
+            return
         problemsHolder.registerProblem(psiElement, ObjJBundle.message("objective-j.inspections.not-imported.message", "class", className), ObjJImportFileForClassQuickFix(psiElement.enclosingFrameworkName, className, withSelector, includeTests(psiElement)))
     }
 
