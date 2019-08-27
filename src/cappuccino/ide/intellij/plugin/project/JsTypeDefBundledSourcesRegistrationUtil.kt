@@ -34,7 +34,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
             return
         }
         val moduleScope = module.moduleContentWithDependenciesScope
-        if (!FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
+        if (FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
             return
         }
         runWriteAction {
