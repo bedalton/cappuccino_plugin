@@ -104,7 +104,6 @@ class ObjJFormattedBlock internal constructor(node: ASTNode, wrap: Wrap?, alignm
         return when (node.elementType) {
             ObjJ_IF_STATEMENT -> (node.psi as? ObjJIfStatement)?.blockList?.isEmpty() ?: return false
             ObjJ_ARGUMENTS -> (node.psi as? ObjJArguments)?.closeParen == null
-            ElementType.ERROR_ELEMENT -> true
             else -> super.isIncomplete()
         }
     }
