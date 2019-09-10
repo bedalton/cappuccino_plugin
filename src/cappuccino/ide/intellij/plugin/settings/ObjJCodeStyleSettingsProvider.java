@@ -38,7 +38,7 @@ public class ObjJCodeStyleSettingsProvider extends CodeStyleSettingsProvider {
     @NotNull
     @Override
     public Configurable createSettingsPage(CodeStyleSettings settings, CodeStyleSettings modelSettings) {
-        return super.createConfigurable(settings, modelSettings);
+        return createConfigurable (settings, modelSettings);
     }
 
     private static class ObjJCodeStyleMainPanel extends TabbedLanguageCodeStylePanel {

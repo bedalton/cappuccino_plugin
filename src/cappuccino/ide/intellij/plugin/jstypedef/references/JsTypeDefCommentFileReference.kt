@@ -49,6 +49,10 @@ class JsTypeDefCommentFileReference(comment:PsiComment, rangeInComment:TextRange
         return null
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 
     private fun getFrameworkInComment(comment:PsiComment):String? {
         val range = comment.getFrameworkTextRangeInComment(false) ?: return null
