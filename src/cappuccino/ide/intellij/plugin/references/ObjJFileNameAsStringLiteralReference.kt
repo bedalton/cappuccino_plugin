@@ -43,6 +43,10 @@ class ObjJFileNameAsStringLiteralReference(element:ObjJFileNameAsImportString)
         return out
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 }
 
 private fun getRange(element:ObjJFileNameAsImportString) : TextRange {

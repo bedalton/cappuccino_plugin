@@ -22,8 +22,8 @@ class ObjJPropertyNameStubType(debugName:String) : ObjJStubElementType<ObjJPrope
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJPropertyNameStub {
-        val key = stream.readNameString() ?: "???"
-        val namespacedName = stream.readNameString() ?: key
+        val key = stream.readName()?.string ?: "???"
+        val namespacedName = stream.readName()?.string ?: key
         return ObjJPropertyNameStubImpl(parent, key, namespacedName)
     }
 

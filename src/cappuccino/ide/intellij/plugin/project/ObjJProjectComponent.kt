@@ -59,9 +59,10 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
             ObjJPluginSettings.pluginUpdated = false
             //ObjJNotify.showUpdate(project)
         }
+        //ObjJPluginSettings.stubVersionsUpdated = true
         if (ObjJPluginSettings.stubVersionsUpdated) {
-            ObjJPluginSettings.stubVersionsUpdated = false
             ObjJNotify.showUpdateIndexWarning(project)
+            ObjJPluginSettings.stubVersionsUpdated = false
         }
     }
 

@@ -69,7 +69,7 @@ internal fun StubOutputStream.writeQNComponentPart(part:ObjJQualifiedReferenceCo
 }
 
 internal fun StubInputStream.readQNComponentPart() : ObjJQualifiedReferenceComponentPart {
-    val name = readNameString()
+    val name = readName()?.string
     val type = ObjJQualifiedReferenceComponentPartType.fromId(readInt())
     return ObjJQualifiedReferenceComponentPart(name, type)
 }

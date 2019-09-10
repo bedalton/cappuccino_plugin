@@ -58,11 +58,11 @@ abstract class JsTypeDefClassDeclarationStubType<PsiT:JsTypeDefClassDeclaration<
         val fileName = stream.readName()?.string ?: ""
         val numComponents = stream.readInt()
         val namespaceComponents = (0 until numComponents).map {
-            stream.readNameString() ?: "???"
+            stream.readName()?.string ?: "???"
         }
-        val className = stream.readNameString() ?: ""
+        val className = stream.readName()?.string ?: ""
         val superTypes = stream.readTypesList().toSet()
-        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
+        val completionModifier = CompletionModifier.fromTag(stream.readName()?.string!!)
         return createStub(parent, fileName, namespaceComponents, className, superTypes, completionModifier)
     }
 

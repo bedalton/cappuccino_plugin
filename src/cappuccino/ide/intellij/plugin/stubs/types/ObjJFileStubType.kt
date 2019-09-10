@@ -60,8 +60,8 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
 }
 
 internal fun StubInputStream.readImportInfo() : ObjJImportInfoStub {
-    val frameworkName = readNameString()
-    val fileName = readNameString()
+    val frameworkName = readName()?.string
+    val fileName = readName()?.string
     return ObjJImportInfoStub(frameworkName, fileName)
 }
 

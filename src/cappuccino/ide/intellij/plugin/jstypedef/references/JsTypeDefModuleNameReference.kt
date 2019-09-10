@@ -46,4 +46,8 @@ class JsTypeDefModuleNameReference(element:JsTypeDefModuleName)  : PsiPolyVarian
         return PsiElementResolveResult.createResults(results)
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 }

@@ -32,7 +32,7 @@ class JsTypeDefFileStubType internal constructor(): IStubFileElementType<JsTypeD
 
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): JsTypeDefFileStub {
         super.deserialize(stream, parentStub)
-        val fileName = stream.readNameString() ?: "???"
+        val fileName = stream.readName()?.string ?: "???"
         return JsTypeDefFileStubImpl(null, fileName)
     }
 

@@ -58,13 +58,13 @@ class JsTypeDefPropertyStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefPropertyStub {
 
-        val fileName = stream.readNameString() ?: ""
-        val enclosingNamespace = stream.readNameString() ?: ""
-        val enclosingClass = stream.readNameString()
-        val propertyName = stream.readNameString() ?: "???"
+        val fileName = stream.readName()?.string ?: ""
+        val enclosingNamespace = stream.readName()?.string ?: ""
+        val enclosingClass = stream.readName()?.string
+        val propertyName = stream.readName()?.string ?: "???"
         val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
         val static = stream.readBoolean()
-        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
+        val completionModifier = CompletionModifier.fromTag(stream.readName()?.string!!)
         return JsTypeDefPropertyStubImpl(
                 parent = parent,
                 fileName = fileName,

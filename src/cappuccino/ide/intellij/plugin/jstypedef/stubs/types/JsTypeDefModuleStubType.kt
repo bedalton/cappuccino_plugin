@@ -46,9 +46,9 @@ class JsTypeDefModuleStubType internal constructor(
         val fileName = stream.readName()?.string ?: ""
         val numComponents = stream.readInt()
         val namespaceComponents = (0 until numComponents).map {
-            stream.readNameString() ?: "???"
+            stream.readName()?.string ?: "???"
         }
-        val moduleName = stream.readNameString() ?: ""
+        val moduleName = stream.readName()?.string ?: ""
         return JsTypeDefModuleStubImpl(parent, fileName, namespaceComponents, moduleName)
     }
 

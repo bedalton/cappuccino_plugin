@@ -208,8 +208,8 @@ fun StubOutputStream.writeMethodStructList(structs:List<ObjJMethodStruct>) {
 fun StubInputStream.readMethodStruct() : ObjJMethodStruct {
     val selectors = readSelectorStructList()
     val returnType = readInferenceResult()
-    val containingClassName = readNameString()
-    val methodScope = MethodScope.getScope(readNameString() ?: "")
+    val containingClassName = readName()?.string
+    val methodScope = MethodScope.getScope(readName()?.string ?: "")
     return ObjJMethodStruct(
             containingClassName = containingClassName,
             selectors = selectors,
@@ -244,11 +244,11 @@ fun StubOutputStream.writeSelectorStructList(selectors:List<ObjJSelectorStruct>)
 }
 
 fun StubInputStream.readSelectorStruct() : ObjJSelectorStruct {
-    val containerName = readNameString() ?: ObjJClassType.UNDEF_CLASS_NAME
+    val containerName = readName()?.string ?: ObjJClassType.UNDEF_CLASS_NAME
     val isContainerAClass = readBoolean()
-    val selector = readNameString() ?: EMPTY_SELECTOR
-    val type = readNameString()
-    val variableName = readNameString()
+    val selector = readName()?.string ?: EMPTY_SELECTOR
+    val type = readName()?.string
+    val variableName = readName()?.string
     val hasColon = readBoolean()
     return ObjJSelectorStruct(
             containerName = containerName,

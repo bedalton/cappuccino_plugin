@@ -69,15 +69,15 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
     @Throws(IOException::class)
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefVariableDeclarationStub {
-        val fileName = stream.readNameString() ?: ""
-        val enclosingNamespace = stream.readNameString() ?: ""
+        val fileName = stream.readName()?.string ?: ""
+        val enclosingNamespace = stream.readName()?.string ?: ""
         val enclosingNamespaceComponents = enclosingNamespace.split(NAMESPACE_SPLITTER_REGEX)
-        val variableName:String = stream.readNameString() ?: ""
+        val variableName:String = stream.readName()?.string ?: ""
         val types: InferenceResult = stream.readInferenceResult() ?: INFERRED_VOID_TYPE
         val readonly: Boolean = stream.readBoolean()
-        val comment: String? = stream.readNameString()
-        val default: String? = stream.readNameString()
-        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
+        val comment: String? = stream.readName()?.string
+        val default: String? = stream.readName()?.string
+        val completionModifier = CompletionModifier.fromTag(stream.readName()?.string!!)
         return JsTypeDefVariableDeclarationStubImpl(
                 parent = parent,
                 fileName = fileName,

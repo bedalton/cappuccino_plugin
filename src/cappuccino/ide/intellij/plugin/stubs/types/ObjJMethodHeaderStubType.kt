@@ -94,7 +94,7 @@ class ObjJMethodHeaderStubType internal constructor(
         for (i in 0 until numParams) {
             params.add(StringRef.toString(stream.readName()))
         }
-        val explicitReturnType = stream.readNameString() ?: ""
+        val explicitReturnType = stream.readName()?.string ?: ""
         val required = stream.readBoolean()
         val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()

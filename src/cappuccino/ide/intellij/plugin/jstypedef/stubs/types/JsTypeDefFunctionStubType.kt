@@ -79,16 +79,16 @@ class JsTypeDefFunctionStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefFunctionStub {
 
-        val fileName = stream.readNameString() ?: ""
-        val enclosingNamespace = stream.readNameString() ?: ""
-        val enclosingClass = stream.readNameString()
-        val functionName = stream.readNameString() ?: ""
+        val fileName = stream.readName()?.string ?: ""
+        val enclosingNamespace = stream.readName()?.string ?: ""
+        val enclosingClass = stream.readName()?.string
+        val functionName = stream.readName()?.string ?: ""
         val parameters = stream.readFunctionArgumentsList()
         val returnType = stream.readInferenceResult()
         val genericKeys = stream.readTypesList().ifEmpty { null }?.mapNotNull { it as? JsTypeListType.JsTypeListGenericType }?.toSet()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
-        val completionModifier = CompletionModifier.fromTag(stream.readNameString()!!)
+        val completionModifier = CompletionModifier.fromTag(stream.readName()?.string!!)
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,

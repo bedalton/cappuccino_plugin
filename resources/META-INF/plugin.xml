@@ -57,11 +57,8 @@
       <li>Extended type inferences</li>
       <li>Improved Autocomplete suggestions</li>
       <li>Added import statement name suggestions</li>
-      <li>Added Objective-J SDK and Library type
-        <ul>
-          <li>This allows for easier definition and reuse of framework sources</li>
-          <li>This also causes the IDE to alert a user when making changes to the framework files</li>
-        </ul>
+      <li>Added inspection to check that variables, functions and classes are imported<br/>
+        <ul><li>Disabled by default as its resolution is slow and cpu intensive</li></ul>
       </li>
       <li>Re-enabled the very buggy, and very experimental method selector rename</li>
       <li>Extended javascript function completions</li>
@@ -140,7 +137,6 @@
        on how to target different products -->
   <!-- uncomment to enable plugin in all products -->
   <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.java</depends>
   <project-components>
     <!--component>
       <implementation-class>cappuccino.intellij.plugin.support.ObjectiveJPluginController</implementation-class>

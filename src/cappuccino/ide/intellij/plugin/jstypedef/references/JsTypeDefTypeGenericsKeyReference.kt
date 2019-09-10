@@ -51,4 +51,8 @@ class JsTypeDefTypeGenericsKeyReference(element:JsTypeDefGenericsKey) : PsiPolyV
         }
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 }

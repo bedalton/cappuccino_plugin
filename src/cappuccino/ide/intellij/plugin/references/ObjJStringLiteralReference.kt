@@ -69,6 +69,10 @@ class ObjJStringLiteralReference(stringLiteral:ObjJStringLiteral)  : PsiPolyVari
         return result
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 }
 
 fun getSuperTypes(project:Project, className:String, out:MutableList<String>): Set<String> {

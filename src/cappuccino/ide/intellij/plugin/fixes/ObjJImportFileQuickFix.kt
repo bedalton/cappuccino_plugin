@@ -33,6 +33,7 @@ import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.ui.components.JBList
 import com.intellij.util.FileContentUtil
+import com.intellij.util.ui.UIUtil
 import icons.ObjJIcons
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
@@ -133,7 +134,7 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
                 .setNorthPanel(JLabel(ObjJBundle.message("objective-j.inspections.not-imported.fix.add-import-title")))
                 .centerPanel(mainLayout)
         dialog.setOkOperation {
-            invokeAndWaitIfNeeded { callback(selectedForImport, isFrameworkFileNode, dialog.dialogWrapper) }
+            UIUtil.invokeAndWaitIfNeeded (Runnable { callback(selectedForImport, isFrameworkFileNode, dialog.dialogWrapper) })
         }
         dialog.addOkAction()
         dialog.addCancelAction()

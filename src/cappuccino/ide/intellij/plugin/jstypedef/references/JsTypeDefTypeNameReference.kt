@@ -44,4 +44,9 @@ class JsTypeDefTypeNameReference(element:JsTypeDefTypeName) : PsiPolyVariantRefe
     }
 
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
+
 }

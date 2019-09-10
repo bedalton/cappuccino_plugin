@@ -46,6 +46,10 @@ class ObjJFrameworkFileNameReference(element:ObjJFrameworkFileName)
         FileContentUtil.reparseFiles(listOf(element.containingFile.virtualFile))
         return out
     }
+
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
 }
 
 internal fun PsiElement.hasFramework(frameworkName:String?) : Boolean {

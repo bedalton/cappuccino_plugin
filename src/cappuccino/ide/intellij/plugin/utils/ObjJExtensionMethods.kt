@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.utils
 
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.stubs.StubInputStream
 
 
 fun Boolean?.orDefault(defaultValue:Boolean) : Boolean {
