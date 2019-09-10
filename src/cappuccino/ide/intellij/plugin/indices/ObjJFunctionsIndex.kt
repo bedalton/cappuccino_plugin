@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.indices
 
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.StubIndexKey
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 
 class ObjJFunctionsIndex private constructor() : ObjJStringStubIndexBase<ObjJFunctionDeclarationElement<*>>() {
 

@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -66,7 +65,7 @@ object ObjJFrameworkUtils {
 
     fun getEnclosingFrameworkName(file: PsiFile): String {
         val parentDirectory = (file.containingDirectory ?: file.originalFile.containingDirectory)
-        var frameworkName: String? = null
+        var frameworkName: String?
         if (parentDirectory != null) {
             frameworkName = if (DumbService.isDumb(file.project)) {
                 getFrameworkNameInDirectoryDumb(file.project, parentDirectory)
@@ -105,7 +104,7 @@ object ObjJFrameworkUtils {
 
     private fun getFrameworkNameInDirectoryDumb(project: Project, directory: PsiDirectory): String? {
         var currentDirectory: PsiDirectory? = directory
-        var plist: PsiFile? = null
+        var plist: PsiFile?
         while (currentDirectory != null && currentDirectory != project.guessProjectDir()) {
             plist = currentDirectory.findFile(INFO_PLIST_FILE_NAME)
                     ?: directory.findFile(INFO_PLIST_FILE_NAME_TO_LOWER_CASE)

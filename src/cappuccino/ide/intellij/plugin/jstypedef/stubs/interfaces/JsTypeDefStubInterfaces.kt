@@ -2,14 +2,17 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces
 
 import cappuccino.ide.intellij.plugin.contributor.JsProperty
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefTypeMapEntry
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefGenericsKey
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REGEX
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
@@ -43,8 +46,7 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
     val static:Boolean
     val enclosingClass:String?
     val asJsFunctionType:JsTypeListType.JsTypeListFunctionType
-    val isQuiet:Boolean
-    val isSilent:Boolean
+    val completionModifier:CompletionModifier
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + functionName
 }
@@ -82,8 +84,7 @@ interface JsTypeDefPropertyStub : StubElement<JsTypeDefPropertyImpl>, JsTypeDefN
     val nullable:Boolean
     val static:Boolean
     val enclosingClass:String?
-    val isQuiet:Boolean
-    val isSilent:Boolean
+    val completionModifier:CompletionModifier
     override val namespaceComponents:List<String>
         get() = enclosingNamespaceComponents + propertyName
 }
@@ -115,8 +116,7 @@ interface JsTypeDefModuleNameStub : StubElement<JsTypeDefModuleNameImpl>, JsType
 interface JsTypeDefClassDeclarationStub<PsiT:JsTypeDefClassDeclaration<*,*>> : StubElement<PsiT>, JsTypeDefNamespacedComponent {
     val fileName:String
     val className:String
-    val isSilent:Boolean
-    val isQuiet:Boolean
+    val completionModifier:CompletionModifier
     val superTypes:Set<JsTypeListType>
     val genericsKeys:Set<JsTypeListGenericType>
     override val namespaceComponents:List<String>
@@ -164,6 +164,5 @@ interface JsTypeDefVariableDeclarationStub : StubElement<JsTypeDefVariableDeclar
     val variableName:String
     val types:InferenceResult
     val static:Boolean
-    val isSilent:Boolean
-    val isQuiet:Boolean
+    val completionModifier:CompletionModifier
 }

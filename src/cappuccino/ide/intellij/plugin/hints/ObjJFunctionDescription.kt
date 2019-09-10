@@ -1,17 +1,14 @@
 package cappuccino.ide.intellij.plugin.hints
 
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.nullable
 import cappuccino.ide.intellij.plugin.psi.utils.parameterType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.util.TextRange
-
 
 
 class ObjJFunctionDescription(val name:String, val returnType:String?) {

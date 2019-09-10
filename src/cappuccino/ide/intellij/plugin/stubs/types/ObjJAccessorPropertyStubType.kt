@@ -1,11 +1,5 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJAccessorPropertyImpl
@@ -15,7 +9,12 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJAccessorPropertyStub
 import cappuccino.ide.intellij.plugin.stubs.stucts.readSelectorStructList
 import cappuccino.ide.intellij.plugin.stubs.stucts.writeSelectorStructList
 import cappuccino.ide.intellij.plugin.utils.Strings
-
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
+import com.intellij.util.io.StringRef
 import java.io.IOException
 
 class ObjJAccessorPropertyStubType internal constructor(

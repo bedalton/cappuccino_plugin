@@ -2,24 +2,25 @@ package cappuccino.ide.intellij.plugin.contributor.utils
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY
 import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Companion.TARGETTED_METHOD_SUGGESTION_PRIORITY
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.PrioritizedLookupElement
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJSelectorInsertHandler
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.*
-import org.jetbrains.annotations.Contract
-
-import javax.swing.*
-
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil.getContainingClassOrFileName
 import cappuccino.ide.intellij.plugin.psi.utils.getTrailingSelectorStrings
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
+import cappuccino.ide.intellij.plugin.utils.ArrayUtils
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.codeInsight.lookup.LookupElementRenderer
+import org.jetbrains.annotations.Contract
+import javax.swing.Icon
 
 /**
  * Utility for looking up possible selector completions

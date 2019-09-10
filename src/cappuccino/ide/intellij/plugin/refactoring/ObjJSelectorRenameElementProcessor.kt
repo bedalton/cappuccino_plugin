@@ -2,14 +2,9 @@ package cappuccino.ide.intellij.plugin.refactoring
 
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
-import cappuccino.ide.intellij.plugin.psi.utils.containingFileName
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
 import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -22,11 +17,9 @@ import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.IncorrectOperationException
 import com.intellij.util.containers.MultiMap
-import java.awt.GridLayout
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JLabel
-import javax.swing.JPanel
 
 class ObjJSelectorRenameElementProcessor : RenamePsiElementProcessor() {
 
@@ -65,7 +58,7 @@ class ObjJSelectorRenameElementProcessor : RenamePsiElementProcessor() {
                                   newName: String,
                                   conflicts: MultiMap<PsiElement, String>) {
         val framework = element.enclosingFrameworkName
-        val displayedFrameworkName = if (framework != EMPTY_FRAMEWORK_NAME) framework else ""
+        //val displayedFrameworkName = if (framework != EMPTY_FRAMEWORK_NAME) framework else ""
         val selectorIndex = (element as? ObjJSelector)?.selectorIndex ?: return
         val selector = element.getParentOfType(ObjJHasMethodSelector::class.java)?.selectorString ?: return
         ObjJUnifiedMethodIndex.instance[selector, element.project]
@@ -75,12 +68,11 @@ class ObjJSelectorRenameElementProcessor : RenamePsiElementProcessor() {
                 .filterNot {
                     it.enclosingFrameworkName == framework
                 }.forEach {
-                    val containingClass = it.containingClass
-                    val scope = when(containingClass) {
+                    /*val scope = when(val containingClass = it.containingClass) {
                         is ObjJProtocolDeclaration -> "protocol"
                         is ObjJImplementationDeclaration -> if (containingClass.isCategory) "category for" else "implementation"
                         else -> ""
-                    }
+                    }*/
                     conflicts.putValue(it, ObjJBundle.message("objective-j.settings.experimental.selector-outside-framework-conflict.message"))//,
                             //it.getParentOfType(ObjJHasMethodSelector::class.java)?.text ?: selector, scope, containingClass?.classNameString ?: it.containingFileName, displayedFrameworkName))
                 }

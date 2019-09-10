@@ -2,12 +2,10 @@ package cappuccino.ide.intellij.plugin.inspections
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.codeInspection.LocalInspectionTool

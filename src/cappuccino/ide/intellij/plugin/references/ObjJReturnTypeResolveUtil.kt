@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.inferFunctionCallReturnType
-import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 

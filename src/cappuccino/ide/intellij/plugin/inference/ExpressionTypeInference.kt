@@ -1,13 +1,12 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType as JsTypeListArrayType
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     if (expr == null)

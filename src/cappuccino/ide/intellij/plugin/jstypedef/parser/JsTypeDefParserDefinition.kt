@@ -1,15 +1,21 @@
 package cappuccino.ide.intellij.plugin.jstypedef.parser
 
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
-import com.intellij.lang.*
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import com.intellij.lang.ASTNode
+import com.intellij.lang.ParserDefinition
+import com.intellij.lang.PsiParser
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.project.Project
-import com.intellij.psi.*
-import com.intellij.psi.tree.*
+import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IFileElementType
+import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.EMPTY
 
 class JsTypeDefParserDefinition : ParserDefinition {

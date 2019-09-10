@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.interfaces
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJGlobalVariableDeclarationImpl
+import com.intellij.psi.stubs.StubElement
 
 interface ObjJGlobalVariableDeclarationStub : StubElement<ObjJGlobalVariableDeclarationImpl> {
 

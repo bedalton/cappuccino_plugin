@@ -1,15 +1,15 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.util.IncorrectOperationException
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.util.FileContentUtil
+import com.intellij.util.IncorrectOperationException
 import org.jetbrains.annotations.Nls
 
 /**

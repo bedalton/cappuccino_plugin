@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.stubs.interfaces
 
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodCallImpl
+import com.intellij.psi.stubs.StubElement
 
 interface ObjJMethodCallStub : StubElement<ObjJMethodCallImpl>, ObjJResolveableStub<ObjJMethodCallImpl> {
 

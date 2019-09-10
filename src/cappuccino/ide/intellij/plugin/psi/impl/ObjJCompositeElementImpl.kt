@@ -1,17 +1,16 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
 import com.intellij.psi.scope.PsiScopeProcessor
-import com.intellij.usageView.UsageViewUtil
-import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import com.intellij.psi.util.PsiTreeUtil
-
-import javax.swing.*
+import com.intellij.usageView.UsageViewUtil
+import javax.swing.Icon
 
 open class ObjJCompositeElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), ObjJCompositeElement {
 

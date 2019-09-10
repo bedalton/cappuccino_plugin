@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import com.intellij.psi.stubs.StubIndexKey
 
 class ObjJClassMethodIndex private constructor() : ObjJStringStubIndexBase<ObjJMethodHeaderDeclaration<*>>() {
 

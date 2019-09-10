@@ -20,7 +20,10 @@
 
 package cappuccino.ide.intellij.plugin.project
 
-import cappuccino.ide.intellij.plugin.utils.*
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME
+import cappuccino.ide.intellij.plugin.utils.contents
+import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
+import cappuccino.ide.intellij.plugin.utils.notEquals
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.ui.RootDetector
@@ -28,8 +31,7 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
-
-import java.util.ArrayList
+import java.util.*
 
 /**
  * @author: Fedor.Korotkov

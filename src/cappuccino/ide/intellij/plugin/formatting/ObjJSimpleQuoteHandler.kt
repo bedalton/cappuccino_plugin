@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.codeInsight.editorActions.SimpleTokenSetQuoteHandler
 import com.intellij.openapi.editor.highlighter.HighlighterIterator
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.TokenType
 
 class ObjJSimpleQuoteHandler : SimpleTokenSetQuoteHandler(ObjJTokenSets.QUOTE_CHARS) {

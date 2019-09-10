@@ -1,13 +1,11 @@
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.lang.BracePair
 import com.intellij.lang.PairedBraceMatcher
 import com.intellij.psi.PsiFile
-import com.intellij.psi.tree.IElementType
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 
 /**
  * Attempts to create a matching brace for a given starting brace

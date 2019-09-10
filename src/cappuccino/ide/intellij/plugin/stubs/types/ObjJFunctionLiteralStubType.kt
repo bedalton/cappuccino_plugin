@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionLiteralImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFunctionLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
+import com.intellij.psi.stubs.StubElement
 
 class ObjJFunctionLiteralStubType internal constructor(
         debugName: String) : ObjJAbstractFunctionDeclarationStubType<ObjJFunctionLiteralImpl>(debugName, ObjJFunctionLiteralImpl::class.java) {

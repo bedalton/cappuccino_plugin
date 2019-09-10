@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.impl
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefVariableDeclarationImpl
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes
 import com.intellij.psi.stubs.StubElement
@@ -17,8 +18,7 @@ class JsTypeDefVariableDeclarationStubImpl (
         override val readonly: Boolean,
         override val comment: String? = null,
         override val default: String? = null,
-        override val isSilent: Boolean,
-        override val isQuiet: Boolean
+        override val completionModifier: CompletionModifier
 ) : JsTypeDefStubBaseImpl<JsTypeDefVariableDeclarationImpl>(parent, JsTypeDefStubTypes.JS_VARIABLE_DECLARATION), JsTypeDefVariableDeclarationStub  {
     override val type: String
         get() = types.types.joinToString("|") { it.toString() }

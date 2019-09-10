@@ -53,10 +53,10 @@ class JsTypeDefTypeAliasStubType internal constructor(
     @Throws(IOException::class)
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefTypeAliasStub {
-        val fileName = stream.readNameString() ?: ""
-        val typeName = stream.readNameString() ?: ""
+        val fileName = stream.readName()?.string ?: ""
+        val typeName = stream.readName()?.string ?: ""
         val types: InferenceResult = stream.readInferenceResult() ?: INFERRED_VOID_TYPE
-        val comment: String? = stream.readNameString()
+        val comment: String? = stream.readName()?.string
         return JsTypeDefTypeAliasStubImpl(
                 parent = parent,
                 fileName = fileName,

@@ -2,8 +2,6 @@ package cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
-import com.intellij.psi.PsiElement
-import java.util.logging.Level
 import java.util.logging.Logger
 
 interface JsTypeDefElement : ObjJUniversalPsiElement {

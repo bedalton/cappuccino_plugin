@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiTreeAnyChangeAbstractAdapter
-import java.util.*
 
 private const val MAXIMUM_ACCESS_MARKS = 10
 

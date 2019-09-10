@@ -4,9 +4,9 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassMethodIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
+import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.DumbService
-import com.intellij.lang.annotation.AnnotationHolder
 
 /**
  * Annotator/Validator for method declarations

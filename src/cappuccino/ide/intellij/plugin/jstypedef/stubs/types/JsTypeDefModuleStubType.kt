@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefModuleImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefModuleStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefModuleStub
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
@@ -47,9 +46,9 @@ class JsTypeDefModuleStubType internal constructor(
         val fileName = stream.readName()?.string ?: ""
         val numComponents = stream.readInt()
         val namespaceComponents = (0 until numComponents).map {
-            stream.readNameString() ?: "???"
+            stream.readName()?.string ?: "???"
         }
-        val moduleName = stream.readNameString() ?: ""
+        val moduleName = stream.readName()?.string ?: ""
         return JsTypeDefModuleStubImpl(parent, fileName, namespaceComponents, moduleName)
     }
 

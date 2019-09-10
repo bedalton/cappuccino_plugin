@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceBodyProper
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
@@ -34,9 +35,18 @@ data class JsClassDefinition(
         val isObjJ: Boolean = false,
         val isStruct: Boolean = true,
         val static: Boolean = false,
-        val isSilent: Boolean = false,
-        val isQuiet: Boolean = false
-)
+        val completionModifier:CompletionModifier
+) {
+    val isSilent:Boolean by lazy {
+        completionModifier == CompletionModifier.AT_SILENT
+    }
+    val isQuiet:Boolean by lazy {
+        completionModifier == CompletionModifier.AT_QUIET
+    }
+    val suggest:Boolean by lazy {
+        completionModifier == CompletionModifier.AT_SUGGEST
+    }
+}
 
 fun getClassDefinitions(project: Project, className: String): List<JsClassDefinition> {
     if (className.contains("&")) {
@@ -127,6 +137,12 @@ fun Iterable<JsClassDefinition>.collapse(): JsClassDefinition {
             staticFunctions = flatMap { it.staticFunctions }.toSet(),
             static = all { it.static },
             isStruct = any { it.isStruct },
+            completionModifier = when {
+                any { it.completionModifier == CompletionModifier.AT_SUGGEST } -> CompletionModifier.AT_SUGGEST
+                any { it.completionModifier == CompletionModifier.AT_QUIET } -> CompletionModifier.AT_QUIET
+                any { it.completionModifier == CompletionModifier.AT_SILENT} -> CompletionModifier.AT_SILENT
+                else -> CompletionModifier.DEFAULT
+            },
             isObjJ = false
     )
 }

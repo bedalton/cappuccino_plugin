@@ -2,15 +2,14 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.indices.ObjJVariableNameByScopeIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
 import java.util.*
 
 /**

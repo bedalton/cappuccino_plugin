@@ -2,9 +2,12 @@ package cappuccino.ide.intellij.plugin.psi.impl
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.psi.interfaces.*
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderDeclarationStub
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubElementType
 import com.intellij.lang.ASTNode
 

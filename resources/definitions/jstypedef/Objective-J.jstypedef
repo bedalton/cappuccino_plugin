@@ -1,14 +1,44 @@
-readonly var E:number;
-readonly var LN2:number;
-readonly var LN10:number
-readonly var LOG:number
-readonly var LOG2E:number
-readonly var PI:number
-readonly var PI2:number
-readonly var PI_2:number
-readonly var SQRT1_2:number
-readonly var SQRT2:number
-readonly var CPLogDisable:BOOL
+@file:@quiet
+/*-- @file: Constants.js --*/
+readonly var kCFErrorLocalizedDescriptionKey:string
+readonly var kCFErrorLocalizedFailureReasonKey:string
+readonly var kCFErrorLocalizedRecoverySuggestionKey:string
+readonly var kCFErrorDescriptionKey:string
+readonly var kCFErrorUnderlyingErrorKey:string
+readonly var kCFErrorURLKey:string
+readonly var kCFErrorFilePathKey:string
+readonly var kCFErrorDomainCappuccino:string
+readonly var kCFErrorDomainCocoa:string
+readonly var kCFURLErrorUnknown:number
+readonly var kCFURLErrorCancelled:number
+readonly var kCFURLErrorBadURL:number
+readonly var kCFURLErrorTimedOut:number
+readonly var kCFURLErrorUnsupportedURL:number
+readonly var kCFURLErrorCannotFindHost:number
+readonly var kCFURLErrorCannotConnectToHost:number
+readonly var kCFURLErrorNetworkConnectionLost:number
+readonly var kCFURLErrorDNSLookupFailed:number
+readonly var kCFURLErrorHTTPTooManyRedirects:number
+readonly var kCFURLErrorResourceUnavailable:number
+readonly var kCFURLErrorNotConnectedToInternet:number
+readonly var kCFURLErrorRedirectToNonExistentLocation:number
+readonly var kCFURLErrorBadServerResponse:number
+readonly var kCFURLErrorUserCancelledAuthentication:number
+readonly var kCFURLErrorUserAuthenticationRequired:number
+readonly var kCFURLErrorZeroByteResource:number
+readonly var kCFURLErrorCannotDecodeRawData:number
+readonly var kCFURLErrorCannotDecodeContentData:number
+readonly var kCFURLErrorCannotParseResponse:number
+readonly var kCFURLErrorRequestBodyStreamExhausted:number
+readonly var kCFURLErrorFileDoesNotExist:number
+readonly var kCFURLErrorFileIsDirectory:number
+readonly var kCFURLErrorNoPermissionsToReadFile:number
+readonly var kCFURLErrorDataLengthExceedsMaximum:number
+ readonly var kCFPropertyListOpenStepFormat:number
+readonly var kCFPropertyListXMLFormat_v1_0:number
+readonly var kCFPropertyListBinaryFormat_v1_0:number
+readonly var kCFPropertyList280NorthFormat_v1_0:number
+readonly var DEBUG:BOOL
 /**
  * Returns the absolute value of a number (the value without regard to whether it is positive or negative).
  * For example, the absolute value of -5 is the same as the absolute value of 5.
@@ -99,42 +129,566 @@ function SQRT(x: number): number;
  * @param x A numeric expression that contains an angle measured in radians.
  */
 function TAN(x: number): number;
-readonly var kCFErrorLocalizedDescriptionKey:string @quiet
-readonly var kCFErrorLocalizedFailureReasonKey:string @quiet
-readonly var kCFErrorLocalizedRecoverySuggestionKey:string @quiet
-readonly var kCFErrorDescriptionKey:string @quiet
-readonly var kCFErrorUnderlyingErrorKey:string @quiet
-readonly var kCFErrorURLKey:string @quiet
-readonly var kCFErrorFilePathKey:string @quiet
-readonly var kCFErrorDomainCappuccino:string @quiet
-readonly var kCFErrorDomainCocoa:string @quiet
-readonly var kCFURLErrorUnknown:number @quiet
-readonly var kCFURLErrorCancelled:number @quiet
-readonly var kCFURLErrorBadURL:number @quiet
-readonly var kCFURLErrorTimedOut:number @quiet
-readonly var kCFURLErrorUnsupportedURL:number @quiet
-readonly var kCFURLErrorCannotFindHost:number @quiet
-readonly var kCFURLErrorCannotConnectToHost:number @quiet
-readonly var kCFURLErrorNetworkConnectionLost:number @quiet
-readonly var kCFURLErrorDNSLookupFailed:number @quiet
-readonly var kCFURLErrorHTTPTooManyRedirects:number @quiet
-readonly var kCFURLErrorResourceUnavailable:number @quiet
-readonly var kCFURLErrorNotConnectedToInternet:number @quiet
-readonly var kCFURLErrorRedirectToNonExistentLocation:number @quiet
-readonly var kCFURLErrorBadServerResponse:number @quiet
-readonly var kCFURLErrorUserCancelledAuthentication:number @quiet
-readonly var kCFURLErrorUserAuthenticationRequired:number @quiet
-readonly var kCFURLErrorZeroByteResource:number @quiet
-readonly var kCFURLErrorCannotDecodeRawData:number @quiet
-readonly var kCFURLErrorCannotDecodeContentData:number @quiet
-readonly var kCFURLErrorCannotParseResponse:number @quiet
-readonly var kCFURLErrorRequestBodyStreamExhausted:number @quiet
-readonly var kCFURLErrorFileDoesNotExist:number @quiet
-readonly var kCFURLErrorFileIsDirectory:number @quiet
-readonly var kCFURLErrorNoPermissionsToReadFile:number @quiet
-readonly var kCFURLErrorDataLengthExceedsMaximum:number @quiet
-readonly var kCFPropertyListOpenStepFormat:number @quiet
-readonly var kCFPropertyListXMLFormat_v1_0:number @quiet
-readonly var kCFPropertyListBinaryFormat_v1_0:number @quiet
-readonly var kCFPropertyList280NorthFormat_v1_0:number @quiet
-readonly var DEBUG:BOOL @quiet
+
+/** The mathematical constant e. This is Euler's number, the base of natural logarithms. */
+declare readonly var E: number;
+/** The natural logarithm of 10. */
+declare readonly var LN10: number;
+/** The natural logarithm of 2. */
+declare readonly var LN2: number;
+/** The base-2 logarithm of e. */
+declare readonly var LOG2E: number;
+/** The base-10 logarithm of e. */
+declare readonly var LOG10E: number;
+/** Pi. This is the ratio of the circumference of a circle to its diameter. */
+declare readonly var PI: number;
+declare readonly var PI2:number;
+declare readonly var PI_2:number;
+
+/** The square root of 0.5, or, equivalently, one divided by the square root of 2. */
+declare readonly var SQRT1_2: number;
+
+/** The square root of 2. */
+declare readonly var SQRT2: number;
+
+
+/*-- @file: /Objective-j/CFDictionary.j --*/
+class CFDictionary {
+    copy():CFDictionary
+    mutableCopy():CFMutableDictionary
+    containsKey(key:string):BOOL
+    containsValue(anObject:Any):BOOL
+    count():int
+    countOfKey(key:string):int
+    countOfValue(anObject:Any):int
+    keys():string[]
+    valueForKey(aKey:string):Any
+    toString():string
+}
+
+class CFMutableDictionary:CFDictionary {
+    addValueForKey(aKey:string, aValue:Any)
+    removeValueForKey(aKey:string)
+    removeAllValues()
+    replaceValueForKey(aKey:string, aValue:Any)
+    setValueForKey(aKey:string, aValue:Any)
+}
+
+
+/*-- @file: /Objective-j/CFError.j --*/
+
+class CFError {
+    new(domain:string, code:int, userInfo:CFDictionary);
+    code:Int
+    domain():string
+    description():string
+    failureReason():string
+    recoverySuggestion():string
+    userInfo():CFDictionary
+
+}
+
+function CFErrorCreate(domain:string, code:int, userInfo:CFDictionary)
+function CFErrorCreateWithUserInfoKeysAndValues(domain:string, code:int, userInfoKeys:string[], userInfoValues:Any[], numUserInfoValues:int)
+function CFErrorGetCode(err:CFError):int
+function CFErrorGetDomain(err:CFError):string
+function CFErrorCopyDescription(err:CFError):string
+function CFErrorCopyUserInfo(err:CFError):string
+function CFErrorCopyFailureReason(err:CFError):string
+function CFErrorCopyRecoverySuggestion(err:CFError):string
+
+
+/*-- @file: /Objective-j/CFBundle.j --*/
+class CFBundle {
+    new(aURL:CFURL|String)
+    static environments():string[]
+    static bundleContainingURL(aURL:CFUrl|string):CFBundle
+    static bundleWithIdentifier(bundleID:string):CFBundle
+    static mainBundle():CFBundle
+    bundleURL():CFURL
+    resourcesDirectoryURL():CFURL
+    resourceURL(aResourceName:string, aType:string, aSubDirectory:string, localizationName:string):CFURL
+    mostEligibleEnvironmentURL():CFURL
+    executableURL():CFURL
+    infoDictionary():CFDictionary
+    loadedLanguage():string
+    valueForInfoDictionaryKey(aKey:string):Any
+    identifier():string
+    hasSpritedImages():BOOL
+    environments():string[]
+    mostEligibleEnvironment:string
+    isLoading():BOOL
+    isLoaded():BOOL
+    load(shouldExecute:BOOL)
+
+}
+
+function CFBundleCopyLocalizedString(bundle:CFBundle, key:string, value:Any, tableName:string):string
+function CFBundleCopyBundleLocalizations(bundle:CFBundle):string[]
+function CFCopyLocalizedString(key:string, comment:string):string
+function CFCopyLocalizedStringFromTable(key:string, tableName:string, comment:string):string
+function CFCopyLocalizedStringWithDefaultValue(key:string, tableName:string, bundle:CFBundle, value:Any, comment:string):string
+function CFBundleGetMainBundle():CFBundle
+
+/*-- @file: /Objective-j/CFData.j --*/
+class CFData {
+    propertyList():CFPropertyList
+    JSONObject():Any
+    rawString():string
+    bytes():byte[]
+    base64():string
+    static decodeBase64ToArray(input:string, strip:BOOL):byte[]
+    static encodeBase64Array(input:byte[]):string[]
+    static decodeBase64ToString(input:string, strip:BOOL):string
+    static decodeBase64ToUtf16String(input:string, strip:BOOL):string
+    static bytesToString(bytes:byte[]):string
+    static stringToBytes(input:string):byte[]
+    static encodeBase64String(input:string):string
+    static bytesToUtf16String(input:byte[]):string
+    static encodeBase64Utf16String(input:string):string
+
+}
+
+class CFMutableData : CFData {
+    setPropertyList(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat)
+    setJSONObject(anObject:Any)
+    setRawString(aString:string)
+    setBytes(bytes:byte[])
+    setBase64String(aBase64String:string)
+
+}
+
+/*-- @file: /Objective-J/CFHTTPRequest.js --*/
+
+alias CFHTTPRequestStatusCode:number
+
+interface CFHTTPRequest {
+    new()
+    self:CFHTTPRequest
+    status():CFHTTPRequestStatusCode
+    statusText():string
+    readyState:CFHTTPRequestStatusCode
+    success():BOOL
+    responseXML():XMLDocument
+    responsePropertyList:CFPropertyList
+    responseText:string
+    setRequestHeader(aHeader:string, aValue:string)
+    getResponseHeader(aHeader:string)
+    overrideMimeType(aMimeType:string)
+    setTimeout(aTimeout:number)
+    getTimeout():number
+    getAllResponseHeaders():string
+    open(aMethod:string, aURL:string, isAsynchronous:BOOL, aUser?:string, aPassword?:string)
+    send(aBody?:string)
+    abort():undefined
+    addEventListener(anEventName:string, anEventListener:EventListener)
+    removeEventListener(anEventName:string, anEventListener:EventListener)
+    isTimeoutRequest():BOOL
+    setWithCredentials(willSendWithCredentials:BOOL)
+    withCredentials():BOOL
+    static readonly UninitializedState:CFHTTPRequestStatusCode;
+    static readonly LoadingState:CFHTTPRequestStatusCode;
+    static readonly LoadedState:CFHTTPRequestStatusCode;
+    static readonly InteractiveState:CFHTTPRequestStatusCode;
+    static readonly CompleteState:CFHTTPRequestStatusCode;
+    static AuthenticationDelegate?:Any
+}
+
+/*-- @file: /Objective-J/CFNetworkErrors.js --*/
+readonly var kCFURLErrorUnknown:number
+readonly var kCFURLErrorCancelled:number
+readonly var kCFURLErrorBadURL:number
+readonly var kCFURLErrorTimedOut:number
+readonly var kCFURLErrorUnsupportedURL:number
+readonly var kCFURLErrorCannotFindHost:number
+readonly var kCFURLErrorCannotConnectToHost:number
+readonly var kCFURLErrorNetworkConnectionLost:number
+readonly var kCFURLErrorDNSLookupFailed:number
+readonly var kCFURLErrorHTTPTooManyRedirects:number
+readonly var kCFURLErrorResourceUnavailable:number
+readonly var kCFURLErrorNotConnectedToInternet:number
+readonly var kCFURLErrorRedirectToNonExistentLocation:number
+readonly var kCFURLErrorBadServerResponse:number
+readonly var kCFURLErrorUserCancelledAuthentication:number
+readonly var kCFURLErrorUserAuthenticationRequired:number
+readonly var kCFURLErrorZeroByteResource:number
+readonly var kCFURLErrorCannotDecodeRawData:number
+readonly var kCFURLErrorCannotDecodeContentData:number
+readonly var kCFURLErrorCannotParseResponse:number
+readonly var kCFURLErrorRequestBodyStreamExhausted:number
+readonly var kCFURLErrorFileDoesNotExist:number
+readonly var kCFURLErrorFileIsDirectory:number
+readonly var kCFURLErrorNoPermissionsToReadFile:number
+readonly var kCFURLErrorDataLengthExceedsMaximum:number
+
+/*-- @file: /Objective-J/CFPropertyList.js --*/
+
+function objj_generateObjectUID():number
+
+alias CFPropertyListFormat:number
+
+interface CFPropertyList {
+    static readonly DTDRE:regex
+    static readonly XMLRE:regex
+    static readonly FormatXMLDTD:string
+    static readonly Format280NorthMagicNumber:string
+    static readonly FormatOpenStep:CFPropertyListFormat
+    static readonly FormatBinary_v1_0:CFPropertyListFormat
+    static readonly FormatXML_v1_0:CFPropertyListFormat
+    static readonly Format280North_v1_0:CFPropertyListFormat
+    static sniffedFormatOfString(aString:string):CFPropertyListFormat|null
+    static dataFromPropertyList(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):CFMutableData
+    static stringFromPropertyList(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):string
+    static readPropertyListFromFile(aFilePath:string):CFPropertyList
+    static writePropertyListToFile(aPropertyList:CFPropertyList, aFilePath:string, aFormat:CFPropertyListFormat):BOOL
+    static modifyPlist(aFilePath:string, aCallback:(pList:CFPropertyList)=>void, aFormat:CFPropertyListFormat)
+    static serializePropertyList(aPropertyList:CFPropertyList, serializers:Any[])
+    static propertyListFromXML(aStringOrXMLNode:string|XMLDocument):CFPropertyList
+}
+
+interface CFPropertyListSerializer {
+    start():string
+    finish():string
+    string(aString:string):string
+    boolean(aBoolean:BOOL):string
+    integer(anInteger:Int):string
+    real(aReal:number):string
+    array(anArray:Any[], serializers:CFPropertyListSerializer)
+    dictionary(aDictionary:CFDictionary, serializers:CFPropertyListSerializer)
+}
+
+function CFPropertyListCreate():CFPropertyList
+function CFPropertyListCreateFromXMLData(aData:CFData):CFPropertyList
+function CFPropertyListCreateXMLData(aPropertyList:CFPropertyList):CFData
+function CFPropertyListCreateFrom280NorthData(data:CFData):CFPropertyList
+function CFPropertyListCreate280NorthData(aPropertyList:CFPropertyList):CFData
+function CPPropertyListCreateFromData(data:CFData, aFormat:CFPropertyListFormat)
+function CPPropertyListCreateData(aPropertyList:CFPropertyList, aFormat:CFPropertyListFormat):CFData
+
+readonly var kCFPropertyListOpenStepFormat:CFPropertyListFormat
+readonly var kCFPropertyListXMLFormat_v1_0:CFPropertyListFormat
+readonly var kCFPropertyListBinaryFormat_v1_0:CFPropertyListFormat
+readonly var kCFPropertyList280NorthFormat_v1_0:CFPropertyListFormat
+
+
+
+/*-- @file: /Objective-j/CFURL.j --*/
+
+interface CFURLParts {
+    url:string
+    scheme:string
+    authority:string;
+    authorityRoot:string,
+    userInfo:CFDictionary;
+    user:string;
+    password:string;
+    domain:string;
+    portNumber:int;
+    path:string
+    queryString?:string;
+    fragment?:string;
+    pathComponents?:string[]
+}
+
+class CFURL {
+    new(aURL:CFURL|string, aBaseURL?:CFURL)
+    static setMappedURLForURL(fromURL:CFURL, toURL:CFURL)
+    UID():int
+    mappedURL():CFURL
+    schemeAndAuthority():string
+    absoluteString():string
+    toString():string
+    absoluteURL():CFURL
+    standardizedURL():CFURL
+    string():string
+    authority():string
+    hasDirectoryPath():BOOL
+    hostName():string
+    fragment():string
+    lastPathComponent():string
+    path():string
+    createCopyDeletingLastPathComponent():CPURL
+    pathComponents():string[]
+    pathExtension():string
+    queryString():string|null
+    scheme():string
+    user():string
+    password():string
+    portNumber():int
+    domain():string
+    baseURL():string
+    asDirectoryPathURL():string
+    resourcePropertyForKey(aKey:string):Any|null
+    setResourcePropertyForKey(aKey:string, aValue:Any)
+    staticResourceData():CFMutableData
+
+}
+
+
+/*-- @file: /Objective-J/CPLog.js --*/
+declare var CPLogDisable:Boolean
+
+interface CPLogFormatter {
+    (aString:string, aLevel:string, aTitle:string)
+}
+
+/**
+ * ["fatal", "error", "warn", "info", "debug", "trace"]
+ */
+readonly var CPLogLevels:string[]
+
+keyset CPLogLevelValue = "fatal"| "error" | "warn" | "info" | "debug" | "trace";
+
+
+/**
+ * @default: "info"
+ */
+var CPLogDefaultLevel:CPLogLevelValue
+
+@quiet
+function CPLogRegister(aProvider:Any, aMaxLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogRegisterRange(aProvider:Any, aMinLevel:CPLogLevelValue, aMaxLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogRegisterSingle(aProvider:Any, aLevel:CPLogLevelValue, aFormatter:CPLogFormatter)
+
+@quiet
+function CPLogUnregister(aProvider:Any)
+
+function CPLog(...args:Any)
+
+function CPLogConsole(aString:String, aLevel:CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
+
+function CPLogColorize(aString:String, aLevel:CPLogLevelValue)
+
+function CPLogPrint(aString:string, aLevel: CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
+
+function CPLogColorize(aString:string, aLevel:CPLogLevelValue)
+
+function CPLogPopup(aString:string, aLevel:CPLogLevelValue, aTitle:string, aFormatter:CPLogFormatter)
+
+/*-- @file: /Objective-J/Debug.js --*/
+
+function objj_msgSend_reset();
+function objj_msgSend_decorate();
+function objj_msgSend_set_decorators();
+function objj_backtrace_print(aStream:(aDebugMessage:string)=>void)
+function objj_backtrace_decorator(msgSend:(...args:Any)=>void) : (aReceiverOrSuper:Any, aSelector:string) => void;
+function objj_supress_exceptions_decorator(msgSend:(...args:Any)=>void) : (aReceiverOrSuper:Any, aSelector:string) => void;
+function objj_typecheck_decorator(msgSend:(...args:Any)=>void) : (aReceiverOrSuper:Any, aSelector:string) => void;
+function objj_debug_typecheck(expectedType:string, object:Any):void
+
+/*-- @file: /Objective-J/Eval.js --*/
+function objj_eval(aString:string):Any
+
+/*-- @file: /Objective-J/Runtime.js --*/
+
+/** Method Selector */
+alias SEL:string
+
+/** Method implementation reference */
+alias IMP:(...args:Any)=>Any|void
+
+interface objj_ivar {
+    new(aName:string, aType:string)
+    name:string
+    type:string
+}
+
+interface objj_method {
+    method_name:string
+    method_imp:Any
+    method_types:string[]
+}
+
+function objj_method(aName:string, anImplementation:IMP, types:string[]):objj_method
+
+@silent
+function Allocator(aFunction:Function)
+
+interface objj_class {
+    new(displayName:string)
+    isa?:Any
+    version:number
+    super_class?:string
+    name?:string
+    info:number
+    ivar_list:objj_ivar[]
+    ivar_store:Any
+    ivar_dtable:Any
+    method_list:Any[]
+    method_dtable:Any
+    protocol_list:string[]
+    allocator:Any
+    _UID:number;
+    toString():string
+    objj_msgSend(...args:Any):Any|void
+    objj_msgSend0(...args:Any):Any|void
+    objj_msgSend1(...args:Any):Any|void
+    objj_msgSend2(...args:Any):Any|void
+    objj_msgSend3(...args:Any):Any|void
+
+
+}
+class objj_protocol {
+    new(name:string)
+    name:string
+    instance_methods:Any[]
+    class_methods:Any[]
+}
+
+class objj_object {
+    new()
+    isa?:Any
+    _UID:number
+}
+
+class objj_typeDef {
+    new(aName:string)
+}
+
+alias objj_object:Any
+
+function class_getName(aClass:objj_class):string
+
+function class_isMetaClass(aClass:objj_class):BOOL
+
+function class_getSuperclass(aClass:objj_class):string
+
+function class_setSuperclass(aClass:objj_class, aSuperClass:string)
+
+function class_addIvar(aClass:objj_class, aName:string, aType:string)
+
+function class_addIvars(aClass:objj_class, ivars:objj_ivar[])
+
+function class_copyIvarList(aClass:objj_class):objj_ivar[]
+
+function class_addMethod(aClass:objj_class, aName:SEL, anImplementation:IMP, types:string[])
+
+function class_addMethods(aClass:objj_class, methods:objj_method[])
+
+function class_getInstanceMethod(aClass:objj_class, aSelector:SEL):objj_method
+
+function class_getInstanceVariable(aClass:objj_class,aName:string):objj_ivar
+
+function class_getClassMethod(aClass:objj_class, aSelector:SEL):objj_method
+
+function class_respondsToSelector(aClass:objj_class, aSelector:SEL):BOOL
+
+function class_copyMethodList(aClass:objj_class):objj_method[]
+
+function class_getVersion(aClass:objj_class):int
+
+function class_setVersion(aClass:objj_class, aVersion:Integer|string)
+
+function class_replaceMethod(aClass:objj_class, aSelector:SEL, aMethodImplementation:IMP):IMP
+
+function class_addProtocol(aClass:objj_class, aProtocol:objj_protocol)
+
+function class_conformsToProtocol(aClass:objj_class, aProtocol:objj_protocol):BOOL
+
+function class_copyProtocolList(aClass:objj_class):objj_protocol[]
+
+function protocol_conformsToProtocol(p1:objj_protocol, p2:objj_protocol):BOOL
+
+function objj_allocateProtocol(aName:string):objj_protocol
+
+function objj_registerProtocol(proto:objj_protocol)
+
+function protocol_getName(proto:objj_protocol):string
+
+function protocol_addMethodDescription(proto:objj_protocol, selector:SEL, types:string[], isRequiredMethod:BOOL, isInstanceMethod:BOOL)
+
+function protocol_addMethodDescriptions(proto:objj_protocol, methods:objj_method[], isRequiredMethod:BOOL, isInstanceMethod:BOOL)
+
+function protocol_copyMethodDescriptionList(proto:objj_protocol,isRequiredMethod:BOOL, isInstanceMethod:BOOL):objj_method[]
+
+function protocol_addProtocol(proto:objj_protocol, addition:objj_protocol)
+
+function objj_allocateTypeDef(aName:string):objj_typeDef
+
+function objj_registerTypeDef(typeDef:objj_typeDef)
+
+function typeDef_getName(typeDef:objj_typeDef):string
+
+function _objj_forward(self:objj_class, _cmd:string, ...args:Any[])
+
+function class_getMethodImplementation(aClass:objj_class, aSelector:SEL):IMP
+
+function objj_enumerateClassesUsingBlock(aBlock:(aClass:objj_class)=>void)
+
+function objj_allocateClassPair(superclass:objj_class, aName:string):objj_class
+
+function objj_registerClassPair(aClass:objj_class)
+
+function objj_resetRegisterClasses()
+
+function class_createInstance(aClass:objj_class):objj_object
+
+function object_getClassName(aClass:objj_object):string
+
+function objj_lookUpClass(aName:string):objj_class
+
+function objj_getClass(aName:string):objj_class
+
+function objj_getClassList(buffer:Any[], bufferLen:int):int
+
+function objj_getMetaClass(aName:string):objj_class
+
+function objj_getProtocol(aName:string):objj_protocol
+
+function objj_getTypeDef(aName:string):objj_typeDef
+
+function ivar_getName(anIvar:objj_ivar):string
+
+function ivar_getTypeEncoding(anIvar:objj_ivar):string
+
+function objj_msgSend(aReceiver:objj_object, aSelector:SEL, ...args:Any):Any|void
+
+function objj_msgSendSuper(aSuper:objj_object, aSelector:SEL, ...args:Any):Any|void
+
+function objj_msgSendSuper0(aSuper:objj_object, aSelector:SEL):Any|void
+
+function objj_msgSendSuper1(aSuper:objj_object, aSelector:SEL, arg0?:Any):Any|void
+
+function objj_msgSendSuper2(aSuper:objj_object, aSelector:SEL, arg0?:Any, arg1?:Any):Any|void
+
+function objj_msgSendSuper3(aSuper:objj_object, aSelector:SEL, arg0?:Any, arg1?:Any, arg2?:Any):Any|void
+
+function objj_msgSendFast(aReceiver:objj_object, aSelector:SEL, ...args:Any):Any|void
+
+function objj_msgSendFast0(aReceiver:objj_object, aSelector:SEL):Any|void
+
+function objj_msgSendFast0Initialize(aReceiver:objj_object, aSelector:SEL):Any|void
+
+function objj_msgSendFast1(aReceiver:objj_object, aSelector:SEL, arg0?:Any):Any|void
+
+function objj_msgSendFast2(aReceiver:objj_object, aSelector:SEL, arg0?:Any, arg1?:Any):Any|void
+
+function objj_msgSendFast3(aReceiver:objj_object, aSelector:SEL, arg0?:Any, arg1?:Any, arg2?:Any):Any|void
+
+function method_getName(aMethod:objj_method):string
+
+function method_copyReturnType(aMethod:objj_method):string
+
+function method_copyArgumentType(aMethod:objj_method, index:int):string
+
+function method_getNumberOfArguments(aMethod:objj_method):int
+
+function method_getImplementation(aMethod:objj_method):IMP
+
+/** @returns IMP old implementation */
+function method_setImplementation(aMethod:objj_method, anImplementation:IMP):IMP
+
+function method_exchangeImplementations(lhs:objj_method, rhs:objj_method):void
+
+function sel_getName(aSelector:SEL):string
+
+function sel_getUid(aName:string):string
+
+function sel_isEqual(lhs:SEL, rhs:SEL):BOOL
+
+function sel_registerName(aName:string):string
+

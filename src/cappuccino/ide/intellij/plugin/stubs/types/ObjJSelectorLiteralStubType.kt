@@ -1,20 +1,19 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJSelectorLiteralImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJSelectorLiteralStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJSelectorLiteralStub
 import cappuccino.ide.intellij.plugin.stubs.stucts.readSelectorStructList
 import cappuccino.ide.intellij.plugin.stubs.stucts.writeSelectorStructList
-
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
+import com.intellij.util.io.StringRef
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
 class ObjJSelectorLiteralStubType internal constructor(
         debugName: String) : ObjJStubElementType<ObjJSelectorLiteralStub, ObjJSelectorLiteralImpl>(debugName, ObjJSelectorLiteralImpl::class.java) {

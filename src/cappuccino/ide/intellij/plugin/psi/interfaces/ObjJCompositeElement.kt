@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
-import java.util.logging.Level
 import java.util.logging.Logger
 
 interface ObjJCompositeElement : ObjJUniversalPsiElement {

@@ -52,10 +52,10 @@ class JsTypeDefTypeMapStubType internal constructor(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefTypeMapStub {
 
         val fileName = stream.readName()?.string ?: ""
-        val mapName = stream.readNameString() ?: "???"
+        val mapName = stream.readName()?.string ?: "???"
         val numValues = stream.readInt()
         val values:List<JsTypeDefTypeMapEntry> = (0 until numValues).mapNotNull {
-            val key = stream.readNameString()
+            val key = stream.readName()?.string
             val types = stream.readInferenceResult()
             if (key == null || types == null)
                 return@mapNotNull null

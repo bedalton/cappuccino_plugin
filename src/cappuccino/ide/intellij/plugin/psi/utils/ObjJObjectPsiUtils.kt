@@ -2,12 +2,11 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.inference.PropertiesMap
 import cappuccino.ide.intellij.plugin.inference.inferExpressionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.plus
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJObjectLiteral

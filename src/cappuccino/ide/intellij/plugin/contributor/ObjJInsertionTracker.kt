@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import kotlin.math.max
@@ -19,7 +18,6 @@ object ObjJInsertionTracker {
                         timesHit = data.timesHit + 1
                 )
         insertions[text] = newData
-        LOGGER.info("Hits For: $text: ${insertions[text]}")
         reduce()
     }
 
@@ -30,7 +28,6 @@ object ObjJInsertionTracker {
         val recentIfGreaterThan = insertions.map { it.value.lastInsertionTime }.max()?.minus(6000) ?: 0
         if (data.lastInsertionTime > recentIfGreaterThan)
             points += pointsForRecent
-        LOGGER.info("Hits($text) = ${insertions[text]?.timesHit ?: 0}; Out -> $points")
         return points
     }
 

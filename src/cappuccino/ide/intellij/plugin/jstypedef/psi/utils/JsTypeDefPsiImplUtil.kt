@@ -4,29 +4,24 @@ import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.TypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasGenerics
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SEMI_COLON
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefModuleNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenericsKeyReference
-import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefClassDeclarationStub
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.tree.IElementType
@@ -528,24 +523,15 @@ object JsTypeDefPsiImplUtil {
             = classDeclaration.stub?.className ?: classDeclaration.typeName?.text ?: "?"
 
     @JvmStatic
-    fun isSilent(classDeclaration: JsTypeDefClassElement) : Boolean {
-        return classDeclaration.stub?.isSilent ?: classDeclaration.atSilent != null
+    fun getCompletionModifier(classDeclaration: JsTypeDefClassElement) : CompletionModifier {
+        return classDeclaration.stub?.completionModifier ?: genericGetCompletionModifier(classDeclaration)
     }
 
     @JvmStatic
-    fun isSilent(classDeclaration: JsTypeDefInterfaceElement) : Boolean {
-        return classDeclaration.stub?.isSilent ?: classDeclaration.atSilent != null
+    fun getCompletionModifier(classDeclaration: JsTypeDefInterfaceElement) : CompletionModifier {
+        return classDeclaration.stub?.completionModifier ?: genericGetCompletionModifier(classDeclaration)
     }
 
-    @JvmStatic
-    fun isQuiet(classDeclaration: JsTypeDefInterfaceElement) : Boolean {
-        return classDeclaration.stub?.isQuiet ?: classDeclaration.atQuiet != null
-    }
-
-    @JvmStatic
-    fun isQuiet(classDeclaration: JsTypeDefClassElement) : Boolean {
-        return classDeclaration.stub?.isQuiet ?: classDeclaration.atQuiet != null
-    }
     // ============================== //
     // ======== Descriptions ======== //
     // ============================== //
@@ -598,25 +584,17 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isSilent(declaration:JsTypeDefVariableDeclaration) : Boolean {
-        return declaration.stub?.isSilent ?: declaration.atSilent != null
+    fun getCompletionModifier(declaration:JsTypeDefVariableDeclaration) : CompletionModifier {
+        return declaration.stub?.completionModifier ?: genericGetCompletionModifier(declaration)
     }
 
     @JvmStatic
-    fun isQuiet(declaration:JsTypeDefVariableDeclaration) : Boolean {
-        return declaration.stub?.isQuiet ?: declaration.atQuiet != null
-    }
+    fun getCompletionModifier(property:JsTypeDefProperty):CompletionModifier {
+        return property.stub?.completionModifier
+            ?: (property.parent as? JsTypeDefVariableDeclaration)?.completionModifier
+            ?: genericGetCompletionModifier(property)
 
-    @JvmStatic
-    fun isQuiet(property:JsTypeDefProperty):Boolean {
-        return property.stub?.isQuiet != null || property.atQuiet != null || (property.parent as? JsTypeDefVariableDeclaration)?.isQuiet ?: false
     }
-
-    @JvmStatic
-    fun isSilent(property:JsTypeDefProperty):Boolean {
-        return property.stub?.isSilent != null || property.atSilent != null || (property.parent as? JsTypeDefVariableDeclaration)?.isSilent ?: false
-    }
-
 
     // ============================== //
     // ========= Functions ========== //
@@ -655,25 +633,16 @@ object JsTypeDefPsiImplUtil {
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: functionName.text
     }
 
-
     @JvmStatic
-    fun isSilent(declaration:JsTypeDefFunction) : Boolean {
-        return declaration.stub?.isSilent ?: declaration.atSilent != null || (declaration.parent as? JsTypeDefFunctionDeclaration)?.atSilent != null
+    fun getCompletionModifier(declaration:JsTypeDefFunction) : CompletionModifier {
+        return declaration.stub?.completionModifier
+                ?: (declaration.parent as? JsTypeDefFunctionDeclaration)?.completionModifier
+                ?: genericGetCompletionModifier(declaration)
     }
 
     @JvmStatic
-    fun isQuiet(declaration:JsTypeDefFunction) : Boolean {
-        return declaration.stub?.isQuiet ?: declaration.atQuiet != null || (declaration.parent as? JsTypeDefFunctionDeclaration)?.atQuiet != null
-    }
-
-    @JvmStatic
-    fun isSilent(declaration:JsTypeDefFunctionDeclaration) : Boolean {
-        return declaration.atSilent != null
-    }
-
-    @JvmStatic
-    fun isQuiet(declaration:JsTypeDefFunctionDeclaration) : Boolean {
-        return declaration.atQuiet != null
+    fun getCompletionModifier(declaration:JsTypeDefFunctionDeclaration) : CompletionModifier {
+        return genericGetCompletionModifier(declaration)
     }
 
 
@@ -701,6 +670,7 @@ object JsTypeDefPsiImplUtil {
         return JsTypeDefTypeGenericsKeyReference(name)
     }
 
+
     // ============================== //
     // ========== Literals ========== //
     // ============================== //
@@ -712,6 +682,61 @@ object JsTypeDefPsiImplUtil {
         val offset = if (outText.endsWith(quotationMark)) 1 else 0
         return if (outText.endsWith(quotationMark)) outText.substring(0, outText.length - offset) else outText
 
+    }
+
+    // ============================== //
+    // === Completion Modifiers ===== //
+    // ============================== //
+
+    private fun genericGetCompletionModifier(element:JsTypeDefHasCompletionModifiers) : CompletionModifier {
+        if (element.atQuiet != null)
+            return CompletionModifier.AT_QUIET
+        if (element.atSilent != null)
+            return CompletionModifier.AT_SILENT
+        if (element.atSuggest != null)
+            return CompletionModifier.AT_SUGGEST
+        return getBlockCompletionModifier(element) ?: CompletionModifier.AT_SUGGEST
+    }
+
+    @JvmStatic
+    fun isQuiet(element: JsTypeDefHasCompletionModifiers):Boolean {
+        return element.completionModifier == CompletionModifier.AT_QUIET
+    }
+
+    @JvmStatic
+    fun isSilent(element: JsTypeDefHasCompletionModifiers):Boolean {
+        return element.completionModifier == CompletionModifier.AT_SILENT
+    }
+
+    @JvmStatic
+    fun isSuggest(element: JsTypeDefHasCompletionModifiers):Boolean {
+        return element.completionModifier == CompletionModifier.AT_SUGGEST
+    }
+
+    @JvmStatic
+    fun getCompletionModifier(element:JsTypeDefCompletionModifiedBlock) : CompletionModifier {
+        if (element.atQuiet != null)
+            return CompletionModifier.AT_QUIET
+        if (element.atSilent != null)
+            return CompletionModifier.AT_SILENT
+        if (element.atSuggest != null)
+            return CompletionModifier.AT_SUGGEST
+        return ((element.containingFile).firstChild as? JsTypeDefFileDirective)?.completionModifier ?: CompletionModifier.DEFAULT
+    }
+
+    @JvmStatic
+    fun getCompletionModifier(element:JsTypeDefFileDirective):CompletionModifier {
+        if (element.atQuiet != null)
+            return CompletionModifier.AT_QUIET
+        if (element.atSilent != null)
+            return CompletionModifier.AT_SILENT
+        if (element.atSuggest != null)
+            return CompletionModifier.AT_SUGGEST
+        return CompletionModifier.DEFAULT
+    }
+
+    private fun getBlockCompletionModifier(element:PsiElement): CompletionModifier? {
+        return (element.getParentOfType(JsTypeDefCompletionModifiedBlock::class.java))?.completionModifier
     }
 
     // ============================== //
@@ -770,20 +795,20 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getGenericsKeys(function:JsTypeDefFunction) : Set<JsTypeListGenericType>? {
         val genericsKeys = function.stub?.genericsKeys
-        if (genericsKeys != null)
+        if (genericsKeys != null &&  genericsKeys.isNotEmpty())
             return genericsKeys.ifEmpty { null }
         return function.genericTypeTypes?.asJsTypeListGenericType()
     }
 
     @JvmStatic
     fun getGenericsKeys(declaration: JsTypeDefClassDeclaration<*,*>) : Set<JsTypeListGenericType>? {
-        val stub = declaration.stub
+        val genericsKeys = declaration.stub?.genericsKeys.orEmpty()
         // If Stub is not null, then the element would know whether or not
         // to keep the list null or empty.
         // Cannot check for null or empty on list
         // As null is a valid return value
-        if (stub != null)
-            return stub.genericsKeys
+        if (genericsKeys.isNotEmpty())
+            return genericsKeys
         val baseGenerics = declaration.genericTypeTypes?.asJsTypeListGenericType().orEmpty().toSet()
         val superTypes = declaration.extendsStatement?.typeList.toJsTypeDefTypeListTypes()
         val includedGenerics = superTypes.mapNotNull { it as? JsTypeListGenericType }.toSet()
@@ -798,10 +823,33 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun asJsTypeListGenericType(genericTypeTypes: JsTypeDefGenericTypeTypes) : Set<JsTypeListGenericType>? {
         return genericTypeTypes.genericTypesTypeList.mapNotNull {
-            val key = it.genericsKey?.text ?: return@mapNotNull null
-            val types = it.typeList.toJsTypeDefTypeListTypes().ifEmpty { null }
-            JsTypeListGenericType(key, types)
+            var key = it.genericsKey?.text
+            val types= it.typeList.toJsTypeDefTypeListTypes()
+            if (key == null && types.size == 1) {
+                key = types.firstOrNull()?.typeName
+            }
+            if (key == null)
+                return null
+            JsTypeListGenericType(key, types.ifEmpty { null })
         }.toSet().ifEmpty { null }
+    }
+
+    // ============================== //
+    // ========== TypeName ========== //
+    // ============================== //
+
+    @JvmStatic
+    fun getPreviousSiblings(thisType:JsTypeDefTypeName) : List<JsTypeDefTypeName> {
+        val parent = (thisType.parent as? JsTypeDefQualifiedTypeName) ?: return emptyList()
+        val allTypeNamesInParent = parent.typeNameList
+        val out = mutableListOf<JsTypeDefTypeName>()
+        for (i in 0 .. allTypeNamesInParent.lastIndex) {
+            val aType = allTypeNamesInParent[i]
+            if (aType.isEquivalentTo(thisType))
+                return out
+            out.add(aType)
+        }
+        return emptyList()
     }
 
 }
@@ -810,3 +858,58 @@ object JsTypeDefPsiImplUtil {
 val TYPE_SPLIT_REGEX = "\\s*\\|\\s*".toRegex()
 
 val NAMESPACE_SPLITTER_REGEX = "\\s*\\.\\s*".toRegex()
+
+private val FILE_PATH_REGEX = "^[/]?[a-zA-Z0-9_+.]([ -]*[a-zA-Z0-9_+./]+)*".toRegex()
+private const val AT_FILE = "@file"
+private const val AT_FRAMEWORK = "@framework"
+
+fun PsiComment.getFileReferenceRangeInComment(includeAtFile:Boolean = false) :TextRange? {
+    return getFileReferenceWithPrefix(AT_FILE, includeAtFile)
+}
+
+fun PsiComment.getFrameworkTextRangeInComment(includeAtFile:Boolean = false) :TextRange? {
+    return getFileReferenceWithPrefix(AT_FRAMEWORK, includeAtFile)
+}
+
+fun PsiElement.getFileReferenceWithPrefix(prefix:String, includePrefix:Boolean) : TextRange? {
+    val text = text
+    val shift = if (includePrefix)
+        -(prefix.length + 2)
+    else
+        0
+    var offset= 0
+    val parts = text.split(prefix)
+    if (parts.size < 2)
+        return null
+    offset += prefix.length
+    offset += parts[0].length
+    val startOf = "^(:|\\s)+".toRegex().find(parts[1])?.value?.length.orElse(0)
+    offset += startOf
+    val fileNameParts = parts[1].substring(startOf).trim()
+    val endOf = FILE_PATH_REGEX.find(fileNameParts)?.range?.last?.plus(1) ?: return null
+    if (endOf < 0)
+        return null
+    val startOffset = offset + shift
+    if (startOffset < 0)
+        return null
+    return TextRange.create(startOffset, offset + endOf)
+}
+
+enum class CompletionModifier(val tag:String) {
+    AT_SUGGEST("@suggest"),
+    AT_QUIET("@quiet"),
+    AT_SILENT("@silent");
+
+    companion object {
+        fun fromTag(tag:String):CompletionModifier {
+            return when (tag) {
+                AT_SUGGEST.tag -> AT_SUGGEST
+                AT_QUIET.tag -> AT_QUIET
+                AT_SILENT.tag -> AT_SILENT
+                else -> throw Exception("Completion tag is invalid")
+            }
+        }
+        val DEFAULT:CompletionModifier = AT_SUGGEST
+    }
+
+}

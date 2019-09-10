@@ -1,11 +1,9 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.inference.inferFunctionDeclarationReturnType
+import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.psi.PsiElement
-import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
@@ -17,11 +15,13 @@ import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.DumbService
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-
-import java.util.ArrayList
+import com.intellij.util.IncorrectOperationException
+import java.util.*
 
 object ObjJFunctionDeclarationPsiUtil {
 

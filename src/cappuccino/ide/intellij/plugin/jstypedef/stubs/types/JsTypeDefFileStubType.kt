@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefLanguage
@@ -33,7 +32,7 @@ class JsTypeDefFileStubType internal constructor(): IStubFileElementType<JsTypeD
 
     override fun deserialize(stream: StubInputStream, parentStub: StubElement<*>?): JsTypeDefFileStub {
         super.deserialize(stream, parentStub)
-        val fileName = stream.readNameString() ?: "???"
+        val fileName = stream.readName()?.string ?: "???"
         return JsTypeDefFileStubImpl(null, fileName)
     }
 

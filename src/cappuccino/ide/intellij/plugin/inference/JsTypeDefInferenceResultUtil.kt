@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 
 fun PropertiesMap.toJsTypeDefInterfaceBody() : JsTypeListClass {
     val functionProperties = mutableListOf<JsTypeListFunctionType>()

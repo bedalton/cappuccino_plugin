@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.stubs.impl
 
-import com.intellij.psi.stubs.StubElement
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJTypeDefImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJTypeDefStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import com.intellij.psi.stubs.StubElement
 
 open class ObjJTypeDefStubImpl internal constructor(
         parent: StubElement<*>,

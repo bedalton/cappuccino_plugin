@@ -2,14 +2,14 @@ package cappuccino.ide.intellij.plugin.annotator
 
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonIntention
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeType
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 
 /**
  * Annotator for missing semi-colons.

@@ -13,6 +13,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.collapseWithSuperType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
@@ -179,6 +181,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             appendQualifiedReferenceCompletions(element, resultSet)
             return
         }
+
         val text = element.textWithoutCaret
         // Prevent completion when keyword is used
         if (text in ObjJKeywordsList.keywords)
@@ -537,6 +540,25 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         val project = element.project
         val previousComponents = qualifiedNameComponent.previousSiblings
+        var isStatic = false
+        if (previousComponents.isNotEmpty()) {
+            val namespace = previousComponents.joinToString(".") { it.text }
+            val nextIndex = previousComponents.size
+            val classNamespaceNames = JsTypeDefClassesByPartialNamespaceIndex.instance[namespace, project].filterIsInstance<JsTypeDefClassElement>().mapNotNull {
+                val namespaceComponents = it.namespaceComponents
+                if (namespaceComponents.size > nextIndex)
+                    it.namespaceComponents[nextIndex]
+                else
+                    null
+            }
+            classNamespaceNames.forEach {
+                val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJTrackInsertionHandler)
+                val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.TYPEDEF_PRIORITY))
+                resultSet.addElement(prioritizedLookupElement)
+            }
+            isStatic = classNamespaceNames.isNotEmpty()
+
+        }
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         val classes = inferred.classes.toMutableSet() + (if (inferred.types.any { it is JsTypeListArrayType }) listOf("Array") else emptyList())
         val collapsedClass = classes.flatMap { className ->
@@ -545,8 +567,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             }
         }.toSet().collapseWithSuperType(project)
         val firstItem = previousComponents[0].text.orEmpty()
-        val includeStatic = index == 1 && classes.any { it == firstItem }
-
+        val includeStatic = isStatic || (index == 1 && classes.any { it == firstItem }) || JsTypeDefClassesByNamespaceIndex.instance.containsKey(previousComponents.joinToString(".") { it.text }, project)
         val functions = if (includeStatic)
             collapsedClass.staticFunctions
         else

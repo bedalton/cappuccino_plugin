@@ -3,17 +3,14 @@ package cappuccino.ide.intellij.plugin.fixes
 import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.util.FileContentUtil
-import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 /**

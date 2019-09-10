@@ -1,9 +1,12 @@
 package cappuccino.ide.intellij.plugin.fixes
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
+import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter

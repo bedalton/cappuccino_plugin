@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReference
 import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReferencePrime
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
 interface ObjJQualifiedReferenceComponent : ObjJCompositeElement {
     val indexInQualifiedReference:Int

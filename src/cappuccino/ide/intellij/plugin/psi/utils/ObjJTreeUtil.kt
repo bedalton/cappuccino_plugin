@@ -3,19 +3,18 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
-import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiErrorElement
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.tree.IElementType
-import com.intellij.psi.util.PsiTreeUtil
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import cappuccino.ide.intellij.plugin.utils.document
+import com.intellij.lang.ASTNode
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.TokenType
-
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Logger
 
 

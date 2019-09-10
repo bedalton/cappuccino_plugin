@@ -1,6 +1,5 @@
-/*-- @framework:AppKit --*/
-
-/*-- @file: CPCompatibility --*/
+/*-- @framework: AppKit --*/
+/*-- @file: CPCompatibility.j --*/
 function CPFeatureIsCompatible(aFeature:Any):boolean
 
 function CPPlatformHasBug(aBug:Any):boolean
@@ -995,7 +994,7 @@ readonly var CPLineMovesRight:CPLineMovementDirection
 readonly var CPLineMovesDown:CPLineMovementDirection
 readonly var CPLineMovesUp:CPLineMovementDirection
 
-/*-- @file: Platform/Dom/CPDOMDisplayServer.h --*/
+/*-- @file: Platform/DOM/CPDOMDisplayServer.h --*/
 function CPDOMDisplayServerSetStyleLeftTop(aDOMElement:DOMElement, aTransform:CGAffineTransform, aLeft:number, aTop:number)
 function CPDOMDisplayServerSetStyleRightTop(aDOMElement:DOMElement, aTransform:CGAffineTransform, aRight:number, aTop:number)
 function CPDOMDisplayServerSetStyleLeftBottom(aDOMElement:DOMElement, aTransform:CGAffineTransform, aLeft:number, aBottom:number)

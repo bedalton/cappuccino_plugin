@@ -83,7 +83,7 @@ private fun StubOutputStream.writeType(type: JsTypeListType) {
 }
 
 private fun StubInputStream.readBasicType(): JsTypeListBasicType? {
-    val type = readNameString() ?: return null
+    val type = readName()?.string ?: return null
     return JsTypeListBasicType(type)
 }
 
@@ -104,8 +104,8 @@ private fun StubOutputStream.writeArrayType(type: JsTypeListArrayType) {
 }
 
 private fun StubInputStream.readKeyOfType(): JsTypeListKeyOfType? {
-    val key = readNameString()
-    val mapName = readNameString()
+    val key = readName()?.string
+    val mapName = readName()?.string
     if (key == null || mapName == null)
         return null
     return JsTypeListKeyOfType(key, mapName)
@@ -118,8 +118,8 @@ private fun StubOutputStream.writeKeyOfType(type: JsTypeListKeyOfType) {
 
 
 private fun StubInputStream.readValueOfKeyType(): JsTypeListValueOfKeyType? {
-    val key = readNameString()
-    val mapName = readNameString()
+    val key = readName()?.string
+    val mapName = readName()?.string
     if (key == null || mapName == null)
         return null
     return JsTypeListValueOfKeyType(key, mapName)
@@ -160,7 +160,7 @@ private fun StubOutputStream.writeMapType(mapType: JsTypeListMapType) {
 private fun StubInputStream.readUnionType() : JsTypeListUnionType {
     val numTypes = readInt()
     val typeNames = (0 until numTypes).mapNotNull {
-        readNameString()
+        readName()?.string
     }.toSet()
     return JsTypeListUnionType(typeNames)
 }
@@ -173,7 +173,7 @@ private fun StubOutputStream.writeUnionType(type:JsTypeListUnionType) {
 }
 
 private fun StubInputStream.readGenericType() : JsTypeListGenericType {
-    val key = readNameString() ?: "K"
+    val key = readName()?.string ?: "K"
     val types = readTypesList().ifEmpty { null }?.toSet()
     return JsTypeListGenericType(key, types)
 }
@@ -200,12 +200,12 @@ fun StubOutputStream.writePropertiesList(propertiesIn: Iterable<JsTypeDefNamedPr
 
 
 private fun StubInputStream.readProperty(): JsTypeDefNamedProperty? {
-    val propertyName = readNameString()
+    val propertyName = readName()?.string
     val types = readInferenceResult()
     val readonly = readBoolean()
     val static = readBoolean()
     val comment = readUTFFast()
-    val default = readNameString()
+    val default = readName()?.string
     if (propertyName == null)
         return null
     return JsTypeDefNamedProperty(
@@ -247,10 +247,10 @@ fun StubOutputStream.writeFunctionArgumentsList(propertiesIn: Iterable<JsTypeDef
 }
 
 private fun StubInputStream.readFunctionProperty(): JsTypeDefFunctionArgument? {
-    val propertyName = readNameString()
+    val propertyName = readName()?.string
     val types = readInferenceResult()
     val comment = readUTFFast()
-    val default = readNameString()
+    val default = readName()?.string
     val varArgs = readBoolean()
     if (propertyName == null)
         return null
@@ -286,7 +286,7 @@ fun StubOutputStream.writeJsFunctionType(function: JsTypeListFunctionType?) {
 fun StubInputStream.readJsFunctionType(): JsTypeListFunctionType? {
     if (!readBoolean())
         return null
-    val name = readNameString()
+    val name = readName()?.string
     val parameters = readFunctionArgumentsList()
     val returnType = readInferenceResult()
     val comment = readUTFFast()

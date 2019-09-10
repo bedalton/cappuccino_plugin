@@ -2,8 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.lang
 
 import com.intellij.openapi.fileTypes.LanguageFileType
 import icons.ObjJIcons
-
-import javax.swing.*
+import javax.swing.Icon
 
 class JsTypeDefFileType private constructor() : LanguageFileType(JsTypeDefLanguage.instance) {
 

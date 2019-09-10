@@ -57,11 +57,8 @@
       <li>Extended type inferences</li>
       <li>Improved Autocomplete suggestions</li>
       <li>Added import statement name suggestions</li>
-      <li>Added Objective-J SDK and Library type
-        <ul>
-          <li>This allows for easier definition and reuse of framework sources</li>
-          <li>This also causes the IDE to alert a user when making changes to the framework files</li>
-        </ul>
+      <li>Added inspection to check that variables, functions and classes are imported<br/>
+        <ul><li>Disabled by default as its resolution is slow and cpu intensive</li></ul>
       </li>
       <li>Re-enabled the very buggy, and very experimental method selector rename</li>
       <li>Extended javascript function completions</li>
@@ -134,13 +131,12 @@
     </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0"/>
+  <idea-version since-build="181.0"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <!-- uncomment to enable plugin in all products -->
   <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.java</depends>
   <project-components>
     <!--component>
       <implementation-class>cappuccino.intellij.plugin.support.ObjectiveJPluginController</implementation-class>
@@ -330,7 +326,7 @@
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReferencedElementIsImportedInspection"
                      level="WARNING"
                      groupName="Objective-J"
-                     enabledByDefault="true"
+                     enabledByDefault="false"
                      displayName="Class is not imported"
                      shortName="ClassNotImported"
                      order="last"
@@ -404,7 +400,7 @@
     <!-- Formatting and Completion -->
     <lang.braceMatcher language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefBraceMatcher"/>
     <completion.contributor language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefCompletionContributor" />
-
+    <enterBetweenBracesDelegate language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.formatting.JsTypeDefEnterBetweenBracesDelegate" />
 
     <!-- STUBS AND INDICES -->
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService"
@@ -412,6 +408,7 @@
     <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesBySuperClassIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByClassNamesIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex"/>

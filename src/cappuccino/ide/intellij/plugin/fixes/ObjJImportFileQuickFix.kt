@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJImportBlock
-import cappuccino.ide.intellij.plugin.psi.ObjJImportFramework
 import cappuccino.ide.intellij.plugin.psi.ObjJImportStatementElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
@@ -34,6 +33,7 @@ import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.ui.components.JBList
 import com.intellij.util.FileContentUtil
+import com.intellij.util.ui.UIUtil
 import icons.ObjJIcons
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
@@ -134,7 +134,7 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
                 .setNorthPanel(JLabel(ObjJBundle.message("objective-j.inspections.not-imported.fix.add-import-title")))
                 .centerPanel(mainLayout)
         dialog.setOkOperation {
-            invokeAndWaitIfNeeded { callback(selectedForImport, isFrameworkFileNode, dialog.dialogWrapper) }
+            UIUtil.invokeAndWaitIfNeeded (Runnable { callback(selectedForImport, isFrameworkFileNode, dialog.dialogWrapper) })
         }
         dialog.addOkAction()
         dialog.addCancelAction()

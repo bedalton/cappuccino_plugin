@@ -1,7 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import java.lang.StringBuilder
-
 object Strings {
 
     @JvmOverloads

@@ -1,13 +1,14 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJImportBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportInfoStub
 import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.FilenameIndex
@@ -225,6 +226,10 @@ fun isImported(thisFile:ObjJFile, import:ObjJImportInfoStub, searched:MutableLis
     return false
 }
 
+/**
+ * @param thisFile a possibly imported file, containing an item of interest
+ * @param imports a list of files that may have imported the 'thisFile' file of interest
+ */
 fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf()) : Boolean {
     val project:Project = thisFile.project
     val thisImports = thisFile.importedFiles.toSet()
@@ -240,14 +245,67 @@ fun hasImportedAny(thisFile: ObjJFile, imports:Collection<ObjJImportInfoStub>, s
     return false
 }
 
+
+fun hasImportedAny(startingFile: ObjJFile, searched:MutableSet<ObjJImportInfoStub> = mutableSetOf(), check:(file:ObjJFile)->Boolean) : Boolean {
+    if (check(startingFile))
+        return true
+    val project:Project = startingFile.project
+    val thisImports = startingFile.importedFiles.toSet()
+    val notSearchedImports = thisImports.minus(searched)
+    for (anImport in notSearchedImports) {
+        val importedFile = anImport.getPsiFile(project) ?: continue
+        if (hasImportedAny(importedFile, searched, check))
+            return true
+    }
+    return false
+}
+
 fun ObjJImportInfoStub.getPsiFile(project: Project) : ObjJFile? {
-    if (fileName == null)
-        return null
+    return getFileWithFramework(fileName, framework, project).mapNotNull { it as? ObjJFile }.getOrNull(0)
+}
+
+fun getFileWithFramework(path:String?, frameworkName:String?, project: Project) : List<PsiFile> {
+    if (path == null || path.trim().isBlank())
+        return emptyList()
+
+    // Check if is root based or should ignore framework
+    val isRootBased = path.startsWith("/")
+
+    // Get parts
+    val pathComponents = path.split("/")
+    val partsIsEmpty = pathComponents.isEmpty() || (pathComponents.size == 2 && pathComponents[0].isBlank())
+
+    // Get files with name
+    val fileName = pathComponents.last()
     val filesWithName = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project))
-    for(file in filesWithName) {
-        if (file is ObjJFile && framework == file.frameworkName) {
-            return file
+
+    // Check if framework is null and should be used.
+    if (frameworkName == null && !isRootBased)
+        return filesWithName.toList()
+
+    // Check if is root and unqualified
+    if (partsIsEmpty && isRootBased)
+        return filesWithName.toList()
+
+    val out = mutableListOf<PsiFile>()
+    // Check all files
+    file@for(file in filesWithName) {
+        val thisFrameworkName = if (file is ObjJFile) file.frameworkName else ObjJFrameworkUtils.getEnclosingFrameworkName(file)
+        if (isRootBased || frameworkName == thisFrameworkName) {
+            // If parts is empty, return what has been found
+            if (partsIsEmpty) {
+                out.add(file)
+                //return listOf(file)
+                continue@file
+            }
+            var parent: PsiDirectory? = file.parent
+            for (i in pathComponents.lastIndex until 0) {
+                if (parent == null || (pathComponents[i].isNotBlank() && parent.name != pathComponents[i]))
+                    continue@file
+                parent = parent.parent
+            }
+            out.add(file)
         }
     }
-    return null
+    return out
 }

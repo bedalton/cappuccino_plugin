@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.actions
 
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import icons.ObjJIcons
 import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
@@ -13,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidatorEx
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.psi.PsiDirectory
+import icons.ObjJIcons
 import java.util.*
 
 /**

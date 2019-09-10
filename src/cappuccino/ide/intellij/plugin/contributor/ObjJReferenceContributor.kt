@@ -1,14 +1,19 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import com.intellij.psi.*
-import com.intellij.util.ProcessingContext
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceRangeInComment
+import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefCommentFileReference
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.references.ObjJClassNameReference
 import cappuccino.ide.intellij.plugin.references.ObjJFunctionNameReference
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
-
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.psi.*
+import com.intellij.util.ProcessingContext
 
 class ObjJReferenceContributor : PsiReferenceContributor() {
 
@@ -29,6 +34,9 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
 
         val functionName = psiElement(ObjJFunctionName::class.java)
         psiReferenceRegistrar.registerReferenceProvider(functionName, FunctionNameReferenceProvider())
+
+        val comment = psiElement(PsiComment::class.java)
+        psiReferenceRegistrar.registerReferenceProvider(comment, JsTypeDefCommentReferenceProvider())
     }
 
     private class SelectorReferenceProvider : PsiReferenceProvider() {
@@ -121,6 +129,22 @@ class ObjJReferenceContributor : PsiReferenceContributor() {
 
         override fun acceptsTarget(target: PsiElement): Boolean {
             return target is ObjJVariableName
+        }
+    }
+
+    private class JsTypeDefCommentReferenceProvider : PsiReferenceProvider() {
+        override fun getReferencesByElement(
+                psiElement: PsiElement,
+                processingContext: ProcessingContext): Array<PsiReference> {
+            if (psiElement !is PsiComment || psiElement.containingFile !is JsTypeDefFile)
+                return emptyArray()
+            val reference = createReference(psiElement) ?: return emptyArray()
+            return arrayOf(reference)
+        }
+
+        private fun createReference(comment: PsiComment) : PsiReference? {
+            val rangeInElement = comment.getFileReferenceRangeInComment() ?: return null
+            return JsTypeDefCommentFileReference(comment, rangeInElement)
         }
     }
 

@@ -1,20 +1,20 @@
 package cappuccino.ide.intellij.plugin.references
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJProtocolDeclarationsIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefType
 import cappuccino.ide.intellij.plugin.psi.ObjJClassName
 import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
-import cappuccino.ide.intellij.plugin.psi.ObjJTypeDef
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
-import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.psi.*
-
-import java.util.ArrayList
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
+import java.util.*
 
 class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBase<ObjJClassName>(element, TextRange.create(0, element.textLength)) {
     private val className: String? = element.text

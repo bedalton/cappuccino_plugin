@@ -8,7 +8,9 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.isNotCategory
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
+import cappuccino.ide.intellij.plugin.psi.utils.hasImportedAny
+import cappuccino.ide.intellij.plugin.psi.utils.isImported
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.enclosingFrameworkName
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -99,6 +101,11 @@ class ObjJReferencedElementIsImportedInspection  : LocalInspectionTool() {
         if (containingFile.asImportStruct in declaredIn)
             return
         if (hasImportedAny(containingFile, declaredIn))
+            return
+        val hasClassReference = hasImportedAny(containingFile) { importedFile ->
+            importedFile.getChildrenOfType(ObjJClassDependencyStatement::class.java).any { it.className?.text == className }
+        }
+        if (hasClassReference)
             return
         problemsHolder.registerProblem(psiElement, ObjJBundle.message("objective-j.inspections.not-imported.message", "class", className), ObjJImportFileForClassQuickFix(psiElement.enclosingFrameworkName, className, withSelector, includeTests(psiElement)))
     }

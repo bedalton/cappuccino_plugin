@@ -1,22 +1,21 @@
 package cappuccino.ide.intellij.plugin.jstypedef.lang
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefVariableDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.jstypedef.structure.JsTypeDefStructureViewElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.ide.projectView.PresentationData
 import icons.ObjJIcons
-
-import javax.swing.*
+import javax.swing.Icon
 
 class JsTypeDefFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, JsTypeDefLanguage.instance), JsTypeDefElement, JsTypeDefHasTreeStructureElement {
 

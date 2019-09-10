@@ -2,18 +2,17 @@
 
 package cappuccino.ide.intellij.plugin.jstypedef.parser
 
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import gnu.trove.TObjectLongHashMap
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
-import cappuccino.ide.intellij.plugin.utils.orTrue
-import com.intellij.psi.TokenType
-import java.util.logging.Logger
 
 @Suppress("DEPRECATION")
 class JsTypeDefParserUtil : GeneratedParserUtilBase() {

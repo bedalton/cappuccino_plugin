@@ -83,7 +83,7 @@ class DOMImplementation {
     createDocumentType(qualifiedName: string, publicId: string, systemId: string): DocumentType;
     createHTMLDocument(title?: string): Document;
     /** @deprecated */
-    hasFeature(...args: any[]): true;
+    hasFeature(...args: any[]): BOOL;
 }
 
 interface DOML2DeprecatedColorProperty {

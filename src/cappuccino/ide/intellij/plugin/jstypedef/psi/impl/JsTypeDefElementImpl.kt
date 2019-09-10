@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.impl
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefModule
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
@@ -11,10 +11,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveState
 import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.tree.IElementType
-import com.intellij.usageView.UsageViewUtil
 import com.intellij.psi.util.PsiTreeUtil
-
-import javax.swing.*
+import com.intellij.usageView.UsageViewUtil
+import javax.swing.Icon
 
 open class JsTypeDefElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), JsTypeDefElement {
 

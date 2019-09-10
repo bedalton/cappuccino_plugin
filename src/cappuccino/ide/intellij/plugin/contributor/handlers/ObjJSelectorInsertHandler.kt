@@ -1,11 +1,11 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
+import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 
 /**
  * Handles completion insertion of selectors

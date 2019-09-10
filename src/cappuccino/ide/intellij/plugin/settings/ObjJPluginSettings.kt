@@ -304,10 +304,10 @@ object ObjJPluginSettings {
     private val messages_didSend_stubVersionSetting: IntegerSetting = IntegerSetting("objj.messages.restart-normally-after-index-update.did-send", -1)
     var stubVersionsUpdated: Boolean
         get()
-        = messages_didSend_stubVersionSetting.value == ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION
+        = messages_didSend_stubVersionSetting.value != ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION + ObjJStubVersions.SOURCE_STUB_VERSION
         set(value) {
             if (!value) {
-                messages_didSend_stubVersionSetting.value = ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION
+                messages_didSend_stubVersionSetting.value = ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION + ObjJStubVersions.SOURCE_STUB_VERSION
             } else {
                 messages_didSend_stubVersionSetting.value = -1
             }

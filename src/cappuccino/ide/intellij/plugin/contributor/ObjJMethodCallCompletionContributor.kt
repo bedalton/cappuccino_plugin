@@ -27,7 +27,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import icons.ObjJIcons
-import java.util.logging.Level
 import java.util.logging.Logger
 
 object ObjJMethodCallCompletionContributor {

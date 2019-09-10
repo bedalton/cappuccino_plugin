@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import com.intellij.openapi.util.MultiValuesMap
-import java.util.ArrayList
+import java.util.*
 
 typealias Filter<T> = (T) -> Boolean
 object ArrayUtils {

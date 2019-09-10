@@ -1,25 +1,25 @@
 package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.utils.*
+import cappuccino.ide.intellij.plugin.utils.INFO_PLIST_FILE_NAME_TO_LOWER_CASE
+import cappuccino.ide.intellij.plugin.utils.ObjJVirtualFileUtil
+import cappuccino.ide.intellij.plugin.utils.contents
+import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlistText
+import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.projectRoots.*
+import com.intellij.openapi.roots.JavadocOrderRootType
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
+import com.intellij.util.PathUtil
 import icons.ObjJIcons
 import org.jdom.Element
-
-import java.io.*
+import java.io.File
 import java.nio.charset.Charset
 import java.util.logging.Logger
 import javax.swing.Icon
-import com.intellij.openapi.projectRoots.SdkModificator
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.module.ModuleUtilCore
-import com.intellij.openapi.roots.OrderRootType
-import com.intellij.util.PathUtil
-import com.intellij.openapi.projectRoots.SdkType
-import com.intellij.openapi.roots.JavadocOrderRootType
-import com.intellij.openapi.roots.ModuleRootManager
-import com.intellij.psi.PsiElement
 
 
 class ObjJSDKType : SdkType(SDK_TYPE_ID) {
@@ -91,7 +91,7 @@ class ObjJSDKType : SdkType(SDK_TYPE_ID) {
         sdkRoot.refresh(false, true)
         sdkModificator.versionString = getVersionString(sdkRoot.path)
         val frameworkDirectories = findFrameworkFolders(sdkRoot.path)
-        for ((frameworkName, directory) in frameworkDirectories) {
+        for ((_, directory) in frameworkDirectories) {
             findAndAddSourceRoots(directory, sdkModificator)
         }
     }

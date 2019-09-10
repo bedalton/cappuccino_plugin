@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.psi.impl
 import cappuccino.ide.intellij.plugin.caches.ObjJVariableNameCache
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
-import cappuccino.ide.intellij.plugin.inference.parentFunctionDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings

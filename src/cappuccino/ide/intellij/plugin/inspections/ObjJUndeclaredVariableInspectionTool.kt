@@ -1,23 +1,28 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.contributor.*
+import cappuccino.ide.intellij.plugin.contributor.ObjJKeywordsList
 import cappuccino.ide.intellij.plugin.fixes.*
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.codeInspection.*
+import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.LocalInspectionToolSession
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
@@ -57,7 +62,24 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (variableName?.parent is ObjJQualifiedReference) {
-                variableName = (variableName.parent!! as ObjJQualifiedReference).primaryVar
+                val qualifiedReference = variableName.parent as ObjJQualifiedReference
+                val lastSibling = qualifiedReference.lastVar
+                if (lastSibling == variableName) {
+                    val parts = variableName.previousSiblings + variableName
+                    val result = inferQualifiedReferenceType(parts, createTag()) ?: INFERRED_EMPTY_TYPE
+                    if (result.toClassList(null).withoutAnyType().isNotEmpty())
+                        return
+                } else {
+                    val project = variableName.project
+                    val parts = variableName.previousSiblings + variableName
+                    val namespace = parts.joinToString(".") { it.text }
+                    val isValid = JsTypeDefFunctionsByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
+                            JsTypeDefPropertiesByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
+                            JsTypeDefClassesByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
+                            JsTypeDefModuleNamesByNamespaceIndex.instance.containsKey(namespace, project)
+                    if (isValid)
+                        return
+                }
             }
             if (variableName == null) {
                 return

@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefFunctionImpl
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFunctionStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
@@ -42,8 +43,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val genericsKeys = function.genericsKeys
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
         val static:Boolean = function.isStatic
-        val isSilent = function.isSilent
-        val isQuiet = function.isQuiet
+        val completionModifier = function.completionModifier
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -55,8 +55,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 genericsKeys = genericsKeys,
                 global = isGlobal,
                 static = static,
-                isSilent = isSilent,
-                isQuiet = isQuiet)
+                completionModifier = completionModifier)
     }
 
     @Throws(IOException::class)
@@ -73,25 +72,23 @@ class JsTypeDefFunctionStubType internal constructor(
         stream.writeTypeList(stub.genericsKeys ?: emptySet())
         stream.writeBoolean(stub.global)
         stream.writeBoolean(stub.static || stub.global)
-        stream.writeBoolean(stub.isSilent)
-        stream.writeBoolean(stub.isQuiet)
+        stream.writeName(stub.completionModifier.tag)
     }
 
     @Throws(IOException::class)
     override fun deserialize(
             stream: StubInputStream, parent: StubElement<*>): JsTypeDefFunctionStub {
 
-        val fileName = stream.readNameString() ?: ""
-        val enclosingNamespace = stream.readNameString() ?: ""
-        val enclosingClass = stream.readNameString()
-        val functionName = stream.readNameString() ?: ""
+        val fileName = stream.readName()?.string ?: ""
+        val enclosingNamespace = stream.readName()?.string ?: ""
+        val enclosingClass = stream.readName()?.string
+        val functionName = stream.readName()?.string ?: ""
         val parameters = stream.readFunctionArgumentsList()
         val returnType = stream.readInferenceResult()
         val genericKeys = stream.readTypesList().ifEmpty { null }?.mapNotNull { it as? JsTypeListType.JsTypeListGenericType }?.toSet()
         val global = stream.readBoolean()
         val static = stream.readBoolean()
-        val isSilent = stream.readBoolean()
-        val isQuiet = stream.readBoolean()
+        val completionModifier = CompletionModifier.fromTag(stream.readName()?.string!!)
         return JsTypeDefFunctionStubImpl(
                 parent = parent,
                 fileName = fileName,
@@ -103,8 +100,7 @@ class JsTypeDefFunctionStubType internal constructor(
                 genericsKeys = genericKeys,
                 global = global,
                 static = static,
-                isSilent = isSilent,
-                isQuiet = isQuiet
+                completionModifier = completionModifier
             )
     }
 

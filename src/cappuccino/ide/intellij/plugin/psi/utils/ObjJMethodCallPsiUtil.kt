@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-
-import java.util.ArrayList
-
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.ID
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.references.ObjJSelectorReference
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveResult
+import java.util.*
 
 fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
     val singleSelector = methodCall.selector

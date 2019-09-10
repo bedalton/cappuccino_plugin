@@ -31,4 +31,9 @@ class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVaria
         return PsiElementResolveResult.EMPTY_ARRAY
     }
 
+
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
 }

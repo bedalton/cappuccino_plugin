@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
@@ -28,7 +27,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*

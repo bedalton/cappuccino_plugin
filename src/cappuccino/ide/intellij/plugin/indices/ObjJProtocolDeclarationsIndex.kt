@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
+import com.intellij.psi.stubs.StubIndexKey
 
 class ObjJProtocolDeclarationsIndex private constructor() : ObjJStringStubIndexBase<ObjJProtocolDeclaration>() {
 

@@ -3,8 +3,6 @@ package cappuccino.ide.intellij.plugin.jstypedef.parser
 import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import com.intellij.psi.tree.IElementType
 
-import java.util.Stack
-
 abstract class JsTypeDefBaseLexer : JsTypeDefLexer() {
 
     private var lastToken: IElementType? = null

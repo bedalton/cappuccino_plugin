@@ -1,14 +1,13 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import com.intellij.openapi.project.Project
-import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.*
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import com.intellij.openapi.project.Project
 
 interface JsProperty {
     val type: String

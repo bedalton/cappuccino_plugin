@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
+import com.intellij.psi.PsiElement
 
 interface ObjJFunctionCallElement : ObjJCompositeElement {
 

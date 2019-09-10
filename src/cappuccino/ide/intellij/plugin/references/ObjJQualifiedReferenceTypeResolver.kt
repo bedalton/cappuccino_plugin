@@ -2,7 +2,9 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil

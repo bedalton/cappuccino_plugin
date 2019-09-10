@@ -2,8 +2,10 @@ package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsPrimitives
-import cappuccino.ide.intellij.plugin.jstypedef.indices.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -39,6 +41,11 @@ class JsTypeDefTypeNameReference(element:JsTypeDefTypeName) : PsiPolyVariantRefe
                 fromKeyList +
                 fromObjJTypeDefElement
         return PsiElementResolveResult.createResults(found)
+    }
+
+
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
     }
 
 

@@ -1,16 +1,15 @@
 package cappuccino.ide.intellij.plugin.lang
 
+import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
-import com.intellij.psi.tree.IElementType
-import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTempTextAttributesKey
-
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
+import com.intellij.psi.tree.IElementType
 import java.awt.Color
 
 class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {

@@ -1,11 +1,10 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import com.intellij.psi.PsiElement
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-
-import java.util.ArrayList
+import com.intellij.psi.PsiElement
+import java.util.*
 
 object ObjJResolveableElementUtil {
 

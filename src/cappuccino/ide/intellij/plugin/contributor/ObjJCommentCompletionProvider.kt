@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader

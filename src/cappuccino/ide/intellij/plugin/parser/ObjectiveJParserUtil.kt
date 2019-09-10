@@ -2,19 +2,18 @@
 
 package cappuccino.ide.intellij.plugin.parser
 
-import com.intellij.lang.PsiBuilder
-import com.intellij.lang.PsiParser
-import com.intellij.lang.parser.GeneratedParserUtilBase
-import com.intellij.openapi.util.Key
-import com.intellij.psi.tree.IElementType
-import com.intellij.psi.tree.TokenSet
-import gnu.trove.TObjectLongHashMap
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import com.intellij.lang.PsiBuilder
+import com.intellij.lang.PsiParser
+import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.openapi.util.Key
 import com.intellij.psi.TokenType
-import java.util.logging.Logger
+import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
+import gnu.trove.TObjectLongHashMap
 
 @Suppress("DEPRECATION")
 class ObjectiveJParserUtil : GeneratedParserUtilBase() {

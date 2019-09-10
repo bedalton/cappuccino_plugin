@@ -11,7 +11,6 @@ import com.intellij.lang.SmartEnterProcessorWithFixers.FixEnterProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import java.util.logging.Level
 import java.util.logging.Logger
 
 /**

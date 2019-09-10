@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefKeyListImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefKeyListStubImpl
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefFunctionStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefKeysListStub
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -51,7 +50,7 @@ class JsTypeDefKeysListStubType internal constructor(
         val keyListName = stream.readName()?.string ?: ""
         val numValues = stream.readInt()
         val values = (0 until numValues).map {
-            stream.readNameString() ?: "???"
+            stream.readName()?.string ?: "???"
         }
         return JsTypeDefKeyListStubImpl(parent, fileName, keyListName, values)
     }

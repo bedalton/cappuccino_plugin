@@ -1,21 +1,21 @@
 package cappuccino.ide.intellij.plugin.contributor.handlers
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
+import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.psi.ObjJExpr
+import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
-import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
-import cappuccino.ide.intellij.plugin.psi.ObjJExpr
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.utils.EditorUtil
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
-import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 
 /**
  * Handles variable name completion events

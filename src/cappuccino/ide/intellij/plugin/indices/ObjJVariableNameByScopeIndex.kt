@@ -1,11 +1,11 @@
 package cappuccino.ide.intellij.plugin.indices
 
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndexKey
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 
 @Suppress("MemberVisibilityCanBePrivate")
 class ObjJVariableNameByScopeIndex private constructor() : ObjJStringStubIndexBase<ObjJVariableName>() {

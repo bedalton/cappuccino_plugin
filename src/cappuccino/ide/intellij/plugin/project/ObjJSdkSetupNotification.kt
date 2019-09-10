@@ -1,12 +1,11 @@
 package cappuccino.ide.intellij.plugin.project
 
+import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
-import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.findFrameworkNameInPlist
-import cappuccino.ide.intellij.plugin.utils.getModule
 import com.intellij.ProjectTopics
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
@@ -39,12 +38,12 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
     }
 
     override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor): EditorNotificationPanel? {
-        if (file.fileType !is ObjJFileType)
+        if (file.fileType !is ObjJFileType && file.fileType !is JsTypeDefFileType)
             return null
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile == null || psiFile.language != ObjJLanguage.instance) return null
 
-        val module = file.getModule(project) ?: return null
+        //val module = file.getModule(project) ?: return null
         var needed:NeededFrameworks? = NeededFrameworks.BOTH
         listOf(GlobalSearchScope.everythingScope(project)).forEach { searchScope ->
             needed = getNeeded(project, searchScope, needed)
@@ -54,14 +53,14 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
         if (needed == null)
             return null
 
-        if (!canRegisterSourcesAsLibrary(module, needed!!.missing))
+        if (!canRegisterSourcesAsLibrary(needed!!.missing))
             return null
 
-        return createPanel(project, psiFile, needed!!)
+        return createPanel(psiFile, needed!!)
     }
 
     companion object {
-        private fun createPanel(project: Project, file: PsiFile, needed: NeededFrameworks): EditorNotificationPanel {
+        private fun createPanel(file: PsiFile, needed: NeededFrameworks): EditorNotificationPanel {
             val panel = EditorNotificationPanel()
             panel.setText(ObjJBundle.message("objj.module.frameworks.error.missing-frameworks-header", needed.textLabel))
             panel.createActionLabel(ObjJBundle.message("objj.module.frameworks.error.add-missing-frameworks-prompt")) createLabel@{

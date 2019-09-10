@@ -1,17 +1,26 @@
 package cappuccino.ide.intellij.plugin.annotator
 
-import cappuccino.ide.intellij.plugin.fixes.*
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredSelector
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
+import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
+import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.lang.ObjJBundle
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
+import cappuccino.ide.intellij.plugin.psi.utils.getSelectorString
+import cappuccino.ide.intellij.plugin.psi.utils.getSelectorStringFromSelectorList
+import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
+import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import com.intellij.lang.annotation.Annotation
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import cappuccino.ide.intellij.plugin.indices.*
-import cappuccino.ide.intellij.plugin.lang.ObjJBundle
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
-import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
-import com.intellij.lang.annotation.Annotation
 
 /**
  * Annotator/Validator of method calls

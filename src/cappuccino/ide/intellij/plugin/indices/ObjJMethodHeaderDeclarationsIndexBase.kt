@@ -1,13 +1,11 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.openapi.project.Project
-import com.intellij.psi.search.GlobalSearchScope
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
-
-import java.util.ArrayList
-import java.util.Collections
+import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
+import java.util.*
 import java.util.logging.Logger
 import java.util.regex.Matcher
 import java.util.regex.Pattern

@@ -1,11 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.formatting
 
+import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import com.intellij.lang.BracePair
 import com.intellij.lang.PairedBraceMatcher
 import com.intellij.psi.PsiFile
-import com.intellij.psi.tree.IElementType
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 
 /**
  * Attempts to create a matching brace for a given starting brace
@@ -27,7 +27,7 @@ class JsTypeDefBraceMatcher : PairedBraceMatcher {
 
     companion object {
         private val PAIRS = arrayOf(
-                BracePair(JS_OPEN_BRACE, JS_CLOSE_PAREN, false),
+                BracePair(JS_OPEN_PAREN, JS_CLOSE_PAREN, false),
                 BracePair(JS_OPEN_BRACKET, JS_CLOSE_BRACKET, false),
                 BracePair(JS_OPEN_BRACE, JS_CLOSE_BRACE, false),
                 BracePair(JS_OPEN_ARROW, JS_CLOSE_ARROW, true),

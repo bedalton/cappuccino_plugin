@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import kotlin.contracts.contract
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.stubs.StubInputStream
 
 
 fun Boolean?.orDefault(defaultValue:Boolean) : Boolean {
@@ -66,4 +67,12 @@ fun CharSequence?.isNotNullOrBlank(): Boolean {
  */
 fun CharSequence?.isNotNullOrEmpty(): Boolean {
     return this != null && this.isNotEmpty()
+}
+
+fun TextRange.isValid(): Boolean {
+    return startOffset in 0..endOffset
+}
+
+fun TextRange.isInvalid(): Boolean {
+    return !isValid()
 }

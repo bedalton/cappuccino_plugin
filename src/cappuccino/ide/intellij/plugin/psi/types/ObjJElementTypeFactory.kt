@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.psi.types
 
-import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERTY
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.CLASS_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_DECLARATION
@@ -24,6 +23,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.TYPE_DEF
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_DECLARATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VAR_TYPE_ID
+import com.intellij.psi.tree.IElementType
 
 class ObjJElementTypeFactory {
     companion object {

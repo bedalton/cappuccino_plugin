@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.psi.types
 
-import com.intellij.psi.tree.IElementType
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.types.JsTypeDefStubTypes.*
+import com.intellij.psi.tree.IElementType
 
 class JsTypeDefTypeFactory {
     companion object {

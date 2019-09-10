@@ -1,10 +1,9 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.utils.EMPTY_FRAMEWORK_NAME
-import cappuccino.ide.intellij.plugin.utils.ObjJFrameworkUtils
 import com.intellij.openapi.project.Project
+import com.intellij.psi.stubs.StubIndexKey
 
 class ObjJClassDeclarationsByFileImportStringIndex private constructor() : ObjJStringStubIndexBase<ObjJClassDeclarationElement<*>>() {
 

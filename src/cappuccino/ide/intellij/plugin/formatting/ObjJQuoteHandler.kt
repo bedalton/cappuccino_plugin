@@ -1,10 +1,10 @@
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.codeInsight.editorActions.QuoteHandler
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.psi.tree.TokenSet
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 
 class ObjJQuoteHandler @JvmOverloads constructor(private val myLiteralTokenSet: TokenSet = TokenSet.create(ObjJTypes.ObjJ_DOUBLE_QUOTE_STRING_LITERAL, ObjJTypes.ObjJ_SINGLE_QUOTE_STRING_LITERAL)) : QuoteHandler {
 

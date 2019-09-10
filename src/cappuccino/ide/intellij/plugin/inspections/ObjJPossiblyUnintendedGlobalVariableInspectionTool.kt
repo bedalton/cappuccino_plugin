@@ -1,16 +1,22 @@
 package cappuccino.ide.intellij.plugin.inspections
 
-import cappuccino.ide.intellij.plugin.fixes.*
+import cappuccino.ide.intellij.plugin.fixes.ObjJAddSuppressInspectionForScope
+import cappuccino.ide.intellij.plugin.fixes.ObjJAlterIgnoredUndeclaredVariable
+import cappuccino.ide.intellij.plugin.fixes.ObjJSuppressInspectionScope
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.elementType
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.codeInspection.*
+import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.LocalInspectionToolSession
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 
 class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool() {

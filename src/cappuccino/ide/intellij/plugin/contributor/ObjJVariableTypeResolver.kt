@@ -1,12 +1,17 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.ObjJFormalVariableType
+import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
+import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJHasContainingClassPsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameResolveUtil
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
-import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement

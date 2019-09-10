@@ -13,8 +13,7 @@ import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-
-import java.util.ArrayList
+import java.util.*
 
 class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {

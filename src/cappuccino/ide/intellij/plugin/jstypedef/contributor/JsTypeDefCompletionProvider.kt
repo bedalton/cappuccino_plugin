@@ -3,18 +3,15 @@ package cappuccino.ide.intellij.plugin.jstypedef.contributor
 import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
 import cappuccino.ide.intellij.plugin.contributor.ObjJInsertionTracker
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
-import cappuccino.ide.intellij.plugin.contributor.textWithoutCaret
 import cappuccino.ide.intellij.plugin.contributor.toIndexPatternString
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefKeyList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeName
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
-import cappuccino.ide.intellij.plugin.psi.utils.elementType
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -25,6 +22,8 @@ import com.intellij.util.ProcessingContext
 import java.util.logging.Logger
 
 object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() {
+
+    private val DOT_REPLACEMENT = "______DOT_____";
 
     private val LOGGER by lazy {
         Logger.getLogger(ObjJBlanketCompletionProvider::class.java.name)
@@ -47,17 +46,17 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
             resultSet: CompletionResultSet) {
         val element = parameters.position
         val project = element.project
-        val prevSibling = element.getPreviousNonEmptySibling(true)
-        val prevSiblingType = prevSibling?.elementType
-        val indexSearchString = element.text?.toIndexPatternString() ?: return
         when {
-            element.parent is JsTypeDefTypeName -> {
-                if (prevSiblingType in doNotCompleteAfter) {
-                    resultSet.stopHere()
+            element is JsTypeDefTypeName || element.parent is JsTypeDefTypeName -> {
+                val typeName = element as? JsTypeDefTypeName ?: element.parent as JsTypeDefTypeName
+                val previousSiblings = typeName.previousSiblings
+                if (previousSiblings.isNotEmpty()) {
+                    addQualifiedNameCompletions(resultSet, project, previousSiblings)
                     return
                 }
-                addTypeNameCompletions(resultSet, project, indexSearchString)
-                resultSet.stopHere()
+                else {
+                    addTypeNameCompletions(resultSet, project, typeName.text.toIndexPatternString())
+                }
             }
         }
     }
@@ -66,9 +65,9 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
     /**
      * Add Completions for class types
      */
-    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, indexSearchString: String) {
+    private fun addTypeNameCompletions(resultSet: CompletionResultSet, project: Project, indexSearchString:String) {
         // Add Js Completions
-        val jsCompletions = JsTypeDefClassesByNameIndex.instance.getKeysByPattern(indexSearchString, project) + JsPrimitives.primitives
+        val jsCompletions = JsTypeDefClassesByNamespaceIndex.instance.getKeysByPattern(indexSearchString, project) + JsPrimitives.primitives
         addLookupElementsSimple(resultSet, jsCompletions, JsTypeDefCompletionContributor.JS_CLASS_NAME_COMPLETIONS)
 
         // Add Js Completions
@@ -84,6 +83,21 @@ object JsTypeDefCompletionProvider : CompletionProvider<CompletionParameters>() 
 
         val aliases = JsTypeDefTypeAliasIndex.instance.getAllKeys(project).mapNotNull { it }
         addLookupElementsSimple(resultSet, aliases, JsTypeDefCompletionContributor.JS_KEYSET_NAME_COMPLETIONS + 10)
+    }
+
+    private fun addQualifiedNameCompletions(resultSet: CompletionResultSet, project: Project, previousSiblings: List<JsTypeDefTypeName>) {
+        val namespacePrefix = previousSiblings.joinToString(".") { it.text }
+        val classes = JsTypeDefClassesByPartialNamespaceIndex.instance[namespacePrefix, project]
+        val index = previousSiblings.size
+        val out = classes.mapNotNull {
+            val namespaceComponents = it.namespaceComponents
+            if (namespaceComponents.size > index) {
+                namespaceComponents.get(index)
+            } else {
+                namespaceComponents.lastOrNull()
+            }
+        }
+        addLookupElementsSimple(resultSet, out, JsTypeDefCompletionContributor.JS_CLASS_NAME_COMPLETIONS)
     }
 
     /**

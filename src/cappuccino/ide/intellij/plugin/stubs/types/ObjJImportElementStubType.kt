@@ -1,14 +1,13 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import com.intellij.util.io.StringRef
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportElement
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJImportStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImportStub
 import cappuccino.ide.intellij.plugin.utils.Strings
-
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
+import com.intellij.util.io.StringRef
 import java.io.IOException
 
 abstract class ObjJImportElementStubType<PsiT : ObjJImportElement<out ObjJImportStub<PsiT>>>(

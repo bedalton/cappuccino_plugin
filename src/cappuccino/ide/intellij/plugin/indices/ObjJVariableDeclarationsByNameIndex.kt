@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.indices
 
-import com.intellij.psi.stubs.StubIndexKey
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
+import com.intellij.psi.stubs.StubIndexKey
 
 class ObjJVariableDeclarationsByNameIndex private constructor() : ObjJStringStubIndexBase<ObjJVariableDeclaration>() {
 

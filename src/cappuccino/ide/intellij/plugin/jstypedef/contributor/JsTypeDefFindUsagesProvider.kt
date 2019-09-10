@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.jstypedef.contributor
 import cappuccino.ide.intellij.plugin.jstypedef.lexer.JsTypeDefLexer
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
 import com.intellij.lang.HelpID
@@ -11,7 +10,6 @@ import com.intellij.lang.cacheBuilder.DefaultWordsScanner
 import com.intellij.lang.cacheBuilder.WordsScanner
 import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.tree.TokenSet.create
 
 class JsTypeDefFindUsagesProvider : FindUsagesProvider {

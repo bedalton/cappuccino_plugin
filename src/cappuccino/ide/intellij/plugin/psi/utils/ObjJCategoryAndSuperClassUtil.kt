@@ -1,13 +1,15 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.project.Project
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
-import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.ObjJClassName
+import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
+import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import java.util.*
 
 

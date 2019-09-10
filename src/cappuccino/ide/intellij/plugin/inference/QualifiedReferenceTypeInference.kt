@@ -56,12 +56,10 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
                 return@getCachedInferredTypes null
 
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
-                val varDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(parts[0] as ObjJVariableName)
-                if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
-                    return@getCachedInferredTypes InferenceResult(
-                            types = setOf(varDefTypeSimple!!).toJsTypeList()
-                    )
-                }
+                val variableName = parts[0] as ObjJVariableName
+                val simpleType = simpleVariableInference(variableName)
+                if (simpleType?.withoutAnyType().orEmpty().isNotEmpty())
+                    return@getCachedInferredTypes simpleType
             }
             if (i == parts.size - 1 && (part.parent is ObjJVariableDeclaration || part.parent.parent is ObjJVariableDeclaration)) {
                 val variableDeclarationExpr =
@@ -89,6 +87,18 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
 }
 
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
+
+internal fun simpleVariableInference(variableName: ObjJVariableName) : InferenceResult? {
+    val varDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
+    if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
+        return InferenceResult(
+                types = setOf(varDefTypeSimple!!).toJsTypeList()
+        )
+    }
+    if (variableName.parent is ObjJCatchProduction)
+        return setOf("Error").toInferenceResult()
+    return null
+}
 
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
     return when (part) {

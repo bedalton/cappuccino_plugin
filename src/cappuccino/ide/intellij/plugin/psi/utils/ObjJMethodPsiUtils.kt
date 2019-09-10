@@ -1,10 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
-import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.*
@@ -12,10 +8,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
-import org.jetbrains.annotations.Contract
-
-import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
@@ -23,8 +17,12 @@ import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.util.IncorrectOperationException
+import org.jetbrains.annotations.Contract
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 
 @Suppress("UNUSED_PARAMETER")
 object ObjJMethodPsiUtils {

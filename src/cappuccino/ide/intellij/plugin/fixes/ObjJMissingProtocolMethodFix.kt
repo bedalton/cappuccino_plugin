@@ -4,17 +4,17 @@ import cappuccino.ide.intellij.plugin.inspections.ObjJInspectionProvider
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
-import com.intellij.codeInsight.intention.impl.BaseIntentionAction
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
-import com.intellij.util.IncorrectOperationException
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJProtocolDeclarationPsiUtil.ProtocolMethods
 import cappuccino.ide.intellij.plugin.utils.ElementPosition
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.util.IncorrectOperationException
 import java.util.logging.Logger
 import javax.swing.SwingUtilities
 
