@@ -330,7 +330,7 @@
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJReferencedElementIsImportedInspection"
                      level="WARNING"
                      groupName="Objective-J"
-                     enabledByDefault="true"
+                     enabledByDefault="false"
                      displayName="Class is not imported"
                      shortName="ClassNotImported"
                      order="last"
