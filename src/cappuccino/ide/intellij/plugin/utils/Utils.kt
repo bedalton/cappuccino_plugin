@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.utils
 
 import java.util.*
 
-const val PLUGIN_VERSION:String = "0.4.0"
+const val PLUGIN_VERSION:String = "0.4.1"
 
 val now:Long get() = Date().time
 

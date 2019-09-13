@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.4.00</version>
+  <version>0.4.1</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -51,6 +51,12 @@
 
   <change-notes><![CDATA[
 
+    <h4>Version: 0.4.1</h4>
+    <h5>Fixed</h5>
+    <ul>
+      <li>Javascript sources not attaching on new projects</li>
+      <li>Index update warning not dismissing</li>
+    </ul>
     <h4>Version: 0.4.0</h4>
     <ul>
       <li>Added cmd+hover information for known types and functions</li>
@@ -187,7 +193,7 @@
     <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJFunctionParameterInfoHandler" />
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJMethodParameterInfoHandler" />
-    <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider" />
+    <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider"/>
     <editorNotificationProvider implementation="cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification" />
     <!-- automaticRenamerFactory implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorAutomaticRenamerFactory"/ -->
     <renamePsiElementProcessor implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorRenameElementProcessor" />
