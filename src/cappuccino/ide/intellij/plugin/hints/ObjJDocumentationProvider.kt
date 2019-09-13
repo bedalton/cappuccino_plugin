@@ -160,7 +160,7 @@ private fun <PsiT : ObjJCompositeElement> InfoSwitch.info(psiClass: Class<PsiT>,
 }
 
 private val PsiElement.containerName: String?
-    get () {
+    get() {
         var container = (this as? ObjJHasContainingClass)?.containingClassNameOrNull
         if (container.isNullOrBlank())
             container = this.containingFile?.name
@@ -196,50 +196,49 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         }
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
-    } else {
-        ////LOGGER.warning(.info("Check QNR")
-        val prevSiblings = previousSiblings
-        val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
-        if (prevSiblings.isEmpty()) {
-            val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
-                it.toJsTypeListType()
-            }.minBy { it.parameters.size }
-            if (jsTypeDefFunctionResult != null)
-                return jsTypeDefFunctionResult.description.presentableText
-            val inferenceResult = inferQualifiedReferenceType(listOf(this), forwardTag)
-            val functionType = inferenceResult?.functionTypes.orEmpty().minBy { it.parameters.size }
-            if (functionType != null) {
-                out.append(functionType.descriptionWithName(text))
-                return out.toString()
-            }
-            val classNames = inferenceResult?.toClassListString("<Any?>")
-            ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
-            if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
-                out.append("parameter")
-            else
-                out.append("var ").append(name)
-            if (classNames.isNotNullOrBlank()) {
-                out.append(": ").append(classNames)
-            }
-            out.append(" in ").append(getLocationString(this))
+    }
+    ////LOGGER.warning(.info("Check QNR")
+    val prevSiblings = previousSiblings
+    val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
+    if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVarDec(this)) {
+        val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
+            it.toJsTypeListType()
+        }.minBy { it.parameters.size }
+        if (jsTypeDefFunctionResult != null)
+            return jsTypeDefFunctionResult.description.presentableText
+        val inferenceResult = inferQualifiedReferenceType(listOf(this), forwardTag)
+        val functionType = inferenceResult?.functionTypes.orEmpty().minBy { it.parameters.size }
+        if (functionType != null) {
+            out.append(functionType.descriptionWithName(text))
             return out.toString()
         }
-        val inferredTypes = inferQualifiedReferenceType(this.previousSiblings + this, forwardTag)
-        val name = this.text
-        val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
+        val classNames = inferenceResult?.toClassListString("<Any?>")
+        ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
+        if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
+            out.append("parameter")
+        else
+            out.append("var ").append(name)
+        if (classNames.isNotNullOrBlank()) {
+            out.append(": ").append(classNames)
+        }
+        out.append(" in ").append(getLocationString(this))
+        return out.toString()
+    }
+    val inferredTypes = inferQualifiedReferenceType(previousSiblings, forwardTag)
+    val name = this.text
+    val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
+    if (propertyTypes.isNotNullOrBlank()) {
+        val classNames = inferredTypes?.toClassListString(null)
+        if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
+            out.append("property ").append(name)
         if (propertyTypes.isNotNullOrBlank()) {
-            val classNames = inferredTypes?.toClassListString(null)
-            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
-                out.append("property ").append(name)
-            if (propertyTypes.isNotNullOrBlank()) {
-                out.append(": ").append(propertyTypes)
-            }
-            if (classNames.isNotNullOrBlank())
-                out.append(" in ").append(classNames)
+            out.append(": ").append(propertyTypes)
+        }
+        if (classNames.isNotNullOrBlank())
+            out.append(" in ").append(classNames)
 
-            if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
-                return out.toString()
-            }
+        if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
+            return out.toString()
         }
     }
     out.append("var '").append(text).append("'")
@@ -291,6 +290,7 @@ private val ObjJFunctionName.functionDescription: String?
 
 private val ObjJFunctionCall.functionDescription: String?
     get() {
-        val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration ?: return "Function ${functionName?.text}"
+        val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration
+        ?: return "Function ${functionName?.text}"
         return parentFunction.description.presentableText
     }
