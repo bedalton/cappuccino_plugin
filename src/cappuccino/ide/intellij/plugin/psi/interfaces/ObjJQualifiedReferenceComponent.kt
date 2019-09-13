@@ -8,7 +8,7 @@ interface ObjJQualifiedReferenceComponent : ObjJCompositeElement {
 }
 
 val ObjJQualifiedReferenceComponent.previousSiblings:List<ObjJQualifiedReferenceComponent> get() {
-    val components = (parent as? ObjJQualifiedReferencePrime)?.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+    val components = (parent as? ObjJQualifiedReferencePrime)?.qualifiedNameParts
             ?: getParentOfType(ObjJQualifiedReference::class.java)?.qualifiedNameParts
             ?: return emptyList()
     val index = indexInQualifiedReference

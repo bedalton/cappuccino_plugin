@@ -58,6 +58,7 @@ object ObjJQualifiedReferenceUtil {
         }
     }
 
+
     fun getIndexInQualifiedNameParent(element: PsiElement?): Int {
 
         if (element == null)
@@ -118,15 +119,21 @@ object ObjJQualifiedReferenceUtil {
     }
 
 
+
     fun getQualifiedNameParts(qualifiedName:ObjJQualifiedReference) : List<ObjJQualifiedReferenceComponent> {
         return qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
     }
 
     fun getQualifiedNameParts(qualifiedName:ObjJQualifiedReferencePrime) : List<ObjJQualifiedReferenceComponent> {
         val leftExpr = qualifiedName.getParentOfType(ObjJExpr::class.java)?.leftExpr
-        val first:List<ObjJQualifiedReferenceComponent> = if (leftExpr?.functionCall != null) listOf(leftExpr.functionCall!!) else leftExpr?.qualifiedReference?.qualifiedNameParts ?: return emptyList()
-        val after = qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
-        return first + after
+        val leftComponent:ObjJQualifiedReferenceComponent? =
+                leftExpr?.functionCall
+                        ?: leftExpr?.methodCall
+        val rightChildren = qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+        if (leftComponent != null)
+            return listOf(leftComponent) + rightChildren
+        val qualifiedReference = leftExpr?.qualifiedReference?.qualifiedNameParts ?: return emptyList()
+        return qualifiedReference + rightChildren
     }
 
 }
