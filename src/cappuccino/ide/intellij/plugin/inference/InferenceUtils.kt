@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -20,7 +21,7 @@ internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private const val INFERRED_TYPES_MINOR_VERSION = 0
+private const val INFERRED_TYPES_MINOR_VERSION = 3
 
 private const val INFERRED_TYPES_VERSION = 1 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
@@ -42,8 +43,9 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
 
     val timeSinceLastFileChange:Long
         get() {
-            if (internalTimeSinceLastFileChange - lastTag > CACHE_EXPIRY)
+            if (internalTimeSinceLastFileChange - lastTag > CACHE_EXPIRY) {
                 lastTag = internalTimeSinceLastFileChange
+            }
             return lastTag
         }
 
@@ -151,13 +153,14 @@ internal fun PsiElement.tagComplete(tag: Long?):Boolean {
 private const val TAG_LIST_LENGTH = 6
 internal data class TagList(var tags:Set<Long> = setOf(), var completed:MutableSet<Long> = mutableSetOf()) {
     fun tagged(tag:Long, setTag: Boolean) : Boolean {
-        if(tag in tags)
+        if(tag in tags) {
             return true
+        }
         if (!setTag)
             return false
         val newTags = tags.toMutableSet()
         if (tags.size > TAG_LIST_LENGTH)
-            newTags.remove(youngestTag)
+            newTags.remove(oldestTag)
         newTags.add(tag)
         tags = newTags
         return false
@@ -171,12 +174,13 @@ internal data class TagList(var tags:Set<Long> = setOf(), var completed:MutableS
         completed.add(tag)
     }
 
-    private val youngestTag:Long
+    private val oldestTag:Long
         get() = tags.min() ?: 0
 }
 
 private val PsiElement.isTextUnchanged:Boolean get() {
+    val thisText = this.parent?.text ?: this.text
     val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("")
-    this.putUserData(INFERRED_TYPES_LAST_TEXT, this.text)
+    this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
     return lastText == text
 }
