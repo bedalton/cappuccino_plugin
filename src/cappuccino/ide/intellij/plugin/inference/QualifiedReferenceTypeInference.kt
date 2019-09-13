@@ -47,7 +47,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
     //ProgressManager.checkCanceled()
     var parentTypes: InferenceResult? = null
     var isStatic = false
-    for (i in 0 until parts.size) {
+    for (i in parts.indices) {
         //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
@@ -61,7 +61,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
                 if (simpleType?.withoutAnyType().orEmpty().isNotEmpty())
                     return@getCachedInferredTypes simpleType
             }
-            if (i == parts.size - 1 && (part.parent is ObjJVariableDeclaration || part.parent.parent is ObjJVariableDeclaration)) {
+            if (i == parts.lastIndex && (part.parent is ObjJVariableDeclaration || part.parent.parent is ObjJVariableDeclaration)) {
                 val variableDeclarationExpr =
                         (part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).expr
                                 ?: return@getCachedInferredTypes null
