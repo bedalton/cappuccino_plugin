@@ -29,7 +29,7 @@ abstract class ObjJVariableNameMixin: ObjJStubBasedElementImpl<ObjJVariableNameS
     abstract override fun getName(): String;
 
     override val cachedParentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
-        get() = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this.reference.resolve())
+        get() = cache.cachedParentFunctionDeclaration ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this.reference.resolve())
 
     override fun getCachedMethods(tag:Long)
             = cache.getMethods(tag)
