@@ -304,10 +304,10 @@ object ObjJPluginSettings {
     private val messages_didSend_stubVersionSetting: IntegerSetting = IntegerSetting("objj.messages.restart-normally-after-index-update.did-send", -1)
     var stubVersionsUpdated: Boolean
         get()
-        = messages_didSend_stubVersionSetting.value != ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION + ObjJStubVersions.SOURCE_STUB_VERSION
+        = messages_didSend_stubVersionSetting.value != (ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION)
         set(value) {
             if (!value) {
-                messages_didSend_stubVersionSetting.value = ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION + ObjJStubVersions.SOURCE_STUB_VERSION
+                messages_didSend_stubVersionSetting.value = (ObjJStubVersions.SOURCE_STUB_VERSION + JsTypeDefStubVersion.VERSION)
             } else {
                 messages_didSend_stubVersionSetting.value = -1
             }
@@ -320,7 +320,7 @@ object ObjJPluginSettings {
             typedefVersionSetting.value = value
         }
 
-    private val lastLoadedVersionSetting: StringSetting = StringSetting("objj.messages.restart-normally-after-index-update.did-send", "")
+    private val lastLoadedVersionSetting: StringSetting = StringSetting("objj.messages.restart-normally-after-last-loaded-version.did-send", "")
     var pluginUpdated: Boolean
         get() = lastLoadedVersionSetting.value != PLUGIN_VERSION
     set(wasUpdated) {

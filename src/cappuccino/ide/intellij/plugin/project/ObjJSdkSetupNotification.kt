@@ -76,6 +76,7 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
                         val didRegister = registerSourcesAsLibrary(module, libraryName, needed.missing)
                         if (!didRegister)
                             LOGGER.severe("Failed to register bundled sources for ${needed.textLabel}")
+
                     }
                 }
                 //}

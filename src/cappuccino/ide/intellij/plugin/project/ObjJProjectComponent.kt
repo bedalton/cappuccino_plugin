@@ -24,7 +24,7 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
     }
 
     private fun registerFileOpenHandler(project: Project) {
-        val bus = project.getMessageBus()
+        val bus = project.messageBus
         bus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object : FileEditorManagerListener {
             override fun fileOpened(editorManager: FileEditorManager, file: VirtualFile) {
                 val extension = file.extension
@@ -59,10 +59,10 @@ class ObjJProjectComponent(project: Project) : ProjectComponent {
             ObjJPluginSettings.pluginUpdated = false
             //ObjJNotify.showUpdate(project)
         }
-        //ObjJPluginSettings.stubVersionsUpdated = true
+
         if (ObjJPluginSettings.stubVersionsUpdated) {
-            ObjJNotify.showUpdateIndexWarning(project)
             ObjJPluginSettings.stubVersionsUpdated = false
+            ObjJNotify.showUpdateIndexWarning(project)
         }
     }
 

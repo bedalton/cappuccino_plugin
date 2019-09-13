@@ -24,17 +24,19 @@ object JsTypeDefBundledSourcesRegistrationUtil {
     private var didInit = false
 
     fun register(module:Module, project:Project) {
-        if (didInit)
+        if (didInit) {
             return
-        didInit = true
+        }
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).smartInvokeLater {
                 register(module, project)
             }
             return
         }
+        didInit = true
         val moduleScope = module.moduleContentWithDependenciesScope
-        if (FilenameIndex.getAllFilesByExt(module.project, ".j", moduleScope).isEmpty()) {
+        if (FilenameIndex.getAllFilesByExt(module.project, "j", moduleScope).isEmpty()) {
+            LOGGER.info("There are no .j files in project")
             return
         }
         runWriteAction {
@@ -76,7 +78,8 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
         // Check if same version
         if (newVersion == ObjJPluginSettings.typedefVersion) {
-            return true
+            LOGGER.info("JsTypeDef version is the same <$newVersion> in ")
+            //return true
         }
 
         val library = cleanAndReturnLibrary(modifiableModel = modifiableModel)

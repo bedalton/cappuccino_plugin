@@ -1,6 +1,9 @@
 package cappuccino.ide.intellij.plugin.utils
 
+import cappuccino.ide.intellij.plugin.project.ObjJNotify
+import cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification
 import com.intellij.ide.plugins.PluginManager
+import com.intellij.notification.NotificationDisplayType
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.PluginId
@@ -59,6 +62,7 @@ object ObjJFileUtil {
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
+                    ?: VfsUtil.findFileByIoFile(file, true)?.findChild("Cappuccino Plugin")?.findChild("lib")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             val jar = libFolder.findChild("Cappuccino Plugin.jar")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
