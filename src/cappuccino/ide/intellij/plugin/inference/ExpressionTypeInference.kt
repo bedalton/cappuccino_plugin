@@ -40,10 +40,8 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
     //ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty()) {
         leftExpressionType(expr.leftExpr, tag)
-    } else if (expr.leftExpr?.functionCall != null && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
-        val components = mutableListOf<ObjJQualifiedReferenceComponent>(expr.leftExpr!!.functionCall!!)
-        components.addAll(expr.rightExprList.first().qualifiedReferencePrime!!.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java))
-        inferQualifiedReferenceType(components, tag)
+    } else if ((expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null) && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
+        inferQualifiedReferenceType(expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty(), tag)
     } else {
         null
     }
