@@ -161,8 +161,7 @@ class ObjJVariableReference(
 
     private fun multiResolve(tag:Long, nullIfSelfReferencing: Boolean) : Array<ResolveResult> {
         val element = resolveInternal(tag)
-        if (element != null) {// && !element.isEquivalentTo(myElement)) {
-            LOGGER.info("Resolved internal")
+        if (element != null) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
 
@@ -175,7 +174,6 @@ class ObjJVariableReference(
         // Get simple if no previous siblings
         val prevSiblings = myElement.previousSiblings
         if (prevSiblings.isEmpty()) {
-            LOGGER.info("Prev siblings are empty for $variableName")
             var outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
                 it.enclosingNamespace.isEmpty()
             }.mapNotNull {
@@ -186,18 +184,14 @@ class ObjJVariableReference(
                     (it as? JsTypeDefClassElement)?.typeName
                 }
             }
-            LOGGER.info("$variableName has simple type in ${outSimple.map{ it.containerName }}")
             return PsiElementResolveResult.createResults(outSimple)
         }
         val className = prevSiblings.joinToString("\\.") { Regex.escape(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
 
         // Get types if qualified
-        val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
-        if (classTypes == null) {
-            LOGGER.info("Failed to infer qualified type")
-            return PsiElementResolveResult.EMPTY_ARRAY
-        }
+        val classTypes = inferQualifiedReferenceType(prevSiblings, tag)
+                ?: return PsiElementResolveResult.EMPTY_ARRAY
 
         if (classTypes.classes.isNotEmpty()) {
             val allClassNames = classTypes.classes.flatMap { jsClassName ->
@@ -206,7 +200,6 @@ class ObjJVariableReference(
                 }
             }.withAllSuperClassNames(project)
             val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it)} + ")\\." + variableName
-            LOGGER.info("SearchString: $searchString")
             val found = JsTypeDefPropertiesByNamespaceIndex.instance.getByPatternFlat(searchString,project).filter {
                 it.isStatic == isStatic
             }.mapNotNull {
