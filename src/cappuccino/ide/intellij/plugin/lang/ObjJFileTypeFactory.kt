@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package cappuccino.ide.intellij.plugin.lang
 
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFileType
