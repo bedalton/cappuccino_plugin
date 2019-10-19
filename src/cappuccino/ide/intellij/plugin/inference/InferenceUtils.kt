@@ -21,9 +21,9 @@ internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private const val INFERRED_TYPES_MINOR_VERSION = 0
+private val INFERRED_TYPES_MINOR_VERSION:Int = (Math.random() * 10000).toInt()
 
-private const val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
+private val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
 private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_TYPES_IS_ACCESSING")
 
