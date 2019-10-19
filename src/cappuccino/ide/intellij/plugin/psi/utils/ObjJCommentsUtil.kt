@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.primitiveTypes
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -12,7 +13,6 @@ import com.intellij.psi.PsiElement
 fun PsiElement.getContainingComments() : List<String> {
     val out:MutableList<String> = mutableListOf()
     var parentNode:ASTNode? = this.node
-    //LOGGER.info("Get Containing Comments")
     // Loop through parent nodes checking if previous node is a comment node
     while(parentNode != null) {
         // Get previous node
@@ -38,7 +38,6 @@ val PsiElement.docComment:CommentWrapper? get() {
             .removePrefix("/*")
             .removeSuffix("*/")
             .removePrefix("//")
-            .removePrefix(" ")
             .trim()
     if (commentText.isBlank())
         return null
@@ -55,8 +54,8 @@ private val newLineRegex = "\n".toRegex()
 data class CommentWrapper(val commentText:String) {
     private val lines:List<String> by lazy {
         commentText.split(newLineRegex)
-                .map{
-                    it.trim()
+                .map {
+                    it.trim().replace("^\\*+\\s*".toRegex(), "")
                 }
                 .filter {
                     it.isNotBlank()
@@ -76,15 +75,20 @@ data class CommentWrapper(val commentText:String) {
     }
 
     val returnParameterComment:CommentParam? by lazy {
-        val line = lines.firstOrNull { it.startsWith("@return") }
+        val line = lines.firstOrNull { it.contains("@return") }
         if (line.isNotNullOrBlank()) {
-            CommentParam("@return", line)
+            val split = line!!.split("@return").getOrNull(1)?.trim()
+            if (split.isNotNullOrBlank())
+                CommentParam("@return", "@return $split")
+            else
+                CommentParam("@return", line)
         } else {
             null
         }
     }
 
     fun getReturnTypes(project: Project):Set<String>? {
+        LOGGER.info("Return Comment: $returnParameterComment")
         return returnParameterComment?.getTypes(project)
     }
 
@@ -133,7 +137,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
     val possibleClassStrings:Set<String> by lazy {
         if (paramCommentIn == null)
             return@lazy emptySet<String>()
-        val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "").trim()
+        val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?|@var\\s*(the\\s*)?".toRegex(), "").trim()
         val out = mutableSetOf<String>()
         listOf(CLASS_NAME_REGEX).forEach { pattern ->
                 val matcher = pattern.matcher(commentStringTrimmed)
@@ -164,11 +168,10 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
         else
             emptySet()
 
-
-        val firstIn = paramCommentIn.split("\\s+".toRegex(), 2).first()
-        if (matchType(firstIn, classes, jsClasses) != null)
+        val firstIn = paramCommentIn.split("\\s+".toRegex()).firstOrNull { !it.contains("@") } ?: ""
+        if (matchType(firstIn, classes, jsClasses) != null || firstIn.toLowerCase() in primitiveTypes) {
             return setOf(firstIn)
-
+        }
         val jsMatches = mutableSetOf<String>()
         val objJMatches = mutableSetOf<String>()
         possibleClassStrings.forEach {
@@ -177,7 +180,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
                 return@forEach
             else if (matchType == ClassMatchType.OBJJ)
                 objJMatches.add(it)
-            if (matchType == ClassMatchType.JS)
+            else
                 jsMatches.add(it)
         }
 
