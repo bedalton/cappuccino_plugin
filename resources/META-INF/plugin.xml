@@ -173,7 +173,6 @@
     <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
     <applicationConfigurable instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
-    <codeInsight.parameterNameHints language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJInlayHintsProvider"  />
     <!-- ObjJ Libraries -->
     <sdkType implementation="cappuccino.ide.intellij.plugin.project.ObjJSDKType" />
     <library.type implementation="cappuccino.ide.intellij.plugin.project.ObjJLibraryType" />
