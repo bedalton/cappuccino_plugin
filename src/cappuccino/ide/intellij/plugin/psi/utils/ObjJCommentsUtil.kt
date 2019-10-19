@@ -130,7 +130,7 @@ data class CommentParam(val paramName:String, private val paramCommentIn:String?
         }
     }
 
-    private val possibleClassStrings:Set<String> by lazy {
+    val possibleClassStrings:Set<String> by lazy {
         if (paramCommentIn == null)
             return@lazy emptySet<String>()
         val commentStringTrimmed = paramCommentIn.trim().replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "").trim()
