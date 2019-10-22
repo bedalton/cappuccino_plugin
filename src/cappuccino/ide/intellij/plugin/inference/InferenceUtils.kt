@@ -80,7 +80,10 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     // Establish and store last text
 
-    val textIsUnchanged = isTextUnchanged
+
+    val thisText = this.parent?.parent?.parent?.text ?: this.parent?.parent?.text ?: this.parent?.text ?: this.text
+    val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
+    val textIsUnchanged = lastText == text
     // Check cache without tagging
     if (tag == null && textIsUnchanged) {
         val inferred = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
@@ -88,12 +91,14 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
             return inferred
     }
     val tagged = tag != null && tagged(tag, false)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && tagged && textIsUnchanged) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (tagged || textIsUnchanged)) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
             return inferredTypes
         }
     }
+    if (!textIsUnchanged)
+        this.putUserData(INFERRED_TYPES_USER_DATA_KEY, null)
     //if (marks > MAXIMUM_ACCESS_MARKS)
       //LOGGER.warning(.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
     try {
@@ -102,6 +107,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
         this.tagComplete(tag)
         //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
         this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
+        this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
         return inferredTypes
     } catch (e:Exception) {
         this.clearTag(tag)
