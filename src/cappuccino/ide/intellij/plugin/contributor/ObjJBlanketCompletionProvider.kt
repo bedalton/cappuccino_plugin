@@ -588,15 +588,22 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             collapsedClass.properties
 
         properties.forEach {
-            val lookupElementBuilder = LookupElementBuilder
+            val classStrings = it.types.withoutAnyType().joinToString("|")
+            var lookupElementBuilder = LookupElementBuilder
                     .create(it.name)
-                    .withTailText(":" + it.types.toClassListString("?"))
+            if (classStrings.isNotNullOrBlank()) {
+                lookupElementBuilder = lookupElementBuilder
+                        .withTailText(":" + classStrings)
+            }
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(it.name, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY)))
         }
         inferred.functionTypes.forEach { jsFunction ->
             val lookupElementBuilder = LookupElementBuilder
                     .create("()")
-                    .withTailText("(" + jsFunction.parameters.joinToString(", ") { it.name + ":" + it.types.toClassListString() } + ")")
+                    .withTailText("(" + jsFunction.parameters.joinToString(", ") {
+                        val classStrings = it.types.withoutAnyType().joinToString("|").ifEmptyNull() ?: return@joinToString it.name
+                        it.name + ":" +  classStrings
+                    } + ")")
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(lookupElementBuilder)
         }
@@ -607,11 +614,14 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 is JsTypeListType.JsTypeListFunctionType -> it.returnType
                 else -> INFERRED_ANY_TYPE
             }
-            val lookupElementBuilder = LookupElementBuilder
+            val classStrings = propertyType?.toClassListString(null)
+            var lookupElementBuilder = LookupElementBuilder
                     .create(propertyName)
-                    .withTailText(":" + propertyType?.toClassListString())
                     .withBoldness(true)
                     .withInsertHandler(ObjJTrackInsertionHandler)
+            if (classStrings.isNotNullOrBlank())
+                lookupElementBuilder = lookupElementBuilder
+                    .withTailText(":" + classStrings)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(propertyName, ObjJCompletionContributor.TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY)))
 
         }
