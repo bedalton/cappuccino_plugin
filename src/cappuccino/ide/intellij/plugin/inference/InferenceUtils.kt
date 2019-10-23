@@ -29,7 +29,7 @@ private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_
 
 private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
 
-private const val CACHE_EXPIRY = 2000
+private const val CACHE_EXPIRY = 15000
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -97,8 +97,6 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
             return inferredTypes
         }
     }
-    if (!textIsUnchanged)
-        this.putUserData(INFERRED_TYPES_USER_DATA_KEY, null)
     //if (marks > MAXIMUM_ACCESS_MARKS)
       //LOGGER.warning(.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
     try {
