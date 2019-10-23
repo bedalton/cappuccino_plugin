@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.hints
 
+import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -70,7 +71,7 @@ data class ObjJMethodParameterDescription(internal val selector:String, val cont
     val presentableText:String get() {
 
         val stringBuilder:StringBuilder = java.lang.StringBuilder(selector)
-        if (parameterName.isNotNullOrBlank() || type.isNotNullOrBlank()) {
+        if (parameterName.isNotNullOrBlank() || (type.isNotNullOrBlank() && type !in anyTypes)) {
             stringBuilder.append(":")
         }
         if (type.isNotNullOrBlank()) {

@@ -16,10 +16,8 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
-import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
-import cappuccino.ide.intellij.plugin.psi.utils.resolve
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.PsiElement
@@ -60,26 +58,31 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
                 it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty
                 ?: (it as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)
             }.flatMap {
-                it.typeList.toJsTypeDefTypeListTypes()
+                it.typeList.filterIsInstance(JsTypeListFunctionType::class.java).flatMap { it.returnType?.types.orEmpty() }.toSet()
             }
     if (typeDefOut.isNotEmpty()) {
         return InferenceResult(types = typeDefOut.toSet())
     }
 
-    val out = resolvesRaw.mapNotNull {
-        val resolved = it.element ?: return@mapNotNull null
+    val out = resolvesRaw.mapNotNull { referenceResult ->
+        val resolved = referenceResult.element ?: return@mapNotNull null
         val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
-                ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)
+                ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.toSet()?.let {
+                    InferenceResult(types = it)
+                }
                 ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
-        if (cached != null)
+        if (cached != null) {
             return cached
+        }
         resolved.getCachedInferredTypes(tag) {
             if (resolved.tagged(tag))
                 return@getCachedInferredTypes null
             val function: ObjJFunctionDeclarationElement<*>? = (when (resolved) {
                 is ObjJVariableName -> resolved.parentFunctionDeclaration
                 is ObjJFunctionName -> resolved.parentFunctionDeclaration
-                else -> null
+                else -> {
+                    null
+                }
             })
             when {
                 function != null -> {
@@ -91,8 +94,12 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
                     val out = when (resolved) {
                         is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
                         is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
-                        is JsTypeDefProperty -> resolved.toJsNamedProperty().types
-                        is JsTypeDefPropertyName -> (parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types
+                        is JsTypeDefProperty -> resolved.toJsNamedProperty().types.functionTypes.flatMap { it.returnType?.types.orEmpty() }.ifEmpty { null }?.let {
+                            InferenceResult(types = it.toSet())
+                        }
+                        is JsTypeDefPropertyName -> (parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.ifEmpty { null }?.let {
+                            InferenceResult(types = it.toSet())
+                        }
                         else -> {
                             null
                         }
@@ -154,7 +161,7 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFu
         //ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
         if (i < commentWrapper?.parameterComments?.size.orElse(0)) {
-            val comment = commentWrapper?.parameterComments
+            val comment = commentWrapper?.parameterComments?.firstOrNull{ it.paramName == parameterName } ?: commentWrapper?.parameterComments
                     ?.get(i)
             val types = comment?.getTypes(project)
             val property = JsTypeDefFunctionArgument(

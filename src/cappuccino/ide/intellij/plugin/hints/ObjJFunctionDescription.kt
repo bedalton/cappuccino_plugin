@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.hints
 
+import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
@@ -81,7 +82,7 @@ class ObjJFunctionParameterDescription(val name:String, val type:String?, val nu
 
     val presentableText:String get() {
         val stringBuilder = StringBuilder(name)
-        if (type.isNotNullOrBlank()) {
+        if (type.isNotNullOrBlank() && type !in anyTypes) {
             stringBuilder.append(":").append(type)
         }
         if (nullable.orFalse()) {
