@@ -595,11 +595,13 @@ globalVariableDeclaration
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJGlobalVariableDeclarationStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
 		methods=[
 			getVariableNameString
 			getVariableType
 			getFileName
+			createTreeStructureElement
 		]
 	}
 	;
@@ -1040,6 +1042,7 @@ functionDeclaration
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>>"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 		]
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub<cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationImpl>"
 		methods=[
@@ -1058,6 +1061,7 @@ functionDeclaration
 			getFunctionScope
 			getCache
 			getDescription
+			createTreeStructureElement
 		]
 
 	}
@@ -2329,6 +2333,7 @@ variableName
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableNameElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub>"
 		]
 		methods = [
@@ -2352,6 +2357,7 @@ variableName
 			getMethods
 			getMethodSelectors
 			getVariableType
+			createTreeStructureElement
 		]
 	}
 	;
