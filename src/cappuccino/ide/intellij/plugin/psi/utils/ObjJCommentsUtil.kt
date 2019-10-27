@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.primitiveTypes
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
@@ -80,7 +81,11 @@ data class CommentWrapper(val commentText: String) {
     val returnParameterComment: CommentParam? by lazy {
         val line = lines.firstOrNull { it.startsWith("@return") }
         if (line.isNotNullOrBlank()) {
-            CommentParam("@return", line)
+            val split = line!!.split("@return").getOrNull(1)?.trim()
+            if (split.isNotNullOrBlank())
+                CommentParam("@return", "@return $split")
+            else
+                CommentParam("@return", line)
         } else {
             null
         }
@@ -174,7 +179,7 @@ data class CommentParam(val paramName: String, private val paramCommentIn: Strin
         val firstIn = commentStringTrimmed.orEmpty().split("\\s+".toRegex(), 2).first()
         if (matchType(firstIn, classes, jsClasses) != null) {
             return setOf(firstIn)
-
+        }
         val jsMatches = mutableSetOf<String>()
         val objJMatches = mutableSetOf<String>()
         possibleClassStrings.forEach {
@@ -183,7 +188,7 @@ data class CommentParam(val paramName: String, private val paramCommentIn: Strin
                 return@forEach
             else if (matchType == ClassMatchType.OBJJ)
                 objJMatches.add(it)
-            if (matchType == ClassMatchType.JS)
+            else
                 jsMatches.add(it)
         }
 

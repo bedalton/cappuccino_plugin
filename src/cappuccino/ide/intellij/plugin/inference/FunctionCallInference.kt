@@ -1,8 +1,11 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
@@ -36,9 +39,11 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 
     // Get Type from JsTypeDef if possible
     val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionNameString, functionCall.project]
-    val lastOut = functionSet.flatMap {
+    var lastOut = functionSet.flatMap {
         it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
     }.toSet()
+    if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, functionCall.project))
+        lastOut = lastOut + JsTypeListType.JsTypeListBasicType(functionNameString)
     if (lastOut.isNotEmpty()) {
         return InferenceResult(types = lastOut)
     }

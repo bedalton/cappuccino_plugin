@@ -1,10 +1,9 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
-import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.inference.JsFunctionType
-import cappuccino.ide.intellij.plugin.inference.toJsTypeList
+import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
@@ -32,7 +31,7 @@ fun ObjJFunctionDeclarationElement<*>.toJsTypeListType(): JsTypeListType.JsTypeL
     } ?: emptyList()
 
     val returnTypeString = stub?.returnType
-    val returnTypesList = if (returnTypeString != null)
+    val returnTypesList = comment?.getReturnTypes(project)?.toJsTypeList() ?: if (returnTypeString != null && returnTypeString !in anyTypes)
         setOf(returnTypeString).toJsTypeList()
     else
         comment?.getReturnTypes(project)?.toJsTypeList()

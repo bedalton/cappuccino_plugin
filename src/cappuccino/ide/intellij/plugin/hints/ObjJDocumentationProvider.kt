@@ -2,10 +2,15 @@ package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -292,6 +297,14 @@ private val ObjJFunctionName.functionDescription: String?
 
 private val ObjJFunctionCall.functionDescription: String?
     get() {
+        val resolved = reference?.resolve()
+        if (resolved != null) {
+            if (resolved.parent is JsTypeDefClassElement) {
+                return "JsClass $functionNameString"
+            } else if (resolved.parent is JsTypeDefInterfaceElement) {
+                return "JsInterface $functionNameString"
+            }
+        }
         val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration
         ?: return "Function ${functionName?.text}"
         return parentFunction.description.presentableText

@@ -6,12 +6,16 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.inferFunctionDeclarationReturnType
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeStructureUtil
+import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubElementType
+import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.lang.ASTNode
 
-abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarationElementStub<*>> : ObjJStubBasedElementImpl<StubT>, ObjJFunctionDeclarationElement<StubT> {
+abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarationElementStub<*>> : ObjJStubBasedElementImpl<StubT>, ObjJFunctionDeclarationElement<StubT>, ObjJHasTreeStructureElement {
 
     protected abstract val cache:ObjJFunctionDeclarationCache
 
@@ -22,6 +26,10 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
 
     override fun getCachedReturnType(tag:Long):InferenceResult? {
         return inferFunctionDeclarationReturnType(this, tag)
+    }
+
+    override fun createTreeStructureElement(): ObjJStructureViewElement {
+        return ObjJTreeStructureUtil.createTreeStructureElement(this)
     }
 }
 
