@@ -43,7 +43,6 @@ class ObjJTreeNode(private val element: ObjJHasTreeStructureElement, project: Pr
     override fun update(
             presentationData: PresentationData) {
         val elementPresentationData = viewElement.presentation
-                ?: return
         presentationData.setIcon(elementPresentationData.getIcon(true))
         presentationData.presentableText = elementPresentationData.presentableText
         presentationData.locationString = elementPresentationData.locationString
