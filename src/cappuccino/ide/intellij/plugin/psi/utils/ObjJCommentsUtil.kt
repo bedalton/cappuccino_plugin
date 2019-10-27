@@ -126,7 +126,7 @@ data class CommentWrapper(val commentText: String) {
 
 data class CommentParam(val paramName: String, private val paramCommentIn: String?) {
 
-    val commentStringTrimmed by lazy {
+    private val commentStringTrimmed by lazy {
         paramCommentIn?.trim()?.replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "")?.trim()
     }
 
@@ -216,7 +216,11 @@ private fun matchType(className: String, objjClassNames: Set<String>, jsClassNam
     return when (className) {
         in objjClassNames -> ClassMatchType.OBJJ
         in jsClassNames -> ClassMatchType.JS
-        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix(jsClassNames)) ClassMatchType.JS else null
+        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix(jsClassNames)) ClassMatchType.JS
+        else if (className.toLowerCase() in primitiveTypes)
+            ClassMatchType.JS
+        else
+            null
     }
 
 }
