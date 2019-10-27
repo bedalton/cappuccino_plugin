@@ -1,10 +1,7 @@
 package cappuccino.ide.intellij.plugin.structure
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment
-import cappuccino.ide.intellij.plugin.psi.ObjJGlobalVariableDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import com.intellij.ide.projectView.PresentationData
@@ -64,8 +61,20 @@ internal fun getChildren(element: ObjJCompositeElement) : List<AbstractTreeNode<
         treeElements.add(ObjJTreeNode(child, project))
     }
 
-    if (element is ObjJFile) {
-        treeElements.addAll(getVariableNamesInFile(element, project))
+    when (element) {
+        is ObjJImplementationDeclaration -> {
+            val instanceVars = element.instanceVariableList?.instanceVariableDeclarationList?.map {
+                ObjJTreeNode(it, project)
+            }.orEmpty()
+            treeElements.addAll(instanceVars)
+        }
+        is ObjJProtocolDeclaration -> {
+            val instanceVars = element.instanceVariableDeclarationList.map {
+                ObjJTreeNode(it, project)
+            }
+            treeElements.addAll(instanceVars)
+        }
+        is ObjJFile -> treeElements.addAll(getVariableNamesInFile(element, project))
     }
     return treeElements
 }
