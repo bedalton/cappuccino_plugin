@@ -13,11 +13,10 @@ import icons.ObjJIcons
 object ObjJTreeStructureUtil {
 
     fun createTreeStructureElement(declaration: ObjJImplementationDeclaration): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(declaration)
         val presentation: ItemPresentation = when {
-            declaration.isCategory -> PresentationData("${declaration.getClassName()} (${declaration.categoryNameString})", fileName, ObjJIcons.CATEGORY_ICON, null)
-            declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("${declaration.classNameString} : ${declaration.superClassName}", fileName, ObjJIcons.CLASS_ICON, null)
-            else -> PresentationData("${declaration.classNameString}", fileName, ObjJIcons.CLASS_ICON, null)
+            declaration.isCategory -> PresentationData("${declaration.getClassName()} (${declaration.categoryNameString})", null, ObjJIcons.CATEGORY_ICON, null)
+            declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("${declaration.classNameString} : ${declaration.superClassName}", null, ObjJIcons.CLASS_ICON, null)
+            else -> PresentationData(declaration.classNameString, null, ObjJIcons.CLASS_ICON, null)
         }
         return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString)
     }
@@ -38,26 +37,23 @@ object ObjJTreeStructureUtil {
     fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement {
         val label = "${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text
                 ?: "{UNDEF}"}${if (instanceVariable.accessor != null) " @accessors" else ""}"
-        val presentation = PresentationData(label, ObjJPsiFileUtil.getContainingFileName(instanceVariable), ObjJIcons.VARIABLE_ICON, null)
+        val presentation = PresentationData(label, null, ObjJIcons.INSTANCE_VARIABLE_ICON, null)
         return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
                 ?: "UNDEF"))
     }
 
     fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(declaration)
-        val presentation: ItemPresentation = PresentationData(declaration.classNameString, fileName, ObjJIcons.PROTOCOL_ICON, null)
+        val presentation: ItemPresentation = PresentationData(declaration.classNameString, null, ObjJIcons.PROTOCOL_ICON, null)
         return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString)
     }
 
     fun createTreeStructureElement(header: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(header)
         val text = if (header.atOptional != null) "@optional" else "@required"
-        return ObjJStructureViewElement(header, PresentationData(text, fileName, null, null), "")
+        return ObjJStructureViewElement(header, PresentationData(text, null, null, null), "")
     }
 
     fun createTreeStructureElement(declaration: ObjJMethodDeclaration): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(declaration)
-        val presentation: ItemPresentation = PresentationData(declaration.methodHeader.text.replace("[\n\r]*", ""), fileName, ObjJIcons.METHOD_ICON, null)
+        val presentation: ItemPresentation = PresentationData(declaration.methodHeader.text.replace("[\n\r]*", ""), null, ObjJIcons.METHOD_ICON, null)
         return object:ObjJStructureViewElement(declaration, presentation, declaration.containingClassName) {
             override fun getChildren(): Array<out TreeElement> {
                 return emptyArray()
@@ -66,14 +62,12 @@ object ObjJTreeStructureUtil {
     }
 
     fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(header)
-        val presentation: ItemPresentation = PresentationData(header.text.replace("[\n\r]*", ""), fileName, ObjJIcons.METHOD_ICON, null)
+        val presentation: ItemPresentation = PresentationData(header.text.replace("[\n\r]*", ""), null, ObjJIcons.METHOD_ICON, null)
         return ObjJStructureViewElement(header, presentation, header.containingClassName)
     }
 
     fun createTreeStructureElement(variable:ObjJGlobalVariableDeclaration): ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(variable)
-        val presentation: ItemPresentation = PresentationData(variable.variableNameString, fileName, ObjJIcons.GLOBAL_VARIABLE_ICON, null)
+        val presentation: ItemPresentation = PresentationData(variable.variableNameString, null, ObjJIcons.GLOBAL_VARIABLE_ICON, null)
         return ObjJStructureViewElement(variable, presentation, "zzzz_${variable.variableNameString}")
     }
 
@@ -84,15 +78,13 @@ object ObjJTreeStructureUtil {
             if (functionLiteral != null)
                 return functionLiteral.createTreeStructureElement()
         }
-        val fileName = ObjJPsiFileUtil.getContainingFileName(variable)
-        val presentation: ItemPresentation = PresentationData(variable.text, fileName, ObjJIcons.VARIABLE_ICON, null)
+        val presentation: ItemPresentation = PresentationData(variable.text, null, ObjJIcons.VARIABLE_ICON, null)
         return ObjJStructureViewElement(variable, presentation, "zzzzz_${variable.text}")
     }
 
     fun createTreeStructureElement(function:ObjJFunctionDeclarationElement<*>) : ObjJStructureViewElement {
-        val fileName = ObjJPsiFileUtil.getContainingFileName(function)
         val functionNameString = function.functionNameString.ifEmpty {"function"} +  " (" + function.paramNames.joinToString(", ") +")"
-        val presentation: ItemPresentation = PresentationData(functionNameString, fileName, ObjJIcons.FUNCTION_ICON, null)
+        val presentation: ItemPresentation = PresentationData(functionNameString, null, ObjJIcons.FUNCTION_ICON, null)
         return ObjJStructureViewElement(function, presentation, "z_${functionNameString}")
     }
 
