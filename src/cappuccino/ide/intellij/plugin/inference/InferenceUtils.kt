@@ -21,7 +21,7 @@ internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private val INFERRED_TYPES_MINOR_VERSION:Int = (Math.random() * 10000).toInt()
+private val INFERRED_TYPES_MINOR_VERSION:Int = 0
 
 private val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
