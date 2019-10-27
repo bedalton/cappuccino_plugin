@@ -88,7 +88,6 @@ data class CommentWrapper(val commentText:String) {
     }
 
     fun getReturnTypes(project: Project):Set<String>? {
-        LOGGER.info("Return Comment: $returnParameterComment")
         return returnParameterComment?.getTypes(project)
     }
 
