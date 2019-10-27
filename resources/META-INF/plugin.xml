@@ -176,6 +176,7 @@
     <!-- ObjJ Libraries -->
     <sdkType implementation="cappuccino.ide.intellij.plugin.project.ObjJSDKType" />
     <library.type implementation="cappuccino.ide.intellij.plugin.project.ObjJLibraryType" />
+    <editorNotificationProvider implementation="cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification" />
 
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
@@ -187,6 +188,7 @@
     <lang.formatter language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJFormattingModelBuilder"/>
     <enterHandlerDelegate id="ObjJEnterHandlerDelegate" order="after EnterBetweenBracesHandler" implementation="cappuccino.ide.intellij.plugin.fixes.ObjJEnterHandler" />
     <quoteHandler fileType="Objective-J Script" className="cappuccino.ide.intellij.plugin.formatting.ObjJSimpleQuoteHandler"/>
+
     <!-- Completion and Rename -->
     <lang.findUsagesProvider language="ObjectiveJ"
                              implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJFindUsagesProvider"/>
@@ -198,17 +200,18 @@
     <typedHandler implementation="cappuccino.ide.intellij.plugin.formatting.ObjJTypedHandlerDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
     <vetoRenameCondition implementation="cappuccino.ide.intellij.plugin.contributor.ObjJRenameVetoCondition" />
+    <!-- automaticRenamerFactory implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorAutomaticRenamerFactory"/ -->
+    <renamePsiElementProcessor implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorRenameElementProcessor" />
+
+    <!-- Hints and Info -->
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJFunctionParameterInfoHandler" />
     <codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJMethodParameterInfoHandler" />
     <documentationProvider implementation="cappuccino.ide.intellij.plugin.hints.ObjJDocumentationProvider"/>
-    <editorNotificationProvider implementation="cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification" />
-    <!-- automaticRenamerFactory implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorAutomaticRenamerFactory"/ -->
-    <renamePsiElementProcessor implementation="cappuccino.ide.intellij.plugin.refactoring.ObjJSelectorRenameElementProcessor" />
+    <codeInsight.parameterNameHints implementationClass="cappuccino.ide.intellij.plugin.hints.ObjJInlayHintsProvider" language="ObjectiveJ"/>
 
     <!-- Annotators -->
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJAnnotator" />
     <annotator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.annotator.ObjJSyntaxHighlighterAnnotator" />
-    <!--codeInsight.parameterInfo language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.handlers.ObjJParameterInfo" / -->
     <problemFileHighlightFilter implementation="cappuccino.ide.intellij.plugin.lang.ObjJProblemFileHighlighterFilter" />
 
     <!-- Inspections -->
