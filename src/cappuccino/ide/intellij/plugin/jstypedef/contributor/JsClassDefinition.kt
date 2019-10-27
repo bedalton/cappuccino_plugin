@@ -1,10 +1,9 @@
 package cappuccino.ide.intellij.plugin.jstypedef.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
-import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.inference.plus
-import cappuccino.ide.intellij.plugin.inference.toClassListString
+import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
@@ -19,6 +18,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.Project
@@ -375,7 +375,9 @@ sealed class JsTypeListType(open val typeName: String) {
                 out.append(name)
             out.append("(")
             val parametersString = parameters.joinToString(", ") { property ->
-                property.name + ":" + property.types.types.joinToString("|") { type -> if (type.typeName == "Function") type.toString() else type.typeName }
+                val types = property.types.types.map{ type -> if (type is JsTypeListFunctionType) type.toString() else type.typeName }.filterNot { it in anyTypes }.joinToString("|")
+                        .ifEmptyNull()?.let { ":$it"} ?: ""
+                property.name + types
             }
             out.append(parametersString)
                     .append(")")
