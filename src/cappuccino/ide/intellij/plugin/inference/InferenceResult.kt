@@ -219,11 +219,14 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
         returnClasses.addAll(arrayTypes)
     }
     returnClasses.addAll(classes)
+    val stringAs = if ("string" in returnClasses && "CPString" in returnClasses) "string" else if ("string" in returnClasses) "string" else "CPString"
+
     return returnClasses.mapNotNull {
         when (it) {
             in anyTypes -> simplifyAnyTypeTo
             in arrayClassNames -> if (hadSpecificArrayTypes) null else it
-            "string" -> "CPString"
+            "string" -> stringAs
+            "CPString" -> stringAs
             else -> it
         }
     }.toSet()
@@ -265,6 +268,8 @@ internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cp
 internal val arrayTypes = listOf("array", "cparray", "cpmutablearray")
 internal val arrayClassNames = arrayTypes
 internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
+
+val primitiveTypes = booleanTypes + stringTypes + numberTypes + dictionaryTypes + arrayTypes
 
 internal fun Iterable<String>.withoutAnyType(): Set<String> {
     return this.filterNot { it in anyTypes }.toSet()

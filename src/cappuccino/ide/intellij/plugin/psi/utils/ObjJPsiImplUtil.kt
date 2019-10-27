@@ -1229,6 +1229,12 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun createTreeStructureElement(header: ObjJMethodHeader): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(header)
+    @JvmStatic
+    fun createTreeStructureElement(variableName: ObjJVariableName): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(variableName)
+
+    @JvmStatic
+    fun createTreeStructureElement(variable:ObjJGlobalVariableDeclaration): ObjJStructureViewElement =
+            ObjJTreeStructureUtil.createTreeStructureElement(variable)
 
     // ============================== //
     // =========== PARSER =========== //

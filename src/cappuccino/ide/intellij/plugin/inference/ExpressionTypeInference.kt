@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 
@@ -40,8 +39,13 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
     //ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty()) {
         leftExpressionType(expr.leftExpr, tag)
-    } else if ((expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null) && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null) {
-        inferQualifiedReferenceType(expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty(), tag)
+    } else if (
+            (expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null)
+            && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
+    ) {
+        val qualifiedNameParts = expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty();
+        val qualifiedReferenceResult = inferQualifiedReferenceType(qualifiedNameParts, tag) ?: return null
+        InferenceResult(types = qualifiedReferenceResult.types)
     } else {
         null
     }
@@ -206,7 +210,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
             current = resolveToNumberType(newTypes)
         }
         if (rightExpr.arrayIndexSelector != null) {
-            val types =  current.types.flatMap {
+            val types = current.types.flatMap {
                 (it as? JsTypeListArrayType)?.types ?: (it as? JsTypeListType.JsTypeListMapType)?.valueTypes.orEmpty()
             }
             current = InferenceResult(types = types.toSet())
