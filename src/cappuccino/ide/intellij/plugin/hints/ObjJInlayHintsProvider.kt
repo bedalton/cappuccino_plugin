@@ -5,10 +5,12 @@ import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
+import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.toJsTypeListType
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
 import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import com.intellij.codeInsight.hints.*
@@ -61,7 +63,6 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         // Check if function param name hints are enabled
         if (functionParameterNameHints.disabled)
             return mutableListOf()
-
         val referencedFunction = element.functionDeclarationReference ?: return mutableListOf()
         val params = when (referencedFunction) {
             is ObjJFunctionDeclarationElement<*> -> referencedFunction.toJsTypeListType()
@@ -69,6 +70,8 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
             else -> return mutableListOf()
         }.parameters
         return element.arguments.exprList.mapIndexedNotNull { i, arg ->
+            if (!arg.isLiteral())
+                return@mapIndexedNotNull null
             val param = params.getOrNull(i)?.name.ifEmptyNull() ?: return@mapIndexedNotNull null
             InlayInfo(param, arg.textOffset, false)
         }.toMutableList()
@@ -89,6 +92,10 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         return null
     }
 
+}
+
+private fun ObjJExpr.isLiteral(): Boolean  {
+    return this.rightExprList.isEmpty() && this.leftExpr?.primary != null
 }
 
 private val Option.disabled get() = !isEnabled()
