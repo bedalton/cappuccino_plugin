@@ -18,6 +18,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
+import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.Project
@@ -263,14 +264,42 @@ interface JsNamedProperty {
 
 
 sealed class JsTypeListType(open val typeName: String) {
-    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType(if (types.isNotEmpty()) "Array<${types.map { it.typeName }.toSet().joinToString("|")}>" else "Array")
-    data class JsTypeListKeyOfType(val genericKey: String, val mapName: String) : JsTypeListType("KeyOf:$mapName")
-    data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName")
-    data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map")
-    data class JsTypeListBasicType(override val typeName: String) : JsTypeListType(typeName)
-    data class JsTypeListUnionType(val typeNames: Set<String>) : JsTypeListType(typeNames.joinToString("&"))
+    data class JsTypeListArrayType(val types: Set<JsTypeListType>, val dimensions: Int = 1) : JsTypeListType(if (types.isNotEmpty()) "Array<${types.map { it.typeName }.toSet().joinToString("|")}>" else "Array")    {
+        override fun toString(): String {
+            return typeName
+        }
+    }
+    data class JsTypeListKeyOfType(val genericKey: String, val mapName: String) : JsTypeListType("KeyOf:$mapName") {
+        override fun toString(): String {
+            return typeName
+        }
+    }
+    data class JsTypeListValueOfKeyType(val genericKey: String, val mapName: String) : JsTypeListType("ValueOf:$mapName") {
+        override fun toString(): String {
+            return typeName
+        }
+    }
+    data class JsTypeListMapType(val keyTypes: Set<JsTypeListType>, val valueTypes: Set<JsTypeListType>) : JsTypeListType("Map") {
+        override fun toString(): String {
+            return "Map<" + keyTypes.joinToString(TYPES_DELIM) + "," + valueTypes.joinToString(TYPES_DELIM)+ ">"
+        }
+    }
+    data class JsTypeListBasicType(override val typeName: String) : JsTypeListType(typeName) {
+        override fun toString(): String {
+            return typeName
+        }
+    }
+    data class JsTypeListUnionType(val typeNames: Set<String>) : JsTypeListType(typeNames.joinToString("&")) {
+        override fun toString(): String {
+            return typeName
+        }
+    }
     data class JsTypeListGenericType(val key: String, val types: Set<JsTypeListType>?)
-        : JsTypeListType("<$key : ${(types?.joinToString("|") { it.typeName } ?: "Any?")} >")
+        : JsTypeListType("<$key : ${(types?.joinToString("|") { it.typeName } ?: "Any?")} >") {
+        override fun toString(): String {
+            return typeName
+        }
+    }
 
     @Suppress("MemberVisibilityCanBePrivate", "unused")
     data class JsTypeListClass(
@@ -333,6 +362,10 @@ sealed class JsTypeListType(open val typeName: String) {
             out.addAll(allFunctions.mapNotNull { it.name })
             return out
         }
+
+        override fun toString(): String {
+            return typeName
+        }
     }
 
     data class JsTypeListFunctionType(override val name: String? = null, val parameters: List<JsTypeDefFunctionArgument>, val returnType: InferenceResult?, override val static: Boolean = false, val comment: String? = null) : JsTypeListType("Function"), JsNamedProperty {
@@ -342,7 +375,7 @@ sealed class JsTypeListType(open val typeName: String) {
                 out.append(name)
             out.append("(")
             val parametersString = parameters.joinToString(", ") { property ->
-                property.name + ":" + property.types.types.joinToString("|") { type -> type.typeName }
+                property.name + ":" + property.types.types.joinToString("|") { type -> if (type.typeName == "Function") type.toString() else type.typeName }
             }
             out.append(parametersString)
                     .append(")")
@@ -351,6 +384,10 @@ sealed class JsTypeListType(open val typeName: String) {
                 out.append(" => ").append(returnTypes)
             return out.toString()
         }
+    }
+
+    override fun toString() : String {
+        return typeName
     }
 }
 

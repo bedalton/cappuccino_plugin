@@ -231,12 +231,14 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     }
     val inferredTypes = inferQualifiedReferenceType(previousSiblings, forwardTag)
     val name = this.text
-    val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
+    var propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
     if (propertyTypes.isNotNullOrBlank()) {
         val classNames = inferredTypes?.toClassListString(null)
+        if (propertyTypes?.startsWith("$name(").orFalse())
+            propertyTypes = propertyTypes?.substring("$name".length)
         if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
             out.append("property ").append(name)
-        if (propertyTypes.isNotNullOrBlank()) {
+        if (propertyTypes.isNotNullOrBlank() && propertyTypes !in anyTypes) {
             out.append(": ").append(propertyTypes)
         }
         if (classNames.isNotNullOrBlank())

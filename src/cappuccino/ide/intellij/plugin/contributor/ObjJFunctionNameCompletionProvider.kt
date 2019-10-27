@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
@@ -101,7 +102,7 @@ object ObjJFunctionNameCompletionProvider {
                 arguments.append(", ").append(it.name)
                 val type = it.types.toString()
                 val nullable = it.nullable
-                if (type.isNotNullOrBlank()) {
+                if (type.isNotNullOrBlank() && type !in anyTypes) {
                     arguments.append(":").append(type)
                 }
                 if (nullable.orFalse()) {
