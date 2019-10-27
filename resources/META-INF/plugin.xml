@@ -180,6 +180,7 @@
     <!-- FORMATTING -->
     <lang.foldingBuilder language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder" />
     <lang.psiStructureViewFactory language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.structure.ObjJStructureViewFactory" />
+    <treeStructureProvider implementation="cappuccino.ide.intellij.plugin.structure.ObjJExpandNodeProjectViewProvider" />
     <lang.smartEnterProcessor implementationClass="cappuccino.ide.intellij.plugin.fixes.ObjJSmartEnterProcessor" language="ObjectiveJ"/>
     <codeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettingsProvider"/>
     <langCodeStyleSettingsProvider implementation="cappuccino.ide.intellij.plugin.settings.ObjJLanguageCodeStyleSettingsProvider"/>
