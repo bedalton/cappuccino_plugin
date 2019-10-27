@@ -44,7 +44,7 @@ class ObjJStructureViewModel internal constructor(psiFile: PsiFile, editor: Edit
     companion object {
         private fun createStructureViewElement(psiFile: PsiFile): ObjJStructureViewElement {
             val fileName = ObjJPsiFileUtil.getFileNameSafe(psiFile, "Objective-J File")
-            val presentationData = PresentationData(fileName, "", ObjJIcons.DOCUMENT_ICON, null)
+            val presentationData = PresentationData(fileName, null, ObjJIcons.DOCUMENT_ICON, null)
             return ObjJStructureViewElement(psiFile as ObjJFile, presentationData, fileName)
         }
     }
