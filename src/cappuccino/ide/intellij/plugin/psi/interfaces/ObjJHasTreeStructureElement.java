@@ -1,15 +1,13 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces;
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile;
-import cappuccino.ide.intellij.plugin.psi.ObjJBodyVariableAssignment;
-import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReference;
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclarationList;
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName;
+import cappuccino.ide.intellij.plugin.psi.*;
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.psi.NavigatablePsiElement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -25,6 +23,21 @@ public interface ObjJHasTreeStructureElement extends ObjJCompositeElement, Navig
         for (ObjJHasTreeStructureElement child : this.getChildrenOfType(ObjJHasTreeStructureElement.class)) {
             treeElements.add(child.createTreeStructureElement());
         }
+        List<TreeElement> declarations = Collections.emptyList();
+        if (this instanceof ObjJImplementationDeclaration) {
+            ObjJInstanceVariableList instanceVariableDeclarations = instanceVariableDeclarations = ((ObjJImplementationDeclaration)this).getInstanceVariableList();
+            if (instanceVariableDeclarations != null) {
+                declarations = instanceVariableDeclarations.getInstanceVariableDeclarationList()
+                        .stream()
+                        .map(ObjJInstanceVariableDeclaration::createTreeStructureElement)
+                        .collect(Collectors.toList());
+            }
+        } else if (this instanceof ObjJProtocolDeclaration) {
+            declarations = ((ObjJProtocolDeclaration)this).getInstanceVariableDeclarationList().stream()
+                    .map(ObjJInstanceVariableDeclaration::createTreeStructureElement)
+                    .collect(Collectors.toList());
+        }
+        treeElements.addAll(declarations);
 
         if (this instanceof ObjJFile) {
             List<ObjJBodyVariableAssignment> bodyVariableAssignments = this.getChildrenOfType(ObjJBodyVariableAssignment.class);
