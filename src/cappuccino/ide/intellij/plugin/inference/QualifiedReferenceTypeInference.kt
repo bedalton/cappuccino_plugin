@@ -4,10 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
@@ -437,14 +434,15 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
         val expr = resolved.getAssignmentExprOrNull()
         if (expr != null) {
             val functionType = inferExpressionType(expr, tag)
-            functionType?.functionTypes?.mapNotNull {
+            return functionType?.functionTypes?.mapNotNull {
                 it.returnType
             }?.combine()
         }
     }
     var basicReturnTypes = functionDeclaration
             ?.getReturnTypes(tag)
-
+    if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
+        basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString
     val functionTypes = JsTypeDefFunctionsByNameIndex.instance[functionNameString, project].map {
         //ProgressManager.checkCanceled()
         it.toJsTypeListType()

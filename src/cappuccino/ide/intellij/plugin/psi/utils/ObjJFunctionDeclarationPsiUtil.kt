@@ -415,15 +415,17 @@ object ObjJFunctionDeclarationPsiUtil {
     }
 
     fun getParameterType(parameterArg:ObjJFormalParameterArg) : String? {
-        val previousNode = parameterArg.getPreviousNonEmptyNode(true) ?: return null
-        if (previousNode.elementType !in ObjJTokenSets.COMMENTS) {
-            return null
+        val previousNode = parameterArg.getPreviousNonEmptyNode(true)
+        if (previousNode?.elementType in ObjJTokenSets.COMMENTS) {
+            val commentTokens = previousNode!!.text.trim().split(" ".toRegex())
+            if (commentTokens.size == 1) {
+                return commentTokens[0]
+            }
         }
-        val commentTokens = previousNode.text.trim().split(" ".toRegex())
-        if (commentTokens.size == 1) {
-            return commentTokens[0]
-        }
-        return null
+        val index = parameterArg.getParentOfType(ObjJFunctionDeclarationElement::class.java)?.formalParameterArgList?.indexOf(parameterArg) ?: -1
+        val parameterComments = parameterArg.docComment?.parameterComments ?: return null
+        val parameter = parameterComments.firstOrNull { it.paramName == parameterArg.variableName?.text } ?: parameterComments.getOrNull(index)
+        return parameter?.getTypes(parameterArg.project, null)?.joinToString("|")
     }
 
     fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {

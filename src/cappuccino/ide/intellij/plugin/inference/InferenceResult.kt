@@ -21,7 +21,7 @@ data class InferenceResult(
 ) : Iterable<String> {
 
     val classes:Set<String> by lazy {
-        types.map { it.typeName }.toSet()
+        types.map { it.toString() }.toSet()
     }
 
     val toIndexSearchString:String by lazy {
@@ -98,11 +98,11 @@ data class InferenceResult(
     }
 
     override fun iterator(): Iterator<String> {
-        return types.map { it.typeName }.iterator()
+        return types.map { it.toString() }.iterator()
     }
 
     override fun toString(): String {
-        return types.joinToString("|") { it.typeName }
+        return types.joinToString("|") { it.toString() }
     }
 
 }
@@ -140,7 +140,7 @@ open class JsFunctionType(
     override fun toString(): String {
         val out = StringBuilder("(")
         val parametersString = parameters.joinToString(", ") { property ->
-            property.name + property.types.types.joinToString("|") { type -> type.typeName }
+            property.name + property.types.types.joinToString("|")
         }
         out.append(parametersString)
                 .append(")")
@@ -157,7 +157,7 @@ fun PropertiesMap.joinToString(enclose: Boolean = true): String {
     val parameters = this.map {
         val parameterString = StringBuilder(it.key)
         val types = it.value.toClassList(null).joinToString(TYPES_DELIM)
-        if (types.isNotNullOrBlank())
+        if (types.isNotNullOrBlank() && types !in anyTypes)
             parameterString.append(":").append(types)
         parameterString.toString()
     }.joinToString(", ")
@@ -219,11 +219,14 @@ internal fun InferenceResult.toClassList(simplifyAnyTypeTo: String? = "?"): Set<
         returnClasses.addAll(arrayTypes)
     }
     returnClasses.addAll(classes)
+    val stringAs = if ("string" in returnClasses && "CPString" in returnClasses) "string" else if ("string" in returnClasses) "string" else "CPString"
+
     return returnClasses.mapNotNull {
         when (it) {
             in anyTypes -> simplifyAnyTypeTo
             in arrayClassNames -> if (hadSpecificArrayTypes) null else it
-            "string" -> "CPString"
+            "string" -> stringAs
+            "CPString" -> stringAs
             else -> it
         }
     }.toSet()
@@ -265,6 +268,8 @@ internal val dictionaryTypes = listOf("map", "cpdictionary", "cfdictionary", "cp
 internal val arrayTypes = listOf("array", "cparray", "cpmutablearray")
 internal val arrayClassNames = arrayTypes
 internal val anyTypes = listOf("id", "?", "any", ObjJClassType.UNDEF_CLASS_NAME.toLowerCase(), ObjJClassType.UNDETERMINED.toLowerCase())
+
+val primitiveTypes = booleanTypes + stringTypes + numberTypes + dictionaryTypes + arrayTypes
 
 internal fun Iterable<String>.withoutAnyType(): Set<String> {
     return this.filterNot { it in anyTypes }.toSet()

@@ -2,10 +2,15 @@ package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
+import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -226,12 +231,14 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     }
     val inferredTypes = inferQualifiedReferenceType(previousSiblings, forwardTag)
     val name = this.text
-    val propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
+    var propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
     if (propertyTypes.isNotNullOrBlank()) {
         val classNames = inferredTypes?.toClassListString(null)
+        if (propertyTypes?.startsWith("$name(").orFalse())
+            propertyTypes = propertyTypes?.substring("$name".length)
         if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
             out.append("property ").append(name)
-        if (propertyTypes.isNotNullOrBlank()) {
+        if (propertyTypes.isNotNullOrBlank() && propertyTypes !in anyTypes) {
             out.append(": ").append(propertyTypes)
         }
         if (classNames.isNotNullOrBlank())
@@ -290,6 +297,14 @@ private val ObjJFunctionName.functionDescription: String?
 
 private val ObjJFunctionCall.functionDescription: String?
     get() {
+        val resolved = reference?.resolve()
+        if (resolved != null) {
+            if (resolved.parent is JsTypeDefClassElement) {
+                return "JsClass $functionNameString"
+            } else if (resolved.parent is JsTypeDefInterfaceElement) {
+                return "JsInterface $functionNameString"
+            }
+        }
         val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration
         ?: return "Function ${functionName?.text}"
         return parentFunction.description.presentableText

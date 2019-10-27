@@ -21,15 +21,15 @@ internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private const val INFERRED_TYPES_MINOR_VERSION = 0
+private val INFERRED_TYPES_MINOR_VERSION:Int = (Math.random() * 10000).toInt()
 
-private const val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
+private val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
 private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_TYPES_IS_ACCESSING")
 
 private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
 
-private const val CACHE_EXPIRY = 2000
+private const val CACHE_EXPIRY = 15000
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -80,7 +80,10 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     // Establish and store last text
 
-    val textIsUnchanged = isTextUnchanged
+
+    val thisText = this.parent?.parent?.parent?.text ?: this.parent?.parent?.text ?: this.parent?.text ?: this.text
+    val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
+    val textIsUnchanged = lastText == text
     // Check cache without tagging
     if (tag == null && textIsUnchanged) {
         val inferred = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
@@ -88,7 +91,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
             return inferred
     }
     val tagged = tag != null && tagged(tag, false)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && tagged && textIsUnchanged) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (tagged || textIsUnchanged)) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
             return inferredTypes
@@ -102,6 +105,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
         this.tagComplete(tag)
         //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
         this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
+        this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
         return inferredTypes
     } catch (e:Exception) {
         this.clearTag(tag)
