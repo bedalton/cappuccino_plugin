@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import kotlinx.coroutines.awaitAll
 
 fun PsiElement.getContainingComments(): List<String> {
     val out: MutableList<String> = mutableListOf()
@@ -171,7 +172,7 @@ data class CommentParam(val paramName: String, private val paramCommentIn: Strin
 
 
         val firstIn = commentStringTrimmed.orEmpty().split("\\s+".toRegex(), 2).first()
-        if (matchType(firstIn, classes, jsClasses) != null)
+        if (matchType(firstIn, classes, jsClasses) != null) {
             return setOf(firstIn)
 
         val jsMatches = mutableSetOf<String>()
