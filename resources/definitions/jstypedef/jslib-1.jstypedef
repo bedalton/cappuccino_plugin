@@ -155,9 +155,8 @@ interface String {
     readonly [index: number]: string;
 }
 
-class String extends string;
-interface CPString extends string;
-interface String:string;
+interface CPString extends String;
+interface string:String;
 
 /**
  * Construct a type with a set of properties K of type T
