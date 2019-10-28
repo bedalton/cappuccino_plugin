@@ -430,7 +430,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return parameter?.getTypes(parameterArg.project, null)?.joinToString("|")
     }
 
-    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
+    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJUniversalFunctionElement? {
         if (element == null)
             return null
 
@@ -445,7 +445,7 @@ object ObjJFunctionDeclarationPsiUtil {
             val globalFunctionDeclaration = element.parent as? ObjJGlobalVariableDeclaration
             globalFunctionDeclaration?.expr
         } ?: return null
-        return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
+        return (expr.leftExpr?.functionDeclaration as? ObjJUniversalFunctionElement) ?: (expr.leftExpr?.functionLiteral as? ObjJUniversalFunctionElement) ?: element.parentFunctionDeclaration
     }
 
     fun isNullableParameter(@Suppress("UNUSED_PARAMETER") it:ObjJFormalParameterArg) : Boolean {
@@ -469,7 +469,7 @@ val ObjJFunctionCall.functionDeclarationReference:ObjJUniversalFunctionElement? 
             return objResolved
     }
     val resolved = functionName.resolve() ?: return null
-    return ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(resolved)
+    return resolved.parentFunctionDeclaration
 }
 
 val ObjJFormalParameterArg.nullable : Boolean get() {

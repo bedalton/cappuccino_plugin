@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
@@ -28,7 +29,7 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
     private val classTypesCache: CachedValue<InferenceResult?> by lazy {
         createClassTypesCachedValue(manager, dependencies)
     }
-    private val parentFunctionDeclarationCache: CachedValue<ObjJFunctionDeclarationElement<*>?> by lazy {
+    private val parentFunctionDeclarationCache: CachedValue<ObjJUniversalFunctionElement?> by lazy {
         createFunctionDeclarationsCache(variableName, manager, dependencies)
     }
     val myTreeChangeTracker = MyModificationTracker()
@@ -73,7 +74,7 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
         return classTypesCache.value
     }
 
-    val cachedParentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
+    val cachedParentFunctionDeclaration: ObjJUniversalFunctionElement?
         get() = parentFunctionDeclarationCache.value
 
     private fun getAllMethods(variableName: ObjJVariableName) : List<ObjJMethodHeaderDeclaration<*>> {
@@ -94,8 +95,8 @@ class ObjJVariableNameCache(variableName: ObjJVariableName) {
             functionName: ObjJVariableName,
             manager: CachedValuesManager,
             dependencies: Array<Any>
-    ) : CachedValue<ObjJFunctionDeclarationElement<*>?> {
-        val provider = CachedValueProvider<ObjJFunctionDeclarationElement<*>?> {
+    ) : CachedValue<ObjJUniversalFunctionElement?> {
+        val provider = CachedValueProvider<ObjJUniversalFunctionElement?> {
             val resolved = ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(functionName)
             CachedValueProvider.Result.create(resolved, dependencies)
         }

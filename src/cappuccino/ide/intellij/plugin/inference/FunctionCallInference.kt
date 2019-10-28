@@ -188,5 +188,10 @@ internal val PsiElement.parentFunctionDeclaration: ObjJUniversalFunctionElement?
                 ?: (this as? ObjJFunctionCall)?.functionName?.resolve()?.parentFunctionDeclaration
                 ?: (this as? JsTypeDefFunctionName)?.getParentOfType(JsTypeDefFunction::class.java)
                 ?: (this as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)?.typeList?.firstOrNull { it.anonymousFunction != null } as? JsTypeDefAnonymousFunction
-                ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this.reference?.resolve())
+                ?: this.reference?.resolve()?.let {
+                    if (this != it)
+                        it.parentFunctionDeclaration
+                    else
+                        null
+                }
     }

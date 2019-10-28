@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeStructureUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
@@ -68,7 +69,7 @@ abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(nod
     /**
      * Attempts to get parent function declaration from cache
      */
-    override val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
+    override val cachedParentFunctionDeclaration:ObjJUniversalFunctionElement?
         get() = cache.parentFunctionDeclarationElement ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
 
     /**
