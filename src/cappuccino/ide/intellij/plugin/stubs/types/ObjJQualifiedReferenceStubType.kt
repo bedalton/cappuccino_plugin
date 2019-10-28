@@ -43,6 +43,7 @@ fun ObjJQualifiedReference.toStubParts() : List<ObjJQualifiedReferenceComponentP
             is ObjJFunctionCall -> ObjJQualifiedReferenceComponentPart(part.functionName?.text, ObjJQualifiedReferenceComponentPartType.FUNCTION_NAME)
             is ObjJVariableName -> ObjJQualifiedReferenceComponentPart(part.text, ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME)
             is ObjJParenEnclosedExpr -> ObjJQualifiedReferenceComponentPart("(...)", ObjJQualifiedReferenceComponentPartType.PAREN_ENCLOSED_EXPR)
+            is ObjJStringLiteral -> ObjJQualifiedReferenceComponentPart(part.text, ObjJQualifiedReferenceComponentPartType.STRING_LITERAL)
             else -> throw Exception("Qualified name part was an unexpected type")
         }
     }

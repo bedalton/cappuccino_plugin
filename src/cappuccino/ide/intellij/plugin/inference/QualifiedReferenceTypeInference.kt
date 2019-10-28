@@ -105,6 +105,7 @@ internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: In
         is ObjJArrayIndexSelector -> getArrayTypes(parentTypes)
         is ObjJMethodCall -> inferMethodCallType(part, tag)
         is ObjJParenEnclosedExpr -> if (part.expr != null) inferExpressionType(part.expr!!, tag) else null
+        is ObjJStringLiteral -> return STRING_TYPE_INFERENCE_RESULT
         else -> return null
     }
 }
@@ -548,3 +549,5 @@ fun ObjJVariableName.getAssignmentExprOrNull(): ObjJExpr? {
     return (this.parent as? ObjJGlobalVariableDeclaration)?.expr
             ?: (this.parent.parent as? ObjJVariableDeclaration)?.expr
 }
+
+private val STRING_TYPE_INFERENCE_RESULT = InferenceResult(types = setOf("String").toJsTypeList());

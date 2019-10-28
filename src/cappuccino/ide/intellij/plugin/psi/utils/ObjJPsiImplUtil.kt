@@ -723,6 +723,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
+    fun getIndexInQualifiedReference(stringLiteral: ObjJStringLiteral) : Int {
+        return 0
+    }
+
+
+    @JvmStatic
     fun getVariableNameString(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String {
         return globalVariableDeclaration.variableName.text
     }
@@ -937,6 +943,11 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
         return ObjJFunctionDeclarationPsiUtil.getQualifiedNameText(functionCall) ?: ""
+    }
+
+    @JvmStatic
+    fun getQualifiedNameText(stringLiteral: ObjJStringLiteral) : String {
+        return stringLiteral.text
     }
 
     @Suppress("unused")

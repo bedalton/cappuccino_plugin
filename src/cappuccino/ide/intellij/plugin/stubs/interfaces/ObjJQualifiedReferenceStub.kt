@@ -16,7 +16,8 @@ enum class ObjJQualifiedReferenceComponentPartType(val typeId:Int) {
     FUNCTION_NAME(1),
     METHOD_CALL(2),
     ARRAY_COMPONENT(3),
-    PAREN_ENCLOSED_EXPR(4);
+    PAREN_ENCLOSED_EXPR(4),
+    STRING_LITERAL(5);
 
     companion object {
         fun fromId(id:Int) : ObjJQualifiedReferenceComponentPartType {
@@ -26,6 +27,7 @@ enum class ObjJQualifiedReferenceComponentPartType(val typeId:Int) {
                 2 -> METHOD_CALL
                 3 -> ARRAY_COMPONENT
                 4 -> PAREN_ENCLOSED_EXPR
+                5 -> STRING_LITERAL
                 else -> throw IndexOutOfBoundsException("Invalid qualified reference component part type id <$id>")
             }
         }
