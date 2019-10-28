@@ -100,7 +100,7 @@ val ObjJMethodHeader.description:ObjJMethodDescription get() {
 val ObjJMethodHeaderDeclaration<*>.genericDescription:ObjJMethodDescription get() {
     val description = ObjJMethodDescription(this.containingClassName, this.getReturnTypes( createTag()).joinToString("|"))
     this.selectorStrings.forEach {
-        val selectorDescription = ObjJMethodParameterDescription(it, this.containingClassName,null, "_")
+        val selectorDescription = ObjJMethodParameterDescription(it, this.containingClassName,null, null)
         description.addParameter(selectorDescription)
     }
     return description
@@ -115,13 +115,13 @@ val ObjJSelector.description:ObjJMethodParameterDescription? get() {
     if (selectorLiteral != null){
         val selectors = selectorLiteral.selectorList
         val text = selectors.joinToString("") {
-            if (it == this) {
-                "<b>${it.getSelectorString(true)}</b>"
-            } else {
-                it.getSelectorString(true)
-            }
+            //if (it == this) {
+              //  "<b>${it.getSelectorString(true)}</b>"
+            //} else {
+                it.getSelectorString(false)
+            //}
         }
-        return ObjJMethodParameterDescription(selector = text, containingClass = selectorLiteral.containingClassName, type = "<?>", parameterName = "_")
+        return ObjJMethodParameterDescription(selector = text, containingClass = selectorLiteral.containingClassName, type = null, parameterName = null)
     }
     val parentMethodDeclarationSelector = this.getParentOfType(ObjJMethodDeclarationSelector::class.java)
     if (parentMethodDeclarationSelector != null) {
