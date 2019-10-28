@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
+import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.toJsTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
@@ -62,15 +63,11 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         if (functionParameterNameHints.disabled)
             return mutableListOf()
         val referencedFunction = element.functionDeclarationReference ?: return mutableListOf()
-        val params = when (referencedFunction) {
-            is ObjJFunctionDeclarationElement<*> -> referencedFunction.toJsTypeListType()
-            is JsTypeDefFunction -> referencedFunction.toJsFunctionType()
-            else -> return mutableListOf()
-        }.parameters
+        val params = referencedFunction.parameterNames
         return element.arguments.exprList.mapIndexedNotNull { i, arg ->
             if (!arg.isLiteral())
                 return@mapIndexedNotNull null
-            val param = params.getOrNull(i)?.name.ifEmptyNull() ?: return@mapIndexedNotNull null
+            val param = params.getOrNull(i)?.ifEmptyNull() ?: return@mapIndexedNotNull null
             InlayInfo(param, arg.textOffset, false)
         }.toMutableList()
     }
@@ -93,7 +90,13 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
 }
 
 private fun ObjJExpr.isLiteral(): Boolean  {
-    return this.rightExprList.isEmpty() && this.leftExpr?.primary != null
+    if (this.rightExprList.isNotEmpty())
+        return false
+    if (this.leftExpr?.primary != null)
+        return true
+    return leftExpr?.qualifiedReference?.qualifiedNameParts.orEmpty().let {
+        it.size == 1 && it.firstOrNull() is ObjJStringLiteral
+    }
 }
 
 private val Option.disabled get() = !isEnabled()
