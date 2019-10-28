@@ -131,14 +131,14 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             if (className.contains("&")) {
                 className.split("\\s*&\\s*".toRegex()).flatMap {
                     JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
-                        classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType()}
+                        classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsFunctionType()}
                     }
                 }
             } else {
                 JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
-                    classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsTypeListType() }
+                    classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsFunctionType() }
                 } + (if (parentTypes.types.any { it is JsTypeListArrayType }) JsTypeDefClassesByNameIndex.instance["Array", project].flatMap { arrayClass ->
-                    arrayClass.propertyList.toNamedPropertiesList() + arrayClass.functionList.map { it.toJsTypeListType() }
+                    arrayClass.propertyList.toNamedPropertiesList() + arrayClass.functionList.map { it.toJsFunctionType() }
                 } else emptyList()) + (JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
                     typeAlias.typesList.functionTypes + typeAlias.typesList.interfaceTypes.flatMap { it.staticProperties } + typeAlias.typesList.interfaceTypes.flatMap { it.staticFunctions }
                 })
@@ -291,7 +291,7 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         if (result != null)
             return result
     } else if (referencedVariable is JsTypeDefFunctionName) {
-        val result = (referencedVariable.parent as? JsTypeDefFunction)?.toJsTypeListType()
+        val result = (referencedVariable.parent as? JsTypeDefFunction)?.toJsFunctionType()
         if (result != null)
             return InferenceResult(types = setOf(result))
     } else if (referencedVariable is JsTypeDefTypeName) {
@@ -305,8 +305,10 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         else -> null
     }
 
-    if (functionDeclaration != null)
-        return functionDeclaration.toJsFunctionTypeResult(tag)
+    if (functionDeclaration != null) {
+        val result = functionDeclaration.toJsFunctionType(tag)
+        return InferenceResult(types = setOf(result))
+    }
 
     if (containingClass != null)
         return InferenceResult(
@@ -440,13 +442,12 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
             }?.combine()
         }
     }
-    var basicReturnTypes = functionDeclaration
-            ?.getReturnTypes(tag)
+    var basicReturnTypes = functionDeclaration?.getReturnTypes(tag)?.toClassList(null)
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
         basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString
     val functionTypes = JsTypeDefFunctionsByNameIndex.instance[functionNameString, project].map {
         //ProgressManager.checkCanceled()
-        it.toJsTypeListType()
+        it.toJsFunctionType(tag)
     }.toMutableList()
     val functionDeclarationAsJsFunctionType = functionDeclaration?.toJsFunctionType(tag)
     if (functionDeclarationAsJsFunctionType != null) {
@@ -500,7 +501,7 @@ private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag:
 
     val functions = JsTypeDefFunctionsByNameIndex.instance[name, project].map {
         //ProgressManager.checkCanceled()
-        it.toJsTypeListType()
+        it.toJsFunctionType()
     }.toMutableList()
     firstMatches.addAll(functions)
     val properties = JsTypeDefPropertiesByNameIndex.instance[name, project].flatMap { it.typeList.toJsTypeDefTypeListTypes() }

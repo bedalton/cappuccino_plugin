@@ -22,7 +22,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
             element: PsiT, stubParent: StubElement<*>): ObjJFunctionDeclarationElementStub<PsiT> {
         val fileName = if (element.containingFile != null && element.containingFile.virtualFile != null) element.containingFile.virtualFile.name else "undefined"
         val functionNameString = element.functionNameString
-        val paramNames = element.paramNames
+        val paramNames = element.parameterNames
         val returnType = null
         val shouldResolve = element.shouldResolve()
         val scope = element.functionScope

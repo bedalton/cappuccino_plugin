@@ -7,10 +7,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
@@ -19,6 +16,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
@@ -82,7 +80,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
         resolved.getCachedInferredTypes(tag) {
             if (resolved.tagged(tag))
                 return@getCachedInferredTypes null
-            val function: ObjJFunctionDeclarationElement<*>? = (when (resolved) {
+            val function: ObjJUniversalFunctionElement? = (when (resolved) {
                 is ObjJVariableName -> resolved.parentFunctionDeclaration
                 is ObjJFunctionName -> resolved.parentFunctionDeclaration
                 else -> {
@@ -126,28 +124,26 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 
 }
 
-fun inferFunctionDeclarationReturnType(function: ObjJFunctionDeclarationElement<*>, tag: Long): InferenceResult? {
+fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Long): InferenceResult? {
     val commentReturnTypes = function.docComment?.getReturnTypes(function.project)
     if (commentReturnTypes.isNotNullOrEmpty())
         return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
-    val returnStatementExpressions = function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
+    if (function is JsTypeDefFunction) {
+        val types = function.functionReturnType?.typeList.toJsTypeDefTypeListTypes()
+        if (types.isEmpty())
+            return null
+        return InferenceResult(types = types)
+    }
+    val returnStatementExpressions = if (function is ObjJFunctionDeclarationElement<*>)
+        function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
+    else
+        emptyList()
     if (returnStatementExpressions.isEmpty())
         return INFERRED_VOID_TYPE
     val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
     return types
-}
-
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionType(tag: Long): JsTypeListFunctionType {
-    val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
-    return JsTypeListFunctionType(
-            name = this.functionNameString,
-            parameters = this.parameterTypes(),
-            returnType = returnTypes,
-            comment = docComment?.commentText,
-            static = true
-    )
 }
 
 fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): InferenceResult? {
@@ -157,7 +153,7 @@ fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): Inferen
     )
 }
 
-private fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFunctionArgument> {
+fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFunctionArgument> {
     //ProgressManager.checkCanceled()
     val parameters = formalParameterArgList
     val out = mutableListOf<JsTypeDefFunctionArgument>()
@@ -185,10 +181,12 @@ private fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFu
 }
 
 
-internal val PsiElement.parentFunctionDeclaration: ObjJFunctionDeclarationElement<*>?
+internal val PsiElement.parentFunctionDeclaration: ObjJUniversalFunctionElement?
     get() {
         return (this as? ObjJFunctionName)?.cachedParentFunctionDeclaration
                 ?: (this as? ObjJVariableName)?.cachedParentFunctionDeclaration
                 ?: (this as? ObjJFunctionCall)?.functionName?.resolve()?.parentFunctionDeclaration
+                ?: (this as? JsTypeDefFunctionName)?.getParentOfType(JsTypeDefFunction::class.java)
+                ?: (this as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)?.typeList?.firstOrNull { it.anonymousFunction != null } as? JsTypeDefAnonymousFunction
                 ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this.reference?.resolve())
     }

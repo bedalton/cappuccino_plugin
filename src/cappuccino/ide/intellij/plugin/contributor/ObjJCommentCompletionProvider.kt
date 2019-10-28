@@ -290,16 +290,16 @@ object ObjJCommentCompletionProvider {
 
     private fun getParamNames(element: PsiElement?): List<String> {
         return when (element) {
-            is ObjJFunctionDeclarationElement<*> -> element.paramNames
+            is ObjJFunctionDeclarationElement<*> -> element.parameterNames
             is ObjJMethodHeader -> element.methodDeclarationSelectorList.mapNotNull { it.variableName?.text }
             is ObjJMethodDeclaration -> element.methodHeader.methodDeclarationSelectorList.mapNotNull { it.variableName?.text }
             is ObjJBodyVariableAssignment -> element.variableDeclarationList?.variableDeclarationList?.mapNotNull {
                 it.expr?.leftExpr?.functionDeclaration as? ObjJFunctionDeclarationElement<*>
                         ?: it.expr?.leftExpr?.functionLiteral  as? ObjJFunctionDeclarationElement<*>
-            }?.flatMap { it.paramNames }.orEmpty()
+            }?.flatMap { it.parameterNames }.orEmpty()
             is ObjJVariableDeclaration -> (element.expr?.leftExpr?.functionDeclaration as? ObjJFunctionDeclarationElement<*>
                     ?: element.expr?.leftExpr?.functionLiteral  as? ObjJFunctionDeclarationElement<*>)
-                    ?.paramNames.orEmpty()
+                    ?.parameterNames.orEmpty()
             else -> {
                 LOGGER.severe("Unexpected element type <${element.elementType}> encountered for get Parameter names")
                 emptyList()

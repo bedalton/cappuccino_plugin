@@ -1050,8 +1050,8 @@ functionDeclaration
 			setName
 			functionNameNode="/functionName"
 			getFunctionNameString
-			getParamNames
-			getReturnType
+			getParameterNames
+			getReturnTypes
 			shouldResolve
 			getBlockList
 			createFoldingDescriptor
@@ -1062,6 +1062,7 @@ functionDeclaration
 			getCache
 			getDescription
 			createTreeStructureElement
+			getParameterNames
 		]
 
 	}
@@ -1339,8 +1340,8 @@ preprocessorDefineFunction
 			setName
 			functionNameNode="/functionName"
 			getFunctionNameString
-			getParamNames
-			getReturnType
+			getParameterNames
+			getReturnTypes
 			shouldResolve
 			block="preprocessorDefineBody"
 			getBlockList
@@ -2108,9 +2109,9 @@ functionLiteral
 			getFunctionNameNode
 			getFunctionNameString
 			getFunctionNamesAsString
-			getReturnType
+			getReturnTypes
 			getParamNameElements
-			getParamNames
+			getParameterNames
 			getFunctionNameNode
 			shouldResolve
 			getBlockList

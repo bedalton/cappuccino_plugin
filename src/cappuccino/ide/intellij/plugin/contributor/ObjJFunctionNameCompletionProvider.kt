@@ -3,7 +3,6 @@ package cappuccino.ide.intellij.plugin.contributor
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.inference.anyTypes
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
@@ -64,7 +63,7 @@ object ObjJFunctionNameCompletionProvider {
             val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
             val lookupElementBuilder = LookupElementBuilder
                     .create(functionName)
-                    .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withTailText("(" + ArrayUtils.join(function.parameterNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, priority)))
         }
@@ -77,7 +76,7 @@ object ObjJFunctionNameCompletionProvider {
             val functionName = function.functionNameNode?.text ?: continue
             val lookupElementBuilder = LookupElementBuilder
                     .create(functionName)
-                    .withTailText("(" + ArrayUtils.join(function.paramNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withTailText("(" + ArrayUtils.join(function.parameterNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
                     .withInsertHandler(ObjJFunctionNameInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.TYPEDEF_PRIORITY)))
         }
@@ -95,7 +94,7 @@ object ObjJFunctionNameCompletionProvider {
         }
 
         for (functionIn in functions) {
-            val function = functionIn.toJsTypeListType()
+            val function = functionIn.toJsFunctionType()
             val functionName = function.name ?: continue
             val arguments = StringBuilder()
             function.parameters.forEach {

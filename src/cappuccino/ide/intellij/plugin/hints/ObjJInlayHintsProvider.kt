@@ -3,14 +3,12 @@ package cappuccino.ide.intellij.plugin.hints
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.toJsTypeListType
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
 import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import com.intellij.codeInsight.hints.*
@@ -66,7 +64,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         val referencedFunction = element.functionDeclarationReference ?: return mutableListOf()
         val params = when (referencedFunction) {
             is ObjJFunctionDeclarationElement<*> -> referencedFunction.toJsTypeListType()
-            is JsTypeDefFunction -> referencedFunction.toJsTypeListType()
+            is JsTypeDefFunction -> referencedFunction.toJsFunctionType()
             else -> return mutableListOf()
         }.parameters
         return element.arguments.exprList.mapIndexedNotNull { i, arg ->

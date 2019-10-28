@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.hints
 
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.inference.toClassListString
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
@@ -12,7 +13,7 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.util.TextRange
 
 
-class ObjJFunctionDescription(val name:String, val returnType:String?) {
+class ObjJFunctionDescription(val name:String, val returnType:InferenceResult?) {
 
     var description:String? = null
 
@@ -30,10 +31,11 @@ class ObjJFunctionDescription(val name:String, val returnType:String?) {
                 .append("(")
                 .append(parametersListPresentableText)
                 .append(")")
-        if (returnType.isNotNullOrBlank()) {
+        val returnTypeString = returnType?.toClassListString(null)
+        if (returnTypeString.isNotNullOrBlank()) {
             stringBuilder
                     .append(" => ")
-                    .append(returnType)
+                    .append(returnTypeString)
         }
         return stringBuilder.toString()
 
@@ -104,7 +106,7 @@ val ObjJFormalParameterArg.description:ObjJFunctionParameterDescription get() {
 
 val JsTypeListType.JsTypeListFunctionType.description:ObjJFunctionDescription get() {
     val name = this.name ?: "_"
-    val returnType = this.returnType?.toClassListString("Any?")
+    val returnType = this.returnType
     val description = ObjJFunctionDescription(name, returnType)
     this.parameters.forEach {
         description.addParameter(it.description)
