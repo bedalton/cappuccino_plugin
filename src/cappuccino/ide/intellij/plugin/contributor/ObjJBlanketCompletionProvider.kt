@@ -310,7 +310,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             lookupElement = if (asFunctionDeclaration != null) {
                 lookupElement
                         .withInsertHandler(ObjJFunctionNameInsertHandler)
-                        .withTailText("(" + asFunctionDeclaration.paramNames.joinToString(", ") + ")")
+                        .withTailText("(" + asFunctionDeclaration.parameterNames.joinToString(", ") + ")")
             } else {
                 lookupElement.withInsertHandler(ObjJVariableInsertHandler)
             }

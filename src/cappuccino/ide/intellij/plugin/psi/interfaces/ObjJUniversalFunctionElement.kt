@@ -6,6 +6,9 @@ import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefAnonymousFunction
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionLiteral
@@ -18,6 +21,9 @@ import cappuccino.ide.intellij.plugin.utils.or
 interface ObjJUniversalFunctionElement : ObjJUniversalPsiElement {
     val functionNameString: String?
     val description: ObjJFunctionDescription
+    val parameterNames:List<String>
+    fun getReturnTypes(tag:Long) : InferenceResult?
+    fun toJsFunctionType(tag:Long) : JsTypeListType.JsTypeListFunctionType
 }
 
 

@@ -2,15 +2,11 @@ package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
@@ -81,7 +77,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                         out.append(it.description.presentableText)
                     }
                     out.append(")")
-                    val returnType = function.getReturnType(createTag())
+                    val returnType = function.getReturnTypes(createTag())?.toClassListString(null)
                     if (returnType.isNotNullOrBlank()) {
                         out.append(": ").append(returnType)
                     }
@@ -207,7 +203,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
     if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVarDec(this)) {
         val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
-            it.toJsTypeListType()
+            it.toJsFunctionType()
         }.minBy { it.parameters.size }
         if (jsTypeDefFunctionResult != null)
             return jsTypeDefFunctionResult.description.presentableText
@@ -297,7 +293,10 @@ private val ObjJFunctionName.functionDescription: String?
 
 private val ObjJFunctionCall.functionDescription: String?
     get() {
-        val resolved = reference?.resolve()
+        val resolved = functionName?.reference?.resolve()
+
+        // Check if Function call was actually a constructor call
+        // Return Name of class if it was
         if (resolved != null) {
             if (resolved.parent is JsTypeDefClassElement) {
                 return "JsClass $functionNameString"
@@ -305,7 +304,7 @@ private val ObjJFunctionCall.functionDescription: String?
                 return "JsInterface $functionNameString"
             }
         }
-        val parentFunction = functionDeclarationReference ?: parentFunctionDeclaration
-        ?: return "Function ${functionName?.text}"
+        val parentFunction = resolved?.parentFunctionDeclaration ?: functionDeclarationReference ?:  parentFunctionDeclaration
+        ?: return "Function ${functionName?.text}(...)"
         return parentFunction.description.presentableText
     }

@@ -2,7 +2,6 @@ package cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toNamedPropertiesList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
@@ -36,10 +35,10 @@ fun JsTypeDefClassDeclaration<*,*>.toJsClassDefinition() : JsClassDefinition {
             isObjJ = false,
             functions = functionList.filterNot {
                 it.isStatic && it.functionNameString.isNotNullOrBlank()
-            }.map { it.toJsTypeListType() }.toSet(),
+            }.map { it.toJsFunctionType() }.toSet(),
             staticFunctions = functionList.filter {
                 it.isStatic && it.functionNameString.isNotNullOrBlank()
-            }.map { it.toJsTypeListType() }.toSet(),
+            }.map { it.toJsFunctionType() }.toSet(),
             properties = this.propertyList.filter{it.staticKeyword == null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             staticProperties = this.propertyList.filter{it.staticKeyword != null && it.propertyNameString.isNotNullOrBlank()}.toNamedPropertiesList().toSet(),
             isStruct = this is JsTypeDefInterfaceElement,

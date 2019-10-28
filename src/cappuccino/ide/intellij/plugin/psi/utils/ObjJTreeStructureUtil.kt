@@ -83,7 +83,7 @@ object ObjJTreeStructureUtil {
     }
 
     fun createTreeStructureElement(function:ObjJFunctionDeclarationElement<*>) : ObjJStructureViewElement {
-        val functionNameString = function.functionNameString.ifEmpty {"function"} +  " (" + function.paramNames.joinToString(", ") +")"
+        val functionNameString = function.functionNameString.ifEmpty {"function"} +  " (" + function.parameterNames.joinToString(", ") +")"
         val presentation: ItemPresentation = PresentationData(functionNameString, null, ObjJIcons.FUNCTION_ICON, null)
         return ObjJStructureViewElement(function, presentation, "z_${functionNameString}")
     }

@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.InferenceResult
 
 interface ObjJVariableNameElement {
 
-    val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
+    val cachedParentFunctionDeclaration:ObjJUniversalFunctionElement?
 
     fun getCachedMethods(tag:Long):List<ObjJMethodHeaderDeclaration<*>>
 

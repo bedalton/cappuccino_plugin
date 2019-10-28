@@ -254,6 +254,16 @@ anonymousFunction
 	|	'(' argumentsList? ')' '=>' functionReturnType/*<<exitMode "useMapOf">>*/
 	{
 		pin(".*") = 2
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement"
+		]
+		methods = [
+			getParameterNames
+			getFunctionNameString
+			getDescription
+			getReturnTypes
+			toJsFunctionType
+		]
 	}
 	;
 
@@ -628,6 +638,9 @@ function
 	        isSilent
 	        isSuggest
 	        getGenericsKeys
+	        getParameterNames
+	        getReturnTypes
+	        toJsFunctionType
 		]
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"

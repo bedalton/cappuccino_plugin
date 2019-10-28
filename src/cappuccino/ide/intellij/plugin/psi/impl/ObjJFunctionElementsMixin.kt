@@ -2,13 +2,16 @@ package cappuccino.ide.intellij.plugin.psi.impl
 
 import cappuccino.ide.intellij.plugin.caches.ObjJFunctionDeclarationCache
 import cappuccino.ide.intellij.plugin.caches.ObjJFunctionNameCache
-import cappuccino.ide.intellij.plugin.inference.InferenceResult
-import cappuccino.ide.intellij.plugin.inference.inferFunctionDeclarationReturnType
+import cappuccino.ide.intellij.plugin.inference.*
+import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJFunctionDeclarationPsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeStructureUtil
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionDeclarationElementStub
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubElementType
@@ -31,6 +34,23 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
     override fun createTreeStructureElement(): ObjJStructureViewElement {
         return ObjJTreeStructureUtil.createTreeStructureElement(this)
     }
+
+    override val parameterNames : List<String> by lazy {
+        formalParameterArgList.map {
+            it.variableName?.text ?: "_"
+        }
+    }
+
+    override fun toJsFunctionType(tag: Long): JsTypeListType.JsTypeListFunctionType {
+        val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
+        return JsTypeListType.JsTypeListFunctionType(
+                name = this.functionNameString,
+                parameters = this.parameterTypes(),
+                returnType = returnTypes,
+                comment = docComment?.commentText,
+                static = true
+        )
+    }
 }
 
 
@@ -49,7 +69,7 @@ abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(nod
     /**
      * Attempts to get parent function declaration from cache
      */
-    override val cachedParentFunctionDeclaration:ObjJFunctionDeclarationElement<*>?
+    override val cachedParentFunctionDeclaration:ObjJUniversalFunctionElement?
         get() = cache.parentFunctionDeclarationElement ?: ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(this)
 
     /**

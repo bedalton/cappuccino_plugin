@@ -2,9 +2,12 @@ package cappuccino.ide.intellij.plugin.jstypedef.psi.utils
 
 import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
+import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toFunctionArgumentList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.*
@@ -14,6 +17,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeGenerics
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeMapNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.references.JsTypeDefTypeNameReference
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
@@ -26,6 +30,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.tree.IElementType
 
+@Suppress("UNUSED_PARAMETER")
 object JsTypeDefPsiImplUtil {
 
     private val EOS_TOKENS = listOf(
@@ -454,6 +459,7 @@ object JsTypeDefPsiImplUtil {
     }
 
 
+
     // ============================== //
     // ========== TypeMap =========== //
     // ============================== //
@@ -538,7 +544,12 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun getDescription(function:JsTypeDefFunction): ObjJFunctionDescription {
-        return (function.stub?.asJsFunctionType ?: function.toJsTypeListType()).description
+        return (function.stub?.asJsFunctionType ?: function.toJsFunctionType()).description
+    }
+
+    @JvmStatic
+    fun getDescription(function:JsTypeDefAnonymousFunction): ObjJFunctionDescription {
+        return (function.toJsTypeListType()).description
     }
 
     @JvmStatic
@@ -643,6 +654,64 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getCompletionModifier(declaration:JsTypeDefFunctionDeclaration) : CompletionModifier {
         return genericGetCompletionModifier(declaration)
+    }
+
+    @JvmStatic
+    fun getParameterNames(functionDeclaration: JsTypeDefFunction) : List<String> {
+        return functionDeclaration.stub?.parameters?.map { it.name } ?:
+                functionDeclaration.argumentsList?.arguments.orEmpty().map { it.argumentNameString }
+    }
+
+    @JvmStatic
+    fun getParameterNames(function:JsTypeDefAnonymousFunction) : List<String> {
+        return function.argumentsList?.arguments.orEmpty().mapNotNull { it.argumentNameString }
+    }
+
+    @JvmStatic
+    fun getFunctionNameString(function:JsTypeDefAnonymousFunction) : String? {
+        return null
+    }
+
+    @JvmStatic
+    fun getReturnTypes(function:JsTypeDefFunction, tag:Long) : InferenceResult? {
+        return function.stub?.returnType ?: function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes()?.let {
+            InferenceResult(types = it)
+        }
+    }
+
+    @JvmStatic
+    fun getReturnTypes(function:JsTypeDefAnonymousFunction, tag:Long) : InferenceResult? {
+        return function.functionReturnType?.toTypeListType()
+    }
+
+
+    @JvmStatic
+    fun toJsFunctionType(function:JsTypeDefFunction, tag:Long) : JsTypeListFunctionType {
+        return toJsFunctionType(function)
+    }
+    @JvmStatic
+    fun toJsFunctionType(function:JsTypeDefFunction) : JsTypeListFunctionType {
+        return JsTypeListFunctionType(
+                name = function.stub?.functionName ?: function.functionNameString,
+                comment = null, // @todo implement comment parsing
+                parameters = function.stub?.parameters ?:function. argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
+                returnType = function.stub?.returnType ?: function.functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
+        )
+    }
+
+
+    @JvmStatic
+    fun toJsFunctionType(function:JsTypeDefAnonymousFunction, tag:Long) : JsTypeListFunctionType {
+        return toJsFunctionType(function)
+    }
+    @JvmStatic
+    fun toJsFunctionType(function:JsTypeDefAnonymousFunction) : JsTypeListFunctionType {
+        return JsTypeListFunctionType(
+                name = function.functionNameString,
+                comment = null, // @todo implement comment parsing
+                parameters = function. argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
+                returnType = function.functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
+        )
     }
 
 

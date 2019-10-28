@@ -922,23 +922,23 @@ object ObjJPsiImplUtil {
             ObjJFunctionDeclarationPsiUtil.getFunctionScope(functionDeclaration)
 
     @JvmStatic
-    fun getParamNames(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
-        return ObjJFunctionDeclarationPsiUtil.getParamNames(functionDeclaration)
+    fun getParameterNames(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
+        return ObjJFunctionDeclarationPsiUtil.getParameterNames(functionDeclaration)
     }
 
     @JvmStatic
-    fun getReturnType(functionDeclaration: ObjJFunctionDeclaration, tag: Long): String? {
-        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionDeclaration, tag)
+    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclaration, tag: Long): InferenceResult? {
+        return ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionDeclaration, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionLiteral: ObjJFunctionLiteral, tag: Long): String? {
-        return ObjJFunctionDeclarationPsiUtil.getReturnType(functionLiteral, tag)
+    fun getReturnTypes(functionLiteral: ObjJFunctionLiteral, tag: Long): InferenceResult? {
+        return ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionLiteral, tag)
     }
 
     @JvmStatic
-    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction, tag: Long): String? =
-            ObjJFunctionDeclarationPsiUtil.getReturnType(functionDefinition, tag)
+    fun getReturnTypes(functionDefinition: ObjJPreprocessorDefineFunction, tag: Long): InferenceResult? =
+            ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionDefinition, tag)
 
     @JvmStatic
     fun getQualifiedNameText(functionCall: ObjJFunctionCall): String {
@@ -986,7 +986,7 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getDescription(functionDeclaration: ObjJFunctionDeclarationElement<*>): ObjJFunctionDescription {
         val name = functionDeclaration.functionNameString
-        val returnType = functionDeclaration.getReturnType(createTag())
+        val returnType = functionDeclaration.getReturnTypes(createTag())
         val description = ObjJFunctionDescription(name, returnType)
         functionDeclaration.formalParameterArgList.forEach {
             description.addParameter(it.description)
@@ -1105,10 +1105,9 @@ object ObjJPsiImplUtil {
         return fileName.replace(newFileName)
     }
 
-    /*
     @JvmStatic
     fun getReference(statement: ObjJImportIncludeStatement): PsiReference? = ObjJImportPsiUtils.getReference(statement)
-    */
+
 
     @JvmStatic
     fun resolve(statement: ObjJImportIncludeStatement): ObjJFile? = ObjJImportPsiUtils.resolve(statement)
@@ -1245,6 +1244,10 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun createTreeStructureElement(variable:ObjJGlobalVariableDeclaration): ObjJStructureViewElement =
+            ObjJTreeStructureUtil.createTreeStructureElement(variable)
+
+    @JvmStatic
+    fun createTreeStructureElement(variable:ObjJFunctionDeclarationElement<*>): ObjJStructureViewElement =
             ObjJTreeStructureUtil.createTreeStructureElement(variable)
 
     // ============================== //

@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
-import cappuccino.ide.intellij.plugin.inference.inferFunctionDeclarationReturnType
-import cappuccino.ide.intellij.plugin.inference.toClassListString
+import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
@@ -203,7 +203,7 @@ object ObjJFunctionDeclarationPsiUtil {
     /**
      * Gets function parameters' names as strings
      */
-    fun getParamNames(
+    fun getParameterNames(
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
         if (functionDeclaration.stub != null) {
 
@@ -249,12 +249,14 @@ object ObjJFunctionDeclarationPsiUtil {
         } else ObjJClassType.UNDETERMINED
     }*/
 
-    fun getReturnType(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag:Long) : String? {
+    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
         val stubReturnType = functionDeclaration.stub?.returnType
         if (stubReturnType != null) {
-            return stubReturnType
+            return stubReturnType.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toJsTypeList().let {
+                InferenceResult(types = it)
+            }
         }
-        return inferFunctionDeclarationReturnType(functionDeclaration, tag)?.toClassListString()
+        return inferFunctionDeclarationReturnType(functionDeclaration, tag)
     }
 
     /**
@@ -428,7 +430,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return parameter?.getTypes(parameterArg.project, null)?.joinToString("|")
     }
 
-    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJFunctionDeclarationElement<*>? {
+    fun getParentFunctionDeclaration(element:PsiElement?) : ObjJUniversalFunctionElement? {
         if (element == null)
             return null
 
@@ -443,7 +445,7 @@ object ObjJFunctionDeclarationPsiUtil {
             val globalFunctionDeclaration = element.parent as? ObjJGlobalVariableDeclaration
             globalFunctionDeclaration?.expr
         } ?: return null
-        return expr.leftExpr?.functionDeclaration ?: expr.leftExpr?.functionLiteral
+        return (expr.leftExpr?.functionDeclaration as? ObjJUniversalFunctionElement) ?: (expr.leftExpr?.functionLiteral as? ObjJUniversalFunctionElement) ?: element.parentFunctionDeclaration
     }
 
     fun isNullableParameter(@Suppress("UNUSED_PARAMETER") it:ObjJFormalParameterArg) : Boolean {
@@ -462,9 +464,12 @@ val ObjJFunctionCall.functionDeclarationReference:ObjJUniversalFunctionElement? 
         val jsResolved = JsTypeDefFunctionsByNameIndex.instance[functionName.text, project].firstOrNull()
         if (jsResolved != null)
             return jsResolved
+        val objResolved = ObjJFunctionsIndex.instance[functionName.text, project].firstOrNull()
+        if (objResolved != null)
+            return objResolved
     }
     val resolved = functionName.resolve() ?: return null
-    return ObjJFunctionDeclarationPsiUtil.getParentFunctionDeclaration(resolved)
+    return resolved.parentFunctionDeclaration
 }
 
 val ObjJFormalParameterArg.nullable : Boolean get() {

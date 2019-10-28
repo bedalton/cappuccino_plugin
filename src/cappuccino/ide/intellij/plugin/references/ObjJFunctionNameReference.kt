@@ -122,10 +122,10 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
         // Get types if qualified
-        val classTypes = inferQualifiedReferenceType(prevSiblings, createTag())
+        val classTypes = previousSiblingTypes
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
-        if (classTypes.classes.isNotEmpty()) {
-            val allClassNames = classTypes.classes.flatMap {
+        if (classTypes.isNotEmpty()) {
+            val allClassNames = classTypes.flatMap {
                 JsTypeDefClassesByNameIndex.instance[it, project].map {
                     it.toJsClassDefinition()
                 }

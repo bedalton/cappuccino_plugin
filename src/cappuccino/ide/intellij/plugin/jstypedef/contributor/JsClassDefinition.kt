@@ -7,10 +7,7 @@ import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefArgument
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceBodyProperty
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
+import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.CompletionModifier
@@ -156,12 +153,12 @@ fun List<String>.toInferenceResult(): InferenceResult {
     return InferenceResult(types = types, nullable = true)
 }
 
-fun JsTypeDefFunction.toJsTypeListType(): JsTypeListFunctionType {
+fun JsTypeDefAnonymousFunction.toJsTypeListType(): JsTypeListFunctionType {
     return JsTypeListFunctionType(
-            name = stub?.functionName ?: functionNameString,
+            name = null,
             comment = null, // @todo implement comment parsing
-            parameters = stub?.parameters ?: argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
-            returnType = stub?.returnType ?: functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
+            parameters = argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
+            returnType = functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
     )
 }
 
@@ -219,7 +216,7 @@ fun JsTypeDefArgument.toJsNamedProperty(): JsTypeDefFunctionArgument {
 
 fun JsTypeDefInterfaceBodyProperty.toJsTypeListType(): JsTypeListClass {
     return JsTypeListClass(
-            allFunctions = this.functionList.map { it.toJsTypeListType() }.toSet(),
+            allFunctions = this.functionList.map { it.toJsFunctionType() }.toSet(),
             allProperties = this.propertyList.toNamedPropertiesList().toSet()
     )
 }
