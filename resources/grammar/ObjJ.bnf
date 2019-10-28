@@ -2200,7 +2200,7 @@ callTarget
 	;
 
 qualifiedReference
-	::= (variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
+	::= (stringLiteral|variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -2247,7 +2247,12 @@ arrayIndexSelector
 stringLiteral
 	::= doubleQuoteStringLiteral | singleQuoteStringLiteral
 	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
 		methods=[
+			getQualifiedNameText
+			getIndexInQualifiedReference
 			getStringValue
 			getReference
 		]
