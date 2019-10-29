@@ -46,6 +46,9 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
+        if (elementType == ObjJ_EXPR && parentType == ObjJ_ARGUMENTS)
+            return Indent.getNormalIndent()
+
         if (prevSibling == ObjJ_IF_STATEMENT || prevSibling == ObjJ_ELSE_IF_STATEMENT || prevSibling == ObjJ_STATEMENT_OR_BLOCK)
             Indent.getNoneIndent()
 

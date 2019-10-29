@@ -88,9 +88,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         //LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
 
         if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
-            if (node2.firstChildNode != ObjJ_OPEN_BRACE && node2.firstChildNode.getNextNonEmptyNodeIgnoringComments()?.elementType != ObjJ_OPEN_BRACE) {
-                return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            val block = (if (node2.firstChildNode?.elementType == ObjJ_BLOCK_ELEMENT) node2.firstChildNode else null)
+            if (block == null || (block.firstChildNode?.elementType != ObjJ_OPEN_BRACE && block.firstChildNode.getNextNonEmptyNodeIgnoringComments()?.elementType != ObjJ_OPEN_BRACE)) {
+                LOGGER.info("Node2: ${node2.elementType}; FirstChild: ${block?.firstChildNode?.elementType}; SecondChild: ${block?.firstChildNode?.getNextNonEmptyNodeIgnoringComments()?.elementType}")
+                return Spacing.createSpacing(0, Int.MAX_VALUE, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             }
+
             val braceType = when (elementType) {
                 ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
                 ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
@@ -129,7 +132,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             } && !force
             val spacing = if (needsSpace) 1 else 0
             val lines = if (force) 1 else 0
-            return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return Spacing.createSpacing(spacing, spacing, lines, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
         if (type2 == ObjJ_CLOSE_BRACE)
             return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
@@ -139,12 +142,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type1 == ObjJ_SWITCH) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_PARENTHESES) 1 else 0
-            return Spacing.createSpacing(spacing, spacing, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return Spacing.createSpacing(spacing, spacing, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
         if (type1 == ObjJ_CLOSE_PAREN && elementType == ObjJ_SWITCH_STATEMENT) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_LBRACE) 1 else 0
             val lines = if (objJSettings.SWITCH_BRACE_FORCE != CommonCodeStyleSettings.DO_NOT_FORCE) 1 else 0
-            return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            return Spacing.createSpacing(spacing, spacing, lines, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (type2 == ObjJ_CONDITION_EXPRESSION) {
@@ -182,14 +185,14 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
                 Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
-        if (type1 == ObjJ_STATEMENT_OR_BLOCK && type2 == ObjJ_ELSE_IF_STATEMENT) {
+        if (type1 == ObjJ_STATEMENT_OR_BLOCK && (type2 == ObjJ_ELSE_IF_STATEMENT) || type2 == ObjJ_ELSE_STATEMENT) {
             val spacing = if(mySettings.SPACE_BEFORE_ELSE_KEYWORD) 1 else 0
-            return getSpacingIfNewLine(mySettings.ELSE_ON_NEW_LINE, spacing)
+            return getSpacingIfNewLine(node1.firstChildNode?.lastChildNode == ObjJ_CLOSE_BRACE || mySettings.ELSE_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_WHILE && elementType == ObjJ_DO_WHILE_STATEMENT) {
             val spacing = if (mySettings.SPACE_BEFORE_WHILE_KEYWORD) 1 else 0
-            val lines = if (mySettings.WHILE_ON_NEW_LINE) 1 else 0
+            val lines = if (mySettings.WHILE_ON_NEW_LINE || node1.firstChildNode?.lastChildNode == ObjJ_CLOSE_BRACE) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
@@ -200,12 +203,12 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type2 == ObjJ_CATCH || type2 == ObjJ_CATCH_PRODUCTION) {
             val spacing = if (mySettings.SPACE_BEFORE_CATCH_KEYWORD) 1 else 0
-            return getSpacingIfNewLine(mySettings.CATCH_ON_NEW_LINE, spacing)
+            return getSpacingIfNewLine(node1.firstChildNode?.lastChildNode == ObjJ_CLOSE_BRACE || mySettings.CATCH_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_FINALLY || type2 == ObjJ_FINALLY_PRODUCTION) {
             val spacing = if (mySettings.SPACE_BEFORE_FINALLY_KEYWORD) 1 else 0
-            return getSpacingIfNewLine(mySettings.FINALLY_ON_NEW_LINE, spacing)
+            return getSpacingIfNewLine( mySettings.FINALLY_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_ELSE_STATEMENT || type2 == ObjJ_ELSE_IF_STATEMENT) {
@@ -531,7 +534,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (elementType == ObjJ_ARGUMENTS) {
             if (type1 == ObjJ_COMMA) {
-                return Spacing.createSpacing(1, 1, 0, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+                return Spacing.createSpacing(1, 1, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE)
             }
         }
 
@@ -610,7 +613,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
     private fun getSpacingIfNewLine(newLine: Boolean, spacing: Int = 0): Spacing {
         val lines = if (newLine) 1 else 0
-        return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        return Spacing.createSpacing(spacing, spacing, lines, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
     }
 
 }
