@@ -445,7 +445,7 @@ object ObjJFunctionDeclarationPsiUtil {
             val globalFunctionDeclaration = element.parent as? ObjJGlobalVariableDeclaration
             globalFunctionDeclaration?.expr
         } ?: return null
-        return (expr.leftExpr?.functionDeclaration as? ObjJUniversalFunctionElement) ?: (expr.leftExpr?.functionLiteral as? ObjJUniversalFunctionElement) ?: element.parentFunctionDeclaration
+        return (expr.leftExpr?.functionDeclaration as? ObjJUniversalFunctionElement) ?: (expr.leftExpr?.functionLiteral as? ObjJUniversalFunctionElement) ?: element.parentFunctionDeclarationNoCache
     }
 
     fun isNullableParameter(@Suppress("UNUSED_PARAMETER") it:ObjJFormalParameterArg) : Boolean {

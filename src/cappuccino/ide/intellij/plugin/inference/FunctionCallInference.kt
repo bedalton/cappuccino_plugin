@@ -195,3 +195,17 @@ internal val PsiElement.parentFunctionDeclaration: ObjJUniversalFunctionElement?
                         null
                 }
     }
+
+
+internal val PsiElement.parentFunctionDeclarationNoCache: ObjJUniversalFunctionElement?
+    get() {
+        return (this as? ObjJFunctionCall)?.functionName?.resolve()?.parentFunctionDeclaration
+                ?: (this as? JsTypeDefFunctionName)?.getParentOfType(JsTypeDefFunction::class.java)
+                ?: (this as? JsTypeDefPropertyName)?.getParentOfType(JsTypeDefProperty::class.java)?.typeList?.firstOrNull { it.anonymousFunction != null } as? JsTypeDefAnonymousFunction
+                ?: this.reference?.resolve()?.let {
+                    if (this != it)
+                        it.parentFunctionDeclaration
+                    else
+                        null
+                }
+    }
