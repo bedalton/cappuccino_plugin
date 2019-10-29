@@ -92,7 +92,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
 private fun ObjJExpr.isLiteral(): Boolean  {
     if (this.rightExprList.isNotEmpty())
         return false
-    if (this.leftExpr?.primary != null)
+    if (this.leftExpr?.primary != null || this.leftExpr?.regularExpressionLiteral != null)
         return true
     return leftExpr?.qualifiedReference?.qualifiedNameParts.orEmpty().let {
         it.size == 1 && it.firstOrNull() is ObjJStringLiteral
