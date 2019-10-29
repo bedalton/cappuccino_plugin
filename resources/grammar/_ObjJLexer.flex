@@ -29,11 +29,11 @@ import java.util.logging.Logger;
 		return canRegex;
 	}
 
-	protected boolean canWhiteSpace() {
+	protected boolean canWhitespace() {
   	    return canWhitespace;
 	}
 
-	protected void canWhiteSpace(boolean canWhitespace) {
+	protected void canWhitespace(boolean canWhitespace) {
   	    this.canWhitespace = canWhitespace;
 	}
 
@@ -111,206 +111,207 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
           inPreProc = false;
           pragmaString = null;
           return type; }
-    "<"                                 { canRegex(false);  return ObjJ_LESS_THAN; }
-    ">"                                 { canRegex(false);  return ObjJ_GREATER_THAN; }
-	"'"									{ canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
-	"\""						        { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-	"/"						        	{ canRegex(false);  yybegin(IN_FILENAME); return ObjJ_DIVIDE; }
-    {FRAMEWORK_NAME}                    { canRegex(false);  return ObjJ_FRAMEWORK_NAME; }
+    "<"                                 { canRegex(false); canWhitespace(true);  return ObjJ_LESS_THAN; }
+    ">"                                 { canRegex(false); canWhitespace(true);  return ObjJ_GREATER_THAN; }
+	"'"									{ canRegex(false); canWhitespace(true);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
+	"\""						        { canRegex(false); canWhitespace(true);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
+	"/"						        	{ canRegex(false); canWhitespace(true);  yybegin(IN_FILENAME); return ObjJ_DIVIDE; }
+    {FRAMEWORK_NAME}                    { canRegex(false); canWhitespace(true);  return ObjJ_FRAMEWORK_NAME; }
 }
 
 <IN_FILENAME> {
-	{FILE_NAME_LITERAL}					{ canRegex(false);  yybegin(IN_IMPORT); return ObjJ_FILE_NAME_LITERAL; }
+	{FILE_NAME_LITERAL}					{ canRegex(false); canWhitespace(true); yybegin(IN_IMPORT); return ObjJ_FILE_NAME_LITERAL; }
 }
 
 <PRAGMA> {
-	'mark'								{ if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
-	[^\r\n\u2028\u2029]+				{ if (pragmaString != null) pragmaString.append(yytext());}
-	{LINE_TERMINATOR}					{ yybegin(YYINITIAL); return ObjJ_PRAGMA_MARKER; }
+	'mark'								{ canWhitespace(true); if (pragmaString == null) pragmaString = new StringBuffer(); return ObjJ_MARK; }
+	[^\r\n\u2028\u2029]+				{ canWhitespace(true); if (pragmaString != null) pragmaString.append(yytext());}
+	{LINE_TERMINATOR}					{ canWhitespace(true); yybegin(YYINITIAL); return ObjJ_PRAGMA_MARKER; }
 }
 
 <PREPROCESSOR> {
-	{LINE_TERMINATOR} 				   	 { yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return ObjJ_LINE_TERMINATOR; }
-	'#'									 { return WHITE_SPACE; }
- 	{WHITE_SPACE}  						 { return WHITE_SPACE; }
-	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { return WHITE_SPACE; }
+	{LINE_TERMINATOR} 				   	 { canWhitespace(true); yybegin(YYINITIAL); inPreProc = false; pragmaString = null; return ObjJ_LINE_TERMINATOR; }
+	'#'									 { canWhitespace(true); return WHITE_SPACE; }
+ 	{WHITE_SPACE}  						 { canWhitespace(true); return WHITE_SPACE; }
+	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { canWhitespace(true); return WHITE_SPACE; }
 }
 
 <SINGLE_QUOTE_STRING> {
-	"'" 								 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_SINGLE_QUO; }
-	{LINE_TERMINATOR}					 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL);  return ObjJ_LINE_TERMINATOR; }
-	{SINGLE_QUOTE_TEXT}				 	 { return ObjJ_QUO_TEXT; }
+	"'" 								 { canWhitespace(true); yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_SINGLE_QUO; }
+	{LINE_TERMINATOR}					 { canWhitespace(true); yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL);  return ObjJ_LINE_TERMINATOR; }
+	{SINGLE_QUOTE_TEXT}				 	 { canWhitespace(true); return ObjJ_QUO_TEXT; }
 }
 
 <DOUBLE_QUOTE_STRING> {
-	"\"" 								 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_DOUBLE_QUO; }
-	{LINE_TERMINATOR}					 { yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_LINE_TERMINATOR; }
+	"\"" 								 { canWhitespace(true); yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_DOUBLE_QUO; }
+	{LINE_TERMINATOR}					 { canWhitespace(true); yybegin(inPreProc ? PREPROCESSOR : pragmaString != null ? PRAGMA : YYINITIAL); return ObjJ_LINE_TERMINATOR; }
 	{DOUBLE_QUOTE_TEXT}				 	 { return ObjJ_QUO_TEXT; }
 }
 
 <BLOCK_COMMENT> {
-	"*/"								 { yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
-  	"*"									 { return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
- 	'.*'/'\n'							 { return ObjJ_BLOCK_COMMENT_LINE; }
+	"*/"								 { canWhitespace(true); yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
+  	"*"									 { canWhitespace(true); return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
+ 	'.*'/'\n'							 { canWhitespace(true); return ObjJ_BLOCK_COMMENT_LINE; }
 }
 
 <IN_REGEXP> {
-  	{REGEXP_VALID_CHAR}					 {}
-  	{REGEXP_ESCAPED_CHAR}				 {}
-  	{REGEXP_END}						 { yybegin(YYINITIAL); return ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN; }
-	{LINE_TERMINATOR}					 { yybegin(YYINITIAL); return BAD_CHARACTER;}
-	<<EOF>>								 { yybegin(YYINITIAL); return BAD_CHARACTER; }
+  	{REGEXP_VALID_CHAR}					 { canWhitespace(true);}
+  	{REGEXP_ESCAPED_CHAR}				 { canWhitespace(true);}
+  	{REGEXP_END}						 { yybegin(YYINITIAL); canWhitespace(true); return ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN; }
+	{LINE_TERMINATOR}					 { yybegin(YYINITIAL); canWhitespace(true); return BAD_CHARACTER;}
+	<<EOF>>								 { yybegin(YYINITIAL); canWhitespace(true); return BAD_CHARACTER; }
 }
 
 <YYINITIAL,PREPROCESSOR> {
-
 	"?*__ERR_SEMICOLON__*?"			 	 { return ObjJ_ERROR_SEQUENCE_TOKEN; }
-	"'"									 { canRegex(false);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
-	("\""|"@\"")						 { canRegex(false);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-	"/*"								 { canRegex(false);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); return ObjJ_BLOCK_COMMENT_START; }
-	"@["                                 { canRegex(true); return ObjJ_AT_OPENBRACKET; }
-	"["                                  { canRegex(true); return ObjJ_OPEN_BRACKET; }
-	"]"                                  { canRegex(false); return ObjJ_CLOSE_BRACKET; }
-	"("                                  { canRegex(true); return ObjJ_OPEN_PAREN; }
-	")"                                  { canRegex(false); return ObjJ_CLOSE_PAREN; }
-	"{"                                  { canRegex(true); return ObjJ_OPEN_BRACE; }
-	"}"                                  { canRegex(false); return ObjJ_CLOSE_BRACE; }
-	","                                  { canRegex(true); return ObjJ_COMMA; }
-	"="                                  { canRegex(true); return ObjJ_ASSIGN; }
-	"?"                                  { canRegex(true); return ObjJ_QUESTION_MARK; }
-	":"                                  { canRegex(true); return ObjJ_COLON; }
-	"..."                                { canRegex(false); return ObjJ_ELLIPSIS; }
-	"."                                  { canRegex(false); return ObjJ_DOT; }
-	"++"                                 { canRegex(false); return ObjJ_PLUS_PLUS; }
-	"--"                                 { canRegex(false); return ObjJ_MINUS_MINUS; }
-	"+"                                  { canRegex(true); return ObjJ_PLUS; }
-	"-"                                  { canRegex(true); return ObjJ_MINUS; }
-	"~"                                  { canRegex(true); return ObjJ_BIT_NOT; }
-	"!"                                  { canRegex(true); 	return ObjJ_NOT; }
-	"*"                                  { canRegex(true); return ObjJ_MULTIPLY; }
-	"/"                                  { canRegex(true); return ObjJ_DIVIDE; }
-	"%"                                  { canRegex(true); return ObjJ_MODULUS; }
-	">>"                                 { canRegex(true); return ObjJ_RIGHT_SHIFT_ARITHMATIC; }
-	"<<"                                 { canRegex(true); return ObjJ_LEFT_SHIFT_ARITHMATIC; }
-	">>>"                                { canRegex(true); return ObjJ_RIGHT_SHIFT_LOGICAL; }
-	"<<<"                                { canRegex(true); return ObjJ_LEFT_SHIFT_LOGICAL; }
-	"<"                                  { canRegex(true); return ObjJ_LESS_THAN; }
-	">"                                  { canRegex(true); return ObjJ_GREATER_THAN; }
-	"<="                                 { canRegex(true); return ObjJ_LESS_THAN_EQUALS; }
-	">="                                 { canRegex(true); return ObjJ_GREATER_THAN_EQUALS; }
-	"=="                                 { canRegex(true); return ObjJ_EQUALS; }
-	"!="                                 { canRegex(true); return ObjJ_NOT_EQUALS; }
-	"==="                                { canRegex(true); return ObjJ_IDENTITY_EQUALS; }
-	"!=="                                { canRegex(true); return ObjJ_IDENTITY_NOT_EQUALS; }
-	"&"                                  { canRegex(true); return ObjJ_BIT_AND; }
-	"^"                                  { canRegex(true); return ObjJ_BIT_XOR; }
-	"|"                                  { canRegex(true); return ObjJ_BIT_OR; }
-	"&&"                                 { canRegex(true); return ObjJ_AND; }
-	"||"                                 { canRegex(true); return ObjJ_OR; }
-	"*="                                 { canRegex(true); return ObjJ_MULTIPLY_ASSIGN; }
-	"/="                                 { canRegex(true); return ObjJ_DIVIDE_ASSIGN; }
-	"%="                                 { canRegex(true); return ObjJ_MODULUS_ASSIGN; }
-	"+="                                 { canRegex(true); return ObjJ_PLUS_ASSIGN; }
-	"-="                                 { canRegex(true); return ObjJ_MINUS_ASSIGN; }
-	"<<="                                { canRegex(true); return ObjJ_LEFT_SHIFT_ARITHMATIC_ASSIGN; }
-	">>="                                { canRegex(true); return ObjJ_RIGHT_SHIFT_ARITHMATIC_ASSIGN; }
-	"<<<="                               { canRegex(true); return ObjJ_LEFT_SHIFT_LOGICAL_ASSIGN; }
-	">>>="                               { canRegex(true); return ObjJ_RIGHT_SHIFT_LOGICAL_ASSIGN; }
-	"&="                                 { canRegex(true); return ObjJ_BIT_AND_ASSIGN; }
-	"^="                                 { canRegex(true); return ObjJ_BIT_XOR_ASSIGN; }
-	"|="                                 { canRegex(true); return ObjJ_BIT_OR_ASSIGN; }
-	"=>"                                 { canRegex(false); return ObjJ_ARROW; }
-	"@import"                            { canRegex(false); yybegin(IN_IMPORT); return ObjJ_AT_IMPORT; }
-	"@accessors"                         { canRegex(false); return ObjJ_AT_ACCESSORS; }
-	"@end"                               { canRegex(false); return ObjJ_AT_END; }
-	"@action"                            { canRegex(false); return ObjJ_AT_ACTION; }
-	"@selector"                          { canRegex(false); return ObjJ_AT_SELECTOR; }
-	"@class"                             { canRegex(false); return ObjJ_AT_CLASS; }
-	"@global"                            { canRegex(false); return ObjJ_AT_GLOBAL; }
-	"@ref"                               { canRegex(false); return ObjJ_AT_REF; }
-	"@deref"                             { canRegex(false); return ObjJ_AT_DEREF; }
-	"@protocol"                          { canRegex(false); return ObjJ_AT_PROTOCOL; }
-	"@optional"                          { canRegex(false); return ObjJ_AT_OPTIONAL; }
-	"@required"                          { canRegex(false); return ObjJ_AT_REQUIRED; }
-	"@interface"                         { canRegex(false); return ObjJ_AT_INTERFACE; }
-	"@typedef"                           { canRegex(false); return ObjJ_AT_TYPE_DEF; }
-	"@implementation"                    { canRegex(false); return ObjJ_AT_IMPLEMENTATION; }
-	"@outlet"                            { canRegex(false); return ObjJ_AT_OUTLET; }
-	"@{"                                 { canRegex(false); return ObjJ_AT_OPEN_BRACE; }
-	"null"|"NULL"                        { canRegex(false); return ObjJ_NULL_LITERAL; }
-	"nil"|"Nil"                          { canRegex(false); return ObjJ_NIL; }
-	"undefined"                          { canRegex(false); return ObjJ_UNDEFINED; }
-	{PP_DEFINE}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
-	{PP_UNDEF}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
-	{PP_IF_DEF}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
-	{PP_IFNDEF}                          { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
-	{PP_IF}                              { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF; }
-	{PP_ELSE}                            { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_ELSE; }
-	{PP_ENDIF}                           { canRegex(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_END_IF; }
-	{PP_ELIF}                            { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ELSE_IF; }
-	{PP_PRAGMA}                          { canRegex(false); yybegin(PRAGMA); return ObjJ_PP_PRAGMA; }
-	{PP_DEFINED}                         { canRegex(false); return ObjJ_PP_DEFINED; }
-	{PP_ERROR}                           { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
-	{PP_WARNING}                         { canRegex(false); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
-	{PP_INCLUDE}                         { canRegex(false);	yybegin(IN_IMPORT); inPreProc = true;return ObjJ_PP_INCLUDE; }
-	"signed"                             { canRegex(false);  return ObjJ_VAR_TYPE_SIGNED; }
-	"unsigned"                           { canRegex(false);  return ObjJ_VAR_TYPE_UNSIGNED; }
-	"IBAction"                           { canRegex(false); return ObjJ_VAR_TYPE_IBACTION; }
-	"IBOutlet"                           { canRegex(false); return ObjJ_VAR_TYPE_IBOUTLET; }
-	"SEL"                                { canRegex(false); return ObjJ_VAR_TYPE_SEL; }
-	"float"                              { canRegex(false);  return ObjJ_VAR_TYPE_FLOAT; }
-	"double"                             { canRegex(false);  return ObjJ_VAR_TYPE_DOUBLE; }
-	"BOOL"                               { canRegex(false);  return ObjJ_VAR_TYPE_BOOL; }
-	"break"                              { canRegex(false);  return ObjJ_BREAK; }
-	"do"                                 { canRegex(false);  return ObjJ_DO; }
-	"instanceof"                         { canRegex(true); return ObjJ_INSTANCE_OF; }
-	"typeof"                             { canRegex(true); return ObjJ_TYPE_OF; }
-	"case"                               { canRegex(false); return ObjJ_CASE; }
-	"else"                               { canRegex(false); return ObjJ_ELSE; }
-	"new"                                { canRegex(false); return ObjJ_NEW; }
-	"var"                                { canRegex(false); return ObjJ_VAR; }
-	"catch"                              { canRegex(false); return ObjJ_CATCH; }
-	"finally"                            { canRegex(false); return ObjJ_FINALLY; }
-	"return"                             { canRegex(true); return ObjJ_RETURN; }
-	"void"                               { canRegex(false); return ObjJ_VOID; }
-	"continue"                           { canRegex(true); return ObjJ_CONTINUE; }
-	"for"                                { canRegex(false); return ObjJ_FOR; }
-	"switch"                             { canRegex(false); return ObjJ_SWITCH; }
-	"while"                              { canRegex(false); return ObjJ_WHILE; }
-	"debugger"                           { canRegex(true); return ObjJ_DEBUGGER; }
-	"function"                           { canRegex(false); return ObjJ_FUNCTION; }
-	"this"                               { canRegex(false); return ObjJ_THIS; }
-	"with"                               { canRegex(true); return ObjJ_WITH; }
-	"default"                            { canRegex(true); return ObjJ_DEFAULT; }
-	"if"                                 { canRegex(false); return ObjJ_IF; }
-	"throw"                              { canRegex(false); return ObjJ_THROW; }
-	"delete"                             { canRegex(false); return ObjJ_DELETE; }
-	"in"                                 { canRegex(true); return ObjJ_IN; }
-	"try"                                { canRegex(false); return ObjJ_TRY; }
-	"let"                                { canRegex(false); return ObjJ_LET; }
-	"const"                              { canRegex(false); return ObjJ_CONST; }
-	";"                                  { canRegex(true); return ObjJ_SEMI_COLON; }
-	{BLOCK_COMMENT}                      { canRegex(true); return ObjJ_BLOCK_COMMENT; }
-	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { canRegex(true); return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
-	{LINE_TERMINATOR}                    { canRegex(true); return WHITE_SPACE; }
-	{VAR_TYPE_BYTE}                      { canRegex(false);  return ObjJ_VAR_TYPE_BYTE; }
-	{VAR_TYPE_CHAR}                      { canRegex(false);  return ObjJ_VAR_TYPE_CHAR; }
-	{VAR_TYPE_SHORT}                     { canRegex(false);  return ObjJ_VAR_TYPE_SHORT; }
-	{VAR_TYPE_INT}                       { canRegex(false);  return ObjJ_VAR_TYPE_INT; }
-	{VAR_TYPE_LONG_LONG}                 { canRegex(false);  return ObjJ_VAR_TYPE_LONG_LONG; }
-	{VAR_TYPE_LONG}                      { canRegex(false);  return ObjJ_VAR_TYPE_LONG; }
-	//{SINGLE_QUOTE_STRING_LITERAL}        { canRegex(false);  return ObjJ_SINGLE_QUOTE_STRING_LITERAL; }
-	//{DOUBLE_QUOTE_STRING_LITERAL}        { canRegex(false);  return ObjJ_DOUBLE_QUOTE_STRING_LITERAL; }
-	{BOOLEAN_LITERAL}                    { canRegex(false);  return ObjJ_BOOLEAN_LITERAL; }
-	{HEX_INTEGER_LITERAL}                { canRegex(false);  return ObjJ_HEX_INTEGER_LITERAL; }
-	{OCTAL_INTEGER_LITERAL}              { canRegex(false);  return ObjJ_OCTAL_INTEGER_LITERAL; }
-	{OCTAL_INTEGER_LITERAL2}             { canRegex(false);  return ObjJ_OCTAL_INTEGER_LITERAL2; }
-	{BINARY_INTEGER_LITERAL}             { canRegex(false);  return ObjJ_BINARY_INTEGER_LITERAL; }
-	{DECIMAL_LITERAL1} | {DECIMAL_LITERAL2} { canRegex(false);  return ObjJ_DECIMAL_LITERAL; }
-	{INTEGER_LITERAL}                    { canRegex(false);  return ObjJ_INTEGER_LITERAL; }
-	{ID}                                 { canRegex(false); return ObjJ_ID; }
+	"'"									 { canRegex(false); canWhitespace(true);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
+	"\""						 		 { canRegex(false); canWhitespace(true);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
+	"/*"								 { canRegex(false); canWhitespace(true);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); return ObjJ_BLOCK_COMMENT_START; }
+	"@["                                 { canRegex(true); canWhitespace(true); return ObjJ_AT_OPENBRACKET; }
+	"["                                  { canRegex(true); canWhitespace(true); return ObjJ_OPEN_BRACKET; }
+	"]"                                  { canRegex(false); canWhitespace(true); return ObjJ_CLOSE_BRACKET; }
+	"("                                  { canRegex(true); canWhitespace(true); return ObjJ_OPEN_PAREN; }
+	")"                                  { canRegex(false); canWhitespace(true); return ObjJ_CLOSE_PAREN; }
+	"{"                                  { canRegex(true); canWhitespace(true); return ObjJ_OPEN_BRACE; }
+	"}"                                  { canRegex(false); canWhitespace(true); return ObjJ_CLOSE_BRACE; }
+	","                                  { canRegex(true); canWhitespace(true); return ObjJ_COMMA; }
+	"="                                  { canRegex(true); canWhitespace(true); return ObjJ_ASSIGN; }
+	"?"                                  { canRegex(true); canWhitespace(true); return ObjJ_QUESTION_MARK; }
+	":"                                  { canRegex(true); canWhitespace(true); return ObjJ_COLON; }
+	"..."                                { canRegex(false); canWhitespace(true); return ObjJ_ELLIPSIS; }
+	"."                                  { canRegex(false); canWhitespace(true); return ObjJ_DOT; }
+	"++"                                 { canRegex(false); canWhitespace(true); return ObjJ_PLUS_PLUS; }
+	"--"                                 { canRegex(false); canWhitespace(true); return ObjJ_MINUS_MINUS; }
+	"+"                                  { canRegex(true); canWhitespace(true); return ObjJ_PLUS; }
+	"-"                                  { canRegex(true); canWhitespace(true); return ObjJ_MINUS; }
+	"~"                                  { canRegex(true); canWhitespace(true); return ObjJ_BIT_NOT; }
+	"!"                                  { canRegex(true); canWhitespace(true); 	return ObjJ_NOT; }
+	"*"                                  { canRegex(true); canWhitespace(true); return ObjJ_MULTIPLY; }
+	"/"                                  { canRegex(true); canWhitespace(true); return ObjJ_DIVIDE; }
+	"%"                                  { canRegex(true); canWhitespace(true); return ObjJ_MODULUS; }
+	">>"                                 { canRegex(true); canWhitespace(true); return ObjJ_RIGHT_SHIFT_ARITHMATIC; }
+	"<<"                                 { canRegex(true); canWhitespace(true); return ObjJ_LEFT_SHIFT_ARITHMATIC; }
+	">>>"                                { canRegex(true); canWhitespace(true); return ObjJ_RIGHT_SHIFT_LOGICAL; }
+	"<<<"                                { canRegex(true); canWhitespace(true); return ObjJ_LEFT_SHIFT_LOGICAL; }
+	"<"                                  { canRegex(true); canWhitespace(true); return ObjJ_LESS_THAN; }
+	">"                                  { canRegex(true); canWhitespace(true); return ObjJ_GREATER_THAN; }
+	"<="                                 { canRegex(true); canWhitespace(true); return ObjJ_LESS_THAN_EQUALS; }
+	">="                                 { canRegex(true); canWhitespace(true); return ObjJ_GREATER_THAN_EQUALS; }
+	"=="                                 { canRegex(true); canWhitespace(true); return ObjJ_EQUALS; }
+	"!="                                 { canRegex(true); canWhitespace(true); return ObjJ_NOT_EQUALS; }
+	"==="                                { canRegex(true); canWhitespace(true); return ObjJ_IDENTITY_EQUALS; }
+	"!=="                                { canRegex(true); canWhitespace(true); return ObjJ_IDENTITY_NOT_EQUALS; }
+	"&"                                  { canRegex(true); canWhitespace(true); return ObjJ_BIT_AND; }
+	"^"                                  { canRegex(true); canWhitespace(true); return ObjJ_BIT_XOR; }
+	"|"                                  { canRegex(true); canWhitespace(true); return ObjJ_BIT_OR; }
+	"&&"                                 { canRegex(true); canWhitespace(true); return ObjJ_AND; }
+	"||"                                 { canRegex(true); canWhitespace(true); return ObjJ_OR; }
+	"*="                                 { canRegex(true); canWhitespace(true); return ObjJ_MULTIPLY_ASSIGN; }
+	"/="                                 { canRegex(true); canWhitespace(true); return ObjJ_DIVIDE_ASSIGN; }
+	"%="                                 { canRegex(true); canWhitespace(true); return ObjJ_MODULUS_ASSIGN; }
+	"+="                                 { canRegex(true); canWhitespace(true); return ObjJ_PLUS_ASSIGN; }
+	"-="                                 { canRegex(true); canWhitespace(true); return ObjJ_MINUS_ASSIGN; }
+	"<<="                                { canRegex(true); canWhitespace(true); return ObjJ_LEFT_SHIFT_ARITHMATIC_ASSIGN; }
+	">>="                                { canRegex(true); canWhitespace(true); return ObjJ_RIGHT_SHIFT_ARITHMATIC_ASSIGN; }
+	"<<<="                               { canRegex(true); canWhitespace(true); return ObjJ_LEFT_SHIFT_LOGICAL_ASSIGN; }
+	">>>="                               { canRegex(true); canWhitespace(true); return ObjJ_RIGHT_SHIFT_LOGICAL_ASSIGN; }
+	"&="                                 { canRegex(true); canWhitespace(true); return ObjJ_BIT_AND_ASSIGN; }
+	"^="                                 { canRegex(true); canWhitespace(true); return ObjJ_BIT_XOR_ASSIGN; }
+	"|="                                 { canRegex(true); canWhitespace(true); return ObjJ_BIT_OR_ASSIGN; }
+	"=>"                                 { canRegex(false); canWhitespace(true); return ObjJ_ARROW; }
+	"@import"                            { canRegex(false); canWhitespace(true); yybegin(IN_IMPORT); return ObjJ_AT_IMPORT; }
+	"@accessors"                         { canRegex(false); canWhitespace(true); return ObjJ_AT_ACCESSORS; }
+	"@end"                               { canRegex(false); canWhitespace(true); return ObjJ_AT_END; }
+	"@action"                            { canRegex(false); canWhitespace(true); return ObjJ_AT_ACTION; }
+	"@selector"                          { canRegex(false); canWhitespace(true); return ObjJ_AT_SELECTOR; }
+	"@class"                             { canRegex(false); canWhitespace(true); return ObjJ_AT_CLASS; }
+	"@global"                            { canRegex(false); canWhitespace(true); return ObjJ_AT_GLOBAL; }
+	"@ref"                               { canRegex(false); canWhitespace(true); return ObjJ_AT_REF; }
+	"@deref"                             { canRegex(false); canWhitespace(true); return ObjJ_AT_DEREF; }
+	"@protocol"                          { canRegex(false); canWhitespace(true); return ObjJ_AT_PROTOCOL; }
+	"@optional"                          { canRegex(false); canWhitespace(true); return ObjJ_AT_OPTIONAL; }
+	"@required"                          { canRegex(false); canWhitespace(true); return ObjJ_AT_REQUIRED; }
+	"@interface"                         { canRegex(false); canWhitespace(true); return ObjJ_AT_INTERFACE; }
+	"@typedef"                           { canRegex(false); canWhitespace(true); return ObjJ_AT_TYPE_DEF; }
+	"@implementation"                    { canRegex(false); canWhitespace(true); return ObjJ_AT_IMPLEMENTATION; }
+	"@outlet"                            { canRegex(false); canWhitespace(true); return ObjJ_AT_OUTLET; }
+	"@{"                                 { canRegex(false); canWhitespace(true); return ObjJ_AT_OPEN_BRACE; }
+	"null"|"NULL"                        { canRegex(false); canWhitespace(true); return ObjJ_NULL_LITERAL; }
+	"nil"|"Nil"                          { canRegex(false); canWhitespace(true); return ObjJ_NIL; }
+	"undefined"                          { canRegex(false); canWhitespace(true); return ObjJ_UNDEFINED; }
+	"@"					 		 	 	 { canRegex(false); canWhitespace(false); return ObjJ_AT; }
+	{PP_DEFINE}                          { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_DEFINE; }
+	{PP_UNDEF}                           { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_UNDEF; }
+	{PP_IF_DEF}                          { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_DEF; }
+	{PP_IFNDEF}                          { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF_NDEF; }
+	{PP_IF}                              { canRegex(true); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_IF; }
+	{PP_ELSE}                            { canRegex(true); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_ELSE; }
+	{PP_ENDIF}                           { canRegex(true); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true;return ObjJ_PP_END_IF; }
+	{PP_ELIF}                            { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ELSE_IF; }
+	{PP_PRAGMA}                          { canRegex(false); canWhitespace(true); yybegin(PRAGMA); return ObjJ_PP_PRAGMA; }
+	{PP_DEFINED}                         { canRegex(false); canWhitespace(true); return ObjJ_PP_DEFINED; }
+	{PP_ERROR}                           { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_ERROR; }
+	{PP_WARNING}                         { canRegex(false); canWhitespace(true); yybegin(PREPROCESSOR); inPreProc = true; return ObjJ_PP_WARNING; }
+	{PP_INCLUDE}                         { canRegex(false); canWhitespace(true);	yybegin(IN_IMPORT); inPreProc = true;return ObjJ_PP_INCLUDE; }
+	"signed"                             { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_SIGNED; }
+	"unsigned"                           { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_UNSIGNED; }
+	"IBAction"                           { canRegex(false); canWhitespace(true); return ObjJ_VAR_TYPE_IBACTION; }
+	"IBOutlet"                           { canRegex(false); canWhitespace(true); return ObjJ_VAR_TYPE_IBOUTLET; }
+	"SEL"                                { canRegex(false); canWhitespace(true); return ObjJ_VAR_TYPE_SEL; }
+	"float"                              { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_FLOAT; }
+	"double"                             { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_DOUBLE; }
+	"BOOL"                               { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_BOOL; }
+	"break"                              { canRegex(false); canWhitespace(true);  return ObjJ_BREAK; }
+	"do"                                 { canRegex(false); canWhitespace(true);  return ObjJ_DO; }
+	"instanceof"                         { canRegex(true); canWhitespace(true); return ObjJ_INSTANCE_OF; }
+	"typeof"                             { canRegex(true); canWhitespace(true); return ObjJ_TYPE_OF; }
+	"case"                               { canRegex(false); canWhitespace(true); return ObjJ_CASE; }
+	"else"                               { canRegex(false); canWhitespace(true); return ObjJ_ELSE; }
+	"new"                                { canRegex(false); canWhitespace(true); return ObjJ_NEW; }
+	"var"                                { canRegex(false); canWhitespace(true); return ObjJ_VAR; }
+	"catch"                              { canRegex(false); canWhitespace(true); return ObjJ_CATCH; }
+	"finally"                            { canRegex(false); canWhitespace(true); return ObjJ_FINALLY; }
+	"return"                             { canRegex(true); canWhitespace(true); return ObjJ_RETURN; }
+	"void"                               { canRegex(false); canWhitespace(true); return ObjJ_VOID; }
+	"continue"                           { canRegex(true); canWhitespace(true); return ObjJ_CONTINUE; }
+	"for"                                { canRegex(false); canWhitespace(true); return ObjJ_FOR; }
+	"switch"                             { canRegex(false); canWhitespace(true); return ObjJ_SWITCH; }
+	"while"                              { canRegex(false); canWhitespace(true); return ObjJ_WHILE; }
+	"debugger"                           { canRegex(true); canWhitespace(true); return ObjJ_DEBUGGER; }
+	"function"                           { canRegex(false); canWhitespace(true); return ObjJ_FUNCTION; }
+	"this"                               { canRegex(false); canWhitespace(true); return ObjJ_THIS; }
+	"with"                               { canRegex(true); canWhitespace(true); return ObjJ_WITH; }
+	"default"                            { canRegex(true); canWhitespace(true); return ObjJ_DEFAULT; }
+	"if"                                 { canRegex(false); canWhitespace(true); return ObjJ_IF; }
+	"throw"                              { canRegex(false); canWhitespace(true); return ObjJ_THROW; }
+	"delete"                             { canRegex(false); canWhitespace(true); return ObjJ_DELETE; }
+	"in"                                 { canRegex(true); canWhitespace(true); return ObjJ_IN; }
+	"try"                                { canRegex(false); canWhitespace(true); return ObjJ_TRY; }
+	"let"                                { canRegex(false); canWhitespace(true); return ObjJ_LET; }
+	"const"                              { canRegex(false); canWhitespace(true); return ObjJ_CONST; }
+	";"                                  { canRegex(true); canWhitespace(true); return ObjJ_SEMI_COLON; }
+	{BLOCK_COMMENT}                      { canRegex(true); canWhitespace(true); return ObjJ_BLOCK_COMMENT; }
+	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { canRegex(true); canWhitespace(true); return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
+	{LINE_TERMINATOR}                    { canRegex(true); canWhitespace(true); return WHITE_SPACE; }
+	{VAR_TYPE_BYTE}                      { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_BYTE; }
+	{VAR_TYPE_CHAR}                      { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_CHAR; }
+	{VAR_TYPE_SHORT}                     { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_SHORT; }
+	{VAR_TYPE_INT}                       { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_INT; }
+	{VAR_TYPE_LONG_LONG}                 { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_LONG_LONG; }
+	{VAR_TYPE_LONG}                      { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_LONG; }
+	//{SINGLE_QUOTE_STRING_LITERAL}        { canRegex(false); canWhitespace(true);  return ObjJ_SINGLE_QUOTE_STRING_LITERAL; }
+	//{DOUBLE_QUOTE_STRING_LITERAL}        { canRegex(false); canWhitespace(true);  return ObjJ_DOUBLE_QUOTE_STRING_LITERAL; }
+	{BOOLEAN_LITERAL}                    { canRegex(false); canWhitespace(true);  return ObjJ_BOOLEAN_LITERAL; }
+	{HEX_INTEGER_LITERAL}                { canRegex(false); canWhitespace(true);  return ObjJ_HEX_INTEGER_LITERAL; }
+	{OCTAL_INTEGER_LITERAL}              { canRegex(false); canWhitespace(true);  return ObjJ_OCTAL_INTEGER_LITERAL; }
+	{OCTAL_INTEGER_LITERAL2}             { canRegex(false); canWhitespace(true);  return ObjJ_OCTAL_INTEGER_LITERAL2; }
+	{BINARY_INTEGER_LITERAL}             { canRegex(false); canWhitespace(true);  return ObjJ_BINARY_INTEGER_LITERAL; }
+	{DECIMAL_LITERAL1} | {DECIMAL_LITERAL2} { canRegex(false); canWhitespace(true);  return ObjJ_DECIMAL_LITERAL; }
+	{INTEGER_LITERAL}                    { canRegex(false); canWhitespace(true);  return ObjJ_INTEGER_LITERAL; }
+	{ID}                                 { canRegex(false); canWhitespace(true); return ObjJ_ID; }
 	"/"{REGEXP_VALID_CHAR}
         								 {
+											canWhitespace(true);
 											if (canRegex()) {
 												canRegex(false);
 												yybegin(IN_REGEXP);
@@ -322,16 +323,16 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 										 		return ObjJ_DIVIDE;
 										 	}
 										 }
-	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); return ObjJ_BLOCK_COMMENT; }
-	{SINGLE_LINE_COMMENT}                { canRegex(true); return ObjJ_SINGLE_LINE_COMMENT; }
+	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); canWhitespace(true); return ObjJ_BLOCK_COMMENT; }
+	{SINGLE_LINE_COMMENT}                { canRegex(true); canWhitespace(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	//{BAD_DOUBLE_QUOTE_STRING_LITERAL}	 { canRegex(false);	return ObjJ_QUO_TEXT; }
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }
 
 }
-{PP_FRAGMENT}				             { canRegex(false); return ObjJ_PP_FRAGMENT; }
-"@"{ID}						 			 { canRegex(false); return ObjJ_AT_FRAGMENT; }
+{PP_FRAGMENT}				             { canRegex(false); canWhitespace(true); return ObjJ_PP_FRAGMENT; }
+"@"{ID}						 			 { canRegex(false); canWhitespace(true); return ObjJ_AT_FRAGMENT; }
 <YYINITIAL, IN_FILENAME, IN_IMPORT> {
-	{WHITE_SPACE}+                       { return WHITE_SPACE; }
+	{WHITE_SPACE}+                       { return canWhitespace() ? WHITE_SPACE : BAD_CHARACTER; }
   	"\\"								 { return ObjJ_FORWARD_SLASH; }
 }
 [^] { return BAD_CHARACTER; }

@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.formatting
 import cappuccino.ide.intellij.plugin.psi.ObjJFrameworkDescriptor
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJObjectLiteral
+import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
@@ -11,6 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
+import cappuccino.ide.intellij.plugin.utils.document
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate.Result
@@ -212,7 +214,7 @@ private object DoubleButtonPressHandler : BeforeKeyPressHandler {
     override val nextCharRequired:List<Char>? = "/()<>.".toList()
 
     override fun handle(element: ObjJCompositeElement, char:Char, prevChar:Char?, nextChar:Char?, project: Project, editor: Editor, file: PsiFile): Result {
-        if (char == nextChar) {
+        if (char == nextChar && char != '"' && char != '\'') {
             editor.caretModel.currentCaret.moveToOffset(editor.caretModel.currentCaret.offset + 1)
             return Result.STOP
         }

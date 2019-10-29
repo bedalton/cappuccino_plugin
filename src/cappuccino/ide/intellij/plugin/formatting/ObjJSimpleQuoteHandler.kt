@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.codeInsight.editorActions.SimpleTokenSetQuoteHandler
 import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.psi.TokenType
@@ -13,7 +14,7 @@ class ObjJSimpleQuoteHandler : SimpleTokenSetQuoteHandler(ObjJTokenSets.QUOTE_CH
         if (isOpeningQuote) {
             iterator?.retreat()
             val prevToken = iterator?.tokenType
-            return prevToken != ObjJ_QUO_TEXT
+            return prevToken != ObjJ_QUO_TEXT && prevToken !in myLiteralTokenSet
         }
         return isOpeningQuote
     }

@@ -119,6 +119,7 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_SINGLE_QUO ||
                 tokenType == ObjJTypes.ObjJ_DOUBLE_QUO ||
                 tokenType == ObjJTypes.ObjJ_SELECTOR_LITERAL ||
+                tokenType == ObjJTypes.ObjJ_AT ||
                 tokenType == ObjJTypes.ObjJ_QUO_TEXT) {
             attrKey = STRING
         } else if (tokenType == ObjJTypes.ObjJ_SINGLE_LINE_COMMENT) {

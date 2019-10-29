@@ -74,7 +74,7 @@
 		BIT_OR_ASSIGN =                    	'|='
 		ARROW =                          	'=>'
 		DOUBLE_QUO =						'"'
-		AT_DOUBLE_QUOTE	=					"@\""
+		AT =								'@'
 		SINGLE_QUO = 						"'"
 		BLOCK_COMMENT_START =				"/*"
 		BLOCK_COMMENT_END =				 	"*/"
@@ -2388,11 +2388,20 @@ functionName
 	;
 
 doubleQuoteStringLiteral
-	::= ("\""|"@\"") QUO_TEXT? "\""
+	::= AT? doubleQuote QUO_TEXT? doubleQuote
 	{
-		pin=2
+		pin=3
+		methods = [
+			openingQuote = "/doubleQuote[0]"
+			closingQuote = "/doubleQuote[1]"
+		]
 	}
 	;
+
+doubleQuote
+	::= DOUBLE_QUO
+	;
+
 
 singleQuoteStringLiteral
 	::= "'" QUO_TEXT? "'"
