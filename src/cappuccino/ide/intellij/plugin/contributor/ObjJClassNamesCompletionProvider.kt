@@ -45,21 +45,23 @@ object ObjJClassNamesCompletionProvider {
         // Add protocols if allowed
         if (shouldAddProtocolNameCompletions(element) || inMethodHeader || isFirstItemInArray) {
             ObjJProtocolDeclarationsIndex.instance.getAllKeys(element.project).forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+                addClassLookupElement(resultSet, it)
             }
         }
 
         // Append primitive var types if necessary
         if (shouldAddPrimitiveTypes(element) || inMethodHeader) {
             ObjJClassType.ADDITIONAL_PREDEFINED_CLASSES.forEach {
-                resultSet.addElement(LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler))
+                addClassLookupElement(resultSet, it)
             }
         }
 
         // Append implementation declaration names if in correct context
         if (shouldAddImplementationClassNameCompletions(element) || inMethodHeader || isFirstItemInArray || shouldAddClassCompletionsInHead) {
             addImplementationClassNameElements(element, resultSet)
-            ObjJCompletionElementProviderUtil.addCompletionElementsSimple(resultSet, ObjJPluginSettings.ignoredClassNames())
+            ObjJPluginSettings.ignoredClassNames().forEach {
+                addClassLookupElement(resultSet, it)
+            }
         }
     }
 
@@ -117,10 +119,7 @@ object ObjJClassNamesCompletionProvider {
         ObjJImplementationDeclarationsIndex.instance.getAllKeys(element.project).filterNot {
             ObjJPluginSettings.ignoreUnderscoredClasses && it.startsWith("_")
         }.toSet().forEach {
-            val priority = ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.GENERIC_VARIABLE_SUGGESTION_PRIORITY)
-            val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler)
-            val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, priority)
-            resultSet.addElement(prioritizedLookupElement)
+            addClassLookupElement(resultSet, it)
         }
     }
 
@@ -140,10 +139,18 @@ object ObjJClassNamesCompletionProvider {
      */
     internal fun addProtocolNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement, queryString: String) {
         val results = ObjJProtocolDeclarationsIndex.instance.getKeysByPattern("$queryString(.+)", element.project) as MutableList<String>
-        ObjJCompletionElementProviderUtil.addCompletionElementsSimple(resultSet, results)
-
+        results.forEach {
+            addClassLookupElement(resultSet, it)
+        }
     }
 
+    private fun addClassLookupElement(resultSet: CompletionResultSet, className:String) {
+        val priority = ObjJInsertionTracker.getPoints(className, ObjJCompletionContributor.CLASS_NAME_PRIORITY)
+        val lookupElement = LookupElementBuilder.create(className).withInsertHandler(ObjJClassNameInsertHandler)
+        val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, priority)
+        resultSet.addElement(prioritizedLookupElement)
+
+    }
 
 
 }
