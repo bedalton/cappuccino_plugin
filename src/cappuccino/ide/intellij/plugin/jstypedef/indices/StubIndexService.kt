@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefFileStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub

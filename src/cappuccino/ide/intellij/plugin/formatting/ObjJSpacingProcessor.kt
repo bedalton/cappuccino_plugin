@@ -90,7 +90,6 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
             val block = (if (node2.firstChildNode?.elementType == ObjJ_BLOCK_ELEMENT) node2.firstChildNode else null)
             if (block == null || (block.firstChildNode?.elementType != ObjJ_OPEN_BRACE && block.firstChildNode.getNextNonEmptyNodeIgnoringComments()?.elementType != ObjJ_OPEN_BRACE)) {
-                LOGGER.info("Node2: ${node2.elementType}; FirstChild: ${block?.firstChildNode?.elementType}; SecondChild: ${block?.firstChildNode?.getNextNonEmptyNodeIgnoringComments()?.elementType}")
                 return Spacing.createSpacing(0, Int.MAX_VALUE, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             }
 

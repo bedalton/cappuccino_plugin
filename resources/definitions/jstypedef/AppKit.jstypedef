@@ -391,7 +391,7 @@ interface CGBitmapGraphicsContext {
     DOMElement:HTMLElement,
     path?:CGPath
     gState:CGGState,
-    gStateStack:CGSGtate[]
+    gStateStack:CGGState[]
 }
 
 

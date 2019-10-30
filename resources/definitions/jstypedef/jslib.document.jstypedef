@@ -511,6 +511,7 @@ typemap DocumentAndElementEventHandlersEventMap {
     "copy": ClipboardEvent;
     "cut": ClipboardEvent;
     "paste": ClipboardEvent;
+    default:ClipboardEvent;
 }
 
 interface DocumentAndElementEventHandlers {

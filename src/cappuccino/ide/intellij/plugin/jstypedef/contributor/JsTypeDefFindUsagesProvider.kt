@@ -36,7 +36,8 @@ class JsTypeDefFindUsagesProvider : FindUsagesProvider {
         return psiElement is JsTypeDefFunctionName ||
                 psiElement is JsTypeDefPropertyName ||
                 psiElement is JsTypeDefTypeName ||
-                psiElement is JsTypeDefModuleName
+                psiElement is JsTypeDefModuleName ||
+                psiElement is JsTypeDefTypeMapName
     }
 
     override fun getHelpId(
@@ -49,6 +50,8 @@ class JsTypeDefFindUsagesProvider : FindUsagesProvider {
         return when (psiElement) {
             is JsTypeDefFunctionName -> "function"
             is JsTypeDefPropertyName -> "property"
+            is JsTypeDefTypeMapName -> "typemap"
+            is JsTypeDefModuleName -> "module"
             is JsTypeDefTypeName -> {
                 when {
                     psiElement.parent is JsTypeDefInterfaceElement -> "interface"

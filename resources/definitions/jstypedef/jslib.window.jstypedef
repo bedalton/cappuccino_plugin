@@ -97,6 +97,7 @@ typemap WindowEventMap extends GlobalEventHandlersEventMap, WindowEventHandlersE
     "vrdisplaypointerunrestricted": Event;
     "vrdisplaypresentchange": Event;
     "waiting": Event;
+    default:Event;
 }
 
 /** The Window interface represents a window containing a DOM document; the document property points to the DOM document loaded in that window. */
@@ -259,6 +260,7 @@ typemap WindowEventHandlersEventMap {
     "storage": StorageEvent;
     "unhandledrejection": PromiseRejectionEvent;
     "unload": Event;
+    default:Event;
 }
 
 interface WindowEventHandlers {

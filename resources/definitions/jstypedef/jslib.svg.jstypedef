@@ -252,6 +252,7 @@ class SVGDescElement extends SVGElement {
 }
 
 typemap SVGElementEventMap extends ElementEventMap, GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
+    default:Event;
 }
 
 /** All of the SVG DOM interfaces that correspond directly to elements in the SVG language derive from the SVGElement interface. */
@@ -1307,6 +1308,7 @@ class SVGRectElement extends SVGGraphicsElement {
 typemap SVGSVGElementEventMap extends SVGElementEventMap {
     "SVGUnload": Event;
     "SVGZoom": SVGZoomEvent;
+    default:Event;
 }
 
 /** The SVGSVGElement interface provides access to the properties of <svg> elements, as well as getMethods to manipulate them. This interface contains also various miscellaneous commonly-used utility getMethods, such as matrix operations and the ability to control the time of redraw on visual rendering devices. */
@@ -1698,4 +1700,5 @@ typemap SVGElementTagNameMap {
     "tspan": SVGTSpanElement;
     "use": SVGUseElement;
     "view": SVGViewElement;
+    default:SVGElement;
 }
