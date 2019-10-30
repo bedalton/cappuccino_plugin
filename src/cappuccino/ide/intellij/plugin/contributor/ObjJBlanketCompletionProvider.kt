@@ -261,7 +261,16 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Adds variable name completion elements
      */
     private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
-
+        addCompletionElementsSimple(resultSet, listOf(
+                "YES",
+                "NO",
+                "Nil",
+                "nil",
+                "true",
+                "false",
+                "null",
+                "undefined"
+        ), 200.0)
         if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
             return
         }
