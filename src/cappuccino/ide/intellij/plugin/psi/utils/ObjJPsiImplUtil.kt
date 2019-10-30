@@ -1104,11 +1104,7 @@ object ObjJPsiImplUtil {
         val newFileName = ObjJElementFactory.createFrameworkFileNameElement(fileName.project, newName)
         return fileName.replace(newFileName)
     }
-
-    //@JvmStatic
-    //fun getReference(statement: ObjJImportIncludeStatement): PsiReference? = ObjJImportPsiUtils.getReference(statement)
-
-
+    
     @JvmStatic
     fun resolve(statement: ObjJImportIncludeStatement): ObjJFile? = ObjJImportPsiUtils.resolve(statement)
 
