@@ -21,7 +21,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.openapi.util.TextRange
@@ -34,39 +33,39 @@ import com.intellij.psi.tree.IElementType
 object JsTypeDefPsiImplUtil {
 
     private val EOS_TOKENS = listOf(
-        JS_SEMI_COLON
+            JS_SEMI_COLON
     )
 
     // ============================== //
     // ========== Get Name ========== //
     // ============================== //
     @JvmStatic
-    fun getName(functionName:JsTypeDefFunctionName?) : String {
+    fun getName(functionName: JsTypeDefFunctionName?): String {
         return functionName?.text ?: ""
     }
 
     @JvmStatic
-    fun getName(propertyName:JsTypeDefPropertyName?) : String {
+    fun getName(propertyName: JsTypeDefPropertyName?): String {
         return propertyName?.text ?: ""
     }
 
     @JvmStatic
-    fun getName(typeName:JsTypeDefTypeName?) : String {
+    fun getName(typeName: JsTypeDefTypeName?): String {
         return typeName?.text ?: ""
     }
 
     @JvmStatic
-    fun getName(moduleName:JsTypeDefModuleName) : String {
+    fun getName(moduleName: JsTypeDefModuleName): String {
         return moduleName.text ?: ""
     }
 
     @JvmStatic
-    fun getName(name:JsTypeDefTypeMapName) : String {
+    fun getName(name: JsTypeDefTypeMapName): String {
         return name.text
     }
 
     @JvmStatic
-    fun getName(key:JsTypeDefGenericsKey) : String {
+    fun getName(key: JsTypeDefGenericsKey): String {
         return key.text
     }
 
@@ -74,38 +73,41 @@ object JsTypeDefPsiImplUtil {
     // ========== Set Name ========== //
     // ============================== //
     @JvmStatic
-    fun setName(oldFunctionName:JsTypeDefFunctionName, newName:String) : PsiElement {
-        val newNode = JsTypeDefElementFactory.createFunctionName(oldFunctionName.project, newName) ?: return oldFunctionName
+    fun setName(oldFunctionName: JsTypeDefFunctionName, newName: String): PsiElement {
+        val newNode = JsTypeDefElementFactory.createFunctionName(oldFunctionName.project, newName)
+                ?: return oldFunctionName
         return oldFunctionName.replace(newNode)
     }
 
     @JvmStatic
-    fun setName(oldPropertyName: JsTypeDefPropertyName, newName:String) : PsiElement {
-        val newPropertyName = JsTypeDefElementFactory.createProperty(oldPropertyName.project, newName, "null") ?: return oldPropertyName
+    fun setName(oldPropertyName: JsTypeDefPropertyName, newName: String): PsiElement {
+        val newPropertyName = JsTypeDefElementFactory.createProperty(oldPropertyName.project, newName, "null")
+                ?: return oldPropertyName
         return oldPropertyName.replace(newPropertyName)
     }
 
     @JvmStatic
-    fun setName(oldTypeName:JsTypeDefTypeName, newName:String) : PsiElement {
+    fun setName(oldTypeName: JsTypeDefTypeName, newName: String): PsiElement {
         val newTypeName = JsTypeDefElementFactory.createTypeName(oldTypeName.project, newName) ?: return oldTypeName
         return oldTypeName.replace(newTypeName)
     }
 
     @JvmStatic
-    fun setName(oldModuleName:JsTypeDefModuleName, newName:String) : PsiElement {
-        val newModuleName = JsTypeDefElementFactory.createModuleName(oldModuleName.project, newName) ?: return oldModuleName
+    fun setName(oldModuleName: JsTypeDefModuleName, newName: String): PsiElement {
+        val newModuleName = JsTypeDefElementFactory.createModuleName(oldModuleName.project, newName)
+                ?: return oldModuleName
         return oldModuleName.replace(newModuleName)
     }
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun setName(name:JsTypeDefTypeMapName, newName:String) : PsiElement {
+    fun setName(name: JsTypeDefTypeMapName, newName: String): PsiElement {
         return name
     }
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun setName(key:JsTypeDefGenericsKey, newName:String) : PsiElement {
+    fun setName(key: JsTypeDefGenericsKey, newName: String): PsiElement {
         return key
     }
 
@@ -114,52 +116,54 @@ object JsTypeDefPsiImplUtil {
     // ========== Namespace ========= //
     // ============================== //
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefElement) : String {
+    fun getEnclosingNamespace(element: JsTypeDefElement): String {
         return element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName ?: ""
     }
 
     @JvmStatic
-    fun getEnclosingNamespace(element: JsTypeDefProperty) : String =
+    fun getEnclosingNamespace(element: JsTypeDefProperty): String =
             element.stub?.enclosingNamespace
-                ?: (element.parent as? JsTypeDefVariableDeclaration)?.enclosingNamespace
-                ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
-                ?: ""
+                    ?: (element.parent as? JsTypeDefVariableDeclaration)?.enclosingNamespace
+                    ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
+                    ?: ""
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefVariableDeclaration) : String =
+    fun getEnclosingNamespace(element: JsTypeDefVariableDeclaration): String =
             element.stub?.enclosingNamespace
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                     ?: ""
+
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element: JsTypeDefProperty) : List<String> =
+    fun getEnclosingNamespaceComponents(element: JsTypeDefProperty): List<String> =
             element.stub?.enclosingNamespaceComponents
                     ?: (element.parent as? JsTypeDefVariableDeclaration)?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String> =
+    fun getEnclosingNamespaceComponents(element: JsTypeDefVariableDeclaration): List<String> =
             element.stub?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
-    @JvmStatic
-    fun getNamespaceComponents(element: JsTypeDefProperty) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.propertyNameString)
 
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefVariableDeclaration) : List<String>
-            = element.stub?.namespaceComponents ?: element.enclosingNamespaceComponents + element.property?.propertyNameString.orEmpty()
+    fun getNamespaceComponents(element: JsTypeDefProperty): List<String> = element.stub?.namespaceComponents
+            ?: (element.enclosingNamespaceComponents + element.propertyNameString)
 
     @JvmStatic
-    fun getNamespaceComponent(element: JsTypeDefProperty) : String
-            = element.stub?.propertyName ?: element.propertyNameString
+    fun getNamespaceComponents(element: JsTypeDefVariableDeclaration): List<String> = element.stub?.namespaceComponents
+            ?: element.enclosingNamespaceComponents + element.property?.propertyNameString.orEmpty()
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefVariableDeclaration) : String
-            = element.stub?.variableName ?: element.property?.namespaceComponent.orEmpty()
+    fun getNamespaceComponent(element: JsTypeDefProperty): String = element.stub?.propertyName
+            ?: element.propertyNameString
 
     @JvmStatic
-    fun getEnclosingNamespace(elementIn:JsTypeDefFunction) : String {
+    fun getNamespaceComponent(element: JsTypeDefVariableDeclaration): String = element.stub?.variableName
+            ?: element.property?.namespaceComponent.orEmpty()
+
+    @JvmStatic
+    fun getEnclosingNamespace(elementIn: JsTypeDefFunction): String {
         val stub = elementIn.stub
         if (stub != null)
             return stub.enclosingNamespace
@@ -168,11 +172,10 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(elementIn:JsTypeDefFunctionDeclaration) : List<String>
-        = elementIn.function?.enclosingNamespaceComponents.orEmpty()
+    fun getEnclosingNamespaceComponents(elementIn: JsTypeDefFunctionDeclaration): List<String> = elementIn.function?.enclosingNamespaceComponents.orEmpty()
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(elementIn:JsTypeDefFunction) : List<String> {
+    fun getEnclosingNamespaceComponents(elementIn: JsTypeDefFunction): List<String> {
         val stub = elementIn.stub
         if (stub != null)
             return stub.enclosingNamespaceComponents
@@ -181,84 +184,79 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefFunction) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.functionName.text)
+    fun getNamespaceComponents(element: JsTypeDefFunction): List<String> = element.stub?.namespaceComponents
+            ?: (element.enclosingNamespaceComponents + element.functionName.text)
 
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefFunctionDeclaration) : List<String>
-            = element.function?.namespaceComponents.orEmpty()
+    fun getNamespaceComponents(element: JsTypeDefFunctionDeclaration): List<String> = element.function?.namespaceComponents.orEmpty()
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefFunction) : String
-            = element.stub?.functionName ?: element.functionName.text
+    fun getNamespaceComponent(element: JsTypeDefFunction): String = element.stub?.functionName
+            ?: element.functionName.text
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefFunctionDeclaration) : String
-            = element.function?.namespaceComponent ?: "???"
+    fun getNamespaceComponent(element: JsTypeDefFunctionDeclaration): String = element.function?.namespaceComponent
+            ?: "???"
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefFunctionName) : String
-            = (element.parent as JsTypeDefFunction).enclosingNamespace
+    fun getEnclosingNamespace(element: JsTypeDefFunctionName): String = (element.parent as JsTypeDefFunction).enclosingNamespace
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element:JsTypeDefFunctionName) : List<String>
-            = (element.parent as JsTypeDefFunction).enclosingNamespaceComponents
+    fun getEnclosingNamespaceComponents(element: JsTypeDefFunctionName): List<String> = (element.parent as JsTypeDefFunction).enclosingNamespaceComponents
 
     @JvmStatic
-    fun getNamespaceComponents(functionName:JsTypeDefFunctionName) : List<String>
-            = (functionName.parent as JsTypeDefFunction).namespaceComponents
+    fun getNamespaceComponents(functionName: JsTypeDefFunctionName): List<String> = (functionName.parent as JsTypeDefFunction).namespaceComponents
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefFunctionName) : String
-            = element.text
+    fun getNamespaceComponent(element: JsTypeDefFunctionName): String = element.text
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefInterfaceElement) : String =
+    fun getEnclosingNamespace(element: JsTypeDefInterfaceElement): String =
             element.stub?.enclosingNamespace
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                     ?: ""
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element:JsTypeDefInterfaceElement) : List<String> =
+    fun getEnclosingNamespaceComponents(element: JsTypeDefInterfaceElement): List<String> =
             element.stub?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
 
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefInterfaceElement) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.className)
+    fun getNamespaceComponents(element: JsTypeDefInterfaceElement): List<String> = element.stub?.namespaceComponents
+            ?: (element.enclosingNamespaceComponents + element.className)
 
     @JvmStatic
-    fun getNamespaceComponent(element: JsTypeDefInterfaceElement) : String
-            = element.stub?.className ?: element.typeName?.text ?: "???"
+    fun getNamespaceComponent(element: JsTypeDefInterfaceElement): String = element.stub?.className
+            ?: element.typeName?.text ?: "???"
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefClassElement) : String =
+    fun getEnclosingNamespace(element: JsTypeDefClassElement): String =
             element.stub?.enclosingNamespace
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespacedName
                     ?: ""
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(element:JsTypeDefClassElement) : List<String> =
+    fun getEnclosingNamespaceComponents(element: JsTypeDefClassElement): List<String> =
             element.stub?.enclosingNamespaceComponents
                     ?: element.getParentOfType(JsTypeDefHasNamespace::class.java)?.namespaceComponents
                     ?: listOf()
 
     @JvmStatic
-    fun getNamespaceComponents(element:JsTypeDefClassElement) : List<String>
-            = element.stub?.namespaceComponents ?: (element.enclosingNamespaceComponents + element.className)
+    fun getNamespaceComponents(element: JsTypeDefClassElement): List<String> = element.stub?.namespaceComponents
+            ?: (element.enclosingNamespaceComponents + element.className)
 
     @JvmStatic
-    fun getNamespaceComponent(element: JsTypeDefClassElement) : String
-            = element.stub?.className ?: element.typeName?.text ?: "???"
+    fun getNamespaceComponent(element: JsTypeDefClassElement): String = element.stub?.className
+            ?: element.typeName?.text ?: "???"
 
     @JvmStatic
-    fun getNamespacedName(element:JsTypeDefHasNamespace) : String {
-            val base = element.enclosingNamespace
-            return if (base.isEmpty())
-                element.namespaceComponent
-            else
-                "$base.${element.namespaceComponent}"
+    fun getNamespacedName(element: JsTypeDefHasNamespace): String {
+        val base = element.enclosingNamespace
+        return if (base.isEmpty())
+            element.namespaceComponent
+        else
+            "$base.${element.namespaceComponent}"
     }
 
     // ============================== //
@@ -266,16 +264,16 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getNamespacedName(module:JsTypeDefModule) : String
-            = module.stub?.fullyNamespacedName ?: getNamespaceComponents(module).joinToString(".")
+    fun getNamespacedName(module: JsTypeDefModule): String = module.stub?.fullyNamespacedName
+            ?: getNamespaceComponents(module).joinToString(".")
 
     @JvmStatic
-    fun getEnclosingNamespace(element:JsTypeDefModule) : String =
+    fun getEnclosingNamespace(element: JsTypeDefModule): String =
             element.stub?.enclosingNamespace
                     ?: element.enclosingNamespaceComponents.joinToString(".")
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(module:JsTypeDefModule) : List<String> {
+    fun getEnclosingNamespaceComponents(module: JsTypeDefModule): List<String> {
         val stubbedNamespace = module.stub?.namespaceComponents
         if (stubbedNamespace != null) {
             return stubbedNamespace
@@ -286,12 +284,12 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getNamespaceComponents(module:JsTypeDefModule) : List<String> {
+    fun getNamespaceComponents(module: JsTypeDefModule): List<String> {
         val stubbedNamespace = module.stub?.namespaceComponents
         if (stubbedNamespace != null)
             return stubbedNamespace
         val temp = mutableListOf<String>()
-        var currentModule:JsTypeDefModule? = module
+        var currentModule: JsTypeDefModule? = module
         while (currentModule?.namespacedModuleName != null) {
             temp.add(0, currentModule.namespacedModuleName!!.text)
             currentModule = currentModule.getParentOfType(JsTypeDefModule::class.java)
@@ -300,12 +298,12 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefModule) : String
-            = element.stub?.moduleName ?: element.namespacedModuleName?.moduleName?.text ?: ""
+    fun getNamespaceComponent(element: JsTypeDefModule): String = element.stub?.moduleName
+            ?: element.namespacedModuleName?.moduleName?.text ?: ""
 
 
     @JvmStatic
-    fun getAllSubModules(moduleIn:JsTypeDefModule, recursive:Boolean = true) : List<JsTypeDefModule> {
+    fun getAllSubModules(moduleIn: JsTypeDefModule, recursive: Boolean = true): List<JsTypeDefModule> {
         if (!recursive) {
             return moduleIn.moduleList
         }
@@ -318,7 +316,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCollapsedNamespaceComponents(module:JsTypeDefModule) : List<JsTypeDefModuleName> {
+    fun getCollapsedNamespaceComponents(module: JsTypeDefModule): List<JsTypeDefModuleName> {
         val moduleName = module.namespacedModuleName ?: return emptyList()
         val out = moduleName.namespace.moduleNameList.toMutableList()
         out.add(moduleName.moduleName)
@@ -326,7 +324,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEnclosingNamespaceComponents(moduleName:JsTypeDefModuleName) : List<String> {
+    fun getEnclosingNamespaceComponents(moduleName: JsTypeDefModuleName): List<String> {
         val stubbedNamespace = moduleName.stub?.enclosingNamespaceComponents
         if (stubbedNamespace != null)
             return stubbedNamespace
@@ -342,32 +340,31 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getEnclosingNamespace(moduleName:JsTypeDefModuleName) : String {
+    fun getEnclosingNamespace(moduleName: JsTypeDefModuleName): String {
         return moduleName.stub?.enclosingNamespace ?: getEnclosingNamespaceComponents(moduleName).joinToString(".")
     }
 
     @JvmStatic
-    fun getNamespaceComponents(moduleName:JsTypeDefModuleName) : List<String>
-            = moduleName.stub?.namespaceComponents ?: getEnclosingNamespaceComponents(moduleName) + moduleName.text
+    fun getNamespaceComponents(moduleName: JsTypeDefModuleName): List<String> = moduleName.stub?.namespaceComponents
+            ?: getEnclosingNamespaceComponents(moduleName) + moduleName.text
 
     @JvmStatic
-    fun getFullyNamespacedName(moduleName:JsTypeDefModuleName) : String
-            = moduleName.stub?.fullyNamespacedName ?: (getEnclosingNamespaceComponents(moduleName) + moduleName.text)
-                .joinToString(".")
+    fun getFullyNamespacedName(moduleName: JsTypeDefModuleName): String = moduleName.stub?.fullyNamespacedName
+            ?: (getEnclosingNamespaceComponents(moduleName) + moduleName.text)
+                    .joinToString(".")
 
     @JvmStatic
-    fun getNamespaceComponent(element:JsTypeDefModuleName) : String
-            = element.stub?.moduleName ?: element.text
+    fun getNamespaceComponent(element: JsTypeDefModuleName): String = element.stub?.moduleName ?: element.text
 
     @JvmStatic
-    fun getIndexInDirectNamespace(moduleName:JsTypeDefModuleName) : Int {
+    fun getIndexInDirectNamespace(moduleName: JsTypeDefModuleName): Int {
         val parentModule = getParentModule(moduleName) ?: return -1
         val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
         return namespaceComponents.indexOf(moduleName)
     }
 
     @JvmStatic
-    fun getIndexInNamespace(moduleName:JsTypeDefModuleName) : Int {
+    fun getIndexInNamespace(moduleName: JsTypeDefModuleName): Int {
         val parentModule = getParentModule(moduleName) ?: return -1
         val namespaceComponents = getCollapsedNamespaceComponents(parentModule)
         val moduleNameIndex = namespaceComponents.indexOf(moduleName)
@@ -378,7 +375,7 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParentModule(moduleName:JsTypeDefModuleName) : JsTypeDefModule? {
+    fun getParentModule(moduleName: JsTypeDefModuleName): JsTypeDefModule? {
         return moduleName.getParentOfType(JsTypeDefModule::class.java)
     }
 
@@ -405,12 +402,11 @@ object JsTypeDefPsiImplUtil {
 */
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun isStatic(declaration:JsTypeDefInterfaceElement) : Boolean = false
+    fun isStatic(declaration: JsTypeDefInterfaceElement): Boolean = false
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun isStatic(declaration:JsTypeDefClassElement) : Boolean
-        = true
+    fun isStatic(declaration: JsTypeDefClassElement): Boolean = true
 
 
     // ============================== //
@@ -418,64 +414,63 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getPropertyTypes(property: JsTypeDefProperty) : List<JsTypeDefType> {
+    fun getPropertyTypes(property: JsTypeDefProperty): List<JsTypeDefType> {
         return property.typeList
     }
 
     @JvmStatic
-    fun isNullable(property: JsTypeDefProperty) : Boolean {
+    fun isNullable(property: JsTypeDefProperty): Boolean {
         return property.stub?.nullable ?: property.nullable != null || isNullable(property.typeList)
     }
 
 
     @JvmStatic
-    fun isNullable(property: JsTypeDefArgument) : Boolean {
+    fun isNullable(property: JsTypeDefArgument): Boolean {
         return property.nullable != null || isNullable(property.typeList)
     }
 
     @JvmStatic
-    fun getPropertyTypes(declaration:JsTypeDefVariableDeclaration) : List<JsTypeDefType> {
+    fun getPropertyTypes(declaration: JsTypeDefVariableDeclaration): List<JsTypeDefType> {
         return declaration.property?.propertyTypes.orEmpty()
     }
 
     @JvmStatic
-    fun isNullable(declaration:JsTypeDefVariableDeclaration) : Boolean {
+    fun isNullable(declaration: JsTypeDefVariableDeclaration): Boolean {
         return declaration.stub?.nullable ?: declaration.property?.isNullable.orTrue()
     }
 
     @JvmStatic
-    fun isNullableReturnType(function:JsTypeDefFunction) : Boolean {
+    fun isNullableReturnType(function: JsTypeDefFunction): Boolean {
         return isNullable(function.functionReturnType)
     }
 
     @JvmStatic
-    fun isNullable(returnType:JsTypeDefFunctionReturnType?) : Boolean {
+    fun isNullable(returnType: JsTypeDefFunctionReturnType?): Boolean {
         return returnType?.void != null || isNullable(returnType?.typeList)
     }
 
     @JvmStatic
-    fun isNullable(typeList:List<JsTypeDefType>?) : Boolean {
+    fun isNullable(typeList: List<JsTypeDefType>?): Boolean {
         return typeList?.firstOrNull { it.nullType != null } != null
     }
-
 
 
     // ============================== //
     // ========== TypeMap =========== //
     // ============================== //
     @JvmStatic
-    fun getMapName(typeMap:JsTypeDefTypeMapElement) : String? {
+    fun getMapName(typeMap: JsTypeDefTypeMapElement): String? {
         return typeMap.stub?.mapName ?: typeMap.typeMapName?.text
     }
 
     @JvmStatic
-    fun getKeys(typeMap:JsTypeDefTypeMapElement) : List<String> {
+    fun getKeys(typeMap: JsTypeDefTypeMapElement): List<String> {
         return typeMap.stub?.values?.map { it.key }
                 ?: typeMap.keyValuePairList.map { it.stringLiteral.stringValue }
     }
 
     @JvmStatic
-    fun getTypesForKey(typeMap: JsTypeDefTypeMapElement, key:String) : InferenceResult? {
+    fun getTypesForKey(typeMap: JsTypeDefTypeMapElement, key: String): InferenceResult? {
         return typeMap.stub?.getTypesForKey(key)
                 ?: typeMap.keyValuePairList.filter { it.key.toLowerCase() == key.toLowerCase() }.mapNotNull { it.typesList }.ifEmpty { null }?.combine()
                 ?: typeMap.defaultMapValueList.mapNotNull {
@@ -485,35 +480,34 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getKeyValuePairs(typeMap: JsTypeDefTypeMapElement) : List<JsTypeDefKeyValuePair>
-            = typeMap.keyValuePairList
+    fun getKeyValuePairs(typeMap: JsTypeDefTypeMapElement): List<JsTypeDefKeyValuePair> = typeMap.keyValuePairList
 
     @JvmStatic
-    fun getKey(keyValuePair: JsTypeDefKeyValuePair) : String {
+    fun getKey(keyValuePair: JsTypeDefKeyValuePair): String {
         return keyValuePair.stringLiteral.stringValue
     }
 
     @JvmStatic
-    fun getTypesList(keyValuePair: JsTypeDefKeyValuePair) : InferenceResult {
+    fun getTypesList(keyValuePair: JsTypeDefKeyValuePair): InferenceResult {
         val nullable = isNullable(keyValuePair)
         val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
         return InferenceResult(types = types, nullable = nullable)
     }
 
     @JvmStatic
-    fun isNullable(keyValuePair: JsTypeDefKeyValuePair) : Boolean {
+    fun isNullable(keyValuePair: JsTypeDefKeyValuePair): Boolean {
         return keyValuePair.typeList.any { it.nullType != null }
     }
 
     @JvmStatic
-    fun getTypesList(keyValuePair: JsTypeDefDefaultMapValue) : InferenceResult {
+    fun getTypesList(keyValuePair: JsTypeDefDefaultMapValue): InferenceResult {
         val nullable = isNullable(keyValuePair)
         val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
         return InferenceResult(types = types, nullable = nullable)
     }
 
     @JvmStatic
-    fun isNullable(keyValuePair: JsTypeDefDefaultMapValue) : Boolean {
+    fun isNullable(keyValuePair: JsTypeDefDefaultMapValue): Boolean {
         return keyValuePair.typeList.any { it.nullType != null }
     }
 
@@ -522,12 +516,12 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getTypeNameString(typeAlias:JsTypeDefTypeAlias) : String {
+    fun getTypeNameString(typeAlias: JsTypeDefTypeAlias): String {
         return typeAlias.stub?.typeName ?: typeAlias.typeName?.text ?: UNDEF_CLASS_NAME
     }
 
     @JvmStatic
-    fun getTypesList(typeAlias:JsTypeDefTypeAlias) : InferenceResult {
+    fun getTypesList(typeAlias: JsTypeDefTypeAlias): InferenceResult {
         return typeAlias.stub?.types ?: InferenceResult(types = typeAlias.typeList.toJsTypeDefTypeListTypes())
     }
 
@@ -537,20 +531,20 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getClassName(typeInterface: JsTypeDefInterfaceElement) : String
-            = typeInterface.stub?.className ?: typeInterface.typeName?.text ?: "?"
+    fun getClassName(typeInterface: JsTypeDefInterfaceElement): String = typeInterface.stub?.className
+            ?: typeInterface.typeName?.text ?: "?"
 
     @JvmStatic
-    fun getClassName(classDeclaration: JsTypeDefClassElement) : String
-            = classDeclaration.stub?.className ?: classDeclaration.typeName?.text ?: "?"
+    fun getClassName(classDeclaration: JsTypeDefClassElement): String = classDeclaration.stub?.className
+            ?: classDeclaration.typeName?.text ?: "?"
 
     @JvmStatic
-    fun getCompletionModifier(classDeclaration: JsTypeDefClassElement) : CompletionModifier {
+    fun getCompletionModifier(classDeclaration: JsTypeDefClassElement): CompletionModifier {
         return classDeclaration.stub?.completionModifier ?: genericGetCompletionModifier(classDeclaration)
     }
 
     @JvmStatic
-    fun getCompletionModifier(classDeclaration: JsTypeDefInterfaceElement) : CompletionModifier {
+    fun getCompletionModifier(classDeclaration: JsTypeDefInterfaceElement): CompletionModifier {
         return classDeclaration.stub?.completionModifier ?: genericGetCompletionModifier(classDeclaration)
     }
 
@@ -559,20 +553,21 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getDescription(function:JsTypeDefFunction): ObjJFunctionDescription {
+    fun getDescription(function: JsTypeDefFunction): ObjJFunctionDescription {
         return (function.stub?.asJsFunctionType ?: function.toJsFunctionType()).description
     }
 
     @JvmStatic
-    fun getDescription(function:JsTypeDefAnonymousFunction): ObjJFunctionDescription {
+    fun getDescription(function: JsTypeDefAnonymousFunction): ObjJFunctionDescription {
         return (function.toJsTypeListType()).description
     }
 
     @JvmStatic
-    fun getDescriptiveText(psiElement: JsTypeDefElement) : String {
+    fun getDescriptiveText(psiElement: JsTypeDefElement): String {
         return when (psiElement) {
             is JsTypeDefInterfaceElement -> {
-                "interface " + (psiElement.typeName?.id?.text ?: "???") + (if (psiElement.extendsStatement?.typeList != null) {
+                "interface " + (psiElement.typeName?.id?.text
+                        ?: "???") + (if (psiElement.extendsStatement?.typeList != null) {
                     val typeListText = psiElement.extendsStatement!!.typeList.joinToString("|")
                     " extends $typeListText"
                 } else "")
@@ -592,34 +587,36 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun isStatic(property:JsTypeDefProperty) : Boolean {
+    fun isStatic(property: JsTypeDefProperty): Boolean {
         return property.stub?.static ?: property.staticKeyword != null || (property.parent is JsTypeDefVariableDeclaration)
     }
+
     @JvmStatic
-    fun getPropertyNameString(property: JsTypeDefProperty) : String {
+    fun getPropertyNameString(property: JsTypeDefProperty): String {
         val stubName = property.stub?.propertyName
         if (stubName != null)
             return stubName
         val propertyNameElement = property.propertyName
         val escapedId = propertyNameElement?.escapedId
-        return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement?.stringLiteral?.stringValue ?: propertyNameElement?.text.orEmpty()
+        return escapedId?.text?.substring(1, escapedId.text.length - 2)
+                ?: propertyNameElement?.stringLiteral?.stringValue ?: propertyNameElement?.text.orEmpty()
     }
 
     @JvmStatic
-    fun getPropertyNameString(declaration:JsTypeDefVariableDeclaration) : String {
+    fun getPropertyNameString(declaration: JsTypeDefVariableDeclaration): String {
         return declaration.stub?.variableName ?: declaration.property?.propertyNameString.orEmpty()
     }
 
     @JvmStatic
-    fun getCompletionModifier(declaration:JsTypeDefVariableDeclaration) : CompletionModifier {
+    fun getCompletionModifier(declaration: JsTypeDefVariableDeclaration): CompletionModifier {
         return declaration.stub?.completionModifier ?: genericGetCompletionModifier(declaration)
     }
 
     @JvmStatic
-    fun getCompletionModifier(property:JsTypeDefProperty):CompletionModifier {
+    fun getCompletionModifier(property: JsTypeDefProperty): CompletionModifier {
         return property.stub?.completionModifier
-            ?: (property.parent as? JsTypeDefVariableDeclaration)?.completionModifier
-            ?: genericGetCompletionModifier(property)
+                ?: (property.parent as? JsTypeDefVariableDeclaration)?.completionModifier
+                ?: genericGetCompletionModifier(property)
 
     }
 
@@ -628,30 +625,30 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getVarArgs(argument: JsTypeDefArgument) : Boolean {
+    fun getVarArgs(argument: JsTypeDefArgument): Boolean {
         return argument.ellipsis != null
     }
 
     @Suppress("UNUSED_PARAMETER")
     @JvmStatic
-    fun isStatic(functionDeclaration:JsTypeDefFunctionDeclaration) : Boolean {
+    fun isStatic(functionDeclaration: JsTypeDefFunctionDeclaration): Boolean {
         return true
     }
 
     @JvmStatic
-    fun isStatic(function:JsTypeDefFunction) : Boolean {
+    fun isStatic(function: JsTypeDefFunction): Boolean {
         return function.stub?.static ?: function.staticKeyword != null || function.parent is JsTypeDefFunctionDeclaration
     }
 
     @JvmStatic
-    fun getArgumentNameString(property: JsTypeDefArgument) : String {
+    fun getArgumentNameString(property: JsTypeDefArgument): String {
         val propertyNameElement = property.propertyName
         val escapedId = propertyNameElement.escapedId
         return escapedId?.text?.substring(1, escapedId.text.length - 2) ?: propertyNameElement.text
     }
 
     @JvmStatic
-    fun getFunctionNameString(function:JsTypeDefFunction) : String {
+    fun getFunctionNameString(function: JsTypeDefFunction): String {
         val stubName = function.stub?.functionName
         if (stubName != null)
             return stubName
@@ -661,71 +658,75 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getCompletionModifier(declaration:JsTypeDefFunction) : CompletionModifier {
+    fun getCompletionModifier(declaration: JsTypeDefFunction): CompletionModifier {
         return declaration.stub?.completionModifier
                 ?: (declaration.parent as? JsTypeDefFunctionDeclaration)?.completionModifier
                 ?: genericGetCompletionModifier(declaration)
     }
 
     @JvmStatic
-    fun getCompletionModifier(declaration:JsTypeDefFunctionDeclaration) : CompletionModifier {
+    fun getCompletionModifier(declaration: JsTypeDefFunctionDeclaration): CompletionModifier {
         return genericGetCompletionModifier(declaration)
     }
 
     @JvmStatic
-    fun getParameterNames(functionDeclaration: JsTypeDefFunction) : List<String> {
-        return functionDeclaration.stub?.parameters?.map { it.name } ?:
-                functionDeclaration.argumentsList?.arguments.orEmpty().map { it.argumentNameString }
+    fun getParameterNames(functionDeclaration: JsTypeDefFunction): List<String> {
+        return functionDeclaration.stub?.parameters?.map { it.name }
+                ?: functionDeclaration.argumentsList?.arguments.orEmpty().map { it.argumentNameString }
     }
 
     @JvmStatic
-    fun getParameterNames(function:JsTypeDefAnonymousFunction) : List<String> {
+    fun getParameterNames(function: JsTypeDefAnonymousFunction): List<String> {
         return function.argumentsList?.arguments.orEmpty().mapNotNull { it.argumentNameString }
     }
 
     @JvmStatic
-    fun getFunctionNameString(function:JsTypeDefAnonymousFunction) : String? {
+    fun getFunctionNameString(function: JsTypeDefAnonymousFunction): String? {
         return null
     }
 
     @JvmStatic
-    fun getReturnTypes(function:JsTypeDefFunction, tag:Long) : InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefFunction, tag: Long): InferenceResult? {
         return function.stub?.returnType ?: function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes()?.let {
             InferenceResult(types = it)
         }
     }
 
     @JvmStatic
-    fun getReturnTypes(function:JsTypeDefAnonymousFunction, tag:Long) : InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefAnonymousFunction, tag: Long): InferenceResult? {
         return function.functionReturnType?.toTypeListType()
     }
 
 
     @JvmStatic
-    fun toJsFunctionType(function:JsTypeDefFunction, tag:Long) : JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefFunction, tag: Long): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
+
     @JvmStatic
-    fun toJsFunctionType(function:JsTypeDefFunction) : JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefFunction): JsTypeListFunctionType {
         return JsTypeListFunctionType(
                 name = function.stub?.functionName ?: function.functionNameString,
                 comment = null, // @todo implement comment parsing
-                parameters = function.stub?.parameters ?:function. argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
-                returnType = function.stub?.returnType ?: function.functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
+                parameters = function.stub?.parameters ?: function.argumentsList?.arguments?.toFunctionArgumentList()
+                ?: emptyList(),
+                returnType = function.stub?.returnType ?: function.functionReturnType?.toTypeListType()
+                ?: INFERRED_EMPTY_TYPE
         )
     }
 
 
     @JvmStatic
-    fun toJsFunctionType(function:JsTypeDefAnonymousFunction, tag:Long) : JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefAnonymousFunction, tag: Long): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
+
     @JvmStatic
-    fun toJsFunctionType(function:JsTypeDefAnonymousFunction) : JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefAnonymousFunction): JsTypeListFunctionType {
         return JsTypeListFunctionType(
                 name = function.functionNameString,
                 comment = null, // @todo implement comment parsing
-                parameters = function. argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
+                parameters = function.argumentsList?.arguments?.toFunctionArgumentList() ?: emptyList(),
                 returnType = function.functionReturnType?.toTypeListType() ?: INFERRED_EMPTY_TYPE
         )
     }
@@ -736,22 +737,22 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getReference(name:JsTypeDefModuleName) : PsiPolyVariantReference {
+    fun getReference(name: JsTypeDefModuleName): PsiPolyVariantReference {
         return JsTypeDefModuleNameReference(name)
     }
 
     @JvmStatic
-    fun getReference(name:JsTypeDefTypeMapName) : PsiPolyVariantReference {
+    fun getReference(name: JsTypeDefTypeMapName): PsiPolyVariantReference {
         return JsTypeDefTypeMapNameReference(name)
     }
 
     @JvmStatic
-    fun getReference(name:JsTypeDefTypeName) : JsTypeDefTypeNameReference {
+    fun getReference(name: JsTypeDefTypeName): JsTypeDefTypeNameReference {
         return JsTypeDefTypeNameReference(name)
     }
 
     @JvmStatic
-    fun getReference(name:JsTypeDefGenericsKey) : PsiPolyVariantReference {
+    fun getReference(name: JsTypeDefGenericsKey): PsiPolyVariantReference {
         return JsTypeDefTypeGenericsKeyReference(name)
     }
 
@@ -773,7 +774,7 @@ object JsTypeDefPsiImplUtil {
     // === Completion Modifiers ===== //
     // ============================== //
 
-    private fun genericGetCompletionModifier(element:JsTypeDefHasCompletionModifiers) : CompletionModifier {
+    private fun genericGetCompletionModifier(element: JsTypeDefHasCompletionModifiers): CompletionModifier {
         if (element.atQuiet != null)
             return CompletionModifier.AT_QUIET
         if (element.atSilent != null)
@@ -784,33 +785,34 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun isQuiet(element: JsTypeDefHasCompletionModifiers):Boolean {
+    fun isQuiet(element: JsTypeDefHasCompletionModifiers): Boolean {
         return element.completionModifier == CompletionModifier.AT_QUIET
     }
 
     @JvmStatic
-    fun isSilent(element: JsTypeDefHasCompletionModifiers):Boolean {
+    fun isSilent(element: JsTypeDefHasCompletionModifiers): Boolean {
         return element.completionModifier == CompletionModifier.AT_SILENT
     }
 
     @JvmStatic
-    fun isSuggest(element: JsTypeDefHasCompletionModifiers):Boolean {
+    fun isSuggest(element: JsTypeDefHasCompletionModifiers): Boolean {
         return element.completionModifier == CompletionModifier.AT_SUGGEST
     }
 
     @JvmStatic
-    fun getCompletionModifier(element:JsTypeDefCompletionModifiedBlock) : CompletionModifier {
+    fun getCompletionModifier(element: JsTypeDefCompletionModifiedBlock): CompletionModifier {
         if (element.atQuiet != null)
             return CompletionModifier.AT_QUIET
         if (element.atSilent != null)
             return CompletionModifier.AT_SILENT
         if (element.atSuggest != null)
             return CompletionModifier.AT_SUGGEST
-        return ((element.containingFile).firstChild as? JsTypeDefFileDirective)?.completionModifier ?: CompletionModifier.DEFAULT
+        return ((element.containingFile).firstChild as? JsTypeDefFileDirective)?.completionModifier
+                ?: CompletionModifier.DEFAULT
     }
 
     @JvmStatic
-    fun getCompletionModifier(element:JsTypeDefFileDirective):CompletionModifier {
+    fun getCompletionModifier(element: JsTypeDefFileDirective): CompletionModifier {
         if (element.atQuiet != null)
             return CompletionModifier.AT_QUIET
         if (element.atSilent != null)
@@ -820,7 +822,7 @@ object JsTypeDefPsiImplUtil {
         return CompletionModifier.DEFAULT
     }
 
-    private fun getBlockCompletionModifier(element:PsiElement): CompletionModifier? {
+    private fun getBlockCompletionModifier(element: PsiElement): CompletionModifier? {
         return (element.getParentOfType(JsTypeDefCompletionModifiedBlock::class.java))?.completionModifier
     }
 
@@ -862,9 +864,10 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getEnclosingGenerics(element:PsiElement) : List<String> {
+    fun getEnclosingGenerics(element: PsiElement): List<String> {
         val out = mutableListOf<String>()
-        var parent:JsTypeDefHasGenerics? = element.getParentOfType(JsTypeDefHasGenerics::class.java) ?: return emptyList()
+        var parent: JsTypeDefHasGenerics? = element.getParentOfType(JsTypeDefHasGenerics::class.java)
+                ?: return emptyList()
         while (parent != null) {
             out.addAll(parent.genericsKeys.orEmpty().map { it.key })
             parent = parent.getParentOfType(JsTypeDefHasGenerics::class.java)
@@ -873,20 +876,20 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getGenericsKeys(declaration:JsTypeDefFunctionDeclaration) : Set<JsTypeListGenericType>? {
+    fun getGenericsKeys(declaration: JsTypeDefFunctionDeclaration): Set<JsTypeListGenericType>? {
         return declaration.function?.genericsKeys
     }
 
     @JvmStatic
-    fun getGenericsKeys(function:JsTypeDefFunction) : Set<JsTypeListGenericType>? {
+    fun getGenericsKeys(function: JsTypeDefFunction): Set<JsTypeListGenericType>? {
         val genericsKeys = function.stub?.genericsKeys
-        if (genericsKeys != null &&  genericsKeys.isNotEmpty())
+        if (genericsKeys != null && genericsKeys.isNotEmpty())
             return genericsKeys.ifEmpty { null }
         return function.genericTypeTypes?.asJsTypeListGenericType()
     }
 
     @JvmStatic
-    fun getGenericsKeys(declaration: JsTypeDefClassDeclaration<*,*>) : Set<JsTypeListGenericType>? {
+    fun getGenericsKeys(declaration: JsTypeDefClassDeclaration<*, *>): Set<JsTypeListGenericType>? {
         val genericsKeys = declaration.stub?.genericsKeys.orEmpty()
         // If Stub is not null, then the element would know whether or not
         // to keep the list null or empty.
@@ -906,10 +909,10 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun asJsTypeListGenericType(genericTypeTypes: JsTypeDefGenericTypeTypes) : Set<JsTypeListGenericType>? {
+    fun asJsTypeListGenericType(genericTypeTypes: JsTypeDefGenericTypeTypes): Set<JsTypeListGenericType>? {
         return genericTypeTypes.genericTypesTypeList.mapNotNull {
             var key = it.genericsKey?.text
-            val types= it.typeList.toJsTypeDefTypeListTypes()
+            val types = it.typeList.toJsTypeDefTypeListTypes()
             if (key == null && types.size == 1) {
                 key = types.firstOrNull()?.typeName
             }
@@ -924,11 +927,11 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getPreviousSiblings(thisType:JsTypeDefTypeName) : List<JsTypeDefTypeName> {
+    fun getPreviousSiblings(thisType: JsTypeDefTypeName): List<JsTypeDefTypeName> {
         val parent = (thisType.parent as? JsTypeDefQualifiedTypeName) ?: return emptyList()
         val allTypeNamesInParent = parent.typeNameList
         val out = mutableListOf<JsTypeDefTypeName>()
-        for (i in 0 .. allTypeNamesInParent.lastIndex) {
+        for (i in 0..allTypeNamesInParent.lastIndex) {
             val aType = allTypeNamesInParent[i]
             if (aType.isEquivalentTo(thisType))
                 return out
@@ -938,39 +941,44 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun resolveForMapType(function:JsTypeDefFunction, functionParameters:List<String?>) : InferenceResult? {
-        LOGGER.info("Getting Value Of for function: ${function.functionNameString}()")
+    fun resolveForMapType(function: JsTypeDefFunction, functionParameters: List<String?>): InferenceResult? {
         val valueOf = function.functionReturnType?.valueOfKeyType
                 ?: return null
-        LOGGER.info("Getting generics key")
         val genericsKey = valueOf.genericsKey
-                ?: return null
 
-        LOGGER.info("Getting arg for key ${genericsKey.text}")
         val arg = function.argumentsList?.arguments?.firstOrNull {
-            LOGGER.info("Arg is ${it.elementType}; Genericskey is ${it.keyOfType?.genericsKey?.text}")
             it.keyOfType?.genericsKey?.text == genericsKey.text
-        }?: return null
+        } ?: return null
 
         val index = function.argumentsList?.arguments?.indexOf(arg).orElse(-1)
-        LOGGER.info("Getting arg at index: $index")
         val key = functionParameters.getOrNull(index)
                 ?: return null
-        LOGGER.info("Resolving typemap")
-        val resolvedMapType = valueOf.typeMapName
+
+        val resolvedMapTypeName = valueOf.typeMapName
                 .reference
-                .resolve()
-                ?.getSelfOrParentOfType(JsTypeDefTypeMapElement::class.java)
-                ?: return null
-        LOGGER.info("Resolved Type map")
-        return resolvedMapType.getTypesForKey(key)
-                ?: resolvedMapType.typeMapExtends?.typeMapNameList?.mapNotNull {
+                .multiResolve(true)
+        if (resolvedMapTypeName.isEmpty()) {
+            return null
+        }
+        val resolved = resolvedMapTypeName.mapNotNull {
+            it.element?.getSelfOrParentOfType(cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapElement::class.java)
+        }
+        if (resolved.isEmpty()) {
+            return null
+        }
+
+        val types = resolved.flatMap { it.getTypesForKey(key)?.types.orEmpty() }
+                .ifEmpty { null }
+                ?.toSet()
+                ?: resolved.flatMap { it.typeMapExtends?.typeMapNameList.orEmpty() }.ifEmpty {null}?.mapNotNull {
                     it.reference.resolve()
                             ?.getParentOfType(JsTypeDefTypeMapElement::class.java)
                             ?.getTypesForKey(key)
-                }?.combine()
+                }?.combine()?.types
+        if (types == null || types.isEmpty())
+            return null
+        return InferenceResult(types = types)
     }
-
 }
 
 @Suppress("unused")
@@ -982,21 +990,21 @@ private val FILE_PATH_REGEX = "^[/]?[a-zA-Z0-9_+.]([ -]*[a-zA-Z0-9_+./]+)*".toRe
 private const val AT_FILE = "@file"
 private const val AT_FRAMEWORK = "@framework"
 
-fun PsiComment.getFileReferenceRangeInComment(includeAtFile:Boolean = false) :TextRange? {
+fun PsiComment.getFileReferenceRangeInComment(includeAtFile: Boolean = false): TextRange? {
     return getFileReferenceWithPrefix(AT_FILE, includeAtFile)
 }
 
-fun PsiComment.getFrameworkTextRangeInComment(includeAtFile:Boolean = false) :TextRange? {
+fun PsiComment.getFrameworkTextRangeInComment(includeAtFile: Boolean = false): TextRange? {
     return getFileReferenceWithPrefix(AT_FRAMEWORK, includeAtFile)
 }
 
-fun PsiElement.getFileReferenceWithPrefix(prefix:String, includePrefix:Boolean) : TextRange? {
+fun PsiElement.getFileReferenceWithPrefix(prefix: String, includePrefix: Boolean): TextRange? {
     val text = text
     val shift = if (includePrefix)
         -(prefix.length + 2)
     else
         0
-    var offset= 0
+    var offset = 0
     val parts = text.split(prefix)
     if (parts.size < 2)
         return null
@@ -1014,13 +1022,13 @@ fun PsiElement.getFileReferenceWithPrefix(prefix:String, includePrefix:Boolean) 
     return TextRange.create(startOffset, offset + endOf)
 }
 
-enum class CompletionModifier(val tag:String) {
+enum class CompletionModifier(val tag: String) {
     AT_SUGGEST("@suggest"),
     AT_QUIET("@quiet"),
     AT_SILENT("@silent");
 
     companion object {
-        fun fromTag(tag:String):CompletionModifier {
+        fun fromTag(tag: String): CompletionModifier {
             return when (tag) {
                 AT_SUGGEST.tag -> AT_SUGGEST
                 AT_QUIET.tag -> AT_QUIET
@@ -1028,7 +1036,8 @@ enum class CompletionModifier(val tag:String) {
                 else -> throw Exception("Completion tag is invalid")
             }
         }
-        val DEFAULT:CompletionModifier = AT_SUGGEST
+
+        val DEFAULT: CompletionModifier = AT_SUGGEST
     }
 
 }
