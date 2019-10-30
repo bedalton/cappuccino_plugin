@@ -17,8 +17,7 @@ import com.intellij.psi.tree.TokenSet
 
 class ObjJFindUsagesProvider : FindUsagesProvider {
 
-
-    override fun getWordsScanner(): WordsScanner? {
+    override fun getWordsScanner(): DefaultWordsScanner {
         return DefaultWordsScanner(
                 ObjJLexer(),
                 TokenSet.create(ObjJTypes.ObjJ_SELECTOR, ObjJTypes.ObjJ_VARIABLE_NAME, ObjJTypes.ObjJ_CLASS_NAME, ObjJTypes.ObjJ_FUNCTION_NAME),

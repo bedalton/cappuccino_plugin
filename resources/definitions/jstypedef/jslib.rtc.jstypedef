@@ -394,6 +394,7 @@ class RTCCertificate {
 
 typemap RTCDTMFSenderEventMap {
     "tonechange": RTCDTMFToneChangeEvent;
+    default:Event;
 }
 
 class RTCDTMFSender extends EventTarget {
@@ -420,6 +421,7 @@ typemap RTCDataChannelEventMap {
     "error": RTCErrorEvent;
     "message": MessageEvent;
     "open": Event;
+    default:Event;
 }
 
 class RTCDataChannel extends EventTarget {
@@ -460,6 +462,7 @@ class RTCDataChannelEvent extends Event {
 typemap RTCDtlsTransportEventMap {
     "error": RTCErrorEvent;
     "statechange": Event;
+    default:Event;
 }
 
 class RTCDtlsTransport extends EventTarget {
@@ -482,6 +485,7 @@ class RTCDtlsTransportStateChangedEvent extends Event {
 
 typemap RTCDtmfSenderEventMap {
     "tonechange": RTCDTMFToneChangeEvent;
+    default:Event;
 }
 
 class RTCDtmfSender extends EventTarget {
@@ -544,6 +548,7 @@ class RTCIceCandidatePairChangedEvent extends Event {
 typemap RTCIceGathererEventMap {
     "error": Event;
     "localcandidate": RTCIceGathererEvent;
+    default:Event;
 }
 
 class RTCIceGatherer extends RTCStatsProvider {
@@ -569,6 +574,7 @@ typemap RTCIceTransportEventMap {
     "gatheringstatechange": Event;
     "selectedcandidatepairchange": Event;
     "statechange": Event;
+    default:Event;
 }
 
 /** The RTCIceTransport interface provides access to information about the ICE transport layer over which the data is being sent and received. */
@@ -614,6 +620,7 @@ typemap RTCPeerConnectionEventMap {
     "signalingstatechange": Event;
     "statsended": RTCStatsEvent;
     "track": RTCTrackEvent;
+    default:Event;
 }
 
 /** The RTCPeerConnection interface represents a WebRTC connection between the local computer and a remote peer. It provides getMethods to connect to a remote peer, maintain and monitor the connection, and close the connection once it's no longer needed. */
@@ -727,6 +734,7 @@ class RTCRtpTransceiver {
 
 typemap RTCSctpTransportEventMap {
     "statechange": Event;
+    default:Event;
 }
 
 class RTCSctpTransport {
@@ -752,6 +760,7 @@ class RTCSessionDescription {
 
 typemap RTCSrtpSdesTransportEventMap {
     "error": Event;
+    default:Event;
 }
 
 class RTCSrtpSdesTransport extends EventTarget {

@@ -261,7 +261,16 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Adds variable name completion elements
      */
     private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
-
+        addCompletionElementsSimple(resultSet, listOf(
+                "YES",
+                "NO",
+                "Nil",
+                "nil",
+                "true",
+                "false",
+                "null",
+                "undefined"
+        ), 200.0)
         if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
             return
         }
@@ -562,10 +571,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val inferred = inferQualifiedReferenceType(previousComponents, createTag()) ?: return
         var classes = inferred.classes.toMutableSet() + (if (inferred.types.any { it is JsTypeListArrayType }) listOf("Array") else emptyList())
         if (("CPString" in classes || "string" in classes) && "String" !in classes) {
-            LOGGER.info("Added 'String' to known types for '${element.text}'")
             classes = classes + "String"
-        } else if ("String" !in classes) {
-            LOGGER.info("Class type for '${element.text}' is not string or CPString")
         }
         val collapsedClass = classes.flatMap { className ->
             JsTypeDefClassesByNameIndex.instance[className, project].map {

@@ -2,6 +2,7 @@
 
 typemap AbstractWorkerEventMap {
     "error": ErrorEvent;
+    default:Event;
 }
 /** The CacheStorage interface represents the storage for Cache objects. */
 class CacheStorage {
@@ -20,6 +21,7 @@ typemap NotificationEventMap {
     "close": Event;
     "error": Event;
     "show": Event;
+    default:Event;
 }
 
 /** The Notification interface of the Notifications API is used to configure and display desktop notifications to the user. */
@@ -118,6 +120,7 @@ class ScopedCredentialInfo {
 
 typemap ServiceWorkerEventMap extends AbstractWorkerEventMap {
     "statechange": Event;
+    default:Event;
 }
 
 /** The ServiceWorker interface of the ServiceWorker API provides a reference to a service worker. Multiple browsing contexts (e.g. pages, workers, etc.) can be associated with the same service worker, each through a unique ServiceWorker object. */
@@ -137,6 +140,7 @@ typemap ServiceWorkerContainerEventMap {
     "controllerchange": Event;
     "message": MessageEvent;
     "messageerror": MessageEvent;
+    default:Event;
 }
 
 /** The ServiceWorkerContainer interface of the ServiceWorker API provides an object representing the service worker as an overall unit in the network ecosystem, including facilities to register, unregister and update service workers, and access the state of service workers and their registrations. */
@@ -169,6 +173,7 @@ class ServiceWorkerMessageEvent extends Event {
 
 typemap ServiceWorkerRegistrationEventMap {
     "updatefound": Event;
+    default:Event;
 }
 
 /** The ServiceWorkerRegistration interface of the ServiceWorker API represents the service worker registration. You register a service worker to control one or more pages that share the same origin. */
@@ -211,6 +216,7 @@ interface WorkletOptions {
 
 typemap WorkerEventMap extends AbstractWorkerEventMap {
     "message": MessageEvent;
+    default:Event;
 }
 
 /** The Worker interface of the Web Workers API represents a background task that can be easily created and can send messages back to its creator. Creating a worker is as simple as calling the Worker() constructor and specifying a script to be run in the worker thread. */

@@ -156,7 +156,7 @@ interface JsTypeDefTypeMapStub : StubElement<JsTypeDefTypeMapElementImpl> {
     val fileName:String
     val mapName:String
     val values:List<JsTypeDefTypeMapEntry>
-    fun getTypesForKey(key:String) : InferenceResult
+    fun getTypesForKey(key:String) : InferenceResult?
 }
 
 interface JsTypeDefVariableDeclarationStub : StubElement<JsTypeDefVariableDeclarationImpl>, JsTypeDefNamespacedComponent, JsProperty {

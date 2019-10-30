@@ -17,8 +17,9 @@ class JsTypeDefTypeMapStubImpl(
     /**
      * Get All types for a given key
      */
-    override fun getTypesForKey(key: String): InferenceResult {
-        val types = values.filter { it.key == key }.map { it.types }
+    override fun getTypesForKey(key: String): InferenceResult? {
+        val types = values.filter { it.key.toLowerCase() == key.toLowerCase() }.map { it.types }.ifEmpty { null }
+                ?: return null
         val nullable = types.any { it.nullable }
         return InferenceResult(
                 types = types.flatMap { it.types }.toSet(),

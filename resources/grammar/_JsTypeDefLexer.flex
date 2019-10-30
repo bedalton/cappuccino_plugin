@@ -109,6 +109,7 @@ AT_FILE = [@][fF][iI][lL][eE]
     {AT_FILE}                   { return JS_AT_FILE; }
     {AT_SUGGEST}                { return JS_AT_SUGGEST; }
     "declare"                   { return JS_DECLARE; }
+  	"default"					{ return JS_DEFAULT; }
 
  	{BLOCK_COMMENT}            	{ return JS_BLOCK_COMMENT; }
   	{SINGLE_LINE_COMMENT}      	{ return JS_SINGLE_LINE_COMMENT; }

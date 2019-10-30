@@ -1114,6 +1114,7 @@ class AbortController {
 
 typemap AbortSignalEventMap {
     "abort": Event;
+    default:Event;
 }
 
 /** The AbortSignal interface represents a signal object that allows you to communicate with a DOM request (such as a Fetch) and abort it if required via an AbortController object. */
@@ -1179,6 +1180,7 @@ interface Animatable {
 typemap AnimationEventMap {
     "cancel": AnimationPlaybackEvent;
     "finish": AnimationPlaybackEvent;
+    default: AnimationPlaybackEvent;
 }
 
 class Animation extends EventTarget {
@@ -1242,6 +1244,7 @@ typemap ApplicationCacheEventMap {
     "obsolete": Event;
     "progress": ProgressEvent;
     "updateready": Event;
+    default:Event;
 }
 
 class ApplicationCache extends EventTarget {
@@ -1939,6 +1942,7 @@ typemap GlobalEventHandlersEventMap {
     "volumechange": Event;
     "waiting": Event;
     "wheel": WheelEvent;
+    default:Event;
 }
 
 interface GlobalEventHandlers {
@@ -2505,6 +2509,7 @@ class MessageEvent extends Event {
 typemap MessagePortEventMap {
     "message": MessageEvent;
     "messageerror": MessageEvent;
+    default:MessageEvent;
 }
 
 /** The MessagePort interface of the Channel Messaging API represents one of the two ports of a MessageChannel, allowing messages to be sent from one port and listening out for them arriving at the other. */
