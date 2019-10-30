@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -30,6 +31,8 @@ private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_
 private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
 
 private const val CACHE_EXPIRY = 15000
+
+private const val TEXT_DEPTH = 3;
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -68,6 +71,8 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
     }
 }
 
+
+
 /**
  * Gets the cached types values for the given element
  * This should save computation time, but results are uncertain
@@ -81,7 +86,14 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
     // Establish and store last text
 
 
-    val thisText = this.parent?.parent?.parent?.text ?: this.parent?.parent?.text ?: this.parent?.text ?: this.text
+    var textParent:PsiElement = this
+    for (i in 0 until TEXT_DEPTH) {
+        val tempParent = textParent.parent
+                ?: break
+        if (tempParent !is ObjJBlock && tempParent !is ObjJFile)
+            textParent = tempParent
+    }
+    val thisText = textParent.text
     val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
     val textIsUnchanged = lastText == text
     // Check cache without tagging
