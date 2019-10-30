@@ -298,8 +298,8 @@ class Array<T> {
 
 declare readonly var Array: {
     (arrayLength?: number): any[];
-    (arrayLength: number): T[];
-    (...items: T[]): T[];
+    (arrayLength: number): any[];
+    (...items: any[]): any[];
     readonly prototype: Array<any>;
 }
 
