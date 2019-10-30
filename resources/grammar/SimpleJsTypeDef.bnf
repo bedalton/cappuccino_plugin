@@ -505,11 +505,10 @@ private typeMapBody
 	;
 
 defaultMapValue
-	::= "default" ':' types eos
+	::= 'default' ':' types eos
 	{
 		pin = 1
 		methods = [
-			getKey
 			getTypesList
 			isNullable
 		]
