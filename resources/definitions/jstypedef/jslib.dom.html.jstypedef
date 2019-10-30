@@ -723,7 +723,7 @@ class HTMLBaseFontElement extends HTMLElement, DOML2DeprecatedColorProperty {
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
-interface HTMLBodyElementEventMap extends HTMLElementEventMap, WindowEventHandlersEventMap {
+typemap HTMLBodyElementEventMap extends HTMLElementEventMap, WindowEventHandlersEventMap {
     "orientationchange": Event;
 }
 
@@ -939,7 +939,7 @@ class HTMLDocument extends Document {
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
-interface HTMLElementEventMap extends ElementEventMap, GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
+typemap HTMLElementEventMap extends ElementEventMap, GlobalEventHandlersEventMap, DocumentAndElementEventHandlersEventMap {
 }
 
 interface DOMElement extends HTMLElement;
@@ -1192,7 +1192,7 @@ class HTMLFrameElement extends HTMLElement {
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
-interface HTMLFrameSetElementEventMap extends HTMLElementEventMap, WindowEventHandlersEventMap {
+typemap HTMLFrameSetElementEventMap extends HTMLElementEventMap, WindowEventHandlersEventMap {
 }
 
 /** The HTMLFrameSetElement interface provides special properties (beyond those of the regular HTMLElement interface they also inherit) for manipulating <frameset> elements. */
@@ -3031,4 +3031,4 @@ typemap HTMLElementDeprecatedTagNameMap {
 
 
 /** @deprecated Directly use HTMLElementTagNameMap or SVGElementTagNameMap as appropriate, instead. */
-interface ElementTagNameMap extends HTMLElementTagNameMap, SVGElementTagNameMap { }
+typemap ElementTagNameMap extends HTMLElementTagNameMap, SVGElementTagNameMap { }

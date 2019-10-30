@@ -177,6 +177,8 @@ object ObjJMethodPsiUtils {
         }
         val formalVariableType = returnTypeElement.formalVariableType
         if (formalVariableType.varTypeId != null) {
+            if (formalVariableType.varTypeId?.className != null)
+                return setOf(formalVariableType.varTypeId?.className!!.text)
             if (follow) {
                 return getReturnTypesFromStatements(methodHeader, tag)
             }

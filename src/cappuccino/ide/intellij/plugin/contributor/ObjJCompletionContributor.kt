@@ -54,6 +54,7 @@ class ObjJCompletionContributor : CompletionContributor() {
 
         private val LOGGER = Logger.getLogger(ObjJCompletionContributor::class.java.name)
         val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
+        val CLASS_NAME_PRIORITY = 70.0
         val TARGETTED_METHOD_SUGGESTION_PRIORITY = 50.0
         val TARGETTED_SUPERCLASS_METHOD_SUGGESTION_PRIORITY = 30.0
         val TARGETTED_VARIABLE_SUGGESTION_PRIORITY = 15.0

@@ -3,10 +3,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.inspections
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJTypeDefIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsPrimitives
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefKeyListsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
@@ -61,9 +58,11 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
         if (classExists(project, typeNameString))
             return
         // Type References generic type
-        if (typeNameString in (typeName.parent as? JsTypeDefType)?.enclosingGenerics.orEmpty()) {
+        if (typeNameString in (typeName.parent as? JsTypeDefType ?: typeName.parent?.parent as? JsTypeDefType)?.enclosingGenerics.orEmpty()) {
             return
         }
+        if (typeNameString in (typeName.parent?.parent as? JsTypeDefProperty)?.enclosingGenerics.orEmpty())
+            return
 
         // Type is itself a generic type
         if (typeIsGenericTypeDeclaration(typeName)) {
@@ -88,11 +87,12 @@ class JsTypeDefUnknownTypeInspection : LocalInspectionTool() {
     }
 
     private fun classExists(project: Project, typeName: String): Boolean {
-        return JsTypeDefClassesByNameIndex.instance.containsKey(typeName, project)
+        return JsPrimitives.isPrimitive(typeName)
+                || JsTypeDefClassesByNameIndex.instance.containsKey(typeName, project)
                 || JsTypeDefTypeAliasIndex.instance.containsKey(typeName, project)
                 || ObjJClassDeclarationsIndex.instance.containsKey(typeName, project)
                 || JsTypeDefKeyListsByNameIndex.instance.containsKey(typeName, project)
-                || JsPrimitives.isPrimitive(typeName)
+                || JsTypeDefTypeMapByNameIndex.instance.containsKey(typeName, project)
                 || ObjJTypeDefIndex.instance.containsKey(typeName, project)
 
     }

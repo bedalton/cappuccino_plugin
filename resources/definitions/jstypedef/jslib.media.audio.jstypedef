@@ -312,7 +312,7 @@ class OfflineAudioCompletionEvent extends Event {
     readonly renderedBuffer: AudioBuffer;
 }
 
-interface OfflineAudioContextEventMap extends BaseAudioContextEventMap {
+typemap OfflineAudioContextEventMap extends BaseAudioContextEventMap {
     "complete": OfflineAudioCompletionEvent;
 }
 

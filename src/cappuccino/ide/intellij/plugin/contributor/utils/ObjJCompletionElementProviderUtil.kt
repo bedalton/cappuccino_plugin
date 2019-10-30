@@ -25,14 +25,24 @@ object ObjJCompletionElementProviderUtil {
             resultSet.addElement(prioritizedLookupElement)
         }
     }
+
     /**
      * Creates completion elements using strings instead of elements
      */
-    fun addCompletionElementsSimple(resultSet: CompletionResultSet, completionOptions: List<String>, priority:Double) {
+    fun addCompletionElementsSimple(resultSet: CompletionResultSet, completionOptions: List<String>, priority: Double) {
         for (completionOption in completionOptions) {
             ProgressIndicatorProvider.checkCanceled()
             val lookupElement = LookupElementBuilder.create(completionOption).withInsertHandler(ObjJVariableInsertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(completionOption, priority)))
         }
+    }
+
+    /**
+     * Creates completion elements using strings instead of elements
+     */
+    fun addCompletionElementSimple(resultSet: CompletionResultSet, completionOption: String, priority: Double) {
+        ProgressIndicatorProvider.checkCanceled()
+        val lookupElement = LookupElementBuilder.create(completionOption).withInsertHandler(ObjJVariableInsertHandler)
+        resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(completionOption, priority)))
     }
 }

@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefMapType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapName
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
@@ -15,6 +16,16 @@ class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVaria
 
     private val isDeclaration:Boolean by lazy {
         element.parent is JsTypeDefTypeMapElement
+    }
+
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        if (element.text != this.element.text)
+            return false
+        if (element !is JsTypeDefTypeMapName)
+            return false
+        if (element.parent is JsTypeDefTypeMapElement)
+            return false
+        return true
     }
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
