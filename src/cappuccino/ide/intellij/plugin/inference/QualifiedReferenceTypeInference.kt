@@ -422,19 +422,13 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
         val functionDeclaration = functionName.reference.resolve()?.parentFunctionDeclaration
         val functionCall = functionName.getParentOfType(ObjJFunctionCall::class.java)
         if (functionDeclaration is JsTypeDefFunction && functionCall != null) {
-            LOGGER.info("Getting map info for js function declaration")
             val parameters = functionCall.arguments.exprList.map {
                 (it?.leftExpr?.qualifiedReference?.stringLiteral ?: it?.leftExpr?.primary?.stringLiteral)?.stringValue
             }.orEmpty()
             val typeMapTypes = JsTypeDefPsiImplUtil.resolveForMapType(functionDeclaration, parameters)
-            LOGGER.info("Type map types: $typeMapTypes")
             if (typeMapTypes?.types.isNotNullOrEmpty())
                 returnTypes = returnTypes + typeMapTypes!!.types
-        } else {
-            LOGGER.info("Won't get map info for non function declaration: FunctionDec: ${functionDeclaration?.tokenType()}; FunctionCall:${functionName?.tokenType()}")
         }
-    } else {
-        LOGGER.info("Won't get map info for non map return type")
     }
     return InferenceResult(
             types = returnTypes
@@ -467,16 +461,12 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
     }
     var basicReturnTypes = functionDeclaration?.getReturnTypes(tag)?.toClassList(null)
     if (functionDeclaration is JsTypeDefFunction) {
-        LOGGER.info("Getting get map info for function declaration")
         val parameters = functionCall?.arguments?.exprList?.map {
             (it?.leftExpr?.qualifiedReference?.stringLiteral ?: it?.leftExpr?.primary?.stringLiteral)?.stringValue
         }.orEmpty()
         val typeMapTypes = JsTypeDefPsiImplUtil.resolveForMapType(functionDeclaration, parameters)
-        LOGGER.info("Type map types: $typeMapTypes")
         if (typeMapTypes?.types.isNotNullOrEmpty())
             basicReturnTypes = basicReturnTypes.orEmpty() + typeMapTypes!!.toClassList(null)
-    } else {
-        LOGGER.info("Won't get map info for non function declaration")
     }
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
         basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString

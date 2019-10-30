@@ -474,9 +474,9 @@ object JsTypeDefPsiImplUtil {
         return typeMap.stub?.getTypesForKey(key)
                 ?: typeMap.keyValuePairList.filter { it.key.toLowerCase() == key.toLowerCase() }.mapNotNull { it.typesList }.ifEmpty { null }?.combine()
                 ?: typeMap.defaultMapValueList.mapNotNull {
-                    LOGGER.info("Getting default of: ${it.text}")
                     it.typesList
-                }.ifEmpty { null }?.combine()
+                }.ifEmpty { null }
+                ?.combine()
     }
 
     @JvmStatic
