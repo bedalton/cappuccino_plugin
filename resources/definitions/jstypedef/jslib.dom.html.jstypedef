@@ -1781,6 +1781,7 @@ typemap HTMLMarqueeElementEventMap extends HTMLElementEventMap {
     "bounce": Event;
     "finish": Event;
     "start": Event;
+    default:Event;
 }
 
 /** The HTMLMarqueeElement interface provides getMethods to manipulate <marquee> elements. */
@@ -3020,6 +3021,7 @@ typemap HTMLElementTagNameMap {
     "var": HTMLElement;
     "video": HTMLVideoElement;
     "wbr": HTMLElement;
+    default:HTMLElement;
 }
 
 typemap HTMLElementDeprecatedTagNameMap {

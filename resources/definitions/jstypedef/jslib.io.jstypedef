@@ -338,6 +338,7 @@ typemap WebSocketEventMap {
     "error": Event;
     "message": MessageEvent;
     "open": Event;
+    default:Event;
 }
 
 /** The WritableStream interface of the the Streams API provides a standard abstraction for writing streaming data to a destination, known as a sink. This object comes with built-in backpressure and queuing. */
@@ -382,6 +383,7 @@ interface WritableStreamErrorCallback {
 
 typemap XMLHttpRequestEventMap extends XMLHttpRequestEventTargetEventMap {
     "readystatechange": Event;
+    default:Event;
 }
 
 /** Use XMLHttpRequest (XHR) objects to interact with servers. You can retrieve data from a URL without having to do a full page refresh. This enables a Web page to update just part of a page without disrupting what the user is doing. */
@@ -501,6 +503,7 @@ typemap XMLHttpRequestEventTargetEventMap {
     "loadstart": ProgressEvent;
     "progress": ProgressEvent;
     "timeout": ProgressEvent;
+    default:ProgressEvent;
 }
 
 class XMLHttpRequestEventTarget extends EventTarget {

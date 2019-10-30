@@ -78,7 +78,7 @@ class ObjJStringLiteralReference(stringLiteral:ObjJStringLiteral)  : PsiPolyVari
 fun getSuperTypes(project:Project, className:String, out:MutableList<String>): Set<String> {
     val classElements = JsTypeDefTypeMapByNameIndex.instance[className, project]
     for (classElement in classElements) {
-        classElement.extendsStatement?.typeList?.mapNotNull { it.typeName?.text }.orEmpty().forEach{
+        classElement.typeMapExtends?.typeMapNameList?.mapNotNull { it.text }.orEmpty().forEach{
             if (it in out)
                 return@forEach
             out.add(it)

@@ -4,22 +4,25 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamesp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapName
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
 class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVariantReferenceBase<JsTypeDefTypeMapName>(element, TextRange(0, element.textLength)) {
 
-    val isDeclaration:Boolean by lazy {
+    private val isDeclaration:Boolean by lazy {
         element.parent is JsTypeDefTypeMapElement
     }
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
+        LOGGER.info("Resolving map by name: ${element.text}. There are ${JsTypeDefTypeMapByNameIndex.instance.getAllKeys(myElement.project).size} mapped types")
         val project = element.project
         if (isDeclaration)
             return PsiElementResolveResult.createResults(element)
-        val found = JsTypeDefTypeMapByNameIndex.instance[myElement.text, project]
+        val found = JsTypeDefTypeMapByNameIndex.instance[element.text, project]
         if (found.isNotEmpty())
             return PsiElementResolveResult.createResults(found)
         val classesWithName = JsTypeDefClassesByNamespaceIndex.instance[myElement.text, project].mapNotNull {

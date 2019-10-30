@@ -20,8 +20,8 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDEF_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
-import cappuccino.ide.intellij.plugin.psi.utils.getNextNode
-import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.openapi.util.TextRange
@@ -477,7 +477,11 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getTypesForKey(typeMap: JsTypeDefTypeMapElement, key:String) : InferenceResult? {
         return typeMap.stub?.getTypesForKey(key)
-                ?: typeMap.keyValuePairList.filter{ it.key == key }.mapNotNull { it.typesList }.combine()
+                ?: typeMap.keyValuePairList.filter { it.key.toLowerCase() == key.toLowerCase() }.mapNotNull { it.typesList }.ifEmpty { null }?.combine()
+                ?: typeMap.defaultMapValueList.mapNotNull {
+                    LOGGER.info("Getting default of: ${it.text}")
+                    it.typesList
+                }.ifEmpty { null }?.combine()
     }
 
     @JvmStatic
@@ -498,6 +502,18 @@ object JsTypeDefPsiImplUtil {
 
     @JvmStatic
     fun isNullable(keyValuePair: JsTypeDefKeyValuePair) : Boolean {
+        return keyValuePair.typeList.any { it.nullType != null }
+    }
+
+    @JvmStatic
+    fun getTypesList(keyValuePair: JsTypeDefDefaultMapValue) : InferenceResult {
+        val nullable = isNullable(keyValuePair)
+        val types = keyValuePair.typeList.toJsTypeDefTypeListTypes()
+        return InferenceResult(types = types, nullable = nullable)
+    }
+
+    @JvmStatic
+    fun isNullable(keyValuePair: JsTypeDefDefaultMapValue) : Boolean {
         return keyValuePair.typeList.any { it.nullType != null }
     }
 
@@ -919,6 +935,40 @@ object JsTypeDefPsiImplUtil {
             out.add(aType)
         }
         return emptyList()
+    }
+
+    @JvmStatic
+    fun resolveForMapType(function:JsTypeDefFunction, functionParameters:List<String?>) : InferenceResult? {
+        LOGGER.info("Getting Value Of for function: ${function.functionNameString}()")
+        val valueOf = function.functionReturnType?.valueOfKeyType
+                ?: return null
+        LOGGER.info("Getting generics key")
+        val genericsKey = valueOf.genericsKey
+                ?: return null
+
+        LOGGER.info("Getting arg for key ${genericsKey.text}")
+        val arg = function.argumentsList?.arguments?.firstOrNull {
+            LOGGER.info("Arg is ${it.elementType}; Genericskey is ${it.keyOfType?.genericsKey?.text}")
+            it.keyOfType?.genericsKey?.text == genericsKey.text
+        }?: return null
+
+        val index = function.argumentsList?.arguments?.indexOf(arg).orElse(-1)
+        LOGGER.info("Getting arg at index: $index")
+        val key = functionParameters.getOrNull(index)
+                ?: return null
+        LOGGER.info("Resolving typemap")
+        val resolvedMapType = valueOf.typeMapName
+                .reference
+                .resolve()
+                ?.getSelfOrParentOfType(JsTypeDefTypeMapElement::class.java)
+                ?: return null
+        LOGGER.info("Resolved Type map")
+        return resolvedMapType.getTypesForKey(key)
+                ?: resolvedMapType.typeMapExtends?.typeMapNameList?.mapNotNull {
+                    it.reference.resolve()
+                            ?.getParentOfType(JsTypeDefTypeMapElement::class.java)
+                            ?.getTypesForKey(key)
+                }?.combine()
     }
 
 }

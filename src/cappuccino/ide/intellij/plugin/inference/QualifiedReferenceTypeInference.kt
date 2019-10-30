@@ -6,11 +6,14 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
+import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.tokenType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -410,9 +413,29 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
                 it.name == functionNameString
             })
     }
-    val returnTypes = functions.flatMap {
+
+    var returnTypes = functions.flatMap {
         it.returnType?.types.orEmpty()
     }.toSet()
+
+    if (true || returnTypes.any { it is JsTypeListType.JsTypeListValueOfKeyType }) {
+        val functionDeclaration = functionName.reference.resolve()?.parentFunctionDeclaration
+        val functionCall = functionName.getParentOfType(ObjJFunctionCall::class.java)
+        if (functionDeclaration is JsTypeDefFunction && functionCall != null) {
+            LOGGER.info("Getting map info for js function declaration")
+            val parameters = functionCall?.arguments?.exprList?.map {
+                (it?.leftExpr?.qualifiedReference?.stringLiteral ?: it?.leftExpr?.primary?.stringLiteral)?.stringValue
+            }.orEmpty()
+            val typeMapTypes = JsTypeDefPsiImplUtil.resolveForMapType(functionDeclaration, parameters)
+            LOGGER.info("Type map types: $typeMapTypes")
+            if (typeMapTypes?.types.isNotNullOrEmpty())
+                returnTypes = returnTypes + typeMapTypes!!.types
+        } else {
+            LOGGER.info("Won't get map info for non function declaration: FunctionDec: ${functionDeclaration?.tokenType()}; FunctionCall:${functionName?.tokenType()}")
+        }
+    } else {
+        LOGGER.info("Won't get map info for non map return type")
+    }
     return InferenceResult(
             types = returnTypes
     )
@@ -443,6 +466,18 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
         }
     }
     var basicReturnTypes = functionDeclaration?.getReturnTypes(tag)?.toClassList(null)
+    if (functionDeclaration is JsTypeDefFunction) {
+        LOGGER.info("Getting get map info for function declaration")
+        val parameters = functionCall?.arguments?.exprList?.map {
+            (it?.leftExpr?.qualifiedReference?.stringLiteral ?: it?.leftExpr?.primary?.stringLiteral)?.stringValue
+        }.orEmpty()
+        val typeMapTypes = JsTypeDefPsiImplUtil.resolveForMapType(functionDeclaration, parameters)
+        LOGGER.info("Type map types: $typeMapTypes")
+        if (typeMapTypes?.types.isNotNullOrEmpty())
+            basicReturnTypes = basicReturnTypes.orEmpty() + typeMapTypes!!.toClassList(null)
+    } else {
+        LOGGER.info("Won't get map info for non function declaration")
+    }
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
         basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString
     val functionTypes = JsTypeDefFunctionsByNameIndex.instance[functionNameString, project].map {

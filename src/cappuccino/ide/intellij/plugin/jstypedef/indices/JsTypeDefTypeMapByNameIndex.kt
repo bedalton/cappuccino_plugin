@@ -23,7 +23,7 @@ class JsTypeDefTypeMapByNameIndex private constructor() : JsTypeDefStringStubInd
 
         private val KEY = IndexKeyUtil.createIndexKey(JsTypeDefTypeMapByNameIndex::class.java)
 
-        private const val VERSION = 1
+        private const val VERSION = 3
     }
 
 

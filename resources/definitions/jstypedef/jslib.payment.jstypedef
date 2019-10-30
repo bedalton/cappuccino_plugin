@@ -76,6 +76,7 @@ class PaymentAddress {
 typemap PaymentRequestEventMap {
     "shippingaddresschange": Event;
     "shippingoptionchange": Event;
+    default:Event;
 }
 
 /** The PaymentRequest interface of the Payment Request API is the primary access point into the API, and lets web content and apps accept payments from the end user. */

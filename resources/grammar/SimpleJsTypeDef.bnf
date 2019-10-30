@@ -69,6 +69,7 @@
 		AT_FILE =                      		'@file'
 		AT_SUGGEST =                  		'@suggest'
 		DECLARE =                           'declare'
+		DEFAULT = 							'default'
 
 		BLOCK_COMMENT_START = 				'/*'
 		BLOCK_COMMENT_BODY =				'____BLOCK_COMMENT_BODY__'
@@ -471,7 +472,7 @@ keyTypes ::= types
 valueTypes ::= types
 
 typeMapElement
-	::= TYPE_MAP_KEYWORD typeMapName extendsStatement? '{' typeMapBody? '}'
+	::= TYPE_MAP_KEYWORD typeMapName typeMapExtends? '{' typeMapBody? '}'
 	{
 		pin = 1
 		extends = "cappuccino.ide.intellij.plugin.jstypedef.psi.impl.JsTypeDefStubBasedElementImpl<?>"
@@ -489,10 +490,29 @@ typeMapElement
 	}
 	;
 
+typeMapExtends
+	::= ('extends'|':') typeMapName+
+	{
+		pin=1
+	}
+	;
+
 private typeMapBody
-	::= keyValuePair+
+	::= (keyValuePair|defaultMapValue)+
 	{
 		recoverWhile = typeMapBody_recover
+	}
+	;
+
+defaultMapValue
+	::= "default" ':' types eos
+	{
+		pin = 1
+		methods = [
+			getKey
+			getTypesList
+			isNullable
+		]
 	}
 	;
 

@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.indices
 
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefClassDeclaration
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.PsiFileStub
@@ -90,8 +91,10 @@ class JsTypeDefIndexService : StubIndexService() {
     }
 
     override fun indexTypeMap(stub:JsTypeDefTypeMapStub, sink:IndexSink) {
-        if(stub.mapName.isBlank())
+        if(stub.mapName.isBlank()) {
+            LOGGER.info("Map name is null or blank")
             return
+        }
         sink.occurrence(JsTypeDefTypeMapByNameIndex.instance.key, stub.mapName)
     }
 }
