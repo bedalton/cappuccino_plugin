@@ -273,6 +273,7 @@ importStatementElement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement"
 		]
 		methods = [
+			getReference
 			multiResolve
 			resolve
 			getImportIncludeElement
@@ -342,6 +343,7 @@ includeStatementElement
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJImportIncludeStatement"
 		]
 		methods = [
+			getReference
 			multiResolve
 			resolve
 			getImportIncludeElement
