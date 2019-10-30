@@ -423,7 +423,7 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
         val functionCall = functionName.getParentOfType(ObjJFunctionCall::class.java)
         if (functionDeclaration is JsTypeDefFunction && functionCall != null) {
             LOGGER.info("Getting map info for js function declaration")
-            val parameters = functionCall?.arguments?.exprList?.map {
+            val parameters = functionCall.arguments.exprList.map {
                 (it?.leftExpr?.qualifiedReference?.stringLiteral ?: it?.leftExpr?.primary?.stringLiteral)?.stringValue
             }.orEmpty()
             val typeMapTypes = JsTypeDefPsiImplUtil.resolveForMapType(functionDeclaration, parameters)
