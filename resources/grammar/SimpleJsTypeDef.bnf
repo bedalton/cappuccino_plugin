@@ -491,7 +491,7 @@ typeMapElement
 	;
 
 typeMapExtends
-	::= ('extends'|':') typeMapName+
+	::= ('extends'|':') (typeMapName ',')* typeMapName
 	{
 		pin=1
 	}
@@ -758,6 +758,7 @@ property
     	        isQuiet
     	        isSilent
     	        isSuggest
+    	        getEnclosingGenerics
     	    ]
     		implements = [
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"
@@ -804,6 +805,7 @@ propertyName
 	|	'extends'
 	|	'module'
 	|	'alias'
+	|	'default'
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNamedElement"
