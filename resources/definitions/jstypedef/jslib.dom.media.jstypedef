@@ -250,7 +250,7 @@ class HTMLTrackElement extends HTMLElement {
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
-interface HTMLVideoElementEventMap extends HTMLMediaElementEventMap {
+typemap HTMLVideoElementEventMap extends HTMLMediaElementEventMap {
     "MSVideoFormatChanged": Event;
     "MSVideoFrameStepCompleted": Event;
     "MSVideoOptimalLayoutChanged": Event;
