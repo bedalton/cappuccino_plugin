@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.jstypedef.references
 
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeMapByNameIndex
+import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefMapType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefTypeMapName
 import com.intellij.openapi.util.TextRange
@@ -15,6 +16,16 @@ class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVaria
         element.parent is JsTypeDefTypeMapElement
     }
 
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        if (element.text != this.element.text)
+            return false
+        if (element !is JsTypeDefTypeMapName)
+            return false
+        if (element.parent is JsTypeDefTypeMapElement)
+            return false
+        return true
+    }
+
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val project = element.project
         if (isDeclaration)
@@ -22,6 +33,7 @@ class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVaria
         val found = JsTypeDefTypeMapByNameIndex.instance[myElement.text, project]
         if (found.isNotEmpty())
             return PsiElementResolveResult.createResults(found)
+        LOGGER.info("Failed to find type map with name: ${element.text}")
         val classesWithName = JsTypeDefClassesByNamespaceIndex.instance[myElement.text, project].mapNotNull {
             it.typeName
         }
