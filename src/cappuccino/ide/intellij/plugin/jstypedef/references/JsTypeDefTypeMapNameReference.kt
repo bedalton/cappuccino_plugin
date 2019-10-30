@@ -11,20 +11,21 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
-class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVariantReferenceBase<JsTypeDefTypeMapName>(element, TextRange(0, element.textLength)) {
+class JsTypeDefTypeMapNameReference(element:JsTypeDefTypeMapName) : PsiPolyVariantReferenceBase<JsTypeDefTypeMapName>(element, TextRange(0, element.text.length)) {
 
     private val isDeclaration:Boolean by lazy {
         element.parent is JsTypeDefTypeMapElement
     }
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
-        LOGGER.info("Resolving map by name: ${element.text}. There are ${JsTypeDefTypeMapByNameIndex.instance.getAllKeys(myElement.project).size} mapped types")
         val project = element.project
-        if (isDeclaration)
+        if (isDeclaration) {
             return PsiElementResolveResult.createResults(element)
+        }
         val found = JsTypeDefTypeMapByNameIndex.instance[element.text, project]
-        if (found.isNotEmpty())
+        if (found.isNotEmpty()) {
             return PsiElementResolveResult.createResults(found)
+        }
         val classesWithName = JsTypeDefClassesByNamespaceIndex.instance[myElement.text, project].mapNotNull {
             it.typeName
         }
