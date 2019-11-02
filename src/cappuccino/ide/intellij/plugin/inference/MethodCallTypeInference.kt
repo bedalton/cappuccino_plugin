@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
@@ -106,6 +107,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance[selector, project]
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
+        ProgressIndicatorProvider.checkCanceled()
         methodDeclaration.getCachedInferredTypes(tag) {
             if (methodDeclaration.tagged(tag))
                 return@getCachedInferredTypes null
@@ -156,6 +158,7 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
     var nullable = false
     val types = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
             .flatMap { classDeclaration ->
+                ProgressIndicatorProvider.checkCanceled()
                 val out = classDeclaration.getReturnTypesForSelector(selector, tag)
                 if (out?.nullable.orFalse())
                     nullable = true
@@ -284,6 +287,7 @@ fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult?
 }
 
 private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
+    ProgressIndicatorProvider.checkCanceled()
     val callTargetText = callTarget.text
     if (ObjJClassDeclarationsIndex.instance.containsKey(callTargetText, callTarget.project))
         return setOf(callTargetText).toInferenceResult()
@@ -300,7 +304,7 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
 }
 
 private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
-    //ProgressManager.checkCanceled()
+    ProgressIndicatorProvider.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
@@ -318,6 +322,7 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
             return simpleOut.toSet()
         }
         expressions.forEach {
+            ProgressIndicatorProvider.checkCanceled()
             val type = inferExpressionType(it, tag)
             if (type != null)
                 out += type

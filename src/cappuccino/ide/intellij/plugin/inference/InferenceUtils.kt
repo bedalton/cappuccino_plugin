@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
@@ -82,6 +83,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
       //  return null;
     //val marks = this.getUserData(INFERRED_TYPES_IS_ACCESSING).orElse(0)
     //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks + 1)
+    ProgressIndicatorProvider.checkCanceled()
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     // Establish and store last text
 

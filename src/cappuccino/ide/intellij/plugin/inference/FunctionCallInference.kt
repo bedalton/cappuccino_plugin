@@ -21,6 +21,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orElse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
 internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
@@ -68,6 +69,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
     }
 
     val out = resolvesRaw.mapNotNull { referenceResult ->
+        ProgressIndicatorProvider.checkCanceled()
         val resolved = referenceResult.element ?: return@mapNotNull null
         val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
                 ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.toSet()?.let {

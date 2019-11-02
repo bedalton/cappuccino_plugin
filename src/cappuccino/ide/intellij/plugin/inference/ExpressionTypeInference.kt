@@ -6,6 +6,8 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
+import javafx.scene.control.ProgressIndicator
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     if (expr == null)
@@ -164,7 +166,6 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
 }
 
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Long): InferenceResult? {
-    //ProgressManager.checkCanceled()
     if (leftExpression == null)// || level < 0)
         return null
     var orExpressionType: InferenceResult? = null
@@ -172,10 +173,12 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
     for (rightExpr in rightExpressions) {
         if (rightExpr.comparisonExprPrime != null)
             return InferenceResult(types = setOf(JS_BOOL).toJsTypeList(), isBoolean = true)
-        //ProgressManager.checkCanceled()
+        ProgressIndicatorProvider.checkCanceled()
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
+            ProgressIndicatorProvider.checkCanceled()
             val ifTrue = if (ternaryExpr.ifTrue?.expr != null) inferExpressionType(ternaryExpr.ifTrue!!.expr!!, tag) else null
+            ProgressIndicatorProvider.checkCanceled()
             val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, tag) else null
             val types = if (ifFalse != null && ifTrue != null)
                 ifFalse + ifTrue
@@ -186,8 +189,10 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
         if (rightExpr.logicExprPrime?.or != null) {
             if (rightExpr.logicExprPrime?.expr != null) {
                 if (orExpressionType == null) {
+                    ProgressIndicatorProvider.checkCanceled()
                     orExpressionType = leftExpressionType(leftExpression, tag)
                 }
+                ProgressIndicatorProvider.checkCanceled()
                 orExpressionType = listOfNotNull(
                         orExpressionType,
                         inferExpressionType(rightExpr.logicExprPrime?.expr!!, tag)
@@ -221,7 +226,10 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
 }
 
 internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Long): InferenceResult {
-    return assignments.mapNotNull { inferExpressionType(it, tag) }.combine()
+    return assignments.mapNotNull {
+        ProgressIndicatorProvider.checkCanceled()
+        inferExpressionType(it, tag)
+    }.combine()
 }
 
 private object IsNumericUtil {
