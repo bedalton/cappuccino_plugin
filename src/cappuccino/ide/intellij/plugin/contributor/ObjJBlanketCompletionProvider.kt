@@ -95,6 +95,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.hasParentOfType(ObjJStringLiteral::class.java) -> {
+                val stringLiteral = element.getParentOfType(ObjJStringLiteral::class.java)
+                    ?: return;
+                addStringCompletions(stringLiteral, resultSet)
+            }
             element.getPreviousNonEmptySibling(false)?.elementType in ObjJTokenSets.IMPORT_BLOCKS -> {
                 resultSet.stopHere()
                 return
