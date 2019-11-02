@@ -20,6 +20,7 @@ fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
 }
 
 private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceResult? {
+    ProgressIndicatorProvider.checkCanceled()
     if (expr.text == "self") {
         val parentClass = expr.getParentOfType(ObjJClassDeclarationElement::class.java)
         if (parentClass != null)
@@ -173,12 +174,9 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
     for (rightExpr in rightExpressions) {
         if (rightExpr.comparisonExprPrime != null)
             return InferenceResult(types = setOf(JS_BOOL).toJsTypeList(), isBoolean = true)
-        ProgressIndicatorProvider.checkCanceled()
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
-            ProgressIndicatorProvider.checkCanceled()
             val ifTrue = if (ternaryExpr.ifTrue?.expr != null) inferExpressionType(ternaryExpr.ifTrue!!.expr!!, tag) else null
-            ProgressIndicatorProvider.checkCanceled()
             val ifFalse = if (ternaryExpr.ifFalse?.expr != null) inferExpressionType(ternaryExpr.ifFalse!!.expr!!, tag) else null
             val types = if (ifFalse != null && ifTrue != null)
                 ifFalse + ifTrue
@@ -189,10 +187,8 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
         if (rightExpr.logicExprPrime?.or != null) {
             if (rightExpr.logicExprPrime?.expr != null) {
                 if (orExpressionType == null) {
-                    ProgressIndicatorProvider.checkCanceled()
                     orExpressionType = leftExpressionType(leftExpression, tag)
                 }
-                ProgressIndicatorProvider.checkCanceled()
                 orExpressionType = listOfNotNull(
                         orExpressionType,
                         inferExpressionType(rightExpr.logicExprPrime?.expr!!, tag)
@@ -227,7 +223,6 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
 
 internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Long): InferenceResult {
     return assignments.mapNotNull {
-        ProgressIndicatorProvider.checkCanceled()
         inferExpressionType(it, tag)
     }.combine()
 }

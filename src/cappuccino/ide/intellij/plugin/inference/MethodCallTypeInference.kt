@@ -82,7 +82,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
 }
 */
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
-    //ProgressManager.checkCanceled()
+    ProgressIndicatorProvider.checkCanceled()
     /*if (level < 0)
         return null*/
     val project = methodCall.project
@@ -107,8 +107,8 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance[selector, project]
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
-        ProgressIndicatorProvider.checkCanceled()
         methodDeclaration.getCachedInferredTypes(tag) {
+            ProgressIndicatorProvider.checkCanceled()
             if (methodDeclaration.tagged(tag))
                 return@getCachedInferredTypes null
             if (methodDeclaration.methodHeader.explicitReturnType == "instancetype" && methodDeclaration.containingClassName !in anyTypes) {
@@ -140,6 +140,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
         instanceVariable ->
         instanceVariable.getCachedInferredTypes(tag) {
+            ProgressIndicatorProvider.checkCanceled()
             if (instanceVariable.tagged(tag))
                 return@getCachedInferredTypes null
             return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
@@ -158,7 +159,6 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
     var nullable = false
     val types = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
             .flatMap { classDeclaration ->
-                ProgressIndicatorProvider.checkCanceled()
                 val out = classDeclaration.getReturnTypesForSelector(selector, tag)
                 if (out?.nullable.orFalse())
                     nullable = true
@@ -304,7 +304,6 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
 }
 
 private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
-    ProgressIndicatorProvider.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
@@ -322,7 +321,6 @@ private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration
             return simpleOut.toSet()
         }
         expressions.forEach {
-            ProgressIndicatorProvider.checkCanceled()
             val type = inferExpressionType(it, tag)
             if (type != null)
                 out += type

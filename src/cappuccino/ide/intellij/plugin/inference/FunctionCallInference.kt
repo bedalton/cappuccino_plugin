@@ -33,6 +33,7 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
+    ProgressIndicatorProvider.checkCanceled()
     val functionName = functionCall.functionName ?: return null
     val functionNameString = functionName.text ?: return null
 
@@ -69,7 +70,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
     }
 
     val out = resolvesRaw.mapNotNull { referenceResult ->
-        ProgressIndicatorProvider.checkCanceled()
+
         val resolved = referenceResult.element ?: return@mapNotNull null
         val cached = (resolved as? ObjJFunctionName)?.getCachedReturnType(tag)
                 ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.toSet()?.let {
@@ -80,6 +81,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
             return cached
         }
         resolved.getCachedInferredTypes(tag) {
+            ProgressIndicatorProvider.checkCanceled()
             if (resolved.tagged(tag))
                 return@getCachedInferredTypes null
             val function: ObjJUniversalFunctionElement? = (when (resolved) {
