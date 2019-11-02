@@ -398,6 +398,9 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     val project = functionName.project
     //ProgressManager.checkCanceled()
     val functionNameString = functionName.text
+    if (functionNameString == "apply") {
+        return parentTypes.functionTypes.mapNotNull { it.returnType }.combine()
+    }
     val classNames = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListArrayType}) "Array" else null)).filterNotNull()
     val classes = classNames.mapNotNull {
         getClassDefinition(project, it)
