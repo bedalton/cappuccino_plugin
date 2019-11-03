@@ -10,7 +10,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -26,56 +25,40 @@ import com.intellij.psi.search.searches.ReferencesSearch
 fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
     //ProgressManager.checkCanceled()
     if (variableName.tagged(tag, false)) {
-        LOGGER.info("TAGGED")
         return null
     }
 
     if (variableName.indexInQualifiedReference == 0) {
-        LOGGER.info("Variable is at index 0")
         return inferVariableNameTypeAtIndexZero(variableName, tag)
     }
 
     if (parentTypes == null) {
-        LOGGER.info("Parent types is null")
         return null
-    } else {
-        LOGGER.info("Parent types is ${parentTypes.types}")
     }
-
     val project = variableName.project
     val variableNameString = variableName.text
     val basicTypes = parentTypes.classes.flatMap { className ->
-        LOGGER.info("Getting parentType: $className for variable $variableNameString")
         getTypesForClass(variableNameString, className, static, parentTypes, project)
     }.toSet()
 
     // If static, stop here
     if (static) {
-        LOGGER.info("Type is static")
         return InferenceResult(types = basicTypes)
     }
     val properties = parentTypes.properties
             .filter {
-                LOGGER.info("Checking property: ${it.name}")
                 it.static == static && it.name == variableNameString
             }
-
-    LOGGER.info("Found ${properties.size} properties with name")
-
     val functions: List<JsTypeListType.JsTypeListFunctionType> = parentTypes.functionTypes +
             properties.filterIsInstance(JsTypeListType.JsTypeListFunctionType::class.java)
-    LOGGER.info("Found ${functions.size} functions with name")
 
     val propertyTypes = properties
             .filterIsInstance(JsTypeDefNamedProperty::class.java)
             .flatMap { it.types.types }
-    LOGGER.info("Found ${propertyTypes.size} property types for $variableNameString")
     val outTypes = basicTypes + functions + propertyTypes
     return if (outTypes.isEmpty()) {
-        LOGGER.info("Out types for $variableNameString is empty")
         null
     } else {
-        LOGGER.info("There are ${outTypes.size} out types for $variableNameString")
         InferenceResult(
                 types = outTypes,
                 nullable = true
@@ -86,14 +69,12 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
 private fun getTypesForClass(variableNameString: String, className: String, static: Boolean, parentTypes: InferenceResult, project: Project): Set<JsTypeListType> {
     val allPropertiesRaw: List<JsNamedProperty> =
             if (className.contains("&")) {
-                LOGGER.info("ClassName: $className contains &")
                 className.split("\\s*&\\s*".toRegex()).flatMap {
                     JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
                         classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsFunctionType() }
                     }
                 }
             } else {
-                LOGGER.info("Getting properties for: $className")
                 val objjProperties:Set<JsNamedProperty>? = if (!static) {
                     objJClassAsJsClass(project, className)?.let {
                         val classType = listOf(it).collapseWithSuperType(project)
@@ -117,7 +98,6 @@ private fun getTypesForClass(variableNameString: String, className: String, stat
                 }
                 allClassPropertiesRaw + arrayPropertiesIfNeededRaw + otherPropertiesRaw
             } + getJsTypeDefAliasProperties(className, static, project)
-    LOGGER.info("AllTypes for $variableNameString: $allPropertiesRaw")
     return allPropertiesRaw.filter { it.name == variableNameString && it.static == static }
             .flatMap {
                 (it as? JsTypeDefNamedProperty)?.types?.types
@@ -191,7 +171,6 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     // If variable resolved to self,
     // Get assigned expression type if any
     if (referencedVariable == variableName) {
-        LOGGER.info("Variable: ${variableName.text} references self in inference")
         val expr = (referencedVariable.parent.parent as? ObjJVariableDeclaration)?.expr
                 ?: (referencedVariable.parent as? ObjJGlobalVariableDeclaration)?.expr
         val result = inferExpressionType(expr, tag)

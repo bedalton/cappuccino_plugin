@@ -14,7 +14,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
@@ -46,10 +45,6 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
         //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
-        LOGGER.info("Inferring type for QN: ${part}")
-        if (thisParentTypes != null) {
-            LOGGER.info("QN ${parts.subList(0, i+1).joinToString ("."){ it.text }}'s parent type == ${parentTypes?.types}")
-        }
         parentTypes = part.getCachedInferredTypes(tag) {
             if (part.tagged(tag, false))
                 return@getCachedInferredTypes null
@@ -64,17 +59,13 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
                 val variableDeclarationExpr =
                         (part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).expr
                                 ?: return@getCachedInferredTypes null
-                LOGGER.info("Inferring variable declaration type for ${(part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).text}")
                 inferExpressionType(variableDeclarationExpr, tag)
             } else if (i == 0) {
-                LOGGER.info("Inferring at index 0")
                 getPartTypes(part, thisParentTypes, false, tag)
             } else {
-                LOGGER.info("Inferring at index $i")
                 getPartTypes(part, thisParentTypes, isStatic, tag)
             }
         }
-        LOGGER.info("Inferred type for ${part.text} as ${parentTypes?.types.orEmpty()}")
         if (isStatic) {
             isStatic = false
         }
@@ -87,7 +78,6 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
     if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVarDec(parts[0])) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
-    LOGGER.info("QN ${parts.joinToString(".") { it.text }} == ${parentTypes?.types}")
     return parentTypes
 }
 
@@ -106,7 +96,6 @@ private fun simpleVariableInference(variableName: ObjJVariableName) : InferenceR
 }
 
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
-    LOGGER.info("getPartTypes(${part.text}, parentTypes: ${parentTypes?.types.orEmpty()}, Static: $static")
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, static, tag)
         is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, tag)
@@ -261,7 +250,6 @@ private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag:
     val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text
     ?: (part as? ObjJFunctionCall)?.functionName?.text
     if (name == null && part is ObjJMethodCall) {
-        //LOGGER.info("Part is a method call")
         return inferMethodCallType(part, tag)
     } else if (name == null)
         return INFERRED_ANY_TYPE
