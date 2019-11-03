@@ -121,7 +121,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
         if (leftExpression.methodCall != null)
             return@getCachedInferredTypes inferMethodCallType(leftExpression.methodCall!!, tag)
         if (leftExpression.refExpression?.variableName != null)
-            return@getCachedInferredTypes inferVariableNameType(leftExpression.refExpression!!.variableName!!, tag)
+            return@getCachedInferredTypes inferVariableNameTypeAtIndexZero(leftExpression.refExpression!!.variableName!!, tag)
         if (leftExpression.variableAssignmentLogical != null)
             return@getCachedInferredTypes InferenceResult(isNumeric = true)
         if (leftExpression.typeOfExprPrime != null)
@@ -158,7 +158,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
             return@getCachedInferredTypes leftExpression.functionLiteral!!.toJsFunctionTypeResult(tag)
         }
         if (leftExpression.derefExpression?.variableName != null) {
-            return@getCachedInferredTypes inferVariableNameType(leftExpression.derefExpression!!.variableName!!, tag)
+            return@getCachedInferredTypes inferVariableNameTypeAtIndexZero(leftExpression.derefExpression!!.variableName!!, tag)
         }
         return@getCachedInferredTypes INFERRED_ANY_TYPE
     }
