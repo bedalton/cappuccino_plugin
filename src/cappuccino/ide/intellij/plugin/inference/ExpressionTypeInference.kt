@@ -81,6 +81,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
         //ProgressManager.checkCanceled()
         if (leftExpression.tagged(tag, false))
             return@getCachedInferredTypes null
+
         if (leftExpression.functionCall != null) {
             return@getCachedInferredTypes inferFunctionCallReturnType(leftExpression.functionCall!!, tag)
         }

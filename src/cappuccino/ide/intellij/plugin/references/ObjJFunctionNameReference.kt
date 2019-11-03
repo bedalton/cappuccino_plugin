@@ -5,10 +5,7 @@ import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
@@ -120,10 +117,22 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
             return PsiElementResolveResult.createResults(outSimple)
         }
         val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
+        val otherResults = if (className.isNotEmpty()) {
+            val searchString = prevSiblings.joinToString(".") { it.text } + "." + functionName
+            LOGGER.info("Search string: $searchString")
+            JsTypeDefPropertiesByNamespaceIndex.instance[searchString, project].map {
+                it.propertyName
+            } + JsTypeDefFunctionsByNamespaceIndex.instance[searchString, project].map {
+                it.functionName
+            }
+        } else {
+            emptyList()
+        }
+
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
         // Get types if qualified
         val classTypes = previousSiblingTypes
-                ?: return PsiElementResolveResult.EMPTY_ARRAY
+                ?: return PsiElementResolveResult.createResults(otherResults)
         if (classTypes.isNotEmpty()) {
             val allClassNames = classTypes.flatMap {
                 JsTypeDefClassesByNameIndex.instance[it, project].map {
@@ -136,9 +145,9 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
             }.map {
                 it.functionName
             }
-            return PsiElementResolveResult.createResults(found)
+            return PsiElementResolveResult.createResults(found + otherResults)
         }
-        return PsiElementResolveResult.EMPTY_ARRAY
+        return PsiElementResolveResult.createResults(otherResults)
     }
 
 

@@ -51,6 +51,8 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
         //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
+
+        LOGGER.info("QN ${parts.subList(0, i+1).joinToString ("."){ it.text }}'s parent type == ${parentTypes?.types}")
         parentTypes = part.getCachedInferredTypes(tag) {
             if (part.tagged(tag, false))
                 return@getCachedInferredTypes null
@@ -83,6 +85,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
     if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVarDec(parts[0])) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
+    LOGGER.info("QN ${parts.joinToString(".") { it.text }} == ${parentTypes?.types}")
     return parentTypes
 }
 
@@ -171,7 +174,6 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
 
     val classes = parentTypes.classes.mapNotNull {
-        ProgressManager.checkCanceled()
         getClassDefinition(project, it)
     }.collapseWithSuperType(project)
 
@@ -247,7 +249,8 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         )
     }
 
-    if (referencedVariable.isEquivalentTo(variableName)) {
+    if (referencedVariable == variableName) {
+        LOGGER.info("Variable: ${variableName.text} references self in inference")
         val expr = (referencedVariable.parent.parent as? ObjJVariableDeclaration)?.expr
                 ?: (referencedVariable.parent as? ObjJGlobalVariableDeclaration)?.expr
         val result = inferExpressionType(expr, tag)
@@ -405,16 +408,23 @@ private fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTyp
     val classes = classNames.mapNotNull {
         getClassDefinition(project, it)
     }
-    val functions = classes.mapNotNull { jsClass ->
-        ProgressManager.checkCanceled()
+    val functions = classes.flatMap { jsClass ->
         (if (static)
-            jsClass.staticFunctions.firstOrNull {
+            jsClass.staticFunctions.filter {
                 it.name == functionNameString
+            }  + jsClass.staticProperties.filter {
+                it.name == functionNameString
+            }.flatMap { property ->
+                property.types.types.mapNotNull { it as? JsTypeListFunctionType }
             }
         else
-            jsClass.functions.firstOrNull {
+            jsClass.functions.filter {
                 it.name == functionNameString
-            })
+            } + jsClass.properties.filter {
+            it.name == functionNameString
+        }.flatMap { property ->
+                property.types.types.mapNotNull { it as? JsTypeListFunctionType }
+        })
     }
 
     var returnTypes = functions.flatMap {
