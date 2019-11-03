@@ -13,7 +13,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
 
-internal fun objJClassAsJsClass(project: Project, className: String): JsClassDefinition? {
+fun objJClassAsJsClass(project: Project, className: String): JsClassDefinition? {
     if (DumbService.isDumb(project))
         return null
     val implementations = ObjJImplementationDeclarationsIndex.instance[className, project]
