@@ -4,28 +4,39 @@ import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.openapi.project.Project
 
-internal fun getAllPropertiesWithNameInClasses(name:String, parentTypes:InferenceResult, static:Boolean, project:Project) : List<JsNamedProperty> {
-    val allPropertiesInClasses = getAllPropertiesFromClassNamesList(parentTypes, static, project);
-    return allPropertiesInClasses.filter {
-        it.name == name
-    }
-}
 
-internal fun getAllPropertyTypesWithNameInClasses(name:String, parentTypes:InferenceResult, static:Boolean, project:Project) : Set<JsTypeListType> {
-    return getAllPropertiesWithNameInClasses(name, parentTypes, static, project).flatMap {
-        if (it is JsTypeDefNamedProperty)
-            it.types.types
-        else if (it is JsTypeListType.JsTypeListFunctionType)
-            it.returnType?.types.orEmpty()
-        else
-            throw Exception("Unexpected JsNamedProperty type: ${it::class.java.simpleName}")
+internal fun getAllPropertyTypesWithNameInParentTypes(name:String, parentTypes:InferenceResult, static:Boolean, project:Project) : Set<JsTypeListType> {
+    val properties = getAllPropertiesWithNameInParentTypes(name, parentTypes, static, project)
+    return properties.flatMap {
+        when (it) {
+            is JsTypeDefNamedProperty -> it.types.types
+            is JsTypeListType.JsTypeListFunctionType -> it.returnType?.types.orEmpty()
+            else -> throw Exception("Unexpected JsNamedProperty type: ${it::class.java.simpleName}")
+        }
     }.toSet()
 }
 
-internal fun getAllPropertiesFromClassNamesList(parentTypes: InferenceResult, static:Boolean, project: Project) : List<JsNamedProperty> {
+internal fun getAllPropertiesWithNameInParentTypes(name:String, parentTypes:InferenceResult, static:Boolean, project:Project) : Set<JsNamedProperty> {
+    val allPropertiesInClasses = getAllPropertiesInParentTypes(parentTypes, static, project)
+    return allPropertiesInClasses.filter {
+        it.name == name
+    }.toSet()
+}
+
+internal fun getAllPropertiesInParentTypes(parentTypes: InferenceResult, static:Boolean, project: Project) : List<JsNamedProperty> {
+
+    val interfaceProperties = parentTypes.interfaceTypes.flatMap {
+        if (static)
+            it.staticFunctions + it.staticProperties
+        else
+            it.instanceFunctions + it.instanceProperties
+    }
+
+    val directProperties = parentTypes.properties
+            .filter { it.static == static }
+
     // Create class names list
     val childClassNameStrings = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListType.JsTypeListArrayType }) "Array" else null)).filterNotNull()
 
@@ -34,7 +45,7 @@ internal fun getAllPropertiesFromClassNamesList(parentTypes: InferenceResult, st
     }.withAllSuperClassNames(project)
 
     // Get Properties for each class
-    return classesWithSuperTypes.flatMap {
+    return interfaceProperties + directProperties + classesWithSuperTypes.flatMap {
         getAllProperties(it, static, parentTypes, project)
     }
 }
@@ -63,8 +74,7 @@ private fun getAllProperties(className: String, static: Boolean, parentTypes: In
             else
                 emptyList()
     val aliasProperties: List<JsNamedProperty> = getJsTypeDefAliasProperties(className, static, parentTypes, project)
-    val allProperties = allClassPropertiesRaw + arrayPropertiesIfNeededRaw + aliasProperties
-    return allProperties
+    return allClassPropertiesRaw + arrayPropertiesIfNeededRaw + aliasProperties
 }
 
 

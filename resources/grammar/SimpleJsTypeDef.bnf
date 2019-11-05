@@ -177,7 +177,7 @@ private moduleElements_recover
 	;
 
 variableDeclaration
-	::= completionModifier? variableDeclarationPrefix? VAR /*<<enterMode "variableDeclaration">>*/<<enterMode "inOuterCompletionModifier">> property <<exitMode "inOuterCompletionModifier">>/*<<exitMode "variableDeclaration">>*/ eos?
+	::= completionModifier? variableDeclarationPrefix? VAR <<enterMode "inOuterCompletionModifier">> property <<exitMode "inOuterCompletionModifier">> eos?
 	{
 		pin = 3
 		implements = [
@@ -201,6 +201,7 @@ variableDeclaration
 	        isSilent
 	        isQuiet
 	        isSuggest
+	        getTypeListTypes
 	    ]
 	}
 	;
@@ -758,6 +759,7 @@ property
     	        isSilent
     	        isSuggest
     	        getEnclosingGenerics
+	        	getTypeListTypes
     	    ]
     		implements = [
     			"cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefHasNamespace"

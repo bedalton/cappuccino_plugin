@@ -26,7 +26,8 @@ internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTy
     if (functionNameString == "apply") {
         return parentTypes.functionTypes.mapNotNull { it.returnType }.combine()
     }
-    val functions = getAllPropertiesWithNameInClasses(functionNameString, parentTypes, static, project)
+
+    val functions = getAllPropertiesWithNameInParentTypes(functionNameString, parentTypes, static, project)
             .filterIsInstance<JsTypeListType.JsTypeListFunctionType>()
 
     var returnTypes = functions.flatMap {

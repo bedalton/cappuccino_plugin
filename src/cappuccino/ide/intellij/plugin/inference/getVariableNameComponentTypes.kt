@@ -1,17 +1,15 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
-import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefVariableDeclarationsByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -39,7 +37,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
     val project = variableName.project
     val variableNameString = variableName.text
-    val basicTypes:Set<JsTypeListType> = getAllPropertyTypesWithNameInClasses(variableNameString, parentTypes, static, project)
+    val basicTypes:Set<JsTypeListType> = getAllPropertyTypesWithNameInParentTypes(variableNameString, parentTypes, static, project)
 
     // If static, stop here
     if (static) {
@@ -55,7 +53,12 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     val propertyTypes = properties
             .filterIsInstance(JsTypeDefNamedProperty::class.java)
             .flatMap { it.types.types }
-    val outTypes = basicTypes + functions + propertyTypes
+
+    val varDecs = JsTypeDefVariableDeclarationsByNamespaceIndex.instance[variableNameString, project].flatMap {
+        it.typeListTypes
+    }.toSet()
+
+    val outTypes = basicTypes + functions + propertyTypes + varDecs
     return if (outTypes.isEmpty()) {
         null
     } else {
