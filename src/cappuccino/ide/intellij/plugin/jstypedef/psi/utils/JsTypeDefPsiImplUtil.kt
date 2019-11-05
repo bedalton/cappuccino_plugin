@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListGenericType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toFunctionArgumentList
@@ -419,6 +420,11 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
+    fun getTypeListTypes(property: JsTypeDefProperty): Set<JsTypeListType> {
+        return property.stub?.types?.types ?: property.propertyTypes.toJsTypeDefTypeListTypes()
+    }
+
+    @JvmStatic
     fun isNullable(property: JsTypeDefProperty): Boolean {
         return property.stub?.nullable ?: property.nullable != null || isNullable(property.typeList)
     }
@@ -432,6 +438,11 @@ object JsTypeDefPsiImplUtil {
     @JvmStatic
     fun getPropertyTypes(declaration: JsTypeDefVariableDeclaration): List<JsTypeDefType> {
         return declaration.property?.propertyTypes.orEmpty()
+    }
+
+    @JvmStatic
+    fun getTypeListTypes(declaration: JsTypeDefVariableDeclaration): Set<JsTypeListType> {
+        return declaration.stub?.types?.types ?: declaration.propertyTypes.toJsTypeDefTypeListTypes()
     }
 
     @JvmStatic

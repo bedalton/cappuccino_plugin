@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArg
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsNamedProperty
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
@@ -18,9 +17,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
@@ -106,7 +103,7 @@ private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResul
             inferFunctionDeclarationReturnType(function, tag)
         }
         resolved is JsTypeDefElement -> {
-            inferWhenResolvedIsJsTypeDefElement(resolved, tag)
+            inferWhenResolvedIsJsTypeDefElement(resolved)
         }
         else -> {
             val expression = (resolved as? ObjJVariableName)
@@ -117,7 +114,7 @@ private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResul
     }
 }
 
-private fun inferWhenResolvedIsJsTypeDefElement(resolved:PsiElement, tag:Long) : InferenceResult? {
+private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : InferenceResult? {
     val parent = resolved.parent
     return when (resolved) {
         is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()

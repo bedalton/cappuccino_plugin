@@ -118,7 +118,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         }
         val otherResults = if (prevSiblings.isNotEmpty()) {
             val searchString = prevSiblings.joinToString(".") { it.text } + "." + functionName
-            LOGGER.info("Search string: $searchString")
             JsTypeDefPropertiesByNamespaceIndex.instance[searchString, project].map {
                 it.propertyName
             } + JsTypeDefFunctionsByNamespaceIndex.instance[searchString, project].map {

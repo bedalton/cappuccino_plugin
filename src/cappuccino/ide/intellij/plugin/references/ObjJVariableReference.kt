@@ -177,55 +177,39 @@ class ObjJVariableReference(
         // Get simple if no previous siblings
         val prevSiblings = myElement.previousSiblings
         if (prevSiblings.isEmpty()) {
-            LOGGER.info("PrevSiblings are empty for $variableName")
             var outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
-                LOGGER.info("Found JS Property result for $variableName. Namespace: ${it.enclosingNamespace}")
                 it.enclosingNamespace.isEmpty()
             }.mapNotNull {
-                LOGGER.info("Found zero index js Property result for $variableName")
                 it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
             }
             if (outSimple.isEmpty()) {
-                LOGGER.info("Outsimple is empty, so returning js class if available")
                 outSimple = JsTypeDefClassesByNameIndex.instance[variableName, project].mapNotNull {
                     (it as? JsTypeDefClassElement)?.typeName
                 }
             }
             return PsiElementResolveResult.createResults(outSimple)
-        } else {
-            LOGGER.info("Prev siblings is not empty for  $variableName")
         }
         val className = prevSiblings.subList(0, prevSiblings.lastIndex).joinToString("\\.") { Regex.escape(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
 
         // Get types if qualified
         val classTypes = inferQualifiedReferenceType(prevSiblings, tag)
-                ?: {
-                    LOGGER.info("Failed to infer types for (${prevSiblings.joinToString(".") { it.text }})")
-                    null
-                }()
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
 
         if (classTypes.classes.isNotEmpty()) {
             val allClassNames = classTypes.classes.flatMap { jsClassName ->
-                LOGGER.info("ClassType for $variableName: $jsClassName")
                 JsTypeDefClassesByNameIndex.instance[jsClassName, project].map {
                     it.toJsClassDefinition()
                 }
             }.withAllSuperClassNames(project)
             val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it) } + ")\\." + variableName
-            LOGGER.info("SearchString: $searchString")
             val found = JsTypeDefPropertiesByNamespaceIndex.instance.getByPatternFlat(searchString, project).filter {
-                LOGGER.info("FOUND: ${it.text}")
                 it.isStatic == isStatic
             }.mapNotNull {
                 it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
             }
             return PsiElementResolveResult.createResults(found)
-        } else {
-            LOGGER.info("Class types is empty for $variableName result: $classTypes")
         }
-        LOGGER.info("NullIfSelfReferencing for $variableName? $nullIfSelfReferencing")
         return if (nullIfSelfReferencing)
             PsiElementResolveResult.EMPTY_ARRAY
         else

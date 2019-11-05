@@ -26,61 +26,6 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
     }
 }
 
-// MUST BE FALSE
-// Causes infinite recursion
-//private val CLASS_METHOD_BASED_RESOLVE = false
-/*
-private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
-    //ProgressManager.checkCanceled()
-    /*if (level < 0)
-        return null*/
-    val project = methodCall.project
-    val selector = methodCall.selectorString
-    if (selector == "alloc" || selector == "alloc:") {
-        return getAllocStatementType(methodCall)
-    }
-    if (selector == "respondsToSelector:" || selector == "respondsToSelector")
-        return listOf("BOOL").toInferenceResult()
-
-    val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
-    val callTargetTypes = callTargetType?.toClassList(null)?.withoutAnyType().orEmpty()
-
-    if (selector == "copy" || selector == "copy:")
-        return callTargetType
-
-    if (callTargetTypes.isEmpty())
-        return INFERRED_ANY_TYPE
-
-    if (CLASS_METHOD_BASED_RESOLVE) {
-        var out = callTargetTypes.mapNotNull {className ->
-            ObjJImplementationDeclarationsIndex.instance[className, project].firstOrNull { !it.isCategory} ?.getMethodReturnType(selector, tag)
-                    ?:ObjJImplementationDeclarationsIndex.instance[className, project].firstOrNull()?.getMethodReturnType(selector, tag)
-        }
-        if (out.isEmpty()) {
-            out = callTargetTypes.mapNotNull {
-                ObjJProtocolDeclarationsIndex.instance[it, project].firstOrNull()?.getMethodReturnType(selector, tag)
-            }
-        }
-        return out.collapse()
-    } else {
-
-        val methods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
-            if (callTargetTypes.isNotEmpty()) {
-                return callTargetTypes.flatMap { className ->
-                    ObjJClassAndSelectorMethodIndex.instance.getByClassAndSelector(className, selector, project).mapNotNull {
-                        it.getCachedReturnType(tag)
-                    }
-                }.collapse()
-            }
-            ObjJUnifiedMethodIndex.instance[selector, project]
-        } else
-            emptyList()
-        return methods.toSet().mapNotNull {
-            it.getCachedReturnType(tag)
-        }.collapse()
-    }
-}
-*/
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
     ProgressIndicatorProvider.checkCanceled()
     /*if (level < 0)
@@ -184,76 +129,6 @@ private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: S
     }
     return InferenceResult(types = types.toSet(), nullable = nullable)
 }
-
-/*
-private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
-    //ProgressManager.checkCanceled()
-    /*if (level < 0)
-        return null*/
-    val project = methodCall.project
-    val selector = methodCall.selectorString
-    if (selector == "alloc" || selector == "alloc:") {
-        return getAllocStatementType(methodCall)
-    }
-    val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
-    val callTargetTypes = callTargetType?.classes.orEmpty().flatMap {
-        ObjJInheritanceUtil.getAllInheritedClasses(it, project)
-    }.toSet()
-    if (selector == "copy" || selector == "copy:" || selector == "new:" || selector == "new:")
-        return callTargetType
-    val getMethods: List<ObjJMethodHeaderDeclaration<*>> = if (!DumbService.isDumb(project)) {
-        if (callTargetTypes.isNotEmpty()) {
-            ObjJUnifiedMethodIndex.instance[selector, project].filter {
-                it.containingClassName in callTargetTypes
-            }
-        } else {
-            ObjJUnifiedMethodIndex.instance[selector, project]
-        }
-    } else
-        emptyList()
-
-    val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
-    val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
-        methodDeclaration.getCachedInferredTypes(tag) {
-            if (methodDeclaration.tagged(tag))
-                return@getCachedInferredTypes null
-            val commentReturnTypes = methodDeclaration.docComment?.getReturnTypes(methodDeclaration.project).orEmpty().withoutAnyType()
-            if (commentReturnTypes.isNotEmpty()) {
-                return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
-            }
-            val thisClasses = getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration, tag)
-            if (thisClasses.isNotEmpty()) {
-                InferenceResult(
-                        types = thisClasses.toJsTypeList()
-                )
-            } else
-                null
-        }?.classes.orEmpty()
-    }
-    val instanceVariableTypes = callTargetTypes.flatMap {className ->
-        ObjJInstanceVariablesByClassIndex.instance[className, project].filter{ it.variableName?.text == selector}.mapNotNull {
-            val type = it.variableType
-            if (type.isNotBlank())
-                type
-            else
-                null
-        }
-    }
-    // Accessors are different than instance var names
-    val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
-        instanceVariable ->
-        instanceVariable.getCachedInferredTypes(tag) {
-            return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
-        }?.classes.orEmpty()
-    }
-    val out = mutableSetOf<String>()
-    out.addAll(instanceVariableAccessorTypes)
-    out.addAll(instanceVariableTypes)
-    out.addAll(getReturnType)
-    return InferenceResult(
-            types = out.toJsTypeList()
-    )
-}*/
 
 private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
     val className = when (val callTargetText = methodCall.callTargetText) {

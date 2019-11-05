@@ -99,6 +99,6 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
     }
 
     override fun indexStub(stub: JsTypeDefVariableDeclarationStub, sink: IndexSink) {
-        //ServiceManager.getService(StubIndexService::class.java).indexVariableDeclaration(stub, sink)
+        ServiceManager.getService(StubIndexService::class.java).indexVariableDeclaration(stub, sink)
     }
 }

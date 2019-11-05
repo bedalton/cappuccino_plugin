@@ -56,6 +56,10 @@ open class StubIndexService {
         return JsTypeDefFileStubImpl(file, fileName)
     }
 
+    open fun indexVariableDeclaration(stub: JsTypeDefVariableDeclarationStub, sink: IndexSink) {
+        throw NotImplementedError("index variable declaration indexing method must be overridden")
+    }
+
     companion object {
 
         /**
