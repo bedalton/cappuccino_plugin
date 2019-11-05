@@ -96,6 +96,8 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
                 return
             }
         }
+        if (variableNameElement.indexInQualifiedReference != 0)
+            return
         val referencedVariable: PsiElement? = ObjJVariableReference(variableNameElement).resolve(nullIfSelfReferencing = true)
                 ?: return
         if (referencedVariable equals variableNameElement) {
