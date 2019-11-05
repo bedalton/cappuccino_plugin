@@ -35,7 +35,6 @@ object ObjJFunctionNameEmptyArgsInsertHandler : InsertHandler<LookupElement> {
         ObjJInsertionTracker.hit(lookupElement.lookupString)
         if (!EditorUtil.isTextAtOffset(insertionContext, "(")) {
             EditorUtil.insertText(insertionContext, "()", true)
-            EditorUtil.offsetCaret(insertionContext, -1)
         }
     }
 }
