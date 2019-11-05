@@ -6,6 +6,7 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     if (expr == null)
