@@ -1621,10 +1621,17 @@ arrayLiteral
 	;
 
 private arrayLiteralExpressionList
-	::= (',')* (expr (',' expr?)*)?
+	::= (',')* expr arrayLiteralExpressionPrime
 	{
-		pin(".*")=1
+		pin(".*")=3
 		recoverWhile=recover_arrayLiteralExpressionList
+	}
+	;
+
+private arrayLiteralExpressionPrime
+	::= (',' expr?)+
+	{
+		pin(".*")=2
 	}
 	;
 
@@ -1700,7 +1707,7 @@ propertyName
 	;
 
 methodCall
-	::= '[' callTarget !(','|']'|mathOp|assignmentOperator|'='|rightExpr) methodCallSelectorList ']'
+	::= '[' callTarget /*!(','|']'|mathOp|assignmentOperator|'='|rightExpr) */ methodCallSelectorList ']'
 	{
 		pin=3
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
@@ -2187,10 +2194,10 @@ regularExpressionLiteral
 	;
 
 callTarget
-	::= functionCall
-	|	qualifiedReference
-    | 	expr
+	::= callTargetPrime
+
     {
+    	pin=1
     	methods=[
     		getPossibleCallTargetTypes
     		getSingleVariableNameElementOrNull
@@ -2198,8 +2205,13 @@ callTarget
 	}
 	;
 
+private callTargetPrime
+	::= expr
+	|	qualifiedReference
+	;
+
 qualifiedReference
-	::= (stringLiteral|variableName|methodCall|parenEnclosedExpr) qualifiedReferencePrimary*
+	::= (stringLiteral|variableName|methodCall|parenEnclosedExpr|functionCall) qualifiedReferencePrimary*
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
