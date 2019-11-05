@@ -42,7 +42,6 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     val parentClasses: Set<String> = (parentTypes.classes.flatMap {
         getClassDefinitions(project, it)
     }.withAllSuperClassNames(project) + parentTypes.classes)
-    LOGGER.info("Finding basic types for ${parentClasses.size} classes from ${parentTypes.classes.size} classes for variable: $variableNameString")
     val basicTypes:Set<JsTypeListType> = getAllPropertyTypesWithNameInClasses(variableNameString, parentTypes, static, project)
 
     // If static, stop here

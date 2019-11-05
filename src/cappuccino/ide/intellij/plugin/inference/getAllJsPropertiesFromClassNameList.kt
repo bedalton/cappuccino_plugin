@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 internal fun getAllPropertiesWithNameInClasses(name:String, parentTypes:InferenceResult, static:Boolean, project:Project) : List<JsNamedProperty> {
     val allPropertiesInClasses = getAllPropertiesFromClassNamesList(parentTypes, static, project);
     return allPropertiesInClasses.filter {
-        LOGGER.info("Does '${it.name}' == '$name'?")
         it.name == name
     }
 }
@@ -65,7 +64,6 @@ private fun getAllProperties(className: String, static: Boolean, parentTypes: In
                 emptyList()
     val aliasProperties: List<JsNamedProperty> = getJsTypeDefAliasProperties(className, static, parentTypes, project)
     val allProperties = allClassPropertiesRaw + arrayPropertiesIfNeededRaw + aliasProperties
-    LOGGER.info("Getting all properties for: $className; Found ${allProperties.size} properties")
     return allProperties
 }
 
