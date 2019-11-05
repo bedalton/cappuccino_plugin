@@ -78,43 +78,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
             return cached
         }
         resolved.getCachedInferredTypes(tag) {
-            if (resolved.tagged(tag))
-                return@getCachedInferredTypes null
-            val function: ObjJUniversalFunctionElement? = (when (resolved) {
-                is ObjJVariableName -> resolved.parentFunctionDeclaration
-                is ObjJFunctionName -> resolved.parentFunctionDeclaration
-                else -> {
-                    null
-                }
-            })
-            when {
-                function != null -> {
-                    inferFunctionDeclarationReturnType(function, tag)
-                }
-                resolved is JsTypeDefElement -> {
-                    val parent = resolved.parent
-
-                    val out = when (resolved) {
-                        is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
-                        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
-                        is JsTypeDefProperty -> resolved.toJsNamedProperty().types.functionTypes.flatMap { it.returnType?.types.orEmpty() }.ifEmpty { null }?.let {
-                            InferenceResult(types = it.toSet())
-                        }
-                        is JsTypeDefPropertyName -> (parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.ifEmpty { null }?.let {
-                            InferenceResult(types = it.toSet())
-                        }
-                        else -> {
-                            null
-                        }
-                    }
-                    out
-                }
-                else -> {
-                    val expression = (resolved as? ObjJVariableName)?.getAssignmentExprOrNull()
-                            ?: return@getCachedInferredTypes null
-                    inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
-                }
-            }
+            inferTypeForResolved(resolved, tag)
         }
     }.orEmpty().combine()
     if (out.types.isNotEmpty()) {
@@ -122,6 +86,49 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
     }
     return null
 
+}
+
+private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResult? {
+    if (resolved.tagged(tag))
+        return null
+    val function: ObjJUniversalFunctionElement? = (when (resolved) {
+        is ObjJVariableName -> resolved.parentFunctionDeclaration
+        is ObjJFunctionName -> resolved.parentFunctionDeclaration
+        else -> {
+            null
+        }
+    })
+    return when {
+        function != null -> {
+            inferFunctionDeclarationReturnType(function, tag)
+        }
+        resolved is JsTypeDefElement -> {
+            inferWhenResolvedIsJsTypeDefElement(resolved, tag)
+        }
+        else -> {
+            val expression = (resolved as? ObjJVariableName)
+                    ?.getAssignmentExprOrNull()
+                    ?: return null
+            inferExpressionType(expression, tag)?.functionTypes?.firstOrNull()?.returnType
+        }
+    }
+}
+
+private fun inferWhenResolvedIsJsTypeDefElement(resolved:PsiElement, tag:Long) : InferenceResult? {
+    val parent = resolved.parent
+    return when (resolved) {
+        is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
+        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
+        is JsTypeDefProperty -> resolved.toJsNamedProperty().types.functionTypes.flatMap { it.returnType?.types.orEmpty() }.ifEmpty { null }?.let {
+            InferenceResult(types = it.toSet())
+        }
+        is JsTypeDefPropertyName -> (parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.ifEmpty { null }?.let {
+            InferenceResult(types = it.toSet())
+        }
+        else -> {
+            null
+        }
+    }
 }
 
 fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Long): InferenceResult? {
@@ -146,7 +153,7 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
     return types
 }
 
-fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): InferenceResult? {
+internal fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): InferenceResult? {
     val functionType = toJsFunctionType(tag)
     return InferenceResult(
             types = setOf(functionType)
