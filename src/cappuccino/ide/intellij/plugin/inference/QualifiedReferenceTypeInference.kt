@@ -21,14 +21,10 @@ import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
 internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
-    /*val lastChild = parts.lastOrNull() ?: return null
-    return lastChild.getCachedInferredTypes(null) {
-        addStatusFileChangeListener(parts[0].project)
-        internalInferQualifiedReferenceType(parts, tag)
-    }*/
     if (parts.isEmpty())
         return null
     addStatusFileChangeListener(parts[0].project)
@@ -40,17 +36,14 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
         return null
     }
     val project: Project = parts[0].project
-    //ProgressManager.checkCanceled()
     var parentTypes: InferenceResult? = null
     var isStatic = false
     for (i in parts.indices) {
-        //ProgressManager.checkCanceled()
         val part = parts[i]
         val thisParentTypes = parentTypes
         parentTypes = part.getCachedInferredTypes(tag) {
             if (part.tagged(tag, false))
                 return@getCachedInferredTypes null
-
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
                 val variableName = parts[0] as ObjJVariableName
                 val simpleType = simpleVariableInference(variableName)

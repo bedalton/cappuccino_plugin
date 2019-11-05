@@ -169,9 +169,6 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
     if (callTarget.expr != null)
         return inferExpressionType(callTarget.expr!!, tag)
 
-    if (callTarget.functionCall != null) {
-        return inferFunctionCallReturnType(callTarget.functionCall!!, tag)
-    }
     if (callTarget.qualifiedReference != null) {
         return inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)
     }
