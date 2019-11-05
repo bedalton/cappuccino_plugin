@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameEmptyArgsInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.inference.anyTypes
@@ -60,11 +61,17 @@ object ObjJFunctionNameCompletionProvider {
             val shouldPossiblyIgnore = ignoreFunctionPrefixedWithUnderscore && functionName.startsWith("_")
             if (shouldPossiblyIgnore && element.containingFile != function.containingFile)
                 continue
+
+            val parametersString = ArrayUtils.join(function.parameterNames, ",")
+            val insertHandler = if (parametersString.isEmpty())
+                ObjJFunctionNameEmptyArgsInsertHandler
+            else
+                ObjJFunctionNameInsertHandler
             val priority = if (PsiTreeUtil.findCommonContext(function, element) != null) ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY else ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY
             val lookupElementBuilder = LookupElementBuilder
                     .create(functionName)
-                    .withTailText("(" + ArrayUtils.join(function.parameterNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
-                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+                    .withTailText("(" + parametersString + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withInsertHandler(insertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, priority)))
         }
     }
@@ -74,10 +81,15 @@ object ObjJFunctionNameCompletionProvider {
         functions.addAll(element.containingFile.getChildrenOfType(ObjJFunctionDeclarationElement::class.java))
         for (function in functions) {
             val functionName = function.functionNameNode?.text ?: continue
+            val parametersString = ArrayUtils.join(function.parameterNames, ",")
+            val insertHandler = if (parametersString.isEmpty())
+                ObjJFunctionNameEmptyArgsInsertHandler
+            else
+                ObjJFunctionNameInsertHandler
             val lookupElementBuilder = LookupElementBuilder
                     .create(functionName)
-                    .withTailText("(" + ArrayUtils.join(function.parameterNames, ",") + ") in " + ObjJPsiImplUtil.getFileName(function))
-                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+                    .withTailText("(" + parametersString + ") in " + ObjJPsiImplUtil.getFileName(function))
+                    .withInsertHandler(insertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.TYPEDEF_PRIORITY)))
         }
     }
@@ -112,19 +124,29 @@ object ObjJFunctionNameCompletionProvider {
                 arguments.substring(2)
             else
                 ""
+
+            val insertHandler = if (argumentsString.isEmpty())
+                ObjJFunctionNameEmptyArgsInsertHandler
+            else
+                ObjJFunctionNameInsertHandler
             val lookupElementBuilder = LookupElementBuilder
                     .create(functionName)
                     .withTailText("(" + argumentsString + ") in [" + ObjJPsiImplUtil.getFileName(functionIn)+"]")
-                    .withInsertHandler(ObjJFunctionNameInsertHandler)
+                    .withInsertHandler(insertHandler)
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, ObjJCompletionContributor.FUNCTIONS_IN_FILE_PRIORITY)))
 
         }
     }
 
-    internal fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String, priority: Double = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY) {
+    internal fun addGlobalFunctionName(resultSet:CompletionResultSet, functionName:String, parameterNames:List<String>, priority: Double = ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY) {
+        val argumentsString = parameterNames.joinToString(",")
+        val insertHandler = if (argumentsString.isEmpty())
+            ObjJFunctionNameEmptyArgsInsertHandler
+        else
+            ObjJFunctionNameInsertHandler
         val lookupElementBuilder = LookupElementBuilder
                 .create(functionName)
-                .withInsertHandler(ObjJFunctionNameInsertHandler)
+                .withInsertHandler(insertHandler)
         resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(functionName, priority)))
     }
 }
