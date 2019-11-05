@@ -116,8 +116,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
             }
             return PsiElementResolveResult.createResults(outSimple)
         }
-        val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
-        val otherResults = if (className.isNotEmpty()) {
+        val otherResults = if (prevSiblings.isNotEmpty()) {
             val searchString = prevSiblings.joinToString(".") { it.text } + "." + functionName
             LOGGER.info("Search string: $searchString")
             JsTypeDefPropertiesByNamespaceIndex.instance[searchString, project].map {
@@ -129,6 +128,7 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
             emptyList()
         }
 
+        val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
         val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
         // Get types if qualified
         val classTypes = previousSiblingTypes

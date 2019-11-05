@@ -4,12 +4,14 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -37,9 +39,11 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
     val project = variableName.project
     val variableNameString = variableName.text
-    val basicTypes = parentTypes.classes.flatMap { className ->
-        getTypesForClass(variableNameString, className, static, parentTypes, project)
-    }.toSet()
+    val parentClasses: Set<String> = (parentTypes.classes.flatMap {
+        getClassDefinitions(project, it)
+    }.withAllSuperClassNames(project) + parentTypes.classes)
+    LOGGER.info("Finding basic types for ${parentClasses.size} classes from ${parentTypes.classes.size} classes for variable: $variableNameString")
+    val basicTypes:Set<JsTypeListType> = getAllPropertyTypesWithNameInClasses(variableNameString, parentTypes, static, project)
 
     // If static, stop here
     if (static) {
@@ -49,8 +53,8 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             .filter {
                 it.static == static && it.name == variableNameString
             }
-    val functions: List<JsTypeListType.JsTypeListFunctionType> = parentTypes.functionTypes +
-            properties.filterIsInstance(JsTypeListType.JsTypeListFunctionType::class.java)
+    val functions: List<JsTypeListFunctionType> = parentTypes.functionTypes +
+            properties.filterIsInstance(JsTypeListFunctionType::class.java)
 
     val propertyTypes = properties
             .filterIsInstance(JsTypeDefNamedProperty::class.java)
@@ -64,57 +68,6 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
                 nullable = true
         )
     }
-}
-
-private fun getTypesForClass(variableNameString: String, className: String, static: Boolean, parentTypes: InferenceResult, project: Project): Set<JsTypeListType> {
-    val allPropertiesRaw: List<JsNamedProperty> =
-            if (className.contains("&")) {
-                className.split("\\s*&\\s*".toRegex()).flatMap {
-                    JsTypeDefClassesByNameIndex.instance[className, project].filterIsInstance<JsTypeDefClassElement>().flatMap { classElement ->
-                        classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsFunctionType() }
-                    }
-                }
-            } else {
-                val objjProperties:Set<JsNamedProperty>? = if (!static) {
-                    objJClassAsJsClass(project, className)?.let {
-                        val classType = listOf(it).collapseWithSuperType(project)
-                        classType.properties
-                    }
-                } else null
-                val allClassPropertiesRaw: List<JsNamedProperty> = JsTypeDefClassesByNameIndex.instance[className, project].flatMap { classElement ->
-                    classElement.propertyList.toNamedPropertiesList() + classElement.functionList.map { it.toJsFunctionType() }
-                } + objjProperties.orEmpty()
-                val arrayPropertiesIfNeededRaw =
-                        if (parentTypes.types.any { it is JsTypeListType.JsTypeListArrayType })
-                            JsTypeDefClassesByNameIndex.instance["Array", project].flatMap { arrayClass ->
-                                arrayClass.propertyList.toNamedPropertiesList() + arrayClass.functionList.map { it.toJsFunctionType() }
-                            }
-                        else
-                            emptyList()
-                val otherPropertiesRaw: List<JsNamedProperty> = JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
-                    typeAlias.typesList.functionTypes +
-                            typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticProperties else it.instanceProperties } +
-                            typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticFunctions else it.instanceFunctions }
-                }
-                allClassPropertiesRaw + arrayPropertiesIfNeededRaw + otherPropertiesRaw
-            } + getJsTypeDefAliasProperties(className, static, project)
-    return allPropertiesRaw.filter { it.name == variableNameString && it.static == static }
-            .flatMap {
-                (it as? JsTypeDefNamedProperty)?.types?.types
-                        ?: listOfNotNull(it as? JsTypeListType.JsTypeListFunctionType)
-            }.toSet()
-}
-
-private fun getJsTypeDefAliasProperties(className:String, static:Boolean, project:Project) : List<JsNamedProperty> {
-    return (JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
-        typeAlias.typesList.functionTypes +
-                typeAlias.typesList.interfaceTypes.flatMap {
-                    if (static) it.staticProperties else it.instanceProperties
-                } +
-                typeAlias.typesList.interfaceTypes.flatMap {
-                    if (static) it.staticFunctions else it.instanceFunctions
-                }
-    })
 }
 
 /**
