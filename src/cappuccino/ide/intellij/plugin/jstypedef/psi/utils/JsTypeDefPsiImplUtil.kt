@@ -24,6 +24,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -982,6 +983,7 @@ object JsTypeDefPsiImplUtil {
                 .ifEmpty { null }
                 ?.toSet()
                 ?: resolved.flatMap { it.typeMapExtends?.typeMapNameList.orEmpty() }.ifEmpty {null}?.mapNotNull {
+                    ProgressIndicatorProvider.checkCanceled()
                     it.reference.resolve()
                             ?.getParentOfType(JsTypeDefTypeMapElement::class.java)
                             ?.getTypesForKey(key)

@@ -14,6 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
@@ -26,9 +27,7 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
 }
 
 private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
-    //ProgressManager.checkCanceled()
-    /*if (level < 0)
-        return null*/
+    ProgressIndicatorProvider.checkCanceled()
     val project = methodCall.project
     val selector = methodCall.selectorString
     if (selector == "alloc" || selector == "alloc:") {
@@ -54,6 +53,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         methodDeclaration.getCachedInferredTypes(tag) {
             if (methodDeclaration.tagged(tag))
                 return@getCachedInferredTypes null
+            ProgressIndicatorProvider.checkCanceled()
             if (methodDeclaration.methodHeader.explicitReturnType == "instancetype" && methodDeclaration.containingClassName !in anyTypes) {
                 return@getCachedInferredTypes setOf(methodDeclaration.containingClassName).toInferenceResult()
             }
@@ -85,6 +85,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         instanceVariable.getCachedInferredTypes(tag) {
             if (instanceVariable.tagged(tag))
                 return@getCachedInferredTypes null
+            ProgressIndicatorProvider.checkCanceled()
             return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
         }?.classes.orEmpty()
     }
@@ -101,6 +102,7 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
     var nullable = false
     val types = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
             .flatMap { classDeclaration ->
+                ProgressIndicatorProvider.checkCanceled()
                 val out = classDeclaration.getReturnTypesForSelector(selector, tag)
                 if (out?.nullable.orFalse())
                     nullable = true
@@ -149,8 +151,6 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
 }
 
 fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult? {
-    /*if (level < 0)
-        return emptySet()*/
     return callTarget.getCachedInferredTypes(tag) {
         //if (callTarget.tagged(tag))
          //   return@getCachedInferredTypes null
@@ -172,7 +172,7 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
 }
 
 private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
-    //ProgressManager.checkCanceled()
+    ProgressIndicatorProvider.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
