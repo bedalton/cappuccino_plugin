@@ -89,7 +89,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val prevSibling = element.getPreviousNonEmptySibling(true)
         val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
 
-        //LOGGER.info("Element<${element.text}> is ${element.tokenType()} in parent ${element.parent?.elementType}; PrevSibling: ${prevSibling?.tokenType()}")
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
                 resultSet.stopHere()
@@ -97,7 +96,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             }
             element.hasParentOfType(ObjJStringLiteral::class.java) -> {
                 val stringLiteral = element.getParentOfType(ObjJStringLiteral::class.java)
-                    ?: return;
+                    ?: return
                 addStringCompletions(stringLiteral, resultSet)
             }
             element.getPreviousNonEmptySibling(false)?.elementType in ObjJTokenSets.IMPORT_BLOCKS -> {
@@ -336,10 +335,13 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
             ProgressIndicatorProvider.checkCanceled()
-            if (it.variableName.parentFunctionDeclaration != null || inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes.isNotNullOrEmpty()) {
-                ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString)
+            val parameters = it.variableName.parentFunctionDeclaration?.parameterNames
+                    ?: inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes?.maxBy { it.parameters.size }?.parameters?.map { it.name }
+            if (parameters != null) {
+                ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString, parameters)
             } else {
-                val lookupElement = LookupElementBuilder.create(it.variableNameString).withInsertHandler(ObjJVariableInsertHandler)
+                val lookupElement = LookupElementBuilder.create(it.variableNameString)
+                        .withInsertHandler(ObjJVariableInsertHandler)
                 resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it.variableNameString, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY)))
             }
         }

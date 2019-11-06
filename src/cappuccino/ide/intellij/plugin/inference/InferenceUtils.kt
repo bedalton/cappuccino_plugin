@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
+import cappuccino.ide.intellij.plugin.psi.ObjJBlockElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.now
@@ -23,17 +24,15 @@ internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
+private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
+
 private const val INFERRED_TYPES_MINOR_VERSION:Int = 0
 
 private const val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
-private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_TYPES_IS_ACCESSING")
-
-private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
-
 private const val CACHE_EXPIRY = 15000
 
-private const val TEXT_DEPTH = 3;
+private const val TEXT_DEPTH = 3
 
 fun addStatusFileChangeListener(project:Project)
     = StatusFileChangeListener.addListenerToProject(project)
@@ -91,7 +90,7 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
     for (i in 0 until TEXT_DEPTH) {
         val tempParent = textParent.parent
                 ?: break
-        if (tempParent !is ObjJBlock && tempParent !is ObjJFile)
+        if (tempParent !is ObjJBlockElement && tempParent !is ObjJFile)
             textParent = tempParent
     }
     val thisText = textParent.text
@@ -116,7 +115,6 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
         val inferredTypes = getIfNull?.invoke() ?: this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
         this.tagComplete(tag)
-        //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
         this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
         this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
         return inferredTypes

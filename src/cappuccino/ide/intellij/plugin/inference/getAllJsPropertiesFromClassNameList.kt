@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.contributor.objJClassAsJsClass
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefTypeAliasIndex
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
 
@@ -41,6 +42,7 @@ internal fun getAllPropertiesInParentTypes(parentTypes: InferenceResult, static:
     val childClassNameStrings = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListType.JsTypeListArrayType }) "Array" else null)).filterNotNull()
 
     val classesWithSuperTypes = childClassNameStrings.mapNotNull {
+        ProgressIndicatorProvider.checkCanceled()
         getClassDefinition(project, it)
     }.withAllSuperClassNames(project)
 
@@ -51,7 +53,8 @@ internal fun getAllPropertiesInParentTypes(parentTypes: InferenceResult, static:
 }
 
 private fun getAllProperties(className: String, static: Boolean, parentTypes: InferenceResult, project: Project): List<JsNamedProperty> {
-    // Class is union type, return properties for each class in union
+    ProgressIndicatorProvider.checkCanceled()
+    // If class is union type, return properties for each class in union
     if (className.contains("&")) {
         return className.split("\\s*&\\s*".toRegex()).flatMap {
             getAllProperties(it, static, parentTypes, project)
@@ -80,6 +83,7 @@ private fun getAllProperties(className: String, static: Boolean, parentTypes: In
 
 private fun getJsTypeDefAliasProperties(className: String, static: Boolean, parentTypes: InferenceResult, project: Project): List<JsNamedProperty> {
     return JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
+        ProgressIndicatorProvider.checkCanceled()
         typeAlias.typesList.functionTypes +
                 typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticProperties else it.instanceProperties } +
                 typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticFunctions else it.instanceFunctions } +

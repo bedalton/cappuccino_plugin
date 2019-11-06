@@ -7,7 +7,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import javafx.scene.control.ProgressIndicator
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     if (expr == null)
@@ -39,12 +38,11 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
         return InferenceResult(types = setOf("Object").toJsTypeList())
     }
 
-    //ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty()) {
         leftExpressionType(expr.leftExpr, tag)
     } else if (
             (expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null)
-            //&& expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
+            && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
     ) {
         val qualifiedNameParts = expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty();
         val qualifiedReferenceResult = inferQualifiedReferenceType(qualifiedNameParts, tag) ?: return null
@@ -170,6 +168,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Long): InferenceResult? {
     if (leftExpression == null)// || level < 0)
         return null
+    ProgressIndicatorProvider.checkCanceled()
     var orExpressionType: InferenceResult? = null
     var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {

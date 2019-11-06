@@ -35,6 +35,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
     if (parts.isEmpty()) {
         return null
     }
+    ProgressIndicatorProvider.checkCanceled()
     val project: Project = parts[0].project
     var parentTypes: InferenceResult? = null
     var isStatic = false
@@ -44,6 +45,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
         parentTypes = part.getCachedInferredTypes(tag) {
             if (part.tagged(tag, false))
                 return@getCachedInferredTypes null
+            ProgressIndicatorProvider.checkCanceled()
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
                 val variableName = parts[0] as ObjJVariableName
                 val simpleType = simpleVariableInference(variableName)
@@ -107,7 +109,6 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     if (parentTypes == null) {
         return INFERRED_ANY_TYPE
     }
-
     var types =  parentTypes.types.flatMap {
         (it as? JsTypeListArrayType)?.types.orEmpty()
     }.toSet()
@@ -133,11 +134,14 @@ private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag:
     val firstMatches: MutableList<JsTypeListType> = mutableListOf()
 
     val functions = JsTypeDefFunctionsByNameIndex.instance[name, project].map {
-        //ProgressManager.checkCanceled()
+        ProgressIndicatorProvider.checkCanceled()
         it.toJsFunctionType()
     }.toMutableList()
     firstMatches.addAll(functions)
-    val properties = JsTypeDefPropertiesByNameIndex.instance[name, project].flatMap { it.typeList.toJsTypeDefTypeListTypes() }
+    val properties = JsTypeDefPropertiesByNameIndex.instance[name, project].flatMap {
+        ProgressIndicatorProvider.checkCanceled()
+        it.typeListTypes
+    }
     firstMatches.addAll(properties)
     if (firstMatches.isEmpty())
         return null

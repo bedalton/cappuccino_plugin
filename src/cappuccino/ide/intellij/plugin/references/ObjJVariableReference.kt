@@ -7,10 +7,7 @@ import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
@@ -20,7 +17,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.project.DumbService
@@ -167,53 +163,11 @@ class ObjJVariableReference(
         if (element != null) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
-
         if (ObjJVariablePsiUtil.isNewVarDec(myElement))
             return PsiElementResolveResult.createResults(listOf(myElement))
 
-        val project = myElement.project
-
-        val variableName = myElement.text
-        // Get simple if no previous siblings
-        val prevSiblings = myElement.previousSiblings
-        if (prevSiblings.isEmpty()) {
-            var outSimple: List<JsTypeDefElement> = JsTypeDefPropertiesByNameIndex.instance[variableName, project].filter {
-                it.enclosingNamespace.isEmpty()
-            }.mapNotNull {
-                it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
-            }
-            if (outSimple.isEmpty()) {
-                outSimple = JsTypeDefClassesByNameIndex.instance[variableName, project].mapNotNull {
-                    (it as? JsTypeDefClassElement)?.typeName
-                }
-            }
-            return PsiElementResolveResult.createResults(outSimple)
-        }
-        val className = prevSiblings.subList(0, prevSiblings.lastIndex).joinToString("\\.") { Regex.escape(it.text) }
-        val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
-
-        // Get types if qualified
-        val classTypes = inferQualifiedReferenceType(prevSiblings, tag)
-                ?: return PsiElementResolveResult.EMPTY_ARRAY
-
-        if (classTypes.classes.isNotEmpty()) {
-            val allClassNames = classTypes.classes.flatMap { jsClassName ->
-                JsTypeDefClassesByNameIndex.instance[jsClassName, project].map {
-                    it.toJsClassDefinition()
-                }
-            }.withAllSuperClassNames(project)
-            val searchString = "(" + allClassNames.joinToString("|") { Regex.escapeReplacement(it) } + ")\\." + variableName
-            val found = JsTypeDefPropertiesByNamespaceIndex.instance.getByPatternFlat(searchString, project).filter {
-                it.isStatic == isStatic
-            }.mapNotNull {
-                it.propertyName ?: it.propertyAccess?.propertyName ?: it.stringLiteral
-            }
-            return PsiElementResolveResult.createResults(found)
-        }
-        return if (nullIfSelfReferencing)
-            PsiElementResolveResult.EMPTY_ARRAY
-        else
-            PsiElementResolveResult.createResults(listOf(myElement))
+        val properties = getJsNamedElementsForReferencedElement(myElement, myElement.text, tag)
+        return PsiElementResolveResult.createResults(properties)
     }
 
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
