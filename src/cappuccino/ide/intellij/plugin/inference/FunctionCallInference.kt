@@ -37,7 +37,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
     // Get Type from JsTypeDef if possible
     val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionNameString, functionCall.project]
     var lastOut = functionSet.flatMap {
-        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+        it.getReturnTypes(tag)?.types.orEmpty()
     }.toSet()
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, functionCall.project))
         lastOut = lastOut + JsTypeListType.JsTypeListBasicType(functionNameString)
@@ -54,7 +54,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
             .mapNotNull {
                 (it as? JsTypeDefFunction) ?: ((it as? JsTypeDefFunctionName)?.parent as? JsTypeDefFunction)
             }.flatMap {
-                it.functionReturnType?.toTypeListType()?.toJsTypeList().orEmpty()
+                it.getReturnTypes(tag)?.types.orEmpty()
             } +
             jsTypeDefResolves.mapNotNull {
                 it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty
@@ -91,6 +91,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResult? {
     if (resolved.tagged(tag))
         return null
+    ProgressIndicatorProvider.checkCanceled()
     val function: ObjJUniversalFunctionElement? = (when (resolved) {
         is ObjJVariableName -> resolved.parentFunctionDeclaration
         is ObjJFunctionName -> resolved.parentFunctionDeclaration
@@ -117,8 +118,8 @@ private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResul
 private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : InferenceResult? {
     val parent = resolved.parent
     return when (resolved) {
-        is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
-        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
+        is JsTypeDefFunction -> resolved.getReturnTypes(createTag())
+        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.getReturnTypes(createTag())
         is JsTypeDefProperty -> resolved.toJsNamedProperty().types.functionTypes.flatMap { it.returnType?.types.orEmpty() }.ifEmpty { null }?.let {
             InferenceResult(types = it.toSet())
         }
@@ -136,7 +137,7 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
     if (commentReturnTypes.isNotNullOrEmpty())
         return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
     if (function is JsTypeDefFunction) {
-        val types = function.functionReturnType?.typeList.toJsTypeDefTypeListTypes()
+        val types = function.getReturnTypes(tag)?.types.orEmpty()
         if (types.isEmpty())
             return null
         return InferenceResult(types = types)

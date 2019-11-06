@@ -54,7 +54,7 @@ interface JsTypeDefFunctionStub : StubElement<JsTypeDefFunctionImpl>, JsTypeDefN
 fun JsTypeDefProperty.toStubParameter() : JsTypeDefNamedProperty {
     return JsTypeDefNamedProperty(
             name = propertyNameString,
-            types = InferenceResult( types = propertyTypes.toJsTypeDefTypeListTypes(), nullable = isNullable)
+            types = InferenceResult( types = typeListTypes, nullable = isNullable)
     )
 }
 

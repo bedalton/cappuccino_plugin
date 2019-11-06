@@ -1707,9 +1707,9 @@ propertyName
 	;
 
 methodCall
-	::= '[' callTarget /*!(','|']'|mathOp|assignmentOperator|'='|rightExpr) */ methodCallSelectorList ']'
+	::= '[' callTarget !(','|']'|mathOp|assignmentOperator|'='|rightExpr) methodCallSelectorList ']'
 	{
-		pin=3
+		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"

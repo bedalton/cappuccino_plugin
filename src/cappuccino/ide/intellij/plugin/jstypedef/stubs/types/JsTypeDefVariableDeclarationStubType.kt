@@ -10,7 +10,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.NAMESPACE_SPLITTER_REG
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.impl.JsTypeDefVariableDeclarationStubImpl
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefVariableDeclarationStub
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orTrue
@@ -35,7 +34,7 @@ class JsTypeDefVariableDeclarationStubType internal constructor(
         val enclosingNamespace = declaration.enclosingNamespace
         val enclosingNamespaceComponents = declaration.enclosingNamespaceComponents
         val variableName = declaration.property?.propertyNameString.orEmpty()
-        val types = InferenceResult(declaration.property?.propertyTypes.orEmpty().toJsTypeDefTypeListTypes(), declaration.property?.isNullable.orTrue())
+        val types = InferenceResult(declaration.property?.typeListTypes.orEmpty(), declaration.property?.isNullable.orTrue())
         val readOnly = declaration.readonly != null
         val comment = null
         val default = null
