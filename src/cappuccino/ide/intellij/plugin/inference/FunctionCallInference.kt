@@ -54,7 +54,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
             .mapNotNull {
                 (it as? JsTypeDefFunction) ?: ((it as? JsTypeDefFunctionName)?.parent as? JsTypeDefFunction)
             }.flatMap {
-                it.functionReturnType?.toTypeListType()?.toJsTypeList().orEmpty()
+                it.getReturnTypes(tag)?.types.orEmpty()
             } +
             jsTypeDefResolves.mapNotNull {
                 it as? JsTypeDefProperty ?: it.parent as? JsTypeDefProperty
@@ -117,8 +117,8 @@ private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResul
 private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : InferenceResult? {
     val parent = resolved.parent
     return when (resolved) {
-        is JsTypeDefFunction -> resolved.functionReturnType?.toTypeListType()
-        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.functionReturnType?.toTypeListType()
+        is JsTypeDefFunction -> resolved.getReturnTypes(createTag())
+        is JsTypeDefFunctionName -> (parent as? JsTypeDefFunction)?.getReturnTypes(createTag())
         is JsTypeDefProperty -> resolved.toJsNamedProperty().types.functionTypes.flatMap { it.returnType?.types.orEmpty() }.ifEmpty { null }?.let {
             InferenceResult(types = it.toSet())
         }

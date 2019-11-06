@@ -39,7 +39,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val parameters = function.argumentsList?.arguments?.map { argument ->
             argument.toStubParameter()
         }?.toList() ?: emptyList()
-        val returnTypes = function.getReturnTypes(createTag())?.types ?: emptySet()
+        val returnTypes = function.getReturnTypes(createTag())?.types.orEmpty()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val genericsKeys = function.genericsKeys
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
