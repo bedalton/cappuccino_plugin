@@ -18,6 +18,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
 internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
@@ -29,13 +30,14 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
+    ProgressIndicatorProvider.checkCanceled()
     val functionName = functionCall.functionName ?: return null
     val functionNameString = functionName.text ?: return null
 
     // Get Type from JsTypeDef if possible
     val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionNameString, functionCall.project]
     var lastOut = functionSet.flatMap {
-        it.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+        it.getReturnTypes(tag)?.types.orEmpty()
     }.toSet()
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, functionCall.project))
         lastOut = lastOut + JsTypeListType.JsTypeListBasicType(functionNameString)
@@ -88,6 +90,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResult? {
     if (resolved.tagged(tag))
         return null
+    ProgressIndicatorProvider.checkCanceled()
     val function: ObjJUniversalFunctionElement? = (when (resolved) {
         is ObjJVariableName -> resolved.parentFunctionDeclaration
         is ObjJFunctionName -> resolved.parentFunctionDeclaration
@@ -133,7 +136,7 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
     if (commentReturnTypes.isNotNullOrEmpty())
         return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
     if (function is JsTypeDefFunction) {
-        val types = function.functionReturnType?.typeList.toJsTypeDefTypeListTypes()
+        val types = function.getReturnTypes(tag)?.types.orEmpty()
         if (types.isEmpty())
             return null
         return InferenceResult(types = types)

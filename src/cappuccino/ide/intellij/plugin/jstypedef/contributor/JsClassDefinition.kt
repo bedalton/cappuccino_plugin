@@ -169,7 +169,7 @@ fun List<JsTypeDefProperty>.toNamedPropertiesList(): List<JsTypeDefNamedProperty
 }
 
 fun JsTypeDefProperty.toJsNamedProperty(): JsTypeDefNamedProperty {
-    val typeList = typeList.toJsTypeDefTypeListTypes().toMutableSet()
+    val typeList = typeListTypes
     val interfaceBodyAsType = interfaceBodyProperty?.toJsTypeListType()
     if (interfaceBodyAsType != null)
         typeList.add(interfaceBodyAsType)

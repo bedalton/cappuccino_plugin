@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.jstypedef.stubs.types
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.StubIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
@@ -38,7 +39,7 @@ class JsTypeDefFunctionStubType internal constructor(
         val parameters = function.argumentsList?.arguments?.map { argument ->
             argument.toStubParameter()
         }?.toList() ?: emptyList()
-        val returnTypes = function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes() ?: emptySet()
+        val returnTypes = function.getReturnTypes(createTag())?.types ?: emptySet()
         val returnType = InferenceResult(returnTypes, function.isNullableReturnType)
         val genericsKeys = function.genericsKeys
         val isGlobal:Boolean = function.hasParentOfType(JsTypeDefFunctionDeclaration::class.java)
