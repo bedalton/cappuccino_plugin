@@ -1631,7 +1631,7 @@ private arrayLiteralExpressionList
 private arrayLiteralExpressionPrime
 	::= (',' expr?)+
 	{
-		pin(".*")=2
+		pin(".*")=1
 	}
 	;
 
@@ -1709,7 +1709,7 @@ propertyName
 methodCall
 	::= '[' callTarget !(','|']'|mathOp|assignmentOperator|'='|rightExpr) methodCallSelectorList ']'
 	{
-		pin=2
+		pin=3
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
