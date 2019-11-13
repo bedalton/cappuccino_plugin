@@ -3,8 +3,6 @@
 package cappuccino.ide.intellij.plugin.psi.types
 
 import cappuccino.ide.intellij.plugin.comments.OBJJ_DOC_COMMENT
-import cappuccino.ide.intellij.plugin.comments.ObjJCommentElement
-import cappuccino.ide.intellij.plugin.comments.ObjJCommentElementType
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*

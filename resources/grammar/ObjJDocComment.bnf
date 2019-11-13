@@ -1,0 +1,73 @@
+{
+	parserClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentParser"
+	implements="cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+	extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentElementImpl"
+	elementTypeHolderClass="cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes"
+	elementTypePrefix="ObjJComment_"
+	elementTypeClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentElementType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTokenType"
+	psiClassPrefix="ObjJDocComment"
+	psiImplClassSuffix="Impl"
+	psiPackage="cappuccino.ide.intellij.plugin.comments.psi.api"
+	psiImplPackage="cappuccino.ide.intellij.plugin.comments.psi.impl"
+	//Tokens
+	tokens = [
+		space = 							'regexp:\s+'
+		START =								"regexp:/[*][*!]*"
+		END =								'regexp:[*]+/'
+		LEADING_ASTERISK =					'regexp:[*]+'
+		TAG_NAME =							'regexp:@[a-zA-Z]+'
+		TAG_VALUE_DELIMITER =				'regexp:[|,]'
+		DOT =								'.'
+		ID = 								'regexp:[_a-zA-Z$][a-zA-Z0-9_]*';
+		TEXT =								'regexp:[^ \n$]+';
+	]
+}
+
+comment
+	::= START (!<<eof>> endOfLine* commentLine)* END
+	{
+		implements = [
+			"com.intellij.psi.PsiElement"
+			"com.intellij.psi.PsiComment"
+		]
+	}
+	;
+
+private commentLine
+	::= tagLine endOfLine
+	|	textLine? endOfLine
+	|	emptyTagLine endOfLine
+	;
+
+tagLine
+	::= TAG_NAME typesList variableName? textLine?
+	;
+
+emptyTagLine
+	::= TAG_NAME textLine
+	;
+
+typesList
+	::= (qualifiedName TAG_VALUE_DELIMITER)* qualifiedName
+	;
+
+qualifiedName
+	::= (qualifiedNameComponent '.')* qualifiedNameComponent
+	;
+
+qualifiedNameComponent
+	::= ID
+	;
+
+textLine
+	::= !(TAG_NAME) TEXT
+	;
+
+variableName
+	::= ID
+	;
+
+endOfLine
+	::= LINE_TERMINATOR | <<eof>>
+	;

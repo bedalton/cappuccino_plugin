@@ -4,17 +4,11 @@ import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocLexer
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.parser.ObjJCommentParser
-import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilderFactory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LazyParseablePsiElement
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.ILazyParseableElementType
-
-class ObjJCommentElementType(debug: String) : IElementType(debug, ObjJLanguage.instance)
-
-class ObjJCommentToken(debug: String) : IElementType(debug, ObjJLanguage.instance)
 
 interface ObjJCommentElement : PsiElement {
 
@@ -33,7 +27,6 @@ interface ObjJCommentElement : PsiElement {
         }
 }
 
-class ObjJCommentTokenType(debug: String) : ObjJTokenType(debug)
 
 var OBJJ_DOC_COMMENT: ILazyParseableElementType = object : ILazyParseableElementType("GrDocComment", ObjJLanguage.instance) {
 

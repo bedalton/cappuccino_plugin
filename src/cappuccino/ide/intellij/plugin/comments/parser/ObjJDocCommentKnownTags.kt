@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.comments.parser
 
 import com.intellij.openapi.util.text.StringUtil
 
-enum class ObjJDocKnownTags(val isReferenceRequired:Boolean, val isSectionStart: Boolean) {
+enum class ObjJDocCommentKnownTags(val isReferenceRequired:Boolean, val isSectionStart: Boolean) {
     AUTHOR(false, false),
     THROWS(true, false),
     EXCEPTION(true, false),
@@ -18,7 +18,7 @@ enum class ObjJDocKnownTags(val isReferenceRequired:Boolean, val isSectionStart:
 
 
     companion object {
-        fun findByTagName(tagNameIn: CharSequence): ObjJDocKnownTags? {
+        fun findByTagName(tagNameIn: CharSequence): ObjJDocCommentKnownTags? {
             var tagName = tagNameIn
             if (StringUtil.startsWith(tagName, "@")) {
                 tagName = tagName.subSequence(1, tagName.length)

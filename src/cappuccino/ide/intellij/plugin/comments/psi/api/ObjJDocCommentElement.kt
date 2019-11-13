@@ -4,7 +4,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import com.intellij.psi.PsiElement
 
 
-interface ObjJCommentElement : PsiElement {
+interface ObjJDocCommentElement : PsiElement {
 
     val containingObjJFile: ObjJFile?
         get() {

@@ -1,7 +1,8 @@
 package cappuccino.ide.intellij.plugin.comments.parser
 
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocLexer
-import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocTokens
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTokenType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderFactory
@@ -11,9 +12,9 @@ import com.intellij.psi.tree.IElementType
 /**
  * Parses the contents of a Markdown link in KDoc. Uses the standard Kotlin lexer.
  */
-class ObjJDocClassParser : PsiParser {
+class ObjJDocQualifiedNameParser : PsiParser {
     companion object {
-        @JvmStatic fun parseMarkdownLink(root: IElementType, chameleon: ASTNode): ASTNode {
+        @JvmStatic fun parseQualifiedName(root: IElementType, chameleon: ASTNode): ASTNode {
             val parentElement = chameleon.treeParent.psi
             val project = parentElement.project
             val builder = PsiBuilderFactory.getInstance().createBuilder(project,
@@ -21,7 +22,7 @@ class ObjJDocClassParser : PsiParser {
                     ObjJDocLexer(),
                     root.language,
                     chameleon.text)
-            val parser = ObjJDocClassParser()
+            val parser = ObjJDocQualifiedNameParser()
 
             return parser.parse(root, builder).firstChildNode
         }
@@ -29,28 +30,15 @@ class ObjJDocClassParser : PsiParser {
 
     override fun parse(root: IElementType, builder: PsiBuilder): ASTNode {
         val rootMarker = builder.mark()
-        val hasTagDelim = builder.tokenType == ObjJDocTokens.TAG_VALUE_DELIM
+        val hasTagDelim = builder.tokenType == ObjJDocCommentTokenType.TAG_VALUE_DELIMITER
         if (hasTagDelim) {
             builder.advanceLexer()
         }
         parseQualifiedName(builder)
-        if (hasLBracket) {
-            if (!builder.eof() && builder.tokenType != KtTokens.RBRACKET) {
-                builder.error("Closing bracket expected")
-                while (!builder.eof() && builder.tokenType != KtTokens.RBRACKET) {
-                    builder.advanceLexer()
-                }
-            }
-            if (builder.tokenType == KtTokens.RBRACKET) {
+        if (!builder.eof()) {
+            builder.error("Expression expected")
+            while (!builder.eof()) {
                 builder.advanceLexer()
-            }
-        }
-        else {
-            if (!builder.eof()) {
-                builder.error("Expression expected")
-                while (!builder.eof()) {
-                    builder.advanceLexer()
-                }
             }
         }
         rootMarker.done(root)
@@ -67,8 +55,8 @@ class ObjJDocClassParser : PsiParser {
                 break
             }
             builder.advanceLexer()
-            marker.done(KDocElementTypes.KDOC_NAME)
-            if (builder.tokenType != KtTokens.DOT) {
+            marker.done(ObjJDocElementTypes.ObjJDoc_NAME)
+            if (builder.tokenType != ObjJTypes.ObjJ_DOT) {
                 break
             }
             marker = marker.precede()
@@ -76,5 +64,5 @@ class ObjJDocClassParser : PsiParser {
         }
     }
 
-    private fun isName(tokenType: IElementType?) = tokenType == KtTokens.IDENTIFIER || tokenType in KtTokens.KEYWORDS
+    private fun isName(tokenType: IElementType?) = tokenType == ObjJTypes.ObjJ_ID;
 }

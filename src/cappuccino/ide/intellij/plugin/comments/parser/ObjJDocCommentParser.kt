@@ -16,25 +16,25 @@ package cappuccino.ide.intellij.plugin.comments.parser
  * limitations under the License.
  */
 
-import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocTokens
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTokenType
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.psi.tree.IElementType
 
-class ObjJDocParser : PsiParser {
+class ObjJDocCommentParser : PsiParser {
     override fun parse(root: IElementType, builder: PsiBuilder): ASTNode {
         val rootMarker = builder.mark()
-        if (builder.tokenType === ObjJDocTokens.START) {
+        if (builder.tokenType === ObjJDocCommentTokenType.START) {
             builder.advanceLexer()
         }
         var currentSectionMarker: PsiBuilder.Marker? = builder.mark()
 
         // todo: parse KDoc tags, markdown, etc...
         while (!builder.eof()) {
-            if (builder.tokenType === ObjJDocTokens.TAG_NAME) {
+            if (builder.tokenType === ObjJDocCommentTokenType.TAG_NAME) {
                 currentSectionMarker = parseTag(builder, currentSectionMarker)
-            } else if (builder.tokenType === ObjJDocTokens.END) {
+            } else if (builder.tokenType === ObjJDocCommentTokenType.END) {
                 builder.advanceLexer()
             } else {
                 builder.advanceLexer()
@@ -65,15 +65,15 @@ class ObjJDocParser : PsiParser {
     }
 
     private fun isAtEndOfTag(builder: PsiBuilder): Boolean {
-        if (builder.tokenType === ObjJDocTokens.END) {
+        if (builder.tokenType === ObjJDocCommentTokenType.END) {
             return true
         }
-        if (builder.tokenType === ObjJDocTokens.LEADING_ASTERISK) {
+        if (builder.tokenType === ObjJDocCommentTokenType.LEADING_ASTERISK) {
             var lookAheadCount = 1
-            if (builder.lookAhead(1) === ObjJDocTokens.text) {
+            if (builder.lookAhead(1) === ObjJDocCommentTokenType.text) {
                 lookAheadCount++
             }
-            if (builder.lookAhead(lookAheadCount) === ObjJDocTokens.TAG_NAME) {
+            if (builder.lookAhead(lookAheadCount) === ObjJDocCommentTokenType.TAG_NAME) {
                 return true
             }
         }

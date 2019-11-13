@@ -6,7 +6,7 @@
 	elementTypeHolderClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTypes"
 	elementTypePrefix="ObjJ_"
 	elementTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJCompositeElementType"
-	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJElementType"
 	psiClassPrefix="ObjJ"
 	psiImplClassSuffix="Impl"
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
