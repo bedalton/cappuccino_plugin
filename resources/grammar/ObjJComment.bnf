@@ -29,7 +29,15 @@
 	]
 }
 
-comment ::= (!<<eof>> LINE_PREFIX* commentLine)*;
+comment
+	::= (!<<eof>> LINE_PREFIX* commentLine)*
+	{
+		implements = [
+			"com.intellij.psi.PsiElement"
+			"com.intellij.psi.PsiComment"
+		]
+	}
+	;
 
 private commentLine
 	::= paramLine
