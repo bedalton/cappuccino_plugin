@@ -1,11 +1,13 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.contributor.ObjJCommentCompletionProvider
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.primitiveTypes
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.trimFromBeginning
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -59,7 +61,7 @@ data class CommentWrapper(val commentText: String) {
     private val lines: List<String> by lazy {
         commentText.split(newLineRegex)
                 .map {
-                    it.trim()
+                    it.trim().trimFromBeginning(ObjJCommentCompletionProvider.stripFromCommentTokenBeginning).trim()
                 }
                 .filter {
                     it.isNotBlank()

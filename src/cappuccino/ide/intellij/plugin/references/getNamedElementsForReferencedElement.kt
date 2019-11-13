@@ -1,6 +1,5 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
@@ -10,7 +9,6 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByName
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
-import cappuccino.ide.intellij.plugin.psi.ObjJGlobalVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
@@ -57,8 +55,8 @@ internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedRefe
     }
 
     // Get properties from inferred previous sibling type
-    val className = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
-    val isStatic = JsTypeDefClassesByNamespaceIndex.instance[className, project].isNotEmpty()
+    val classNameSearchString = prevSiblings.joinToString("\\.") { Regex.escapeReplacement(it.text) }
+    val isStatic = JsTypeDefClassesByNamespaceIndex.instance[classNameSearchString, project].isNotEmpty()
     // Get types if qualified
     val classTypes = prevSiblings.types(tag).ifEmpty { null }
             ?: return emptyList()

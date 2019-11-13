@@ -1,0 +1,89 @@
+{
+	parserClass="cappuccino.ide.intellij.plugin.parser.ObjJCommentParser"
+	implements="cappuccino.ide.intellij.plugin.comments.ObjJCommentElement"
+	extends="cappuccino.ide.intellij.plugin.comments.ObjJCompositeElementImpl"
+	elementTypeHolderClass="cappuccino.ide.intellij.plugin.comments.ObjJCommentTypes"
+	elementTypePrefix="ObjJComment_"
+	elementTypeClass="cappuccino.ide.intellij.plugin.comments.ObjJCommentElementType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.comments.ObjJCommentTokenType"
+	psiClassPrefix="ObjJComment"
+	psiImplClassSuffix="Impl"
+	psiPackage="cappuccino.ide.intellij.plugin.comments.psi"
+	psiImplPackage="cappuccino.ide.intellij.plugin.comments.psi.impl"
+	//Tokens
+	tokens = [
+		//Line Terminator
+		LINE_TERMINATOR =                 	'regexp:[\r\n\u2028\u2029]';
+		AT_PARAM =							'@param';
+		AT_RETURN = 						'@return';
+		AT_RETURNS = 						'@returns';
+		AT_IGNORE =							'@ignore';
+		AT_VAR =							'@var';
+		PIPE = 								"|";
+		COMMA =								',';
+		PIPE = 								'|';
+		TEXT =								'regexp:[^ \n$]+';
+		ID = 								'regexp:[_a-zA-Z$][a-zA-Z0-9_]*';
+	]
+}
+
+comment ::= (!<<eof>> LINE_PREFIX* commentLine)*;
+
+private commentLine
+	::= paramLine
+	|	returnLine
+	|	ignoreLine
+	|	varLine
+	|	textLine
+	|	LINE_TERMINATOR
+	;
+
+paramLine
+	::= AT_PARAM  classNameList variableName textLine? endOfLine
+	{
+		pin=1;
+	}
+	;
+
+returnLine
+	::= AT_RETURN classNameList? textLine? endOfLine
+	{
+		pin=1;
+	}
+	;
+
+ignoreLine
+	::= AT_IGNORE ignoreFlag ((','|'|') ignoreFlag)* endOfLine
+	{
+		pin = 1
+	}
+	;
+
+varLine
+	::= AT_VAR classNameList variableName? textLine? endOfLine
+	{
+		pin=1
+	}
+	;
+
+textLine
+	::= (text|ID|AT_ALT)+
+	;
+
+
+private classNameList
+	::= className('|'className)*
+	;
+
+
+className ::= ID;
+
+ignoreFlag ::= ID;
+
+variableName
+	::= ID
+	;
+
+endOfLine
+	::= LINE_TERMINATOR | <<eof>>
+	;

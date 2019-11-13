@@ -29,7 +29,7 @@ import java.util.logging.Logger
  */
 object ObjJCommentCompletionProvider {
 
-    private val stripFromCommentTokenBeginning = listOf("*/", "*", "//", " ", "/**", "/*")
+    val stripFromCommentTokenBeginning = listOf("*/", "*", "//", " ", "/**", "/*")
 
     private val LOGGER: Logger by lazy {
         Logger.getLogger("#${ObjJCommentCompletionProvider::class.java.canonicalName}")
@@ -51,7 +51,7 @@ object ObjJCommentCompletionProvider {
      */
     private fun addCommentCompletionsForLine(resultSet: CompletionResultSet, element: PsiElement, textIn: String) {
         val text = textIn.trim()
-        if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p")) {
+        if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p") && !text.contains("@r")) {
             return
         }
         // Divide comment line into tokens
@@ -195,7 +195,7 @@ object ObjJCommentCompletionProvider {
             currentIndex++
 
             // Check if is @var keyword
-            if (!afterVar && (part == "@return")) {
+            if (!afterVar && (part == "@return" || part == "@returns")) {
                 afterVar = true
                 indexAfter = currentIndex
                 continue
