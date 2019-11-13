@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.parser.ObjJCommentParser
 import cappuccino.ide.intellij.plugin.parser.ObjJParserDefinition
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.*
 import com.intellij.lang.impl.PsiBuilderImpl
@@ -12,7 +13,10 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.impl.source.tree.LazyParseablePsiElement
 import com.intellij.psi.tree.ILazyParseableElementType
-
+import com.intellij.lang.PsiParser
+import com.intellij.lang.PsiBuilderFactory
+import com.intellij.lang.PsiBuilder
+import java.lang.reflect.Constructor
 
 
 interface ObjJCommentElement : PsiElement {
@@ -34,6 +38,10 @@ interface ObjJCommentElement : PsiElement {
 
 open class ObjJCommentElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), ObjJCommentElement {
 
+    override fun getLanguage(): Language {
+        return ObjJLanguage.instance
+    }
+
     override val containingObjJFile: ObjJFile?
         get() {
             val file = containingFile
@@ -45,26 +53,41 @@ open class ObjJCommentElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), O
     }
 }
 
-class ObjJCommentElementType(debug: String) : IElementType(debug, ObjJLanguage.instance)
+class ObjJCommentElementType(debug: String, psiClass: Class<out PsiElement>) : IElementType(debug, ObjJLanguage.instance) {
+    private val psiFactory: Constructor<out PsiElement>
+    init {
+        try {
+            psiFactory = psiClass.getConstructor(ASTNode::class.java)
+        } catch (e: NoSuchMethodException) {
+            throw RuntimeException("Must have a constructor with ASTNode")
+        }
 
-class ObjJCommentTokenType(debug: String) : IElementType(debug, ObjJLanguage.instance)
+    }
+    fun createPsi(node: ASTNode): PsiElement {
+        assert(node.elementType === this)
+        try {
+            return psiFactory.newInstance(node)
+        } catch (e: Exception) {
+            throw RuntimeException("Error creating psi element for node", e)
+        }
+
+    }
+}
+
+class ObjJCommentTokenType(debug: String) : ObjJTokenType(debug)
 
 /**
  * GroovyDoc comment
  */
-var OBJJ_DOC_COMMENT: ILazyParseableElementType = object : ILazyParseableElementType("GrDocComment") {
-    override fun getLanguage(): Language {
-        return ObjJLanguage.instance
-    }
+var OBJJ_DOC_COMMENT: ILazyParseableElementType = object : ILazyParseableElementType("GrDocComment", ObjJLanguage.instance) {
 
     override fun parseContents(chameleon: ASTNode): ASTNode {
         val parentElement = chameleon.treeParent.psi
-        val project = JavaPsiFacade.getInstance(parentElement.project).project
-
-        val builder = PsiBuilderImpl(project, ObjJParserDefinition(), ObjJCommentLexer(), chameleon, chameleon.text)
+        val project = parentElement.project
+        val builder = PsiBuilderFactory.getInstance().createBuilder(project, chameleon, ObjJCommentLexer(), language,
+                chameleon.text)
         val parser = ObjJCommentParser()
-
-        return parser.parse(this, builder).firstChildNode
+        return parser.parse(this, builder).getFirstChildNode()
     }
 
     override fun createNode(text: CharSequence): ASTNode {

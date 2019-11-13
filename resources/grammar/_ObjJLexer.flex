@@ -7,6 +7,7 @@ import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import cappuccino.ide.intellij.plugin.comments.OBJJ_DOC_COMMENT;
 
 %%
 
@@ -290,7 +291,7 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 	"let"                                { canRegex(false); canWhitespace(true); return ObjJ_LET; }
 	"const"                              { canRegex(false); canWhitespace(true); return ObjJ_CONST; }
 	";"                                  { canRegex(true); canWhitespace(true); return ObjJ_SEMI_COLON; }
-	{BLOCK_COMMENT}                      { canRegex(true); canWhitespace(true); return ObjJ_BLOCK_COMMENT; }
+	{BLOCK_COMMENT}                      { canRegex(true); canWhitespace(true); return OBJJ_DOC_COMMENT; }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { canRegex(true); canWhitespace(true); return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
 	{LINE_TERMINATOR}                    { canRegex(true); canWhitespace(true); return WHITE_SPACE; }
 	{VAR_TYPE_BYTE}                      { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_BYTE; }

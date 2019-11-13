@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.parser
 
+import cappuccino.ide.intellij.plugin.comments.OBJJ_DOC_COMMENT
+import cappuccino.ide.intellij.plugin.comments.ObjJCommentElementType
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
@@ -54,7 +56,10 @@ class ObjJParserDefinition : ParserDefinition {
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return ObjJTypes.Factory.createElement(node)
+        return when(val elementType = node.elementType) {
+            is ObjJCommentElementType -> elementType.createPsi(node)
+            else -> ObjJTypes.Factory.createElement(node)
+        }
     }
 
     companion object {
