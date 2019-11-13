@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public class ObjJDocCommentTokenType extends ObjJElementType {
 
 
+
     public ObjJDocCommentTokenType(
             @NotNull
                     String debug) {
