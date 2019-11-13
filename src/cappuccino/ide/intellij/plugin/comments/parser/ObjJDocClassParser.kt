@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.comments.parser
 
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocLexer
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocTokens
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderFactory
@@ -28,7 +29,7 @@ class ObjJDocClassParser : PsiParser {
 
     override fun parse(root: IElementType, builder: PsiBuilder): ASTNode {
         val rootMarker = builder.mark()
-        val hasTagDelim = builder.tokenType == ObjJDocTokens.tagValueDelim
+        val hasTagDelim = builder.tokenType == ObjJDocTokens.TAG_VALUE_DELIM
         if (hasTagDelim) {
             builder.advanceLexer()
         }
