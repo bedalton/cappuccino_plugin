@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.stubs.ObjJStubVersions
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJFileStubImpl
@@ -60,8 +61,8 @@ class ObjJFileStubType : IStubFileElementType<ObjJFileStub>(NAME, ObjJLanguage.i
 }
 
 internal fun StubInputStream.readImportInfo() : ObjJImportInfoStub {
-    val frameworkName = readName()?.string
-    val fileName = readName()?.string
+    val frameworkName = readNameAsString()
+    val fileName = readNameAsString()
     return ObjJImportInfoStub(frameworkName, fileName)
 }
 

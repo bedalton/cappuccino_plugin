@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJQualifiedReferenceImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJQualifiedReferenceStubImpl
@@ -70,7 +71,7 @@ internal fun StubOutputStream.writeQNComponentPart(part:ObjJQualifiedReferenceCo
 }
 
 internal fun StubInputStream.readQNComponentPart() : ObjJQualifiedReferenceComponentPart {
-    val name = readName()?.string
+    val name = readNameAsString()
     val type = ObjJQualifiedReferenceComponentPartType.fromId(readInt())
     return ObjJQualifiedReferenceComponentPart(name, type)
 }

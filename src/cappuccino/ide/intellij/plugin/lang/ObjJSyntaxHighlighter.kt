@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.lang
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.lexer.Lexer
@@ -127,7 +129,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         } else if (tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_START ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_END ||
-                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY) {
+                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY ||
+                tokenType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK
+                ) {
             attrKey = BLOCK_COMMENT
         } else if (tokenType == ObjJTypes.ObjJ_PRAGMA_MARKER || tokenType == ObjJTypes.ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN) {
             attrKey = SECONDARY_LITERAL

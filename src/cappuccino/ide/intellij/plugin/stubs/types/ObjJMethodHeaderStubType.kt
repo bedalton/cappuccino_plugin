@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderImpl
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
@@ -94,7 +95,7 @@ class ObjJMethodHeaderStubType internal constructor(
         for (i in 0 until numParams) {
             params.add(StringRef.toString(stream.readName()))
         }
-        val explicitReturnType = stream.readName()?.string ?: ""
+        val explicitReturnType = stream.readNameAsString() ?: ""
         val required = stream.readBoolean()
         val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()

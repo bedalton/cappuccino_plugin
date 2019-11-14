@@ -87,7 +87,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             resultSet: CompletionResultSet) {
         val element = parameters.position
         val prevSibling = element.getPreviousNonEmptySibling(true)
-        val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
+        val caretIndex = element.text.indexOf(CARET_INDICATOR)
+        if (caretIndex < 0)
+            return;
+        val queryString = element.text.substring(0, caretIndex)
 
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
