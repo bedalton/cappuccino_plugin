@@ -210,7 +210,7 @@ fun JsTypeDefArgument.toJsNamedProperty(): JsTypeDefFunctionArgument {
             comment = docComment?.commentText,
             types = InferenceResult(types = typeList, nullable = isNullable),
             default = null,
-            varArgs = varArgs
+            variableArgs = variableArgs
     )
 }
 
@@ -242,7 +242,7 @@ data class JsTypeDefFunctionArgument(
         override val types: InferenceResult,
         override val comment: String? = null,
         override val default: String? = null,
-        val varArgs: Boolean = false
+        val variableArgs: Boolean = false
 ) : JsTypeDefPropertyBase {
     override val nullable: Boolean get() = types.nullable
 }

@@ -210,7 +210,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addFileLevelCompletions(resultSet, element)
         }
 
-        if (ObjJVariablePsiUtil.isNewVarDec(element)) {
+        if (ObjJVariablePsiUtil.isNewVariableDec(element)) {
             resultSet.stopHere()
             return
         }

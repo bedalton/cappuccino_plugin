@@ -9,7 +9,7 @@ import com.intellij.psi.stubs.StubElement
 class ObjJFunctionDeclarationStubImpl(parent: StubElement<*>,
                                       fileName: String,
                                       fqName: String,
-                                      paramNames: List<String>,
+                                      parameterNames: List<String>,
                                       returnType: String?,
                                       shouldResolve: Boolean,
-                                      scope:ObjJFunctionScope) : ObjJFunctionDeclarationElementStubImpl<ObjJFunctionDeclarationImpl>(parent, ObjJStubTypes.FUNCTION_DECLARATION, fileName, fqName, paramNames, returnType, shouldResolve, scope), ObjJFunctionDeclarationElementStub<ObjJFunctionDeclarationImpl>
+                                      scope:ObjJFunctionScope) : ObjJFunctionDeclarationElementStubImpl<ObjJFunctionDeclarationImpl>(parent, ObjJStubTypes.FUNCTION_DECLARATION, fileName, fqName, parameterNames, returnType, shouldResolve, scope), ObjJFunctionDeclarationElementStub<ObjJFunctionDeclarationImpl>

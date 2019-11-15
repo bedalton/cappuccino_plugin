@@ -72,11 +72,11 @@ object ObjJElementFactory {
         return errorElement
     }
 
-    fun createIgnoreComment(project: Project, ignoreFlags: ObjJSuppressInspectionFlags, paramIn:String? = null): PsiElement {
-        val param = if (paramIn == null || paramIn.trim().isEmpty()) {
+    fun createIgnoreComment(project: Project, ignoreFlags: ObjJSuppressInspectionFlags, parameterIn:String? = null): PsiElement {
+        val param = if (parameterIn == null || parameterIn.trim().isEmpty()) {
             ""
         } else {
-            " $paramIn"
+            " $parameterIn"
         }
         val scriptText = "// @ignore " + ignoreFlags.flag + param
         val file = createFileFromText(project, scriptText)
@@ -140,9 +140,9 @@ object ObjJElementFactory {
         }
         var defaultValue = "nil"
         val formalVariableType = returnTypeElement.formalVariableType
-        if (formalVariableType.varTypeBool != null) {
+        if (formalVariableType.variableTypeBool != null) {
             defaultValue = "NO"
-        } else if (formalVariableType.varTypeId != null || formalVariableType.className != null) {
+        } else if (formalVariableType.variableTypeId != null || formalVariableType.className != null) {
             defaultValue = "Nil"
         }
         return "return $defaultValue;"

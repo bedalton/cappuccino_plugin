@@ -458,13 +458,13 @@ object ObjJPsiImplUtil {
     fun respondsToSelectorStrings(variableName: ObjJVariableName): Set<String> = ObjJVariablePsiUtil.respondsToSelectorStrings(variableName)
 
     @JvmStatic
-    fun getParamTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType?> {
-        return ObjJMethodPsiUtils.getParamTypes(methodHeader.methodDeclarationSelectorList)
+    fun getParameterTypes(methodHeader: ObjJMethodHeader): List<ObjJFormalVariableType?> {
+        return ObjJMethodPsiUtils.getParameterTypes(methodHeader.methodDeclarationSelectorList)
     }
 
     @JvmStatic
-    fun getParamTypesAsStrings(methodHeader: ObjJMethodHeader): List<String> {
-        return ObjJMethodPsiUtils.getParamTypesAsString(methodHeader.methodDeclarationSelectorList)
+    fun getParameterTypesAsStrings(methodHeader: ObjJMethodHeader): List<String> {
+        return ObjJMethodPsiUtils.getParameterTypesAsString(methodHeader.methodDeclarationSelectorList)
     }
 
     @JvmStatic
@@ -485,12 +485,12 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
-        return ObjJMethodPsiUtils.getVarType(selector)
+    fun getVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
+        return ObjJMethodPsiUtils.getVariableType(selector)
     }
 
     @JvmStatic
-    fun getVarType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVarType(property)
+    fun getVariableType(property: ObjJAccessorProperty): String? = ObjJAccessorPropertyPsiUtil.getVariableType(property)
 
     @JvmStatic
     fun getFormalVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
@@ -499,7 +499,7 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getVariableType(type:ObjJFormalVariableType) : String {
-        return type.varTypeId?.className?.text ?: type.text
+        return type.variableTypeId?.className?.text ?: type.text
     }
 
     @JvmStatic
@@ -693,17 +693,17 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getIdType(varTypeId: ObjJVarTypeId): String {
-        return ObjJMethodPsiUtils.getIdReturnType(varTypeId)
+    fun getIdType(variableTypeId: ObjJVariableTypeId): String {
+        return ObjJMethodPsiUtils.getIdReturnType(variableTypeId)
     }
 
     @JvmStatic
-    fun getIdType(varTypeId: ObjJVarTypeId, follow: Boolean): String {
-        return ObjJMethodPsiUtils.getIdReturnType(varTypeId, follow)
+    fun getIdType(variableTypeId: ObjJVariableTypeId, follow: Boolean): String {
+        return ObjJMethodPsiUtils.getIdReturnType(variableTypeId, follow)
     }
 
     @JvmStatic
-    fun getVarType(variable: ObjJGlobalVariableDeclaration): String? {
+    fun getVariableType(variable: ObjJGlobalVariableDeclaration): String? {
         return ObjJClassType.UNDETERMINED
     }
 
@@ -909,8 +909,8 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getParamNameElements(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
-        return ObjJFunctionDeclarationPsiUtil.getParamNameElements(functionDeclaration)
+    fun getParameterNameElements(functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
+        return ObjJFunctionDeclarationPsiUtil.getParameterNameElements(functionDeclaration)
     }
 
     /**
@@ -1008,8 +1008,8 @@ object ObjJPsiImplUtil {
             ?: declaration.toQualifiedNamePaths()
 
     @JvmStatic
-    fun hasVarKeyword(declaration: ObjJVariableDeclaration): Boolean {
-        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.varModifier != null
+    fun hasVariableKeyword(declaration: ObjJVariableDeclaration): Boolean {
+        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.variableModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.variableModifier != null
     }
 
     // ============================== //
@@ -1104,7 +1104,7 @@ object ObjJPsiImplUtil {
         val newFileName = ObjJElementFactory.createFrameworkFileNameElement(fileName.project, newName)
         return fileName.replace(newFileName)
     }
-    
+
     @JvmStatic
     fun resolve(statement: ObjJImportIncludeStatement): ObjJFile? = ObjJImportPsiUtils.resolve(statement)
 

@@ -55,11 +55,11 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
             .filterIsInstance(JsTypeDefNamedProperty::class.java)
             .flatMap { it.types.types }
 
-    val varDecs = JsTypeDefVariableDeclarationsByNamespaceIndex.instance[variableNameString, project].flatMap {
+    val variableDecs = JsTypeDefVariableDeclarationsByNamespaceIndex.instance[variableNameString, project].flatMap {
         it.typeListTypes
     }.toSet()
 
-    val outTypes = basicTypes + functions + propertyTypes + varDecs
+    val outTypes = basicTypes + functions + propertyTypes + variableDecs
     return if (outTypes.isEmpty()) {
         null
     } else {
@@ -89,7 +89,7 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
         return InferenceResult(types = setOf(containingClass).toJsTypeList())
 
 
-    if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVarKeyword().orFalse() || variableName.parent is ObjJGlobalVariableDeclaration) {
+    if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVariableKeyword().orFalse() || variableName.parent is ObjJGlobalVariableDeclaration) {
         return internalInferVariableTypeAtIndexZero(variableName, variableName, containingClass, tag, true)
     }
 
@@ -106,18 +106,18 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
 /**
  * Infers the type for a variable name element at qualified name index zero
  */
-private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long, isVarDec: Boolean): InferenceResult? {
+private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long, isVariableDec: Boolean): InferenceResult? {
     val project = variableName.project
     val variableNameString: String = variableName.text
-    val varDefType = if (referencedVariable is ObjJNamedElement)
+    val variableDefType = if (referencedVariable is ObjJNamedElement)
         ObjJCommentEvaluatorUtil.getVariableTypesInParent(referencedVariable)
     else
         null
 
     // If var def type is not null, return it
-    if (varDefType.isNotNullOrBlank() && varDefType !in anyTypes) {
+    if (variableDefType.isNotNullOrBlank() && variableDefType !in anyTypes) {
         return InferenceResult(
-                types = setOf(varDefType!!).toJsTypeList()
+                types = setOf(variableDefType!!).toJsTypeList()
         )
     }
 
@@ -148,8 +148,8 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
         }
     }
 
-    if (!isVarDec) {
-        val result = inferVariableTypeIfNotVarDeclaration(variableNameString, project)
+    if (!isVariableDec) {
+        val result = inferVariableTypeIfNotVariableDeclaration(variableNameString, project)
         if (result != null)
             return result
     }
@@ -245,7 +245,7 @@ private fun buildTypeDefTypeFromGenericParameterIfNecessary(it: String): JsTypeL
 /**
  * Infers variable type if referenced variable is not a variable declaration
  */
-private fun inferVariableTypeIfNotVarDeclaration(variableNameString: String, project: Project): InferenceResult? {
+private fun inferVariableTypeIfNotVariableDeclaration(variableNameString: String, project: Project): InferenceResult? {
     val staticVariablesUnfiltered = JsTypeDefPropertiesByNameIndex.instance[variableNameString, project]
     val staticVariables = staticVariablesUnfiltered.filter {
         it.enclosingNamespaceComponents.isEmpty()

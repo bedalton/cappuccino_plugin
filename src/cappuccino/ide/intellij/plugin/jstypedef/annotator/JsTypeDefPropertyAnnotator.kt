@@ -21,12 +21,12 @@ import com.intellij.psi.SmartPointerManager
 internal fun annotateProperty(property:JsTypeDefProperty, annotationHolder: AnnotationHolder) {
     val parentVariableDeclaration = property.parent as? JsTypeDefVariableDeclaration
     if (parentVariableDeclaration != null) {
-        annotateVarDec(property, parentVariableDeclaration, annotationHolder)
+        annotateVariableDec(property, parentVariableDeclaration, annotationHolder)
     }
 }
 
 @Suppress("UNUSED_PARAMETER")
-private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration:JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
+private fun annotateVariableDec(property:JsTypeDefProperty, parentVariableDeclaration:JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
     val className = property.propertyNameString
     val body = property.interfaceBodyProperty ?: return
     val constructors = body.interfaceConstructorList
@@ -54,10 +54,10 @@ private fun annotateVarDec(property:JsTypeDefProperty, parentVariableDeclaration
             textRange,
             "Variable declaration can be mapped to class"
     )
-    annotation.registerFix(JsTypeDefVarToClassFix(interfaceElement = interfaceElement, property = property))
+    annotation.registerFix(JsTypeDefVariableToClassFix(interfaceElement = interfaceElement, property = property))
 }
 
-class JsTypeDefVarToClassFix(interfaceElement:JsTypeDefInterfaceElement, property:JsTypeDefProperty) : IntentionAndQuickFixAction() {
+class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, property:JsTypeDefProperty) : IntentionAndQuickFixAction() {
     val property = SmartPointerManager.createPointer(property)
     val interfaceElement = SmartPointerManager.createPointer(interfaceElement)
     override fun getName(): String {

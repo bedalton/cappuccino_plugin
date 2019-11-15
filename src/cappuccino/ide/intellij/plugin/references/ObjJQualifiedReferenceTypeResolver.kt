@@ -52,8 +52,8 @@ private fun getTypeFromInstanceVariables(variableName: ObjJVariableName) : Strin
     val referencedVariable = variableName.reference.resolve() ?: return null
     val instanceVariable = referencedVariable.getParentOfType(ObjJInstanceVariableDeclaration::class.java) ?: return null
     val type = instanceVariable.formalVariableType
-    if (type.varTypeId != null) {
-        return type.varTypeId?.className?.text ?: ObjJClassType.UNDETERMINED
+    if (type.variableTypeId != null) {
+        return type.variableTypeId?.className?.text ?: ObjJClassType.UNDETERMINED
     }
     return type.text
 }
@@ -163,8 +163,8 @@ private fun getInstanceVariableAndAccessorsAsStringList(it: ObjJVariableName) : 
 private fun getVariableTypesFromInstanceVariableNames(instanceVariables:List<ObjJVariableName>) : List<String> {
     return instanceVariables.mapNotNull {
         val formalVariableType = it.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType
-        if (formalVariableType?.varTypeId?.className != null)
-            formalVariableType.varTypeId?.className?.text
+        if (formalVariableType?.variableTypeId?.className != null)
+            formalVariableType.variableTypeId?.className?.text
         else
             formalVariableType?.text
     }

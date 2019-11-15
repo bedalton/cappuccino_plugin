@@ -42,14 +42,14 @@ object ObjJCommentEvaluatorUtil {
      * Gets the variable type if declared in an @var comment
      */
     fun getVariableTypesInParent(element: ObjJNamedElement): String? {
-        val varName = element.text
+        val variableName = element.text
         element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
                 .sortedByDescending { it.textRange.startOffset }
                 .flatMap { it.text.split("\n") }
                 .forEach { comment ->
                     val matcher = VARIABLE_TYPE_REGEX.matcher(comment)
                     if (matcher.find()) {
-                        if (matcher.group(2) != varName) {
+                        if (matcher.group(2) != variableName) {
                             return@forEach
                         }
                         return matcher.group(1)

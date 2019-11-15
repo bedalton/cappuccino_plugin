@@ -62,7 +62,7 @@ fun JsTypeDefArgument.toStubParameter() : JsTypeDefFunctionArgument {
     return JsTypeDefFunctionArgument(
             name = propertyName.text,
             types = InferenceResult( types = this.propertyTypes(), nullable = isNullable),
-            varArgs = varArgs,
+            variableArgs = variableArgs,
             comment = docComment?.commentText
     )
 }

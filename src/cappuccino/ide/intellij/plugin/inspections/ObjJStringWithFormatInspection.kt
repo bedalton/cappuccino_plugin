@@ -53,13 +53,13 @@ class ObjJStringWithFormatInspection : LocalInspectionTool() {
                 return
             }
             val format = expressions.removeAt(0)
-            /*val formatVarType: String = try {
+            /*val formatVariableType: String = try {
                 getReturnType(format, true)
             } catch (e: MixedReturnTypeException) {
                 e.returnTypesList[0]
             } ?: return
 
-            if (!isUniversalMethodCaller(formatVarType) && formatVarType != ObjJClassType.STRING) {
+            if (!isUniversalMethodCaller(formatVariableType) && formatVariableType != ObjJClassType.STRING) {
                 problemsHolder.registerProblem(format, "First parameter should be of type CPString")
                 return
             }*/

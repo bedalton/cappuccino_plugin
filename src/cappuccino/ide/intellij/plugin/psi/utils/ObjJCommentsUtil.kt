@@ -68,7 +68,7 @@ data class CommentWrapper(val commentText: String) {
                 }
     }
     val parameterComments: List<CommentParam> by lazy {
-        val paramLines = lines
+        val parameterLines = lines
                 .filter {
                     it.startsWith("@param")
                 }
@@ -77,7 +77,7 @@ data class CommentWrapper(val commentText: String) {
 
                     CommentParam(tokens.getOrElse(0) { "_" }, it)
                 }
-        paramLines
+        parameterLines
     }
 
     val returnParameterComment: CommentParam? by lazy {
@@ -112,7 +112,7 @@ data class CommentWrapper(val commentText: String) {
      */
     fun getParameterComment(name: String): CommentParam? {
         return parameterComments.firstOrNull {
-            it.paramName == name
+            it.parameterName == name
         }
     }
 
@@ -126,19 +126,19 @@ data class CommentWrapper(val commentText: String) {
     }
 }
 
-data class CommentParam(val paramName: String, private val paramCommentIn: String?) {
+data class CommentParam(val parameterName: String, private val parameterCommentIn: String?) {
 
     private val commentStringTrimmed by lazy {
-        paramCommentIn?.trim()?.replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "")?.trim()
+        parameterCommentIn?.trim()?.replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "")?.trim()
     }
 
-    val paramCommentClean: String? by lazy {
-        paramCommentIn?.replace("""\s*\\c\s*""".toRegex(), " ")
+    val parameterCommentClean: String? by lazy {
+        parameterCommentIn?.replace("""\s*\\c\s*""".toRegex(), " ")
     }
 
-    val paramCommentFormatted: String? by lazy {
+    val parameterCommentFormatted: String? by lazy {
         val pattern = """\s*\\c\s+([^ $]+)""".toRegex()
-        paramCommentIn?.replace(pattern) {
+        parameterCommentIn?.replace(pattern) {
             "<strong>$it</strong>"
         }
     }
@@ -165,7 +165,7 @@ data class CommentParam(val paramName: String, private val paramCommentIn: Strin
      */
     fun getTypes(project: Project, matchTypeFilter: ClassMatchType? = null): Set<String>? {
 
-        if (paramCommentIn == null)
+        if (parameterCommentIn == null)
             return null
         val classes = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.OBJJ)
             ObjJClassDeclarationsIndex.instance.getAllKeys(project).withoutAnyType().toSet()

@@ -87,12 +87,12 @@ object ObjJSelectorLookupUtil {
         val stringBuilder = StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
 
         // Add parameter type if it exists
-        val paramType = getSelectorVariableType(selector)
-        if (paramType != null) {
+        val parameterType = getSelectorVariableType(selector)
+        if (parameterType != null) {
             if (isGetter) {
-                return stringBuilder.append(paramType).toString()
+                return stringBuilder.append(parameterType).toString()
             }
-            stringBuilder.append("(").append(paramType).append(")")
+            stringBuilder.append("(").append(parameterType).append(")")
             val variableName = getSelectorVariableName(selector)
             if (variableName != null) {
                 stringBuilder.append(variableName)

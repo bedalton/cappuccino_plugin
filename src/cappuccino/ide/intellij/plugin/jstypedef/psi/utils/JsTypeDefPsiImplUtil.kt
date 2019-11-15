@@ -637,7 +637,7 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getVarArgs(argument: JsTypeDefArgument): Boolean {
+    fun getVariableArgs(argument: JsTypeDefArgument): Boolean {
         return argument.ellipsis != null
     }
 

@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.comments.parser
 
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentComment
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
 import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentParameterStruct
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
@@ -64,8 +65,16 @@ object ObjJDocCommentParserUtil {
     }
 
     @JvmStatic
+    fun getParameterNameElement(tagLine: ObjJDocCommentTagLine): ObjJDocCommentElement? {
+        return tagLine.parameterNameElement ?:
+        if (tagLine.typesList.qualifiedNameList.size == 1)
+            tagLine.typesList.qualifiedNameList.lastOrNull()
+        else null
+    }
+
+    @JvmStatic
     fun getParameterName(tagLine: ObjJDocCommentTagLine) : String? {
-        return tagLine.stub?.paramName ?: tagLine.parameterNameElement?.text
+        return tagLine.stub?.parameterName ?: tagLine.parameterNameElement?.text
     }
 
     @JvmStatic

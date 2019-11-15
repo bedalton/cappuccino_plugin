@@ -26,7 +26,7 @@ class ObjJCompletionContributor : CompletionContributor() {
     override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean {
         return position.text.replace(CARET_INDICATOR, "").trim().length > 2 &&
                 position !is ObjJBlock &&
-                !ObjJVariablePsiUtil.isNewVarDec(position) &&
+                !ObjJVariablePsiUtil.isNewVariableDec(position) &&
                 !(position.text.contains("{") || position.text.contains("}")) &&
                 !position.text.matches("^[0-9]".toRegex()) &&
                 !position.text.contains(";") && position.prevSibling?.text?.endsWith(";")  == false
@@ -40,7 +40,7 @@ class ObjJCompletionContributor : CompletionContributor() {
                 EditorUtil.insertText(editor, "()", false)
                 EditorUtil.offsetCaret(editor, 1)
             }
-            if (ObjJVariableInsertHandler.shouldAppendFunctionParamComma(element)) {
+            if (ObjJVariableInsertHandler.shouldAppendFunctionParameterComma(element)) {
                 //EditorUtil.insertText(editor, ", ", true);
             }
             if (ObjJVariableInsertHandler.shouldAppendClosingBracket(element)) {

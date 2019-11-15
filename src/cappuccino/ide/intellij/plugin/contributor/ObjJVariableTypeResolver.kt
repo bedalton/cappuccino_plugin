@@ -77,12 +77,12 @@ object ObjJVariableTypeResolver {
                 setOf(variableName.text)
         }
         val out = mutableSetOf<String>()
-        /*val varNameResults = getVariableTypeFromAssignments(variableName, recurse, tag)//
-        if (varNameResults != null) {
+        /*val variableNameResults = getVariableTypeFromAssignments(variableName, recurse, tag)//
+        if (variableNameResults != null) {
             if (withInheritance){
-                out.addAll(varNameResults.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) })
+                out.addAll(variableNameResults.flatMap { ObjJInheritanceUtil.getAllInheritedClasses(it, project) })
             } else
-                out.addAll(varNameResults)
+                out.addAll(variableNameResults)
         }*/
         return if (out.isNotEmpty()) out else setOf()
     }
@@ -93,7 +93,7 @@ object ObjJVariableTypeResolver {
         if (genericClass.isNotNullOrEmpty()) {
             genericClass = "<$genericClass>"
         }
-        return formalVariableType.varTypeId?.className?.text ?: formalVariableType.text + genericClass
+        return formalVariableType.variableTypeId?.className?.text ?: formalVariableType.text + genericClass
     }
 
     private fun getPossibleCallTargetTypesFromFormalVariableTypesRaw(callTargetVariableName:ObjJVariableName): ObjJFormalVariableType? {

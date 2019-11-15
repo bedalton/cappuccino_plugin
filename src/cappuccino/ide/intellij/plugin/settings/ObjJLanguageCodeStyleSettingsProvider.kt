@@ -89,7 +89,7 @@ A Block Comment
 */
 @implementation MyClass : SuperClass <HasProtocol>{
 id _reference;
-int _varInt;
+int _variableInt;
 CPString _string  @accessors(property=string);
 CPColor _backgroundColor;
 }

@@ -72,7 +72,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
             }
         }
     }
-    if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVarDec(parts[0])) {
+    if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVariableDec(parts[0])) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
     return parentTypes
@@ -81,10 +81,10 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
 
 private fun simpleVariableInference(variableName: ObjJVariableName) : InferenceResult? {
-    val varDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
-    if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
+    val variableDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
+    if (variableDefTypeSimple.isNotNullOrBlank() && variableDefTypeSimple !in anyTypes) {
         return InferenceResult(
-                types = setOf(varDefTypeSimple!!).toJsTypeList()
+                types = setOf(variableDefTypeSimple!!).toJsTypeList()
         )
     }
     if (variableName.parent is ObjJCatchProduction)

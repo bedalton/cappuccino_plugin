@@ -49,7 +49,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
                 return false
             }
             val bodyVariableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
-            return bodyVariableAssignment != null && bodyVariableAssignment.varModifier != null
+            return bodyVariableAssignment != null && bodyVariableAssignment.variableModifier != null
         }
 
         private fun annotateOvershadow(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
@@ -100,19 +100,19 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
         }
 
         private fun isDeclaredInBodyVariableAssignment(variableAssignment: ObjJBodyVariableAssignment, variableNameString: String, offset: Int): Boolean {
-            if (variableAssignment.varModifier == null) {
+            if (variableAssignment.variableModifier == null) {
                 return false
             }
 
             val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
-            val varNames = variableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
+            val variableNames = variableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
             for (declaration in variableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
                 qualifiedReferences.addAll(declaration.qualifiedReferenceList)
             }
             for (qualifiedReference in qualifiedReferences) {
-                varNames.add(qualifiedReference.primaryVar!!)
+                variableNames.add(qualifiedReference.primaryVar!!)
             }
-            return varNames.firstOrNull { it.text == variableNameString && offset > it.textRange.startOffset } != null
+            return variableNames.firstOrNull { it.text == variableNameString && offset > it.textRange.startOffset } != null
         }
 
         /**

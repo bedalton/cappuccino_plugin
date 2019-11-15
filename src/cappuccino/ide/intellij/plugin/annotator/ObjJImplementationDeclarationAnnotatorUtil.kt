@@ -130,12 +130,12 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolder) {
         val variableType = variable.formalVariableType
         val className: ObjJClassName
-        className = if (variableType.varTypeId != null) {
+        className = if (variableType.variableTypeId != null) {
             // No className present return as valid
-            if (variableType.varTypeId?.className == null) {
+            if (variableType.variableTypeId?.className == null) {
                 return
             }
-            variableType.varTypeId?.className ?: return
+            variableType.variableTypeId?.className ?: return
         } else {
             variableType.className ?: return
         }

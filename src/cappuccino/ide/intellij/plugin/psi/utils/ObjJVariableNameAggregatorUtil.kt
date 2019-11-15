@@ -293,7 +293,7 @@ object ObjJVariableNameAggregatorUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java).filter {
-            it.varModifier != null
+            it.variableModifier != null
         }
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
         result.addAll(getAllFileScopeGlobalVariables(file))
@@ -500,7 +500,7 @@ object ObjJVariableNameAggregatorUtil {
         return result.filterNotNull()
     }
 
-    fun isInstanceVarDeclaredInClassOrInheritance(variableName: ObjJVariableName): Boolean {
+    fun isInstanceVariableDeclaredInClassOrInheritance(variableName: ObjJVariableName): Boolean {
         return getAllContainingClassInstanceVariables(variableName).firstOrNull { itVar -> itVar.text == variableName.text } != null
     }
 

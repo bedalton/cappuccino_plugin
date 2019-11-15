@@ -15,7 +15,7 @@ val ObjJ_DOC_COMMENT_TAG_LINE = ObjJDocCommentTagLineStubElementType("ObjJDocCom
 
 interface ObjJDocCommentTagLineStub : StubElement<ObjJDocCommentTagLineImpl> {
     val tag:ObjJDocCommentKnownTag
-    val paramName:String?
+    val parameterName:String?
     val types:InferenceResult
     val commentText:String?
 }
@@ -23,7 +23,7 @@ interface ObjJDocCommentTagLineStub : StubElement<ObjJDocCommentTagLineImpl> {
 class ObjJDocCommentTagLineStubImpl(
         parent:StubElement<*>,
         override val tag:ObjJDocCommentKnownTag,
-        override val paramName:String?,
+        override val parameterName:String?,
         override val types:InferenceResult = INFERRED_ANY_TYPE,
         override val commentText:String?
 ): StubBase<ObjJDocCommentTagLineImpl>(parent, ObjJ_DOC_COMMENT_TAG_LINE), ObjJDocCommentTagLineStub;
@@ -37,7 +37,7 @@ class ObjJDocCommentTagLineStubElementType(debugName:String)
 
     override fun serialize(stub: ObjJDocCommentTagLineStub, stream: StubOutputStream) {
         stream.writeInt(ObjJDocCommentKnownTag.PARAM.ordinal)
-        stream.writeName(stub.paramName)
+        stream.writeName(stub.parameterName)
         val types = if (stub.types == INFERRED_ANY_TYPE) null else stub.types
         stream.writeInferenceResult(types)
         stream.writeUTFFast(stub.commentText ?: "")
@@ -51,14 +51,14 @@ class ObjJDocCommentTagLineStubElementType(debugName:String)
                     it.ordinal == tagOrdinal
                 }
                 .orElse(ObjJDocCommentKnownTag.UNKNOWN)
-        val paramName = stream.readNameAsString();
+        val parameterName = stream.readNameAsString();
         val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
         val commentText = stream.readUTFFast()
         return ObjJDocCommentTagLineStubImpl(
                 parent = parent,
                 tag = tagType,
                 types = types,
-                paramName = paramName,
+                parameterName = parameterName,
                 commentText = commentText
         )
     }
@@ -66,13 +66,13 @@ class ObjJDocCommentTagLineStubElementType(debugName:String)
     override fun createStub(element: ObjJDocCommentTagLineImpl, parent: StubElement<*>): ObjJDocCommentTagLineStub {
         val tagType = element.tag ?: ObjJDocCommentKnownTag.UNKNOWN
         val types = element.types ?: INFERRED_ANY_TYPE
-        val paramName = element.parameterName
+        val parameterName = element.parameterName
         val text = element.commentText
         return ObjJDocCommentTagLineStubImpl(
                 parent = parent,
                 tag = tagType,
                 types = types,
-                paramName = paramName,
+                parameterName = parameterName,
                 commentText = text
         )
     }

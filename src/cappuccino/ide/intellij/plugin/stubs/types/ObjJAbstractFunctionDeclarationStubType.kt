@@ -22,17 +22,17 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
             element: PsiT, stubParent: StubElement<*>): ObjJFunctionDeclarationElementStub<PsiT> {
         val fileName = if (element.containingFile != null && element.containingFile.virtualFile != null) element.containingFile.virtualFile.name else "undefined"
         val functionNameString = element.functionNameString
-        val paramNames = element.parameterNames
+        val parameterNames = element.parameterNames
         val returnType = null
         val shouldResolve = element.shouldResolve()
         val scope = element.functionScope
-        return createStub(stubParent, fileName, functionNameString, paramNames, returnType, shouldResolve, scope)
+        return createStub(stubParent, fileName, functionNameString, parameterNames, returnType, shouldResolve, scope)
     }
 
     internal abstract fun createStub(parent: StubElement<*>,
                                      fileName: String,
                                      fqName: String,
-                                     paramNames: List<String>,
+                                     parameterNames: List<String>,
                                      returnType: String?,
                                      shouldResolve: Boolean,
                                      scope:ObjJFunctionScope): ObjJFunctionDeclarationElementStub<PsiT>
@@ -45,7 +45,7 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         stream.writeName(stub.fileName)
         stream.writeName(stub.fqName)
         stream.writeInt(stub.numParams)
-        for (param in stub.paramNames) {
+        for (param in stub.parameterNames) {
             stream.writeName(param)
         }
         stream.writeName(stub.returnType)
@@ -59,14 +59,14 @@ abstract class ObjJAbstractFunctionDeclarationStubType<PsiT : ObjJFunctionDeclar
         val fileName = StringRef.toString(stream.readName())
         val fqName = StringRef.toString(stream.readName())
         val numParams = stream.readInt()
-        val paramNames = ArrayList<String>()
+        val parameterNames = ArrayList<String>()
         for (i in 0 until numParams) {
-            paramNames.add(StringRef.toString(stream.readName()))
+            parameterNames.add(StringRef.toString(stream.readName()))
         }
         val returnType = StringRef.toString(stream.readName())
         val shouldResolve = stream.readBoolean()
         val scope = ObjJFunctionScope.fromValue(stream.readInt())
-        return createStub(stubParent, fileName, fqName, paramNames, returnType, shouldResolve, scope)
+        return createStub(stubParent, fileName, fqName, parameterNames, returnType, shouldResolve, scope)
     }
 
     override fun indexStub(stub: ObjJFunctionDeclarationElementStub<PsiT>, sink: IndexSink) {

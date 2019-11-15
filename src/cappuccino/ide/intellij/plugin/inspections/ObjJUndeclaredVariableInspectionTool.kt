@@ -208,7 +208,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
         }
 
         private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
-            return ObjJVariableNameAggregatorUtil.isInstanceVarDeclaredInClassOrInheritance(variableName) ||
+            return ObjJVariableNameAggregatorUtil.isInstanceVariableDeclaredInClassOrInheritance(variableName) ||
                     isDeclaredInContainingMethodHeader(variableName) ||
                     isDeclaredInFunctionScope(variableName) ||
                     ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0).isNotEmpty()
@@ -282,7 +282,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
 
             val parent = variableName.parent
-            if (parent is ObjJBodyVariableAssignment && parent.varModifier != null) {
+            if (parent is ObjJBodyVariableAssignment && parent.variableModifier != null) {
                 return true
             }
 
@@ -291,13 +291,13 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (reference.parent is ObjJVariableDeclaration) {
                 val variableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
                 if (variableAssignment != null) {
-                    return variableAssignment.varModifier != null
+                    return variableAssignment.variableModifier != null
                 }
             }
 
             if (reference.parent is ObjJVariableDeclaration && !isDeclaredInSameDeclaration(variableName, reference)) {
-                if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.varModifier != null ||
-                        variableName.getParentOfType(ObjJInExpr::class.java)?.varModifier != null) {
+                if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.variableModifier != null ||
+                        variableName.getParentOfType(ObjJInExpr::class.java)?.variableModifier != null) {
                     return true
                 }
             }
@@ -310,14 +310,14 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             var assignment: ObjJBodyVariableAssignment? = null
             if (reference.parent is ObjJVariableDeclaration) {
                 val variableDeclaration = reference.parent as ObjJVariableDeclaration
-                if (variableDeclaration.parent is ObjJIterationStatement && variableDeclaration.siblingOfTypeOccursAtLeastOnceBefore(ObjJVarModifier::class.java)) {
+                if (variableDeclaration.parent is ObjJIterationStatement && variableDeclaration.siblingOfTypeOccursAtLeastOnceBefore(ObjJVariableModifier::class.java)) {
                     return true
                 } else if (variableDeclaration.parent is ObjJGlobalVariableDeclaration) {
                     return true
                 }
                 assignment = if (variableDeclaration.parent is ObjJBodyVariableAssignment) variableDeclaration.parent as ObjJBodyVariableAssignment else null
             }
-            return assignment != null && assignment.varModifier != null
+            return assignment != null && assignment.variableModifier != null
         }
     }
 

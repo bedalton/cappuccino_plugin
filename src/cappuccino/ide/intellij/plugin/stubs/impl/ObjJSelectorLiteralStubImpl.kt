@@ -15,7 +15,7 @@ class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containin
 
     override val ignored:Boolean = false
 
-    override val paramTypes: List<String>
+    override val parameterTypes: List<String>
         get() = emptyList()
 
     override val isRequired: Boolean

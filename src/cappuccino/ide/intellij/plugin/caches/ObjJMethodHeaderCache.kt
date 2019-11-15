@@ -58,7 +58,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
     ): CachedValue<Map<ObjJCompositeElement, InferenceResult?>> {
         val provider = CachedValueProvider<Map<ObjJCompositeElement, InferenceResult?>> {
             val methodReturnTypeElement = methodHeader.methodHeaderReturnTypeElement?.formalVariableType
-            val returnTypeElementType = methodReturnTypeElement?.varTypeId?.className?.text
+            val returnTypeElementType = methodReturnTypeElement?.variableTypeId?.className?.text
                     ?: methodReturnTypeElement?.text
             val map: MutableMap<ObjJCompositeElement, InferenceResult?> = mutableMapOf()
             if (returnTypeElementType != null && returnTypeElementType != "id") {
@@ -121,7 +121,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
                 return@CachedValueProvider CachedValueProvider.Result.create(mapOf<ObjJCompositeElement, InferenceResult?>(parent to null), dependencies)
             }
             val map: MutableMap<ObjJCompositeElement, InferenceResult?> = if (variableType != null) {
-                val returnTypeElementType = listOfNotNull(variableType.varTypeId?.className?.text
+                val returnTypeElementType = listOfNotNull(variableType.variableTypeId?.className?.text
                         ?: variableType.text).toSet().toInferenceResult()
                 mutableMapOf(declaration to returnTypeElementType)
             } else {

@@ -163,7 +163,7 @@ class ObjJVariableReference(
         if (element != null) {
             return PsiElementResolveResult.createResults(listOf(element))
         }
-        if (ObjJVariablePsiUtil.isNewVarDec(myElement))
+        if (ObjJVariablePsiUtil.isNewVariableDec(myElement))
             return PsiElementResolveResult.createResults(listOf(myElement))
 
         val properties = getJsNamedElementsForReferencedElement(myElement, myElement.text, tag)
@@ -200,7 +200,7 @@ class ObjJVariableReference(
         }
 
         val variableDeclaration = myElement.parent?.parent as? ObjJVariableDeclaration
-        if (variableDeclaration?.hasVarKeyword().orFalse())
+        if (variableDeclaration?.hasVariableKeyword().orFalse())
             return myElement
 
         var variableName = ObjJVariableNameResolveUtil.getVariableDeclarationElement(myElement)

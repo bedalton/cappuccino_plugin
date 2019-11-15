@@ -43,7 +43,7 @@ object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
             EditorUtil.insertText(editor, "()", false)
             EditorUtil.offsetCaret(editor, 1)
         }
-        if (shouldAppendFunctionParamComma(element)) {
+        if (shouldAppendFunctionParameterComma(element)) {
             EditorUtil.insertText(editor, ", ", true)
         }
         if (shouldAppendClosingBracket(element)) {
@@ -54,7 +54,7 @@ object ObjJVariableInsertHandler : InsertHandler<LookupElement> {
     /**
      * Appends comma if is a function parameter
      */
-    fun shouldAppendFunctionParamComma(element: PsiElement): Boolean {
+    fun shouldAppendFunctionParameterComma(element: PsiElement): Boolean {
         val parentExpression = element.getParentOfType( ObjJExpr::class.java) ?: return false
         val nextNonEmptyNode = parentExpression.getNextNonEmptyNode(true)
         return parentExpression.parent is ObjJFunctionCall && (nextNonEmptyNode == null || nextNonEmptyNode.elementType !== ObjJTypes.ObjJ_COMMA)

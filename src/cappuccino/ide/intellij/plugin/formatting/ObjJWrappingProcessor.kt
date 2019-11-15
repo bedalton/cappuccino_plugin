@@ -174,7 +174,7 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
         }
 
         if (childType === ObjJ_VARIABLE_DECLARATION_LIST && elementType !== ObjJ_FOR_LOOP_PARTS_IN_BRACES) {
-            return if (varDeclListContainsVarInit(child)) {
+            return if (variableDeclListContainsVariableInit(child)) {
                 Wrap.createWrap(WrapType.ALWAYS, true)
             } else {
                 Wrap.createWrap(WrapType.CHOP_DOWN_IF_LONG, true)
@@ -185,7 +185,7 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
             return if (parent != null && parent.elementType === ObjJ_FOR_LOOP_PARTS_IN_BRACES) {
                 Wrap.createWrap(WrapType.NORMAL, true)
             } else {
-                if (varDeclListContainsVarInit(myNode)) {
+                if (variableDeclListContainsVariableInit(myNode)) {
                     Wrap.createWrap(WrapType.ALWAYS, true)
                 } else {
                     Wrap.createWrap(WrapType.CHOP_DOWN_IF_LONG, true)
@@ -226,7 +226,7 @@ class ObjJWrappingProcessor(private val myNode: ASTNode, private val mySettings:
             return Wrap.createWrap(if (isNormal) WrapType.NORMAL else WrapType.NONE, true)
         }
 
-        private fun varDeclListContainsVarInit(decl: ASTNode): Boolean {
+        private fun variableDeclListContainsVariableInit(decl: ASTNode): Boolean {
             if (decl.findChildByType(ObjJ_VAR) != null) return true
             var child: ASTNode? = decl.firstChildNode
             while (child != null) {

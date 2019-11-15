@@ -17,8 +17,8 @@ object ObjJAccessorPropertyPsiUtil {
      * @param accessorProperty accessor property psi element
      * @return accessor property var type
      */
-    fun getVarType(accessorProperty: ObjJAccessorProperty): String? =
-            accessorProperty.stub?.varType
+    fun getVariableType(accessorProperty: ObjJAccessorProperty): String? =
+            accessorProperty.stub?.variableType
                     ?: accessorProperty.getParentOfType(ObjJInstanceVariableDeclaration::class.java)?.formalVariableType?.text
 
     /**
@@ -109,13 +109,13 @@ object ObjJAccessorPropertyPsiUtil {
         }
         if (setter != null) {
             val selectorStrings = listOf(setter)
-            val paramTypes = listOf(variableType)
+            val parameterTypes = listOf(variableType)
             return ObjJMethodHeaderStubImpl(
                     parent = null,
                     className = containingClassName,
                     isStatic = false,
                     selectorStrings = selectorStrings,
-                    paramTypes = paramTypes,
+                    parameterTypes = parameterTypes,
                     explicitReturnType = "void",
                     isRequired = true,
                     shouldResolve = variableDeclaration.shouldResolve(),
@@ -146,20 +146,20 @@ object ObjJAccessorPropertyPsiUtil {
      * @return method header stub
      */
     fun getGetter(variableDeclaration: ObjJInstanceVariableDeclaration): ObjJMethodHeaderStub? {
-        val varType = variableDeclaration.stub?.variableType ?: variableDeclaration.formalVariableType.text
+        val variableType = variableDeclaration.stub?.variableType ?: variableDeclaration.formalVariableType.text
         val getter: String = variableDeclaration.stub?.getter
                 ?: getGetterFromAccessorPropertyList(variableDeclaration.accessorPropertyList)
                 ?: variableDeclaration.stub?.variableName ?: variableDeclaration.variableName?.text
                 ?: return null
         val selectorStrings: List<String> = listOf(getter)
-        val paramTypes = listOf(varType)
+        val parameterTypes = listOf(variableType)
         return ObjJMethodHeaderStubImpl(
                 parent = null,
                 className = variableDeclaration.containingClassName,
                 isStatic = false,
                 selectorStrings = selectorStrings,
-                paramTypes = paramTypes,
-                explicitReturnType = varType,
+                parameterTypes = parameterTypes,
+                explicitReturnType = variableType,
                 isRequired = true,
                 shouldResolve = variableDeclaration.shouldResolve(),
                 ignored = false,
@@ -192,11 +192,11 @@ object ObjJAccessorPropertyPsiUtil {
     /**
      * Builds and returns the getter virtual method selector
      * @param variableName var name as string
-     * @param varType var type as string
+     * @param variableType var type as string
      * @param accessorProperty accessor property
      * @return instance variable virtual getter method
      */
-    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") varType: String, accessorProperty: ObjJAccessorProperty): String? {
+    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") variableType: String, accessorProperty: ObjJAccessorProperty): String? {
         return accessorProperty.stub?.getter ?: when (accessorProperty.accessorPropertyType.text) {
             "getter", "property", "copy", "readonly" -> (accessorProperty.accessor?.text
                     ?: variableName) + ObjJMethodPsiUtils.SELECTOR_SYMBOL
@@ -207,10 +207,10 @@ object ObjJAccessorPropertyPsiUtil {
     /**
      * Builds and returns the getter virtual method selector
      * @param variableName var name as string
-     * @param varType var type as string
+     * @param variableType var type as string
      * @return instance variable virtual getter method
      */
-    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") varType: String): String {
+    fun getGetterSelector(variableName: String, @Suppress("UNUSED_PARAMETER") variableType: String): String {
         return variableName + ObjJMethodPsiUtils.SELECTOR_SYMBOL
     }
 
@@ -218,17 +218,17 @@ object ObjJAccessorPropertyPsiUtil {
     /**
      * Builds and returns the setter virtual method selector
      * @param variableNameIn var name as string
-     * @param varType var type as string
+     * @param variableType var type as string
      * @return instance variable virtual setter method
      */
-    fun getSetterSelector(variableNameIn: String, varType: String): String {
+    fun getSetterSelector(variableNameIn: String, variableType: String): String {
         var variableName = variableNameIn
         var underscorePrefix = ""
         if (variableName.substring(0, 1) == "_") {
             underscorePrefix = "_"
             variableName = variableName.substring(1)
         }
-        return if (varType == "BOOL" && variableName.length > 2 && variableName.substring(0, 2) == "is") {
+        return if (variableType == "BOOL" && variableName.length > 2 && variableName.substring(0, 2) == "is") {
             underscorePrefix + "set" + variableName.substring(2) + ObjJMethodPsiUtils.SELECTOR_SYMBOL
         } else {
             underscorePrefix + "set" + variableName.upperCaseFirstLetter() + ObjJMethodPsiUtils.SELECTOR_SYMBOL
@@ -238,11 +238,11 @@ object ObjJAccessorPropertyPsiUtil {
     /**
      * Builds and returns the setter virtual method selector
      * @param variableName var name as string
-     * @param varType var type as string
+     * @param variableType var type as string
      * @param accessorProperty accessor property
      * @return instance variable virtual setter method
      */
-    fun getSetterSelector(variableName: String, varType: String, accessorProperty: ObjJAccessorProperty): String? {
+    fun getSetterSelector(variableName: String, variableType: String, accessorProperty: ObjJAccessorProperty): String? {
         //Check stub for setter
         val setter = accessorProperty.stub?.setter
         if (setter != null) {
@@ -270,7 +270,7 @@ object ObjJAccessorPropertyPsiUtil {
 
         return when (propertyType) {
             "setter" -> underscorePrefix + "set" + accessor.upperCaseFirstLetter() + ObjJMethodPsiUtils.SELECTOR_SYMBOL
-            "property" -> if (varType == "BOOL" && accessor.length > 2 && accessor.substring(0, 2) == "is") {
+            "property" -> if (variableType == "BOOL" && accessor.length > 2 && accessor.substring(0, 2) == "is") {
                 underscorePrefix + "set" + accessor.substring(2) + ObjJMethodPsiUtils.SELECTOR_SYMBOL
             } else {
                 underscorePrefix + "set" + accessor.upperCaseFirstLetter() + ObjJMethodPsiUtils.SELECTOR_SYMBOL

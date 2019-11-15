@@ -47,7 +47,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
                 }
                 when (psiElement.tokenType()) {
                     in ObjJTokenSets.VAR_TYPE_KEYWORDS ->
-                        stripVarTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
+                        stripVariableTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
                     in ObjJTokenSets.ITERATION_STATEMENT_KEYWORDS ->
                         stripLoopWordsIfInSelector(psiElement, annotationHolder)
                 }
@@ -145,7 +145,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
      * Strips variable type highlighting, if it is not used inside a valid block
      * Sometimes keywords are used as variable names, and this has to remove misleading colorization
      */
-    private fun stripVarTypesAnnotationIfNotInValidBlock(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
+    private fun stripVariableTypesAnnotationIfNotInValidBlock(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
         if (psiElement.hasParentOfType(ObjJBlock::class.java)) {
             stripAnnotation(psiElement, annotationHolder)
             return

@@ -93,20 +93,20 @@ private propertyList_recover
 	;
 
 docType
-	::= '<!DOCTYPE' docTypeParamList? '>'
+	::= '<!DOCTYPE' docTypeParameterList? '>'
 	{
 		pin=1
 	}
 	;
 
-docTypeParamList
+docTypeParameterList
 	::= (XML_TAG_PROPERTY_KEY|stringLiteral)+
 	{
-		recoverWhile=docTypeParamList_recover
+		recoverWhile=docTypeParameterList_recover
 	}
 	;
 
-private docTypeParamList_recover
+private docTypeParameterList_recover
 	::= !('>'|'<'|'<?')
 	;
 

@@ -25,7 +25,7 @@ class ObjJVariableDeclarationStubType internal constructor(debugName:String):
         stub.qualifiedNamesList.forEach {
             stream.writeQNComponents(it)
         }
-        stream.writeBoolean(stub.hasVarKeyword)
+        stream.writeBoolean(stub.hasVariableKeyword)
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJVariableDeclarationStub {
@@ -34,12 +34,12 @@ class ObjJVariableDeclarationStubType internal constructor(debugName:String):
         (0 until numParts).forEach { _ ->
             out.add(stream.readQNComponents())
         }
-        val hasVarKeyword = stream.readBoolean()
-        return ObjJVariableDeclarationStubImpl(parent, out, hasVarKeyword)
+        val hasVariableKeyword = stream.readBoolean()
+        return ObjJVariableDeclarationStubImpl(parent, out, hasVariableKeyword)
     }
 
     override fun createStub(element: ObjJVariableDeclarationImpl, parent: StubElement<*>): ObjJVariableDeclarationStub {
-        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths(), element.hasVarKeyword())
+        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths(), element.hasVariableKeyword())
     }
 
     override fun indexStub(stub: ObjJVariableDeclarationStub, sink: IndexSink) {

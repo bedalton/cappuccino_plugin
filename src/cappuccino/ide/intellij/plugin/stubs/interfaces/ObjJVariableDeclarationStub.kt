@@ -5,5 +5,5 @@ import com.intellij.psi.stubs.StubElement
 
 interface ObjJVariableDeclarationStub : StubElement<ObjJVariableDeclarationImpl> {
     val qualifiedNamesList:List<QualifiedReferenceStubComponents>
-    val hasVarKeyword:Boolean
+    val hasVariableKeyword:Boolean
 }

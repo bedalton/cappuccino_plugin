@@ -35,7 +35,7 @@ class ObjJMethodHeaderStubType internal constructor(
             methodHeader: ObjJMethodHeaderImpl, parentStub: StubElement<*>): ObjJMethodHeaderStub {
         val containingClassName = methodHeader.containingClassName
         val selectors = methodHeader.selectorStrings
-        val params = methodHeader.paramTypesAsStrings
+        val params = methodHeader.parameterTypesAsStrings
         val returnType = methodHeader.explicitReturnType
         val required = methodHeader.isRequired
         val selectorStructs = methodHeader.selectorStructs
@@ -46,7 +46,7 @@ class ObjJMethodHeaderStubType internal constructor(
                 className = containingClassName,
                 isStatic = methodHeader.isStatic,
                 selectorStrings = selectors,
-                paramTypes = params,
+                parameterTypes = params,
                 explicitReturnType = returnType,
                 isRequired = required,
                 selectorStructs = selectorStructs,
@@ -67,9 +67,9 @@ class ObjJMethodHeaderStubType internal constructor(
         for (selector in stub.selectorStrings) {
             stubOutputStream.writeName(Strings.notNull(selector))
         }
-        val numParams = stub.paramTypes.size
+        val numParams = stub.parameterTypes.size
         stubOutputStream.writeInt(numParams)
-        for (param in stub.paramTypes) {
+        for (param in stub.parameterTypes) {
             stubOutputStream.writeName(Strings.notNull(param))
         }
         stubOutputStream.writeName(stub.explicitReturnType)
@@ -105,7 +105,7 @@ class ObjJMethodHeaderStubType internal constructor(
                 className = containingClassName,
                 isStatic = isStatic,
                 selectorStrings = selectors,
-                paramTypes = params,
+                parameterTypes = params,
                 explicitReturnType = explicitReturnType,
                 isRequired = required,
                 selectorStructs = selectorStructs,

@@ -251,7 +251,7 @@ private fun StubInputStream.readFunctionProperty(): JsTypeDefFunctionArgument? {
     val types = readInferenceResult()
     val comment = readUTFFast()
     val default = readNameAsString()
-    val varArgs = readBoolean()
+    val variableArgs = readBoolean()
     if (propertyName == null)
         return null
     return JsTypeDefFunctionArgument(
@@ -259,7 +259,7 @@ private fun StubInputStream.readFunctionProperty(): JsTypeDefFunctionArgument? {
             types = types ?: INFERRED_ANY_TYPE,
             comment = if (comment.isBlank()) null else comment,
             default = default,
-            varArgs = varArgs
+            variableArgs = variableArgs
     )
 }
 
@@ -269,7 +269,7 @@ private fun StubOutputStream.writeFunctionProperty(type: JsTypeDefFunctionArgume
     writeInferenceResult(type.types)
     writeUTFFast(type.comment ?: "")
     writeName(type.default)
-    writeBoolean(type.varArgs)
+    writeBoolean(type.variableArgs)
 }
 
 fun StubOutputStream.writeJsFunctionType(function: JsTypeListFunctionType?) {

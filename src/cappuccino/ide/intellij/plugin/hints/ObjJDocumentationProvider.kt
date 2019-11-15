@@ -62,8 +62,8 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
-                    if (parameterComment?.paramCommentFormatted != null) {
-                        out.append(" - ").append(parameterComment.paramCommentFormatted)
+                    if (parameterComment?.parameterCommentFormatted != null) {
+                        out.append(" - ").append(parameterComment.parameterCommentFormatted)
                     }
                     out.append("[in").append(containingClassName).append("]")
                     out.toString()
@@ -191,9 +191,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         if (type != null)
             out.append("(").append(type).append(")")
         out.append(text)
-        val paramComment = comment?.getParameterComment(text)?.paramCommentClean
-        if (paramComment.isNotNullOrBlank()) {
-            out.append(" - ").append(paramComment)
+        val parameterComment = comment?.getParameterComment(text)?.parameterCommentClean
+        if (parameterComment.isNotNullOrBlank()) {
+            out.append(" - ").append(parameterComment)
         }
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
@@ -201,7 +201,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     ////LOGGER.warning(.info("Check QNR")
     val prevSiblings = previousSiblings
     val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
-    if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVarDec(this)) {
+    if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVariableDec(this)) {
         val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
             it.toJsFunctionType()
         }.minBy { it.parameters.size }
@@ -266,7 +266,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? =
     val resolvedSelectors: List<ObjJMethodDeclarationSelector> = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
-    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramCommentClean }.joinToString("|")
+    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.parameterCommentClean }.joinToString("|")
     out.append(selector?.text ?: "_").append(":")
     out.append("(").append(resolvedTypes.joinToString("|")).append(")")
     if (resolvedVariableNames.size > 1) {

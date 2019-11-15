@@ -63,12 +63,12 @@ object ObjJCommentCompletionProvider {
         when {
             // @var completions
             text.contains("@var") ->
-                appendVarCompletions(resultSet, element, commentTokenParts)
+                appendVariableCompletions(resultSet, element, commentTokenParts)
             // @Ignore completions
             text.contains("@ignore") ->
                 getIgnoreCompletions(resultSet, commentTokenParts)
             text.contains("@param") ->
-                appendParamCompletions(resultSet, element, nextSibling?.psi, commentTokenParts)
+                appendParameterCompletions(resultSet, element, nextSibling?.psi, commentTokenParts)
             text.contains("@return") -> appendReturnCompletions(resultSet, element, commentTokenParts)
             // Default completions
             else -> addDefaults(resultSet, commentTokenParts, nextSiblingHasParams)
@@ -89,7 +89,7 @@ object ObjJCommentCompletionProvider {
     /**
      * Append @var completion items
      */
-    private fun appendVarCompletions(resultSet: CompletionResultSet, element: PsiElement, commentTokenParts: List<String>) {
+    private fun appendVariableCompletions(resultSet: CompletionResultSet, element: PsiElement, commentTokenParts: List<String>) {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
@@ -144,7 +144,7 @@ object ObjJCommentCompletionProvider {
     /**
      * Append @var completion items
      */
-    private fun appendParamCompletions(resultSet: CompletionResultSet, element: PsiElement, nextSibling: PsiElement?, commentTokenParts: List<String>) {
+    private fun appendParameterCompletions(resultSet: CompletionResultSet, element: PsiElement, nextSibling: PsiElement?, commentTokenParts: List<String>) {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
@@ -170,7 +170,7 @@ object ObjJCommentCompletionProvider {
                 }
                 // Add variable name completions if second token
                 2 -> {
-                    val variableNames = getParamNames(nextSibling)
+                    val variableNames = getParameterNames(nextSibling)
                     addCompletionElementsSimple(resultSet, variableNames)
                 }
                 // index too far out, quit
@@ -288,7 +288,7 @@ object ObjJCommentCompletionProvider {
     }
 
 
-    private fun getParamNames(element: PsiElement?): List<String> {
+    private fun getParameterNames(element: PsiElement?): List<String> {
         return when (element) {
             is ObjJFunctionDeclarationElement<*> -> element.parameterNames
             is ObjJMethodHeader -> element.methodDeclarationSelectorList.mapNotNull { it.variableName?.text }

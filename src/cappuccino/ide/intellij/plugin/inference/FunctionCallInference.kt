@@ -169,7 +169,7 @@ fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFunctionAr
     for ((i, parameter) in parameters.withIndex()) {
         //ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
-        val comment = commentWrapper?.parameterComments?.firstOrNull{ it.paramName == parameterName } ?: commentWrapper?.parameterComments
+        val comment = commentWrapper?.parameterComments?.firstOrNull{ it.parameterName == parameterName } ?: commentWrapper?.parameterComments
                 ?.getOrNull(i)
         if (comment != null) {
             val types = comment.getTypes(project)

@@ -35,7 +35,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.parent is ObjJPropertyAssignment) {
             return variableNameElement
         }
-        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.variableModifier != null &&
                 variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement
@@ -72,7 +72,7 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement
         }
 
-        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.variableModifier != null &&
                 variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement

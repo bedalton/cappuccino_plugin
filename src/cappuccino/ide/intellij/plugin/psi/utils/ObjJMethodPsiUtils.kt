@@ -30,26 +30,26 @@ object ObjJMethodPsiUtils {
     val EMPTY_SELECTOR = getSelectorString("{EMPTY}")
 
     @Contract("null -> !null")
-    fun getParamTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
+    fun getParameterTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
         if (declarationSelectors == null || declarationSelectors.isEmpty()) {
             return emptyList()
         }
         val out = ArrayList<ObjJFormalVariableType?>()
         for (selector in declarationSelectors) {
-            out.add(selector.varType)
+            out.add(selector.variableType)
         }
         return out
     }
 
 
     @Contract("null -> !null")
-    fun getParamTypesAsString(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<String> {
+    fun getParameterTypesAsString(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<String> {
         if (declarationSelectors == null || declarationSelectors.isEmpty()) {
             return EMPTY_STRING_ARRAY
         }
         val out = ArrayList<String>()
         for (selector in declarationSelectors) {
-            out.add(if (selector.varType != null) selector.varType!!.text else "")
+            out.add(if (selector.variableType != null) selector.variableType!!.text else "")
         }
         return out
     }
@@ -147,7 +147,7 @@ object ObjJMethodPsiUtils {
         val stubHeaderType = methodHeader.stub?.explicitReturnType
         if (stubHeaderType != null)
             return stubHeaderType
-        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
+        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.variableTypeId?.className?.text
                 ?: methodHeader.methodHeaderReturnTypeElement?.text
                 ?: UNDETERMINED
     }
@@ -176,9 +176,9 @@ object ObjJMethodPsiUtils {
             return setOf(VOID_CLASS_NAME)
         }
         val formalVariableType = returnTypeElement.formalVariableType
-        if (formalVariableType.varTypeId != null) {
-            if (formalVariableType.varTypeId?.className != null)
-                return setOf(formalVariableType.varTypeId?.className!!.text)
+        if (formalVariableType.variableTypeId != null) {
+            if (formalVariableType.variableTypeId?.className != null)
+                return setOf(formalVariableType.variableTypeId?.className!!.text)
             if (follow) {
                 return getReturnTypesFromStatements(methodHeader, tag)
             }
@@ -209,17 +209,17 @@ object ObjJMethodPsiUtils {
     }
 
     @JvmOverloads
-    fun getIdReturnType(varTypeId: ObjJVarTypeId, follow: Boolean = true): String {
-        if (varTypeId.stub != null) {
-            val stub = varTypeId.stub
+    fun getIdReturnType(variableTypeId: ObjJVariableTypeId, follow: Boolean = true): String {
+        if (variableTypeId.stub != null) {
+            val stub = variableTypeId.stub
             if (!isUniversalMethodCaller(stub.idType) && stub.idType != "id") {
                 //return stub.getIdType();
             }
         }
-        if (varTypeId.className != null) {
-            return varTypeId.className!!.text
+        if (variableTypeId.className != null) {
+            return variableTypeId.className!!.text
         }
-        if (varTypeId.getParentOfType(ObjJMethodDeclaration::class.java) == null)
+        if (variableTypeId.getParentOfType(ObjJMethodDeclaration::class.java) == null)
                 return ObjJClassType.ID
         var returnType: String?
         returnType = try {
@@ -233,20 +233,20 @@ object ObjJMethodPsiUtils {
         }
         /*
         if (returnType != null) {
-            //LOGGER.info(!returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
+            //LOGGER.info(!returnType.equals("id") ? "VariableTypeId: id <" + returnType + ">" : "VariableTypeId: failed to infer var type");
         } else {
-            //LOGGER.info("VarTypeId: getTypeFromReturnStatements returned null");
+            //LOGGER.info("VariableTypeId: getTypeFromReturnStatements returned null");
         }*/
-        return returnType ?: varTypeId.text
+        return returnType ?: variableTypeId.text
     }
 
 
     fun getExplicitReturnType(accessorProperty: ObjJAccessorProperty): String {
-        val stubReturnType = accessorProperty.stub?.varType
+        val stubReturnType = accessorProperty.stub?.variableType
         if (stubReturnType != null) {
             return stubReturnType
         }
-        val variableType = accessorProperty.varType
+        val variableType = accessorProperty.variableType
         return variableType ?: UNDETERMINED
     }
 
@@ -316,7 +316,7 @@ object ObjJMethodPsiUtils {
         return selector.text
     }
 
-    fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
+    fun getVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return selector.formalVariableType
     }
 

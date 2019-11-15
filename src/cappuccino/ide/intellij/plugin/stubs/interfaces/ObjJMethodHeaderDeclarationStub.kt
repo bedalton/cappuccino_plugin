@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.StubElement
 
 interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT> {
-    val paramTypes: List<String>
+    val parameterTypes: List<String>
 
     val selectorStrings: List<String>
 
