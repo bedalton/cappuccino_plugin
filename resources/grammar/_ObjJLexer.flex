@@ -2,12 +2,10 @@ package cappuccino.ide.intellij.plugin.lexer;
 
 import com.intellij.psi.tree.IElementType;
 import com.intellij.lexer.FlexLexer;
-import static com.intellij.psi.TokenType.BAD_CHARACTER;
-import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.getOBJJ_DOC_COMMENT_PARSABLE_BLOCK;
+import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.getOBJJ_DOC_COMMENT_PARSABLE_BLOCK;import static com.intellij.psi.TokenType.*;
 
 %%
 
@@ -73,16 +71,15 @@ BINARY_INTEGER_LITERAL=0 [bB] [01]+
 DECIMAL_LITERAL1=[0-9]*\.([0-9]*([eE] [+-]? [0-9]+)?|[eE] [+-]? [0-9]+)
 DECIMAL_LITERAL2=[0-9]+\.?([eE] [+-]? [0-9]+)
 INTEGER_LITERAL=[0-9]+
-BAD_BLOCK_COMMENT="/"\* {BLOCK_COMMENT_TEXT}
-BLOCK_COMMENT_TEXT = ([^*]|\*[^/]|'\n'|'\r'|";"|\s)+
-BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
+BAD_BLOCK_COMMENT="/*" {BLOCK_COMMENT_TEXT}
+BLOCK_COMMENT_TEXT = ([^*]|"*"[^*/])+
+BLOCK_COMMENT = {BAD_BLOCK_COMMENT}("*/")
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 REGEXP_LITERAL_SET = \[ ([^\]]|\\[\[\]]|\/)* \]
 REGEXP_ESCAPED_CHAR = \\ [^\r\n\u2028\u2029]
 REGEXP_CHAR_SIMPLE = [^\r\n\u2028\u2029\\/\[\]]
 REGEXP_VALID_CHAR = {REGEXP_LITERAL_SET} | {REGEXP_ESCAPED_CHAR} | {REGEXP_CHAR_SIMPLE}
 REGEXP_END = \/ [a-zA-Z]*
-REGEXP = \/ {REGEXP_VALID_CHAR}+ {REGEXP_END}
 ID=[$_a-zA-Z][_a-zA-Z0-9]*
 PP_UNDEF = #\s*undef
 PP_IF_DEF = #\s*ifdef
@@ -150,9 +147,10 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 }
 
 <BLOCK_COMMENT> {
-	"*/"								 { canWhitespace(true); yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return ObjJ_BLOCK_COMMENT_END; }
-  	"*"									 { canWhitespace(true); return ObjJ_BLOCK_COMMENT_LEADING_ASTERISK; }
- 	'.*'/'\n'							 { canWhitespace(true); return ObjJ_BLOCK_COMMENT_LINE; }
+	[*]+[/]								 { canWhitespace(true); yybegin(YYINITIAL); canRegex(true); /*log("Ending Comment");*/ return getOBJJ_DOC_COMMENT_PARSABLE_BLOCK(); }
+ 	{BLOCK_COMMENT_TEXT}				 { canWhitespace(true);}
+     <<EOF>>							 { yybegin(YYINITIAL); return getOBJJ_DOC_COMMENT_PARSABLE_BLOCK(); }
+
 }
 
 <IN_REGEXP> {
@@ -167,7 +165,7 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 	"?*__ERR_SEMICOLON__*?"			 	 { return ObjJ_ERROR_SEQUENCE_TOKEN; }
 	"'"									 { canRegex(false); canWhitespace(true);  yybegin(SINGLE_QUOTE_STRING); return ObjJ_SINGLE_QUO; }
 	"\""						 		 { canRegex(false); canWhitespace(true);  yybegin(DOUBLE_QUOTE_STRING); return ObjJ_DOUBLE_QUO; }
-	"/*"								 { canRegex(false); canWhitespace(true);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); return ObjJ_BLOCK_COMMENT_START; }
+	"/""*"+"!"?							 { canRegex(false); canWhitespace(true);  /*log("Starting Comment");*/ yybegin(BLOCK_COMMENT); }
 	"@["                                 { canRegex(true); canWhitespace(true); return ObjJ_AT_OPENBRACKET; }
 	"["                                  { canRegex(true); canWhitespace(true); return ObjJ_OPEN_BRACKET; }
 	"]"                                  { canRegex(false); canWhitespace(true); return ObjJ_CLOSE_BRACKET; }
@@ -291,7 +289,7 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 	"let"                                { canRegex(false); canWhitespace(true); return ObjJ_LET; }
 	"const"                              { canRegex(false); canWhitespace(true); return ObjJ_CONST; }
 	";"                                  { canRegex(true); canWhitespace(true); return ObjJ_SEMI_COLON; }
-	{BLOCK_COMMENT}                      { canRegex(true); canWhitespace(true); return getOBJJ_DOC_COMMENT_PARSABLE_BLOCK(); }
+	//{BLOCK_COMMENT}                      { canRegex(true); canWhitespace(true); return getOBJJ_DOC_COMMENT_PARSABLE_BLOCK(); }
 	{PREPROCESSOR_CONTINUE_ON_NEXT_LINE} { canRegex(true); canWhitespace(true); return ObjJ_PREPROCESSOR_CONTINUE_ON_NEXT_LINE; }
 	{LINE_TERMINATOR}                    { canRegex(true); canWhitespace(true); return WHITE_SPACE; }
 	{VAR_TYPE_BYTE}                      { canRegex(false); canWhitespace(true);  return ObjJ_VAR_TYPE_BYTE; }
@@ -324,7 +322,7 @@ FRAMEWORK_NAME = [a-zA-Z0-9_-]+
 										 		return ObjJ_DIVIDE;
 										 	}
 										 }
-	{BAD_BLOCK_COMMENT}			 		 { canRegex(false); canWhitespace(true); return ObjJ_BLOCK_COMMENT; }
+	//{BAD_BLOCK_COMMENT}			 		 { canRegex(false); canWhitespace(true); return ERROR_ELEMENT; }
 	{SINGLE_LINE_COMMENT}                { canRegex(true); canWhitespace(true); return ObjJ_SINGLE_LINE_COMMENT; }
 	//{BAD_DOUBLE_QUOTE_STRING_LITERAL}	 { canRegex(false);	return ObjJ_QUO_TEXT; }
 	//{BAD_SINGLE_QUOTE_STRING_LITERAL}	 { canRegex(false); return ObjJ_QUO_TEXT; }

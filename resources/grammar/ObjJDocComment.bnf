@@ -12,6 +12,7 @@
 	psiImplPackage="cappuccino.ide.intellij.plugin.comments.psi.impl"
 	elementTypeFactory("comment|tagLine")="cappuccino.ide.intellij.plugin.comments.psi.ObjJDocCommentElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentParserUtil"
+	name(".*")="comment"
 	//Tokens
 	tokens = [
 		space = 							'regexp:\s+'
@@ -27,11 +28,11 @@
 }
 
 root
-	::= comment?
+	::= START comment? END
 	;
 
 comment
-	::= START (!<<eof>> endOfLine* LEADING_ASTERISK* commentLine)* END
+	::= (!<<eof>> commentElement)+
 	{
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub"
@@ -49,6 +50,12 @@ comment
 	}
 	;
 
+private commentElement
+	::= commentLine
+	|	LEADING_ASTERISK
+	|	endOfLine
+	;
+
 private commentLine
 	::= tagLine endOfLine?
 	|	textLine endOfLine?
@@ -57,7 +64,7 @@ private commentLine
 	;
 
 tagLine
-	::= TAG_NAME typesList parameterName? textLine?
+	::= tagNameElement typesList parameterName? textLine?
 	{
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub"
@@ -69,17 +76,26 @@ tagLine
 			getTag
 			getTypes
 			getParameterName
-			parameterNameElement="parameterName"
+			parameterNameElementElement="parameterName"
 			getCommentText
+			tagName = "tagNameElement"
+			getParameterNameElement
 		]
 	}
 	;
 
 emptyTagLine
-	::= TAG_NAME textLine
+	::= tagNameElement textLine
 	{
 		pin = 2
+		methods = [
+			tagName = "tagNameElement"
+		]
 	}
+	;
+
+tagNameElement
+	::= TAG_NAME
 	;
 
 typesList
@@ -95,13 +111,17 @@ qualifiedNameComponent
 	;
 
 textLine
-	::= !(TAG_NAME) TEXT_BODY*
+	::= !(TAG_NAME) TEXT_BODY
 	;
 
 parameterName
 	::= ID
 	;
 
-endOfLine
+private endOfLine
 	::= LINE_TERMINATOR | <<eof>>
+	;
+
+private endOfComment
+	::= END
 	;

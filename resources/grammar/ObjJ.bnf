@@ -12,7 +12,7 @@
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|propertyName|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef|className|variableDeclaration|qualifiedReference|objectLiteral")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|propertyName|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|variableTypeId|variableName|typeDef|className|variableDeclaration|qualifiedReference|objectLiteral")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -566,7 +566,7 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= varModifier variableDeclarationList
+	::= variableModifier variableDeclarationList
 	{
 		pin=1
 	}
@@ -617,7 +617,7 @@ variableDeclaration
 		methods=[
 			assignedValue="/expr"
 			getQualifiedNamePaths
-			hasVarKeyword
+			hasVariableKeyword
 		]
 		//recoverWhile=variableDeclaration_recover
 	}
@@ -692,7 +692,7 @@ accessorProperty
 		methods=[
 			accessorKind="/accessorPropertyType"
 			accessor="/selector"
-			getVarType
+			getVariableType
 			getContainingClass
 			isGetter
 			getSelectorList
@@ -868,7 +868,7 @@ private compoundForLoopHeader
 	;
 
 
-varModifier
+variableModifier
 	::= 'var'
     | 	'let'
     | 	'const'
@@ -1028,7 +1028,7 @@ deleteStatement
 	;
 
 functionDeclaration
-	::= 'function' (<<notInMode "varDec">> functionName) formalParameterList blockElement
+	::= 'function' (<<notInMode "variableDec">> functionName) formalParameterList blockElement
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
@@ -1108,8 +1108,8 @@ methodHeader
 		methods = [
 			getSelectorList
 			getSelectorStrings
-			getParamTypes
-			getParamTypesAsStrings
+			getParameterTypes
+			getParameterTypesAsStrings
 			getSelectorString
 			getName
 			setName
@@ -1154,7 +1154,7 @@ firstMethodDeclarationSelector
 		pin=1
 		extends=methodDeclarationSelector
 		methods=[
-			getVarType
+			getVariableType
 		]
 	}
 	;
@@ -1164,10 +1164,10 @@ methodDeclarationSelector
 	{
 		pin=2;
 		methods = [
-			getVarType
+			getVariableType
 			getContainingClassName
 			getContainingClass
-			getVarType
+			getVariableType
 			getFileName
 			getFormalVariableType
 		]
@@ -1940,7 +1940,7 @@ typeOfExprPrime
 	;
 
 inExpr
-	::= varModifier? variableName 'in' expr
+	::= variableModifier? variableName 'in' expr
 	{
 		pin=3
 	}
@@ -2026,7 +2026,7 @@ nullLiterals
 	;
 
 formalVariableType
-	::= varTypeId
+	::= variableTypeId
 	| 	VAR_TYPE_CHAR
 	| 	VAR_TYPE_BYTE
 	| 	VAR_TYPE_SHORT
@@ -2060,30 +2060,30 @@ classNameGeneric
 	}
 	;
 
-varTypeId
-	::= 'id' ('<' varTypeIdClassName '>')?
+variableTypeId
+	::= 'id' ('<' variableTypeIdClassName '>')?
 	{
 		pin=1
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableTypeIdStub>"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableTypeIdStub"
 		methods=[
 			getIdType
 			shouldResolve
 		]
 	}
 	;
-private varTypeIdClassName
+private variableTypeIdClassName
 	::= className
 	{
 		pin=1
-		recoverWhile=recover_varTypeIdClassName
+		recoverWhile=recover_variableTypeIdClassName
 	}
 	;
-private recover_varTypeIdClassName
+private recover_variableTypeIdClassName
 	::= !('>'|')'|';'|'@accessors')
 	;
 
@@ -2115,7 +2115,7 @@ functionLiteral
 			getFunctionNameString
 			getFunctionNamesAsString
 			getReturnTypes
-			getParamNameElements
+			getParameterNameElements
 			getParameterNames
 			getFunctionNameNode
 			shouldResolve
