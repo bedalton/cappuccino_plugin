@@ -78,7 +78,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
 
         // Check if same version
         if (newVersion == ObjJPluginSettings.typedefVersion) {
-            LOGGER.info("JsTypeDef version is the same <$newVersion> in ")
+            //LOGGER.info("JsTypeDef version is the same <$newVersion> in ")
             //return true
         }
 
@@ -90,7 +90,7 @@ object JsTypeDefBundledSourcesRegistrationUtil {
         modifiableModel.commit()
         rootModel.commit()
         ObjJPluginSettings.typedefVersion = newVersion
-        LOGGER.info("Updated JsTypeDef version to $newVersion")
+        //LOGGER.info("Updated JsTypeDef version to $newVersion")
         return true
     }
 
