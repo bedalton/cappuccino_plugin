@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
@@ -93,7 +92,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         val functionCall = myElement.parent as? ObjJFunctionCall
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         // Get Base variables
-        val project = functionCall.project
         val functionName = functionCall.functionNameString
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         val properties = getJsNamedElementsForReferencedElement(functionCall, functionName, tag)
