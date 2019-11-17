@@ -87,7 +87,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
         }
 
         fun execute(variableAssignment: ObjJBodyVariableAssignment, group:FoldingGroup) : FoldingDescriptor? {
-            val startOffset = (variableAssignment.variableModifier?.textRange?.endOffset ?: return null)
+            val startOffset = (variableAssignment.varModifier?.textRange?.endOffset ?: return null)
             val endOffset = variableAssignment.textRange.endOffset - 1
             if (startOffset >= endOffset) {
                 return null

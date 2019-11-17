@@ -39,7 +39,7 @@ class ObjJVariableDeclarationStubType internal constructor(debugName:String):
     }
 
     override fun createStub(element: ObjJVariableDeclarationImpl, parent: StubElement<*>): ObjJVariableDeclarationStub {
-        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths(), element.hasVariableKeyword())
+        return ObjJVariableDeclarationStubImpl(parent, element.toQualifiedNamePaths(), element.hasVarKeyword())
     }
 
     override fun indexStub(stub: ObjJVariableDeclarationStub, sink: IndexSink) {

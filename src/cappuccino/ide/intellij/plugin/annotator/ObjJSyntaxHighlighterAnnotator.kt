@@ -46,7 +46,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
                     return
                 }
                 when (psiElement.tokenType()) {
-                    in ObjJTokenSets.VAR_TYPE_KEYWORDS ->
+                    in ObjJTokenSets.VARIABLE_TYPE_KEYWORDS ->
                         stripVariableTypesAnnotationIfNotInValidBlock(psiElement, annotationHolder)
                     in ObjJTokenSets.ITERATION_STATEMENT_KEYWORDS ->
                         stripLoopWordsIfInSelector(psiElement, annotationHolder)

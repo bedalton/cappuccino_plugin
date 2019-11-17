@@ -5,13 +5,11 @@ import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsInde
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.openapi.progress.ProgressIndicatorProvider

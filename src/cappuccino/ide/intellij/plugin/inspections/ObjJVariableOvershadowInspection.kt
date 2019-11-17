@@ -49,7 +49,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
                 return false
             }
             val bodyVariableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
-            return bodyVariableAssignment != null && bodyVariableAssignment.variableModifier != null
+            return bodyVariableAssignment != null && bodyVariableAssignment.varModifier != null
         }
 
         private fun annotateOvershadow(variableName: ObjJVariableName, problemsHolder: ProblemsHolder) {
@@ -100,7 +100,7 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
         }
 
         private fun isDeclaredInBodyVariableAssignment(variableAssignment: ObjJBodyVariableAssignment, variableNameString: String, offset: Int): Boolean {
-            if (variableAssignment.variableModifier == null) {
+            if (variableAssignment.varModifier == null) {
                 return false
             }
 

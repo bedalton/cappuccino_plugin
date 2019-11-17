@@ -21,7 +21,7 @@ object ObjJVariablePsiUtil {
         if (variableName != null) {
             return when {
                 variableName.parent is ObjJGlobalVariableDeclaration -> true
-                variableName.parent.parent is ObjJVariableDeclaration -> (variableName.parent.parent as ObjJVariableDeclaration).hasVariableKeyword()
+                variableName.parent.parent is ObjJVariableDeclaration -> (variableName.parent.parent as ObjJVariableDeclaration).hasVarKeyword()
                 variableName.parent is ObjJFormalParameterArg -> true
                 variableName.parent is ObjJMethodDeclarationSelector -> true
                 else -> false

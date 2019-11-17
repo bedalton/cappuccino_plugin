@@ -19,7 +19,7 @@ object ObjJVariableDeclarationAnnotator {
 
         // Only check if direct parent if body variable assignment.
         // Looking for any inherited parent of caused problems with nested declarations
-        val inBodyVariableAssignment:Boolean = (variableDeclaration.parent as? ObjJBodyVariableAssignment)?.variableModifier != null
+        val inBodyVariableAssignment:Boolean = (variableDeclaration.parent as? ObjJBodyVariableAssignment)?.varModifier != null
 
         for (qualifiedReference in variableDeclaration.qualifiedReferenceList) {
             // Check that method call is not being assigned to directly

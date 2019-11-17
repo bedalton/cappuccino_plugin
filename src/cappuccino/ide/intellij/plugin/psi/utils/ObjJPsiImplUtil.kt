@@ -20,6 +20,7 @@ import cappuccino.ide.intellij.plugin.structure.ObjJCodeFoldingBuilder
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionScope
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderStub
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
 import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.types.toQualifiedNamePaths
@@ -342,7 +343,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariableType(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String? {
+    fun getVariableTypeElement(globalVariableDeclaration: ObjJGlobalVariableDeclaration): String? {
         return ObjJVariablePsiUtil.getVariableType(globalVariableDeclaration)
     }
 
@@ -703,7 +704,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getVariableType(variable: ObjJGlobalVariableDeclaration): String? {
+    fun getVariableTypeString(variable: ObjJGlobalVariableDeclaration): String? {
         return ObjJClassType.UNDETERMINED
     }
 
@@ -712,10 +713,6 @@ object ObjJPsiImplUtil {
         return ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(namedElement)
     }
 
-    @JvmStatic
-    fun getIndexInQualifiedReference(namedElement: ObjJQualifiedReferenceComponent): Int {
-        return ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(namedElement)
-    }
 
     @JvmStatic
     fun getIndexInQualifiedReference(enclosedExpression: ObjJParenEnclosedExpr): Int {
@@ -1008,8 +1005,8 @@ object ObjJPsiImplUtil {
             ?: declaration.toQualifiedNamePaths()
 
     @JvmStatic
-    fun hasVariableKeyword(declaration: ObjJVariableDeclaration): Boolean {
-        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.variableModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.variableModifier != null
+    fun hasVarKeyword(declaration: ObjJVariableDeclaration): Boolean {
+        return (declaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null || (declaration.parent.parent as? ObjJForLoopPartsInBraces)?.varModifier != null
     }
 
     // ============================== //
@@ -1152,6 +1149,16 @@ object ObjJPsiImplUtil {
     @JvmStatic
     fun getConditionalExpression(composite: ObjJConditionalStatement): ObjJExpr? {
         return composite.getChildOfType(ObjJConditionExpression::class.java)?.expr
+    }
+
+    @JvmStatic
+    fun getQualifiedNameParts(expr: ObjJExpr) : List<ObjJQualifiedReferenceComponent> {
+        return ObjJQualifiedReferenceUtil.getQualifiedNameParts(expr)
+    }
+
+    @JvmStatic
+    fun getQualifiedNamePath(expr: ObjJExpr) : List<ObjJQualifiedReferenceComponentPart> {
+        return expr.toStubParts()
     }
 
     // ============================== //

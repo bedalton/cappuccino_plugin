@@ -81,20 +81,20 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_NULL_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_UNDEFINED) {
             attrKey = KEYWORD
-        } else if (tokenType == ObjJTypes.ObjJ_VAR_TYPE_BOOL ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_DOUBLE ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_FLOAT ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_IBACTION ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_IBOUTLET ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_CHAR ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SHORT ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_BYTE ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_UNSIGNED ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SIGNED ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SEL ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_INT ||
+        } else if (tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_BOOL ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_DOUBLE ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_FLOAT ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_IBACTION ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_IBOUTLET ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_CHAR ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SHORT ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_BYTE ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_UNSIGNED ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SIGNED ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SEL ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_LONG ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_LONG_LONG ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_INT ||
                 tokenType == ObjJTypes.ObjJ_VOID) {
             attrKey = VARIABLE_TYPE
         } else if (tokenType == ObjJTypes.ObjJ_PP_DEFINE ||

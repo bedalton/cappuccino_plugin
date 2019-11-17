@@ -82,7 +82,7 @@ private fun getVariableNamesInFile(file: ObjJFile, project:Project) : List<Abstr
     val bodyVariableAssignments = file.getChildrenOfType(ObjJBodyVariableAssignment::class.java)
     val fileScopeVariables = ArrayList<ObjJVariableName>()
     for (bodyVariableAssignment in bodyVariableAssignments) {
-        if (bodyVariableAssignment.getVariableModifier() == null)
+        if (bodyVariableAssignment.getVarModifier() == null)
             continue
         val declarationList = bodyVariableAssignment.getVariableDeclarationList() ?: continue
         fileScopeVariables.addAll(declarationList.getVariableNameList())

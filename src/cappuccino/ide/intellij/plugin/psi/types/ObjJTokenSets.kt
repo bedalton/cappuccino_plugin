@@ -234,18 +234,18 @@ object ObjJTokenSets {
             ObjJ_PP_WARNING
     )
 
-    val VAR_TYPE_KEYWORDS = create(
-            ObjJ_VAR_TYPE_BOOL,
-            ObjJ_VAR_TYPE_INT,
-            ObjJ_VAR_TYPE_SHORT,
-            ObjJ_VAR_TYPE_LONG,
-            ObjJ_VAR_TYPE_LONG_LONG,
-            ObjJ_VAR_TYPE_UNSIGNED,
-            ObjJ_VAR_TYPE_SIGNED,
-            ObjJ_VAR_TYPE_FLOAT,
-            ObjJ_VAR_TYPE_DOUBLE,
-            ObjJ_VAR_TYPE_BYTE,
-            ObjJ_VAR_TYPE_ID
+    val VARIABLE_TYPE_KEYWORDS = create(
+            ObjJ_VARIABLE_TYPE_BOOL,
+            ObjJ_VARIABLE_TYPE_INT,
+            ObjJ_VARIABLE_TYPE_SHORT,
+            ObjJ_VARIABLE_TYPE_LONG,
+            ObjJ_VARIABLE_TYPE_LONG_LONG,
+            ObjJ_VARIABLE_TYPE_UNSIGNED,
+            ObjJ_VARIABLE_TYPE_SIGNED,
+            ObjJ_VARIABLE_TYPE_FLOAT,
+            ObjJ_VARIABLE_TYPE_DOUBLE,
+            ObjJ_VARIABLE_TYPE_BYTE,
+            ObjJ_VARIABLE_TYPE_ID
     )
 
     val NUMERIC_TYPES = create(

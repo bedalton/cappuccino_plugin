@@ -43,7 +43,7 @@ public interface ObjJHasTreeStructureElement extends ObjJCompositeElement, Navig
             List<ObjJBodyVariableAssignment> bodyVariableAssignments = this.getChildrenOfType(ObjJBodyVariableAssignment.class);
             List<ObjJVariableName> fileScopeVariables = new ArrayList<>();
             for(ObjJBodyVariableAssignment bodyVariableAssignment : bodyVariableAssignments) {
-                if (bodyVariableAssignment.getVariableModifier() == null)
+                if (bodyVariableAssignment.getVarModifier() == null)
                     continue;
                 ObjJVariableDeclarationList declarationList = bodyVariableAssignment.getVariableDeclarationList();
                 if (declarationList == null)

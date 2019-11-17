@@ -10,6 +10,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefVariableDeclara
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
@@ -89,7 +90,7 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
         return InferenceResult(types = setOf(containingClass).toJsTypeList())
 
 
-    if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVariableKeyword().orFalse() || variableName.parent is ObjJGlobalVariableDeclaration) {
+    if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVarKeyword().orFalse() || variableName.parent is ObjJGlobalVariableDeclaration) {
         return internalInferVariableTypeAtIndexZero(variableName, variableName, containingClass, tag, true)
     }
 
@@ -124,6 +125,9 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     // If variable resolved to self,
     // Get assigned expression type if any
     if (referencedVariable == variableName) {
+
+        val docComment = variableName.docComment
+
         val expr = (referencedVariable.parent.parent as? ObjJVariableDeclaration)?.expr
                 ?: (referencedVariable.parent as? ObjJGlobalVariableDeclaration)?.expr
         val result = inferExpressionType(expr, tag)

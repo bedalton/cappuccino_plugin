@@ -43,7 +43,7 @@ class ObjJPossiblyUnintendedGlobalVariableInspectionTool : LocalInspectionTool()
             val parentDeclaration = variableNameIn.parent.parent as? ObjJVariableDeclaration ?: return
             if (variableNameIn.reference.resolve(true) != null)
                 return
-            if ((parentDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.variableModifier != null ||
+            if ((parentDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null ||
                     parentDeclaration.parent.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_VAR_MODIFIER)
                 return
 

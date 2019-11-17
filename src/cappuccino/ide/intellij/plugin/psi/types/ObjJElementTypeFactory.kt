@@ -22,7 +22,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.SELECTOR_LITERAL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.TYPE_DEF
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_DECLARATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_NAME
-import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VAR_TYPE_ID
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.VARIABLE_TYPE_ID
 import com.intellij.psi.tree.IElementType
 
 class ObjJElementTypeFactory {
@@ -50,7 +50,7 @@ class ObjJElementTypeFactory {
                 "ObjJ_QUALIFIED_REFERENCE" -> QUALIFIED_REFERENCE
                 "ObjJ_SELECTOR_LITERAL" -> SELECTOR_LITERAL
                 "ObjJ_TYPE_DEF" -> TYPE_DEF
-                "ObjJ_VAR_TYPE_ID" -> VAR_TYPE_ID
+                "ObjJ_VARIABLE_TYPE_ID" -> VARIABLE_TYPE_ID
                 "ObjJ_VARIABLE_DECLARATION" -> VARIABLE_DECLARATION
                 "ObjJ_VARIABLE_NAME" -> VARIABLE_NAME
                 else -> throw RuntimeException("Failed to find element type in factory for type <$name>")

@@ -297,7 +297,7 @@ object ObjJFunctionDeclarationPsiUtil {
 
         val variableDeclaration = expr.parent as? ObjJVariableDeclaration ?: return ObjJFunctionScope.PRIVATE
         val bodyDeclaration = variableDeclaration.parent?.parent as? ObjJBodyVariableAssignment
-        if (bodyDeclaration?.variableModifier != null) {
+        if (bodyDeclaration?.varModifier != null) {
             return ObjJFunctionScope.FILE_SCOPE
         }
 
@@ -332,7 +332,7 @@ object ObjJFunctionDeclarationPsiUtil {
         }
         val variableDeclaration = functionDeclaration.parent.parent.parent as? ObjJVariableDeclaration ?: return false
         val isBodyVariableAssignmentLocal
-                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.variableModifier != null
+                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
         val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
         if (isBodyVariableAssignmentLocal || isNested)
             return false
@@ -340,8 +340,8 @@ object ObjJFunctionDeclarationPsiUtil {
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
             bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { variableDec ->
                 variableDec.qualifiedReferenceList.any {
-                    if (it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0]?.text == functionName)
-                        bodyVariableAssignment.variableModifier != null
+                    if (it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0].text == functionName)
+                        bodyVariableAssignment.varModifier != null
                     else
                         false
                 }
@@ -352,7 +352,7 @@ object ObjJFunctionDeclarationPsiUtil {
     private fun functionIsEnclosedGlobalStrict(functionDeclaration: ObjJFunctionDeclarationElement<*>) : Boolean {
         val variableDeclaration = functionDeclaration.parent.parent.parent as? ObjJVariableDeclaration ?: return false
         val isBodyVariableAssignmentLocal
-                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.variableModifier != null
+                = (variableDeclaration.parent.parent as? ObjJBodyVariableAssignment)?.varModifier != null
         val isNested = variableDeclaration.qualifiedReferenceList.all { it.qualifiedNameParts.size > 1 }
         if (isBodyVariableAssignmentLocal || isNested)
             return false
@@ -360,12 +360,12 @@ object ObjJFunctionDeclarationPsiUtil {
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
             bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any variableDec@{ variableDec ->
                 variableDec.qualifiedReferenceList.any{
-                    if (it.qualifiedNameParts.size != 1 && it.qualifiedNameParts[0]?.text != functionName)
+                    if (it.qualifiedNameParts.size != 1 && it.qualifiedNameParts[0].text != functionName)
                         return@variableDec false
                     val qualifiedReference = it.qualifiedNameParts[0].reference?.resolve()?.parent as? ObjJQualifiedReference ?: return@variableDec false
                     if (qualifiedReference.hasParentOfType(ObjJExpr::class.java))
                         return false
-                    return qualifiedReference.getParentOfType(ObjJBodyVariableAssignment::class.java)?.variableModifier != null
+                    return qualifiedReference.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null
                 }
             }.orFalse()
         }
