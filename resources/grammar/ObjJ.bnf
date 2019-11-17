@@ -124,21 +124,21 @@
 		PP_INCLUDE = 						'#include'
 
 		//'var' Types
-		//VAR_TYPE_ID = 					'id'
-		VAR_TYPE_BYTE = 					'regexp:((unsigned|signed)[ ]+)?byte'
-		VAR_TYPE_CHAR = 					'regexp:((unsigned|signed)[ ]+)?char'
-		VAR_TYPE_SHORT = 					'regexp:((unsigned|signed)[ ]+)?short'
-		VAR_TYPE_INT = 						'regexp:((unsigned|signed)[ ]+)?int'
-		VAR_TYPE_LONG_LONG = 				'regexp:((unsigned|signed)[ ]+)?long[ ]+long'
-		VAR_TYPE_LONG =						'regexp:((unsigned|signed)[ ]+)?long'
-		VAR_TYPE_SIGNED =					'signed'
-		VAR_TYPE_UNSIGNED = 				'unsigned'
-		VAR_TYPE_IBACTION = 				'IBAction'
-		VAR_TYPE_IBOUTLET = 				'IBOutlet'
-		VAR_TYPE_SEL = 						'SEL'
-		VAR_TYPE_FLOAT= 					'float'
-		VAR_TYPE_DOUBLE= 					'double'
-		VAR_TYPE_BOOL = 					'BOOL'
+		//VARIABLE_TYPE_ID = 					'id'
+		VARIABLE_TYPE_BYTE = 					'regexp:((unsigned|signed)[ ]+)?byte'
+		VARIABLE_TYPE_CHAR = 					'regexp:((unsigned|signed)[ ]+)?char'
+		VARIABLE_TYPE_SHORT = 					'regexp:((unsigned|signed)[ ]+)?short'
+		VARIABLE_TYPE_INT = 						'regexp:((unsigned|signed)[ ]+)?int'
+		VARIABLE_TYPE_LONG_LONG = 				'regexp:((unsigned|signed)[ ]+)?long[ ]+long'
+		VARIABLE_TYPE_LONG =						'regexp:((unsigned|signed)[ ]+)?long'
+		VARIABLE_TYPE_SIGNED =					'signed'
+		VARIABLE_TYPE_UNSIGNED = 				'unsigned'
+		VARIABLE_TYPE_IBACTION = 				'IBAction'
+		VARIABLE_TYPE_IBOUTLET = 				'IBOutlet'
+		VARIABLE_TYPE_SEL = 						'SEL'
+		VARIABLE_TYPE_FLOAT= 					'float'
+		VARIABLE_TYPE_DOUBLE= 					'double'
+		VARIABLE_TYPE_BOOL = 					'BOOL'
 		IMPORT_FRAMEWORK_LITERAL = 			'regexp:<.*/.*>'
 		//Keywords
 		BREAK =                          	'break'
@@ -566,7 +566,7 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= variableModifier variableDeclarationList
+	::= varModifier variableDeclarationList
 	{
 		pin=1
 	}
@@ -597,7 +597,8 @@ globalVariableDeclaration
 		]
 		methods=[
 			getVariableNameString
-			getVariableType
+			getVariableTypeElement
+			getVariableTypeString
 			getFileName
 			createTreeStructureElement
 		]
@@ -617,7 +618,7 @@ variableDeclaration
 		methods=[
 			assignedValue="/expr"
 			getQualifiedNamePaths
-			hasVariableKeyword
+			hasVarKeyword
 		]
 		//recoverWhile=variableDeclaration_recover
 	}
@@ -868,7 +869,7 @@ private compoundForLoopHeader
 	;
 
 
-variableModifier
+varModifier
 	::= 'var'
     | 	'let'
     | 	'const'
@@ -1813,11 +1814,14 @@ expr
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
 		]
 		methods = [
 			getBlock
 			shouldResolve
 			getBlockList
+			getQualifiedNameParts
+			getQualifiedNamePath
 		]
 		//recoverWhile=recover_statement
 	}
@@ -1940,7 +1944,7 @@ typeOfExprPrime
 	;
 
 inExpr
-	::= variableModifier? variableName 'in' expr
+	::= varModifier? variableName 'in' expr
 	{
 		pin=3
 	}
@@ -2027,20 +2031,20 @@ nullLiterals
 
 formalVariableType
 	::= variableTypeId
-	| 	VAR_TYPE_CHAR
-	| 	VAR_TYPE_BYTE
-	| 	VAR_TYPE_SHORT
-	| 	VAR_TYPE_INT
-	| 	VAR_TYPE_LONG_LONG
-	| 	VAR_TYPE_LONG
-	| 	VAR_TYPE_FLOAT
-	| 	VAR_TYPE_DOUBLE
-	| 	VAR_TYPE_IBOUTLET
-	| 	VAR_TYPE_IBACTION
-	| 	VAR_TYPE_BOOL
-	| 	VAR_TYPE_SEL
-	| 	VAR_TYPE_UNSIGNED
-	| 	VAR_TYPE_SIGNED
+	| 	VARIABLE_TYPE_CHAR
+	| 	VARIABLE_TYPE_BYTE
+	| 	VARIABLE_TYPE_SHORT
+	| 	VARIABLE_TYPE_INT
+	| 	VARIABLE_TYPE_LONG_LONG
+	| 	VARIABLE_TYPE_LONG
+	| 	VARIABLE_TYPE_FLOAT
+	| 	VARIABLE_TYPE_DOUBLE
+	| 	VARIABLE_TYPE_IBOUTLET
+	| 	VARIABLE_TYPE_IBACTION
+	| 	VARIABLE_TYPE_BOOL
+	| 	VARIABLE_TYPE_SEL
+	| 	VARIABLE_TYPE_UNSIGNED
+	| 	VARIABLE_TYPE_SIGNED
 	| 	<<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
 	| 	className classNameGeneric?
 	{
@@ -2218,6 +2222,7 @@ qualifiedReference
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceStub"
 		implements= [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
 		]
 		methods = [
 			primaryVar ="/variableName[0]"
@@ -2326,27 +2331,27 @@ className
 variableName
 	::= ID
 	|	'this'
-	| 	VAR_TYPE_CHAR
-	| 	VAR_TYPE_BYTE
-	| 	VAR_TYPE_SHORT
-	| 	VAR_TYPE_INT
-	| 	VAR_TYPE_LONG
-	| 	VAR_TYPE_FLOAT
-	| 	VAR_TYPE_DOUBLE
-	| 	VAR_TYPE_IBOUTLET
-	| 	VAR_TYPE_IBACTION
-	| 	VAR_TYPE_BOOL
-	| 	VAR_TYPE_SEL
-	| 	VAR_TYPE_UNSIGNED
-	| 	VAR_TYPE_SIGNED
+	| 	VARIABLE_TYPE_CHAR
+	| 	VARIABLE_TYPE_BYTE
+	| 	VARIABLE_TYPE_SHORT
+	| 	VARIABLE_TYPE_INT
+	| 	VARIABLE_TYPE_LONG
+	| 	VARIABLE_TYPE_FLOAT
+	| 	VARIABLE_TYPE_DOUBLE
+	| 	VARIABLE_TYPE_IBOUTLET
+	| 	VARIABLE_TYPE_IBACTION
+	| 	VARIABLE_TYPE_BOOL
+	| 	VARIABLE_TYPE_SEL
+	| 	VARIABLE_TYPE_UNSIGNED
+	| 	VARIABLE_TYPE_SIGNED
 	{
 
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableNameElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
