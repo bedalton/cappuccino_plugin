@@ -37,6 +37,7 @@ comment
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub"
 		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"com.intellij.psi.PsiElement"
 			"com.intellij.psi.PsiComment"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub>"
@@ -69,6 +70,7 @@ tagLine
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub"
 		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub>"
 		]
 		pin = 2;
@@ -104,24 +106,55 @@ typesList
 
 qualifiedName
 	::= (qualifiedNameComponent '.')* qualifiedNameComponent
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
+		]
+		methods = [
+			getQualifiedNameParts
+			getQualifiedNamePath
+		]
+	}
 	;
 
 qualifiedNameComponent
 	::= ID
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+		methods = [
+			getName
+			setName
+			getIndexInQualifiedReference
+		]
+	}
 	;
 
 textLine
-	::= !(TAG_NAME) TEXT_BODY
+	::= !(TAG_NAME) (TEXT_BODY|ID)+
 	;
 
 parameterName
 	::= ID
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+		methods = [
+			getName
+			setName
+			getIndexInQualifiedReference
+		]
+	}
 	;
 
 private endOfLine
 	::= LINE_TERMINATOR | <<eof>>
 	;
 
-private endOfComment
-	::= END
-	;

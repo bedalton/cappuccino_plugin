@@ -7,7 +7,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.lexer.FlexLexer;
 import java.util.List;
 
-import java.util.Arrays;import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.*;
+import java.util.Arrays;import java.util.logging.Logger;import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.*;
 
 %%
 
@@ -15,56 +15,58 @@ import java.util.Arrays;import static cappuccino.ide.intellij.plugin.comments.le
 
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
 
-	public _ObjJDocCommentLexer() {
-		this((java.io.Reader)null);
-	}
-	public boolean prevCharIs(char c) {
-		if (zzMarkedPos < 2)
-		  	return false;
-		int zzMarkedPos = zzCurrentPos - 1;
-		while(zzMarkedPos != 0 && Character.isWhitespace(zzBuffer.charAt(zzMarkedPos))) {
-		  	zzMarkedPos -= 1;
+		public _ObjJDocCommentLexer() {
+			this((java.io.Reader)null);
 		}
-		return zzBuffer.charAt(zzMarkedPos) == c;
-	}
-
-	public boolean prevElementIsTag() {
-		char it = zzBuffer.charAt(zzMarkedPos);
-		boolean isDollar = false;
-		while(zzMarkedPos != 0 && Character.isWhitespace(it) || ID_VALID_CHARS.contains(it)) {
-			if (isDollar && it != '@')
-				return false;
-			if (it == '$') {
-				isDollar = true;
-			} else if (it == '@') {
-				return true;
-			} else {
-				isDollar = false;
+		public boolean prevCharIs(char c) {
+			if (zzMarkedPos == 0)
+				  return false;
+			int zzMarkedPos = zzCurrentPos;
+			while(zzMarkedPos != 0 && Character.isWhitespace(zzBuffer.charAt(zzMarkedPos))) {
+				  zzMarkedPos -= 1;
+				  Logger.getLogger("_ObjJDocCommentLexer").info("IsAt: " + zzBuffer.charAt(zzMarkedPos));
 			}
-			zzMarkedPos -= 1;
-			it = zzBuffer.charAt(zzMarkedPos);
+			Logger.getLogger("_ObjJDocCommentLexer").info("EndsAt: " + zzBuffer.charAt(zzMarkedPos));
+			return zzBuffer.charAt(zzMarkedPos) == c;
 		}
-		return false;
-	}
 
-	public boolean prevCharIsDot() {
-		return prevCharIs('.');
-	}
-	public boolean prevCharIsPipe() {
-		return prevCharIs('|');
-	}
+		public boolean prevElementIsTag() {
+			char it = zzBuffer.charAt(zzMarkedPos);
+			boolean isDollar = false;
+			while(zzMarkedPos != 0 && Character.isWhitespace(it) || ID_VALID_CHARS.contains(it)) {
+				if (isDollar && it != '@')
+					return false;
+				if (it == '$') {
+					isDollar = true;
+				} else if (it == '@') {
+					return true;
+				} else {
+					isDollar = false;
+				}
+				zzMarkedPos -= 1;
+				it = zzBuffer.charAt(zzMarkedPos);
+			}
+			return false;
+		}
 
-	public boolean prevCharIsPipeOrDot() {
-		return prevCharIsPipe() || prevCharIsDot();
-	}
+		public boolean prevCharIsDot() {
+			return prevCharIs('.');
+		}
+		public boolean prevCharIsPipe() {
+			return prevCharIs('|');
+		}
 
-	private boolean yytextContainLineBreaks() {
-		return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
-	}
+		public boolean prevCharIsPipeOrDot() {
+			return prevCharIsPipe() || prevCharIsDot();
+		}
 
-	private boolean isLastToken() {
-		return zzMarkedPos == zzBuffer.length();
-	}
+		private boolean yytextContainLineBreaks() {
+			return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
+		}
+
+		private boolean isLastToken() {
+			return zzMarkedPos == zzBuffer.length();
+		}
 %}
 
 %public
@@ -119,8 +121,6 @@ BLOCK_END=[*][/]
 
 <TAG_BEGINNING> {
     {IDENTIFIER} {
-		if (!prevCharIsPipeOrDot() || !prevElementIsTag())
-		    yybegin(CONTENTS);
 		return ObjJDocComment_ID;
 	}
 
@@ -128,7 +128,7 @@ BLOCK_END=[*][/]
 
     "|"|","	{ return ObjJDocComment_TAG_VALUE_DELIMITER; }
 
-	[^@ \n.] {
+	[^@\s.|,] {
 		yybegin(CONTENTS);
   	}
 }
