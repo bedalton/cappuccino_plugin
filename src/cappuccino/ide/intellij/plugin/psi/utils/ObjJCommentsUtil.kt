@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.contributor.ObjJCommentCompletionProvider
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.primitiveTypes
@@ -38,6 +39,12 @@ fun PsiElement.getContainingComments(): List<String> {
 
 val PsiElement.docComment: CommentWrapper?
     get() {
+        val containingComments = getContainingComments()
+        val tagLines = containingComments
+                .filterIsInstance(ObjJDocCommentParsableBlock::class.java)
+                .flatMap {
+                    it.comment?.tagLineList.orEmpty()
+                }
         val commentText = getContainingComments().joinToString("\n").trim()
                 .removePrefix("/*!")
                 .removePrefix("/*")
@@ -47,7 +54,7 @@ val PsiElement.docComment: CommentWrapper?
                 .trim()
         if (commentText.isBlank())
             return null
-        return CommentWrapper(commentText)
+        return CommentWrapper(commentText, tagLines)
     }
 
 private val newLineRegex = "\n".toRegex()
@@ -57,7 +64,7 @@ private val newLineRegex = "\n".toRegex()
  * Wrapper class for organizing and parsing doc comments
  */
 @Suppress("MemberVisibilityCanBePrivate")
-data class CommentWrapper(val commentText: String) {
+data class CommentWrapper(val commentText: String, val tagLines:ObjJTagLines) {
     private val lines: List<String> by lazy {
         commentText.split(newLineRegex)
                 .map {

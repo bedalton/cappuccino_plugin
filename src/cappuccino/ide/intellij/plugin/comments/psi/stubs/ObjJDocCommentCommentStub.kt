@@ -12,11 +12,16 @@ val ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE = ObjJDocCommentCommentStubType("ObjJDocC
 
 interface ObjJDocCommentCommentStub : StubElement<ObjJDocCommentCommentImpl> {
     val parameters:List<ObjJDocCommentParameterStruct>
+    val tagLines:List<ObjJDocCommentParameterStruct>
     val returnType:InferenceResult?
 }
 
-class ObjJDocCommentCommentStubImpl(parent:StubElement<*>, override val returnType:InferenceResult?, override val parameters:List<ObjJDocCommentParameterStruct>)
-    : StubBase<ObjJDocCommentCommentImpl>(parent, ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE), ObjJDocCommentCommentStub
+class ObjJDocCommentCommentStubImpl(parent:StubElement<*>, override val returnType:InferenceResult?, override val tagLines:List<ObjJDocCommentParameterStruct>)
+    : StubBase<ObjJDocCommentCommentImpl>(parent, ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE), ObjJDocCommentCommentStub {
+    override val parameters:List<ObjJDocCommentParameterStruct> by lazy {
+        tagLines.filter { it.tag }
+    }
+}
 
 
 class ObjJDocCommentCommentStubType(debugName:String): IStubElementType<ObjJDocCommentCommentStub, ObjJDocCommentCommentImpl>(debugName, ObjJLanguage.instance) {
