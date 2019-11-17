@@ -10,11 +10,9 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
-import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
-import cappuccino.ide.intellij.plugin.psi.ObjJReturnStatement
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
@@ -217,3 +215,13 @@ internal val PsiElement.parentFunctionDeclarationNoCache: ObjJUniversalFunctionE
                         null
                 }
     }
+
+val ObjJFunctionNameElement.getDirectParentFunctionElement: ObjJFunctionDeclarationElement<*>? get() {
+    val parent: ObjJFunctionDeclarationElement<*>? = this.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+    if (parent != null) {
+        return parent;
+    }
+    val expr = this.getParentOfType(ObjJExpr::class.java)?.leftExpr
+            ?: return null
+    return expr.functionDeclaration ?: expr.functionLiteral
+}

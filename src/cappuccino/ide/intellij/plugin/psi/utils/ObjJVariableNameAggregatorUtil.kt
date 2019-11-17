@@ -293,7 +293,7 @@ object ObjJVariableNameAggregatorUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java).filter {
-            it.variableModifier != null
+            it.varModifier != null
         }
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
         result.addAll(getAllFileScopeGlobalVariables(file))
@@ -505,7 +505,7 @@ object ObjJVariableNameAggregatorUtil {
     }
 
 
-    fun getFormalVariableInstanceVariables(variableName: ObjJVariableName) : List<ObjJVariableName>? {
+    fun getFormalVariableInstanceVariables(variableName: ObjJQualifiedReferenceComponent) : List<ObjJVariableName>? {
         val index = variableName.indexInQualifiedReference
         if (index < 1) {
             return null
@@ -519,10 +519,10 @@ object ObjJVariableNameAggregatorUtil {
 
         val variableType:String = when (baseVariableName.text) {
             "self" -> {
-                variableName.containingClassName
+                (variableName as? ObjJHasContainingClass)?.containingClassName
             }
             "super" -> {
-                variableName.getContainingSuperClass()?.text
+                (variableName as? ObjJHasContainingClass)?.getContainingSuperClass()?.text
             }
             else -> {
                 val resolvedSibling = baseVariableName.reference.resolve() ?: return null

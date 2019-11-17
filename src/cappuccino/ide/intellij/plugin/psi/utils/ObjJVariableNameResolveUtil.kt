@@ -2,7 +2,9 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import java.util.logging.Logger
@@ -13,7 +15,7 @@ object ObjJVariableNameResolveUtil {
         Logger.getLogger(ObjJVariableNameResolveUtil::class.java.canonicalName)
     }
 
-    fun getVariableDeclarationElement(variableNameElement: ObjJVariableName): PsiElement? {
+    fun getVariableDeclarationElement(variableNameElement: ObjJQualifiedReferenceComponent): PsiElement? {
         val variableNameString = variableNameElement.text
 
         if (variableNameString == "class") {
@@ -35,7 +37,7 @@ object ObjJVariableNameResolveUtil {
         if (variableNameElement.parent is ObjJPropertyAssignment) {
             return variableNameElement
         }
-        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.variableModifier != null &&
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
                 variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement
@@ -72,7 +74,7 @@ object ObjJVariableNameResolveUtil {
             return variableNameElement
         }
 
-        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.variableModifier != null &&
+        if (variableNameElement.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null &&
                 variableNameElement.getParentOfType(ObjJExpr::class.java) == null
         ) {
             return variableNameElement
@@ -96,14 +98,14 @@ object ObjJVariableNameResolveUtil {
     }
 
 
-    private fun getClassNameIfVariableNameIsStaticReference(variableNameElement: ObjJVariableName): ObjJClassName? {
+    private fun getClassNameIfVariableNameIsStaticReference(variableNameElement: ObjJQualifiedReferenceComponent): ObjJClassName? {
 
         val variableNameText = variableNameElement.text
         var classNameElement: ObjJClassName? = null
         if (variableNameText == "self") {
             classNameElement = ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
         }
-        if (variableNameText == "super") {
+        if (variableNameText == "super" && variableNameElement is ObjJHasContainingClass) {
             classNameElement = getContainingSuperClass(variableNameElement, true)
                     ?: ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
         }
@@ -157,7 +159,7 @@ object ObjJVariableNameResolveUtil {
 
 
 
-    private fun isPrecedingVar(baseVar: ObjJVariableName, possibleFirstDeclaration: ObjJVariableName): Boolean {
+    private fun isPrecedingVar(baseVar: ObjJQualifiedReferenceComponent, possibleFirstDeclaration: ObjJVariableName): Boolean {
         // Variable is a proceeding variable if it is not in same file(globals),
         // Or if it is declared before other in same file.
         return baseVar.text == possibleFirstDeclaration.text && (!baseVar.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) && baseVar.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference

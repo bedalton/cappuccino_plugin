@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -39,7 +40,7 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
 private val RESOLVE_CACHE_KEY = Key<SmartPsiElementPointer<PsiElement>>("objj.resolve.CACHE_KEY")
 private val LAST_CACHE_TIME = Key<Long>("objj.resolve.LAST_CACHE_TIME_KEY")
 
-internal fun ObjJCompositeElement.resolveFromCache(onNull:((PsiElement)->PsiElement?)?) : PsiElement? {
+internal fun ObjJUniversalPsiElement.resolveFromCache(onNull:((PsiElement)->PsiElement?)?) : PsiElement? {
     addStatusFileChangeListener(project)
     val now = Date().time
     val timeSinceCache = now - getUserData(LAST_CACHE_TIME).orElse(0)

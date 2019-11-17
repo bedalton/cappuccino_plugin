@@ -1,5 +1,10 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedName
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagNameElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
@@ -171,12 +176,50 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.parent is ObjJObjectLiteral && prevSibling?.text != ":" -> {
                 resultSet.stopHere()
             }
+            element.isOrHasParentOfType(ObjJDocCommentQualifiedNameComponent::class.java) -> {
+                addDocCommentCompletions(element, prevSibling, resultSet)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentParameterName::class.java) -> {
+                addVariableNameCompletionElements(resultSet, element)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentTagNameElement::class.java) -> {
+                addDocCommentTagCompletions(resultSet)
+            }
+
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER -> {
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
         }
         resultSet.stopHere()
+    }
+
+    private fun addDocCommentCompletions(elementIn: PsiElement, prevSibling: PsiElement?, resultSet: CompletionResultSet) {
+        val element = elementIn.getSelfOrParentOfType(ObjJDocCommentQualifiedNameComponent::class.java)
+                ?: return
+        if (prevSibling?.text != "|" && prevSibling?.text != ".")
+            addVariableNameCompletionElements(resultSet, element)
+        getClassNameCompletions(resultSet, element)
+        addJsQualifiedTypeName(element, resultSet);
+    }
+
+
+    private fun addJsQualifiedTypeName(element:ObjJQualifiedReferenceComponent, resultSet: CompletionResultSet) {
+        val searchKey = Regex.escape(element.previousSiblings.joinToString(".") { it.text }.let{ if (it.isNotEmpty()) "$it." else it}+element.textWithoutCaret) + ".+"
+        val keys = JsTypeDefClassesByNamespaceIndex.instance.getByPattern(searchKey, element.project).map { it.key }
+        addCompletionElementsSimple(resultSet, keys)
+    }
+
+    private fun addDocCommentTagCompletions(resultSet: CompletionResultSet) {
+        ObjJDocCommentKnownTag.values().map { it.name.toLowerCase() }
+                .sorted()
+                .forEach {
+                    val lookupElement = LookupElementBuilder.create(it)
+                            .withPresentableText("@$it")
+                    resultSet.addElement(lookupElement)
+                }
     }
 
     /**
@@ -285,7 +328,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val results: List<ObjJVariableName> = if (variableName != null) {
             ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName)
         } else {
-            emptyList()
+            ObjJVariableNameCompletionContributorUtil.getAllVariableNameElementsByName(element)
         }
         //val selectorTargets = getSelectorTargets(element)
         addVariableNameCompletionElementsWithPriority(resultSet, results)
