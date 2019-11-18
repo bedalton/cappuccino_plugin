@@ -2,8 +2,10 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.*
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefVariableDeclarationsByNamespaceIndex
@@ -39,7 +41,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     }
     val project = variableName.project
     val variableNameString = variableName.text
-    val basicTypes:Set<JsTypeListType> = getAllPropertyTypesWithNameInParentTypes(variableNameString, parentTypes, static, project)
+    val basicTypes: Set<JsTypeListType> = getAllPropertyTypesWithNameInParentTypes(variableNameString, parentTypes, static, project)
 
     // If static, stop here
     if (static) {
@@ -126,8 +128,11 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     // Get assigned expression type if any
     if (referencedVariable == variableName) {
 
-        val docComment = variableName.docComment
-
+        val docCommentTypes = variableName.docComment
+                ?.getParameterComment(variableNameString)
+                ?.types
+        if (docCommentTypes != null && docCommentTypes.types.isNotEmpty())
+            return docCommentTypes
         val expr = (referencedVariable.parent.parent as? ObjJVariableDeclaration)?.expr
                 ?: (referencedVariable.parent as? ObjJGlobalVariableDeclaration)?.expr
         val result = inferExpressionType(expr, tag)
@@ -136,7 +141,7 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
     }
 
     // Resolved variable is not self referencing, so resolve it
-    val referencedVariableInferenceResult = inferReferencedElementTypeAtIndexZero(variableName, referencedVariable, tag);
+    val referencedVariableInferenceResult = inferReferencedElementTypeAtIndexZero(variableName, referencedVariable, tag)
     if (referencedVariableInferenceResult != null)
         return referencedVariableInferenceResult
 
@@ -166,17 +171,15 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
  */
 private fun inferReferencedElementTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, tag: Long): InferenceResult? {
     // If reference resolved to a variable name (as opposed to function)
-    return if (referencedVariable is ObjJVariableName) {
-        inferReferencedVariableNameAtIndexZero(variableName, referencedVariable, tag)
-    } else if (referencedVariable is JsTypeDefPropertyName) {
-        (referencedVariable.parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types
-    } else if (referencedVariable is JsTypeDefFunctionName) {
-        val result = (referencedVariable.parent as? JsTypeDefFunction)?.toJsFunctionType()
-        result?.let { InferenceResult(types = setOf(result)) }
-    } else if (referencedVariable is JsTypeDefTypeName) {
-        InferenceResult(types = setOf(referencedVariable.text).toJsTypeList())
-    } else {
-        inferIfIsReferenceToFunctionDeclaration(referencedVariable, tag)
+    return when (referencedVariable) {
+        is ObjJVariableName -> inferReferencedVariableNameAtIndexZero(variableName, referencedVariable, tag)
+        is JsTypeDefPropertyName -> (referencedVariable.parent as? JsTypeDefProperty)?.toJsNamedProperty()?.types
+        is JsTypeDefFunctionName -> {
+            val result = (referencedVariable.parent as? JsTypeDefFunction)?.toJsFunctionType()
+            result?.let { InferenceResult(types = setOf(result)) }
+        }
+        is JsTypeDefTypeName -> InferenceResult(types = setOf(referencedVariable.text).toJsTypeList())
+        else -> inferIfIsReferenceToFunctionDeclaration(referencedVariable, tag)
     }
 }
 

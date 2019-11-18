@@ -1,13 +1,14 @@
 package cappuccino.ide.intellij.plugin.comments.parser
 
 import cappuccino.ide.intellij.plugin.comments.psi.api.*
-import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentParameterStruct
+import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStruct
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil
+import cappuccino.ide.intellij.plugin.references.ObjJDocCommentNameElementReference
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import com.intellij.psi.PsiElement
@@ -57,22 +58,33 @@ object ObjJDocCommentParserUtil {
     }
 
     @JvmStatic
-    fun getParametersAsStructs(comment: ObjJDocCommentComment): List<ObjJDocCommentParameterStruct> {
-        return comment.stub?.parameters ?: getParameterTags(comment)
+    fun getReference(namedElement:ObjJQualifiedReferenceComponent) : ObjJDocCommentNameElementReference {
+        return ObjJDocCommentNameElementReference(namedElement)
+    }
+
+    @JvmStatic
+    fun getTagLinesAsStructs(comment: ObjJDocCommentComment): List<ObjJDocCommentTagLineStruct> {
+        return comment.stub?.tagLines ?: comment.tagLineList
                 .mapNotNull {
                     val parameterName = it.parameterName
                             ?: return@mapNotNull null
-                    ObjJDocCommentParameterStruct(parameterName, it.types)
+                    val text = it.textLine?.text.orEmpty()
+                    ObjJDocCommentTagLineStruct(it.tag ?: ObjJDocCommentKnownTag.UNKNOWN, parameterName, it.types, text)
                 }
     }
+
     @JvmStatic
-    fun getTagLinesAsStructs(comment: ObjJDocCommentComment): List<ObjJDocCommentParameterStruct> {
-        return comment.stub?.tagLines ?: getParameterTags(comment)
-                .mapNotNull {
-                    val parameterName = it.parameterName
-                            ?: return@mapNotNull null
-                    ObjJDocCommentParameterStruct(parameterName, it.types)
-                }
+    fun getParametersAsStructs(comment: ObjJDocCommentComment): List<ObjJDocCommentTagLineStruct> {
+        return comment.stub?.parameters ?: getTagLinesAsStructs(comment).filter {
+            it.tag == ObjJDocCommentKnownTag.PARAM
+        }
+    }
+
+    @JvmStatic
+    fun getReturnTagAsStruct(comment: ObjJDocCommentComment) : ObjJDocCommentTagLineStruct? {
+        return getTagLinesAsStructs(comment).firstOrNull{
+            it.tag == ObjJDocCommentKnownTag.RETURN
+        }
     }
 
     @JvmStatic
@@ -135,5 +147,10 @@ object ObjJDocCommentParserUtil {
     @JvmStatic
     fun getCommentText(tagLine:ObjJDocCommentTagLine) : String? {
         return tagLine.stub?.commentText ?: tagLine.textLine?.text
+    }
+
+    @JvmStatic
+    fun getTextLinesAsStrings(comment:ObjJDocCommentComment) : List<String> {
+        return comment.stub?.textLines ?: comment.textLineList.mapNotNull { it.text }
     }
 }

@@ -425,9 +425,13 @@ object ObjJFunctionDeclarationPsiUtil {
             }
         }
         val index = parameterArg.getParentOfType(ObjJFunctionDeclarationElement::class.java)?.formalParameterArgList?.indexOf(parameterArg) ?: -1
-        val parameterComments = parameterArg.docComment?.parameterComments ?: return null
-        val parameter = parameterComments.firstOrNull { it.parameterName == parameterArg.variableName?.text } ?: parameterComments.getOrNull(index)
-        return parameter?.getTypes(parameterArg.project, null)?.joinToString("|")
+        val docComment = parameterArg.docComment
+                ?: return null
+        val variableName = parameterArg.variableName?.text
+                ?: return null
+        val parameter = docComment.getParameterComment(variableName) ?: docComment.getParameterComment(index)
+            ?: return null
+        return parameter.types?.withoutAnyType()?.joinToString("|")
     }
 
     fun getParentFunctionDeclaration(element:PsiElement?) : ObjJUniversalFunctionElement? {

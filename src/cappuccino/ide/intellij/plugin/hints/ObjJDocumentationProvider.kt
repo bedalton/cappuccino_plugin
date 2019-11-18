@@ -27,7 +27,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     }
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
+        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
                     it.quickInfo(comment)
@@ -62,8 +62,9 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
-                    if (parameterComment?.parameterCommentFormatted != null) {
-                        out.append(" - ").append(parameterComment.parameterCommentFormatted)
+                    val commentText = parameterComment?.text?.replace("""\s*\\c\s*""".toRegex(), " ")
+                    if (commentText.isNotNullOrBlank()) {
+                        out.append(" - ").append(commentText)
                     }
                     out.append("[in").append(containingClassName).append("]")
                     out.toString()
@@ -126,7 +127,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         //val doc = StringBuilder()
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
+        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         ////LOGGER.warning(.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
@@ -191,7 +192,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         if (type != null)
             out.append("(").append(type).append(")")
         out.append(text)
-        val parameterComment = comment?.getParameterComment(text)?.parameterCommentClean
+        val parameterComment = comment?.getParameterComment(text)?.text?.replace("""\s*\\c\s*""".toRegex(), " ")
         if (parameterComment.isNotNullOrBlank()) {
             out.append(" - ").append(parameterComment)
         }
@@ -266,7 +267,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? =
     val resolvedSelectors: List<ObjJMethodDeclarationSelector> = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
-    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.parameterCommentClean }.joinToString("|")
+    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.text?.replace("""\s*\\c\s*""".toRegex(), " ") }.joinToString("|")
     out.append(selector?.text ?: "_").append(":")
     out.append("(").append(resolvedTypes.joinToString("|")).append(")")
     if (resolvedVariableNames.size > 1) {

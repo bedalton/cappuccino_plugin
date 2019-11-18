@@ -8,14 +8,11 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamesp
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toTypeListType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
@@ -131,9 +128,9 @@ private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : Inferenc
 }
 
 fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Long): InferenceResult? {
-    val commentReturnTypes = function.docComment?.getReturnTypes(function.project)
-    if (commentReturnTypes.isNotNullOrEmpty())
-        return InferenceResult(types = commentReturnTypes!!.toJsTypeList())
+    val commentReturnTypes = function.docComment?.getReturnTypes()
+    if (commentReturnTypes != null)
+        return commentReturnTypes
     if (function is JsTypeDefFunction) {
         val types = function.getReturnTypes(tag)?.types.orEmpty()
         if (types.isEmpty())
@@ -167,13 +164,12 @@ fun ObjJFunctionDeclarationElement<*>.parameterTypes(): List<JsTypeDefFunctionAr
     for ((i, parameter) in parameters.withIndex()) {
         //ProgressManager.checkCanceled()
         val parameterName = parameter.variableName?.text ?: "$i"
-        val comment = commentWrapper?.parameterComments?.firstOrNull{ it.parameterName == parameterName } ?: commentWrapper?.parameterComments
-                ?.getOrNull(i)
+        val comment = commentWrapper?.getParameterComment(parameterName)
+                ?: commentWrapper?.getParameterComment(i)
         if (comment != null) {
-            val types = comment.getTypes(project)
             val property = JsTypeDefFunctionArgument(
                     name = parameterName,
-                    types = InferenceResult(types = types?.toJsTypeList().orEmpty())
+                    types = comment.types ?: INFERRED_ANY_TYPE
             )
             out.add(property)
         } else {

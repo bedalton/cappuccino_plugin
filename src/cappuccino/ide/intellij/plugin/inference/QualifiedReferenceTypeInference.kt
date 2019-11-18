@@ -2,24 +2,15 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.getClassDefinition
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClasses
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
-import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
@@ -81,15 +72,15 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
 
 private fun simpleVariableInference(variableName: ObjJVariableName) : InferenceResult? {
-    val variableDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
-    if (variableDefTypeSimple.isNotNullOrBlank() && variableDefTypeSimple !in anyTypes) {
-        return InferenceResult(
-                types = setOf(variableDefTypeSimple!!).toJsTypeList()
-        )
-    }
-    if (variableName.parent is ObjJCatchProduction)
-        return setOf("Error").toInferenceResult()
-    return null
+    val variableNameString = variableName.text
+    val variableDefTypeSimple = variableName.docComment
+            ?.getParameterComment(variableNameString)
+            ?.types
+            ?: return null
+    return if (variableDefTypeSimple.types.isNotEmpty())
+        variableDefTypeSimple
+    else
+        null
 }
 
 internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
@@ -155,4 +146,4 @@ fun ObjJVariableName.getAssignmentExprOrNull(): ObjJExpr? {
             ?: (this.parent.parent as? ObjJVariableDeclaration)?.expr
 }
 
-private val STRING_TYPE_INFERENCE_RESULT = InferenceResult(types = setOf("String").toJsTypeList());
+private val STRING_TYPE_INFERENCE_RESULT = InferenceResult(types = setOf("String").toJsTypeList())

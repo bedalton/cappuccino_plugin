@@ -156,7 +156,7 @@ object ObjJMethodPsiUtils {
         return methodHeader.getCachedInferredTypes(tag) {
             if (methodHeader.tagged(tag))
                 return@getCachedInferredTypes null
-            val commentReturnTypes = methodHeader.docComment?.getReturnTypes(methodHeader.project).orEmpty().withoutAnyType()
+            val commentReturnTypes = methodHeader.docComment?.getReturnTypes()?.withoutAnyType().orEmpty()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
             }

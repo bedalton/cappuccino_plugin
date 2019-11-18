@@ -1,18 +1,15 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
+import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
 import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
-import cappuccino.ide.intellij.plugin.contributor.ObjJCommentCompletionProvider
-import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
-import cappuccino.ide.intellij.plugin.inference.primitiveTypes
-import cappuccino.ide.intellij.plugin.inference.withoutAnyType
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStruct
+import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
-import cappuccino.ide.intellij.plugin.utils.trimFromBeginning
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import kotlinx.coroutines.awaitAll
 
 fun PsiElement.getContainingComments(): List<String> {
     val out: MutableList<String> = mutableListOf()
@@ -40,68 +37,42 @@ fun PsiElement.getContainingComments(): List<String> {
 val PsiElement.docComment: CommentWrapper?
     get() {
         val containingComments = getContainingComments()
-        val tagLines = containingComments
                 .filterIsInstance(ObjJDocCommentParsableBlock::class.java)
-                .flatMap {
-                    it.comment?.tagLineList.orEmpty()
+        val tagLines = containingComments.flatMap {
+                    it.comment?.tagLinesAsStructs.orEmpty()
                 }
-        val commentText = getContainingComments().joinToString("\n").trim()
-                .removePrefix("/*!")
-                .removePrefix("/*")
-                .removeSuffix("*/")
-                .removePrefix("//")
-                .removePrefix(" ")
-                .trim()
-        if (commentText.isBlank())
+        val commentText = containingComments.flatMap {
+            it.textLines
+        }.joinToString("\n")
+        val returnType = containingComments.mapNotNull{
+            it.returnType
+        }.combine()
+        if (commentText.isBlank() && tagLines.isEmpty())
             return null
-        return CommentWrapper(commentText, tagLines)
+        return CommentWrapper(commentText, tagLines, returnType)
     }
-
-private val newLineRegex = "\n".toRegex()
-
 
 /**
  * Wrapper class for organizing and parsing doc comments
  */
 @Suppress("MemberVisibilityCanBePrivate")
-data class CommentWrapper(val commentText: String, val tagLines:ObjJTagLines) {
-    private val lines: List<String> by lazy {
-        commentText.split(newLineRegex)
-                .map {
-                    it.trim().trimFromBeginning(ObjJCommentCompletionProvider.stripFromCommentTokenBeginning).trim()
-                }
-                .filter {
-                    it.isNotBlank()
-                }
-    }
-    val parameterComments: List<CommentParam> by lazy {
-        val parameterLines = lines
-                .filter {
-                    it.startsWith("@param")
-                }
-                .map {
-                    val tokens: List<String> = it.split("\\s+".toRegex(), 3)
+data class CommentWrapper(
+        val commentText: String,
+        val tagLines:List<ObjJDocCommentTagLineStruct>,
+        val returnType:InferenceResult?) {
 
-                    CommentParam(tokens.getOrElse(0) { "_" }, it)
-                }
+    val parameterComments: List<ObjJDocCommentTagLineStruct> by lazy {
+        val parameterLines = tagLines.filter {
+            it.tag == ObjJDocCommentKnownTag.VAR || it.tag == ObjJDocCommentKnownTag.PARAM
+        }
         parameterLines
     }
 
-    val returnParameterComment: CommentParam? by lazy {
-        val line = lines.firstOrNull { it.startsWith("@return") }
-        if (line.isNotNullOrBlank()) {
-            val split = line!!.split("@return").getOrNull(1)?.trim()
-            if (split.isNotNullOrBlank())
-                CommentParam("@return", "@return $split")
-            else
-                CommentParam("@return", line)
-        } else {
-            null
-        }
-    }
-
-    fun getReturnTypes(project: Project): Set<String>? {
-        return returnParameterComment?.getTypes(project)
+    fun getReturnTypes(): InferenceResult? {
+        return if(returnType?.types?.isEmpty().orTrue())
+            return null
+        else
+            returnType
     }
 
     val deprecated: Boolean by lazy {
@@ -109,17 +80,17 @@ data class CommentWrapper(val commentText: String, val tagLines:ObjJTagLines) {
     }
 
     val deprecationWarning: String? by lazy {
-        lines.first {
-            it.trim().startsWith("@deprecated")
-        }
+        tagLines.firstOrNull {
+            it.tag == ObjJDocCommentKnownTag.DEPRECATED
+        }?.text
     }
 
     /**
      * Gets parameter comment based on parameter name
      */
-    fun getParameterComment(name: String): CommentParam? {
+    fun getParameterComment(name: String): ObjJDocCommentTagLineStruct? {
         return parameterComments.firstOrNull {
-            it.parameterName == name
+            it.name == name
         }
     }
 
@@ -128,113 +99,7 @@ data class CommentWrapper(val commentText: String, val tagLines:ObjJTagLines) {
      * Note:: May not be accurate if doc comment does not
      *        maintain order or does not define all parameters
      */
-    fun getParameterComment(index: Int): CommentParam? {
+    fun getParameterComment(index: Int): ObjJDocCommentTagLineStruct? {
         return parameterComments.getOrNull(index)
     }
-}
-
-data class CommentParam(val parameterName: String, private val parameterCommentIn: String?) {
-
-    private val commentStringTrimmed by lazy {
-        parameterCommentIn?.trim()?.replace("^@?param\\s*|@?return[s]?\\s*(the\\s*)?".toRegex(), "")?.trim()
-    }
-
-    val parameterCommentClean: String? by lazy {
-        parameterCommentIn?.replace("""\s*\\c\s*""".toRegex(), " ")
-    }
-
-    val parameterCommentFormatted: String? by lazy {
-        val pattern = """\s*\\c\s+([^ $]+)""".toRegex()
-        parameterCommentIn?.replace(pattern) {
-            "<strong>$it</strong>"
-        }
-    }
-
-    val possibleClassStrings: Set<String> by lazy {
-        val commentStringTrimmed = this.commentStringTrimmed
-                ?: return@lazy emptySet<String>()
-
-        val out = mutableSetOf<String>()
-        listOf(CLASS_NAME_REGEX).forEach { pattern ->
-            val matcher = pattern.matcher(commentStringTrimmed)
-            while (matcher.find()) {
-                if (matcher.groupCount() < 2) {
-                    continue
-                }
-                out.add(matcher.group(1).trim())
-            }
-        }
-        out
-    }
-
-    /**
-     * Gets class types if matching, null otherwise
-     */
-    fun getTypes(project: Project, matchTypeFilter: ClassMatchType? = null): Set<String>? {
-
-        if (parameterCommentIn == null)
-            return null
-        val classes = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.OBJJ)
-            ObjJClassDeclarationsIndex.instance.getAllKeys(project).withoutAnyType().toSet()
-        else
-            emptySet()
-
-        val jsClasses = if (matchTypeFilter == null || matchTypeFilter == ClassMatchType.JS)
-            JsTypeDefClassesByNamespaceIndex.instance.getAllKeys(project).toSet()
-        else
-            emptySet()
-
-
-        val firstIn = commentStringTrimmed.orEmpty().split("\\s+".toRegex(), 2).first()
-        if (matchType(firstIn, classes, jsClasses) != null) {
-            return setOf(firstIn)
-        }
-        val jsMatches = mutableSetOf<String>()
-        val objJMatches = mutableSetOf<String>()
-        possibleClassStrings.forEach {
-            val matchType = matchType(it, classes, jsClasses) ?: return@forEach
-            if (matchTypeFilter != null && matchTypeFilter != matchType)
-                return@forEach
-            else if (matchType == ClassMatchType.OBJJ)
-                objJMatches.add(it)
-            else
-                jsMatches.add(it)
-        }
-
-        // Return correct set of matches
-        val out = when (matchTypeFilter) {
-            ClassMatchType.OBJJ -> objJMatches
-            ClassMatchType.JS -> jsMatches
-            else -> objJMatches + jsMatches
-        }
-
-        // Return matches if not empty, null otherwise
-        return if (out.isNotEmpty())
-            out
-        else
-            null
-    }
-}
-
-fun jsTypesMinusCPPrefix(jsClassNames: Set<String>): Set<String> = jsClassNames.map { it.removePrefix("CP").removePrefix("CF") }.toSet()
-
-
-private val CLASS_NAME_REGEX = "([a-zA-Z_$][a-zA-Z0-9_]*)".toPattern()
-
-private fun matchType(className: String, objjClassNames: Set<String>, jsClassNames: Set<String>): ClassMatchType? {
-    return when (className) {
-        in objjClassNames -> ClassMatchType.OBJJ
-        in jsClassNames -> ClassMatchType.JS
-        else -> if (jsClassNames.isNotEmpty() && className in jsTypesMinusCPPrefix(jsClassNames)) ClassMatchType.JS
-        else if (className.toLowerCase() in primitiveTypes)
-            ClassMatchType.JS
-        else
-            null
-    }
-
-}
-
-enum class ClassMatchType {
-    OBJJ,
-    JS
 }
