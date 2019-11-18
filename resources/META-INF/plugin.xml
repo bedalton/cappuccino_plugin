@@ -364,6 +364,7 @@
     <applicationService serviceInterface="cappuccino.ide.intellij.plugin.indices.StubIndexService"
                         serviceImplementation="cappuccino.ide.intellij.plugin.indices.ObjJIndexService" />
     <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes"/>
+    <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJAssignedVariableNamesByBlockIndex" />
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsByFileImportStringIndex"/>
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex"/>
