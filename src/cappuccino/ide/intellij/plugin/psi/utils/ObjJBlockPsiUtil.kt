@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.util.Pair
 import com.intellij.psi.PsiElement
 import java.util.*
 
@@ -130,7 +131,7 @@ private fun PsiElement.getParentBlockVariableNameChildren(recursive: Boolean): L
     val out = if (useIndex)
         getParentBlockVariableNameChildren(recursive) { block ->
             val range = block.textRange
-            ObjJVariableNameByScopeIndex.instance.getInRange(fileName, range, project)
+            ObjJVariableNameByScopeIndex.instance.getInRangeStrict(fileName, range, project)
         }
     else
         getParentBlockVariableNameChildren(recursive, defaultSearchFunction)
@@ -254,6 +255,29 @@ fun PsiElement?.getScopeBlock(): ObjJBlock? {
         return block
     }
     return getBlockForMethod(this)
+}
+
+/**
+ * Gets the outer scope for a given element
+ * Mostly used to determine whether two variable name elements have the same scope
+ * @return scope block for element
+ */
+fun PsiElement?.getScopeBlockRanges(): List<Pair<Int, Int>> {
+    if (this == null) {
+        return emptyList()
+    }
+    val blockRanges = mutableListOf<Pair<Int,Int>>()
+    var block = getParentOfType(ObjJFoldable::class.java)
+    if (block == null) {
+        val fileRange = containingFile.textRange
+        return listOf(Pair(fileRange.startOffset, fileRange.endOffset))
+    }
+    while (block != null) {
+        val range = block.textRange
+        blockRanges.add(Pair(range.startOffset, range.endOffset))
+        block = block.getParentOfType(ObjJFoldable::class.java)
+    }
+    return blockRanges
 }
 
 /**

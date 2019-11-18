@@ -8,7 +8,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndexKey
 
 @Suppress("MemberVisibilityCanBePrivate")
-class ObjJVariableNameByScopeIndex private constructor() : ObjJStringStubIndexBase<ObjJVariableName>() {
+class ObjJAssignedVariableNamesByBlockIndex private constructor() : ObjJStringStubIndexBase<ObjJVariableName>() {
 
     override val indexedElementClass: Class<ObjJVariableName>
         get() = ObjJVariableName::class.java
@@ -51,7 +51,7 @@ class ObjJVariableNameByScopeIndex private constructor() : ObjJStringStubIndexBa
         return out
     }
 
-    private fun filterKeys(fileName:String, elementStartOffset: Int, elementEndOffset: Int, project: Project) : List<String> {
+    fun filterKeys(fileName:String, elementStartOffset: Int, elementEndOffset: Int, project: Project) : List<String> {
         return getAllKeys(project).filter {
             val parts = it.split("-")
             if (parts[0] != fileName)
@@ -68,8 +68,8 @@ class ObjJVariableNameByScopeIndex private constructor() : ObjJStringStubIndexBa
     }
 
     companion object {
-        val instance = ObjJVariableNameByScopeIndex()
-        val KEY = IndexKeyUtil.createIndexKey(ObjJVariableNameByScopeIndex::class.java)
+        val instance = ObjJAssignedVariableNamesByBlockIndex()
+        val KEY = IndexKeyUtil.createIndexKey(ObjJAssignedVariableNamesByBlockIndex::class.java)
         private const val KEY_FORMAT = "%s-%s-%s"
         private const val VERSION = 3
         fun getIndexKey(fileName: String, blockRange: Pair<Int, Int>): String {

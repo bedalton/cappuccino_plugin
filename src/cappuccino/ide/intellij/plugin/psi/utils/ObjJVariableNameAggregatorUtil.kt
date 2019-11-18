@@ -87,7 +87,7 @@ object ObjJVariableNameAggregatorUtil {
         }
         val containingFile = element.containingFile
         val fileName = ObjJPsiFileUtil.getContainingFileName(containingFile)
-        return ObjJVariableNameByScopeIndex.instance.getInRange(fileName, containingBlock.textRange, element.project)
+        return ObjJVariableNameByScopeIndex.instance.getInRangeStrict(fileName, containingBlock.textRange, element.project)
     }
 
 
