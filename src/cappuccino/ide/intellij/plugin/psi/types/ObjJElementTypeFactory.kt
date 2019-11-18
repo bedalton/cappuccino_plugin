@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ACCESSOR_PROPERT
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.CLASS_NAME
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_DECLARATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_LITERAL
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FUNCTION_CALL
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.GLOBAL_VARIABLE
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.IMPLEMENTATION
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.IMPORT_FILE
@@ -34,6 +35,7 @@ class ObjJElementTypeFactory {
                 "ObjJ_CLASS_NAME" -> CLASS_NAME
                 "ObjJ_FUNCTION_DECLARATION" -> FUNCTION_DECLARATION
                 "ObjJ_FUNCTION_LITERAL" -> FUNCTION_LITERAL
+                "ObjJ_FUNCTION_CALL" -> FUNCTION_CALL
                 "ObjJ_GLOBAL_VARIABLE_DECLARATION" -> GLOBAL_VARIABLE
                 "ObjJ_IMPLEMENTATION_DECLARATION" -> IMPLEMENTATION
                 "ObjJ_IMPORT_FILE" -> IMPORT_FILE

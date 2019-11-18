@@ -12,7 +12,7 @@
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|propertyName|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|variableTypeId|variableName|typeDef|className|variableDeclaration|qualifiedReference|objectLiteral")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("accessorProperty|className|functionDeclaration|functionLiteral|functionCall|globalVariableDeclaration|implementationDeclaration|importFile|importFramework|includeFile|includeFramework|instanceVariableDeclaration|methodCall|methodHeader|objectLiteral|preprocessorDefineFunction|propertyName|protocolDeclaration|qualifiedReference|selectorLiteral|typeDef|variableDeclaration|variableName|variableTypeId")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -1889,6 +1889,8 @@ functionCall
 	::= (functionName|methodCall) arrayIndexSelector* arguments
 	{
 		pin=3
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionCallStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
@@ -2379,6 +2381,7 @@ variableName
 			getMethodSelectors
 			getVariableType
 			createTreeStructureElement
+			isAssignedTo
 		]
 	}
 	;

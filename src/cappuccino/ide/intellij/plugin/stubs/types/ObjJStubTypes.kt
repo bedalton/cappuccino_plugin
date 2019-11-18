@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.stubs.types
 
 
 object ObjJStubTypes {
+    val FUNCTION_CALL = ObjJFunctionCallStubType("ObjJ_FUNCTION_CALL")
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
     val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
     val FILE = ObjJFileStubType()
