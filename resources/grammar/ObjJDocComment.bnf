@@ -43,9 +43,12 @@ comment
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub>"
 		]
 		methods = [
+			getTagLinesAsStructs
 			getParametersAsStructs
+			getReturnTagAsStruct
 			getReturnType
 			getParameterTags
+			getTextLinesAsStrings
 		]
 
 	}
@@ -130,6 +133,7 @@ qualifiedNameComponent
 			getName
 			setName
 			getIndexInQualifiedReference
+			getReference
 		]
 	}
 	;
@@ -150,6 +154,7 @@ parameterName
 			getName
 			setName
 			getIndexInQualifiedReference
+			getReference
 		]
 	}
 	;
