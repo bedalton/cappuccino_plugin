@@ -6,6 +6,7 @@ enum class ObjJDocCommentKnownTag(val isReferenceRequired: Boolean) {
     UNKNOWN(false),
     AUTHOR(false),
     THROWS(true),
+    DEPRECATED(false),
     EXCEPTION(true),
     PARAM(true),
     RECEIVER(false),
@@ -20,7 +21,7 @@ enum class ObjJDocCommentKnownTag(val isReferenceRequired: Boolean) {
 
 
     companion object {
-        fun findByTagName(tagNameIn: CharSequence): ObjJDocCommentKnownTag? {
+        fun findByTagName(tagNameIn: CharSequence): ObjJDocCommentKnownTag {
             var tagName = tagNameIn
             if (StringUtil.startsWith(tagName, "@")) {
                 tagName = tagName.substring(1)
@@ -31,7 +32,7 @@ enum class ObjJDocCommentKnownTag(val isReferenceRequired: Boolean) {
             catch (ignored: IllegalArgumentException) {
             }
 
-            return null
+            return UNKNOWN
         }
     }
 }
