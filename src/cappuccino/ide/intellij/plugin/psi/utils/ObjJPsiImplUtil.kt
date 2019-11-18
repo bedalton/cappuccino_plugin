@@ -713,6 +713,17 @@ object ObjJPsiImplUtil {
         return ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(namedElement)
     }
 
+    @JvmStatic
+    fun getIndexInQualifiedReference(functionCall: ObjJFunctionCall): Int {
+        return functionCall.stub?.indexInQualifiedReference
+                ?: ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(functionCall)
+    }
+
+    @JvmStatic
+    fun getIndexInQualifiedReference(variableName: ObjJVariableName): Int {
+        return variableName.stub?.indexInQualifiedReference
+                ?: ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent(variableName)
+    }
 
     @JvmStatic
     fun getIndexInQualifiedReference(enclosedExpression: ObjJParenEnclosedExpr): Int {
@@ -721,6 +732,11 @@ object ObjJPsiImplUtil {
 
     @JvmStatic
     fun getIndexInQualifiedReference(stringLiteral: ObjJStringLiteral) : Int {
+        return 0
+    }
+
+    @JvmStatic
+    fun getIndexInQualifiedReference(methodCall: ObjJMethodCall) : Int {
         return 0
     }
 
@@ -753,6 +769,31 @@ object ObjJPsiImplUtil {
     fun getVariableType(variableName: ObjJVariableName, tag: Long): InferenceResult? {
         return variableName.getClassTypes(tag)
                 ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
+    }
+
+    @JvmStatic
+    fun isAssignedTo(variableName: ObjJVariableName) : Boolean {
+        return variableName.stub?.isAssignedTo ?: evaluateIsAssignedTo(variableName)
+
+    }
+
+    private fun evaluateIsAssignedTo(variableName: ObjJVariableName) : Boolean {
+        if (variableName.indexInQualifiedReference != 0)
+            return false
+        val parent = variableName.parent
+                ?: return true
+        return when {
+            parent is ObjJGlobalVariableDeclaration -> true
+            parent.parent is ObjJVariableDeclaration -> true
+            parent is ObjJInstanceVariableDeclaration -> true
+            parent is ObjJInExpr -> true
+            parent is ObjJForLoopHeader -> true
+            parent is ObjJForLoopPartsInBraces -> true
+            parent is ObjJVariableDeclarationList -> true
+            parent is ObjJAssignmentExprPrime -> true
+            parent is ObjJMethodDeclarationSelector -> true
+            else -> false
+        }
     }
 
     // ============================== //
