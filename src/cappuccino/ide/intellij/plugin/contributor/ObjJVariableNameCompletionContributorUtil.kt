@@ -75,9 +75,6 @@ object ObjJVariableNameCompletionContributorUtil {
 
 
     fun getVariableNameElementsAfter(psiElement: PsiElement): List<ObjJVariableName> {
-        val names = ObjJGlobalVariableNamesIndex.instance.getAll(psiElement.project).map {
-            it.variableName
-        }
         val file = psiElement.containingFile
         val variablesAfter = if (!psiElement.hasParentOfType(ObjJBlockElement::class.java)) {
             ObjJAssignedVariableNamesByBlockIndex.instance
@@ -97,8 +94,7 @@ object ObjJVariableNameCompletionContributorUtil {
                 ObjJAssignedVariableNamesByBlockIndex.instance
                         .getInRangeFuzzy(file, parentBlock.textRange, file.project)
         }
-        val out = names + variablesAfter
-        LOGGER.info("Found ${out.size} variables in block")
-        return out;
+        LOGGER.info("Found ${variablesAfter.size} variables in block")
+        return variablesAfter
     }
 }
