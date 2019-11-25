@@ -9,10 +9,11 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-fun PsiElement.getContainingComments(): List<String> {
-    val out: MutableList<String> = mutableListOf()
+fun PsiElement.getContainingComments(): List<PsiComment> {
+    val out: MutableList<PsiComment> = mutableListOf()
     var parentNode: ASTNode? = this.node
     //LOGGER.info("Get Containing Comments")
     // Loop through parent nodes checking if previous node is a comment node
@@ -22,8 +23,8 @@ fun PsiElement.getContainingComments(): List<String> {
         // Check if prev node is comment
         if (prevNode != null && prevNode.elementType in ObjJTokenSets.COMMENTS) {
             var nextNode: ASTNode? = prevNode
-            while (nextNode != null && nextNode.elementType in ObjJTokenSets.COMMENTS) {
-                out.add(0, nextNode.text)
+            while (nextNode != null && nextNode.psi is PsiComment) {
+                out.add(0, nextNode.psi as PsiComment)
                 nextNode = prevNode.treePrev
             }
             return out
@@ -39,12 +40,12 @@ val PsiElement.docComment: CommentWrapper?
         val containingComments = getContainingComments()
                 .filterIsInstance(ObjJDocCommentParsableBlock::class.java)
         val tagLines = containingComments.flatMap {
-                    it.comment?.tagLinesAsStructs.orEmpty()
-                }
+            it.tagLinesAsStructs
+        }
         val commentText = containingComments.flatMap {
             it.textLines
         }.joinToString("\n")
-        val returnType = containingComments.mapNotNull{
+        val returnType = containingComments.mapNotNull {
             it.returnType
         }.combine()
         if (commentText.isBlank() && tagLines.isEmpty())

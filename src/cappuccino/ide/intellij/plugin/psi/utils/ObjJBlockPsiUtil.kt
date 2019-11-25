@@ -131,7 +131,7 @@ private fun PsiElement.getParentBlockVariableNameChildren(recursive: Boolean): L
     val out = if (useIndex)
         getParentBlockVariableNameChildren(recursive) { block ->
             val range = block.textRange
-            ObjJVariableNameByScopeIndex.instance.getInRangeStrict(fileName, range, project)
+            ObjJVariableNameByScopeIndex.instance.getInRangeStrict(file, range, project)
         }
     else
         getParentBlockVariableNameChildren(recursive, defaultSearchFunction)

@@ -13,6 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElem
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
@@ -68,6 +69,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
                 ?: (resolved as? ObjJVariableName)?.getClassTypes(tag)?.functionTypes?.flatMap { it.returnType?.types.orEmpty() }?.toSet()?.let {
                     InferenceResult(types = it)
                 }
+                ?: if (!resolved.isEquivalentTo(functionName)) (resolved as? ObjJFunctionName)?.parentFunctionDeclaration?.getReturnTypes(tag) else null
                 ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
         if (cached != null) {
             return cached
@@ -126,9 +128,17 @@ private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : Inferenc
         }
     }
 }
-
+private val hasReturnCallRegex = "(^return|\\s+return)\\s+[a-zA-Z0-9\$_]".toRegex();
 fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Long): InferenceResult? {
     val commentReturnTypes = function.docComment?.getReturnTypes()
+    if (function.functionNameString == "PPStoreState") {
+        val docComment = function.docComment
+        if (docComment?.returnType == null) {
+            LOGGER.info("Failed to locate return type in comment: ${docComment?.commentText ?: "NULL"}")
+        } else {
+            LOGGER.info("Found return type: ${docComment.returnType.toClassList(null)}")
+        }
+    }
     if (commentReturnTypes != null)
         return commentReturnTypes
     if (function is JsTypeDefFunction) {
@@ -137,13 +147,18 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
             return null
         return InferenceResult(types = types)
     }
+    if (!ObjJPluginSettings.inferFunctionReturnTypeFromReturnStatements())
+        return if (function.text.contains(hasReturnCallRegex)) INFERRED_ANY_TYPE else INFERRED_VOID_TYPE
+
     val returnStatementExpressions = if (function is ObjJFunctionDeclarationElement<*>)
         function.block.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
     else
         emptyList()
     if (returnStatementExpressions.isEmpty())
         return INFERRED_VOID_TYPE
-    val types = getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
+
+    val types =
+        getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
     return types
@@ -212,8 +227,8 @@ internal val PsiElement.parentFunctionDeclarationNoCache: ObjJUniversalFunctionE
                 }
     }
 
-val ObjJFunctionNameElement.getDirectParentFunctionElement: ObjJFunctionDeclarationElement<*>? get() {
-    val parent: ObjJFunctionDeclarationElement<*>? = this.getParentOfType(ObjJFunctionDeclarationElement::class.java)
+val PsiElement.directParentFunctionElement: ObjJFunctionDeclarationElement<*>? get() {
+    val parent: ObjJFunctionDeclarationElement<*>? = this.getSelfOrParentOfType(ObjJFunctionDeclarationElement::class.java)
     if (parent != null) {
         return parent;
     }

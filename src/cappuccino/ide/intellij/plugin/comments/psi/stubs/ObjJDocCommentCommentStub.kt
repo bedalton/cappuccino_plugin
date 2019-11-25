@@ -105,6 +105,7 @@ private fun StubOutputStream.writeTagLineList(params:List<ObjJDocCommentTagLineS
 }
 
 private fun StubOutputStream.writeTagLine(param:ObjJDocCommentTagLineStruct) {
+    writeName(param.tag.name)
     writeName(param.name);
     writeInferenceResult(param.types)
     writeUTFFast(param.text)

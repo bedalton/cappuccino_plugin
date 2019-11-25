@@ -2,8 +2,8 @@ package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedName
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagNameElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
@@ -36,6 +36,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
@@ -94,7 +95,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val prevSibling = element.getPreviousNonEmptySibling(true)
         val caretIndex = element.text.indexOf(CARET_INDICATOR)
         if (caretIndex < 0)
-            return;
+            return
         val queryString = element.text.substring(0, caretIndex)
 
         when {
@@ -113,6 +114,17 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             }
             element.elementType in ObjJTokenSets.STRING_COMPLETION_LITERALS && element.hasParentOfType(ObjJImportStatementElement::class.java) -> {
                 addCompletionsForFrameworkFiles(resultSet, element)
+            }
+            element.isOrHasParentOfType(ObjJDocCommentQualifiedNameComponent::class.java) -> {
+                addDocCommentCompletions(element, prevSibling, resultSet)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentParameterName::class.java) -> {
+                addDocCommentCompletions(element, prevSibling, resultSet)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentTagNameElement::class.java) -> {
+                addDocCommentTagCompletions(resultSet)
             }
             // Comment
             element.elementType in ObjJTokenSets.COMMENTS || element is PsiCommentImpl ->
@@ -176,17 +188,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.parent is ObjJObjectLiteral && prevSibling?.text != ":" -> {
                 resultSet.stopHere()
             }
-            element.isOrHasParentOfType(ObjJDocCommentQualifiedNameComponent::class.java) -> {
-                addDocCommentCompletions(element, prevSibling, resultSet)
-            }
-
-            element.isOrHasParentOfType(ObjJDocCommentParameterName::class.java) -> {
-                addVariableNameCompletionElements(resultSet, element)
-            }
-
-            element.isOrHasParentOfType(ObjJDocCommentTagNameElement::class.java) -> {
-                addDocCommentTagCompletions(resultSet)
-            }
 
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER -> {
                 resultSet.stopHere()
@@ -196,13 +197,39 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         resultSet.stopHere()
     }
 
-    private fun addDocCommentCompletions(elementIn: PsiElement, prevSibling: PsiElement?, resultSet: CompletionResultSet) {
-        val element = elementIn.getSelfOrParentOfType(ObjJDocCommentQualifiedNameComponent::class.java)
+    private fun addDocCommentCompletions(element: PsiElement, prevSibling: PsiElement?, resultSet: CompletionResultSet) {
+        if (!prevSibling?.text.orEmpty().startsWith("@") && prevSibling?.text != "|" && prevSibling?.text != ".") {
+            val tag = element.getParentOfType(ObjJDocCommentTagLine::class.java)?.tag
+            if (tag == ObjJDocCommentKnownTag.PARAM) {
+                LOGGER.info("Completing @param tag")
+                addParamCompletions(element, resultSet)
+            } else if (tag == ObjJDocCommentKnownTag.VAR || tag == ObjJDocCommentKnownTag.PARAM) {
+                LOGGER.info("Completing @${tag.name.toLowerCase()}")
+                val variableNameCompletions = ObjJVariableNameCompletionContributorUtil.getVariableNameElementsAfter(element)
+                addVariableNameCompletionElementsWithPriority(resultSet, variableNameCompletions)
+            }
+        } else {
+            getClassNameCompletions(resultSet, element)
+            val qnElement =element.getSelfOrParentOfType(ObjJDocCommentQualifiedNameComponent::class.java)
+                    ?: return
+            addJsQualifiedTypeName(qnElement, resultSet)
+        }
+    }
+
+    private fun addParamCompletions(elementIn: PsiElement, resultSet: CompletionResultSet) {
+        var outerComment = elementIn.getParentOfType(PsiComment::class.java)
+        while(outerComment != null) {
+            val temp = outerComment.getParentOfType(PsiComment::class.java)
+                    ?: break
+            outerComment = temp
+        }
+        val nextSibling = (outerComment ?: elementIn).getNextNonEmptySiblingIgnoringComments()
                 ?: return
-        if (prevSibling?.text != "|" && prevSibling?.text != ".")
-            addVariableNameCompletionElements(resultSet, element)
-        getClassNameCompletions(resultSet, element)
-        addJsQualifiedTypeName(element, resultSet);
+        LOGGER.info("Getting parent function declaration of element: ${nextSibling.text}")
+        val function = nextSibling as? ObjJUniversalFunctionElement ?: nextSibling.directParentFunctionElement
+                ?: return
+        LOGGER.info("Getting parent function declaration: ${function.functionNameString.ifEmptyNull() ?: "NULL"}. Params: ${function.parameterNames}")
+        addCompletionElementsSimple(resultSet, function.parameterNames)
     }
 
 
@@ -310,17 +337,19 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     /**
      * Adds variable name completion elements
      */
-    private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
-        addCompletionElementsSimple(resultSet, listOf(
-                "YES",
-                "NO",
-                "Nil",
-                "nil",
-                "true",
-                "false",
-                "null",
-                "undefined"
-        ), 200.0)
+    private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement, addPrimitives:Boolean = true) {
+        if (addPrimitives) {
+            addCompletionElementsSimple(resultSet, listOf(
+                    "YES",
+                    "NO",
+                    "Nil",
+                    "nil",
+                    "true",
+                    "false",
+                    "null",
+                    "undefined"
+            ), 200.0)
+        }
         if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
             return
         }

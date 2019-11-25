@@ -21,6 +21,7 @@ interface ObjJDocCommentParsableBlock : ObjJCompositeElement, PsiComment {
     val parameterTags: List<ObjJDocCommentTagLine>
     val textLines:List<String>
     val comment: ObjJDocCommentComment?
+    val tagLinesAsStructs: List<ObjJDocCommentTagLineStruct>
 }
 
 
@@ -41,6 +42,9 @@ class ObjJDocCommentParsableBlockImpl(buffer: CharSequence?) : LazyParseablePsiE
 
     override val textLines: List<String>
         get() = comment?.textLinesAsStrings.orEmpty()
+
+    override val tagLinesAsStructs: List<ObjJDocCommentTagLineStruct>
+        get() = comment?.tagLinesAsStructs.orEmpty()
 
     override fun <T:PsiElement> getParentOfType(parentClass:Class<T>) : T? = PsiTreeUtil.getParentOfType(this, parentClass)
     override fun <T:PsiElement> getChildOfType(childClass:Class<T>) : T? = PsiTreeUtil.getChildOfType(this, childClass)

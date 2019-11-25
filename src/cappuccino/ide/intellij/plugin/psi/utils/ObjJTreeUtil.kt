@@ -182,6 +182,11 @@ fun PsiElement.getNextNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement
     return node?.psi
 }
 
+fun PsiElement.getNextNonEmptySiblingIgnoringComments(): PsiElement? {
+    val node = node.getNextNonEmptyNodeIgnoringComments()
+    return node?.psi
+}
+
 fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return this?.node?.getPreviousNonEmptyNode(ignoreLineTerminator)
 }

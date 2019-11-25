@@ -33,7 +33,7 @@ private fun getPossibleTypesIfVariableName(variableName: ObjJVariableName, tag: 
         else -> {
             /*if (variableName.tagged(tag))
                 return emptySet()*/
-            ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName) ?: getTypeFromInstanceVariables(variableName)
+            getTypeFromInstanceVariables(variableName) ?: ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
         }
     } ?: return ObjJVariableTypeResolver.resolveVariableType(
             variableName = variableName,

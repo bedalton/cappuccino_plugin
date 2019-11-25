@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
@@ -12,6 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySiblingIgnoringComments
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -50,7 +52,7 @@ object ObjJCommentCompletionProvider {
      * Adds comment completions for a give line
      */
     private fun addCommentCompletionsForLine(resultSet: CompletionResultSet, element: PsiElement, textIn: String) {
-        val text = textIn.trim()
+        val text = (element.getParentOfType(ObjJDocCommentTagLine::class.java)?.text ?: textIn).trim()
         if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p") && !text.contains("@r")) {
             return
         }

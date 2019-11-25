@@ -10,13 +10,13 @@ enum class ObjJDocCommentKnownTag(val isReferenceRequired: Boolean) {
     EXCEPTION(true),
     PARAM(true),
     RECEIVER(false),
-    RETURN(false),
+    RETURN(true),
     SEE(true),
     SINCE(false),
     CONSTRUCTOR(false),
     PROPERTY(true),
     SAMPLE(true),
-    SUPPRESS(false),
+    SUPPRESS(true),
     VAR(true);
 
 

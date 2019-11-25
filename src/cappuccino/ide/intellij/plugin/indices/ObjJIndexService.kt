@@ -212,13 +212,13 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
 
         // Index for each containing block
         for (blockRange in blockRanges) {
-            indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, ObjJVariableNameByScopeIndex.getIndexKey(containingFileName, blockRange))
+            indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, ObjJVariableNameByScopeIndex.getIndexKey(stub.variableName, blockRange))
         }
 
         if (stub.isAssignedTo) {
             // Index for each containing block
             for (blockRange in blockRanges) {
-                indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, ObjJAssignedVariableNamesByBlockIndex.getIndexKey(containingFileName, blockRange))
+                indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, ObjJAssignedVariableNamesByBlockIndex.getIndexKey(stub.variableName, blockRange))
             }
         }
     }

@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
@@ -43,8 +46,13 @@ object ObjJCommentEvaluatorUtil {
      */
     fun getVariableTypesInParent(element: ObjJNamedElement): String? {
         val variableName = element.text
-        element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
+        return element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
                 .sortedByDescending { it.textRange.startOffset }
+                .filterIsInstance<ObjJDocCommentParsableBlock>()
+                .flatMap {
+                    it.parameterTags.firstOrNull { it.parameterName == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
+                }.firstOrNull()?.typeName ?: return null
+                /*
                 .flatMap { it.text.split("\n") }
                 .forEach { comment ->
                     val matcher = VARIABLE_TYPE_REGEX.matcher(comment)
@@ -54,9 +62,9 @@ object ObjJCommentEvaluatorUtil {
                         }
                         return matcher.group(1)
                     }
-
                 }
-        return null
+
+        return null*/
     }
 
     /**
