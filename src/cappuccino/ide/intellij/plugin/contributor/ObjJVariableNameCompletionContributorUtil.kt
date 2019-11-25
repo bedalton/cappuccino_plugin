@@ -77,6 +77,7 @@ object ObjJVariableNameCompletionContributorUtil {
     fun getVariableNameElementsAfter(psiElement: PsiElement): List<ObjJVariableName> {
         val file = psiElement.containingFile
         val variablesAfter = if (!psiElement.hasParentOfType(ObjJBlockElement::class.java)) {
+            LOGGER.info("Finding variables in file block")
             ObjJAssignedVariableNamesByBlockIndex.instance
                     .getInRangeFuzzy(file, file.textRange, file.project)
                     .filterNot { it.hasParentOfType(ObjJBlock::class.java) }
