@@ -10,7 +10,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import com.intellij.psi.stubs.*
 
-val ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE = ObjJDocCommentCommentStubType("ObjJDocComment_COMMENT")
+object ObjJDocCommentStubElementTypes {
+    @JvmStatic
+    val ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE = ObjJDocCommentCommentStubType("ObjJDocComment_COMMENT")
+}
 
 interface ObjJDocCommentCommentStub : StubElement<ObjJDocCommentCommentImpl> {
     val parameters:List<ObjJDocCommentTagLineStruct>
@@ -24,7 +27,7 @@ class ObjJDocCommentCommentStubImpl(
         override val returnType:InferenceResult?,
         override val tagLines:List<ObjJDocCommentTagLineStruct>,
         override val textLines:List<String>
-) : StubBase<ObjJDocCommentCommentImpl>(parent, ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE), ObjJDocCommentCommentStub {
+) : StubBase<ObjJDocCommentCommentImpl>(parent, ObjJDocCommentStubElementTypes.ObjJ_DOC_COMMENT_COMMENT_STUB_TYPE), ObjJDocCommentCommentStub {
     override val parameters:List<ObjJDocCommentTagLineStruct> by lazy {
         tagLines.filter { it.tag == ObjJDocCommentKnownTag.PARAM || it.tag == ObjJDocCommentKnownTag.VAR }
     }
