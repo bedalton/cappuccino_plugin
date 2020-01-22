@@ -461,6 +461,11 @@
     <internalFileTemplate name="jstypedef.file" />
 
 
+    <!-- =============================== -->
+    <!-- ========= DocComment ========== -->
+    <!-- =============================== -->
+    <stubElementTypeHolder class="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentStubElementTypes" />
+
 
   </extensions>
 
