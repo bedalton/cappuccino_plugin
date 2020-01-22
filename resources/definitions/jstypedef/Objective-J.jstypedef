@@ -692,3 +692,8 @@ function sel_isEqual(lhs:SEL, rhs:SEL):BOOL
 
 function sel_registerName(aName:string):string
 
+/*-- @file: /lib/Objective-J.js --*/
+
+declare readonly var ObjectiveJ : {
+	sprintf(format:string, ..args:Any): string
+}
