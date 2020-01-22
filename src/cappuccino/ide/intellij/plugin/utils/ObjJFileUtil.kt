@@ -1,9 +1,6 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import cappuccino.ide.intellij.plugin.project.ObjJNotify
-import cappuccino.ide.intellij.plugin.project.ObjJSdkSetupNotification
-import com.intellij.ide.plugins.PluginManager
-import com.intellij.notification.NotificationDisplayType
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.PluginId
@@ -20,7 +17,7 @@ import com.intellij.psi.PsiManager
 import java.io.File
 import java.util.logging.Logger
 
-private val LOGGER:Logger = Logger.getLogger("#"+ObjJFileUtil::class.java.canonicalName)
+private val LOGGER: Logger = Logger.getLogger("#" + ObjJFileUtil::class.java.canonicalName)
 
 val VirtualFile.contents: String
     get() {
@@ -56,7 +53,7 @@ object ObjJFileUtil {
     private const val RESOURCES_FOLDER = "classes"
 
     private val PLUGIN_HOME_FILE: File?
-        get() = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID))?.path
+        get() = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.path
 
     val PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
@@ -69,7 +66,7 @@ object ObjJFileUtil {
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
 
-    private val DEBUG_PLUGIN_HOME_DIRECTORY:VirtualFile?
+    private val DEBUG_PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
             return VfsUtil.findFileByIoFile(file, true)?.findChild("classes")
