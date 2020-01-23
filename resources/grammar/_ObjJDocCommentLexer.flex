@@ -14,8 +14,9 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 %%
 
 %{
-
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
+	private boolean needsPipeOrDot = false;
+
 
 		public _ObjJDocCommentLexer() {
 			this((java.io.Reader)null);
@@ -26,9 +27,7 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 			int zzMarkedPos = zzCurrentPos;
 			while(zzMarkedPos != 0 && Character.isWhitespace(zzBuffer.charAt(zzMarkedPos))) {
 				  zzMarkedPos -= 1;
-				  Logger.getLogger("_ObjJDocCommentLexer").info("IsAt: " + zzBuffer.charAt(zzMarkedPos));
 			}
-			Logger.getLogger("_ObjJDocCommentLexer").info("EndsAt: " + zzBuffer.charAt(zzMarkedPos));
 			return zzBuffer.charAt(zzMarkedPos) == c;
 		}
 
@@ -55,7 +54,7 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 			return prevCharIs('.');
 		}
 		public boolean prevCharIsPipe() {
-			return prevCharIs('|');
+			return prevCharIs('|') || prevCharIs(',');
 		}
 
 		public boolean prevCharIsPipeOrDot() {
@@ -117,20 +116,39 @@ BLOCK_END=[*][/]
 		return ObjJDocComment_TAG_NAME;
 	}
 	[^@\s] {
+	  	yypushback(yylength());
 	  	yybegin(CONTENTS);
 	}
 }
 
 <TAG_BEGINNING> {
     {IDENTIFIER} {
+          if (needsPipeOrDot && !prevCharIsPipeOrDot()) {
+			yypushback(yylength());
+			yybegin(CONTENTS);
+          }
+          needsPipeOrDot = true;
 		return ObjJDocComment_ID;
 	}
 
-	"." 	{ return ObjJDocComment_DOT; }
+	"." 	{
+          if (!needsPipeOrDot) {
+			yypushback(yylength());
+			yybegin(CONTENTS);
+          }
+          return ObjJDocComment_DOT;
+      }
 
-    "|"|","	{ return ObjJDocComment_TAG_VALUE_DELIMITER; }
+    "|"|","	{
+		if (!needsPipeOrDot) {
+			yypushback(yylength());
+			yybegin(CONTENTS);
+		}
+		return ObjJDocComment_TAG_VALUE_DELIMITER;
+  }
 
 	[^@\s.|,] {
+	  	yypushback(yylength());
 		yybegin(CONTENTS);
   	}
 }
@@ -141,4 +159,4 @@ BLOCK_END=[*][/]
 	  	return ObjJDocComment_TEXT_BODY;
   	}
 }
-[^] { return TokenType.BAD_CHARACTER; }
+[^] { return ObjJDocComment_TEXT_BODY; }
