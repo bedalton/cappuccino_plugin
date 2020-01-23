@@ -135,7 +135,7 @@ object ObjJVariableNameResolveUtil {
         }
 
         val hasContainingClass = ObjJHasContainingClassPsiUtil.getContainingClass(variableName) != null
-        return ObjJVariableNameAggregatorUtil.getAndFilterSiblingVariableNameElements(variableName, qualifiedIndex) { thisVariable ->
+        return ObjJVariableNameAggregatorUtil.getAndFilterMatchingSiblingVariableNameElements(variableName, qualifiedIndex) { thisVariable ->
             isMatchingElement(variableNameQualifiedString, thisVariable, hasContainingClass, startOffset, qualifiedIndex)
         }
     }

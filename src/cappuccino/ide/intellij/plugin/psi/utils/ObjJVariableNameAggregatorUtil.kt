@@ -28,8 +28,8 @@ object ObjJVariableNameAggregatorUtil {
     /**
      * Gets ALL variable names EVEN if NOT ASSIGNMENTS and filters them
      */
-    internal fun getAndFilterSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
-        val rawVariableNameElements = getSiblingVariableNameElements(element, qualifiedNameIndex)
+    internal fun getAndFilterMatchingSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int, filter: Filter<ObjJVariableName>): List<ObjJVariableName> {
+        val rawVariableNameElements = getAllMatchingSiblingVariableNameElements(element, qualifiedNameIndex)
         return ArrayUtils.filter(rawVariableNameElements, filter)
     }
 
@@ -42,12 +42,11 @@ object ObjJVariableNameAggregatorUtil {
      *
      * todo Allow checking of non 0 qualified name index
      */
-    private fun getSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
+    private fun getAllMatchingSiblingVariableNameElements(element: PsiElement, qualifiedNameIndex: Int): List<ObjJVariableName> {
         val result = ArrayList(getAllVariableNamesInContainingBlocks(element, qualifiedNameIndex))
         if (qualifiedNameIndex == 0) {
             result.addAll(getAllContainingClassInstanceVariables(element))
         }
-
         result.addAll(getAllAtGlobalFileVariables(element.containingFile))
         result.addAll(getAllGlobalScopedFileVariables(element.containingFile))
         result.addAll(getAllMethodDeclarationSelectorVars(element))
@@ -86,7 +85,7 @@ object ObjJVariableNameAggregatorUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val containingFile = element.containingFile
-        return ObjJVariableNameByScopeIndex.instance.getInRangeStrict(containingFile, containingBlock.textRange, element.project)
+        return ObjJVariableNameByScopeIndex.instance.getInRangeStrict(containingFile, element.text, containingBlock.textRange, element.project)
     }
 
 
@@ -273,14 +272,10 @@ object ObjJVariableNameAggregatorUtil {
             for (methodDeclarationSelector in declaration.methodHeader.methodDeclarationSelectorList) {
                 ProgressIndicatorProvider.checkCanceled()
                 if (methodDeclarationSelector.variableName == null || methodDeclarationSelector.variableName!!.text.isEmpty()) {
-                    ////LOGGER.info("Selector variable name is null");
                     continue
                 }
-                ////LOGGER.info("Adding method header selector: "+methodDeclarationSelector.getVariableName().getText());
                 result.add(methodDeclarationSelector.variableName!!)
             }
-        } else {
-            ////LOGGER.info("Psi element is not within a variable declaration");
         }
         return result
     }
@@ -291,7 +286,7 @@ object ObjJVariableNameAggregatorUtil {
             return EMPTY_VARIABLE_NAME_LIST
         }
         val result = ArrayList<ObjJVariableName>()
-        val bodyVariableAssignments = file.getChildrenOfType( ObjJBodyVariableAssignment::class.java).filter {
+        val bodyVariableAssignments = file.getChildrenOfType(ObjJBodyVariableAssignment::class.java).filter {
             it.varModifier != null
         }
         result.addAll(getAllVariablesFromBodyVariableAssignmentsList(bodyVariableAssignments, qualifiedNameIndex))
@@ -315,6 +310,9 @@ object ObjJVariableNameAggregatorUtil {
         return out
     }
 
+    /**
+     * Gets all variables declared with 'var' keyword in this file
+     */
     private fun getAllFileScopeGlobalVariables(
             file: PsiFile?): List<ObjJVariableName> {
         if (file == null) {
@@ -334,6 +332,9 @@ object ObjJVariableNameAggregatorUtil {
         return result
     }
 
+    /**
+     * Gets all variables in file declared without 'var' in file scope
+     */
     private fun getAllGlobalScopedFileVariables(
             file: PsiFile?): List<ObjJVariableName> {
         if (file == null) {
@@ -354,7 +355,7 @@ object ObjJVariableNameAggregatorUtil {
         }
         val result = ArrayList<ObjJVariableName>()
         for (variableDeclaration in file.getChildrenOfType( ObjJGlobal::class.java)) {
-            val variableName =variableDeclaration.variableName ?: continue
+            val variableName= variableDeclaration.variableName ?: continue
             result.add(variableName)
         }
         return result
