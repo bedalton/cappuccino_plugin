@@ -121,7 +121,7 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
     }
 }
 
-class Tag(val tag: Long, var depth: Int = 12) {
+class Tag(val tag: Long, var depth: Int = 16) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Tag) return false
