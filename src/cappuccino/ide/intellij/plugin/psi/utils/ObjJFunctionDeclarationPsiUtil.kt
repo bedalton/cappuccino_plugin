@@ -219,37 +219,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return out.filterNotNull()
     }
 
-    /**
-     * Gets the return type if cached
-     * /
-    fun getReturnType(
-            functionDeclaration: ObjJFunctionDeclaration): String {
-        if (functionDeclaration.stub != null) {
-            functionDeclaration.stub.returnType
-        }
-        return ObjJClassType.UNDETERMINED
-    }
-
-    /**
-     * Gets the return type if cached
-     */
-    fun getReturnType(
-            functionLiteral: ObjJFunctionLiteral): String {
-        if (functionLiteral.stub != null) {
-            functionLiteral.stub.returnType
-        }
-        return ObjJClassType.UNDETERMINED
-    }
-    /**
-     * Gets the return type if cached
-     */
-    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? {
-        return if (functionDefinition.stub != null) {
-            functionDefinition.stub.returnType
-        } else ObjJClassType.UNDETERMINED
-    }*/
-
-    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
+    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag: Tag) : InferenceResult? {
         val stubReturnType = functionDeclaration.stub?.returnType
         if (stubReturnType != null) {
             return stubReturnType.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toJsTypeList().let {

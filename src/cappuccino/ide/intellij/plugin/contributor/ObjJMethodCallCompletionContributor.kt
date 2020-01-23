@@ -437,7 +437,10 @@ object ObjJMethodCallCompletionContributor {
         val selectorString: String = getSelectorStringFromSelectorStrings(selectorStrings)
         var didAddOne = false
         ObjJUnifiedMethodIndex.instance
-                .getByPatternFlat(selectorString.toIndexPatternString(), project).mapNotNull { it.selectorStructs.getOrNull(selectorIndex) }.toSet().forEach {
+                .getByPatternFlat(selectorString.toIndexPatternString(), project)
+                .mapNotNull { it.selectorStructs.getOrNull(selectorIndex) }
+                .toSet()
+                .forEach {
                     if (!didAddOne)
                         didAddOne = true
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
