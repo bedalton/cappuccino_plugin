@@ -11,12 +11,14 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 
@@ -214,7 +216,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
             out.append(functionType.descriptionWithName(text))
             return out.toString()
         }
-        val classNames = inferenceResult?.toClassListString("<Any?>")
+        val classNames = stripCPObject(inferenceResult, project) ?: "<Any?>"
         ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
         if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
             out.append("parameter")
@@ -230,9 +232,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     val name = this.text
     var propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
     if (propertyTypes.isNotNullOrBlank()) {
-        val classNames = inferredTypes?.toClassListString(null)
+        val classNames = stripCPObject(inferredTypes, project) ?: "<Any?>"
         if (propertyTypes?.startsWith("$name(").orFalse())
-            propertyTypes = propertyTypes?.substring("$name".length)
+            propertyTypes = propertyTypes?.substring(name.length)
         if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
             out.append("property ").append(name)
         if (propertyTypes.isNotNullOrBlank() && propertyTypes !in anyTypes) {
@@ -246,12 +248,21 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         }
     }
     out.append("var '").append(text).append("'")
-    val possibleClasses = this.getPossibleClassTypes(createTag() + 2).filterNot { it == "CPObject" }
+    val possibleClasses = this.getPossibleClassTypes(createTag()).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
     out.append(" in ").append(getLocationString(this))
     return out.toString()
+}
+
+private fun stripCPObject(inferredTypes:InferenceResult?, project:Project) : String? {
+    var classNamesTemp = inferredTypes?.toClassList(null).orEmpty()
+    classNamesTemp = if (classNamesTemp.any{ ObjJClassDeclarationsIndex.instance.containsKey(it, project)})
+        classNamesTemp.filter{ it == "CPObject" }.toSet()
+    else
+        classNamesTemp
+    return classNamesTemp.joinToString("|").ifEmptyNull()
 }
 
 private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? = null): String? {
