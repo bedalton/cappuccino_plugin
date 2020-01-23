@@ -74,7 +74,7 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     val parts = variableName.previousSiblings + variableName
                     val namespace = parts.joinToString(".") { it.text }
                     val isValid = JsTypeDefFunctionsByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
-                            JsTypeDefPropertiesByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
+                            //JsTypeDefPropertiesByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
                             JsTypeDefClassesByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
                             JsTypeDefModuleNamesByNamespaceIndex.instance.containsKey(namespace, project)
                     if (isValid)
