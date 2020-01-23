@@ -12,7 +12,7 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
-internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
+internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     if (functionName == null)
         return null
     ProgressIndicatorProvider.checkCanceled()
@@ -54,7 +54,7 @@ internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTy
 
 }
 
-private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: Long): InferenceResult? {
+private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: Tag): InferenceResult? {
     val project: Project = functionName.project
     if (functionName.indexInQualifiedReference != 0) {
         return null

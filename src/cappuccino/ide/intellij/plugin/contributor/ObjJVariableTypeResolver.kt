@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalVariableType
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
@@ -19,7 +20,7 @@ import com.intellij.psi.PsiElement
 
 object ObjJVariableTypeResolver {
 
-    fun resolveVariableType(variableName: ObjJVariableName, withGeneric:Boolean, recurse:Boolean = true, tag:Long,  withInheritance:Boolean = false): Set<String> {
+    fun resolveVariableType(variableName: ObjJVariableName, withGeneric:Boolean, recurse:Boolean = true, tag: Tag,  withInheritance:Boolean = false): Set<String> {
         if (ObjJPluginSettings.resolveCallTargetFromAssignments && !ObjJCommentEvaluatorUtil.isInferDisabled(variableName, variableName.text)) {
             return resolveVariableTypeWithoutMethodParse(variableName, withGeneric, recurse, tag, withInheritance)
         }
@@ -27,7 +28,7 @@ object ObjJVariableTypeResolver {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, withGeneric:Boolean, recurse: Boolean = true, tag:Long, withInheritance:Boolean = false) : Set<String> {
+    private fun resolveVariableTypeWithoutMethodParse(variableName: ObjJVariableName, withGeneric:Boolean, recurse: Boolean = true, tag: Tag, withInheritance:Boolean = false) : Set<String> {
         val project = variableName.project
         var containingClass: String? = ObjJPsiImplUtil.getContainingClassName(variableName)
 

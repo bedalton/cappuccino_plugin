@@ -19,8 +19,8 @@ interface ObjJUniversalFunctionElement : ObjJUniversalPsiElement {
     val functionNameString: String?
     val description: ObjJFunctionDescription
     val parameterNames:List<String>
-    fun getReturnTypes(tag:Long) : InferenceResult?
-    fun toJsFunctionType(tag:Long) : JsTypeListType.JsTypeListFunctionType
+    fun getReturnTypes(tag: Tag) : InferenceResult?
+    fun toJsFunctionType(tag: Tag) : JsTypeListType.JsTypeListFunctionType
 }
 
 

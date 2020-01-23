@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
@@ -698,20 +699,20 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnTypes(function: JsTypeDefFunction, tag: Long): InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefFunction, tag: Tag): InferenceResult? {
         return function.stub?.returnType ?: function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes()?.let {
             InferenceResult(types = it)
         }
     }
 
     @JvmStatic
-    fun getReturnTypes(function: JsTypeDefAnonymousFunction, tag: Long): InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefAnonymousFunction, tag: Tag): InferenceResult? {
         return function.functionReturnType?.toTypeListType()
     }
 
 
     @JvmStatic
-    fun toJsFunctionType(function: JsTypeDefFunction, tag: Long): JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefFunction, tag: Tag): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
 
@@ -729,7 +730,7 @@ object JsTypeDefPsiImplUtil {
 
 
     @JvmStatic
-    fun toJsFunctionType(function: JsTypeDefAnonymousFunction, tag: Long): JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefAnonymousFunction, tag: Tag): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
 

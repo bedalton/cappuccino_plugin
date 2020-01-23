@@ -5,7 +5,8 @@ import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsInde
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByClassIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
@@ -15,7 +16,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
-internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
+internal fun inferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): InferenceResult? {
     return methodCall.getCachedInferredTypes(tag) {
         if (methodCall.tagged(tag))
             return@getCachedInferredTypes null
@@ -23,7 +24,7 @@ internal fun inferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : Inferenc
     }
 }
 
-private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : InferenceResult? {
+private fun internalInferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): InferenceResult? {
     ProgressIndicatorProvider.checkCanceled()
     val project = methodCall.project
     val selector = methodCall.selectorString
@@ -46,7 +47,7 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
     }
     val getMethods: List<ObjJMethodHeaderDeclaration<*>> = ObjJUnifiedMethodIndex.instance[selector, project]
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
-    val getReturnType = methodDeclarations.flatMap { methodDeclaration ->
+    val returnTypesFromExpressions = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes(tag) {
             ProgressIndicatorProvider.checkCanceled()
             if (methodDeclaration.tagged(tag))
@@ -67,9 +68,22 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
             } else
                 null
         }?.classes.orEmpty()
+    }.toMutableSet()
+    if (returnTypesFromExpressions.any { it == "self" }) {
+        returnTypesFromExpressions.addAll(callTargetTypes)
     }
-    val instanceVariableTypes = callTargetTypes.flatMap {className ->
-        ObjJInstanceVariablesByClassIndex.instance[className, project].filter{ it.variableName?.text == selector}.mapNotNull {
+    if (returnTypesFromExpressions.any { it == "super" }) {
+        val superTypes = callTargetTypes
+                .flatMap { targetType ->
+                    ObjJImplementationDeclarationsIndex.instance[targetType, project].mapNotNull {
+                        it.superClassName
+                    }
+                }
+                .toSet()
+        returnTypesFromExpressions.addAll(superTypes)
+    }
+    val instanceVariableTypes = callTargetTypes.flatMap { className ->
+        ObjJInstanceVariablesByClassIndex.instance[className, project].filter { it.variableName?.text == selector }.mapNotNull {
             val type = it.variableType
             if (type.isNotBlank())
                 type
@@ -78,34 +92,48 @@ private fun internalInferMethodCallType(methodCall:ObjJMethodCall, tag:Long) : I
         }
     }
     // Accessors are different than instance var names
-    val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap {
-        instanceVariable ->
+    val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap { instanceVariable ->
         instanceVariable.getCachedInferredTypes(tag) {
             ProgressIndicatorProvider.checkCanceled()
             if (instanceVariable.tagged(tag))
                 return@getCachedInferredTypes null
             ProgressIndicatorProvider.checkCanceled()
-            return@getCachedInferredTypes  setOf(instanceVariable.variableType).toInferenceResult()
+            return@getCachedInferredTypes setOf(instanceVariable.variableType).toInferenceResult()
         }?.classes.orEmpty()
     }
     val out = mutableSetOf<String>()
     out.addAll(instanceVariableAccessorTypes)
     out.addAll(instanceVariableTypes)
-    out.addAll(getReturnType)
+    out.addAll(returnTypesFromExpressions.filter { it != "self" && it != "super" })
     return InferenceResult(
             types = out.toJsTypeList()
     )
 }
 
-private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<String>, selector:String, tag:Long) :InferenceResult {
+private fun getReturnTypesFromKnownClasses(project: Project, callTargetTypes: Set<String>, selector: String, tag: Tag): InferenceResult {
     var nullable = false
     val types = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
             .flatMap { classDeclaration ->
                 ProgressIndicatorProvider.checkCanceled()
-                val out = classDeclaration.getReturnTypesForSelector(selector, tag)
-                if (out?.nullable.orFalse())
+                val outTemp = classDeclaration.getReturnTypesForSelector(selector, tag)
+                if (outTemp?.nullable.orFalse())
                     nullable = true
-                out?.types.orEmpty()
+                val out = outTemp?.types.orEmpty().toMutableSet()
+                if (out.any { it.typeName == "self" }) {
+                    out.addAll(callTargetTypes.toJsTypeList())
+                }
+                if (out.any { it.typeName == "super" }) {
+                    val superTypes = callTargetTypes
+                            .flatMap { targetType ->
+                                ObjJImplementationDeclarationsIndex.instance[targetType, project].mapNotNull {
+                                    it.superClassName
+                                }
+                            }
+                            .toSet()
+                            .toJsTypeList()
+                    out.addAll(superTypes)
+                }
+                out.filterNot { it.typeName == "self" || it.typeName == "super" }
             }
     return InferenceResult(
             types = types.toSet(),
@@ -113,7 +141,7 @@ private fun getReturnTypesFromKnownClasses(project:Project, callTargetTypes:Set<
     )
 }
 
-private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: String, tag: Long) : InferenceResult? {
+private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: String, tag: Tag): InferenceResult? {
     var nullable = false
     val types = getMethodStructs(true, tag).filter {
         selector == it.selectorStringWithColon
@@ -128,20 +156,10 @@ private fun ObjJClassDeclarationElement<*>.getReturnTypesForSelector(selector: S
     return InferenceResult(types = types.toSet(), nullable = nullable)
 }
 
-private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult? {
-    val className = when (val callTargetText = methodCall.callTargetText) {
-        "super" -> methodCall
-                .getParentOfType(ObjJHasContainingClass::class.java)
-                ?.containingSuperClassName
-                ?: callTargetText
-        "self" -> methodCall
-                .getParentOfType(ObjJHasContainingClass::class.java)
-                ?.containingClassName
-                ?: callTargetText
-        else -> callTargetText
-    }
+private fun getAllocStatementType(methodCall: ObjJMethodCall): InferenceResult? {
+    val className = methodCall.callTargetText
     val isValidClass = ObjJImplementationDeclarationsIndex.instance.containsKey(className, methodCall.project)
-    if (!isValidClass) {
+    if (!isValidClass && className != "super" && className != "self") {
         return null
     }
     return InferenceResult(
@@ -149,15 +167,15 @@ private fun getAllocStatementType(methodCall: ObjJMethodCall) : InferenceResult?
     )
 }
 
-fun inferCallTargetType(callTarget: ObjJCallTarget, tag:Long) : InferenceResult? {
+fun inferCallTargetType(callTarget: ObjJCallTarget, tag: Tag): InferenceResult? {
     return callTarget.getCachedInferredTypes(tag) {
         //if (callTarget.tagged(tag))
-         //   return@getCachedInferredTypes null
+        //   return@getCachedInferredTypes null
         internalInferCallTargetType(callTarget, tag)
     }
 }
 
-private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : InferenceResult? {
+private fun internalInferCallTargetType(callTarget: ObjJCallTarget, tag: Tag): InferenceResult? {
     ProgressIndicatorProvider.checkCanceled()
     val callTargetText = callTarget.text
     if (ObjJClassDeclarationsIndex.instance.containsKey(callTargetText, callTarget.project))
@@ -171,24 +189,19 @@ private fun internalInferCallTargetType(callTarget:ObjJCallTarget, tag:Long) : I
     return null
 }
 
-private fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration:ObjJMethodDeclaration, tag:Long) : Set<String> {
+fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration: ObjJMethodDeclaration, tag: Tag): Set<String> {
     ProgressIndicatorProvider.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
         return setOf(type)
     } else {
-        //var out = methodDeclaration.methodHeader.getCachedReturnType(tag)
-        //if (out != null)
-         //   return out.classes
         var out = INFERRED_EMPTY_TYPE
         val expressions = methodDeclaration.methodBlock.getBlockChildrenOfType(ObjJReturnStatement::class.java, true).mapNotNull { it.expr }
-        val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
-        val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
-        val simpleOut = selfExpressionTypes + superExpressionTypes
-        if (simpleOut.isNotEmpty()) {
-            return simpleOut.toSet()
-        }
+        if (expressions.any { it.text == "self" })
+            return setOf("self")
+        if (expressions.any { it.text == "super" })
+            return setOf("super")
         expressions.forEach {
             val type = inferExpressionType(it, tag)
             if (type != null)

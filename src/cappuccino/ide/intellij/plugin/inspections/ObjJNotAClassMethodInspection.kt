@@ -80,7 +80,7 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
         }
     }
 
-    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>, tag:Long) : Boolean {
+    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>, tag: Tag) : Boolean {
         val project = methodCall.project
         val selectorString = methodCall.selectorString
         if (selectorString in methodCall.callTarget.singleVariableNameElementOrNull?.getMethodSelectors(tag).orEmpty())

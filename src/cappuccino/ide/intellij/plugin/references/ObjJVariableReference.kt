@@ -3,6 +3,7 @@ package cappuccino.ide.intellij.plugin.references
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
@@ -25,7 +26,7 @@ import com.intellij.util.IncorrectOperationException
 class ObjJVariableReference(
         element: ObjJQualifiedReferenceComponent,
         private val nullIfSelfReferencing: Boolean? = null,
-        private val tag: Long? = null
+        private val tag: Tag? = null
 ) : PsiPolyVariantReferenceBase<ObjJQualifiedReferenceComponent>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
@@ -155,7 +156,11 @@ class ObjJVariableReference(
         return result.filterNot { it == myElement }.firstOrNull() ?: result.firstOrNull()
     }
 
-    private fun multiResolve(tag: Long, nullIfSelfReferencing: Boolean): Array<ResolveResult> {
+    private fun multiResolve(tag: Tag, nullIfSelfReferencing: Boolean): Array<ResolveResult> {
+        val classes = ObjJClassDeclarationsIndex.instance[myElement.text,myElement.project]
+                .mapNotNull { it.getClassName() }
+        if (classes.isNotEmpty())
+            return PsiElementResolveResult.createResults(classes)
         val element = resolveInternal(tag)
         if (element != null) {
             if (!nullIfSelfReferencing)
@@ -176,7 +181,7 @@ class ObjJVariableReference(
         return multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse())
     }
 
-    fun resolve(nullIfSelfReferencing: Boolean? = null, tag: Long? = null): PsiElement? {
+    fun resolve(nullIfSelfReferencing: Boolean? = null, tag: Tag? = null): PsiElement? {
         return myElement.resolveFromCache {
             if (DumbService.isDumb(myElement.project)) {
                 return@resolveFromCache null
@@ -189,7 +194,7 @@ class ObjJVariableReference(
         }
     }
 
-    private fun resolveInternal(tag: Long? = null): PsiElement? {
+    private fun resolveInternal(tag: Tag? = null): PsiElement? {
         if (tag != null && this.tag == tag)
             return null
         try {

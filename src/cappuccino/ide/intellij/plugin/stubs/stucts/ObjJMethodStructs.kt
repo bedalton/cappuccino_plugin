@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.stucts
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.toJsTypeList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
@@ -78,7 +79,7 @@ private val METHOD_STRUCT_KEY = Key<ObjJMethodStruct>("objj.userdata.structs.met
 // ===== Extension Methods ====== //
 // ============================== //
 
-fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
+fun ObjJMethodHeader.toMethodStruct(tag:Tag) : ObjJMethodStruct {
     val cached = getUserData(METHOD_STRUCT_KEY)
     if (cached != null)
         return cached
@@ -118,7 +119,7 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
                 )
         )
     }
-    var setter = setter
+    val setter = setter
     if (setter != null) {
         val prefix = if (startsWithVowelRegex.containsMatchIn(variableType)) "an" else "a"
         val variableName = prefix + variableType.capitalize()
@@ -153,9 +154,6 @@ fun ObjJSelectorLiteral.toMethodStruct() : ObjJMethodStruct {
 fun ObjJSelector.toSelectorStruct(containingClassName: String) : ObjJSelectorStruct {
     val selectorString = getSelectorString(false)
     val parent = parent
-    if (parent is ObjJSelectorLiteral) {
-
-    }
     if (parent is ObjJMethodDeclarationSelector) {
         return parent.toSelectorStruct()
     }

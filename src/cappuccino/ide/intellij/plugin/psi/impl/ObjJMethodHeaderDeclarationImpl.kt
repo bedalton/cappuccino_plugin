@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
@@ -18,9 +19,9 @@ abstract class ObjJMethodHeaderDeclarationImpl<StubT : ObjJMethodHeaderDeclarati
 
     //val returnType:Set<String>
 
-    override fun getCachedReturnType(tag:Long): InferenceResult? = methodHeaderCache.getCachedReturnType(tag)
+    override fun getCachedReturnType(tag: Tag): InferenceResult? = methodHeaderCache.getCachedReturnType(tag)
 
-    override fun getReturnTypes(tag:Long): Set<String> = getCachedReturnType(tag)?.toClassList("?").orEmpty()
+    override fun getReturnTypes(tag: Tag): Set<String> = getCachedReturnType(tag)?.toClassList("?").orEmpty()
 
     abstract override val explicitReturnType:String
 

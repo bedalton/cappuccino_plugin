@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
@@ -13,7 +14,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceCompo
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 
-internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedReferenceComponent, propertyName:String, tag:Long) : List<ObjJUniversalPsiElement> {
+internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedReferenceComponent, propertyName:String, tag: Tag) : List<ObjJUniversalPsiElement> {
 
     val project = psiElement.project
 
@@ -80,6 +81,6 @@ internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedRefe
     return foundFunctions + foundProperties + otherResults
 }
 
-private fun List<ObjJQualifiedReferenceComponent>.types(tag:Long) : Set<String> {
+private fun List<ObjJQualifiedReferenceComponent>.types(tag: Tag) : Set<String> {
     return inferQualifiedReferenceType(this, tag)?.toClassList(null)?.toSet().orEmpty()
 }

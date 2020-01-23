@@ -15,14 +15,14 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
-internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
+internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Tag): InferenceResult? {
     if (parts.isEmpty())
         return null
     addStatusFileChangeListener(parts[0].project)
     return internalInferQualifiedReferenceType(parts, tag)
 }
 
-internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
+internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Tag): InferenceResult? {
     if (parts.isEmpty()) {
         return null
     }
@@ -83,7 +83,7 @@ private fun simpleVariableInference(variableName: ObjJVariableName) : InferenceR
         null
 }
 
-internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
+internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, static, tag)
         is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, tag)
@@ -113,7 +113,7 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     return INFERRED_ANY_TYPE
 }
 
-private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag: Long): InferenceResult? {
+private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag: Tag): InferenceResult? {
     val project = part.project
     //ProgressManager.checkCanceled()
     val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text

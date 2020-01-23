@@ -23,7 +23,7 @@ fun createMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJ
 }
 
 interface ObjJMethodHeaderDeclarationCache {
-    fun getCachedReturnType(tag:Long):InferenceResult?
+    fun getCachedReturnType(tag:Tag):InferenceResult?
 }
 
 class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeaderDeclarationCache {
@@ -40,7 +40,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
     private val modificationTracker = MyModificationTracker()
 
 
-    override fun getCachedReturnType(tag: Long): InferenceResult {
+    override fun getCachedReturnType(tag: Tag): InferenceResult {
         if (modificationTracker.tagged(tag))
             return INFERRED_ANY_TYPE
         var types = returnTypesInternal
@@ -98,7 +98,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
     }
     private var returnTypesInternal:InferenceResult? = null
 
-    override fun getCachedReturnType(tag:Long):InferenceResult {
+    override fun getCachedReturnType(tag:Tag):InferenceResult {
         var types = returnTypesInternal
         if (types != null)
             return types
@@ -137,7 +137,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
 
 
 class ObjJSelectorLiteralCache(val selector: ObjJSelectorLiteral) : ObjJMethodHeaderDeclarationCache  {
-    override fun getCachedReturnType(tag:Long):InferenceResult
+    override fun getCachedReturnType(tag:Tag):InferenceResult
             = INFERRED_ANY_TYPE
 
 }

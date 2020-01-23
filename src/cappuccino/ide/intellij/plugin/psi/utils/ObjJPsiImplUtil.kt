@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.caches.*
 import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListClass
@@ -313,7 +314,7 @@ object ObjJPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, tag: Long): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, tag: Tag): Set<String> {
         return ObjJMethodPsiUtils.getReturnTypes(methodHeader, true, tag)
     }
 
@@ -355,7 +356,7 @@ object ObjJPsiImplUtil {
             cappuccino.ide.intellij.plugin.psi.utils.getCallTargetText(methodCall)
 
     @JvmStatic
-    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget, tag: Long): List<String> {
+    fun getPossibleCallTargetTypes(callTarget: ObjJCallTarget, tag: Tag): List<String> {
         return getPossibleClassTypesForCallTarget(callTarget, tag).toList()
     }
 
@@ -756,17 +757,17 @@ object ObjJPsiImplUtil {
 
 
     @JvmStatic
-    fun getMethods(variableName: ObjJVariableName, tag: Long): List<ObjJMethodHeaderDeclaration<*>> {
+    fun getMethods(variableName: ObjJVariableName, tag: Tag): List<ObjJMethodHeaderDeclaration<*>> {
         return variableName.getCachedMethods(tag)
     }
 
     @JvmStatic
-    fun getMethodSelectors(variableName: ObjJVariableName, tag: Long): Set<String> {
+    fun getMethodSelectors(variableName: ObjJVariableName, tag: Tag): Set<String> {
         return getMethods(variableName, tag).map { it.selectorString }.toSet()
     }
 
     @JvmStatic
-    fun getVariableType(variableName: ObjJVariableName, tag: Long): InferenceResult? {
+    fun getVariableType(variableName: ObjJVariableName, tag: Tag): InferenceResult? {
         return variableName.getClassTypes(tag)
                 ?: inferQualifiedReferenceType(variableName.previousSiblings + variableName, tag)
     }
@@ -965,17 +966,17 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclaration, tag: Long): InferenceResult? {
+    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclaration, tag: Tag): InferenceResult? {
         return ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionDeclaration, tag)
     }
 
     @JvmStatic
-    fun getReturnTypes(functionLiteral: ObjJFunctionLiteral, tag: Long): InferenceResult? {
+    fun getReturnTypes(functionLiteral: ObjJFunctionLiteral, tag: Tag): InferenceResult? {
         return ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionLiteral, tag)
     }
 
     @JvmStatic
-    fun getReturnTypes(functionDefinition: ObjJPreprocessorDefineFunction, tag: Long): InferenceResult? =
+    fun getReturnTypes(functionDefinition: ObjJPreprocessorDefineFunction, tag: Tag): InferenceResult? =
             ObjJFunctionDeclarationPsiUtil.getReturnTypes(functionDefinition, tag)
 
     @JvmStatic
@@ -1385,7 +1386,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun toJsObjectType(element: ObjJObjectLiteral, tag: Long): JsTypeListClass {
+    fun toJsObjectType(element: ObjJObjectLiteral, tag: Tag): JsTypeListClass {
         return ObjJObjectPsiUtils.toJsObjectType(element, tag)
     }
 

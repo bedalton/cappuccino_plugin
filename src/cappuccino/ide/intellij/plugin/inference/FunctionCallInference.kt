@@ -10,14 +10,14 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionNameElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalFunctionElement
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.psi.PsiElement
 
-internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
+internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Tag): InferenceResult? {
     return functionCall.getCachedInferredTypes(tag) {
         if (functionCall.tagged(tag))
             return@getCachedInferredTypes null
@@ -25,11 +25,25 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Lo
     }
 }
 
-internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Long): InferenceResult? {
+internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Tag): InferenceResult? {
     ProgressIndicatorProvider.checkCanceled()
     val functionName = functionCall.functionName ?: return null
     val functionNameString = functionName.text ?: return null
-
+    if (functionNameString == "apply") {
+        val thisIndex = functionName.indexInQualifiedReference
+        val parentQualifiedReference = functionName.getParentOfType(ObjJQualifiedReference::class.java)
+        if (parentQualifiedReference != null && thisIndex > 0) {
+            val siblings = parentQualifiedReference.qualifiedNameParts.subList(0, thisIndex - 1)
+            val types = inferQualifiedReferenceType(siblings, tag)
+                    ?.functionTypes
+                    ?.mapNotNull {
+                        it.returnType
+                    }
+                    ?.combine()
+            if (types?.withoutAnyType()?.isNotEmpty().orFalse())
+                return types
+        }
+    }
     // Get Type from JsTypeDef if possible
     val functionSet = JsTypeDefFunctionsByNameIndex.instance[functionNameString, functionCall.project]
     var lastOut = functionSet.flatMap {
@@ -70,7 +84,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
                     InferenceResult(types = it)
                 }
                 ?: if (!resolved.isEquivalentTo(functionName)) (resolved as? ObjJFunctionName)?.parentFunctionDeclaration?.getReturnTypes(tag) else null
-                ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
+                        ?: (resolved as? ObjJFunctionDeclarationElement<*>)?.getCachedReturnType(tag)
         if (cached != null) {
             return cached
         }
@@ -85,17 +99,15 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 
 }
 
-private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResult? {
+private fun inferTypeForResolved(resolved: PsiElement, tag: Tag): InferenceResult? {
     if (resolved.tagged(tag))
         return null
     ProgressIndicatorProvider.checkCanceled()
-    val function: ObjJUniversalFunctionElement? = (when (resolved) {
+    val function: ObjJUniversalFunctionElement? = when (resolved) {
         is ObjJVariableName -> resolved.parentFunctionDeclaration
         is ObjJFunctionName -> resolved.parentFunctionDeclaration
-        else -> {
-            null
-        }
-    })
+        else ->  null
+    }
     return when {
         function != null -> {
             inferFunctionDeclarationReturnType(function, tag)
@@ -112,7 +124,7 @@ private fun inferTypeForResolved(resolved:PsiElement, tag:Long) : InferenceResul
     }
 }
 
-private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : InferenceResult? {
+private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement): InferenceResult? {
     val parent = resolved.parent
     return when (resolved) {
         is JsTypeDefFunction -> resolved.getReturnTypes(createTag())
@@ -128,17 +140,10 @@ private fun inferWhenResolvedIsJsTypeDefElement(resolved: PsiElement) : Inferenc
         }
     }
 }
+
 private val hasReturnCallRegex = "(^return|\\s+return)\\s+[a-zA-Z0-9\$_]".toRegex();
-fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Long): InferenceResult? {
+fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, tag: Tag): InferenceResult? {
     val commentReturnTypes = function.docComment?.getReturnTypes()
-    if (function.functionNameString == "PPStoreState") {
-        val docComment = function.docComment
-        if (docComment?.returnType == null) {
-            LOGGER.info("Failed to locate return type in comment: ${docComment?.commentText ?: "NULL"}")
-        } else {
-            LOGGER.info("Found return type: ${docComment.returnType.toClassList(null)}")
-        }
-    }
     if (commentReturnTypes != null)
         return commentReturnTypes
     if (function is JsTypeDefFunction) {
@@ -158,13 +163,13 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
         return INFERRED_VOID_TYPE
 
     val types =
-        getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
+            getInferredTypeFromExpressionArray(returnStatementExpressions, tag)
     if (types.toClassList().isEmpty())
         return INFERRED_ANY_TYPE
     return types
 }
 
-internal fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Long): InferenceResult? {
+internal fun ObjJFunctionDeclarationElement<*>.toJsFunctionTypeResult(tag: Tag): InferenceResult? {
     val functionType = toJsFunctionType(tag)
     return InferenceResult(
             types = setOf(functionType)
@@ -227,12 +232,13 @@ internal val PsiElement.parentFunctionDeclarationNoCache: ObjJUniversalFunctionE
                 }
     }
 
-val PsiElement.directParentFunctionElement: ObjJFunctionDeclarationElement<*>? get() {
-    val parent: ObjJFunctionDeclarationElement<*>? = this.getSelfOrParentOfType(ObjJFunctionDeclarationElement::class.java)
-    if (parent != null) {
-        return parent;
+val PsiElement.directParentFunctionElement: ObjJFunctionDeclarationElement<*>?
+    get() {
+        val parent: ObjJFunctionDeclarationElement<*>? = this.getSelfOrParentOfType(ObjJFunctionDeclarationElement::class.java)
+        if (parent != null) {
+            return parent;
+        }
+        val expr = this.getParentOfType(ObjJExpr::class.java)?.leftExpr
+                ?: return null
+        return expr.functionDeclaration ?: expr.functionLiteral
     }
-    val expr = this.getParentOfType(ObjJExpr::class.java)?.leftExpr
-            ?: return null
-    return expr.functionDeclaration ?: expr.functionLiteral
-}

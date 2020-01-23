@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
@@ -12,7 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
-fun ObjJVariableName.getPossibleClassTypes(tag:Long) : Set<String> {
+fun ObjJVariableName.getPossibleClassTypes(tag: Tag) : Set<String> {
     /*if (this.tagged(tag))
         return emptySet()*/
     return getPossibleTypesIfVariableName(this, tag)
@@ -26,7 +27,7 @@ fun ObjJVariableName.getPossibleClassTypes(tag:Long) : Set<String> {
 /**
  * Attempt to get call call target type if variable name
  */
-private fun getPossibleTypesIfVariableName(variableName: ObjJVariableName, tag: Long) : Set<String> {
+private fun getPossibleTypesIfVariableName(variableName: ObjJVariableName, tag: Tag) : Set<String> {
     val className = when (variableName.text) {
         "self" -> variableName.containingClassName
         "super" -> variableName.getContainingSuperClass(true)?.text
@@ -62,7 +63,7 @@ private fun getTypeFromInstanceVariables(variableName: ObjJVariableName) : Strin
 /**
  * Attempts to get possible call target type if method call
  */
-private fun getPossibleCallTargetTypeFromMethodCall(methodCall: ObjJMethodCall, @Suppress("SameParameterValue") follow:Boolean = true, tag: Long) : Set<String> {
+private fun getPossibleCallTargetTypeFromMethodCall(methodCall: ObjJMethodCall, @Suppress("SameParameterValue") follow:Boolean = true, tag: Tag) : Set<String> {
     /*if (methodCall.tagged(tag))
         return emptySet()*/
     if (methodCall.selector?.text == "alloc") {
@@ -80,7 +81,7 @@ private fun getPossibleCallTargetTypeFromMethodCall(methodCall: ObjJMethodCall, 
 /**
  * Attempts to get target type from simple self or super calls to instance variables
  */
-private fun getSimpleTargetTypesIfAccessor(methodCall: ObjJMethodCall, follow:Boolean = true, tag: Long) : Set<String> {
+private fun getSimpleTargetTypesIfAccessor(methodCall: ObjJMethodCall, follow:Boolean = true, tag: Tag) : Set<String> {
     val selectorVariableName = methodCall.selectorList[0].getSelectorString(false)
     // Attempts to get simple containing class target
     val containingClass = when (methodCall.callTarget.text) {
@@ -133,7 +134,7 @@ private fun getInstanceVariableTypesForClass(containingClass:String, selectorVar
  * Very simple implementation
  * Most object return types return id, making it near useless
  */
-private fun getPossibleCallTargetTypesFromMultiSelectorCall(methodCall: ObjJMethodCall, tag:Long) : Set<String> {
+private fun getPossibleCallTargetTypesFromMultiSelectorCall(methodCall: ObjJMethodCall, tag: Tag) : Set<String> {
     if (DumbService.isDumb(methodCall.project))
         return setOf()
     val selector = methodCall.selectorString

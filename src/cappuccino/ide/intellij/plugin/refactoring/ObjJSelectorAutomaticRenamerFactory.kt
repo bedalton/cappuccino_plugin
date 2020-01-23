@@ -2,8 +2,8 @@ package cappuccino.ide.intellij.plugin.refactoring
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.inference.inferCallTargetType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
@@ -23,7 +23,7 @@ import com.intellij.usageView.UsageInfo
 
 class ObjJSelectorAutomaticRenamerFactory : AutomaticRenamerFactory {
 
-    var allowRename = ObjJPluginSettings.experimental_allowSelectorRename
+    private var allowRename = ObjJPluginSettings.experimental_allowSelectorRename
 
     override fun isEnabled(): Boolean {
         return allowRename
@@ -89,7 +89,7 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
         suggestAllNames(selector.name, newName)
     }
 
-    private fun getTargetClass(selector: ObjJSelector, tag: Long): Set<String>? {
+    private fun getTargetClass(selector: ObjJSelector, tag: Tag): Set<String>? {
         val parent = selector.getParentOfType(ObjJHasMethodSelector::class.java)!!
         if (parent is ObjJSelectorLiteral)
             return null
@@ -100,8 +100,8 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
     }
 
     private fun getAllPossibleClassTypes(project: Project, baseClasses: Set<String>, selectorString:String): Set<String> {
-        val allSuperClasses = baseClasses.flatMap {
-            ObjJInheritanceUtil.getAllInheritedClasses(it, project, true).filter {
+        val allSuperClasses = baseClasses.flatMap { baseClassName ->
+            ObjJInheritanceUtil.getAllInheritedClasses(baseClassName, project, true).filter {
                 val key = ObjJClassAndSelectorMethodIndex.getClassMethodKey(it, selectorString)
                 ObjJClassAndSelectorMethodIndex.instance.containsKey(key, project)
             }
@@ -112,7 +112,7 @@ internal class ObjJSelectorRenamer(val selector: ObjJSelector, usages: MutableCo
         return (baseClasses + allSuperClasses + allChildClasses).toSet()
     }
 
-    private fun getSelectorsCalledFromUnknownClass(usages: MutableCollection<UsageInfo>?, tag: Long, targetClasses:Set<String>?, hasUnknownCallingClass:MutableList<ObjJSelector>, matchesClasses:MutableList<ObjJSelector>) {
+    private fun getSelectorsCalledFromUnknownClass(usages: MutableCollection<UsageInfo>?, tag: Tag, targetClasses:Set<String>?, hasUnknownCallingClass:MutableList<ObjJSelector>, matchesClasses:MutableList<ObjJSelector>) {
         for (usage in usages.orEmpty()) {
             // Get selector or continue
             val selector = usage.element as? ObjJSelector ?: continue

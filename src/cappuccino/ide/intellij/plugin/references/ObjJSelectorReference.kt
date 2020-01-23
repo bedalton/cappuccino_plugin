@@ -4,8 +4,8 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.inference.inferCallTargetType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.psi.*
@@ -20,7 +20,7 @@ import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
 @Suppress("MoveVariableDeclarationIntoWhen")
-class ObjJSelectorReference(element: ObjJSelector, val  tag: Long = createTag()) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
+class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
 
     private var _classConstraints: Set<String>? = null
     private val fullSelector: String = myElement.getParentOfType(ObjJHasMethodSelector::class.java)!!.selectorString
@@ -129,7 +129,7 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Long = createTag())
     }
 
 
-    private fun getTargetClass(selector: ObjJSelector, tag: Long): Set<String>? {
+    private fun getTargetClass(selector: ObjJSelector, tag: Tag): Set<String>? {
         val parent = selector.getParentOfType(ObjJHasMethodSelector::class.java)!!
         if (parent is ObjJSelectorLiteral)
             return null

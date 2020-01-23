@@ -26,7 +26,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 
 
-fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
+fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     //ProgressManager.checkCanceled()
     if (variableName.tagged(tag, false)) {
         return null
@@ -76,7 +76,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
 /**
  * Infers a variable name type, wherever it is in a qualified name
  */
-internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, tag: Long): InferenceResult? {
+internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, tag: Tag): InferenceResult? {
     /*if (level < 0) {
         return null
     }*/
@@ -109,7 +109,7 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
 /**
  * Infers the type for a variable name element at qualified name index zero
  */
-private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Long, isVariableDec: Boolean): InferenceResult? {
+private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Tag, isVariableDec: Boolean): InferenceResult? {
     val project = variableName.project
     val variableNameString: String = variableName.text
     val variableDefType = if (referencedVariable is ObjJNamedElement)
@@ -169,7 +169,7 @@ private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName,
 /**
  * Infers the type of a referenced PSI element if at index zero
  */
-private fun inferReferencedElementTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, tag: Long): InferenceResult? {
+private fun inferReferencedElementTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, tag: Tag): InferenceResult? {
     // If reference resolved to a variable name (as opposed to function)
     return when (referencedVariable) {
         is ObjJVariableName -> inferReferencedVariableNameAtIndexZero(variableName, referencedVariable, tag)
@@ -186,7 +186,7 @@ private fun inferReferencedElementTypeAtIndexZero(variableName: ObjJVariableName
 /**
  * Infers a referenced variable's type if it is at index zero
  */
-private fun inferReferencedVariableNameAtIndexZero(variableName: ObjJVariableName, referencedVariable: ObjJVariableName, tag: Long): InferenceResult? {
+private fun inferReferencedVariableNameAtIndexZero(variableName: ObjJVariableName, referencedVariable: ObjJVariableName, tag: Tag): InferenceResult? {
     // Use old fashioned type resolved
     val outTemp = ObjJVariableTypeResolver.resolveVariableType(
             variableName = referencedVariable,
@@ -210,7 +210,7 @@ private fun inferReferencedVariableNameAtIndexZero(variableName: ObjJVariableNam
 /**
  * Infer referenced variable type, if it is a function declaration
  */
-private fun inferIfIsReferenceToFunctionDeclaration(referencedVariable: PsiElement, tag: Long): InferenceResult? {
+private fun inferIfIsReferenceToFunctionDeclaration(referencedVariable: PsiElement, tag: Tag): InferenceResult? {
     val functionDeclaration = when (referencedVariable) {
         is ObjJFunctionName -> referencedVariable.parentFunctionDeclaration
         is ObjJVariableDeclaration -> referencedVariable.parentFunctionDeclaration

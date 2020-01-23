@@ -27,7 +27,7 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
 
     constructor(node: ASTNode) : super(node)
 
-    override fun getCachedReturnType(tag:Long):InferenceResult? {
+    override fun getCachedReturnType(tag: Tag):InferenceResult? {
         return inferFunctionDeclarationReturnType(this, tag)
     }
 
@@ -41,7 +41,7 @@ abstract class ObjJFunctionDeclarationElementMixin<StubT : ObjJFunctionDeclarati
         }
     }
 
-    override fun toJsFunctionType(tag: Long): JsTypeListType.JsTypeListFunctionType {
+    override fun toJsFunctionType(tag: Tag): JsTypeListType.JsTypeListFunctionType {
         val returnTypes = inferFunctionDeclarationReturnType(this, tag) ?: INFERRED_ANY_TYPE
         return JsTypeListType.JsTypeListFunctionType(
                 name = this.functionNameString,
@@ -75,7 +75,7 @@ abstract class ObjJFunctionNameMixin(node: ASTNode):ObjJCompositeElementImpl(nod
     /**
      * Gets cached value for return type
      */
-    override fun getCachedReturnType(tag:Long):InferenceResult? {
+    override fun getCachedReturnType(tag: Tag):InferenceResult? {
         val returnType = cache.getReturnType(tag)
         if (returnType != null)
             return returnType

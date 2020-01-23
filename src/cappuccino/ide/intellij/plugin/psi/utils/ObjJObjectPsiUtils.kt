@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.inferExpressionType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
@@ -55,7 +56,7 @@ object ObjJObjectPsiUtils {
         )
     }
 
-    fun toJsObjectType(element: ObjJObjectLiteral, tag: Long): JsTypeListClass {
+    fun toJsObjectType(element: ObjJObjectLiteral, tag: Tag): JsTypeListClass {
         val outProperties = mutableSetOf<JsTypeDefNamedProperty>()
         val outFunctions = mutableSetOf<JsTypeListFunctionType>()
         element.propertyAssignmentList.forEach {

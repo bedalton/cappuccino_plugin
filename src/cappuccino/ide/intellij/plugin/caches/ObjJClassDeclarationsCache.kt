@@ -1,9 +1,8 @@
 package cappuccino.ide.intellij.plugin.caches
 
+import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
-import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.inference.plus
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
@@ -119,7 +118,7 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
             classMethodsCache.value
     }
 
-    fun getMethodStructs(internalOnly: Boolean, tag: Long): List<ObjJMethodStruct> {
+    fun getMethodStructs(internalOnly: Boolean, tag: Tag): List<ObjJMethodStruct> {
 
         return if (internalOnly) {
             if (internalMethodsCache.hasUpToDateValue() && internalAccessorProperties.hasUpToDateValue() && internalMethodStructs.isNotEmpty())
@@ -191,7 +190,7 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
         return manager.createCachedValue(provider)
     }
 
-    fun getMethodReturnType(selector: String, tag: Long): InferenceResult? {
+    fun getMethodReturnType(selector: String, tag: Tag): InferenceResult? {
         if (myTreeChangeTracker.tagged(tag))
             return null
         return methodReturnValuesMap.value[selector]?.second ?: INFERRED_ANY_TYPE

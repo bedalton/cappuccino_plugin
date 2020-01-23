@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
@@ -25,7 +26,7 @@ import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Logger
 
-class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
+class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Tag = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
     private val file: PsiFile = functionName.containingFile
     private val isFunctionCall: Boolean

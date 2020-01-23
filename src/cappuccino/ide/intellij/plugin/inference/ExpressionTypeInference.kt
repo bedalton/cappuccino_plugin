@@ -8,7 +8,7 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
-fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
+fun inferExpressionType(expr: ObjJExpr?, tag: Tag): InferenceResult? {
     if (expr == null)
         return null
     return expr.getCachedInferredTypes(tag) {
@@ -18,7 +18,7 @@ fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     }
 }
 
-private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceResult? {
+private fun internalInferExpressionType(expr: ObjJExpr, tag: Tag): InferenceResult? {
     ProgressIndicatorProvider.checkCanceled()
     if (expr.text == "self") {
         val parentClass = expr.getParentOfType(ObjJClassDeclarationElement::class.java)
@@ -74,7 +74,7 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
     )
 }
 
-fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResult? {
+fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult? {
     if (leftExpression == null) {// || level < 0) {
         return null
     }
@@ -165,7 +165,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
     }
 }
 
-fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Long): InferenceResult? {
+fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Tag): InferenceResult? {
     if (leftExpression == null)// || level < 0)
         return null
     ProgressIndicatorProvider.checkCanceled()
@@ -222,7 +222,7 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
     return current
 }
 
-internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Long): InferenceResult {
+internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Tag): InferenceResult {
     return assignments.mapNotNull {
         inferExpressionType(it, tag)
     }.combine()
