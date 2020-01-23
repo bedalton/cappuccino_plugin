@@ -3,12 +3,19 @@ package cappuccino.ide.intellij.plugin.psi.utils
 import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
 import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStruct
+import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.combine
+import cappuccino.ide.intellij.plugin.inference.toJsTypeList
+import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
+import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
@@ -45,9 +52,22 @@ val PsiElement.docComment: CommentWrapper?
         val commentText = containingComments.flatMap {
             it.textLines
         }.joinToString("\n")
-        val returnType = containingComments.mapNotNull {
-            it.returnType
-        }.combine()
+        val returnTypes = containingComments
+                .mapNotNull {
+                    it.returnType
+                }
+                .combine()
+                .types
+                .filter {
+                    if (it is JsTypeListType.JsTypeListBasicType) {
+                        val typeName = it.typeName
+                        isValidClass(typeName, project) || isValidClass(typeName.stripRefSuffixes(), project)
+                    } else
+                        true
+                }
+                .toSet()
+
+        val returnType = InferenceResult(types = returnTypes)
         if (commentText.isBlank() && tagLines.isEmpty())
             return null
         return CommentWrapper(commentText, tagLines, returnType)
@@ -59,8 +79,8 @@ val PsiElement.docComment: CommentWrapper?
 @Suppress("MemberVisibilityCanBePrivate")
 data class CommentWrapper(
         val commentText: String,
-        val tagLines:List<ObjJDocCommentTagLineStruct>,
-        val returnType:InferenceResult?) {
+        val tagLines: List<ObjJDocCommentTagLineStruct>,
+        val returnType: InferenceResult?) {
 
     val parameterComments: List<ObjJDocCommentTagLineStruct> by lazy {
         val parameterLines = tagLines.filter {
@@ -70,7 +90,7 @@ data class CommentWrapper(
     }
 
     fun getReturnTypes(): InferenceResult? {
-        return if(returnType?.types?.isEmpty().orTrue())
+        return if (returnType?.types?.isEmpty().orTrue())
             return null
         else
             returnType
@@ -103,4 +123,11 @@ data class CommentWrapper(
     fun getParameterComment(index: Int): ObjJDocCommentTagLineStruct? {
         return parameterComments.getOrNull(index)
     }
+}
+
+
+private fun isValidClass(it: String, project: Project): Boolean {
+    return JsTypeDefClassesByNameIndex.instance.containsKey(it, project)
+            || ObjJClassDeclarationsIndex.instance.containsKey(it, project)
+            || ObjJClassType.isPrimitive(it)
 }
