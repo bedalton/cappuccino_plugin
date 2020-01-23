@@ -15,7 +15,7 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 
 %{
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
-	private boolean needsPipeOrDot = false;
+	private int identifierSteps = 0;
 
 
 		public _ObjJDocCommentLexer() {
@@ -112,6 +112,7 @@ BLOCK_END=[*][/]
 	}
 	"@"{TAG_NAME} {
 		ObjJDocCommentKnownTag tag = ObjJDocCommentKnownTag.Companion.findByTagName(zzBuffer.subSequence(zzStartRead, zzMarkedPos));
+		identifierSteps = 0;
 		yybegin(tag != null && tag.isReferenceRequired() ? TAG_BEGINNING : CONTENTS);
 		return ObjJDocComment_TAG_NAME;
 	}
@@ -123,27 +124,28 @@ BLOCK_END=[*][/]
 
 <TAG_BEGINNING> {
     {IDENTIFIER} {
-          if (needsPipeOrDot && !prevCharIsPipeOrDot()) {
-			yypushback(yylength());
-			yybegin(CONTENTS);
-          }
-          needsPipeOrDot = true;
-		return ObjJDocComment_ID;
+          identifierSteps++;
+          return ObjJDocComment_ID;
 	}
 
-	"." 	{
-          if (!needsPipeOrDot) {
+	"." {
+          if (identifierSteps != 1)
+          {
 			yypushback(yylength());
 			yybegin(CONTENTS);
-          }
+			return null;
+		  }
+          identifierSteps = 0;
           return ObjJDocComment_DOT;
       }
 
     "|"|","	{
-		if (!needsPipeOrDot) {
+          if (identifierSteps != 1) {
 			yypushback(yylength());
 			yybegin(CONTENTS);
-		}
+			return null;
+          }
+          identifierSteps = 0;
 		return ObjJDocComment_TAG_VALUE_DELIMITER;
   }
 
