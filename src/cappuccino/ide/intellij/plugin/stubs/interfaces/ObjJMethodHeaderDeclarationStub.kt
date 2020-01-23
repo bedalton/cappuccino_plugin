@@ -24,4 +24,6 @@ interface ObjJMethodHeaderDeclarationStub<PsiT : PsiElement> : StubElement<PsiT>
 
     val selectorStructs:List<ObjJSelectorStruct>
 
+    val isPrivate:Boolean
+
 }

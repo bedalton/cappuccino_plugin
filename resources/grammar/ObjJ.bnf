@@ -711,6 +711,7 @@ accessorProperty
 			shouldResolve
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;
@@ -1126,6 +1127,7 @@ methodHeader
 			createTreeStructureElement
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;
@@ -2164,6 +2166,7 @@ selectorLiteral
 			getContainingSuperClass
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;

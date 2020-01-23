@@ -128,7 +128,8 @@ object ObjJAccessorPropertyPsiUtil {
                                     hasColon = true,
                                     containerName = containingClassName
                             )
-                    )
+                    ),
+                    isPrivate = false
             )
         }
         return null
@@ -165,7 +166,8 @@ object ObjJAccessorPropertyPsiUtil {
                 ignored = false,
                 selectorStructs = listOf(
                         ObjJSelectorStruct.Getter(getter, variableDeclaration.containingClassName)
-                )
+                ),
+                isPrivate = false
         )
     }
 

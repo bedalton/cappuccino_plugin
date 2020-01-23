@@ -41,6 +41,7 @@ class ObjJMethodHeaderStubType internal constructor(
         val selectorStructs = methodHeader.selectorStructs
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
         val ignored = ObjJCommentEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
+        val isPrivate = methodHeader.isPrivate
         return ObjJMethodHeaderStubImpl(
                 parent = parentStub,
                 className = containingClassName,
@@ -51,7 +52,8 @@ class ObjJMethodHeaderStubType internal constructor(
                 isRequired = required,
                 selectorStructs = selectorStructs,
                 shouldResolve = shouldResolve,
-                ignored = ignored
+                ignored = ignored,
+                isPrivate = isPrivate
         )
     }
 
@@ -77,6 +79,7 @@ class ObjJMethodHeaderStubType internal constructor(
         stubOutputStream.writeSelectorStructList(stub.selectorStructs)
         stubOutputStream.writeBoolean(stub.shouldResolve())
         stubOutputStream.writeBoolean(stub.ignored)
+        stubOutputStream.writeBoolean(stub.isPrivate)
 
     }
 
@@ -100,6 +103,7 @@ class ObjJMethodHeaderStubType internal constructor(
         val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()
         val ignored = stream.readBoolean()
+        val isPrivate = stream.readBoolean()
         return ObjJMethodHeaderStubImpl(
                 parent = parentStub,
                 className = containingClassName,
@@ -110,7 +114,8 @@ class ObjJMethodHeaderStubType internal constructor(
                 isRequired = required,
                 selectorStructs = selectorStructs,
                 shouldResolve = shouldResolve,
-                ignored = ignored
+                ignored = ignored,
+                isPrivate = isPrivate
         )
     }
 

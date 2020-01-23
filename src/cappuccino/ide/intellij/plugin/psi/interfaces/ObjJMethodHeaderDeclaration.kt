@@ -24,4 +24,6 @@ interface ObjJMethodHeaderDeclaration<StubT:ObjJMethodHeaderDeclarationStub<*>>:
         get() = methodScope == STATIC
 
     val methodHeaderCache:ObjJMethodHeaderDeclarationCache
+
+    val isPrivate:Boolean
 }

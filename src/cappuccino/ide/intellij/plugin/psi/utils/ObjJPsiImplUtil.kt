@@ -485,6 +485,20 @@ object ObjJPsiImplUtil {
         return ObjJAccessorPropertyPsiUtil.getSelectorStructs(accessorProperty)
     }
 
+    @JvmStatic
+    fun isPrivate(methodHeader: ObjJMethodHeader) : Boolean {
+        return methodHeader.stub?.isPrivate ?: methodHeader.selectorString.startsWith("_")
+    }
+
+    @JvmStatic
+    fun isPrivate(methodHeader: ObjJSelectorLiteral) : Boolean {
+        return false
+    }
+
+    @JvmStatic
+    fun isPrivate(methodHeader: ObjJAccessorProperty) : Boolean {
+        return false
+    }
 
     @JvmStatic
     fun getVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
@@ -517,6 +531,7 @@ object ObjJPsiImplUtil {
             return null
         return (qualifiedReferenceComponents[0] as? ObjJVariableName)?.reference?.resolve() as? ObjJVariableName
     }
+
     // ============================== //
     // ====== Virtual Methods ======= //
     // ============================== //

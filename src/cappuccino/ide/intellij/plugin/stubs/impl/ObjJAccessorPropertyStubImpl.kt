@@ -23,7 +23,7 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val setter: String? = if (setter != null && setter.isNotEmpty()) setter else null
     override val variableType: String? = if (variableType != null && variableType.isNotEmpty()) variableType else null
     override val containingClassName: String = containingClass
-
+    override val isPrivate: Boolean = false // Todo: See if this is right
     override val ignored:Boolean = false
 
     override val parameterTypes: List<String>
