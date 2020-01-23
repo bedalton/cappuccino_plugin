@@ -203,7 +203,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
     override fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {
         // Ensure has containing file
         val containingFile = stub.psi.containingFile
-                ?: return
         val variableName = stub.variableName
         val containingFileName = ObjJPsiFileUtil.getContainingFileName(stub.psi.containingFile)
         val blockRanges = stub.containingBlockRanges
