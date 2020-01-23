@@ -36,6 +36,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -310,6 +311,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .mapNotNull {
                         (it as? JsTypeDefClassElement)?.className
                     }.forEach {
+                        ProgressManager.checkCanceled()
                         val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler)
                         val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.TYPEDEF_PRIORITY))
                         resultSet.addElement(prioritizedLookupElement)
@@ -389,6 +391,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables: List<ObjJVariableName>) {
         variables.forEach {
+            ProgressManager.checkCanceled()
             val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
             var lookupElement = LookupElementBuilder.create(it.text)
             if (type.isNotNullOrBlank())
@@ -409,6 +412,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
+            ProgressManager.checkCanceled()
             ProgressIndicatorProvider.checkCanceled()
             val parameters = it.variableName.parentFunctionDeclaration?.parameterNames
                     ?: inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes?.maxBy { it.parameters.size }?.parameters?.map { it.name }
@@ -467,6 +471,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Add results to completion result set
         resultsTemp.forEach {
+            ProgressManager.checkCanceled()
             val lookupElement = prefixedLookupElement(it, prefix)
             resultSet.addElement(lookupElement)
         }
@@ -476,6 +481,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Creates a lookup element with a prefix such as @ or #
      */
     private fun prefixedLookupElement(keyword: String, prefix: String): LookupElementBuilder {
+        ProgressManager.checkCanceled()
         return LookupElementBuilder.create(keyword)
                 .withPresentableText(prefix + keyword)
                 .withInsertHandler { context, _ ->
