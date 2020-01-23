@@ -90,7 +90,7 @@ tagLine
 	;
 
 emptyTagLine
-	::= tagNameElement textLine
+	::= tagNameElement textLine?
 	{
 		pin = 2
 		methods = [
