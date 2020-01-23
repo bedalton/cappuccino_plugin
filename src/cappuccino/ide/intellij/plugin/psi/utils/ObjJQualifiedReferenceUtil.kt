@@ -125,7 +125,13 @@ object ObjJQualifiedReferenceUtil {
                 ?: return 0
         val parent: ObjJHasQualifiedName = element.getParentOfType(ObjJHasQualifiedName::class.java)
                 ?: return 0
-        val index = parent.qualifiedNameParts.indexOf(element)
+        val parts = parent.qualifiedNameParts
+        val index = if (parts.indexOf(element) >= 0)
+            parts.indexOf(element)
+        else if (element.parent is ObjJFunctionCall)
+            parts.indexOf(element.parent as ObjJFunctionCall)
+        else
+            0
         return if (index < 0)
             0
         else
