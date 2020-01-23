@@ -35,7 +35,6 @@ BLOCK_COMMENT_TEXT = ([^*]|\*[^/]|'\n'|'\r'|";"|\s)+
 BLOCK_COMMENT = {BAD_BLOCK_COMMENT}\*"/"
 SINGLE_LINE_COMMENT="//"[^\r\n\u2028\u2029]*
 ESCAPED_ID=`[ \t\n\x0B\f\r]*[_a-zA-Z][_a-zA-Z0-9]*[ \t\n\x0B\f\r]*`
-
 INTEGER_LITERAL=[0-9]+
 ID=[$_a-zA-Z][_a-zA-Z0-9]*
 

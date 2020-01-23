@@ -47,13 +47,10 @@ fun VirtualFile.getPsiFile(project: Project): PsiFile? = PsiManager.getInstance(
 
 
 object ObjJFileUtil {
-
-    private const val PLUGIN_ID = "cappuccino.intellij.plugin"
-
     private const val RESOURCES_FOLDER = "classes"
 
     private val PLUGIN_HOME_FILE: File?
-        get() = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.path
+        get() = PLUGIN?.path
 
     val PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {

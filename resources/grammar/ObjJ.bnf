@@ -1622,7 +1622,7 @@ arrayLiteral
 	;
 
 private arrayLiteralExpressionList
-	::= (',')* expr arrayLiteralExpressionPrime
+	::= (',')* expr arrayLiteralExpressionPrime?
 	{
 		pin(".*")=3
 		recoverWhile=recover_arrayLiteralExpressionList
