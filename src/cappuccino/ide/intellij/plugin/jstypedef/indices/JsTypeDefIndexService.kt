@@ -10,35 +10,50 @@ import com.intellij.psi.stubs.PsiFileStub
 
 class JsTypeDefIndexService : StubIndexService() {
 
-    override fun indexFile(stub:PsiFileStub<*>, sink: IndexSink) {
-            if (stub !is JsTypeDefFileStub) {
-                return
-            }
+    override fun indexFile(stub: PsiFileStub<*>, sink: IndexSink) {
+        if (stub !is JsTypeDefFileStub) {
+            return
+        }
     }
 
-    override fun indexFunction(stub: JsTypeDefFunctionStub, sink:IndexSink) {
+    override fun indexFunction(stub: JsTypeDefFunctionStub, sink: IndexSink) {
         if (stub.functionName.isBlank())
             return
         sink.occurrence(JsTypeDefFunctionsByNameIndex.instance.key, stub.functionName)
         sink.occurrence(JsTypeDefFunctionsByNamespaceIndex.instance.key, stub.fullyNamespacedName)
         val enclosingClass = stub.enclosingClass
-        if(enclosingClass.isNotNullOrBlank()) {
+        if (enclosingClass.isNotNullOrBlank()) {
             sink.occurrence(JsTypeDefFunctionsByClassNamesIndex.instance.key, enclosingClass!!)
         }
+        indexPartialNamespace(sink, stub.namespaceComponents)
     }
 
-    override fun indexProperty(stub: JsTypeDefPropertyStub, sink:IndexSink) {
+    override fun indexProperty(stub: JsTypeDefPropertyStub, sink: IndexSink) {
         if (stub.propertyName.isBlank())
             return
         sink.occurrence(JsTypeDefPropertiesByNameIndex.instance.key, stub.propertyName)
         sink.occurrence(JsTypeDefPropertiesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
         val enclosingClass = stub.enclosingClass
-        if(enclosingClass.isNotNullOrBlank()) {
+        if (enclosingClass.isNotNullOrBlank()) {
             sink.occurrence(JsTypeDefPropertiesByClassNameIndex.instance.key, enclosingClass!!)
+        }
+        indexPartialNamespace(sink, stub.namespaceComponents)
+    }
+
+    private fun indexPartialNamespace(sink:IndexSink, namespaceComponents:List<String>) {
+        val namespace = StringBuilder()
+        val lastIndex = namespaceComponents.lastIndex - 1
+        if (lastIndex >= 0) {
+            for (i in 0..lastIndex) {
+                if (i != 0)
+                    namespace.append(".")
+                namespace.append(namespaceComponents[i])
+                sink.occurrence(JsTypeDefNamespacedElementsByPartialNamespaceIndex.instance.key, namespace.toString())
+            }
         }
     }
 
-    override fun indexModule(stub: JsTypeDefModuleStub, sink:IndexSink) {
+    override fun indexModule(stub: JsTypeDefModuleStub, sink: IndexSink) {
         if (stub.moduleName.isBlank())
             return
         sink.occurrence(JsTypeDefModulesByNameIndex.instance.key, stub.moduleName)
@@ -46,44 +61,44 @@ class JsTypeDefIndexService : StubIndexService() {
 
     }
 
-    override fun indexModuleName(stub: JsTypeDefModuleNameStub, sink:IndexSink) {
+    override fun indexModuleName(stub: JsTypeDefModuleNameStub, sink: IndexSink) {
         if (stub.moduleName.isBlank())
             return
         sink.occurrence(JsTypeDefModuleNamesByNameIndex.instance.key, stub.moduleName)
         sink.occurrence(JsTypeDefModuleNamesByNamespaceIndex.instance.key, stub.fullyNamespacedName)
     }
 
-    override fun indexInterface(stub:JsTypeDefInterfaceStub, sink:IndexSink) {
-        if(stub.className.isBlank())
+    override fun indexInterface(stub: JsTypeDefInterfaceStub, sink: IndexSink) {
+        if (stub.className.isBlank())
             return
-        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
-        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
         val namespaceComponents = stub.namespaceComponents
-        for (i in 1 .. namespaceComponents.size) {
+        for (i in 1..namespaceComponents.size) {
             val namespace = namespaceComponents.subList(0, i).joinToString(".")
             sink.occurrence(JsTypeDefClassesByPartialNamespaceIndex.KEY, namespace)
         }
     }
 
-    override fun indexClass(stub:JsTypeDefClassStub, sink:IndexSink) {
-        if(stub.className.isBlank())
+    override fun indexClass(stub: JsTypeDefClassStub, sink: IndexSink) {
+        if (stub.className.isBlank())
             return
-        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
-        sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
+        sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesByNameIndex.KEY, stub.className)
+        sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesByNamespaceIndex.KEY, stub.fullyNamespacedName)
         for (superType in stub.superTypes) {
-            sink.occurrence<JsTypeDefClassDeclaration<*,*>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
+            sink.occurrence<JsTypeDefClassDeclaration<*, *>, String>(JsTypeDefClassesBySuperClassIndex.KEY, superType.typeName)
         }
         val namespaceComponents = stub.namespaceComponents
-        for (i in 1 .. namespaceComponents.size) {
+        for (i in 1..namespaceComponents.size) {
             val namespace = namespaceComponents.subList(0, i).joinToString(".")
             sink.occurrence(JsTypeDefClassesByPartialNamespaceIndex.KEY, namespace)
         }
     }
 
-    override fun indexKeyList(stub:JsTypeDefKeysListStub, sink: IndexSink) {
+    override fun indexKeyList(stub: JsTypeDefKeysListStub, sink: IndexSink) {
         sink.occurrence(JsTypeDefKeyListsByNameIndex.instance.key, stub.listName)
     }
 
@@ -91,8 +106,8 @@ class JsTypeDefIndexService : StubIndexService() {
         sink.occurrence(JsTypeDefTypeAliasIndex.KEY, stub.typeName)
     }
 
-    override fun indexTypeMap(stub:JsTypeDefTypeMapStub, sink:IndexSink) {
-        if(stub.mapName.isBlank()) {
+    override fun indexTypeMap(stub: JsTypeDefTypeMapStub, sink: IndexSink) {
+        if (stub.mapName.isBlank()) {
             LOGGER.info("Map name is null or blank")
             return
         }
