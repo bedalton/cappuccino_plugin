@@ -246,7 +246,8 @@ object JsTypeDefPsiImplUtil {
                     ?: listOf()
 
     @JvmStatic
-    fun getNamespaceComponents(element: JsTypeDefClassElement): List<String> = element.stub?.namespaceComponents
+    fun getNamespaceComponents(element: JsTypeDefClassElement): List<String>
+            = element.stub?.namespaceComponents
             ?: (element.enclosingNamespaceComponents + element.className)
 
     @JvmStatic
