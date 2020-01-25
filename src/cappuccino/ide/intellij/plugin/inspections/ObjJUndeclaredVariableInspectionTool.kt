@@ -6,13 +6,13 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.jstypedef.indices.*
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByPartialNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefModuleNamesByNamespaceIndex
+import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefNamespacedElementsByPartialNamespaceIndex
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJIterationStatement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
@@ -42,10 +42,19 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
     companion object {
 
-        private fun registerProblemIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, problemsHolder:ProblemsHolder) {
-            var variableName: ObjJVariableName? = variableNameIn
+        private fun registerProblemIfVariableIsNotDeclaredBeforeUse(variableNameIn: ObjJVariableName, problemsHolder: ProblemsHolder) {
+            val variableName: ObjJVariableName = variableNameIn
+            val variableNameString = variableNameIn.text
 
-            if (variableName?.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
+            if ((variableNameString == "self" || variableNameString == "super") && variableName.hasContainingClass) {
+                return
+            }
+
+            if (variableNameString == "this" && variableName.hasParentOfType(ObjJBlock::class.java)) {
+                return
+            }
+
+            if (variableName.getParentOfType(ObjJInstanceVariableList::class.java) != null) {
                 return
             }
             // Check if is global variable assignment
@@ -54,34 +63,10 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
 
             // if is variable assignment target
             // Have unintended global variable inspection handle it
-            if(variableNameIn.parent.parent is ObjJVariableDeclaration)
+            if (variableNameIn.parent.parent is ObjJVariableDeclaration)
                 return
 
-            if (variableName?.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
-                return
-            }
-
-            if (variableName?.parent is ObjJQualifiedReference) {
-                val qualifiedReference = variableName.parent as ObjJQualifiedReference
-                val lastSibling = qualifiedReference.lastVar
-                if (lastSibling == variableName) {
-                    val parts = variableName.previousSiblings + variableName
-                    val result = inferQualifiedReferenceType(parts, createTag()) ?: INFERRED_EMPTY_TYPE
-                    if (result.toClassList(null).withoutAnyType().isNotEmpty())
-                        return
-                } else {
-                    val project = variableName.project
-                    val parts = variableName.previousSiblings + variableName
-                    val namespace = parts.joinToString(".") { it.text }
-                    val isValid = JsTypeDefFunctionsByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
-                            //JsTypeDefPropertiesByNamespaceIndex.instance.getStartingWith(namespace, project).isNotEmpty() ||
-                            JsTypeDefClassesByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
-                            JsTypeDefModuleNamesByNamespaceIndex.instance.containsKey(namespace, project)
-                    if (isValid)
-                        return
-                }
-            }
-            if (variableName == null) {
+            if (variableName.getPreviousNonEmptySibling(true).elementType == ObjJTypes.ObjJ_DOT) {
                 return
             }
 
@@ -97,18 +82,33 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (DumbService.isDumb(project)) {
                 return
             }
-            val variableNameString = variableNameIn.text
 
-            if (JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(variableNameString, project))
-                return
-
-            if (JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(variableNameString, project))
-                return
+            if (variableName.parent is ObjJQualifiedReference) {
+                val qualifiedReference = variableName.parent as ObjJQualifiedReference
+                val lastSibling = qualifiedReference.lastVar
+                if (lastSibling == variableName) {
+                    val parts = variableName.previousSiblings + variableName
+                    val result = inferQualifiedReferenceType(parts, createTag()) ?: INFERRED_EMPTY_TYPE
+                    if (result.toClassList(null).withoutAnyType().isNotEmpty()) {
+                        LOGGER.info("Found variable through inferred types " + result.types + " qn parts: " + parts)
+                        return
+                    }
+                } else {
+                    val parts = variableName.previousSiblings + variableName
+                    val namespace = parts.joinToString(".") { it.text }
+                    val isValid =
+                            JsTypeDefNamespacedElementsByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
+                                    JsTypeDefClassesByPartialNamespaceIndex.instance.containsKey(namespace, project) ||
+                                    JsTypeDefModuleNamesByNamespaceIndex.instance.containsKey(namespace, project)
+                    if (isValid)
+                        return
+                }
+            }
 
             if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(variableNameString, project))
                 return
 
-            if (ObjJClassDeclarationsIndex.instance[variableName.text, variableName.project].isNotEmpty()) {
+            if (ObjJClassDeclarationsIndex.instance.containsKey(variableNameString, variableName.project)) {
                 return
             }
 
@@ -117,11 +117,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             }
 
             if (isVariableDeclaredBeforeUse(variableName)) {
-                ////LOGGER.info("Variable is <" + variableName.getText() + "> declared before use.");
-                return
-            }
-
-            if (isJsStandardVariable(variableName)) {
                 return
             }
 
@@ -134,25 +129,16 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return
             }
 
-            /*var tempElement = variableName.getNextNonEmptySibling(true)
-            if (tempElement != null && tempElement.text == ".") {
-                tempElement = tempElement.getNextNonEmptySibling(true)
-                if (tempElement is ObjJFunctionCall) {
-                    val functionCall = tempElement as ObjJFunctionCall?
-                    if (functionCall!!.functionName != null && functionCall.functionName!!.text == "call") {
-                        if (ObjJFunctionsIndex.instance[variableName.name, variableName.project].isEmpty()) {
-                            problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.failed-to-find.message", variableName.name))
-                        }
-                        return
-                    }
-                }
-            }*/
-
-            val declarations: MutableList<ObjJGlobalVariableDeclaration> = ObjJGlobalVariableNamesIndex.instance[variableName.text, variableName.project].toMutableList()
-            if (declarations.isNotEmpty()) {
+            if (ObjJGlobalVariableNamesIndex.instance.containsKey(variableName.text, variableName.project)) {
                 return
             }
-            if (variableNameString.substring(0, 1) == variableNameString.substring(0, 1).toUpperCase() && variableNameString != variableNameString.toUpperCase()) {
+
+            val canBeClassReference =
+                    variableName.hasParentOfType(ObjJCallTarget::class.java)
+                            && variableNameString.substring(0, 1) == variableNameString.substring(0, 1).toUpperCase()
+                            && variableNameString != variableNameString.toUpperCase()
+
+            if (canBeClassReference) {
                 if (ObjJCommentEvaluatorUtil.isIgnored(variableName, ObjJSuppressInspectionFlags.IGNORE_CLASS, variableNameString) || ObjJPluginSettings.isIgnoredClassName(variableNameString))
                     return
                 problemsHolder.registerProblem(
@@ -164,10 +150,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                         ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.CLASS, variableNameString),
                         ObjJAddSuppressInspectionForScope(variableName, ObjJSuppressInspectionFlags.IGNORE_UNDECLARED_CLASS, ObjJSuppressInspectionScope.FILE, variableNameString)
                 )
-                return
-            }
-
-            if (variableName.hasText("self") || variableName.hasText("super")) {
                 return
             }
             problemsHolder.registerProblem(variableName, ObjJBundle.message("objective-j.inspection.undec-var.var-may-not-have-been-declared.message"),
@@ -184,27 +166,25 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (ObjJKeywordsList.keywords.contains(variableName.text)) {
                 return true
             }
+
             val resolved = ObjJVariableReference(variableName).resolve(nullIfSelfReferencing = true)
-            if (resolved != null) {
-                return true//!isDeclaredInSameDeclaration(variableName, resolved)
-            }
+            if (resolved != null)
+                return true
             if (ObjJVariableReference(variableName).multiResolve(false).isNotEmpty())
                 return true
-            val precedingVariableNameReferences = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
+            val precedingVariableNameReferences
+                    = ObjJVariableNameResolveUtil.getMatchingPrecedingVariableNameElements(variableName, 0)
             return precedingVariableNameReferences.isNotEmpty() || ObjJFunctionsIndex.instance[variableName.text, variableName.project].isNotEmpty()
         }
 
-        private fun isDeclaredInSameDeclaration(variableName: ObjJVariableName, resolved:PsiElement) : Boolean {
+        private fun isDeclaredInSameDeclaration(variableName: ObjJVariableName, resolved: PsiElement): Boolean {
             if (variableName.isEquivalentTo(resolved))
-                return false
-            val resolvedDeclaration = resolved.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
-            val thisVariableDeclaration = variableName.getParentOfType(ObjJVariableDeclaration::class.java) ?: return false
+                return true
+            val resolvedDeclaration = resolved.getParentOfType(ObjJVariableDeclaration::class.java)
+                    ?: return false
+            val thisVariableDeclaration = variableName.getParentOfType(ObjJVariableDeclaration::class.java)
+                    ?: return false
             return resolvedDeclaration.isEquivalentTo(thisVariableDeclaration)
-        }
-
-        private fun isJsStandardVariable(variableName: ObjJVariableName): Boolean {
-            val variableNameText = variableName.text
-            return JsTypeDefPropertiesByNamespaceIndex.instance.containsKey(variableNameText, variableName.project) || JsTypeDefFunctionsByNamespaceIndex.instance.containsKey(variableNameText, variableName.project)
         }
 
         private fun isDeclaredInEnclosingScopesHeader(variableName: ObjJVariableName): Boolean {
@@ -263,16 +243,8 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
             if (variableName.parent is ObjJCatchProduction) {
                 return true
             }
-            //If variable name itself a javascript object property name
-            if (variableName.parent is ObjJPropertyAssignment) {
-                return true
-            }
 
             if (variableName.parent is ObjJInExpr) {
-                return true
-            }
-
-            if (variableName.getParentOfType(ObjJPreprocessorDefineFunction::class.java) != null) {
                 return true
             }
 
@@ -280,43 +252,37 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                 return true
             }
 
-
             val parent = variableName.parent
             if (parent is ObjJBodyVariableAssignment && parent.varModifier != null) {
                 return true
             }
 
-            val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java) ?: return false
+            val reference = variableName.getParentOfType(ObjJQualifiedReference::class.java)
+                    ?: return false
+            val referenceParent = reference.parent
 
-            if (reference.parent is ObjJVariableDeclaration) {
-                val variableAssignment = variableName.getParentOfType(ObjJBodyVariableAssignment::class.java)
-                if (variableAssignment != null) {
-                    return variableAssignment.varModifier != null
-                }
-            }
+            /*if (referenceParent is ObjJLeftExpr || reference.parent.parent is ObjJLeftExpr)
+                return false*/
 
-            if (reference.parent is ObjJVariableDeclaration && !isDeclaredInSameDeclaration(variableName, reference)) {
-                if(variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)?.varModifier != null ||
-                        variableName.getParentOfType(ObjJInExpr::class.java)?.varModifier != null) {
-                    return true
-                }
-            }
+            if (referenceParent is ObjJIterationStatement)
+                return true
 
+            if (referenceParent !is ObjJVariableDeclaration)
+                return false
 
-            if (reference.parent is ObjJIterationStatement) {
+            // check 'for' expression
+            val forLoopPart = variableName.getParentOfType(ObjJForLoopPartsInBraces::class.java)
+            if (forLoopPart?.varModifier != null)
+                return true
+
+            val variableDeclaration = referenceParent
+            if (variableDeclaration.parent is ObjJIterationStatement &&
+                    variableDeclaration.siblingOfTypeOccursAtLeastOnceBefore(ObjJVarModifier::class.java)) {
+                return true
+            } else if (variableDeclaration.parent is ObjJGlobalVariableDeclaration) {
                 return true
             }
-
-            var assignment: ObjJBodyVariableAssignment? = null
-            if (reference.parent is ObjJVariableDeclaration) {
-                val variableDeclaration = reference.parent as ObjJVariableDeclaration
-                if (variableDeclaration.parent is ObjJIterationStatement && variableDeclaration.siblingOfTypeOccursAtLeastOnceBefore(ObjJVarModifier::class.java)) {
-                    return true
-                } else if (variableDeclaration.parent is ObjJGlobalVariableDeclaration) {
-                    return true
-                }
-                assignment = if (variableDeclaration.parent is ObjJBodyVariableAssignment) variableDeclaration.parent as ObjJBodyVariableAssignment else null
-            }
+            val assignment = variableDeclaration.parent as? ObjJBodyVariableAssignment
             return assignment != null && assignment.varModifier != null
         }
     }
