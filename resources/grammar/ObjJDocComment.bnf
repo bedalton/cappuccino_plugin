@@ -57,7 +57,6 @@ comment
 private commentElement
 	::= commentLine
 	|	LEADING_ASTERISK
-	|	endOfLine
 	;
 
 private commentLine

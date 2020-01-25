@@ -125,6 +125,11 @@ BLOCK_END=[*][/]
 <TAG_BEGINNING> {
     {IDENTIFIER} {
           identifierSteps++;
+          if (identifierSteps > 2) {
+          	yypushback(yylength());
+          	yybegin(CONTENTS);
+			return ObjJDocComment_TEXT_BODY;
+          }
           return ObjJDocComment_ID;
 	}
 
@@ -133,7 +138,7 @@ BLOCK_END=[*][/]
           {
 			yypushback(yylength());
 			yybegin(CONTENTS);
-			return null;
+			return ObjJDocComment_TEXT_BODY;
 		  }
           identifierSteps = 0;
           return ObjJDocComment_DOT;
@@ -143,7 +148,7 @@ BLOCK_END=[*][/]
           if (identifierSteps != 1) {
 			yypushback(yylength());
 			yybegin(CONTENTS);
-			return null;
+			return ObjJDocComment_TEXT_BODY;
           }
           identifierSteps = 0;
 		return ObjJDocComment_TAG_VALUE_DELIMITER;
