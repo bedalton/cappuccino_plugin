@@ -1,10 +1,8 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.writePropertiesList
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameImpl
-import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlock
 import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlockRanges
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableNameStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub
@@ -39,7 +37,8 @@ class ObjJVariableNameStubType internal constructor(
                 indexInQualifiedReference = indexInQualifiedReference,
                 containingBlockRanges = blockRanges,
                 greatestContainingBlockRange = greatestBlockRange,
-                shouldResolve = shouldResolve(variableName.node)
+                shouldResolve = shouldResolve(variableName.node),
+                hasContainingClass = variableName.hasContainingClass
         )
     }
 
@@ -86,6 +85,7 @@ class ObjJVariableNameStubType internal constructor(
         stream.writeBoolean(stub.isAssignedTo)
         stream.writeInt(stub.indexInQualifiedReference)
         stream.writeBoolean(stub.shouldResolve())
+        stream.writeBoolean(stub.hasContainingClass)
     }
 
     @Throws(IOException::class)
@@ -104,6 +104,7 @@ class ObjJVariableNameStubType internal constructor(
         val isAssignedTo = stream.readBoolean()
         val indexInQualifiedReference = stream.readInt()
         val shouldResolve = stream.readBoolean()
+        val hasContainingClass = stream.readBoolean()
         return ObjJVariableNameStubImpl(
                 parent = parent,
                 variableName = name,
@@ -111,7 +112,8 @@ class ObjJVariableNameStubType internal constructor(
                 indexInQualifiedReference = indexInQualifiedReference,
                 containingBlockRanges = blockRanges,
                 greatestContainingBlockRange = greatestRange,
-                shouldResolve = shouldResolve
+                shouldResolve = shouldResolve,
+                hasContainingClass = hasContainingClass
         )
     }
 

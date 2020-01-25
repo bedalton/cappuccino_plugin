@@ -14,7 +14,8 @@ class ObjJVariableNameStubImpl(
         override val indexInQualifiedReference: Int,
         override val containingBlockRanges: List<Pair<Int, Int>>,
         override val greatestContainingBlockRange: Pair<Int, Int>?,
-        private val shouldResolve: Boolean
+        private val shouldResolve: Boolean,
+        override val hasContainingClass: Boolean
 ) : NamedStubBase<ObjJVariableNameImpl>(parent, ObjJStubTypes.VARIABLE_NAME, variableName), ObjJVariableNameStub {
     override fun shouldResolve(): Boolean {
         return shouldResolve

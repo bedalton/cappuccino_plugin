@@ -1242,6 +1242,11 @@ object ObjJPsiImplUtil {
         return ObjJResolveableElementUtil.shouldResolve(hasContainingClass as PsiElement?) && shouldResolve(hasContainingClass!!.containingClass)
     }
 
+    @JvmStatic
+    fun getHasContainingClass(variableName: ObjJVariableName) : Boolean {
+        return variableName.stub?.hasContainingClass ?: variableName.containingClass != null
+    }
+
     // ============================== //
     // ========== Folding =========== //
     // ============================== //

@@ -10,4 +10,5 @@ interface ObjJVariableNameStub : StubElement<ObjJVariableNameImpl>, ObjJResolvea
     val greatestContainingBlockRange: Pair<Int, Int>?
     val isAssignedTo:Boolean
     val indexInQualifiedReference:Int
+    val hasContainingClass:Boolean
 }
