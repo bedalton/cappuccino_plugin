@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.4.2</version>
+  <version>0.4.3</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -50,7 +50,16 @@
     ]]></description>
 
   <change-notes><![CDATA[
-
+    <h4>Version: 0.4.3</h4>
+    <h5>Fixed</h5>
+    <ul>
+      <li>Erroneous space added before '.' in qualified calls</li>
+      <li>Fix formatting after last fix broke formatting</li>
+    </ul>
+    <h5>Notes</h5>
+    <ul>
+      <li>Type inference changes may be more CPU intensive</li>
+    </ul>
     <h4>Version: 0.4.2</h4>
     <h5>Fixed</h5>
     <ul>
@@ -143,7 +152,7 @@
     </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="182.0"/>
+  <idea-version since-build="191.0"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
