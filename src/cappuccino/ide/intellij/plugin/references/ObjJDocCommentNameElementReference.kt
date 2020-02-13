@@ -15,6 +15,10 @@ class ObjJDocCommentNameElementReference(val namedElement: ObjJQualifiedReferenc
         return super.isReferenceTo(element)
     }
 
+    override fun getVariants(): Array<Any> {
+        return emptyArray()
+    }
+
     override fun multiResolve(partial: Boolean): Array<ResolveResult> {
         val classNames = JsTypeDefTypeNameReference.findClassReferencesByName(myElement.text, myElement.project)
         val variables = ObjJVariableReference(namedElement).multiResolve(partial)
