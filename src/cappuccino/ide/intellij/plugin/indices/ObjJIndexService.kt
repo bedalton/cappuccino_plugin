@@ -204,7 +204,6 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
         // Ensure has containing file
         val containingFile = stub.psi.containingFile
         val variableName = stub.variableName
-        val containingFileName = ObjJPsiFileUtil.getContainingFileName(stub.psi.containingFile)
         val blockRanges = stub.containingBlockRanges
         if (blockRanges.isEmpty()) {
             val range = containingFile.textRange
