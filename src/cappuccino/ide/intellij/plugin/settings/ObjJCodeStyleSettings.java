@@ -20,14 +20,19 @@ public class ObjJCodeStyleSettings extends CustomCodeStyleSettings {
     public boolean ALIGN_SELECTORS_IN_METHOD_CALL = true;
     public boolean ALIGN_SELECTORS_IN_METHOD_DECLARATION = false;
     public boolean ALIGN_PROPERTIES = false;
-    public int FUNCTION_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-    public int FUNCTION_IN_EXPRESSION_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-    public int INSTANCE_VARIABLE_LIST_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int FUNCTION_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int FOR_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int DO_WHILE_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int WHILE_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int IF_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int FUNCTION_IN_EXPRESSION_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int INSTANCE_VARIABLE_LIST_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
     public boolean TRY_ON_NEW_LINE = true;
-    public int CATCH_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-    public int FINALLY_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int CATCH_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int FINALLY_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
     public int BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
-    public int SWITCH_BRACE_FORCE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int SWITCH_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
+    public int TRY_BRACE_ON_NEW_LINE = CommonCodeStyleSettings.FORCE_BRACES_ALWAYS;
 
     ObjJCodeStyleSettings(CodeStyleSettings container) {
         super(ObjJLanguage.getInstance().getID(), container);

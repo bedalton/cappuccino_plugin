@@ -82,7 +82,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if (elementType == ObjJ_RIGHT_EXPR)
-            return Indent.getContinuationWithoutFirstIndent()
+            return Indent.getNormalIndent()
 
         if (parentType in ObjJTokenSets.INDENT_CHILDREN) {
             if (elementType == ObjJ_OPEN_BRACE || elementType == ObjJ_CLOSE_BRACE)
@@ -105,7 +105,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
         if (elementType == ObjJ_BLOCK_COMMENT_BODY) {
-            return Indent.getContinuationIndent()
+            return Indent.getNoneIndent()
         }
 
         if (elementType == ObjJ_BLOCK_COMMENT_LEADING_ASTERISK || elementType == ObjJ_BLOCK_COMMENT_END) {
@@ -323,7 +323,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
 
         if (parentType == ObjJ_IMPORT_FILE || parentType == ObjJ_IMPORT_FRAMEWORK) {
             if (FormatterUtil.isPrecededBy(node, ObjJ_AT_IMPORT, WHITE_SPACE)) {
-                return Indent.getContinuationIndent()
+                return Indent.getNormalIndent()
             }
         }
 
@@ -331,8 +331,8 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNormalIndent()
         }
 
-        if (elementType == ObjJ_DOT) {
-            return Indent.getContinuationIndent()
+        if (elementType == ObjJ_DOT && node.treeParent.elementType != ObjJ_RIGHT_EXPR) {
+            return Indent.getNormalIndent()
         }
 
         if (elementType == ObjJ_ACCESSOR) {

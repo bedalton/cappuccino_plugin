@@ -54,24 +54,26 @@ class ObjJLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
             consumer.renameStandardOption( "SPACE_BEFORE_METHOD_PARENTHESES", "'function' parentheses")
         } else if (settingsType == SettingsType.BLANK_LINES_SETTINGS) {
             consumer.showStandardOptions("KEEP_BLANK_LINES_IN_CODE")
+
         } else if (settingsType == SettingsType.WRAPPING_AND_BRACES_SETTINGS) {
             consumer.showStandardOptions(
-                    "IF_BRACE_FORCE",
                     "ELSE_ON_NEW_LINE",
-                    "FOR_BRACE_FORCE",
-                    "WHILE_BRACE_FORCE",
-                    "DOWHILE_BRACE_FORCE",
                     "WHILE_ON_NEW_LINE",
                     "CATCH_ON_NEW_LINE",
                     "FINALLY_ON_NEW_LINE"
                     )
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "INSTANCE_VARIABLE_LIST_BRACE_FORCE", "Force Braces", "instance variable list", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_BRACE_FORCE", "Force Braces", "'function' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_IN_EXPRESSION_BRACE_FORCE", "Force Braces", "'function' in expression",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' in expression", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FOR_BRACE_ON_NEW_LINE", "brace on new line", "'for()' statement", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "IF_BRACE_ON_NEW_LINE", "brace on new line", "'if()' statement", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "WHILE_BRACE_ON_NEW_LINE", "brace on new line", "'while()' statement", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "DO_WHILE_BRACE_ON_NEW_LINE", "brace on new line", "'do ... while()' statement", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "INSTANCE_VARIABLE_LIST_BRACE_ON_NEW_LINE", "brace on new line", "instance variable list", CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "instance variable list", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_BRACE_ON_NEW_LINE", "brace on new line", "'function' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FUNCTION_IN_EXPRESSION_BRACE_ON_NEW_LINE", "brace new line", "'function' in expression",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'function' in expression", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
             consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "TRY_ON_NEW_LINE", "'try' on new line", "'try' statement", CodeStyleSettingsCustomizable.OptionAnchor.BEFORE, "'try' statement")
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "CATCH_BRACE_FORCE", "'catch' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FINALLY_BRACE_FORCE", "'finally' Force Braces", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
-            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SWITCH_BRACE_FORCE", "Force Braces", "'switch' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'switch' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "TRY_BRACE_ON_NEW_LINE", "'try' brace on new line", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "CATCH_BRACE_ON_NEW_LINE", "'catch' brace on new line", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "FINALLY_BRACE_ON_NEW_LINE", "'finally' brace on new line", "'try' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'try' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
+            consumer.showCustomOption(ObjJCodeStyleSettings::class.java, "SWITCH_BRACE_ON_NEW_LINE", "brace on new line", "'switch' statement",CodeStyleSettingsCustomizable.OptionAnchor.AFTER, "'switch' statement", CodeStyleSettingsCustomizable.BRACE_OPTIONS, CodeStyleSettingsCustomizable.BRACE_VALUES)
         } else if (settingsType == SettingsType.INDENT_SETTINGS) {
             consumer.showAllStandardOptions()
         }

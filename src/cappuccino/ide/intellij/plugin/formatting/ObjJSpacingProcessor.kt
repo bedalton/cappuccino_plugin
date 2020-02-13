@@ -89,25 +89,35 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type1 == ObjJ_DOT)
             return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        if (type2 == ObjJ_DOT && !node2.isDirectlyPrecededByNewline())
+            return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
 
-        if (type2 == ObjJ_STATEMENT_OR_BLOCK) {
-            val block = (if (node2.firstChildNode?.elementType == ObjJ_BLOCK_ELEMENT) node2.firstChildNode else null)
+        if (type2 == ObjJ_RIGHT_EXPR && !node2.isDirectlyPrecededByNewline())
+            return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+
+        if (type2 == ObjJ_STATEMENT_OR_BLOCK || (type2 == ObjJ_BLOCK_ELEMENT && parentType != ObjJ_STATEMENT_OR_BLOCK)) {
+            val block = when {
+                node2.firstChildNode?.elementType == ObjJ_BLOCK_ELEMENT -> node2.firstChildNode
+                type2 == ObjJ_BLOCK_ELEMENT -> node2
+                else -> null
+            }
             if (block == null || (block.firstChildNode?.elementType != ObjJ_OPEN_BRACE && block.firstChildNode.getNextNonEmptyNodeIgnoringComments()?.elementType != ObjJ_OPEN_BRACE)) {
-                return Spacing.createSpacing(0, Int.MAX_VALUE, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+                return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             }
 
             val braceType = when (elementType) {
-                ObjJ_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_ELSE_IF_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_ELSE_STATEMENT -> mySettings.IF_BRACE_FORCE
-                ObjJ_FOR_STATEMENT -> mySettings.FOR_BRACE_FORCE
-                ObjJ_WHILE_STATEMENT -> mySettings.WHILE_BRACE_FORCE
-                ObjJ_DO_WHILE_STATEMENT -> mySettings.DOWHILE_BRACE_FORCE
-                ObjJ_FORMAL_PARAMETER_LIST -> objJSettings.FUNCTION_BRACE_FORCE
-                ObjJ_CATCH_PRODUCTION -> objJSettings.CATCH_BRACE_FORCE
-                ObjJ_FINALLY_PRODUCTION -> objJSettings.FINALLY_BRACE_FORCE
-                ObjJ_FUNCTION_LITERAL -> objJSettings.FUNCTION_BRACE_FORCE
-                ObjJ_FUNCTION_DECLARATION -> objJSettings.FUNCTION_BRACE_FORCE
+                ObjJ_IF_STATEMENT -> objJSettings.IF_BRACE_ON_NEW_LINE
+                ObjJ_ELSE_IF_STATEMENT -> objJSettings.IF_BRACE_ON_NEW_LINE
+                ObjJ_ELSE_STATEMENT -> objJSettings.IF_BRACE_ON_NEW_LINE
+                ObjJ_FOR_STATEMENT -> objJSettings.FOR_BRACE_ON_NEW_LINE
+                ObjJ_WHILE_STATEMENT -> objJSettings.WHILE_BRACE_ON_NEW_LINE
+                ObjJ_DO_WHILE_STATEMENT -> objJSettings.DO_WHILE_BRACE_ON_NEW_LINE
+                ObjJ_FORMAL_PARAMETER_LIST -> objJSettings.FUNCTION_BRACE_ON_NEW_LINE
+                ObjJ_TRY_STATEMENT -> objJSettings.TRY_BRACE_ON_NEW_LINE
+                ObjJ_CATCH_PRODUCTION -> objJSettings.CATCH_BRACE_ON_NEW_LINE
+                ObjJ_FINALLY_PRODUCTION -> objJSettings.FINALLY_BRACE_ON_NEW_LINE
+                ObjJ_FUNCTION_LITERAL -> objJSettings.FUNCTION_BRACE_ON_NEW_LINE
+                ObjJ_FUNCTION_DECLARATION -> objJSettings.FUNCTION_BRACE_ON_NEW_LINE
                 ObjJ_TRY_STATEMENT -> if (objJSettings.TRY_ON_NEW_LINE) CommonCodeStyleSettings.FORCE_BRACES_ALWAYS else CommonCodeStyleSettings.DO_NOT_FORCE
                 else -> {
                     LOGGER.severe("Failed to match parentType($elementType) for element: $type1")
@@ -148,7 +158,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
         if (type1 == ObjJ_CLOSE_PAREN && elementType == ObjJ_SWITCH_STATEMENT) {
             val spacing = if (mySettings.SPACE_BEFORE_SWITCH_LBRACE) 1 else 0
-            val lines = if (objJSettings.SWITCH_BRACE_FORCE != CommonCodeStyleSettings.DO_NOT_FORCE) 1 else 0
+            val lines = if (objJSettings.SWITCH_BRACE_ON_NEW_LINE != CommonCodeStyleSettings.DO_NOT_FORCE) 1 else 0
             return Spacing.createSpacing(spacing, spacing, lines, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
@@ -181,14 +191,14 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         }
 
         if (type2 == ObjJ_INSTANCE_VARIABLE_LIST) {
-            return if (objJSettings.INSTANCE_VARIABLE_LIST_BRACE_FORCE == CommonCodeStyleSettings.DO_NOT_FORCE)
+            return if (objJSettings.INSTANCE_VARIABLE_LIST_BRACE_ON_NEW_LINE == CommonCodeStyleSettings.DO_NOT_FORCE)
                 Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             else
                 Spacing.createSpacing(0, 0, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }
 
         if (type1 == ObjJ_STATEMENT_OR_BLOCK && (type2 == ObjJ_ELSE_IF_STATEMENT) || type2 == ObjJ_ELSE_STATEMENT) {
-            val spacing = if(mySettings.SPACE_BEFORE_ELSE_KEYWORD) 1 else 0
+            val spacing = if (mySettings.SPACE_BEFORE_ELSE_KEYWORD) 1 else 0
             return getSpacingIfNewLine(node1.firstChildNode?.lastChildNode == ObjJ_CLOSE_BRACE || mySettings.ELSE_ON_NEW_LINE, spacing)
         }
 
@@ -210,7 +220,7 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type2 == ObjJ_FINALLY || type2 == ObjJ_FINALLY_PRODUCTION) {
             val spacing = if (mySettings.SPACE_BEFORE_FINALLY_KEYWORD) 1 else 0
-            return getSpacingIfNewLine( mySettings.FINALLY_ON_NEW_LINE, spacing)
+            return getSpacingIfNewLine(mySettings.FINALLY_ON_NEW_LINE, spacing)
         }
 
         if (type2 == ObjJ_ELSE_STATEMENT || type2 == ObjJ_ELSE_IF_STATEMENT) {
@@ -230,8 +240,8 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
 
         if (type1 == ObjJ_FORMAL_PARAMETER_LIST && type2 == ObjJ_BLOCK_ELEMENT) {
             val isMultiLine = node2.psi.getChildrenOfType(ObjJCompositeElement::class.java).size > 1
-            val force = objJSettings.FUNCTION_BRACE_FORCE == CommonCodeStyleSettings.FORCE_BRACES_ALWAYS
-                    || (objJSettings.FUNCTION_BRACE_FORCE == CommonCodeStyleSettings.FORCE_BRACES_IF_MULTILINE && isMultiLine)
+            val force = objJSettings.FUNCTION_BRACE_ON_NEW_LINE == CommonCodeStyleSettings.FORCE_BRACES_ALWAYS
+                    || (objJSettings.FUNCTION_BRACE_ON_NEW_LINE == CommonCodeStyleSettings.FORCE_BRACES_IF_MULTILINE && isMultiLine)
             return if (force)
                 Spacing.createSpacing(0, Int.MAX_VALUE, 1, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
             else
@@ -689,7 +699,7 @@ fun ObjJMethodDeclarationSelector.getSelectorAlignmentSpacing(objJSettings: ObjJ
     val offset = (if (objJSettings.SPACE_BETWEEN_RETURN_TYPE_AND_FIRST_SELECTOR) 1 else 0) +
             (if (objJSettings.SPACE_BETWEEN_METHOD_TYPE_AND_RETURN_TYPE) 1 else 0)
 
-    val longestLengthToColon = this.getParentOfType(ObjJHasMethodSelector::class.java)?.getLongestLengthToColon(offset).add(EditorUtil.tabSize(this).or(0))
+    val longestLengthToColon = this.getParentOfType(ObjJHasMethodSelector::class.java)?.getLongestLengthToColon(objJSettings.ALIGN_FIRST_SELECTOR_IN_METHOD_CALL, offset).add(EditorUtil.tabSize(this).or(0))
             ?: return null
     val thisSelectorLength = this.selector?.textLength ?: return null
 
@@ -722,7 +732,7 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
     // Find the longest length to a colon in this call
     // This is used as the basis for aligning objects
     val tabSize = EditorUtil.tabSize(this).orElse(0)
-    val longestLengthToColon = methodCall.getLongestLengthToColon(tabSize)
+    val longestLengthToColon = methodCall.getLongestLengthToColon(indentFirstSelector, tabSize)
     val thisSelectorLength = this.selector?.text?.length?.plus(1) ?: return null
     // Determine values for first in line or first selector
     val isFirstSelectorInCall: Boolean = this.node.getPreviousNonEmptyNode(true)?.elementType == ObjJ_CALL_TARGET
@@ -758,12 +768,8 @@ fun ObjJQualifiedMethodCallSelector.getSelectorAlignmentSpacing(indentFirstSelec
 /**
  * Gets the longest length from start of line to colon in this selector set
  */
-fun ObjJHasMethodSelector.getLongestLengthToColon(tabSize: Int, offsetFromStart: Int = 0): Int {
-    val distanceToFirstColon = when (this) {
-        is ObjJMethodCall -> this.distanceToFirstColon(offsetFromStart)
-        is ObjJMethodHeaderDeclaration<*> -> this.distanceToFirstColon(tabSize, offsetFromStart)
-        else -> null
-    }
+fun ObjJHasMethodSelector.getLongestLengthToColon(indentFirstSelector: Boolean, tabSize: Int, offsetFromStart: Int = 0): Int {
+
     val selectorList: List<ObjJSelector?>? = this.selectorList
     val maxLengthOfSelector = (selectorList ?: listOf()).filterNotNull()
             .filter { it.node?.isDirectlyPrecededByNewline().orFalse() }
@@ -774,8 +780,15 @@ fun ObjJHasMethodSelector.getLongestLengthToColon(tabSize: Int, offsetFromStart:
     }
     // Offset secondary colons by the indent size
     // Hopefully this stays true
-    if (distanceToFirstColon != null)
-        return max(0, max(maxLengthOfSelector, distanceToFirstColon))
+    if (indentFirstSelector) {
+        val distanceToFirstColon = when (this) {
+            is ObjJMethodCall -> this.distanceToFirstColon(offsetFromStart)
+            is ObjJMethodHeaderDeclaration<*> -> this.distanceToFirstColon(tabSize, offsetFromStart)
+            else -> null
+        }
+        if (distanceToFirstColon != null)
+            return max(0, max(maxLengthOfSelector, distanceToFirstColon))
+    }
     return max(0, maxLengthOfSelector)
 }
 
@@ -787,8 +800,8 @@ fun ObjJMethodCall.distanceToFirstColon(offsetFromStart: Int = 0): Int? {
     val firstSelector = selectorList.firstOrNull() ?: return null
     if (firstSelector.getPreviousNonEmptyNode(false) == null)
         return null
-    val offsetCallTarget = ((this.distanceFromStartOfLine().orElse(0) + 1) - callTarget.distanceFromStartOfLine().orElse(0)) + callTarget.text.length
-    return offsetCallTarget + 1 + firstSelector.text.length
+    val offsetCallTarget = callTarget.distanceFromStartOfLine().orElse(0) + callTarget.text.length//((this.distanceFromStartOfLine().orElse(0) + 1) - callTarget.distanceFromStartOfLine().orElse(0)) + callTarget.text.length
+    return offsetCallTarget + firstSelector.text.length
 }
 
 /**
