@@ -90,7 +90,6 @@ class ObjJUndeclaredVariableInspectionTool : LocalInspectionTool() {
                     val parts = variableName.previousSiblings + variableName
                     val result = inferQualifiedReferenceType(parts, createTag()) ?: INFERRED_EMPTY_TYPE
                     if (result.toClassList(null).withoutAnyType().isNotEmpty()) {
-                        LOGGER.info("Found variable through inferred types " + result.types + " qn parts: " + parts)
                         return
                     }
                 } else {

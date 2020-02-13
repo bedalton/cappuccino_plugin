@@ -108,7 +108,6 @@ class JsTypeDefIndexService : StubIndexService() {
 
     override fun indexTypeMap(stub: JsTypeDefTypeMapStub, sink: IndexSink) {
         if (stub.mapName.isBlank()) {
-            LOGGER.info("Map name is null or blank")
             return
         }
         sink.occurrence(JsTypeDefTypeMapByNameIndex.instance.key, stub.mapName)

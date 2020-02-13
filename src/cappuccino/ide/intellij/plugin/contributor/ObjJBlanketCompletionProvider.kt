@@ -202,10 +202,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (!prevSibling?.text.orEmpty().startsWith("@") && prevSibling?.text != "|" && prevSibling?.text != ".") {
             val tag = element.getParentOfType(ObjJDocCommentTagLine::class.java)?.tag
             if (tag == ObjJDocCommentKnownTag.PARAM) {
-                LOGGER.info("Completing @param tag")
                 addParamCompletions(element, resultSet)
             } else if (tag == ObjJDocCommentKnownTag.VAR || tag == ObjJDocCommentKnownTag.PARAM) {
-                LOGGER.info("Completing @${tag.name.toLowerCase()}")
                 val variableNameCompletions = ObjJVariableNameCompletionContributorUtil.getVariableNameElementsAfter(element)
                 addVariableNameCompletionElementsWithPriority(resultSet, variableNameCompletions)
             }
@@ -226,10 +224,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         val nextSibling = (outerComment ?: elementIn).getNextNonEmptySiblingIgnoringComments()
                 ?: return
-        LOGGER.info("Getting parent function declaration of element: ${nextSibling.text}")
         val function = nextSibling as? ObjJUniversalFunctionElement ?: nextSibling.directParentFunctionElement
                 ?: return
-        LOGGER.info("Getting parent function declaration: ${function.functionNameString.ifEmptyNull() ?: "NULL"}. Params: ${function.parameterNames}")
         addCompletionElementsSimple(resultSet, function.parameterNames)
     }
 

@@ -36,7 +36,6 @@ object JsTypeDefBundledSourcesRegistrationUtil {
         didInit = true
         val moduleScope = module.moduleContentWithDependenciesScope
         if (FilenameIndex.getAllFilesByExt(module.project, "j", moduleScope).isEmpty()) {
-            LOGGER.info("There are no .j files in project")
             return
         }
         runWriteAction {
