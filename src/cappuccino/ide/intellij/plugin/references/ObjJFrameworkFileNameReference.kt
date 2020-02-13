@@ -11,7 +11,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 
 class ObjJFrameworkFileNameReference(element:ObjJFrameworkFileName)
     : PsiPolyVariantReferenceBase<ObjJFrameworkFileName>(element, TextRange(0, element.textLength))
@@ -43,7 +43,7 @@ class ObjJFrameworkFileNameReference(element:ObjJFrameworkFileName)
 
     override fun handleElementRename(newElementName: String): PsiElement {
         val out = ObjJPsiImplUtil.setName(element, newElementName)
-        FileContentUtil.reparseFiles(listOf(element.containingFile.virtualFile))
+        FileContentUtilCore.reparseFiles(listOf(element.containingFile.virtualFile))
         return out
     }
 

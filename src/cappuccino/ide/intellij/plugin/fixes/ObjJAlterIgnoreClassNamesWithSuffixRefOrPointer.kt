@@ -10,7 +10,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 /**
@@ -41,7 +41,7 @@ class ObjJAlterIgnoreClassNamesWithSuffixRefOrPointer(private val shouldIgnore:B
     private fun invoke(file:PsiFile) {
         ObjJPluginSettings.ignoreMissingClassesWhenSuffixedWithRefOrPointer = shouldIgnore
         ApplicationManager.getApplication().invokeLater {
-            FileContentUtil.reparseFiles (listOf(file.virtualFile))
+            FileContentUtilCore.reparseFiles (listOf(file.virtualFile))
         }
     }
 

@@ -10,7 +10,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 /**
@@ -48,7 +48,7 @@ class ObjJAlterIgnoredFunctionNames(private val keyword:String, val addToIgnored
             } else {
                 ObjJPluginSettings.removeIgnoredFunctionName(keyword)
             }
-            FileContentUtil.reparseFiles(file.virtualFile)
+            FileContentUtilCore.reparseFiles(file.virtualFile)
         }
     }
 

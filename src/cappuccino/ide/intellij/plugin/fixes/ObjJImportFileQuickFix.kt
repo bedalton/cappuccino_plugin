@@ -17,7 +17,6 @@ import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.TransactionGuardImpl
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -32,7 +31,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.ui.components.JBList
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.ui.UIUtil
 import icons.ObjJIcons
 import javafx.geometry.Orientation
@@ -184,14 +183,14 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
             }
 
             if (siblingElement == null) {
-                FileContentUtil.reparseFiles(listOf(fileToAlter.virtualFile))
+                FileContentUtilCore.reparseFiles(listOf(fileToAlter.virtualFile))
                 return@runUndoTransparentWriteAction added != null
             }
             val siblingTextRange = siblingElement.textRange
             val thisElementRange = added.textRange
             val range = TextRange.create(min(siblingTextRange.startOffset, thisElementRange.startOffset), max(siblingTextRange.endOffset, thisElementRange.endOffset))
             EditorUtil.formatRange(fileToAlter, range)
-            FileContentUtil.reparseFiles(listOf(fileToAlter.virtualFile))
+            FileContentUtilCore.reparseFiles(listOf(fileToAlter.virtualFile))
             return@runUndoTransparentWriteAction added != null
         }
 

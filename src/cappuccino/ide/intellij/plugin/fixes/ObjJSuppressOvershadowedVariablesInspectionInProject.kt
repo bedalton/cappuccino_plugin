@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 import org.jetbrains.annotations.Nls
 
@@ -43,6 +44,6 @@ class ObjJSuppressOvershadowedVariablesInspectionInProject : BaseIntentionAction
 
     private fun apply(file:PsiFile) {
         ObjJPluginSettings.ignoreOvershadowedVariables(true)
-        FileContentUtil.reparseFiles(file.virtualFile)
+        FileContentUtilCore.reparseFiles(file.virtualFile)
     }
 }

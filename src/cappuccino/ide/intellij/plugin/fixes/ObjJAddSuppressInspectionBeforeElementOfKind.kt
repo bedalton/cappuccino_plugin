@@ -21,7 +21,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 
@@ -60,7 +60,7 @@ abstract class ObjJAddSuppressInspectionBeforeElementOfKind(psiElement: PsiEleme
 
         DaemonCodeAnalyzer.getInstance(project).restart(file)
         ApplicationManager.getApplication().invokeLater {
-            FileContentUtil.reparseFiles(listOf(file.virtualFile))
+            FileContentUtilCore.reparseFiles(listOf(file.virtualFile))
         }
     }
 
