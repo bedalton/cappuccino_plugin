@@ -2,6 +2,7 @@
 
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBraces
@@ -86,7 +87,9 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
             return Spacing.createSpacing(spacing, spacing, lines, false, mySettings.KEEP_BLANK_LINES_IN_CODE)
         }*/
         //LOGGER.info("Type1: $type1; Type2: $type2; ElementType is: $elementType")
-
+        if (type1 == ObjJDocCommentTypes.ObjJDocComment_LEADING_ASTERISK || type2 == ObjJDocCommentTypes.ObjJDocComment_LEADING_ASTERISK) {
+            return Spacing.createSpacing(1, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
         if (type1 == ObjJ_DOT)
             return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
         if (type2 == ObjJ_DOT && !node2.isDirectlyPrecededByNewline())
