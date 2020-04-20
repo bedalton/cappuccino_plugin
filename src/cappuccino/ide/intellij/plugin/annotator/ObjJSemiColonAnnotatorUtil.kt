@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeType
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 
@@ -75,8 +76,11 @@ internal object ObjJSemiColonAnnotatorUtil {
      */
     private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolder) {
         val errorRange = TextRange.create(element.textRange.endOffset - 1, element.textRange.endOffset)
-        annotationHolder.createErrorAnnotation(errorRange, ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"))
-                .registerFix(ObjJAddSemiColonIntention(element))
+        val messageKey = "objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"
+        annotationHolder.newAnnotation(HighlightSeverity.ERROR, ObjJBundle.message(messageKey))
+                .range(errorRange)
+                .withFix(ObjJAddSemiColonIntention(element))
+                .create()
     }
 
     /**

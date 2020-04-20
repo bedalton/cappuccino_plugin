@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
@@ -24,7 +26,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
             Option("objj.hints.function_parameter_name", "Function parameter names", true)
 
 
-    override fun getParameterHints(element: PsiElement?): MutableList<InlayInfo> {
+    override fun getParameterHints(element: PsiElement): MutableList<InlayInfo> {
         if (true || element == null)
             return mutableListOf()
         val project = element.project;
@@ -83,7 +85,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         return mutableSetOf()
     }
 
-    override fun getHintInfo(element: PsiElement?): HintInfo? {
+    override fun getHintInfo(element: PsiElement): HintInfo? {
         return null
     }
 

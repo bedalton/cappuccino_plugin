@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.getNextSiblingOfType
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 
 object ObjJVariableDeclarationAnnotator {
@@ -25,7 +26,12 @@ object ObjJVariableDeclarationAnnotator {
             // Check that method call is not being assigned to directly
             // Values can only be assigned to (.) or [array] expressions
             if (qualifiedReference.methodCall != null && qualifiedReference.qualifiedNameParts.isEmpty()) {
-                annotationHolder.createErrorAnnotation(qualifiedReference.getNextSiblingOfType(ObjJTypes.ObjJ_EQUALS)?:qualifiedReference, ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.assign-to-method-call-err.message"))
+                val range = qualifiedReference.getNextSiblingOfType(ObjJTypes.ObjJ_EQUALS)
+                        ?: qualifiedReference;
+                val errorMessageKey = "objective-j.annotator-messages.variable-declaration-annotator.assign-to-method-call-err.message";
+                annotationHolder.newAnnotation(HighlightSeverity.ERROR, ObjJBundle.message(errorMessageKey))
+                        .range(range)
+                        .create()
                 return
             }
             // Check that there is not a qualified reference in a 'var' declaration
@@ -37,7 +43,9 @@ object ObjJVariableDeclarationAnnotator {
             // as these cannot be assigned to
             val lastChild = qualifiedReference.qualifiedNameParts.lastOrNull() ?: return
             if (lastChild is ObjJFunctionCall) {
-                annotationHolder.createErrorAnnotation(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset), ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.assign-to-func-call.message"))
+                annotationHolder.newAnnotation(HighlightSeverity.ERROR, ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.assign-to-func-call.message"))
+                        .range(TextRange(lastChild.textRange.startOffset, variableDeclaration.textRange.endOffset))
+                        .create()
             }
         }
     }
@@ -62,6 +70,11 @@ object ObjJVariableDeclarationAnnotator {
             }
             textRange = TextRange.create(startOffset, variableDeclaration.textRange.endOffset)
         }
-        annotationHolder.createErrorAnnotation(textRange, ObjJBundle.message("objective-j.annotator-messages.variable-declaration-annotator.qname-in-var-dec.message"))
+        val message = ObjJBundle.message(
+                "objective-j.annotator-messages.variable-declaration-annotator.qname-in-var-dec.message"
+        )
+        annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
+                .range(textRange)
+                .create()
     }
 }

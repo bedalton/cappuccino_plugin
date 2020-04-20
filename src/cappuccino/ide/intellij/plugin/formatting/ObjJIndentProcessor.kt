@@ -115,7 +115,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (settings.KEEP_FIRST_COLUMN_COMMENT && (elementType == ObjJ_SINGLE_LINE_COMMENT || elementType == ObjJ_BLOCK_COMMENT)) {
             val previousNode = node.treePrev
             if (previousNode != null && previousNode.elementType == WHITE_SPACE && previousNode.text.endsWith("\n")) {
-                return Indent.getAbsoluteNoneIndent()
+                return Indent.getNoneIndent();
             }
         }
 
