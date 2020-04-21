@@ -11,8 +11,8 @@ class ObjJExpandNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 
     // should be called after ClassesTreeStructureProvider
     override fun modify(
-            parent: AbstractTreeNode<Any>,
-            children: Collection<AbstractTreeNode<Any>>,
+            parent: AbstractTreeNode<*>,
+            children: Collection<AbstractTreeNode<*>>,
             settings: ViewSettings
     ): Collection<AbstractTreeNode<out Any>> {
         val result = ArrayList<AbstractTreeNode<out Any>>()
@@ -22,8 +22,7 @@ class ObjJExpandNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 
             if (childValue != null) {
                 result.add(ObjJFileTreeNode(childValue.project, childValue, settings))
-            }
-            else {
+            } else {
                 result.add(child)
             }
 
@@ -32,7 +31,7 @@ class ObjJExpandNodeProjectViewProvider : TreeStructureProvider, DumbAware {
         return result
     }
 
-    override fun getData(selected: Collection<AbstractTreeNode<Any>>, dataName: String): Any? = null
+    override fun getData(selected: MutableCollection<AbstractTreeNode<*>>, dataId: String): Any? = null
 }
 
 /*

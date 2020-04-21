@@ -1,17 +1,17 @@
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.*
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJRightExpr
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
-import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNode
-import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptyNodeIgnoringComments
-import cappuccino.ide.intellij.plugin.psi.utils.getSelfOrParentOfType
-import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
+import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.settings.ObjJCodeStyleSettings
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiFile
@@ -63,6 +63,34 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         }
 
 
+        if (elementType == ObjJDocComment_START || elementType == ObjJDocComment_COMMENT) {
+            return Indent.getNoneIndent()
+        }
+
+        if ((elementType == ObjJDocComment_LEADING_ASTERISK || prevSibling == ObjJDocComment_LEADING_ASTERISK || elementType == ObjJDocComment_END))  {
+            return Indent.getSpaceIndent(1, false)
+        }
+
+        if (parentType == ObjJDocComment_COMMENT && prevSiblingType != ObjJDocComment_LEADING_ASTERISK) {
+            return Indent.getNormalIndent()
+        }
+
+        if (elementType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK) {
+            if (node.getPreviousPossiblyEmptySibling()?.text?.endsWith("\n").orFalse())
+                return Indent.getNoneIndent()
+            return Indent.getNormalIndent()
+        }
+
+        if (parentType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK) {
+            return Indent.getNoneIndent()
+        }
+
+        if (parentType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK) {
+            if (node.getPreviousPossiblyEmptySibling()?.text?.endsWith("\n").orFalse())
+                return prevSpaceIndent(node)
+            return Indent.getNoneIndent()
+        }
+
         if (parentType == ObjJ_FOR_STATEMENT || parentType == ObjJ_WHILE_STATEMENT || parentType == ObjJ_DO_WHILE_STATEMENT) {
             if (elementType == ObjJ_STATEMENT_OR_BLOCK)
                 return Indent.getNoneIndent()
@@ -104,10 +132,6 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
-        if (elementType == ObjJ_BLOCK_COMMENT_BODY) {
-            return Indent.getNoneIndent()
-        }
-
         if (elementType == ObjJ_BLOCK_COMMENT_LEADING_ASTERISK || elementType == ObjJ_BLOCK_COMMENT_END) {
             return Indent.getSpaceIndent(1, true)
         }
@@ -115,7 +139,7 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         if (settings.KEEP_FIRST_COLUMN_COMMENT && (elementType == ObjJ_SINGLE_LINE_COMMENT || elementType == ObjJ_BLOCK_COMMENT)) {
             val previousNode = node.treePrev
             if (previousNode != null && previousNode.elementType == WHITE_SPACE && previousNode.text.endsWith("\n")) {
-                return Indent.getAbsoluteNoneIndent()
+                return Indent.getNormalIndent()
             }
         }
 
@@ -431,5 +455,15 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
         val LOGGER:Logger by lazy {
             Logger.getLogger("#"+ObjJIndentProcessor::class.java.canonicalName)
         }
+    }
+
+    private fun prevSpaceIndent(node:ASTNode) : Indent? {
+        val prev = node.getPreviousPossiblyEmptySibling()
+        if (prev == null || prev.elementType != WHITE_SPACE) {
+            LOGGER.warning("Getting prev space index fails becaues prev sibling is not whitespace")
+            return null
+        }
+        val indent = prev.text.split("\n").last().length
+        return Indent.getSpaceIndent(indent, false)
     }
 }

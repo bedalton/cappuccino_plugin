@@ -110,6 +110,10 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
     return node
 }
 
+fun ASTNode?.getPreviousPossiblyEmptySibling(): ASTNode? {
+    return this?.treePrev ?: getPrevInTreeParent(this)
+}
+
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode? = this?.treePrev ?: getPrevInTreeParent(this) ?: return null
     while (out != null && shouldSkipNode(out, ignoreLineTerminator)) {
@@ -145,6 +149,11 @@ private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
     return temp?.treePrev
 }
 
+
+
+fun ASTNode?.getNextPossiblyEmptySibling(): ASTNode? {
+    return this?.treeNext ?: getNextInTreeParent(this)
+}
 
 fun ASTNode.getNextNonEmptySiblingIgnoringComments(): ASTNode? {
     var node = this.getNextNonEmptyNode(true)

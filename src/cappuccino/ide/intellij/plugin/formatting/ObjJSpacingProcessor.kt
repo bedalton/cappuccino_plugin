@@ -95,9 +95,13 @@ class ObjJSpacingProcessor(private val myNode: ASTNode, private val mySettings: 
         if (type2 == ObjJ_DOT && !node2.isDirectlyPrecededByNewline())
             return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
 
-        if (type2 == ObjJ_RIGHT_EXPR && !node2.isDirectlyPrecededByNewline())
-            return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
-
+        if (type2 == ObjJ_RIGHT_EXPR) {
+            if (!node2.text.startsWith(".")) {
+                return Spacing.createSpacing(0, Int.MAX_VALUE, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+            }
+            if (!node2.isDirectlyPrecededByNewline())
+                return Spacing.createSpacing(0, 0, 0, true, mySettings.KEEP_BLANK_LINES_IN_CODE)
+        }
         if (type2 == ObjJ_STATEMENT_OR_BLOCK || (type2 == ObjJ_BLOCK_ELEMENT && parentType != ObjJ_STATEMENT_OR_BLOCK)) {
             val block = when {
                 node2.firstChildNode?.elementType == ObjJ_BLOCK_ELEMENT -> node2.firstChildNode

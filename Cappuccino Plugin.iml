@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PLUGIN_MODULE" version="4">
   <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/resources/META-INF/plugin.xml" />
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/../target/production/Cappuccino Plugin Actual" />
-    <output-test url="file://$MODULE_DIR$/../target/test/Cappuccino Plugin Actual" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/gen/cappuccino/decompiler" />
-      <excludeFolder url="file://$MODULE_DIR$/gen/org/cappuccino_project/ide/intellij/plugin/extensions" />
       <excludeFolder url="file://$MODULE_DIR$/src/cappuccino/ide/intellij/plugin/extensions" />
-      <excludeFolder url="file://$MODULE_DIR$/src/org/cappuccino_project/ide/intellij/plugin/extensions" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
   </component>
 </module>
