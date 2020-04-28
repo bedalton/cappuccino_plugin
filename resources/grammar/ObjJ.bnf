@@ -566,7 +566,7 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= varModifier variableDeclarationList
+	::= varModifier <<enterMode "bodyVar">>variableDeclarationList<<exitMode "bodyVar">>
 	{
 		pin=1
 	}
@@ -1883,7 +1883,7 @@ parenEnclosedExpr
         ]
 	}
 	;
-private incrementExpr
+incrementExpr
 	::= ('--'|'++') qualifiedReference
    	| 	qualifiedReference ('++'|'--')
 	;
@@ -2221,7 +2221,8 @@ private callTargetPrime
 	;
 
 qualifiedReference
-	::= (stringLiteral|variableName|methodCall|parenEnclosedExpr|functionCall) qualifiedReferencePrimary*
+	::= <<inMode "bodyVar">>variableName
+	|	<<notInMode "bodyVar">>(stringLiteral|variableName|methodCall|parenEnclosedExpr|functionCall) qualifiedReferencePrimary*
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"

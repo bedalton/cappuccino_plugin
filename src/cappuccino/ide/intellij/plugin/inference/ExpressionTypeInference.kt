@@ -44,7 +44,7 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Tag): InferenceResu
             (expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null)
             && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
     ) {
-        val qualifiedNameParts = expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty();
+        val qualifiedNameParts = expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty()
         val qualifiedReferenceResult = inferQualifiedReferenceType(qualifiedNameParts, tag) ?: return null
         InferenceResult(types = qualifiedReferenceResult.types)
     } else {
@@ -127,7 +127,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult
             return@getCachedInferredTypes InferenceResult(isNumeric = true)
         if (leftExpression.typeOfExprPrime != null)
             return@getCachedInferredTypes InferenceResult(isString = true)
-        if (leftExpression.minusMinus != null || leftExpression.plusPlus != null)
+        if (leftExpression.incrementExpr?.minusMinus != null || leftExpression.incrementExpr?.plusPlus != null)
             return@getCachedInferredTypes InferenceResult(isNumeric = true)
         if (leftExpression.arrayLiteral != null) {
             var types: Set<JsTypeListType> = getInferredTypeFromExpressionArray(leftExpression.arrayLiteral!!.exprList, tag).classes.toJsTypeList()
@@ -244,7 +244,7 @@ private object IsNumericUtil {
     private fun isLeftExprNumber(leftExpression: ObjJLeftExpr?): Boolean {
         if (leftExpression == null)
             return false
-        if (leftExpression.plusPlus != null || leftExpression.minusMinus != null)
+        if (leftExpression.incrementExpr?.plusPlus != null || leftExpression.incrementExpr?.minusMinus != null)
             return true
         if (leftExpression.variableAssignmentLogical != null)
             return true
