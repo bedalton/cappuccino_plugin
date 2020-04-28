@@ -47,7 +47,8 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
     companion object {
 
         fun execute(declaration: ObjJImplementationDeclaration, group:FoldingGroup): FoldingDescriptor? {
-            val startElement = (declaration.inheritedProtocolList ?: declaration.categoryName?: declaration.superClass ?: declaration.getClassName() ?: return null)
+            val startElement = (declaration.inheritedProtocolList ?: declaration.categoryName?: declaration.superClass ?: declaration.className
+            ?: return null)
             val startOffset:Int = startElement.textRange.endOffset
             val endOffset:Int = declaration.atEnd?.textRange?.endOffset ?: return null
             val numMethods = declaration.methodDeclarationList.size
@@ -66,7 +67,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
         }
 
         fun execute(protocol:ObjJProtocolDeclaration, group:FoldingGroup) : FoldingDescriptor? {
-            val startElement = protocol.inheritedProtocolList ?: protocol.getClassName() ?: return null
+            val startElement = protocol.inheritedProtocolList ?: protocol.className ?: return null
             val startOffset = startElement.textRange.endOffset
             val endOffset = (protocol.atEnd?.textRange?.endOffset ?: protocol.textRange.endOffset) - 1
             if (startOffset >= endOffset) {

@@ -9,6 +9,8 @@ import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJMethodStruct
 
 interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : ObjJStubBasedElement<StubT>, ObjJIsOfClassType, ObjJHasProtocolList, ObjJCompositeElement, ObjJResolveableElement<StubT> {
 
+    val className: ObjJClassName?
+
     val classNameString : String
 
     val internalMethodHeaders : List<ObjJMethodHeader>
@@ -21,7 +23,6 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
 
     fun getAllSelectors(internalOnly: Boolean) : Set<String>
 
-    fun getClassName() : ObjJClassName?
 
     fun hasMethod(selector: String): Boolean
 

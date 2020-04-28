@@ -190,7 +190,7 @@ object ObjJPsiImplUtil {
         if (classElement.stub != null) {
             return classElement.stub?.className ?: ""
         }
-        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME
+        return classElement.className?.text ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     @JvmStatic
@@ -198,7 +198,7 @@ object ObjJPsiImplUtil {
         if (classElement.stub != null) {
             return classElement.stub.className
         }
-        return classElement.getClassName()?.text ?: ObjJClassType.UNDEF_CLASS_NAME
+        return classElement.className?.text ?: ObjJClassType.UNDEF_CLASS_NAME
     }
 
     @JvmStatic
@@ -1297,7 +1297,11 @@ object ObjJPsiImplUtil {
     fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(declaration)
 
     @JvmStatic
+    fun getTreeStructureChildElements(declaration: ObjJProtocolDeclaration): Array<ObjJStructureViewElement> = ObjJTreeStructureUtil.getTreeStructureChildElements(declaration)
+
+    @JvmStatic
     fun createTreeStructureElement(protocol: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement = ObjJTreeStructureUtil.createTreeStructureElement(protocol)
+
 
     @JvmStatic
     fun createTreeStructureElement(methodDeclaration: ObjJMethodDeclaration): ObjJStructureViewElement = createTreeStructureElement(methodDeclaration.methodHeader)

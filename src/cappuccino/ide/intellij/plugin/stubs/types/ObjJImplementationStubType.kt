@@ -25,7 +25,7 @@ class ObjJImplementationStubType internal constructor(
 
     override fun createStub(
             element: ObjJImplementationDeclarationImpl, parentStub: StubElement<*>): ObjJImplementationStub {
-        val className = element.getClassName()?.text ?: ""
+        val className = element.className?.text ?: ""
         val superClassName = element.superClassName
         val protocols = element.getInheritedProtocols()
         val categoryName = if (element.categoryName != null) element.categoryName!!.text else null

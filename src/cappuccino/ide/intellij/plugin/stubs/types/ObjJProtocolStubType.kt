@@ -23,7 +23,7 @@ class ObjJProtocolStubType internal constructor(
 
     override fun createStub(
             element: ObjJProtocolDeclarationImpl, parentStub: StubElement<*>): ObjJProtocolDeclarationStub {
-        val className = element.getClassName()?.text ?: ""
+        val className = element.className?.text ?: ""
         val protocols = element.getInheritedProtocols()
         val shouldResolve = shouldResolve(element.node)
         return ObjJProtocolDeclarationStubImpl(parentStub, className, protocols, shouldResolve)

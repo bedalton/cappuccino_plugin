@@ -24,7 +24,7 @@ object ObjJElementFactory {
 
     fun createClassName(project:Project, className:String) : ObjJClassName? {
         val scriptText = "@implementation $className \n @end"
-        return createFileFromText(project, scriptText).classDeclarations[0].getClassName()
+        return createFileFromText(project, scriptText).classDeclarations[0].className
     }
 
     fun createSelector(project: Project, selectorIn: String): ObjJSelector?

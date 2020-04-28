@@ -27,7 +27,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
      */
     fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
         if (declaration.isCategory) {
-            annotateIfUndefinedImplementationForCategory(declaration.getClassName(), annotationHolder)
+            annotateIfUndefinedImplementationForCategory(declaration.className, annotationHolder)
         }/*else {
             // Annotation for duplicate implementations was removed due to conflicts in test files
             annotateIfDuplicateImplementation(declaration, annotationHolder)
