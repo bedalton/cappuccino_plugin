@@ -1491,6 +1491,7 @@ protocolDeclaration
 			getClassType
 			createFoldingDescriptor
 			createTreeStructureElement
+			getTreeStructureChildElements
 			getCache
 		]
 	}
@@ -2322,6 +2323,7 @@ className
 		implements= [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"com.intellij.psi.NavigatablePsiElement"
 		]
 		methods = [
 			getReference
