@@ -1,6 +1,6 @@
 @file:Suppress("unused", "UNUSED_PARAMETER")
 
-package cappuccino.ide.intellij.plugin.formatting
+package cappuccino.ide.intellij.plugin.formatting.spacing
 
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes
 import cappuccino.ide.intellij.plugin.psi.*

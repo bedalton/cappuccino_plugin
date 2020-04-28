@@ -2,6 +2,7 @@
 
 package cappuccino.ide.intellij.plugin.formatting
 
+import cappuccino.ide.intellij.plugin.formatting.spacing.ObjJSpacingProcessor
 import cappuccino.ide.intellij.plugin.lang.ObjJFileType
 import cappuccino.ide.intellij.plugin.psi.ObjJArguments
 import cappuccino.ide.intellij.plugin.psi.ObjJIfStatement

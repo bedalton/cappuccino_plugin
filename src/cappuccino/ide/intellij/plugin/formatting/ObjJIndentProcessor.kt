@@ -2,6 +2,8 @@ package cappuccino.ide.intellij.plugin.formatting
 
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.*
+import cappuccino.ide.intellij.plugin.formatting.spacing.getObjectLiteralPropertySpacing
+import cappuccino.ide.intellij.plugin.formatting.spacing.getSelectorAlignmentSpacing
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclarationSelector
 import cappuccino.ide.intellij.plugin.psi.ObjJPropertyAssignment
 import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedMethodCallSelector
