@@ -57,3 +57,10 @@ infix fun <T : PsiElement> PsiElement?.hasParentOfType (parentClass:Class<T>) : 
 
 infix fun <T : PsiElement> PsiElement?.doesNotHaveParentOfType (parentClass:Class<T>) : Boolean =
         this != null && this.getParentOfType(parentClass) == null
+
+
+fun <T : PsiElement> PsiElement?.hasAnyParentOfType (vararg parentClass:Class<out T>) : Boolean {
+    return this != null && parentClass.any { parent ->
+        this.getParentOfType(parent) != null
+    }
+}

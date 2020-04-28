@@ -12,7 +12,7 @@ import com.intellij.psi.PsiFile
 class ObjJFileTreeNode(
         myProject: Project,
         val value:ObjJFile,
-        viewSettings:ViewSettings
+        viewSettings:ViewSettings?
 ) : PsiFileNode(myProject, value, viewSettings) {
 
     private val objJFile: ObjJFile
