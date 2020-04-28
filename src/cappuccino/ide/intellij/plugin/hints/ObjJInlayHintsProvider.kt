@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
