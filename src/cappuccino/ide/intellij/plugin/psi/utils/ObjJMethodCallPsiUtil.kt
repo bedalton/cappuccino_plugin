@@ -37,7 +37,7 @@ fun getSelectorList(methodCall:ObjJMethodCall): List<ObjJSelector?> {
  * @param psiElement currently editing psi element
  * @return array of selectors in this editing psi element
  */
-fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentMethodCall: ObjJMethodCall?): List<ObjJSelector> {
+fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentMethodCall: ObjJMethodCall?): List<ObjJSelector>? {
     val project = psiElement.project
 
     //Check to ensure this element is part of a method
@@ -54,7 +54,8 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
     if (psiElement is ObjJSelector || psiElement.parent is ObjJSelector) {
         return selectors
     }
-
+    return null
+/*
     // If psi parent is a qualified method call,
     // find it's index in selector array for autocompletion
     selectorIndex = if (psiElement.parent is ObjJQualifiedMethodCallSelector) {
@@ -79,6 +80,7 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
     val selector = ObjJElementFactory.createSelector(project, psiElement.text) ?: return selectors
     selectors.add(selector)
     return selectors
+ */
 }
 
 fun getCallTargetText(methodCall:ObjJMethodCall): String =

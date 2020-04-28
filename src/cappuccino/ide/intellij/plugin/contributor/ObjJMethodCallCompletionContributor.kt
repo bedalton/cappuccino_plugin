@@ -7,12 +7,14 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor.Comp
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJSelectorLookupUtil
 import cappuccino.ide.intellij.plugin.indices.*
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
-import cappuccino.ide.intellij.plugin.psi.ObjJSelector
-import cappuccino.ide.intellij.plugin.psi.ObjJSelectorLiteral
+import cappuccino.ide.intellij.plugin.inference.inferExpressionType
+import cappuccino.ide.intellij.plugin.inference.withoutAnyType
+import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
+import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope
 import cappuccino.ide.intellij.plugin.references.getClassConstraints
@@ -21,6 +23,7 @@ import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.stucts.getMethodStructs
 import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
+import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -31,7 +34,9 @@ import java.util.logging.Logger
 
 object ObjJMethodCallCompletionContributor {
 
-    private val LOGGER = Logger.getLogger(ObjJMethodCallCompletionContributor::class.java.name)
+    private val LOGGER by lazy {
+        Logger.getLogger("#"+ObjJMethodCallCompletionContributor::class.java.name)
+    }
 
     /**
      * Method to manage adding selector lookup elements to result set
@@ -42,7 +47,7 @@ object ObjJMethodCallCompletionContributor {
             result: CompletionResultSet,
             psiElement: PsiElement?) {
         if (psiElement == null) {
-           //LOGGER.severe("Cannot add selector lookup elements. Selector element is null")
+            //LOGGER.severe("Cannot add selector lookup elements. Selector element is null")
             return
         }
         val selectorLiteral = psiElement.getSelfOrParentOfType(ObjJSelectorLiteral::class.java)
@@ -59,7 +64,7 @@ object ObjJMethodCallCompletionContributor {
     private fun addMethodCallCompletions(result: CompletionResultSet, psiElement: PsiElement, elementsParentMethodCall: ObjJMethodCall?, useAllSelectors: Boolean = true) {
         // Check for null parent method call
         if (elementsParentMethodCall == null) {
-           //LOGGER.severe("Cannot add method call completions. Method call parent element is null")
+            //LOGGER.severe("Cannot add method call completions. Method call parent element is null")
             result.stopHere()
             return
         }
@@ -69,9 +74,37 @@ object ObjJMethodCallCompletionContributor {
             return
         }
 
+        // Create tag for inference type resolution
+        val tag = createTag()
+
+        //Determine target scope
+        val scope: MethodScope = getTargetScope(elementsParentMethodCall.callTargetText, elementsParentMethodCall.project)
+
+
         // Find all possible completion elements, even those from a broken method call element
-        var selectors: List<ObjJSelector> = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
+        var selectors: List<ObjJSelector>? = getSelectorsFromIncompleteMethodCall(psiElement, elementsParentMethodCall)
+        val strictType = mutableListOf<String>()
+        //Determine possible containing class names
+        val possibleContainingClassNames: List<String> = when {
+            scope == MethodScope.STATIC -> {
+                strictType.add(elementsParentMethodCall.callTargetText)
+                ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
+            }
+            selectors.isNotNullOrEmpty() -> getClassConstraints(selectors!![0], tag, strictType)
+            psiElement is ObjJCompositeElement -> getClassConstraints(psiElement, tag, strictType)
+            else -> emptyList()
+        }
+        val usePrivate = elementsParentMethodCall.containingClassName in possibleContainingClassNames
+
+        // Selectors is empty
+        if (selectors.isNullOrEmpty()) {
+            addMethodDeclarationLookupElementsForClasses(psiElement.project, result, possibleContainingClassNames, scope, usePrivate)
+            return
+        }
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
+
+        // Get all selectors possibly checked for
+        addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
 
         // Trim Selectors if needed
         if (!useAllSelectors && selectorIndex >= 0) {
@@ -81,28 +114,6 @@ object ObjJMethodCallCompletionContributor {
         // Get selectors as string
         val selectorString = getSelectorString(selectors)
 
-        // Create tag for inference type resolution
-        val tag = createTag()
-
-        // Get all selectors possibly checked for
-        addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
-
-        //Determine target scope
-        val scope: MethodScope = getTargetScope(elementsParentMethodCall)
-
-
-        val strictType = mutableListOf<String>()
-        //Determine possible containing class names
-        val possibleContainingClassNames: List<String> = when {
-            scope == MethodScope.STATIC -> {
-                strictType.add(elementsParentMethodCall.callTargetText)
-                ObjJInheritanceUtil.getAllInheritedClasses(elementsParentMethodCall.callTargetText, psiElement.project).toList()
-            }
-            selectors.isNotEmpty() -> getClassConstraints(selectors[0], tag, strictType)
-            else -> emptyList()
-        }
-
-        val usePrivate = elementsParentMethodCall.containingClassName in possibleContainingClassNames
 
         // Attempt to add completions for known classes
         val project = psiElement.project
@@ -117,7 +128,7 @@ object ObjJMethodCallCompletionContributor {
                 possibleContainingClassNames = possibleContainingClassNames,
                 selectorIndex = selectorIndex,
                 targetScope = scope,
-                selectorString = selectors.subList(0, selectorIndex + 1).joinToString ("") { it.getSelectorString(true)},
+                selectorString = selectors.subList(0, selectorIndex + 1).joinToString("") { it.getSelectorString(true) },
                 usePrivate = usePrivate
         )
 
@@ -146,6 +157,41 @@ object ObjJMethodCallCompletionContributor {
         if (!didAddCompletions && useAllSelectors) {
             addMethodCallCompletions(result, psiElement, elementsParentMethodCall, false)
         }
+    }
+
+    fun getInArrayMethodCallCompletions(result: CompletionResultSet, arrayLiteral: ObjJArrayLiteral): Boolean {
+        if (arrayLiteral.exprList.size > 0) {
+            return false
+        }
+        val callTargetLike = arrayLiteral.exprList.first()
+                ?: return false
+        if (callTargetLike.getNextNonEmptySibling(true)?.elementType == ObjJTypes.ObjJ_COMMA) {
+            return false
+        }
+        val project = callTargetLike.project
+        val callTargetText = callTargetLike.text
+        //Determine target scope
+        val scope: MethodScope = getTargetScope(callTargetLike.text, project)
+        val tag = createTag()
+        val strictType = mutableListOf<String>()
+        //Determine possible containing class names
+        val possibleContainingClassNames: List<String> = if (scope == MethodScope.STATIC) {
+            strictType.add(callTargetText)
+            ObjJInheritanceUtil.getAllInheritedClasses(callTargetText, project).toList()
+        } else {
+            inferExpressionType(callTargetLike, tag)?.withoutAnyType().orEmpty().toList()
+        }
+
+        val containingClass = callTargetLike
+                .getParentOfType(ObjJClassDeclarationElement::class.java)
+                ?.classNameString
+                .orEmpty()
+        val usePrivate = containingClass in possibleContainingClassNames
+
+        // Attempt to add completions for known classes
+        addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, scope, usePrivate)
+        result.stopHere()
+        return true
     }
 
     private fun getSelectorString(selectors: List<ObjJSelector>): String {
@@ -232,12 +278,12 @@ object ObjJMethodCallCompletionContributor {
 
     private fun addCompletionsForKnownClasses(
             resultSet: CompletionResultSet,
-            project:Project,
+            project: Project,
             possibleContainingClassNames: List<String>,
             targetScope: MethodScope,
             selectorIndex: Int,
             selectorString: String,
-            strictTypes:List<String>? = null,
+            strictTypes: List<String>? = null,
             usePrivate: Boolean
     ): Boolean {
         // Check if class names are empty
@@ -258,7 +304,7 @@ object ObjJMethodCallCompletionContributor {
                 .flatMap {
                     val constructs = it.getMethodStructs(true, createTag())
                     constructs
-                } .filter {
+                }.filter {
                     selectorStringBefore.isEmpty() || it.selectorStringWithColon.startsWith(selectorStringBefore)
                 }
                 .forEach {
@@ -298,7 +344,7 @@ object ObjJMethodCallCompletionContributor {
             result: CompletionResultSet,
             possibleContainingClassNames: List<String>,
             targetScope: MethodScope,
-            usePrivate:Boolean
+            usePrivate: Boolean
     ): Boolean {
         var didAdd = false
         collapseContainingClasses(project, possibleContainingClassNames).forEach {
@@ -487,9 +533,9 @@ object ObjJMethodCallCompletionContributor {
     /**
      * Gets the scope for the suggested getMethods we should have
      */
-    private fun getTargetScope(methodCall: ObjJMethodCall): MethodScope {
+    private fun getTargetScope(callTargetText: String, project: Project): MethodScope {
         return when {
-            ObjJImplementationDeclarationsIndex.instance[methodCall.callTargetText, methodCall.project].isNotEmpty() -> MethodScope.STATIC
+            ObjJImplementationDeclarationsIndex.instance[callTargetText, project].isNotEmpty() -> MethodScope.STATIC
             else -> MethodScope.ANY
         }
     }
@@ -515,6 +561,7 @@ object ObjJMethodCallCompletionContributor {
             priorityIfNotTarget
         }
     }
+
     internal data class SelectorCompletionPriorityTuple(val selector: ObjJSelectorStruct, val priority: Double)
 
 }

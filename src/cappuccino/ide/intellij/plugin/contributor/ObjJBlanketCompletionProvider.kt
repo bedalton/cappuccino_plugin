@@ -98,7 +98,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         if (caretIndex < 0)
             return
         val queryString = element.text.substring(0, caretIndex)
-
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
                 resultSet.stopHere()
@@ -144,6 +143,11 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
                 return
             }
+            element.parent is ObjJArrayLiteral && ObjJMethodCallCompletionContributor.getInArrayMethodCallCompletions(resultSet, element.parent as ObjJArrayLiteral) -> {
+                resultSet.stopHere()
+                return
+            }
+
             isMethodCallSelector(element) ->
                 ObjJMethodCallCompletionContributor.addSelectorLookupElementsFromSelectorList(resultSet, element)
             element.hasParentOfType(ObjJSelectorLiteral::class.java) ->
