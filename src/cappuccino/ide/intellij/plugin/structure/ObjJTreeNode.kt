@@ -4,19 +4,18 @@ import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
+import cappuccino.ide.intellij.plugin.psi.utils.ObjJTreeStructureUtil
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.ide.projectView.PresentationData
-import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
-import com.intellij.ide.util.treeView.smartTree.TreeElement
-import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
+import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiElement
 import java.util.ArrayList
 
 class ObjJTreeNode(private val element: ObjJHasTreeStructureElement, project: Project) : AbstractTreeNode<PsiElement>(project, element) {
     private val viewElement: ObjJStructureViewElement = element.createTreeStructureElement()
-    private val alphaSortKey: String
+    internal val alphaSortKey: String
     private val alwaysLeaf: Boolean
 
     init {
@@ -40,6 +39,11 @@ class ObjJTreeNode(private val element: ObjJHasTreeStructureElement, project: Pr
         return element.canNavigateToSource()
     }
 
+
+    override fun getWeight(): Int {
+        return viewElement.weight ?: super.getWeight()
+    }
+
     override fun update(
             presentationData: PresentationData) {
         val elementPresentationData = viewElement.presentation
@@ -48,7 +52,15 @@ class ObjJTreeNode(private val element: ObjJHasTreeStructureElement, project: Pr
         presentationData.locationString = elementPresentationData.locationString
     }
     override fun getChildren(): List<AbstractTreeNode<PsiElement>> {
-        return getChildren(element)
+        return getChildren(element).sortedBy {
+            if ( it is ObjJTreeNode) {
+                it.alphaSortKey
+            } else if (it is ObjJFakeTreeNode) {
+                it.alphaSortKey
+            } else {
+                "z"+presentation.presentableText
+            }
+        }
     }
 }
 
@@ -62,12 +74,22 @@ internal fun getChildren(element: ObjJCompositeElement) : List<AbstractTreeNode<
 
     when (element) {
         is ObjJImplementationDeclaration -> {
+            val headerNode = element.className?.let {
+                ObjJFakeTreeNode(it, ObjJTreeStructureUtil.getHeaderStructureViewElement(element))
+            }
+            if (headerNode != null)
+                treeElements.add(headerNode)
             val instanceVars = element.instanceVariableList?.instanceVariableDeclarationList?.map {
                 ObjJTreeNode(it, project)
             }.orEmpty()
             treeElements.addAll(instanceVars)
         }
         is ObjJProtocolDeclaration -> {
+            val headerNode = element.className?.let {
+                ObjJFakeTreeNode(it, ObjJTreeStructureUtil.getHeaderStructureViewElement(element))
+            }
+            if (headerNode != null)
+                treeElements.add(headerNode)
             val instanceVars = element.instanceVariableDeclarationList.map {
                 ObjJTreeNode(it, project)
             }
@@ -93,4 +115,44 @@ private fun getVariableNamesInFile(file: ObjJFile, project:Project) : List<Abstr
         fileScopeVariables.addAll(variablesInDecList)
     }
     return fileScopeVariables.map{ ObjJTreeNode(it, project) }
+}
+
+class ObjJFakeTreeNode(private val element:ObjJCompositeElement, private val viewElement: ObjJStructureViewElement) : AbstractTreeNode<PsiElement>(element.project, element) {
+    internal val alphaSortKey: String = viewElement.alphaSortKey
+    private val alwaysLeaf: Boolean = viewElement.isAlwaysLeaf
+
+    override fun isAlwaysLeaf(): Boolean {
+        return alwaysLeaf
+    }
+
+    override fun navigate(requestFocus: Boolean) {
+        (element as? Navigatable)?.navigate(requestFocus)
+    }
+
+    override fun canNavigate(): Boolean = (element as? Navigatable)?.canNavigate().orFalse()
+    override fun canNavigateToSource(): Boolean = (element as? Navigatable)?.canNavigateToSource().orFalse()
+
+    override fun update(
+            presentationData: PresentationData) {
+        val elementPresentationData = viewElement.presentation
+        presentationData.setIcon(elementPresentationData.getIcon(true))
+        presentationData.presentableText = elementPresentationData.presentableText
+        presentationData.locationString = elementPresentationData.locationString
+    }
+
+    override fun getWeight(): Int {
+        return viewElement.weight ?: super.getWeight()
+    }
+
+    override fun getChildren(): List<AbstractTreeNode<PsiElement>> {
+        return getChildren(element) .sortedBy {
+            if ( it is ObjJTreeNode) {
+                it.alphaSortKey
+            } else if (it is ObjJFakeTreeNode) {
+                it.alphaSortKey
+            } else {
+                "z"+presentation.presentableText
+            }
+        }
+    }
 }
