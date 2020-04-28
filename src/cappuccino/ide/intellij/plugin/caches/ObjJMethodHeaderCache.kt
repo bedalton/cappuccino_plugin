@@ -23,7 +23,7 @@ fun createMethodHeaderCache(methodHeader: ObjJMethodHeaderDeclaration<*>) : ObjJ
 }
 
 interface ObjJMethodHeaderDeclarationCache {
-    fun getCachedReturnType(tag:Long):InferenceResult?
+    fun getCachedReturnType(tag:Tag):InferenceResult?
 }
 
 class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeaderDeclarationCache {
@@ -40,7 +40,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
     private val modificationTracker = MyModificationTracker()
 
 
-    override fun getCachedReturnType(tag: Long): InferenceResult {
+    override fun getCachedReturnType(tag: Tag): InferenceResult {
         if (modificationTracker.tagged(tag))
             return INFERRED_ANY_TYPE
         var types = returnTypesInternal
@@ -58,7 +58,7 @@ class ObjJMethodHeaderCache(val methodHeader:ObjJMethodHeader) : ObjJMethodHeade
     ): CachedValue<Map<ObjJCompositeElement, InferenceResult?>> {
         val provider = CachedValueProvider<Map<ObjJCompositeElement, InferenceResult?>> {
             val methodReturnTypeElement = methodHeader.methodHeaderReturnTypeElement?.formalVariableType
-            val returnTypeElementType = methodReturnTypeElement?.varTypeId?.className?.text
+            val returnTypeElementType = methodReturnTypeElement?.variableTypeId?.className?.text
                     ?: methodReturnTypeElement?.text
             val map: MutableMap<ObjJCompositeElement, InferenceResult?> = mutableMapOf()
             if (returnTypeElementType != null && returnTypeElementType != "id") {
@@ -98,7 +98,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
     }
     private var returnTypesInternal:InferenceResult? = null
 
-    override fun getCachedReturnType(tag:Long):InferenceResult {
+    override fun getCachedReturnType(tag:Tag):InferenceResult {
         var types = returnTypesInternal
         if (types != null)
             return types
@@ -121,7 +121,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
                 return@CachedValueProvider CachedValueProvider.Result.create(mapOf<ObjJCompositeElement, InferenceResult?>(parent to null), dependencies)
             }
             val map: MutableMap<ObjJCompositeElement, InferenceResult?> = if (variableType != null) {
-                val returnTypeElementType = listOfNotNull(variableType.varTypeId?.className?.text
+                val returnTypeElementType = listOfNotNull(variableType.variableTypeId?.className?.text
                         ?: variableType.text).toSet().toInferenceResult()
                 mutableMapOf(declaration to returnTypeElementType)
             } else {
@@ -137,7 +137,7 @@ class ObjJAccessorCache(val accessor:ObjJAccessorProperty) : ObjJMethodHeaderDec
 
 
 class ObjJSelectorLiteralCache(val selector: ObjJSelectorLiteral) : ObjJMethodHeaderDeclarationCache  {
-    override fun getCachedReturnType(tag:Long):InferenceResult
+    override fun getCachedReturnType(tag:Tag):InferenceResult
             = INFERRED_ANY_TYPE
 
 }

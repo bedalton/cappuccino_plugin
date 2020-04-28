@@ -202,17 +202,16 @@ internal constructor()//   Logger.getGlobal().log(Level.INFO, "Creating ObjJInde
      */
     override fun indexVariableName(stub: ObjJVariableNameStub, indexSink: IndexSink) {
         // Ensure has containing file
-        val containingFileName = ObjJPsiFileUtil.getContainingFileName(stub.psi.containingFile)
-        // Sink in file
-        indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, "$containingFileName-ALL")
+        val containingFile = stub.psi.containingFile
+        val variableName = stub.variableName
         val blockRanges = stub.containingBlockRanges
         if (blockRanges.isEmpty()) {
-            indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, "$containingFileName-TOP")
+            val range = containingFile.textRange
+            indexSink.occurrence<ObjJVariableName, ObjJRangeKey>(ObjJVariableNameByScopeIndex.KEY, ObjJRangeKey(variableName, range.startOffset, range.endOffset))
         }
-
         // Index for each containing block
         for (blockRange in blockRanges) {
-            indexSink.occurrence<ObjJVariableName, String>(ObjJVariableNameByScopeIndex.KEY, ObjJVariableNameByScopeIndex.getIndexKey(containingFileName, blockRange))
+            indexSink.occurrence<ObjJVariableName, ObjJRangeKey>(ObjJVariableNameByScopeIndex.KEY, ObjJRangeKey(variableName, blockRange.first, blockRange.second))
         }
     }
 

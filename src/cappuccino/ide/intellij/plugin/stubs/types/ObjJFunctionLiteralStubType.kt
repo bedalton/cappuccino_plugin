@@ -18,11 +18,11 @@ class ObjJFunctionLiteralStubType internal constructor(
             parent: StubElement<*>,
             fileName: String,
             fqName: String,
-            paramNames: List<String>,
+            parameterNames: List<String>,
             returnType: String?,
             shouldResolve: Boolean,
             scope:ObjJFunctionScope
     ): ObjJFunctionDeclarationElementStub<ObjJFunctionLiteralImpl> {
-        return ObjJFunctionLiteralStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve, scope)
+        return ObjJFunctionLiteralStubImpl(parent, fileName, fqName, parameterNames, returnType, shouldResolve, scope)
     }
 }

@@ -24,7 +24,7 @@ class ObjJGlobalVariableDeclarationStubType internal constructor(
 
     override fun createStub(
             variableDeclaration: ObjJGlobalVariableDeclarationImpl, stubParent: StubElement<*>): ObjJGlobalVariableDeclarationStub {
-        return ObjJGlobalVariableDeclarationStubImpl(stubParent, ObjJPsiFileUtil.getContainingFileName(variableDeclaration), variableDeclaration.variableNameString, variableDeclaration.variableType)
+        return ObjJGlobalVariableDeclarationStubImpl(stubParent, ObjJPsiFileUtil.getContainingFileName(variableDeclaration), variableDeclaration.variableNameString, variableDeclaration.variableTypeString)
     }
 
     @Throws(IOException::class)

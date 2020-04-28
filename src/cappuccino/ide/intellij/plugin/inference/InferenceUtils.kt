@@ -3,8 +3,8 @@ package cappuccino.ide.intellij.plugin.inference
 import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.psi.ObjJBlockElement
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.openapi.project.Project
@@ -14,37 +14,32 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiTreeAnyChangeAbstractAdapter
 
-private const val MAXIMUM_ACCESS_MARKS = 10
-
 internal val INFERENCE_TAG_LIST = Key<TagList>("objj.userdata.keys.INFERENCE_TAG_LIST")
 
 internal val INFERRED_TYPES_USER_DATA_KEY = Key<InferenceResult>("objj.userdata.keys.INFERRED_TYPES")
 
 internal val INFERRED_TYPES_VERSION_USER_DATA_KEY = Key<Int>("objj.userdata.keys.INFERRED_TYPES_VERSION")
 
-private const val INFERRED_TYPES_MINOR_VERSION:Int = 0
+private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
+
+private const val INFERRED_TYPES_MINOR_VERSION: Int = 0
 
 private const val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
-private val INFERRED_TYPES_IS_ACCESSING = Key<Int>("objj.userdata.keys.INFERRED_TYPES_IS_ACCESSING")
-
-private val INFERRED_TYPES_LAST_TEXT = Key<String>("objj.userdata.keys.INFERRED_TYPES_LAST_TEXT")
-
 private const val CACHE_EXPIRY = 15000
 
-private const val TEXT_DEPTH = 3;
+private const val TEXT_DEPTH = 3
 
-fun addStatusFileChangeListener(project:Project)
-    = StatusFileChangeListener.addListenerToProject(project)
+fun addStatusFileChangeListener(project: Project) = StatusFileChangeListener.addListenerToProject(project)
 
 
-private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
+private object StatusFileChangeListener : PsiTreeAnyChangeAbstractAdapter() {
     internal var didAddListener = false
 
     private var internalTimeSinceLastFileChange = now
     private var lastTag = now
 
-    val timeSinceLastFileChange:Long
+    val timeSinceLastFileChange: Long
         get() {
             if (internalTimeSinceLastFileChange - lastTag > CACHE_EXPIRY) {
                 lastTag = internalTimeSinceLastFileChange
@@ -52,9 +47,10 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
             return lastTag
         }
 
-    internal val nextTag : Long get() {
-        return timeSinceLastFileChange
-    }
+    internal val nextTag: Long
+        get() {
+            return timeSinceLastFileChange
+        }
 
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile && file !is JsTypeDefFile)
@@ -72,29 +68,28 @@ private object StatusFileChangeListener: PsiTreeAnyChangeAbstractAdapter() {
 }
 
 
-
 /**
  * Gets the cached types values for the given element
  * This should save computation time, but results are uncertain
  */
-internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (() -> InferenceResult?)? = null) : InferenceResult? {
+internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (() -> InferenceResult?)? = null): InferenceResult? {
     //if (this.getUserData(INFERRED_TYPES_IS_ACCESSING).orFalse())
-      //  return null;
+    //  return null;
     //val marks = this.getUserData(INFERRED_TYPES_IS_ACCESSING).orElse(0)
     //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks + 1)
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     // Establish and store last text
 
 
-    var textParent:PsiElement = this
+    var textParent: PsiElement = this
     for (i in 0 until TEXT_DEPTH) {
         val tempParent = textParent.parent
                 ?: break
-        if (tempParent !is ObjJBlock && tempParent !is ObjJFile)
+        if (tempParent !is ObjJBlockElement && tempParent !is ObjJFile)
             textParent = tempParent
     }
     val thisText = textParent.text
-    val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
+    val lastText = this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
     val textIsUnchanged = lastText == text
     // Check cache without tagging
     if (tag == null && textIsUnchanged) {
@@ -109,30 +104,46 @@ internal fun <T: PsiElement> T.getCachedInferredTypes(tag: Long?, getIfNull: (()
             return inferredTypes
         }
     }
+    if (tag != null && --tag.depth < 0)
+        return null
     //if (marks > MAXIMUM_ACCESS_MARKS)
-      //LOGGER.warning(.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
+    //LOGGER.warning(.info("Reached max marks. $marks/$MAXIMUM_ACCESS_MARKS")//return null
     try {
         val inferredTypes = getIfNull?.invoke() ?: this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         this.putUserData(INFERRED_TYPES_USER_DATA_KEY, inferredTypes)
         this.tagComplete(tag)
-        //this.putUserData(INFERRED_TYPES_IS_ACCESSING, marks - 1)
         this.putUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY, INFERRED_TYPES_VERSION)
         this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
         return inferredTypes
-    } catch (e:Exception) {
+    } catch (e: Exception) {
         this.clearTag(tag)
         throw e
     }
 }
 
-internal fun createTag():Long {
-    return StatusFileChangeListener.nextTag
+class Tag(val tag: Long, var depth: Int = 16) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Tag) return false
+
+        if (tag != other.tag) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return tag.hashCode()
+    }
+}
+
+internal fun createTag(): Tag {
+    return Tag(StatusFileChangeListener.nextTag)
 }
 
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun PsiElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
+internal fun PsiElement.tagged(tag: Tag?, setTag: Boolean = true): Boolean {
     if (tag == null)
         return false
     val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()
@@ -145,7 +156,7 @@ internal fun PsiElement.tagged(tag:Long?, setTag: Boolean = true):Boolean {
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun PsiElement.clearTag(tag:Long?):Boolean {
+internal fun PsiElement.clearTag(tag: Tag?): Boolean {
     if (tag == null)
         return false
     val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()
@@ -157,7 +168,7 @@ internal fun PsiElement.clearTag(tag:Long?):Boolean {
 /**
  * Returns true if this item has already been seen this loop
  */
-internal fun PsiElement.tagComplete(tag: Long?):Boolean {
+internal fun PsiElement.tagComplete(tag: Tag?): Boolean {
     if (tag == null)
         return false
     val tagList = getUserData(INFERENCE_TAG_LIST) ?: TagList()
@@ -167,9 +178,10 @@ internal fun PsiElement.tagComplete(tag: Long?):Boolean {
 }
 
 private const val TAG_LIST_LENGTH = 6
-internal data class TagList(var tags:Set<Long> = setOf(), var completed:MutableSet<Long> = mutableSetOf()) {
-    fun tagged(tag:Long, setTag: Boolean) : Boolean {
-        if(tag in tags) {
+
+internal data class TagList(var tags: Set<Tag> = setOf(), var completed: MutableSet<Tag> = mutableSetOf()) {
+    fun tagged(tag: Tag, setTag: Boolean): Boolean {
+        if (tag in tags) {
             return true
         }
         if (!setTag)
@@ -182,21 +194,22 @@ internal data class TagList(var tags:Set<Long> = setOf(), var completed:MutableS
         return false
     }
 
-    fun clearTag(tag:Long) {
-        tags = tags.filterNot {it == tag}.toSet()
+    fun clearTag(tag: Tag) {
+        tags = tags.filterNot { it == tag }.toSet()
     }
 
-    fun tagCompleted(tag:Long) {
+    fun tagCompleted(tag: Tag) {
         completed.add(tag)
     }
 
-    private val oldestTag:Long
-        get() = tags.min() ?: 0
+    private val oldestTag: Tag
+        get() = tags.minBy { it.tag } ?: createTag()
 }
 
-private val PsiElement.isTextUnchanged:Boolean get() {
-    val thisText = this.parent?.text ?: this.text
-    val lastText =  this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("")
-    this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
-    return lastText == text
-}
+private val PsiElement.isTextUnchanged: Boolean
+    get() {
+        val thisText = this.parent?.text ?: this.text
+        val lastText = this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("")
+        this.putUserData(INFERRED_TYPES_LAST_TEXT, thisText)
+        return lastText == text
+    }

@@ -2,6 +2,10 @@
 
 package cappuccino.ide.intellij.plugin.psi
 
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentComment
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
+import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
@@ -72,11 +76,11 @@ object ObjJElementFactory {
         return errorElement
     }
 
-    fun createIgnoreComment(project: Project, ignoreFlags: ObjJSuppressInspectionFlags, paramIn:String? = null): PsiElement {
-        val param = if (paramIn == null || paramIn.trim().isEmpty()) {
+    fun createIgnoreComment(project: Project, ignoreFlags: ObjJSuppressInspectionFlags, parameterIn:String? = null): PsiElement {
+        val param = if (parameterIn == null || parameterIn.trim().isEmpty()) {
             ""
         } else {
-            " $paramIn"
+            " $parameterIn"
         }
         val scriptText = "// @ignore " + ignoreFlags.flag + param
         val file = createFileFromText(project, scriptText)
@@ -140,9 +144,9 @@ object ObjJElementFactory {
         }
         var defaultValue = "nil"
         val formalVariableType = returnTypeElement.formalVariableType
-        if (formalVariableType.varTypeBool != null) {
+        if (formalVariableType.variableTypeBool != null) {
             defaultValue = "NO"
-        } else if (formalVariableType.varTypeId != null || formalVariableType.className != null) {
+        } else if (formalVariableType.variableTypeId != null || formalVariableType.className != null) {
             defaultValue = "Nil"
         }
         return "return $defaultValue;"
@@ -212,6 +216,17 @@ object ObjJElementFactory {
         val frameworkFileName = frameworkDescriptor.frameworkFileName
         assert (frameworkFileName != null) { "Framework name element cannot be null. Target filename = <$fileName>" }
         return frameworkFileName!!
+    }
+
+    fun createDocCommentQualifiedReferenceComponent(project: Project, name:String) : ObjJDocCommentQualifiedNameComponent {
+        val block = createFileFromText(project, "/* @var $name */").firstChild as ObjJDocCommentParsableBlock
+        return block.comment!!.tagLineList.first().typesList.qualifiedNameList.first().qualifiedNameComponentList.first()
+    }
+
+
+    fun createDocCommentParameterName(project: Project, name:String) : ObjJDocCommentParameterName {
+        val block = createFileFromText(project, "/* @var type $name */").firstChild as ObjJDocCommentParsableBlock
+        return block.comment!!.tagLineList.first().parameterNameElementElement!!
     }
 
 }

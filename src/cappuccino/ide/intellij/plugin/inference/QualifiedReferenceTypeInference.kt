@@ -2,39 +2,31 @@ package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListArrayType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.getClassDefinition
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClasses
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
-import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.JsTypeDefPsiImplUtil
-import cappuccino.ide.intellij.plugin.jstypedef.stubs.toJsTypeDefTypeListTypes
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
-import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
-import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
-internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
+internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Tag): InferenceResult? {
     if (parts.isEmpty())
         return null
     addStatusFileChangeListener(parts[0].project)
     return internalInferQualifiedReferenceType(parts, tag)
 }
 
-internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Long): InferenceResult? {
+internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Tag): InferenceResult? {
     if (parts.isEmpty()) {
         return null
     }
+    ProgressIndicatorProvider.checkCanceled()
     val project: Project = parts[0].project
     var parentTypes: InferenceResult? = null
     var isStatic = false
@@ -44,6 +36,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
         parentTypes = part.getCachedInferredTypes(tag) {
             if (part.tagged(tag, false))
                 return@getCachedInferredTypes null
+            ProgressIndicatorProvider.checkCanceled()
             if (parts.size == 1 && parts[0] is ObjJVariableName) {
                 val variableName = parts[0] as ObjJVariableName
                 val simpleType = simpleVariableInference(variableName)
@@ -70,7 +63,7 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
             }
         }
     }
-    if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVarDec(parts[0])) {
+    if (parentTypes == null && parts.size == 1 && !ObjJVariablePsiUtil.isNewVariableDec(parts[0])) {
         return getFirstMatchesInGlobals(parts[0], tag)
     }
     return parentTypes
@@ -79,18 +72,18 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
 val SPLIT_JS_CLASS_TYPES_LIST_REGEX = """\s*\$TYPES_DELIM\s*""".toRegex()
 
 private fun simpleVariableInference(variableName: ObjJVariableName) : InferenceResult? {
-    val varDefTypeSimple = ObjJCommentEvaluatorUtil.getVariableTypesInParent(variableName)
-    if (varDefTypeSimple.isNotNullOrBlank() && varDefTypeSimple !in anyTypes) {
-        return InferenceResult(
-                types = setOf(varDefTypeSimple!!).toJsTypeList()
-        )
-    }
-    if (variableName.parent is ObjJCatchProduction)
-        return setOf("Error").toInferenceResult()
-    return null
+    val variableNameString = variableName.text
+    val variableDefTypeSimple = variableName.docComment
+            ?.getParameterComment(variableNameString)
+            ?.types
+            ?: return null
+    return if (variableDefTypeSimple.types.isNotEmpty())
+        variableDefTypeSimple
+    else
+        null
 }
 
-internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
+internal fun getPartTypes(part: ObjJQualifiedReferenceComponent, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     return when (part) {
         is ObjJVariableName -> getVariableNameComponentTypes(part, parentTypes, static, tag)
         is ObjJFunctionCall -> getFunctionComponentTypes(part.functionName, parentTypes, static, tag)
@@ -107,7 +100,6 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     if (parentTypes == null) {
         return INFERRED_ANY_TYPE
     }
-
     var types =  parentTypes.types.flatMap {
         (it as? JsTypeListArrayType)?.types.orEmpty()
     }.toSet()
@@ -121,7 +113,7 @@ private fun getArrayTypes(parentTypes: InferenceResult?): InferenceResult? {
     return INFERRED_ANY_TYPE
 }
 
-private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag: Long): InferenceResult? {
+private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag: Tag): InferenceResult? {
     val project = part.project
     //ProgressManager.checkCanceled()
     val name = (part as? ObjJVariableName)?.text ?: (part as? ObjJFunctionName)?.text
@@ -133,11 +125,14 @@ private fun getFirstMatchesInGlobals(part: ObjJQualifiedReferenceComponent, tag:
     val firstMatches: MutableList<JsTypeListType> = mutableListOf()
 
     val functions = JsTypeDefFunctionsByNameIndex.instance[name, project].map {
-        //ProgressManager.checkCanceled()
+        ProgressIndicatorProvider.checkCanceled()
         it.toJsFunctionType()
     }.toMutableList()
     firstMatches.addAll(functions)
-    val properties = JsTypeDefPropertiesByNameIndex.instance[name, project].flatMap { it.typeList.toJsTypeDefTypeListTypes() }
+    val properties = JsTypeDefPropertiesByNameIndex.instance[name, project].flatMap {
+        ProgressIndicatorProvider.checkCanceled()
+        it.typeListTypes
+    }
     firstMatches.addAll(properties)
     if (firstMatches.isEmpty())
         return null
@@ -151,4 +146,4 @@ fun ObjJVariableName.getAssignmentExprOrNull(): ObjJExpr? {
             ?: (this.parent.parent as? ObjJVariableDeclaration)?.expr
 }
 
-private val STRING_TYPE_INFERENCE_RESULT = InferenceResult(types = setOf("String").toJsTypeList());
+private val STRING_TYPE_INFERENCE_RESULT = InferenceResult(types = setOf("String").toJsTypeList())

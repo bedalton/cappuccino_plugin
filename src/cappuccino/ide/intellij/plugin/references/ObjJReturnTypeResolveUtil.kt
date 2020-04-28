@@ -11,12 +11,12 @@ import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 /**
  * Attempts to get possible variable types from a selector
  */
-fun getClassConstraints(element: ObjJSelector, tag:Long, strict:MutableList<String>? = null): List<String> {
+fun getClassConstraints(element: ObjJSelector, tag: Tag, strict:MutableList<String>? = null): List<String> {
     return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java), tag, strict)
 }
 
 
-private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long, strict:MutableList<String>?): List<String> {
+private fun getClassConstraints(element: ObjJHasMethodSelector?, tag: Tag, strict:MutableList<String>?): List<String> {
     if (element !is ObjJMethodCall) {
         return emptyList()
     }
@@ -38,7 +38,7 @@ private fun getClassConstraints(element: ObjJHasMethodSelector?, tag:Long, stric
 /**
  * Attempts to get possible class types for a call target
  */
-fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag:Long) : Set<String> {
+fun getPossibleClassTypesForCallTarget(callTarget: ObjJCallTarget, tag: Tag) : Set<String> {
     val inference = when {
         callTarget.expr != null -> inferExpressionType(callTarget.expr!!, tag)
         callTarget.qualifiedReference != null -> inferQualifiedReferenceType(callTarget.qualifiedReference!!.qualifiedNameParts, tag)

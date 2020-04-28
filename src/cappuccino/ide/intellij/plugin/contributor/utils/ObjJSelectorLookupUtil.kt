@@ -19,6 +19,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.codeInsight.lookup.LookupElementRenderer
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import org.jetbrains.annotations.Contract
 import javax.swing.Icon
 
@@ -87,12 +88,12 @@ object ObjJSelectorLookupUtil {
         val stringBuilder = StringBuilder(ObjJMethodPsiUtils.SELECTOR_SYMBOL)
 
         // Add parameter type if it exists
-        val paramType = getSelectorVariableType(selector)
-        if (paramType != null) {
+        val parameterType = getSelectorVariableType(selector)
+        if (parameterType != null) {
             if (isGetter) {
-                return stringBuilder.append(paramType).toString()
+                return stringBuilder.append(parameterType).toString()
             }
-            stringBuilder.append("(").append(paramType).append(")")
+            stringBuilder.append("(").append(parameterType).append(")")
             val variableName = getSelectorVariableName(selector)
             if (variableName != null) {
                 stringBuilder.append(variableName)
@@ -166,6 +167,7 @@ object ObjJSelectorLookupUtil {
      */
     @JvmOverloads
     fun addSelectorLookupElement(resultSet: CompletionResultSet, suggestedText: String, className: String?, tailText: String?, priority: Double, addSuffix: Boolean, addSpaceAfterColon: Boolean, icon: Icon? = null) {
+        ProgressIndicatorProvider.checkCanceled()
         val selectorLookupElement = when (priority) {
             TARGETTED_INSTANCE_VAR_SUGGESTION_PRIORITY, TARGETTED_METHOD_SUGGESTION_PRIORITY ->
                 createSelectorLookupElement(
@@ -207,6 +209,7 @@ object ObjJSelectorLookupUtil {
      * Creates a lookup element builder base for a selector
      */
     private fun createSelectorLookupElement(suggestedText: String, className: String?, tailText: String?, useInsertHandler: Boolean, addSpaceAfterColon:Boolean, icon: Icon?): LookupElementBuilder {
+        ProgressIndicatorProvider.checkCanceled()
         var elementBuilder = LookupElementBuilder
                 .create(suggestedText)
         if (tailText != null) {
@@ -243,6 +246,7 @@ object ObjJSelectorLookupUtil {
      * Creates a lookup element builder base for a selector
      */
     fun createSelectorLookupElement(selectorStruct:ObjJSelectorStruct, addSpaceAfterColon:Boolean, icon: Icon? = null): LookupElementBuilder {
+        ProgressIndicatorProvider.checkCanceled()
         var elementBuilder = LookupElementBuilder
                 .create(selectorStruct.selector)
         val tailText = selectorStruct.tail

@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJBundle
 import cappuccino.ide.intellij.plugin.psi.ObjJProtocolDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiFileUtil
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import java.util.*
 
 /**
@@ -41,7 +42,9 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         }
         val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJPsiFileUtil.getContainingFileName(protocolDeclaration) }
         val errorMessage = ObjJBundle.message("objective-j.annotator-messages.protocol-declaration.duplicate-declaration.message", className, duplicatedInFileNameList)
-        annotationHolder.createErrorAnnotation(classNameElement, errorMessage)
+        annotationHolder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                .range(classNameElement)
+                .create()
 
     }
 

@@ -1,5 +1,10 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagNameElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJFunctionNameInsertHandler
@@ -31,6 +36,8 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.PsiCommentImpl
@@ -87,7 +94,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             resultSet: CompletionResultSet) {
         val element = parameters.position
         val prevSibling = element.getPreviousNonEmptySibling(true)
-        val queryString = element.text.substring(0, element.text.indexOf(CARET_INDICATOR))
+        val caretIndex = element.text.indexOf(CARET_INDICATOR)
+        if (caretIndex < 0)
+            return
+        val queryString = element.text.substring(0, caretIndex)
 
         when {
             element.hasParentOfType(ObjJTypeDef::class.java) -> {
@@ -105,6 +115,17 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             }
             element.elementType in ObjJTokenSets.STRING_COMPLETION_LITERALS && element.hasParentOfType(ObjJImportStatementElement::class.java) -> {
                 addCompletionsForFrameworkFiles(resultSet, element)
+            }
+            element.isOrHasParentOfType(ObjJDocCommentQualifiedNameComponent::class.java) -> {
+                addDocCommentCompletions(element, prevSibling, resultSet)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentParameterName::class.java) -> {
+                addDocCommentCompletions(element, prevSibling, resultSet)
+            }
+
+            element.isOrHasParentOfType(ObjJDocCommentTagNameElement::class.java) -> {
+                addDocCommentTagCompletions(resultSet)
             }
             // Comment
             element.elementType in ObjJTokenSets.COMMENTS || element is PsiCommentImpl ->
@@ -168,12 +189,61 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             element.parent is ObjJObjectLiteral && prevSibling?.text != ":" -> {
                 resultSet.stopHere()
             }
+
             prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER -> {
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
         }
         resultSet.stopHere()
+    }
+
+    private fun addDocCommentCompletions(element: PsiElement, prevSibling: PsiElement?, resultSet: CompletionResultSet) {
+        if (!prevSibling?.text.orEmpty().startsWith("@") && prevSibling?.text != "|" && prevSibling?.text != ".") {
+            val tag = element.getParentOfType(ObjJDocCommentTagLine::class.java)?.tag
+            if (tag == ObjJDocCommentKnownTag.PARAM) {
+                addParamCompletions(element, resultSet)
+            } else if (tag == ObjJDocCommentKnownTag.VAR || tag == ObjJDocCommentKnownTag.PARAM) {
+                val variableNameCompletions = ObjJVariableNameCompletionContributorUtil.getVariableNameElementsAfter(element)
+                addVariableNameCompletionElementsWithPriority(resultSet, variableNameCompletions)
+            }
+        } else {
+            getClassNameCompletions(resultSet, element)
+            val qnElement =element.getSelfOrParentOfType(ObjJDocCommentQualifiedNameComponent::class.java)
+                    ?: return
+            addJsQualifiedTypeName(qnElement, resultSet)
+        }
+    }
+
+    private fun addParamCompletions(elementIn: PsiElement, resultSet: CompletionResultSet) {
+        var outerComment = elementIn.getParentOfType(PsiComment::class.java)
+        while(outerComment != null) {
+            val temp = outerComment.getParentOfType(PsiComment::class.java)
+                    ?: break
+            outerComment = temp
+        }
+        val nextSibling = (outerComment ?: elementIn).getNextNonEmptySiblingIgnoringComments()
+                ?: return
+        val function = nextSibling as? ObjJUniversalFunctionElement ?: nextSibling.directParentFunctionElement
+                ?: return
+        addCompletionElementsSimple(resultSet, function.parameterNames)
+    }
+
+
+    private fun addJsQualifiedTypeName(element:ObjJQualifiedReferenceComponent, resultSet: CompletionResultSet) {
+        val searchKey = Regex.escape(element.previousSiblings.joinToString(".") { it.text }.let{ if (it.isNotEmpty()) "$it." else it}+element.textWithoutCaret) + ".+"
+        val keys = JsTypeDefClassesByNamespaceIndex.instance.getByPattern(searchKey, element.project).map { it.key }
+        addCompletionElementsSimple(resultSet, keys)
+    }
+
+    private fun addDocCommentTagCompletions(resultSet: CompletionResultSet) {
+        ObjJDocCommentKnownTag.values().map { it.name.toLowerCase() }
+                .sorted()
+                .forEach {
+                    val lookupElement = LookupElementBuilder.create(it)
+                            .withPresentableText("@$it")
+                    resultSet.addElement(lookupElement)
+                }
     }
 
     /**
@@ -207,7 +277,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addFileLevelCompletions(resultSet, element)
         }
 
-        if (ObjJVariablePsiUtil.isNewVarDec(element)) {
+        if (ObjJVariablePsiUtil.isNewVariableDec(element)) {
             resultSet.stopHere()
             return
         }
@@ -237,6 +307,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .mapNotNull {
                         (it as? JsTypeDefClassElement)?.className
                     }.forEach {
+                        ProgressManager.checkCanceled()
                         val lookupElement = LookupElementBuilder.create(it).withInsertHandler(ObjJClassNameInsertHandler)
                         val prioritizedLookupElement = PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it, ObjJCompletionContributor.TYPEDEF_PRIORITY))
                         resultSet.addElement(prioritizedLookupElement)
@@ -264,17 +335,19 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     /**
      * Adds variable name completion elements
      */
-    private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement) {
-        addCompletionElementsSimple(resultSet, listOf(
-                "YES",
-                "NO",
-                "Nil",
-                "nil",
-                "true",
-                "false",
-                "null",
-                "undefined"
-        ), 200.0)
+    private fun addVariableNameCompletionElements(resultSet: CompletionResultSet, element: PsiElement, addPrimitives:Boolean = true) {
+        if (addPrimitives) {
+            addCompletionElementsSimple(resultSet, listOf(
+                    "YES",
+                    "NO",
+                    "Nil",
+                    "nil",
+                    "true",
+                    "false",
+                    "null",
+                    "undefined"
+            ), 200.0)
+        }
         if (element.hasParentOfType(ObjJMethodHeader::class.java)) {
             return
         }
@@ -282,7 +355,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         val results: List<ObjJVariableName> = if (variableName != null) {
             ObjJVariableNameCompletionContributorUtil.getVariableNameCompletions(variableName)
         } else {
-            emptyList()
+            ObjJVariableNameCompletionContributorUtil.getAllVariableNameElementsByName(element)
         }
         //val selectorTargets = getSelectorTargets(element)
         addVariableNameCompletionElementsWithPriority(resultSet, results)
@@ -314,6 +387,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables: List<ObjJVariableName>) {
         variables.forEach {
+            ProgressManager.checkCanceled()
             val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
             var lookupElement = LookupElementBuilder.create(it.text)
             if (type.isNotNullOrBlank())
@@ -334,6 +408,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
         ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
+            ProgressManager.checkCanceled()
             ProgressIndicatorProvider.checkCanceled()
             val parameters = it.variableName.parentFunctionDeclaration?.parameterNames
                     ?: inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes?.maxBy { it.parameters.size }?.parameters?.map { it.name }
@@ -392,6 +467,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
         }
         // Add results to completion result set
         resultsTemp.forEach {
+            ProgressManager.checkCanceled()
             val lookupElement = prefixedLookupElement(it, prefix)
             resultSet.addElement(lookupElement)
         }
@@ -401,6 +477,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
      * Creates a lookup element with a prefix such as @ or #
      */
     private fun prefixedLookupElement(keyword: String, prefix: String): LookupElementBuilder {
+        ProgressManager.checkCanceled()
         return LookupElementBuilder.create(keyword)
                 .withPresentableText(prefix + keyword)
                 .withInsertHandler { context, _ ->

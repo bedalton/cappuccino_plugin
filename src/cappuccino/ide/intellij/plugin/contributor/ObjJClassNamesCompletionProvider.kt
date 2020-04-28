@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil
 import cappuccino.ide.intellij.plugin.indices.ObjJImplementationDeclarationsIndex
@@ -86,6 +87,8 @@ object ObjJClassNamesCompletionProvider {
      */
     private fun shouldAddPrimitiveTypes(element: PsiElement): Boolean {
         return element.hasParentOfType(ObjJFormalVariableType::class.java)
+                || element is ObjJDocCommentQualifiedNameComponent
+                || element.parent is ObjJDocCommentQualifiedNameComponent
     }
 
     /**

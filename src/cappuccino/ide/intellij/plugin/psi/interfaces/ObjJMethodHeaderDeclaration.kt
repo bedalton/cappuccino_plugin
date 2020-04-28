@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.caches.ObjJMethodHeaderDeclarationCache
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJMethodPsiUtils.MethodScope.STATIC
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJMethodHeaderDeclarationStub
@@ -11,9 +12,9 @@ interface ObjJMethodHeaderDeclaration<StubT:ObjJMethodHeaderDeclarationStub<*>>:
 
     val selectorStructs:List<ObjJSelectorStruct>
 
-    fun getCachedReturnType(tag:Long):InferenceResult?
+    fun getCachedReturnType(tag: Tag):InferenceResult?
 
-    fun getReturnTypes(tag:Long): Set<String>
+    fun getReturnTypes(tag: Tag): Set<String>
 
     val explicitReturnType:String
 
@@ -23,4 +24,6 @@ interface ObjJMethodHeaderDeclaration<StubT:ObjJMethodHeaderDeclarationStub<*>>:
         get() = methodScope == STATIC
 
     val methodHeaderCache:ObjJMethodHeaderDeclarationCache
+
+    val isPrivate:Boolean
 }

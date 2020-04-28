@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJClassDeclarationStub
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJImplementationStub
@@ -14,7 +15,7 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
 
     fun getMethodHeaders(internalOnly:Boolean) : List<ObjJMethodHeader>
 
-    fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct>
+    fun getMethodStructs(internalOnly:Boolean, tag: Tag) : List<ObjJMethodStruct>
 
     fun getAccessors(internalOnly: Boolean) : List<ObjJAccessorProperty>
 
@@ -24,7 +25,7 @@ interface ObjJClassDeclarationElement<StubT : ObjJClassDeclarationStub<*>> : Obj
 
     fun hasMethod(selector: String): Boolean
 
-    fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?
+    fun getMethodReturnType(selector:String, tag: Tag) : InferenceResult?
 
     fun isInstance(className:String) : Boolean
 

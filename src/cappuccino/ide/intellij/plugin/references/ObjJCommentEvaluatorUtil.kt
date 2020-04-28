@@ -1,5 +1,8 @@
 package cappuccino.ide.intellij.plugin.references
 
+import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
@@ -42,21 +45,26 @@ object ObjJCommentEvaluatorUtil {
      * Gets the variable type if declared in an @var comment
      */
     fun getVariableTypesInParent(element: ObjJNamedElement): String? {
-        val varName = element.text
-        element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
+        val variableName = element.text
+        return element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
                 .sortedByDescending { it.textRange.startOffset }
+                .filterIsInstance<ObjJDocCommentParsableBlock>()
+                .flatMap {
+                    it.parameterTags.firstOrNull { it.parameterName == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
+                }.firstOrNull()?.typeName ?: return null
+                /*
                 .flatMap { it.text.split("\n") }
                 .forEach { comment ->
                     val matcher = VARIABLE_TYPE_REGEX.matcher(comment)
                     if (matcher.find()) {
-                        if (matcher.group(2) != varName) {
+                        if (matcher.group(2) != variableName) {
                             return@forEach
                         }
                         return matcher.group(1)
                     }
-
                 }
-        return null
+
+        return null*/
     }
 
     /**

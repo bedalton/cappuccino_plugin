@@ -105,14 +105,14 @@ class ObjJVariableOvershadowInspection : LocalInspectionTool() {
             }
 
             val qualifiedReferences = mutableListOf<ObjJQualifiedReference>()
-            val varNames = variableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
+            val variableNames = variableAssignment.variableDeclarationList?.variableNameList?.toMutableList() ?: mutableListOf()
             for (declaration in variableAssignment.variableDeclarationList?.variableDeclarationList ?: listOf()) {
                 qualifiedReferences.addAll(declaration.qualifiedReferenceList)
             }
             for (qualifiedReference in qualifiedReferences) {
-                varNames.add(qualifiedReference.primaryVar!!)
+                variableNames.add(qualifiedReference.primaryVar!!)
             }
-            return varNames.firstOrNull { it.text == variableNameString && offset > it.textRange.startOffset } != null
+            return variableNames.firstOrNull { it.text == variableNameString && offset > it.textRange.startOffset } != null
         }
 
         /**

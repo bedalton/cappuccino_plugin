@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassInstanceVariableAccessorM
 import cappuccino.ide.intellij.plugin.indices.ObjJInstanceVariablesByNameIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
@@ -24,9 +25,9 @@ object ObjJSelectorReferenceResolveUtil {
     private val EMPTY_RESULT = SelectorResolveResult(emptyList(), emptyList<PsiElement>(), emptyList())
     private val EMPTY_SELECTORS_RESULT = SelectorResolveResult(emptyList(), emptyList<ObjJSelector>(), emptyList())
 
-    fun getMethodCallReferences(element: ObjJSelector, tag:Long, classConstraints: List<String> = getClassConstraints(element, tag)): SelectorResolveResult<ObjJSelector> {
+    fun getMethodCallReferences(element: ObjJSelector, tag: Tag, classConstraints: List<String> = getClassConstraints(element, tag)): SelectorResolveResult<ObjJSelector> {
         val selector = element.getSelectorString(false)
-        val parent = element.getParentOfType( ObjJHasMethodSelector::class.java)
+        val parent = element.getParentOfType(ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorStrings?.indexOf(selector) ?: -1
         val fullSelector = parent?.selectorString ?: return EMPTY_SELECTORS_RESULT
         if (parent is ObjJMethodHeader || parent is ObjJAccessorProperty) {
@@ -48,12 +49,12 @@ object ObjJSelectorReferenceResolveUtil {
     internal fun getMethodCallPartialReferences(
             element: ObjJSelector?,
             includeSelf: Boolean,
-            tag:Long): SelectorResolveResult<ObjJSelector> {
+            tag: Tag): SelectorResolveResult<ObjJSelector> {
         if (element == null) {
             return EMPTY_SELECTORS_RESULT
         }
         val classConstraints = getClassConstraints(element, tag)
-        val parent = element.getParentOfType( ObjJHasMethodSelector::class.java)
+        val parent = element.getParentOfType(ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorList?.indexOf(element) ?: -1
         val selectorFragment = ObjJPsiImplUtil.getSelectorUntil(element, includeSelf) ?: return EMPTY_SELECTORS_RESULT
         if (parent is ObjJMethodHeader || parent is ObjJAccessorProperty) {
@@ -82,7 +83,7 @@ object ObjJSelectorReferenceResolveUtil {
         for (methodHeader in methodHeaders) {
             selectorElement = ObjJPsiImplUtil.getThisOrPreviousNonNullSelector(methodHeader, subSelector, selectorIndex)
             if (selectorElement == null) {
-               //LOGGER.severe("Method header returned an empty selector in matched header")
+                //LOGGER.severe("Method header returned an empty selector in matched header")
                 continue
             }
             if (sharesContainingClass(classConstraints, methodHeader)) {
@@ -109,7 +110,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (selectorElement == null) {
             return EMPTY_SELECTORS_RESULT
         }
-        val parent = selectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
+        val parent = selectorElement.getParentOfType(ObjJHasMethodSelector::class.java)
         val selectorIndex = parent?.selectorStrings?.indexOf(selectorElement.getSelectorString(false)) ?: -1
         val fullSelector = parent?.selectorString ?: return EMPTY_SELECTORS_RESULT
         val containingClass = selectorElement.containingClassName
@@ -139,7 +140,7 @@ object ObjJSelectorReferenceResolveUtil {
     /**
      * Gets accessor method references
      */
-    fun getInstanceVariableSimpleAccessorMethods(selectorElement: ObjJSelector, classConstraintsIn: List<String>, tag:Long): SelectorResolveResult<PsiElement> {
+    fun getInstanceVariableSimpleAccessorMethods(selectorElement: ObjJSelector, classConstraintsIn: List<String>, tag: Tag): SelectorResolveResult<PsiElement> {
         var classConstraints = classConstraintsIn
         if (classConstraints.isEmpty()) {
             classConstraints = getClassConstraints(selectorElement, tag)
@@ -147,7 +148,7 @@ object ObjJSelectorReferenceResolveUtil {
         if (DumbService.isDumb(selectorElement.project)) {
             return packageResolveResult(emptyList(), emptyList(), classConstraints)
         }
-        val parent = selectorElement.getParentOfType( ObjJHasMethodSelector::class.java)
+        val parent = selectorElement.getParentOfType(ObjJHasMethodSelector::class.java)
         val fullSelector = parent?.selectorString ?: ""
         val result = ArrayList<PsiElement>()
         val otherResult = ArrayList<PsiElement>()
@@ -155,7 +156,7 @@ object ObjJSelectorReferenceResolveUtil {
             val atAccessors = variableDeclaration.accessor?.atAccessors
             if (sharesContainingClass(classConstraints, variableDeclaration)) {
                 result.add(atAccessors ?: variableDeclaration)
-            } else if (atAccessors != null){
+            } else if (atAccessors != null) {
                 otherResult.add(atAccessors)
             }
         }
@@ -168,7 +169,7 @@ object ObjJSelectorReferenceResolveUtil {
      * currently unused
      */
     @Suppress("unused")
-    fun getVariableReferences(selectorElement: ObjJSelector, classConstraintsIn: List<String>, tag:Long): SelectorResolveResult<PsiElement> {
+    fun getVariableReferences(selectorElement: ObjJSelector, classConstraintsIn: List<String>, tag: Tag): SelectorResolveResult<PsiElement> {
         var classConstraints = classConstraintsIn
         val variableName = selectorElement.getSelectorString(false)
         if (classConstraints.isEmpty()) {

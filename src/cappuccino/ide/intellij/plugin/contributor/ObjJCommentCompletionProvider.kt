@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
@@ -12,6 +13,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.elementType
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptySiblingIgnoringComments
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -29,7 +31,7 @@ import java.util.logging.Logger
  */
 object ObjJCommentCompletionProvider {
 
-    private val stripFromCommentTokenBeginning = listOf("*/", "*", "//", " ", "/**", "/*")
+    val stripFromCommentTokenBeginning = listOf("*/", "*", "//", " ", "/**", "/*")
 
     private val LOGGER: Logger by lazy {
         Logger.getLogger("#${ObjJCommentCompletionProvider::class.java.canonicalName}")
@@ -50,8 +52,8 @@ object ObjJCommentCompletionProvider {
      * Adds comment completions for a give line
      */
     private fun addCommentCompletionsForLine(resultSet: CompletionResultSet, element: PsiElement, textIn: String) {
-        val text = textIn.trim()
-        if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p")) {
+        val text = (element.getParentOfType(ObjJDocCommentTagLine::class.java)?.text ?: textIn).trim()
+        if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p") && !text.contains("@r")) {
             return
         }
         // Divide comment line into tokens
@@ -63,12 +65,12 @@ object ObjJCommentCompletionProvider {
         when {
             // @var completions
             text.contains("@var") ->
-                appendVarCompletions(resultSet, element, commentTokenParts)
+                appendVariableCompletions(resultSet, element, commentTokenParts)
             // @Ignore completions
             text.contains("@ignore") ->
                 getIgnoreCompletions(resultSet, commentTokenParts)
             text.contains("@param") ->
-                appendParamCompletions(resultSet, element, nextSibling?.psi, commentTokenParts)
+                appendParameterCompletions(resultSet, element, nextSibling?.psi, commentTokenParts)
             text.contains("@return") -> appendReturnCompletions(resultSet, element, commentTokenParts)
             // Default completions
             else -> addDefaults(resultSet, commentTokenParts, nextSiblingHasParams)
@@ -89,7 +91,7 @@ object ObjJCommentCompletionProvider {
     /**
      * Append @var completion items
      */
-    private fun appendVarCompletions(resultSet: CompletionResultSet, element: PsiElement, commentTokenParts: List<String>) {
+    private fun appendVariableCompletions(resultSet: CompletionResultSet, element: PsiElement, commentTokenParts: List<String>) {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
@@ -144,7 +146,7 @@ object ObjJCommentCompletionProvider {
     /**
      * Append @var completion items
      */
-    private fun appendParamCompletions(resultSet: CompletionResultSet, element: PsiElement, nextSibling: PsiElement?, commentTokenParts: List<String>) {
+    private fun appendParameterCompletions(resultSet: CompletionResultSet, element: PsiElement, nextSibling: PsiElement?, commentTokenParts: List<String>) {
         var afterVar = false
         var indexAfter = -1
         var currentIndex = 0
@@ -170,7 +172,7 @@ object ObjJCommentCompletionProvider {
                 }
                 // Add variable name completions if second token
                 2 -> {
-                    val variableNames = getParamNames(nextSibling)
+                    val variableNames = getParameterNames(nextSibling)
                     addCompletionElementsSimple(resultSet, variableNames)
                 }
                 // index too far out, quit
@@ -195,7 +197,7 @@ object ObjJCommentCompletionProvider {
             currentIndex++
 
             // Check if is @var keyword
-            if (!afterVar && (part == "@return")) {
+            if (!afterVar && (part == "@return" || part == "@returns")) {
                 afterVar = true
                 indexAfter = currentIndex
                 continue
@@ -288,7 +290,7 @@ object ObjJCommentCompletionProvider {
     }
 
 
-    private fun getParamNames(element: PsiElement?): List<String> {
+    private fun getParameterNames(element: PsiElement?): List<String> {
         return when (element) {
             is ObjJFunctionDeclarationElement<*> -> element.parameterNames
             is ObjJMethodHeader -> element.methodDeclarationSelectorList.mapNotNull { it.variableName?.text }

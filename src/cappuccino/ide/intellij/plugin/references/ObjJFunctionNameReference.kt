@@ -1,12 +1,12 @@
 package cappuccino.ide.intellij.plugin.references
 
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionName
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefPropertyName
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
@@ -26,7 +26,7 @@ import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.logging.Logger
 
-class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
+class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Tag = createTag()) : PsiPolyVariantReferenceBase<ObjJFunctionName>(functionName, TextRange.create(0, functionName.textLength)) {
     private val functionName: String = functionName.text
     private val file: PsiFile = functionName.containingFile
     private val isFunctionCall: Boolean
@@ -93,7 +93,6 @@ class ObjJFunctionNameReference(functionName: ObjJFunctionName, val tag: Long = 
         val functionCall = myElement.parent as? ObjJFunctionCall
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         // Get Base variables
-        val project = functionCall.project
         val functionName = functionCall.functionNameString
                 ?: return PsiElementResolveResult.EMPTY_ARRAY
         val properties = getJsNamedElementsForReferencedElement(functionCall, functionName, tag)

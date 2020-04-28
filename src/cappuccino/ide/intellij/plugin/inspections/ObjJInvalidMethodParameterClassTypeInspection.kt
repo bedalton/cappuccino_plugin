@@ -75,7 +75,7 @@ class ObjJInvalidMethodParameterClassTypeInspection : LocalInspectionTool() {
         private fun getClassNameParam(selector:ObjJMethodDeclarationSelector) : ObjJClassName? {
             val formalVariableType = selector.formalVariableType
                     ?: return null
-            return formalVariableType.varTypeId?.className ?: formalVariableType.className
+            return formalVariableType.variableTypeId?.className ?: formalVariableType.className
         }
 
         private fun registerIfEndsInCG(className: ObjJClassName, problemsHolder: ProblemsHolder) {

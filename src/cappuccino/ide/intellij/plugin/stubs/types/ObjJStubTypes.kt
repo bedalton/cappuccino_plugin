@@ -2,6 +2,7 @@ package cappuccino.ide.intellij.plugin.stubs.types
 
 
 object ObjJStubTypes {
+    val FUNCTION_CALL = ObjJFunctionCallStubType("ObjJ_FUNCTION_CALL")
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
     val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
     val FILE = ObjJFileStubType()
@@ -23,7 +24,7 @@ object ObjJStubTypes {
     val QUALIFIED_REFERENCE = ObjJQualifiedReferenceStubType("ObjJ_QUALIFIED_REFERENCE")
     val SELECTOR_LITERAL = ObjJSelectorLiteralStubType("ObjJ_SELETOR_LITERAL")
     val TYPE_DEF = ObjJTypeDefStubType("ObjJ_TYPE_DEF")
-    val VAR_TYPE_ID = ObjJVarTypeIdStubType("ObjJ_VAR_TYPE_ID")
+    val VARIABLE_TYPE_ID = ObjJVariableTypeIdStubType("ObjJ_VARIABLE_TYPE_ID")
     val VARIABLE_DECLARATION = ObjJVariableDeclarationStubType("ObjJ_VARIABLE_DECLARATION")
     val VARIABLE_NAME = ObjJVariableNameStubType("ObjJ_VARIABLE_NAME")
 }

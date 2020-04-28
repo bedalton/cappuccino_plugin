@@ -51,7 +51,7 @@ private fun getScopeStrict(commonContext:PsiElement) : ReferencedInScope? {
         return ReferencedInScope.METHOD
     }
 
-    if (commonContext is ObjJVariableName && ObjJVariableNameAggregatorUtil.isInstanceVarDeclaredInClassOrInheritance(commonContext)) {
+    if (commonContext is ObjJVariableName && ObjJVariableNameAggregatorUtil.isInstanceVariableDeclaredInClassOrInheritance(commonContext)) {
         return ReferencedInScope.CLASS
     }
     return null

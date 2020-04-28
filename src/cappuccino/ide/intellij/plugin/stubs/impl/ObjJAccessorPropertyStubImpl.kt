@@ -13,7 +13,7 @@ import java.util.*
 private val startsWithVowelRegex = "^[aAeEiIoOuU]".toRegex()
 
 class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containingClass: String,
-                                   varType: String?, variableName: String?,
+                                   variableType: String?, variableName: String?,
                                    getter: String?, setter: String?,
                                    override val selectorStructs: List<ObjJSelectorStruct>,
                                    private val shouldResolve: Boolean
@@ -21,13 +21,13 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
     override val variableName: String? = if (variableName != null && variableName.isEmpty()) variableName else null
     override val getter: String? = if (getter != null && getter.isNotEmpty()) getter else null
     override val setter: String? = if (setter != null && setter.isNotEmpty()) setter else null
-    override val varType: String? = if (varType != null && varType.isNotEmpty()) varType else null
+    override val variableType: String? = if (variableType != null && variableType.isNotEmpty()) variableType else null
     override val containingClassName: String = containingClass
-
+    override val isPrivate: Boolean = false // Todo: See if this is right
     override val ignored:Boolean = false
 
-    override val paramTypes: List<String>
-        get() = if (getter != null || varType == null) emptyList() else listOf(varType)
+    override val parameterTypes: List<String>
+        get() = if (getter != null || variableType == null) emptyList() else listOf(variableType)
 
     override val selectorStrings: List<String>
         get() = Arrays.asList(*selectorString.split(ObjJMethodPsiUtils.SELECTOR_SYMBOL.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
@@ -39,7 +39,7 @@ class ObjJAccessorPropertyStubImpl(parent: StubElement<*>, override val containi
         get() = false
 
     override val explicitReturnType: String
-        get() = if (getter != null && varType != null) varType else ObjJClassType.VOID_CLASS_NAME
+        get() = if (getter != null && variableType != null) variableType else ObjJClassType.VOID_CLASS_NAME
 
     override val isStatic: Boolean
         get() = false

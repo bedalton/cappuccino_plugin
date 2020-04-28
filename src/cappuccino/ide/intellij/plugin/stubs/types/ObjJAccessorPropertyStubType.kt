@@ -45,7 +45,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         return ObjJAccessorPropertyStubImpl(
                 parent = parentStub,
                 containingClass = containingClass,
-                varType = variableType,
+                variableType = variableType,
                 variableName = variableName,
                 getter = getter,
                 setter = setter,
@@ -59,7 +59,7 @@ class ObjJAccessorPropertyStubType internal constructor(
             stub: ObjJAccessorPropertyStub,
             stream: StubOutputStream) {
         stream.writeName(stub.containingClass)
-        stream.writeName(Strings.notNull(stub.varType))
+        stream.writeName(Strings.notNull(stub.variableType))
         stream.writeName(Strings.notNull(stub.variableName))
         stream.writeName(Strings.notNull(stub.getter))
         stream.writeName(Strings.notNull(stub.setter))
@@ -71,7 +71,7 @@ class ObjJAccessorPropertyStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parentStub: StubElement<*>): ObjJAccessorPropertyStub {
         val containingClass = StringRef.toString(stream.readName())
-        val varType = StringRef.toString(stream.readName())
+        val variableType = StringRef.toString(stream.readName())
         val variableName = StringRef.toString(stream.readName())
         val getter = StringRef.toString(stream.readName())
         val setter = StringRef.toString(stream.readName())
@@ -80,7 +80,7 @@ class ObjJAccessorPropertyStubType internal constructor(
         return ObjJAccessorPropertyStubImpl(
                 parent = parentStub,
                 containingClass = containingClass,
-                varType = varType,
+                variableType = variableType,
                 variableName = variableName,
                 getter = getter,
                 setter = setter,

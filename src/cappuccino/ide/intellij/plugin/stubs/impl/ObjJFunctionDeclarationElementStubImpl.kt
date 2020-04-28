@@ -6,11 +6,11 @@ import com.intellij.psi.StubBasedPsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 
-open class ObjJFunctionDeclarationElementStubImpl<PsiT : StubBasedPsiElement<*>> (parent: StubElement<*>, stubElementType: IStubElementType<*, *>, override val fileName: String, final override val fqName: String, override val paramNames: List<String>, override val returnType: String?, private val shouldResolve: Boolean, override val scope:ObjJFunctionScope) : ObjJStubBaseImpl<PsiT>(parent, stubElementType), ObjJFunctionDeclarationElementStub<PsiT> {
+open class ObjJFunctionDeclarationElementStubImpl<PsiT : StubBasedPsiElement<*>> (parent: StubElement<*>, stubElementType: IStubElementType<*, *>, override val fileName: String, final override val fqName: String, override val parameterNames: List<String>, override val returnType: String?, private val shouldResolve: Boolean, override val scope:ObjJFunctionScope) : ObjJStubBaseImpl<PsiT>(parent, stubElementType), ObjJFunctionDeclarationElementStub<PsiT> {
     final override val functionName: String
 
     override val numParams: Int
-        get() = paramNames.size
+        get() = parameterNames.size
 
     init {
         val lastDotIndex = fqName.lastIndexOf(".")

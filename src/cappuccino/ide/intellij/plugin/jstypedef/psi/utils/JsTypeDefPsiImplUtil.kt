@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.hints.ObjJFunctionDescription
 import cappuccino.ide.intellij.plugin.hints.description
 import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.combine
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType.JsTypeListFunctionType
@@ -24,6 +25,7 @@ import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.utils.orElse
 import cappuccino.ide.intellij.plugin.utils.orTrue
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -244,7 +246,8 @@ object JsTypeDefPsiImplUtil {
                     ?: listOf()
 
     @JvmStatic
-    fun getNamespaceComponents(element: JsTypeDefClassElement): List<String> = element.stub?.namespaceComponents
+    fun getNamespaceComponents(element: JsTypeDefClassElement): List<String>
+            = element.stub?.namespaceComponents
             ?: (element.enclosingNamespaceComponents + element.className)
 
     @JvmStatic
@@ -636,7 +639,7 @@ object JsTypeDefPsiImplUtil {
     // ============================== //
 
     @JvmStatic
-    fun getVarArgs(argument: JsTypeDefArgument): Boolean {
+    fun getVariableArgs(argument: JsTypeDefArgument): Boolean {
         return argument.ellipsis != null
     }
 
@@ -697,20 +700,20 @@ object JsTypeDefPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReturnTypes(function: JsTypeDefFunction, tag: Long): InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefFunction, tag: Tag): InferenceResult? {
         return function.stub?.returnType ?: function.functionReturnType?.typeList?.toJsTypeDefTypeListTypes()?.let {
             InferenceResult(types = it)
         }
     }
 
     @JvmStatic
-    fun getReturnTypes(function: JsTypeDefAnonymousFunction, tag: Long): InferenceResult? {
+    fun getReturnTypes(function: JsTypeDefAnonymousFunction, tag: Tag): InferenceResult? {
         return function.functionReturnType?.toTypeListType()
     }
 
 
     @JvmStatic
-    fun toJsFunctionType(function: JsTypeDefFunction, tag: Long): JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefFunction, tag: Tag): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
 
@@ -728,7 +731,7 @@ object JsTypeDefPsiImplUtil {
 
 
     @JvmStatic
-    fun toJsFunctionType(function: JsTypeDefAnonymousFunction, tag: Long): JsTypeListFunctionType {
+    fun toJsFunctionType(function: JsTypeDefAnonymousFunction, tag: Tag): JsTypeListFunctionType {
         return toJsFunctionType(function)
     }
 
@@ -982,6 +985,7 @@ object JsTypeDefPsiImplUtil {
                 .ifEmpty { null }
                 ?.toSet()
                 ?: resolved.flatMap { it.typeMapExtends?.typeMapNameList.orEmpty() }.ifEmpty {null}?.mapNotNull {
+                    ProgressIndicatorProvider.checkCanceled()
                     it.reference.resolve()
                             ?.getParentOfType(JsTypeDefTypeMapElement::class.java)
                             ?.getTypesForKey(key)

@@ -3,18 +3,16 @@ package cappuccino.ide.intellij.plugin.references
 import cappuccino.ide.intellij.plugin.indices.ObjJClassDeclarationsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJFunctionsIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.inference.inferQualifiedReferenceType
 import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.withAllSuperClassNames
-import cappuccino.ide.intellij.plugin.jstypedef.indices.*
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefElement
-import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamespacedComponent
+import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
@@ -26,10 +24,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 
 class ObjJVariableReference(
-        element: ObjJVariableName,
+        element: ObjJQualifiedReferenceComponent,
         private val nullIfSelfReferencing: Boolean? = null,
-        private val tag: Long? = null
-) : PsiPolyVariantReferenceBase<ObjJVariableName>(element, TextRange.create(0, element.textLength)) {
+        private val tag: Tag? = null
+) : PsiPolyVariantReferenceBase<ObjJQualifiedReferenceComponent>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
     private val referencedElement: SmartPsiElementPointer<PsiElement>? by lazy {
@@ -45,7 +43,7 @@ class ObjJVariableReference(
             if (DumbService.isDumb(myElement.project)) {
                 return null
             }
-            val file = myElement.containingObjJFile
+            val file = myElement.containingFile as? ObjJFile
             val imports = file?.cachedImportFileList
             val globalVariableDeclarations = ObjJGlobalVariableNamesIndex.instance[myElement.text, myElement.project]
             var namedElement: PsiElement? = null
@@ -158,15 +156,24 @@ class ObjJVariableReference(
         return result.filterNot { it == myElement }.firstOrNull() ?: result.firstOrNull()
     }
 
-    private fun multiResolve(tag: Long, nullIfSelfReferencing: Boolean): Array<ResolveResult> {
+    private fun multiResolve(tag: Tag, nullIfSelfReferencing: Boolean): Array<ResolveResult> {
+        val classes = ObjJClassDeclarationsIndex.instance[myElement.text,myElement.project]
+                .mapNotNull { it.getClassName() }
+        if (classes.isNotEmpty())
+            return PsiElementResolveResult.createResults(classes)
         val element = resolveInternal(tag)
         if (element != null) {
-            return PsiElementResolveResult.createResults(listOf(element))
+            if (!nullIfSelfReferencing)
+                return PsiElementResolveResult.createResults(listOf(element))
         }
-        if (ObjJVariablePsiUtil.isNewVarDec(myElement))
+        if (ObjJVariablePsiUtil.isNewVariableDec(myElement))
             return PsiElementResolveResult.createResults(listOf(myElement))
 
-        val properties = getJsNamedElementsForReferencedElement(myElement, myElement.text, tag)
+
+        val project = myElement.project
+        val properties =
+                getJsNamedElementsForReferencedElement(myElement, myElement.text, tag) +
+                ObjJFunctionsIndex.instance[myElement.text, project]
         return PsiElementResolveResult.createResults(properties)
     }
 
@@ -174,7 +181,7 @@ class ObjJVariableReference(
         return multiResolve(tag ?: createTag(), nullIfSelfReferencing.orFalse())
     }
 
-    fun resolve(nullIfSelfReferencing: Boolean? = null, tag: Long? = null): PsiElement? {
+    fun resolve(nullIfSelfReferencing: Boolean? = null, tag: Tag? = null): PsiElement? {
         return myElement.resolveFromCache {
             if (DumbService.isDumb(myElement.project)) {
                 return@resolveFromCache null
@@ -187,7 +194,7 @@ class ObjJVariableReference(
         }
     }
 
-    private fun resolveInternal(tag: Long? = null): PsiElement? {
+    private fun resolveInternal(tag: Tag? = null): PsiElement? {
         if (tag != null && this.tag == tag)
             return null
         try {

@@ -140,7 +140,7 @@ val ObjJSelector.description:ObjJMethodParameterDescription? get() {
     val containingClassNames = mutableListOf<String>()
     for(reference in references) {
         val declaration = reference.element?.getSelfOrParentOfType(ObjJMethodDeclarationSelector::class.java) ?: continue
-        val type = declaration.formalVariableType?.varTypeId?.idType ?: declaration.formalVariableType?.text ?: continue
+        val type = declaration.formalVariableType?.variableTypeId?.idType ?: declaration.formalVariableType?.text ?: continue
         if (!allKinds.contains(type))
             allKinds.add(type)
         val containingClass = this.containingClassName

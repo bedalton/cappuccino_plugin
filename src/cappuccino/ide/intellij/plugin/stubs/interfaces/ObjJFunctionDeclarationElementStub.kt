@@ -8,7 +8,7 @@ interface ObjJFunctionDeclarationElementStub<PsiT : StubBasedPsiElement<*>> : St
     val fqName: String
     val functionName: String
     val numParams: Int
-    val paramNames: List<String>
+    val parameterNames: List<String>
     val returnType: String?
     val scope:ObjJFunctionScope
 }

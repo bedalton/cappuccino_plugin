@@ -4,7 +4,6 @@ import cappuccino.ide.intellij.plugin.contributor.ObjJBlanketCompletionProvider
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
@@ -30,37 +29,37 @@ object ObjJMethodPsiUtils {
     val EMPTY_SELECTOR = getSelectorString("{EMPTY}")
 
     @Contract("null -> !null")
-    fun getParamTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
+    fun getParameterTypes(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<ObjJFormalVariableType?> {
         if (declarationSelectors == null || declarationSelectors.isEmpty()) {
             return emptyList()
         }
         val out = ArrayList<ObjJFormalVariableType?>()
         for (selector in declarationSelectors) {
-            out.add(selector.varType)
+            out.add(selector.variableType)
         }
         return out
     }
 
 
     @Contract("null -> !null")
-    fun getParamTypesAsString(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<String> {
+    fun getParameterTypesAsString(declarationSelectors: List<ObjJMethodDeclarationSelector>?): List<String> {
         if (declarationSelectors == null || declarationSelectors.isEmpty()) {
             return EMPTY_STRING_ARRAY
         }
         val out = ArrayList<String>()
         for (selector in declarationSelectors) {
-            out.add(if (selector.varType != null) selector.varType!!.text else "")
+            out.add(if (selector.variableType != null) selector.variableType!!.text else "")
         }
         return out
     }
 
-    fun getSelectorIndex(selector:ObjJSelector) : Int {
-        val method : ObjJMethodHeaderDeclaration<*> = selector.getParentOfType(ObjJMethodHeaderDeclaration::class.java)
+    fun getSelectorIndex(selector: ObjJSelector): Int {
+        val method: ObjJMethodHeaderDeclaration<*> = selector.getParentOfType(ObjJMethodHeaderDeclaration::class.java)
                 ?: return 0
         return getSelectorIndex(method, selector) ?: 0
     }
 
-    private fun getSelectorIndex(methodHeader: ObjJMethodHeaderDeclaration<*>?, selector:ObjJSelector) : Int? {
+    private fun getSelectorIndex(methodHeader: ObjJMethodHeaderDeclaration<*>?, selector: ObjJSelector): Int? {
         if (methodHeader == null) {
             return null
         }
@@ -80,8 +79,8 @@ object ObjJMethodPsiUtils {
 
 
     @JvmStatic
-    fun getSelectorList(methodHeader:ObjJMethodHeader): List<ObjJSelector?> {
-        val out:MutableList<ObjJSelector?> = ArrayList()
+    fun getSelectorList(methodHeader: ObjJMethodHeader): List<ObjJSelector?> {
+        val out: MutableList<ObjJSelector?> = ArrayList()
         methodHeader.methodDeclarationSelectorList.forEach { selector ->
             out.add(selector.selector)
         }
@@ -102,6 +101,7 @@ object ObjJMethodPsiUtils {
         }
         return null
     }
+
     @JvmStatic
     fun getThisOrPreviousNonNullSelector(hasMethodSelector: ObjJHasMethodSelector?, subSelector: String?, selectorIndex: Int): ObjJSelector? {
         if (hasMethodSelector == null) {
@@ -143,20 +143,20 @@ object ObjJMethodPsiUtils {
     // ======== Return Type ========= //
     // ============================== //
 
-    fun getExplicitReturnType(methodHeader: ObjJMethodHeader, follow:Boolean) : String {
+    fun getExplicitReturnType(methodHeader: ObjJMethodHeader, follow: Boolean): String {
         val stubHeaderType = methodHeader.stub?.explicitReturnType
         if (stubHeaderType != null)
             return stubHeaderType
-        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.varTypeId?.className?.text
+        return methodHeader.methodHeaderReturnTypeElement?.formalVariableType?.variableTypeId?.className?.text
                 ?: methodHeader.methodHeaderReturnTypeElement?.text
                 ?: UNDETERMINED
     }
 
-    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
+    fun getReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag: Tag): Set<String> {
         return methodHeader.getCachedInferredTypes(tag) {
             if (methodHeader.tagged(tag))
                 return@getCachedInferredTypes null
-            val commentReturnTypes = methodHeader.docComment?.getReturnTypes(methodHeader.project).orEmpty().withoutAnyType()
+            val commentReturnTypes = methodHeader.docComment?.getReturnTypes()?.withoutAnyType().orEmpty()
             if (commentReturnTypes.isNotEmpty()) {
                 return@getCachedInferredTypes commentReturnTypes.toInferenceResult()
             }
@@ -167,7 +167,7 @@ object ObjJMethodPsiUtils {
         }?.toClassList().orEmpty()
     }
 
-    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag:Long): Set<String> {
+    private fun internalGetReturnTypes(methodHeader: ObjJMethodHeader, follow: Boolean, tag: Tag): Set<String> {
         val returnTypeElement = methodHeader.methodHeaderReturnTypeElement ?: return setOf(UNDETERMINED)
         if (returnTypeElement.formalVariableType.atAction != null) {
             return setOf(AT_ACTION)
@@ -176,9 +176,9 @@ object ObjJMethodPsiUtils {
             return setOf(VOID_CLASS_NAME)
         }
         val formalVariableType = returnTypeElement.formalVariableType
-        if (formalVariableType.varTypeId != null) {
-            if (formalVariableType.varTypeId?.className != null)
-                return setOf(formalVariableType.varTypeId?.className!!.text)
+        if (formalVariableType.variableTypeId != null) {
+            if (formalVariableType.variableTypeId?.className != null)
+                return setOf(formalVariableType.variableTypeId?.className!!.text)
             if (follow) {
                 return getReturnTypesFromStatements(methodHeader, tag)
             }
@@ -186,18 +186,16 @@ object ObjJMethodPsiUtils {
         return setOf(formalVariableType.text.stripRefSuffixes())
     }
 
-    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, tag:Long) : Set<String> {
+    private fun getReturnTypesFromStatements(methodHeader: ObjJMethodHeader, tag: Tag): Set<String> {
         val expressions = methodHeader
                 .getParentOfType(ObjJMethodDeclaration::class.java)
                 ?.methodBlock
                 ?.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
                 ?.mapNotNull { it.expr } ?: emptyList()
-        val selfExpressionTypes = expressions.filter { it.text == "self"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.containingClassName)}
-        val superExpressionTypes = expressions.filter { it.text == "super"}.mapNotNull { (it.getParentOfType(ObjJHasContainingClass::class.java)?.getContainingSuperClass()?.text)}
-        val simpleOut = selfExpressionTypes + superExpressionTypes
-        if (simpleOut.isNotEmpty()) {
-            return InferenceResult(types = simpleOut.toJsTypeList()).toClassList()
-        }
+        if (expressions.any { it.text == "self" })
+            return setOf("self")
+        if (expressions.any { it.text == "super" })
+            return setOf("super")
         var out = INFERRED_EMPTY_TYPE
         expressions.forEach {
             //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")
@@ -209,18 +207,16 @@ object ObjJMethodPsiUtils {
     }
 
     @JvmOverloads
-    fun getIdReturnType(varTypeId: ObjJVarTypeId, follow: Boolean = true): String {
-        if (varTypeId.stub != null) {
-            val stub = varTypeId.stub
-            if (!isUniversalMethodCaller(stub.idType) && stub.idType != "id") {
-                //return stub.getIdType();
-            }
+    fun getIdReturnType(variableTypeId: ObjJVariableTypeId, follow: Boolean = true): String {
+        val stubId = variableTypeId.stub?.idType
+        if (stubId != null && !isUniversalMethodCaller(stubId)) {
+            return stubId
         }
-        if (varTypeId.className != null) {
-            return varTypeId.className!!.text
+        if (variableTypeId.className != null) {
+            return variableTypeId.className!!.text
         }
-        if (varTypeId.getParentOfType(ObjJMethodDeclaration::class.java) == null)
-                return ObjJClassType.ID
+        if (variableTypeId.getParentOfType(ObjJMethodDeclaration::class.java) == null)
+            return ObjJClassType.ID
         var returnType: String?
         returnType = try {
             ObjJClassType.ID//getReturnTypeFromReturnStatements(declaration, follow)
@@ -233,20 +229,20 @@ object ObjJMethodPsiUtils {
         }
         /*
         if (returnType != null) {
-            //LOGGER.info(!returnType.equals("id") ? "VarTypeId: id <" + returnType + ">" : "VarTypeId: failed to infer var type");
+            //LOGGER.info(!returnType.equals("id") ? "VariableTypeId: id <" + returnType + ">" : "VariableTypeId: failed to infer var type");
         } else {
-            //LOGGER.info("VarTypeId: getTypeFromReturnStatements returned null");
+            //LOGGER.info("VariableTypeId: getTypeFromReturnStatements returned null");
         }*/
-        return returnType ?: varTypeId.text
+        return returnType ?: variableTypeId.text
     }
 
 
     fun getExplicitReturnType(accessorProperty: ObjJAccessorProperty): String {
-        val stubReturnType = accessorProperty.stub?.varType
+        val stubReturnType = accessorProperty.stub?.variableType
         if (stubReturnType != null) {
             return stubReturnType
         }
-        val variableType = accessorProperty.varType
+        val variableType = accessorProperty.variableType
         return variableType ?: UNDETERMINED
     }
 
@@ -316,7 +312,7 @@ object ObjJMethodPsiUtils {
         return selector.text
     }
 
-    fun getVarType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
+    fun getVariableType(selector: ObjJMethodDeclarationSelector): ObjJFormalVariableType? {
         return selector.formalVariableType
     }
 
@@ -346,13 +342,13 @@ object ObjJMethodPsiUtils {
     // ============================== //
     // ========== Structs =========== //
     // ============================== //
-    fun getSelectorStructs(header:ObjJMethodHeader) : List<ObjJSelectorStruct> {
+    fun getSelectorStructs(header: ObjJMethodHeader): List<ObjJSelectorStruct> {
         return header.stub?.selectorStructs ?: header.methodDeclarationSelectorList.map {
             it.toSelectorStruct()
         }
     }
 
-    fun getSelectorStructs(selectorLiteral:ObjJSelectorLiteral) : List<ObjJSelectorStruct> {
+    fun getSelectorStructs(selectorLiteral: ObjJSelectorLiteral): List<ObjJSelectorStruct> {
         return selectorLiteral.stub?.selectorStructs ?: selectorLiteral.selectorList.map {
             ObjJSelectorStruct(
                     selector = it.getSelectorString(false),
@@ -380,13 +376,13 @@ object ObjJMethodPsiUtils {
         }
         return null
     }
+
     /**
      * Determines whether two getMethods in the same class are truly different.
      * This is due to overlaps of static and instnace method selectors
      * And also with single selector getMethods where one has a parameter and the other does not
      */
-    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader:ObjJMethodHeader?) : Boolean
-    {
+    fun hasSimilarDisposition(thisHeader: ObjJMethodHeader, otherHeader: ObjJMethodHeader?): Boolean {
         // If one method is static, while another is an instance method, ignore
         if (thisHeader.methodScope != otherHeader?.methodScope) {
             return false
@@ -401,7 +397,7 @@ object ObjJMethodPsiUtils {
         val otherSelector = otherHeader.methodDeclarationSelectorList.getOrNull(0) ?: return false
 
         // Return different if one selector has a parameter, and the other does not
-        return  (thisSelector.methodHeaderSelectorFormalVariableType == null && otherSelector.methodHeaderSelectorFormalVariableType == null) ||
+        return (thisSelector.methodHeaderSelectorFormalVariableType == null && otherSelector.methodHeaderSelectorFormalVariableType == null) ||
                 (thisSelector.methodHeaderSelectorFormalVariableType != null && otherSelector.methodHeaderSelectorFormalVariableType != null)
     }
 

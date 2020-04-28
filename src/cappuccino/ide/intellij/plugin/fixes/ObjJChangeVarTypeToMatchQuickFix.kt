@@ -14,7 +14,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import org.jetbrains.annotations.Nls
 
-class ObjJChangeVarTypeToMatchQuickFix(element: PsiElement, private val newType:String) : LocalQuickFixOnPsiElement(element) {
+class ObjJChangeVariableTypeToMatchQuickFix(element: PsiElement, private val newType:String) : LocalQuickFixOnPsiElement(element) {
     override fun getText(): String {
         return ObjJBundle.message("objective-j.intentions.change-variable-type.prompt", newType)
     }
@@ -24,62 +24,62 @@ class ObjJChangeVarTypeToMatchQuickFix(element: PsiElement, private val newType:
             psiFile: PsiFile,
             startElement: PsiElement,
             endElement: PsiElement) {
-        Logger.getInstance(ObjJChangeVarTypeToMatchQuickFix::class.java).assertTrue(startElement == endElement)
-        val varType = ObjJElementFactory.createFormalVariableType(startElement.project, newType)
+        Logger.getInstance(ObjJChangeVariableTypeToMatchQuickFix::class.java).assertTrue(startElement == endElement)
+        val variableType = ObjJElementFactory.createFormalVariableType(startElement.project, newType)
         when {
-            startElement is ObjJFormalVariableType -> replaceWith(startElement, varType)
-            startElement.isType(ObjJTypes.ObjJ_VOID) -> replaceWith(startElement, varType)
-            startElement is ObjJMethodHeaderReturnTypeElement -> replaceWith(startElement.formalVariableType, varType)
-            startElement is ObjJMethodDeclarationSelector -> replaceInSelector(startElement, varType)
-            startElement.isType(ObjJTypes.ObjJ_OPEN_PAREN) -> addAfter(startElement, varType)
-            startElement.isType(ObjJTypes.ObjJ_CLOSE_PAREN) -> addBefore(startElement, varType)
-            startElement is ObjJMethodHeader -> addReturnToMethodHeader(startElement, varType)
+            startElement is ObjJFormalVariableType -> replaceWith(startElement, variableType)
+            startElement.isType(ObjJTypes.ObjJ_VOID) -> replaceWith(startElement, variableType)
+            startElement is ObjJMethodHeaderReturnTypeElement -> replaceWith(startElement.formalVariableType, variableType)
+            startElement is ObjJMethodDeclarationSelector -> replaceInSelector(startElement, variableType)
+            startElement.isType(ObjJTypes.ObjJ_OPEN_PAREN) -> addAfter(startElement, variableType)
+            startElement.isType(ObjJTypes.ObjJ_CLOSE_PAREN) -> addBefore(startElement, variableType)
+            startElement is ObjJMethodHeader -> addReturnToMethodHeader(startElement, variableType)
             else -> return
         }
         DaemonCodeAnalyzer.getInstance(startElement.project).restart(startElement.containingFile)
     }
 
-    private fun replaceWith(psiElement: PsiElement, varType: ObjJFormalVariableType) {
-        psiElement.replace(varType)
+    private fun replaceWith(psiElement: PsiElement, variableType: ObjJFormalVariableType) {
+        psiElement.replace(variableType)
     }
 
-    private fun addAfter(psiElement: PsiElement, varType: ObjJFormalVariableType) {
-        psiElement.parent.addAfter(varType, psiElement)
+    private fun addAfter(psiElement: PsiElement, variableType: ObjJFormalVariableType) {
+        psiElement.parent.addAfter(variableType, psiElement)
     }
 
-    private fun addBefore(psiElement: PsiElement, varType: ObjJFormalVariableType) {
-        psiElement.parent.addBefore(varType, psiElement)
+    private fun addBefore(psiElement: PsiElement, variableType: ObjJFormalVariableType) {
+        psiElement.parent.addBefore(variableType, psiElement)
     }
 
-    private fun addReturnToMethodHeader(psiElement: ObjJMethodHeader, varType: ObjJFormalVariableType) {
+    private fun addReturnToMethodHeader(psiElement: ObjJMethodHeader, variableType: ObjJFormalVariableType) {
         if (psiElement.methodHeaderReturnTypeElement != null) {
-            replaceWith(psiElement.methodHeaderReturnTypeElement!!.formalVariableType, varType)
+            replaceWith(psiElement.methodHeaderReturnTypeElement!!.formalVariableType, variableType)
             return
         }
         var firstChild:PsiElement? = psiElement.firstChild
         while (firstChild != null) {
             when {
-                firstChild.isType(ObjJTypes.ObjJ_OPEN_PAREN) -> addAfter(firstChild, varType)
-                firstChild.isType(ObjJTypes.ObjJ_CLOSE_PAREN) -> addBefore(firstChild, varType)
+                firstChild.isType(ObjJTypes.ObjJ_OPEN_PAREN) -> addAfter(firstChild, variableType)
+                firstChild.isType(ObjJTypes.ObjJ_CLOSE_PAREN) -> addBefore(firstChild, variableType)
                 firstChild is ObjJMethodScopeMarker || firstChild.isType(TokenType.WHITE_SPACE) -> firstChild = firstChild.nextSibling
                 else -> return
             }
         }
     }
 
-    private fun replaceInSelector(selector: ObjJMethodDeclarationSelector, varType: ObjJFormalVariableType) {
-        if (selector.varType != null) {
-            replaceWith(selector.varType!!, varType)
+    private fun replaceInSelector(selector: ObjJMethodDeclarationSelector, variableType: ObjJFormalVariableType) {
+        if (selector.variableType != null) {
+            replaceWith(selector.variableType!!, variableType)
             return
         }
         val closeParen = selector.methodHeaderSelectorFormalVariableType?.closeParen
         if (closeParen != null) {
-            addBefore(closeParen, varType)
+            addBefore(closeParen, variableType)
             return
         }
         val openParen = selector.methodHeaderSelectorFormalVariableType?.openParen
         if (openParen != null) {
-            addAfter(openParen, varType)
+            addAfter(openParen, variableType)
         }
     }
 

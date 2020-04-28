@@ -731,7 +731,7 @@ argument
 	{
 		pin=2
 		methods = [
-			getVarArgs
+			getVariableArgs
 		    isNullable
 	        getArgumentNameString
         ]

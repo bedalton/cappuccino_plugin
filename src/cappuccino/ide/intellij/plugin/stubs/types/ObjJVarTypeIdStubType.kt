@@ -1,8 +1,8 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
-import cappuccino.ide.intellij.plugin.psi.impl.ObjJVarTypeIdImpl
-import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVarTypeIdStubImpl
-import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub
+import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableTypeIdImpl
+import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableTypeIdStubImpl
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableTypeIdStub
 import cappuccino.ide.intellij.plugin.utils.Strings
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
@@ -11,13 +11,13 @@ import com.intellij.psi.stubs.StubOutputStream
 import com.intellij.util.io.StringRef
 import java.io.IOException
 
-class ObjJVarTypeIdStubType internal constructor(
-        debugName: String) : ObjJStubElementType<ObjJVarTypeIdStub, ObjJVarTypeIdImpl>(debugName, ObjJVarTypeIdImpl::class.java) {
+class ObjJVariableTypeIdStubType internal constructor(
+        debugName: String) : ObjJStubElementType<ObjJVariableTypeIdStub, ObjJVariableTypeIdImpl>(debugName, ObjJVariableTypeIdImpl::class.java) {
 
 
     @Throws(IOException::class)
     override fun serialize(
-            stub: ObjJVarTypeIdStub,
+            stub: ObjJVariableTypeIdStub,
             stream: StubOutputStream) {
         stream.writeName(stub.idType)
         stream.writeBoolean(stub.shouldResolve())
@@ -25,23 +25,23 @@ class ObjJVarTypeIdStubType internal constructor(
 
     @Throws(IOException::class)
     override fun deserialize(
-            stream: StubInputStream, stubParent: StubElement<*>): ObjJVarTypeIdStub {
+            stream: StubInputStream, stubParent: StubElement<*>): ObjJVariableTypeIdStub {
         val idType = Strings.notNull(StringRef.toString(stream.readName()), "id")
         val shouldResolve = stream.readBoolean()
-        return ObjJVarTypeIdStubImpl(stubParent, idType, shouldResolve)
+        return ObjJVariableTypeIdStubImpl(stubParent, idType, shouldResolve)
     }
 
-    override fun indexStub(stub: ObjJVarTypeIdStub, sink: IndexSink) {
-        //ServiceManager.getService(StubIndexService.class).indexVarTypeId(stub, indexSink);
+    override fun indexStub(stub: ObjJVariableTypeIdStub, sink: IndexSink) {
+        //ServiceManager.getService(StubIndexService.class).indexVariableTypeId(stub, indexSink);
     }
 
     override fun createPsi(
-            stub: ObjJVarTypeIdStub): ObjJVarTypeIdImpl {
-        return ObjJVarTypeIdImpl(stub, this)
+            stub: ObjJVariableTypeIdStub): ObjJVariableTypeIdImpl {
+        return ObjJVariableTypeIdImpl(stub, this)
     }
 
     override fun createStub(
-            varTypeId: ObjJVarTypeIdImpl, stubParent: StubElement<*>): ObjJVarTypeIdStub {
-        return ObjJVarTypeIdStubImpl(stubParent, varTypeId.idType, shouldResolve(varTypeId.node))
+            variableTypeId: ObjJVariableTypeIdImpl, stubParent: StubElement<*>): ObjJVariableTypeIdStub {
+        return ObjJVariableTypeIdStubImpl(stubParent, variableTypeId.idType, shouldResolve(variableTypeId.node))
     }
 }

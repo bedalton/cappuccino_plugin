@@ -1,18 +1,20 @@
+@file:Suppress("UnstableApiUsage")
+
 package cappuccino.ide.intellij.plugin.hints
 
 import cappuccino.ide.intellij.plugin.indices.ObjJClassAndSelectorMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.psi.ObjJExpr
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJStringLiteral
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.toJsTypeListType
 import cappuccino.ide.intellij.plugin.psi.utils.functionDeclarationReference
 import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
-import com.intellij.codeInsight.hints.*
+import com.intellij.codeInsight.hints.HintInfo
+import com.intellij.codeInsight.hints.InlayInfo
+import com.intellij.codeInsight.hints.InlayParameterHintsProvider
+import com.intellij.codeInsight.hints.Option
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 
@@ -24,8 +26,8 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
             Option("objj.hints.function_parameter_name", "Function parameter names", true)
 
 
-    override fun getParameterHints(element: PsiElement?): MutableList<InlayInfo> {
-        if (element == null)
+    override fun getParameterHints(element: PsiElement): MutableList<InlayInfo> {
+        if (true || element == null)
             return mutableListOf()
         val project = element.project;
         if (DumbService.isDumb(project))
@@ -83,7 +85,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
         return mutableSetOf()
     }
 
-    override fun getHintInfo(element: PsiElement?): HintInfo? {
+    override fun getHintInfo(element: PsiElement): HintInfo? {
         return null
     }
 

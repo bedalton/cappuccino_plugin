@@ -8,5 +8,5 @@ interface ObjJAccessorPropertyStub : ObjJMethodHeaderDeclarationStub<ObjJAccesso
     val variableName: String?
     val getter: String?
     val setter: String?
-    val varType: String?
+    val variableType: String?
 }

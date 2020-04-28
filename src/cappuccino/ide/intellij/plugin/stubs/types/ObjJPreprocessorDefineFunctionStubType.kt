@@ -18,11 +18,11 @@ class ObjJPreprocessorDefineFunctionStubType internal constructor(
     override fun createStub(parent: StubElement<*>,
                                      fileName: String,
                                      fqName: String,
-                                     paramNames: List<String>,
+                                     parameterNames: List<String>,
                                      returnType: String?,
                                      shouldResolve: Boolean,
                                      scope:ObjJFunctionScope): ObjJFunctionDeclarationElementStub<ObjJPreprocessorDefineFunctionImpl> {
-        return ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, paramNames, returnType, shouldResolve)
+        return ObjJPreprocessorFunctionDeclarationStubImpl(parent, fileName, fqName, parameterNames, returnType, shouldResolve)
     }
 
     override fun shouldCreateStub(node: ASTNode?): Boolean {

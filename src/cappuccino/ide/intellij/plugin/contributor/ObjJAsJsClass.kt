@@ -55,8 +55,8 @@ fun objJClassAsJsClass(project: Project, className: String): JsClassDefinition? 
 private fun ObjJInstanceVariableDeclaration.toJsProperty(): JsTypeDefNamedProperty? {
     val propertyName = this.variableName?.text ?: return null
     val formalVariableType = this.formalVariableType
-    val type = if (this.formalVariableType.varTypeId?.className != null)
-        formalVariableType.varTypeId!!.className!!.text
+    val type = if (this.formalVariableType.variableTypeId?.className != null)
+        formalVariableType.variableTypeId!!.className!!.text
     else {
         val typeName = formalVariableType.text
         when {

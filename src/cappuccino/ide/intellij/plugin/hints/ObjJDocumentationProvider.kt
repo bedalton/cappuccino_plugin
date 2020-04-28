@@ -11,12 +11,14 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.getPossibleClassTypes
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 
@@ -27,7 +29,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     }
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
+        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
                     it.quickInfo(comment)
@@ -62,8 +64,9 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
                     val parameterComment = comment.getParameterComment(it.variableName?.text ?: "")
                     val out = StringBuilder(it.text)
                     val containingClassName = it.containingClassName
-                    if (parameterComment?.paramCommentFormatted != null) {
-                        out.append(" - ").append(parameterComment.paramCommentFormatted)
+                    val commentText = parameterComment?.text?.replace("""\s*\\c\s*""".toRegex(), " ")
+                    if (commentText.isNotNullOrBlank()) {
+                        out.append(" - ").append(commentText)
                     }
                     out.append("[in").append(containingClassName).append("]")
                     out.toString()
@@ -126,7 +129,7 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         //val doc = StringBuilder()
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("")
+        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         ////LOGGER.warning(.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
@@ -191,9 +194,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         if (type != null)
             out.append("(").append(type).append(")")
         out.append(text)
-        val paramComment = comment?.getParameterComment(text)?.paramCommentClean
-        if (paramComment.isNotNullOrBlank()) {
-            out.append(" - ").append(paramComment)
+        val parameterComment = comment?.getParameterComment(text)?.text?.replace("""\s*\\c\s*""".toRegex(), " ")
+        if (parameterComment.isNotNullOrBlank()) {
+            out.append(" - ").append(parameterComment)
         }
         //out.append(" in ").append("[").append(it.containingClassName).append("]")
         return out.toString()
@@ -201,7 +204,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     ////LOGGER.warning(.info("Check QNR")
     val prevSiblings = previousSiblings
     val forwardTag = createTag() // Drop the + 1 as it was causing stack overflow
-    if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVarDec(this)) {
+    if (prevSiblings.isEmpty() && !ObjJVariablePsiUtil.isNewVariableDec(this)) {
         val jsTypeDefFunctionResult = JsTypeDefFunctionsByNameIndex.instance[this.text, project].map {
             it.toJsFunctionType()
         }.minBy { it.parameters.size }
@@ -213,7 +216,7 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
             out.append(functionType.descriptionWithName(text))
             return out.toString()
         }
-        val classNames = inferenceResult?.toClassListString("<Any?>")
+        val classNames = stripCPObject(inferenceResult, project) ?: "<Any?>"
         ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
         if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
             out.append("parameter")
@@ -229,9 +232,9 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     val name = this.text
     var propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
     if (propertyTypes.isNotNullOrBlank()) {
-        val classNames = inferredTypes?.toClassListString(null)
+        val classNames = stripCPObject(inferredTypes, project) ?: "<Any?>"
         if (propertyTypes?.startsWith("$name(").orFalse())
-            propertyTypes = propertyTypes?.substring("$name".length)
+            propertyTypes = propertyTypes?.substring(name.length)
         if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
             out.append("property ").append(name)
         if (propertyTypes.isNotNullOrBlank() && propertyTypes !in anyTypes) {
@@ -245,12 +248,21 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
         }
     }
     out.append("var '").append(text).append("'")
-    val possibleClasses = this.getPossibleClassTypes(createTag() + 2).filterNot { it == "CPObject" }
+    val possibleClasses = this.getPossibleClassTypes(createTag()).filterNot { it == "CPObject" }
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
     out.append(" in ").append(getLocationString(this))
     return out.toString()
+}
+
+private fun stripCPObject(inferredTypes:InferenceResult?, project:Project) : String? {
+    var classNamesTemp = inferredTypes?.toClassList(null).orEmpty()
+    classNamesTemp = if (classNamesTemp.any{ ObjJClassDeclarationsIndex.instance.containsKey(it, project)})
+        classNamesTemp.filter{ it == "CPObject" }.toSet()
+    else
+        classNamesTemp
+    return classNamesTemp.joinToString("|").ifEmptyNull()
 }
 
 private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? = null): String? {
@@ -266,7 +278,7 @@ private fun ObjJQualifiedMethodCallSelector.quickInfo(comment: CommentWrapper? =
     val resolvedSelectors: List<ObjJMethodDeclarationSelector> = resolved.mapNotNull { (it.selectorList.getOrNull(index)?.parent as? ObjJMethodDeclarationSelector) }
     val resolvedTypes = resolvedSelectors.mapNotNull { it.formalVariableType?.text }.toSet()
     val resolvedVariableNames = resolvedSelectors.mapNotNull { it.variableName?.text }.filter { it.isNotNullOrBlank() }
-    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.paramCommentClean }.joinToString("|")
+    val positionComment = resolvedComments.mapNotNull { it.getParameterComment(index)?.text?.replace("""\s*\\c\s*""".toRegex(), " ") }.joinToString("|")
     out.append(selector?.text ?: "_").append(":")
     out.append("(").append(resolvedTypes.joinToString("|")).append(")")
     if (resolvedVariableNames.size > 1) {

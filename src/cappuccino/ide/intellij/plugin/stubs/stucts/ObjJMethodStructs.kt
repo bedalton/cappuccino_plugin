@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.stucts
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.toJsTypeList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
@@ -25,7 +26,13 @@ val startsWithVowelRegex = "^[aAeEiIoOuU]".toRegex()
 // ============================== //
 // ========== Structs =========== //
 // ============================== //
-data class ObjJMethodStruct(val selectors:List<ObjJSelectorStruct>, val returnType:InferenceResult?, val methodScope: MethodScope, val containingClassName:String?) {
+data class ObjJMethodStruct(
+        val selectors:List<ObjJSelectorStruct>,
+        val returnType:InferenceResult?,
+        val methodScope: MethodScope,
+        val containingClassName:String?,
+        val isPrivate:Boolean
+) {
     val selectorString:String by lazy {
         if (selectors.size == 1) {
             val selector = selectors[0]
@@ -78,7 +85,7 @@ private val METHOD_STRUCT_KEY = Key<ObjJMethodStruct>("objj.userdata.structs.met
 // ===== Extension Methods ====== //
 // ============================== //
 
-fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
+fun ObjJMethodHeader.toMethodStruct(tag:Tag) : ObjJMethodStruct {
     val cached = getUserData(METHOD_STRUCT_KEY)
     if (cached != null)
         return cached
@@ -90,7 +97,13 @@ fun ObjJMethodHeader.toMethodStruct(tag:Long) : ObjJMethodStruct {
         InferenceResult(types = returnTypeStrings)
     else
         null
-    val out = ObjJMethodStruct(selectors = selectors, returnType = returnType, methodScope = methodScope, containingClassName = containingClassName)
+    val out = ObjJMethodStruct(
+            selectors = selectors,
+            returnType = returnType,
+            methodScope = methodScope,
+            containingClassName = containingClassName,
+            isPrivate = isPrivate
+    )
     putUserData(METHOD_STRUCT_KEY, out)
     return out
 }
@@ -114,11 +127,12 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
                         selectors = listOf(Getter(getter, containingClassName)),
                         returnType = InferenceResult(setOf(variableType).toJsTypeList()),
                         methodScope = INSTANCE,
-                        containingClassName = containingClassName
+                        containingClassName = containingClassName,
+                        isPrivate = false
                 )
         )
     }
-    var setter = setter
+    val setter = setter
     if (setter != null) {
         val prefix = if (startsWithVowelRegex.containsMatchIn(variableType)) "an" else "a"
         val variableName = prefix + variableType.capitalize()
@@ -134,7 +148,8 @@ fun ObjJAccessorProperty.getMethodStructs() : List<ObjJMethodStruct> {
                         )),
                         returnType = null,
                         methodScope = INSTANCE,
-                        containingClassName = containingClassName
+                        containingClassName = containingClassName,
+                        isPrivate = false
                 )
         )
     }
@@ -146,16 +161,14 @@ fun ObjJSelectorLiteral.toMethodStruct() : ObjJMethodStruct {
             selectors = selectorStructs,
             returnType = null,
             methodScope = SELECTOR_LITERAL,
-            containingClassName = null
+            containingClassName = null,
+            isPrivate = false
     )
 }
 
 fun ObjJSelector.toSelectorStruct(containingClassName: String) : ObjJSelectorStruct {
     val selectorString = getSelectorString(false)
     val parent = parent
-    if (parent is ObjJSelectorLiteral) {
-
-    }
     if (parent is ObjJMethodDeclarationSelector) {
         return parent.toSelectorStruct()
     }
@@ -214,7 +227,8 @@ fun StubInputStream.readMethodStruct() : ObjJMethodStruct {
             containingClassName = containingClassName,
             selectors = selectors,
             returnType = returnType,
-            methodScope = methodScope
+            methodScope = methodScope,
+            isPrivate = readBoolean()
     )
 }
 
@@ -223,6 +237,7 @@ fun StubOutputStream.writeMethodStruct(method:ObjJMethodStruct) {
     writeInferenceResult(method.returnType)
     writeName(method.containingClassName)
     writeName(method.methodScope.scopeMarker)
+    writeBoolean(method.isPrivate)
 }
 
 

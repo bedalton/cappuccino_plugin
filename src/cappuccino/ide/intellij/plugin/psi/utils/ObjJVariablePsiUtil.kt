@@ -16,7 +16,7 @@ object ObjJVariablePsiUtil {
         return "ObjJ_VAR_NAME(" + variableName.text + ")"
     }
 
-    fun isNewVarDec(psiElement: PsiElement): Boolean {
+    fun isNewVariableDec(psiElement: PsiElement): Boolean {
         val variableName = psiElement.getSelfOrParentOfType(ObjJVariableName::class.java)
         if (variableName != null) {
             return when {
@@ -40,7 +40,7 @@ object ObjJVariablePsiUtil {
 
     fun getVariableType(variable:ObjJInstanceVariableDeclaration) : String {
         return variable.stub?.variableType
-                ?: variable.formalVariableType.varTypeId?.className?.text
+                ?: variable.formalVariableType.variableTypeId?.className?.text
                 ?: variable.formalVariableType.text
     }
 

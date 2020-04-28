@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.caches
 
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.TagList
 import cappuccino.ide.intellij.plugin.inference.createTag
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -96,13 +97,13 @@ class MyModificationTracker:ModificationTracker {
     private var myCount: Long = 0
     internal var tagList:TagList = TagList()
     override fun getModificationCount(): Long {
-        return myCount + (tagList.tags.max().orElse(0))
+        return myCount + (tagList.tags.maxBy { it.tag }?.tag.orElse(0))
     }
-    fun tagged(tag:Long, setTag:Boolean = true) : Boolean {
+    fun tagged(tag:Tag, setTag:Boolean = true) : Boolean {
         return tagList.tagged(tag, setTag)
     }
 
-    val tag:Long get() = tagList.tags.max() ?: createTag()
+    val tag:Tag get() = tagList.tags.maxBy { it.tag } ?: createTag()
 
     fun tick() {
         myCount++

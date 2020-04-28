@@ -1,7 +1,14 @@
 package cappuccino.ide.intellij.plugin.parser
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes
+import cappuccino.ide.intellij.plugin.comments.psi.ObjJDocCommentElementTypeFactory
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement
+import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentCommentImpl
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
+import cappuccino.ide.intellij.plugin.psi.impl.ObjJBlockCommentImpl
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets.COMMENTS
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.FILE
@@ -54,7 +61,11 @@ class ObjJParserDefinition : ParserDefinition {
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return ObjJTypes.Factory.createElement(node)
+        return when {
+            node.elementType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK -> ObjJDocCommentCommentImpl(node)
+            node.elementType.toString().contains("ObjJDocComment_") -> ObjJDocCommentTypes.Factory.createElement(node)
+            else -> ObjJTypes.Factory.createElement(node)
+        }
     }
 
     companion object {

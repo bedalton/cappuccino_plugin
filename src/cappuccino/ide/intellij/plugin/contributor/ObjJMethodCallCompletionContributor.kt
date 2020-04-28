@@ -102,10 +102,12 @@ object ObjJMethodCallCompletionContributor {
             else -> emptyList()
         }
 
+        val usePrivate = elementsParentMethodCall.containingClassName in possibleContainingClassNames
+
         // Attempt to add completions for known classes
         val project = psiElement.project
         if (selectorString.trim() == CARET_INDICATOR && possibleContainingClassNames.isNotEmpty()) {
-            if (addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, scope))
+            if (addMethodDeclarationLookupElementsForClasses(project, result, possibleContainingClassNames, scope, usePrivate))
                 return
         }
         var didAddCompletions = addCompletionsForKnownClasses(
@@ -115,7 +117,8 @@ object ObjJMethodCallCompletionContributor {
                 possibleContainingClassNames = possibleContainingClassNames,
                 selectorIndex = selectorIndex,
                 targetScope = scope,
-                selectorString = selectors.subList(0, selectorIndex + 1).joinToString ("") { it.getSelectorString(true)}
+                selectorString = selectors.subList(0, selectorIndex + 1).joinToString ("") { it.getSelectorString(true)},
+                usePrivate = usePrivate
         )
 
         // If completions added for known classes, return
@@ -124,7 +127,15 @@ object ObjJMethodCallCompletionContributor {
         }
 
         //Attempt other was to add completions
-        didAddCompletions = addMethodDeclarationLookupElements(psiElement.project, psiElement.containingFile?.name, result, scope, selectorString, selectorIndex, elementsParentMethodCall.containingClassName)
+        didAddCompletions = addMethodDeclarationLookupElements(
+                project = psiElement.project,
+                fileName = psiElement.containingFile?.name,
+                result = result,
+                targetScope = scope,
+                selectorString = selectorString,
+                selectorIndex = selectorIndex,
+                containingClass = elementsParentMethodCall.containingClassName
+        )
 
 
         // Add accessor and instance variable elements if selector size is equal to one
@@ -181,12 +192,10 @@ object ObjJMethodCallCompletionContributor {
                 .filter {
                     ProgressIndicatorProvider.checkCanceled()
                     val allowUnderscore = it.containingClassName == containingClass || allowUnderscoreOverride
-                    //val isIgnored = it.stub?.ignored ?: ObjJCommentEvaluatorUtil.isIgnored(it, ObjJSuppressInspectionFlags.IGNORE_METHOD) ||
-                    //      ObjJCommentEvaluatorUtil.isIgnored(it.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
-                    if (!allowUnderscore && it.selectorString.startsWith("_")) {
+                    if (!allowUnderscore && it.isPrivate) {
                         false
                     } else {
-                        !ObjJPluginSettings.ignoreUnderscoredClasses || !it.containingClassName.startsWith("_") || it.containingFile?.name == fileName
+                        !ObjJPluginSettings.ignoreUnderscoredClasses || !it.isPrivate || it.containingFileName == fileName
                     }
                 }
 
@@ -221,7 +230,16 @@ object ObjJMethodCallCompletionContributor {
     }
 
 
-    private fun addCompletionsForKnownClasses(resultSet: CompletionResultSet, project:Project, possibleContainingClassNames: List<String>, targetScope: MethodScope, selectorIndex: Int, selectorString: String, strictTypes:List<String>? = null): Boolean {
+    private fun addCompletionsForKnownClasses(
+            resultSet: CompletionResultSet,
+            project:Project,
+            possibleContainingClassNames: List<String>,
+            targetScope: MethodScope,
+            selectorIndex: Int,
+            selectorString: String,
+            strictTypes:List<String>? = null,
+            usePrivate: Boolean
+    ): Boolean {
         // Check if class names are empty
         if (possibleContainingClassNames.isEmpty())
             return false
@@ -244,6 +262,8 @@ object ObjJMethodCallCompletionContributor {
                     selectorStringBefore.isEmpty() || it.selectorStringWithColon.startsWith(selectorStringBefore)
                 }
                 .forEach {
+                    if (it.isPrivate && !usePrivate)
+                        return@forEach
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
                             resultSet = resultSet,
@@ -273,21 +293,29 @@ object ObjJMethodCallCompletionContributor {
     }
 
 
-    private fun addMethodDeclarationLookupElementsForClasses(project: Project, result: CompletionResultSet, possibleContainingClassNames: List<String>, targetScope: MethodScope): Boolean {
+    private fun addMethodDeclarationLookupElementsForClasses(
+            project: Project,
+            result: CompletionResultSet,
+            possibleContainingClassNames: List<String>,
+            targetScope: MethodScope,
+            usePrivate:Boolean
+    ): Boolean {
         var didAdd = false
         collapseContainingClasses(project, possibleContainingClassNames).forEach {
-            didAdd = addMethodDeclarationLookupElementsForClass(project, it, result, targetScope) || didAdd
+            didAdd = addMethodDeclarationLookupElementsForClass(project, it, result, targetScope, usePrivate) || didAdd
         }
         return didAdd
     }
 
-    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: MethodScope): Boolean {
+    private fun addMethodDeclarationLookupElementsForClass(project: Project, className: String, result: CompletionResultSet, targetScope: MethodScope, usePrivate: Boolean): Boolean {
         var didAdd = false
         ObjJClassMethodIndex.instance[className, project].forEach {
             if (targetScope != it.methodScope)
                 return@forEach
             didAdd = true
             val selector = it.selectorStructs.getOrNull(0) ?: return@forEach
+            if (it.isPrivate && !usePrivate)
+                return@forEach
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
                     selectorStruct = selector,
@@ -437,7 +465,10 @@ object ObjJMethodCallCompletionContributor {
         val selectorString: String = getSelectorStringFromSelectorStrings(selectorStrings)
         var didAddOne = false
         ObjJUnifiedMethodIndex.instance
-                .getByPatternFlat(selectorString.toIndexPatternString(), project).mapNotNull { it.selectorStructs.getOrNull(selectorIndex) }.toSet().forEach {
+                .getByPatternFlat(selectorString.toIndexPatternString(), project)
+                .mapNotNull { it.selectorStructs.getOrNull(selectorIndex) }
+                .toSet()
+                .forEach {
                     if (!didAddOne)
                         didAddOne = true
                     ObjJSelectorLookupUtil.addSelectorLookupElement(

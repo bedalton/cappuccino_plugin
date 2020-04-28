@@ -8,7 +8,7 @@ import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 
-fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
+fun inferExpressionType(expr: ObjJExpr?, tag: Tag): InferenceResult? {
     if (expr == null)
         return null
     return expr.getCachedInferredTypes(tag) {
@@ -18,7 +18,8 @@ fun inferExpressionType(expr: ObjJExpr?, tag: Long): InferenceResult? {
     }
 }
 
-private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceResult? {
+private fun internalInferExpressionType(expr: ObjJExpr, tag: Tag): InferenceResult? {
+    ProgressIndicatorProvider.checkCanceled()
     if (expr.text == "self") {
         val parentClass = expr.getParentOfType(ObjJClassDeclarationElement::class.java)
         if (parentClass != null)
@@ -37,12 +38,11 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
         return InferenceResult(types = setOf("Object").toJsTypeList())
     }
 
-    //ProgressManager.checkCanceled()
     val leftExpressionType = if (expr.leftExpr != null && expr.rightExprList.isEmpty()) {
         leftExpressionType(expr.leftExpr, tag)
     } else if (
             (expr.leftExpr?.functionCall != null || expr.leftExpr?.methodCall != null)
-            //&& expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
+            && expr.rightExprList.firstOrNull()?.qualifiedReferencePrime != null
     ) {
         val qualifiedNameParts = expr.rightExprList.firstOrNull()?.qualifiedReferencePrime?.qualifiedNameParts.orEmpty();
         val qualifiedReferenceResult = inferQualifiedReferenceType(qualifiedNameParts, tag) ?: return null
@@ -74,7 +74,7 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Long): InferenceRes
     )
 }
 
-fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResult? {
+fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult? {
     if (leftExpression == null) {// || level < 0) {
         return null
     }
@@ -165,17 +165,16 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Long): InferenceResul
     }
 }
 
-fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Long): InferenceResult? {
-    //ProgressManager.checkCanceled()
+fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Tag): InferenceResult? {
     if (leftExpression == null)// || level < 0)
         return null
+    ProgressIndicatorProvider.checkCanceled()
     var orExpressionType: InferenceResult? = null
     var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {
         ProgressIndicatorProvider.checkCanceled()
         if (rightExpr.comparisonExprPrime != null)
             return InferenceResult(types = setOf(JS_BOOL).toJsTypeList(), isBoolean = true)
-        //ProgressManager.checkCanceled()
         if (rightExpr.ternaryExprPrime != null) {
             val ternaryExpr = rightExpr.ternaryExprPrime!!
             val ifTrue = if (ternaryExpr.ifTrue?.expr != null) inferExpressionType(ternaryExpr.ifTrue!!.expr!!, tag) else null
@@ -223,8 +222,10 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
     return current
 }
 
-internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Long): InferenceResult {
-    return assignments.mapNotNull { inferExpressionType(it, tag) }.combine()
+internal fun getInferredTypeFromExpressionArray(assignments: List<ObjJExpr>, tag: Tag): InferenceResult {
+    return assignments.mapNotNull {
+        inferExpressionType(it, tag)
+    }.combine()
 }
 
 private object IsNumericUtil {

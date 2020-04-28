@@ -187,7 +187,7 @@ object ObjJFunctionDeclarationPsiUtil {
     /**
      * Gets function parameters' variable name elements
      */
-    fun getParamNameElements(
+    fun getParameterNameElements(
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<ObjJVariableName> {
         val out = mutableListOf<ObjJVariableName?>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
@@ -207,7 +207,7 @@ object ObjJFunctionDeclarationPsiUtil {
             functionDeclaration: ObjJFunctionDeclarationElement<*>): List<String> {
         if (functionDeclaration.stub != null) {
 
-            return (functionDeclaration.stub as ObjJFunctionDeclarationElementStub<*>).paramNames
+            return (functionDeclaration.stub as ObjJFunctionDeclarationElementStub<*>).parameterNames
         }
         val out = mutableListOf<String?>()
         for (parameterArg in functionDeclaration.formalParameterArgList) {
@@ -219,37 +219,7 @@ object ObjJFunctionDeclarationPsiUtil {
         return out.filterNotNull()
     }
 
-    /**
-     * Gets the return type if cached
-     * /
-    fun getReturnType(
-            functionDeclaration: ObjJFunctionDeclaration): String {
-        if (functionDeclaration.stub != null) {
-            functionDeclaration.stub.returnType
-        }
-        return ObjJClassType.UNDETERMINED
-    }
-
-    /**
-     * Gets the return type if cached
-     */
-    fun getReturnType(
-            functionLiteral: ObjJFunctionLiteral): String {
-        if (functionLiteral.stub != null) {
-            functionLiteral.stub.returnType
-        }
-        return ObjJClassType.UNDETERMINED
-    }
-    /**
-     * Gets the return type if cached
-     */
-    fun getReturnType(functionDefinition: ObjJPreprocessorDefineFunction): String? {
-        return if (functionDefinition.stub != null) {
-            functionDefinition.stub.returnType
-        } else ObjJClassType.UNDETERMINED
-    }*/
-
-    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag:Long) : InferenceResult? {
+    fun getReturnTypes(functionDeclaration: ObjJFunctionDeclarationElement<*>, tag: Tag) : InferenceResult? {
         val stubReturnType = functionDeclaration.stub?.returnType
         if (stubReturnType != null) {
             return stubReturnType.split(SPLIT_JS_CLASS_TYPES_LIST_REGEX).toJsTypeList().let {
@@ -338,9 +308,9 @@ object ObjJFunctionDeclarationPsiUtil {
             return false
         val functionName = functionDeclaration.functionNameString
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
-            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { varDec ->
-                varDec.qualifiedReferenceList.any {
-                    if (it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0]?.text == functionName)
+            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any { variableDec ->
+                variableDec.qualifiedReferenceList.any {
+                    if (it.qualifiedNameParts.size == 1 && it.qualifiedNameParts[0].text == functionName)
                         bodyVariableAssignment.varModifier != null
                     else
                         false
@@ -358,11 +328,11 @@ object ObjJFunctionDeclarationPsiUtil {
             return false
         val functionName = functionDeclaration.functionNameString
         return !variableDeclaration.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true).any { bodyVariableAssignment ->
-            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any varDec@{ varDec ->
-                varDec.qualifiedReferenceList.any{
-                    if (it.qualifiedNameParts.size != 1 && it.qualifiedNameParts[0]?.text != functionName)
-                        return@varDec false
-                    val qualifiedReference = it.qualifiedNameParts[0].reference?.resolve()?.parent as? ObjJQualifiedReference ?: return@varDec false
+            bodyVariableAssignment.variableDeclarationList?.variableDeclarationList?.any variableDec@{ variableDec ->
+                variableDec.qualifiedReferenceList.any{
+                    if (it.qualifiedNameParts.size != 1 && it.qualifiedNameParts[0].text != functionName)
+                        return@variableDec false
+                    val qualifiedReference = it.qualifiedNameParts[0].reference?.resolve()?.parent as? ObjJQualifiedReference ?: return@variableDec false
                     if (qualifiedReference.hasParentOfType(ObjJExpr::class.java))
                         return false
                     return qualifiedReference.getParentOfType(ObjJBodyVariableAssignment::class.java)?.varModifier != null
@@ -425,9 +395,13 @@ object ObjJFunctionDeclarationPsiUtil {
             }
         }
         val index = parameterArg.getParentOfType(ObjJFunctionDeclarationElement::class.java)?.formalParameterArgList?.indexOf(parameterArg) ?: -1
-        val parameterComments = parameterArg.docComment?.parameterComments ?: return null
-        val parameter = parameterComments.firstOrNull { it.paramName == parameterArg.variableName?.text } ?: parameterComments.getOrNull(index)
-        return parameter?.getTypes(parameterArg.project, null)?.joinToString("|")
+        val docComment = parameterArg.docComment
+                ?: return null
+        val variableName = parameterArg.variableName?.text
+                ?: return null
+        val parameter = docComment.getParameterComment(variableName) ?: docComment.getParameterComment(index)
+            ?: return null
+        return parameter.types?.withoutAnyType()?.joinToString("|")
     }
 
     fun getParentFunctionDeclaration(element:PsiElement?) : ObjJUniversalFunctionElement? {

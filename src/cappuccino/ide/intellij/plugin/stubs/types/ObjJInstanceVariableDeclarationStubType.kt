@@ -69,7 +69,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
     override fun deserialize(
             stream: StubInputStream, parentStub: StubElement<*>): ObjJInstanceVariableDeclarationStub {
         val containingClass = StringRef.toString(stream.readName())
-        val varType = StringRef.toString(stream.readName())!!
+        val variableType = StringRef.toString(stream.readName())!!
         val variableName = StringRef.toString(stream.readName())!!
         val getter = StringRef.toString(stream.readName())
         val setter = StringRef.toString(stream.readName())
@@ -78,7 +78,7 @@ class ObjJInstanceVariableDeclarationStubType internal constructor(
         return ObjJInstanceVariableDeclarationStubImpl(
                 parent = parentStub,
                 containingClass = containingClass,
-                variableType = varType,
+                variableType = variableType,
                 variableName = variableName,
                 getter = getter,
                 setter = setter,

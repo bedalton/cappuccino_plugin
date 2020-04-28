@@ -16,7 +16,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.IncorrectOperationException
 
 
@@ -60,7 +60,7 @@ class ObjJSuppressUndeclaredVariableInspectionOnVariable(variableName:ObjJVariab
             CodeStyleManager.getInstance(file.project).reformatText(file, listOf(parentBlock.textRange))
         }
         DaemonCodeAnalyzer.getInstance(project).restart(file)
-        FileContentUtil.reparseFiles(file.virtualFile)
+        FileContentUtilCore.reparseFiles(file.virtualFile)
     }
 
     override fun getFamilyName(): String {

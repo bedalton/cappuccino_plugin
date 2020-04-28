@@ -1,5 +1,7 @@
 package cappuccino.ide.intellij.plugin.lang
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
 import cappuccino.ide.intellij.plugin.lexer.ObjJLexer
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import com.intellij.lexer.Lexer
@@ -79,20 +81,20 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
                 tokenType == ObjJTypes.ObjJ_NULL_LITERAL ||
                 tokenType == ObjJTypes.ObjJ_UNDEFINED) {
             attrKey = KEYWORD
-        } else if (tokenType == ObjJTypes.ObjJ_VAR_TYPE_BOOL ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_DOUBLE ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_FLOAT ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_IBACTION ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_IBOUTLET ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_CHAR ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SHORT ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_BYTE ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_UNSIGNED ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SIGNED ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_SEL ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_LONG_LONG ||
-                tokenType == ObjJTypes.ObjJ_VAR_TYPE_INT ||
+        } else if (tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_BOOL ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_DOUBLE ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_FLOAT ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_IBACTION ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_IBOUTLET ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_CHAR ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SHORT ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_BYTE ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_UNSIGNED ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SIGNED ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_SEL ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_LONG ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_LONG_LONG ||
+                tokenType == ObjJTypes.ObjJ_VARIABLE_TYPE_INT ||
                 tokenType == ObjJTypes.ObjJ_VOID) {
             attrKey = VARIABLE_TYPE
         } else if (tokenType == ObjJTypes.ObjJ_PP_DEFINE ||
@@ -127,7 +129,9 @@ class ObjJSyntaxHighlighter : SyntaxHighlighterBase() {
         } else if (tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_START ||
                 tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_END ||
-                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY) {
+                tokenType == ObjJTypes.ObjJ_BLOCK_COMMENT_BODY ||
+                tokenType == OBJJ_DOC_COMMENT_PARSABLE_BLOCK
+                ) {
             attrKey = BLOCK_COMMENT
         } else if (tokenType == ObjJTypes.ObjJ_PRAGMA_MARKER || tokenType == ObjJTypes.ObjJ_REGULAR_EXPRESSION_LITERAL_TOKEN) {
             attrKey = SECONDARY_LITERAL

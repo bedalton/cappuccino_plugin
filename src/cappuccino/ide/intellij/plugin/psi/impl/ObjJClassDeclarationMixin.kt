@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.impl
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.psi.ObjJAccessorProperty
 import cappuccino.ide.intellij.plugin.psi.ObjJImplementationDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader
@@ -28,7 +29,7 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
         return cache.getMethods(internalOnly)
     }
 
-    override fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct> {
+    override fun getMethodStructs(internalOnly:Boolean, tag: Tag) : List<ObjJMethodStruct> {
         return cache.getMethodStructs(internalOnly, tag)
     }
 
@@ -36,7 +37,7 @@ abstract class ObjJProtocolDeclarationMixin : ObjJStubBasedElementImpl<ObjJProto
         return cache.getAllSelectors(internalOnly)
     }
 
-    override fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?
+    override fun getMethodReturnType(selector:String, tag: Tag) : InferenceResult?
         = cache.getMethodReturnType(selector, tag)
 
     override val inheritedProtocolDeclarations: List<ObjJProtocolDeclaration>
@@ -65,11 +66,11 @@ abstract class ObjJImplementationDeclarationMixin : ObjJStubBasedElementImpl<Obj
         return cache.getMethods(internalOnly)
     }
 
-    override fun getMethodStructs(internalOnly:Boolean, tag:Long) : List<ObjJMethodStruct> {
+    override fun getMethodStructs(internalOnly:Boolean, tag: Tag) : List<ObjJMethodStruct> {
         return cache.getMethodStructs(internalOnly, tag)
     }
 
-    override fun getMethodReturnType(selector:String, tag:Long) : InferenceResult?
+    override fun getMethodReturnType(selector:String, tag: Tag) : InferenceResult?
             = cache.getMethodReturnType(selector, tag)
 
     override fun getAllSelectors(internalOnly: Boolean): Set<String> {

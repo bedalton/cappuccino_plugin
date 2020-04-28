@@ -29,7 +29,7 @@ class ObjJColorSettingsPage : ColorSettingsPage {
 @implementation MyClass : <<variableType>HasProtocol</variableType>>
 {
     <variableType>id</variableType> _reference;
-    <variableType>int</variableType> _varInt;
+    <variableType>int</variableType> _variableInt;
     <variableType>CPString</variableType> _string  @accessors(property=string);
     <variableType>CPColor</variableType> _backgroundColor;
 }
@@ -40,7 +40,7 @@ class ObjJColorSettingsPage : ColorSettingsPage {
     var i = 0,
         regexp = <literal2>/[hH]ello/g</literal2>;
     <identifier>i</identifier>++
-    <instanceVar>_backgroundColor</instanceVar> = <paramVar>aColor</paramVar>;
+    <instanceVar>_backgroundColor</instanceVar> = <parameterVar>aColor</parameterVar>;
 }
 
 -(<variableType>CPString</variableType>) colorHex
@@ -72,7 +72,7 @@ var element = <js_var>document</js_var>.<funcName>getElementById</funcName>("tag
 
 var isValidName = function(aName)
 {
-    if (<paramVar>aName</paramVar>)
+    if (<parameterVar>aName</parameterVar>)
     {
         return YES;
     }
@@ -87,9 +87,9 @@ function sayHello(aName)
     var fab = -<js_val>SQRT</js_val>,
         abFab = <js_func>abs(fab)</js_func>;
 
-    if (<funcName>isValidName</funcName>(<paramVar>aName</paramVar>))
+    if (<funcName>isValidName</funcName>(<parameterVar>aName</parameterVar>))
     {
-        return [<variableType>CPString</variableType> stringWithFormat:<globalVar>globalGreeting</globalVar>, <paramVar>aName</paramVar>];
+        return [<variableType>CPString</variableType> stringWithFormat:<globalVar>globalGreeting</globalVar>, <parameterVar>aName</parameterVar>];
     }
     return null;
 }
@@ -144,7 +144,7 @@ function sayHello(aName)
                 "variableType" to ObjJSyntaxHighlighter.VARIABLE_TYPE,
                 "fileLevelVariable" to ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE,
                 "instanceVar" to ObjJSyntaxHighlighter.INSTANCE_VARIABLE,
-                "paramVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,
+                "parameterVar" to ObjJSyntaxHighlighter.PARAMETER_VARIABLE,
                 "globalVar" to ObjJSyntaxHighlighter.GLOBAL_VARIABLE,
                 "functionNames" to ObjJSyntaxHighlighter.FUNCTION_NAME,
                 "globalFunctionNames" to ObjJSyntaxHighlighter.GLOBAL_FUNCTION_NAME,

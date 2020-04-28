@@ -6,9 +6,6 @@ import cappuccino.ide.intellij.plugin.inference.INFERRED_EMPTY_TYPE
 import cappuccino.ide.intellij.plugin.inference.anyTypes
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefFunctionArgument
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.contributor.toJsTypeListType
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefAnonymousFunction
-import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunction
 import cappuccino.ide.intellij.plugin.psi.ObjJFormalParameterArg
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionDeclaration
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionLiteral
@@ -22,8 +19,8 @@ interface ObjJUniversalFunctionElement : ObjJUniversalPsiElement {
     val functionNameString: String?
     val description: ObjJFunctionDescription
     val parameterNames:List<String>
-    fun getReturnTypes(tag:Long) : InferenceResult?
-    fun toJsFunctionType(tag:Long) : JsTypeListType.JsTypeListFunctionType
+    fun getReturnTypes(tag: Tag) : InferenceResult?
+    fun toJsFunctionType(tag: Tag) : JsTypeListType.JsTypeListFunctionType
 }
 
 
@@ -37,10 +34,10 @@ fun ObjJFunctionDeclarationElement<*>.toJsTypeListType(): JsTypeListType.JsTypeL
     } ?: emptyList()
 
     val returnTypeString = stub?.returnType
-    val returnTypesList = comment?.getReturnTypes(project)?.toJsTypeList() ?: if (returnTypeString != null && returnTypeString !in anyTypes)
+    val returnTypesList = comment?.getReturnTypes()?.toJsTypeList() ?: if (returnTypeString != null && returnTypeString !in anyTypes)
         setOf(returnTypeString).toJsTypeList()
     else
-        comment?.getReturnTypes(project)?.toJsTypeList()
+        comment?.getReturnTypes()?.toJsTypeList()
     val returnType = if (returnTypesList.isNotNullOrEmpty())
         InferenceResult(types = returnTypesList!!)
     else INFERRED_EMPTY_TYPE
@@ -48,7 +45,9 @@ fun ObjJFunctionDeclarationElement<*>.toJsTypeListType(): JsTypeListType.JsTypeL
     return JsTypeListType.JsTypeListFunctionType(
             name = stub?.functionName ?: functionNameString,
             comment = null, // @todo implement comment parsing
-            parameters = params.mapIndexed { i, it -> it.toJsNamedProperty(comment?.getParameterComment(i)?.possibleClassStrings) },
+            parameters = params.mapIndexed { i, it ->
+                it.toJsNamedProperty(comment?.getParameterComment(i)?.types?.withoutAnyType().orEmpty())
+            },
             returnType = returnType
     )
 }

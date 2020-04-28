@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.psi.ObjJElementFactory
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJMethodHeaderImpl
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
@@ -34,23 +35,25 @@ class ObjJMethodHeaderStubType internal constructor(
             methodHeader: ObjJMethodHeaderImpl, parentStub: StubElement<*>): ObjJMethodHeaderStub {
         val containingClassName = methodHeader.containingClassName
         val selectors = methodHeader.selectorStrings
-        val params = methodHeader.paramTypesAsStrings
+        val params = methodHeader.parameterTypesAsStrings
         val returnType = methodHeader.explicitReturnType
         val required = methodHeader.isRequired
         val selectorStructs = methodHeader.selectorStructs
         val shouldResolve = ObjJPsiImplUtil.shouldResolve(methodHeader)
         val ignored = ObjJCommentEvaluatorUtil.isIgnored(methodHeader.parent, ObjJSuppressInspectionFlags.IGNORE_METHOD)
+        val isPrivate = methodHeader.isPrivate
         return ObjJMethodHeaderStubImpl(
                 parent = parentStub,
                 className = containingClassName,
                 isStatic = methodHeader.isStatic,
                 selectorStrings = selectors,
-                paramTypes = params,
+                parameterTypes = params,
                 explicitReturnType = returnType,
                 isRequired = required,
                 selectorStructs = selectorStructs,
                 shouldResolve = shouldResolve,
-                ignored = ignored
+                ignored = ignored,
+                isPrivate = isPrivate
         )
     }
 
@@ -66,9 +69,9 @@ class ObjJMethodHeaderStubType internal constructor(
         for (selector in stub.selectorStrings) {
             stubOutputStream.writeName(Strings.notNull(selector))
         }
-        val numParams = stub.paramTypes.size
+        val numParams = stub.parameterTypes.size
         stubOutputStream.writeInt(numParams)
-        for (param in stub.paramTypes) {
+        for (param in stub.parameterTypes) {
             stubOutputStream.writeName(Strings.notNull(param))
         }
         stubOutputStream.writeName(stub.explicitReturnType)
@@ -76,6 +79,7 @@ class ObjJMethodHeaderStubType internal constructor(
         stubOutputStream.writeSelectorStructList(stub.selectorStructs)
         stubOutputStream.writeBoolean(stub.shouldResolve())
         stubOutputStream.writeBoolean(stub.ignored)
+        stubOutputStream.writeBoolean(stub.isPrivate)
 
     }
 
@@ -94,22 +98,24 @@ class ObjJMethodHeaderStubType internal constructor(
         for (i in 0 until numParams) {
             params.add(StringRef.toString(stream.readName()))
         }
-        val explicitReturnType = stream.readName()?.string ?: ""
+        val explicitReturnType = stream.readNameAsString() ?: ""
         val required = stream.readBoolean()
         val selectorStructs = stream.readSelectorStructList()
         val shouldResolve = stream.readBoolean()
         val ignored = stream.readBoolean()
+        val isPrivate = stream.readBoolean()
         return ObjJMethodHeaderStubImpl(
                 parent = parentStub,
                 className = containingClassName,
                 isStatic = isStatic,
                 selectorStrings = selectors,
-                paramTypes = params,
+                parameterTypes = params,
                 explicitReturnType = explicitReturnType,
                 isRequired = required,
                 selectorStructs = selectorStructs,
                 shouldResolve = shouldResolve,
-                ignored = ignored
+                ignored = ignored,
+                isPrivate = isPrivate
         )
     }
 

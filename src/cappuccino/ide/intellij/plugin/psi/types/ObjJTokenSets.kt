@@ -2,6 +2,7 @@
 
 package cappuccino.ide.intellij.plugin.psi.types
 
+import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_BLOCK_COMMENT
 import cappuccino.ide.intellij.plugin.jstypedef.psi.types.JsTypeDefTypes.JS_SINGLE_LINE_COMMENT
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes.*
@@ -26,7 +27,7 @@ object ObjJTokenSets {
 
     val CLASS_DECLARATIONS = create(ObjJ_IMPLEMENTATION_DECLARATION, ObjJ_PROTOCOL_DECLARATION)
 
-    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT, JS_BLOCK_COMMENT, JS_SINGLE_LINE_COMMENT)
+    val COMMENTS = create(ObjJ_SINGLE_LINE_COMMENT, ObjJ_BLOCK_COMMENT, JS_BLOCK_COMMENT, JS_SINGLE_LINE_COMMENT, OBJJ_DOC_COMMENT_PARSABLE_BLOCK)
 
     val STRING_LITERALS = create(ObjJ_SINGLE_QUOTE_STRING_LITERAL, ObjJ_DOUBLE_QUOTE_STRING_LITERAL)
 
@@ -233,18 +234,18 @@ object ObjJTokenSets {
             ObjJ_PP_WARNING
     )
 
-    val VAR_TYPE_KEYWORDS = create(
-            ObjJ_VAR_TYPE_BOOL,
-            ObjJ_VAR_TYPE_INT,
-            ObjJ_VAR_TYPE_SHORT,
-            ObjJ_VAR_TYPE_LONG,
-            ObjJ_VAR_TYPE_LONG_LONG,
-            ObjJ_VAR_TYPE_UNSIGNED,
-            ObjJ_VAR_TYPE_SIGNED,
-            ObjJ_VAR_TYPE_FLOAT,
-            ObjJ_VAR_TYPE_DOUBLE,
-            ObjJ_VAR_TYPE_BYTE,
-            ObjJ_VAR_TYPE_ID
+    val VARIABLE_TYPE_KEYWORDS = create(
+            ObjJ_VARIABLE_TYPE_BOOL,
+            ObjJ_VARIABLE_TYPE_INT,
+            ObjJ_VARIABLE_TYPE_SHORT,
+            ObjJ_VARIABLE_TYPE_LONG,
+            ObjJ_VARIABLE_TYPE_LONG_LONG,
+            ObjJ_VARIABLE_TYPE_UNSIGNED,
+            ObjJ_VARIABLE_TYPE_SIGNED,
+            ObjJ_VARIABLE_TYPE_FLOAT,
+            ObjJ_VARIABLE_TYPE_DOUBLE,
+            ObjJ_VARIABLE_TYPE_BYTE,
+            ObjJ_VARIABLE_TYPE_ID
     )
 
     val NUMERIC_TYPES = create(

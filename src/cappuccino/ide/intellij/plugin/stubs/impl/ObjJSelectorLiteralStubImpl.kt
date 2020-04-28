@@ -9,13 +9,18 @@ import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils
 import com.intellij.psi.stubs.StubElement
 
-class ObjJSelectorLiteralStubImpl(parent: StubElement<*>, override val containingClassName: String, override val selectorStrings: List<String>, private val shouldResolve: Boolean, override val selectorStructs: List<ObjJSelectorStruct>) : ObjJStubBaseImpl<ObjJSelectorLiteralImpl>(parent, ObjJStubTypes.SELECTOR_LITERAL), ObjJSelectorLiteralStub {
+class ObjJSelectorLiteralStubImpl(
+        parent: StubElement<*>,
+        override val containingClassName: String,
+        override val selectorStrings: List<String>,
+        private val shouldResolve: Boolean,
+        override val selectorStructs: List<ObjJSelectorStruct>
+) : ObjJStubBaseImpl<ObjJSelectorLiteralImpl>(parent, ObjJStubTypes.SELECTOR_LITERAL), ObjJSelectorLiteralStub {
     override val selectorString: String = ArrayUtils.join(selectorStrings, ObjJMethodPsiUtils.SELECTOR_SYMBOL, true)
-
-
+    override val isPrivate: Boolean = false
     override val ignored:Boolean = false
 
-    override val paramTypes: List<String>
+    override val parameterTypes: List<String>
         get() = emptyList()
 
     override val isRequired: Boolean

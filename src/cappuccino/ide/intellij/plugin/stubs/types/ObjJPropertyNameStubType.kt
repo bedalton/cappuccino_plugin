@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
+import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJPropertyNameImpl
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStub
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJPropertyNameStubImpl
@@ -22,8 +23,8 @@ class ObjJPropertyNameStubType(debugName:String) : ObjJStubElementType<ObjJPrope
     }
 
     override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJPropertyNameStub {
-        val key = stream.readName()?.string ?: "???"
-        val namespacedName = stream.readName()?.string ?: key
+        val key = stream.readNameAsString() ?: "???"
+        val namespacedName = stream.readNameAsString() ?: key
         return ObjJPropertyNameStubImpl(parent, key, namespacedName)
     }
 

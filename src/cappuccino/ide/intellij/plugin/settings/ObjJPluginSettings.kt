@@ -330,4 +330,27 @@ object ObjJPluginSettings {
             lastLoadedVersionSetting.value = PLUGIN_VERSION
     }
 
+
+    // ============================== //
+    // ========= Inference ========== //
+    // ============================== //
+
+    private const val INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT_KEY = "objj.inference.INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT"
+    private const val INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT = true
+    private val inferFunctionReturnTypeFromReturnStatements = BooleanSetting(INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT_KEY, INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT)
+    fun inferFunctionReturnTypeFromReturnStatements(): Boolean
+            = inferFunctionReturnTypeFromReturnStatements.value ?: INFER_FUNCTION_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT
+
+
+    private const val INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT_KEY = "objj.inference.INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT"
+    private const val INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT = true
+    private val inferMethodReturnTypeFromReturnStatements = BooleanSetting(INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT_KEY, INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT)
+    fun inferMethodReturnTypeFromReturnStatements(): Boolean
+            = inferMethodReturnTypeFromReturnStatements.value ?: INFER_METHOD_RETURN_TYPE_FROM_RETURN_STATMENT_DEFAULT
+
+    private const val INFERENCE_MAX_DEPTH_KEY = "objj.inference.INFERENCE_MAX_DEPTH"
+    private const val INFERENCE_MAX_DEPTH_DEFAULT = 15
+    private val inferenceMaxDepthSetting = IntegerSetting(INFERENCE_MAX_DEPTH_KEY, INFERENCE_MAX_DEPTH_DEFAULT)
+
+    val inferenceMaxDepth = inferenceMaxDepthSetting.value ?: INFERENCE_MAX_DEPTH_DEFAULT
 }

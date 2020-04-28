@@ -1,9 +1,9 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
 import cappuccino.ide.intellij.plugin.indices.StubIndexService
-import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
+import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameImpl
-import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlock
+import cappuccino.ide.intellij.plugin.psi.utils.getScopeBlockRanges
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJVariableNameStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub
 import com.intellij.openapi.components.ServiceManager
@@ -28,13 +28,22 @@ class ObjJVariableNameStubType internal constructor(
             variableName: ObjJVariableNameImpl, stubElement: StubElement<*>): ObjJVariableNameStub {
         val blockRanges = getBlockRanges(variableName)
         val greatestBlockRange = getGreatestBlockRange(blockRanges)
-        return ObjJVariableNameStubImpl(stubElement, variableName.name, blockRanges, greatestBlockRange, shouldResolve(variableName.node))
+        val isAssignedTo = variableName.isAssignedTo
+        val indexInQualifiedReference = variableName.indexInQualifiedReference
+        return ObjJVariableNameStubImpl(
+                parent = stubElement,
+                variableName = variableName.name,
+                isAssignedTo = isAssignedTo,
+                indexInQualifiedReference = indexInQualifiedReference,
+                containingBlockRanges = blockRanges,
+                greatestContainingBlockRange = greatestBlockRange,
+                shouldResolve = shouldResolve(variableName.node),
+                hasContainingClass = variableName.hasContainingClass
+        )
     }
 
     private fun getBlockRanges(variableName: ObjJVariableName): List<Pair<Int, Int>> {
-        val scopeBlock = variableName.getScopeBlock() ?: return emptyList()
-        val scopeTextRange = scopeBlock.textRange
-        return listOf(Pair(scopeTextRange.startOffset, scopeTextRange.endOffset))
+        return variableName.getScopeBlockRanges()
     }
 
     private fun getGreatestBlockRange(blockRanges: List<Pair<Int, Int>>): Pair<Int, Int>? {
@@ -73,7 +82,10 @@ class ObjJVariableNameStubType internal constructor(
             stream.writeInt(greatestBlock.getFirst())
             stream.writeInt(greatestBlock.getSecond())
         }
+        stream.writeBoolean(stub.isAssignedTo)
+        stream.writeInt(stub.indexInQualifiedReference)
         stream.writeBoolean(stub.shouldResolve())
+        stream.writeBoolean(stub.hasContainingClass)
     }
 
     @Throws(IOException::class)
@@ -89,8 +101,20 @@ class ObjJVariableNameStubType internal constructor(
         if (stream.readBoolean()) {
             greatestRange = Pair(stream.readInt(), stream.readInt())
         }
+        val isAssignedTo = stream.readBoolean()
+        val indexInQualifiedReference = stream.readInt()
         val shouldResolve = stream.readBoolean()
-        return ObjJVariableNameStubImpl(parent, name, blockRanges, greatestRange, shouldResolve)
+        val hasContainingClass = stream.readBoolean()
+        return ObjJVariableNameStubImpl(
+                parent = parent,
+                variableName = name,
+                isAssignedTo = isAssignedTo,
+                indexInQualifiedReference = indexInQualifiedReference,
+                containingBlockRanges = blockRanges,
+                greatestContainingBlockRange = greatestRange,
+                shouldResolve = shouldResolve,
+                hasContainingClass = hasContainingClass
+        )
     }
 
     override fun indexStub(stub: ObjJVariableNameStub, sink: IndexSink) {

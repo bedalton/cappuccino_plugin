@@ -2,10 +2,6 @@ package cappuccino.ide.intellij.plugin.project
 
 import cappuccino.ide.intellij.plugin.utils.ObjJFileUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.ide.plugins.PluginManager
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationType
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType

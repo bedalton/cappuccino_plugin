@@ -12,6 +12,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.util.containers.isNullOrEmpty
 
 class ObjJNotAClassMethodInspection : LocalInspectionTool() {
 
@@ -57,7 +58,7 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
                 val onlyVariable = methodCall.callTarget.singleVariableNameElementOrNull
                 if (onlyVariable != null) {
                     val classes = onlyVariable.getVariableType(tag)?.toClassList(null)?.withoutAnyType()
-                    if (classes.isNullOrEmpty() || classes.all { it in anyTypes })
+                    if (classes.isNullOrEmpty() || classes!!.all { it in anyTypes })
                         return
                     val selectors = onlyVariable.getMethodSelectors(tag)
                     if (selectors.isNotEmpty()) {
@@ -80,7 +81,7 @@ class ObjJNotAClassMethodInspection : LocalInspectionTool() {
         }
     }
 
-    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>, tag:Long) : Boolean {
+    private fun isValid(methodCall: ObjJMethodCall, classes:Set<String>, tag: Tag) : Boolean {
         val project = methodCall.project
         val selectorString = methodCall.selectorString
         if (selectorString in methodCall.callTarget.singleVariableNameElementOrNull?.getMethodSelectors(tag).orEmpty())

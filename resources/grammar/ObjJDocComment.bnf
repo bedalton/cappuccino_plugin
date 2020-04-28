@@ -1,0 +1,164 @@
+{
+	parserClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentParser"
+	implements="cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+	extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentElementImpl"
+	elementTypeHolderClass="cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes"
+	elementTypePrefix="ObjJDocComment_"
+	elementTypeClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentElementType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTokenType"
+	psiClassPrefix="ObjJDocComment"
+	psiImplClassSuffix="Impl"
+	psiPackage="cappuccino.ide.intellij.plugin.comments.psi.api"
+	psiImplPackage="cappuccino.ide.intellij.plugin.comments.psi.impl"
+	elementTypeFactory("comment|tagLine")="cappuccino.ide.intellij.plugin.comments.psi.ObjJDocCommentElementTypeFactory.factory"
+	psiImplUtilClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentParserUtil"
+	name(".*")="comment"
+	//Tokens
+	tokens = [
+		space = 							'regexp:\s+'
+		START =								"regexp:/[*][*!]*"
+		END =								'regexp:[*]+/'
+		LEADING_ASTERISK =					'regexp:[*]+'
+		TAG_NAME =							'regexp:@[a-zA-Z]+'
+		TAG_VALUE_DELIMITER =				'regexp:[|,]'
+		DOT =								'.'
+		ID = 								'regexp:[_a-zA-Z$][a-zA-Z0-9_]*';
+		TEXT_BODY =							'regexp:[^ \n$]+';
+	]
+}
+
+root
+	::= START comment? END
+	;
+
+comment
+	::= (!<<eof>> commentElement)+
+	{
+		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub"
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"com.intellij.psi.PsiElement"
+			"com.intellij.psi.PsiComment"
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentCommentStub>"
+		]
+		methods = [
+			getTagLinesAsStructs
+			getParametersAsStructs
+			getReturnTagAsStruct
+			getReturnType
+			getParameterTags
+			getTextLinesAsStrings
+		]
+
+	}
+	;
+
+private commentElement
+	::= commentLine
+	|	LEADING_ASTERISK
+	;
+
+private commentLine
+	::= tagLine endOfLine?
+	|	textLine endOfLine?
+	|	emptyTagLine endOfLine?
+	| 	endOfLine
+	;
+
+tagLine
+	::= tagNameElement typesList parameterName? textLine?
+	{
+		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub"
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub>"
+		]
+		pin = 2;
+		methods = [
+			getTag
+			getTypes
+			getParameterName
+			parameterNameElementElement="parameterName"
+			getCommentText
+			tagName = "tagNameElement"
+			getParameterNameElement
+		]
+	}
+	;
+
+emptyTagLine
+	::= tagNameElement textLine?
+	{
+		pin = 2
+		methods = [
+			tagName = "tagNameElement"
+		]
+	}
+	;
+
+tagNameElement
+	::= TAG_NAME
+	;
+
+typesList
+	::= (qualifiedName TAG_VALUE_DELIMITER)* qualifiedName
+	;
+
+qualifiedName
+	::= (qualifiedNameComponent '.')* qualifiedNameComponent
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
+		]
+		methods = [
+			getQualifiedNameParts
+			getQualifiedNamePath
+		]
+	}
+	;
+
+qualifiedNameComponent
+	::= ID
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+		methods = [
+			getName
+			setName
+			getIndexInQualifiedReference
+			getReference
+		]
+	}
+	;
+
+textLine
+	::= !(TAG_NAME) (TEXT_BODY|ID)+
+	;
+
+parameterName
+	::= ID
+	{
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+		]
+		methods = [
+			getName
+			setName
+			getIndexInQualifiedReference
+			getReference
+		]
+	}
+	;
+
+private endOfLine
+	::= LINE_TERMINATOR | <<eof>>
+	;
+

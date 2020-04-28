@@ -6,13 +6,13 @@
 	elementTypeHolderClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTypes"
 	elementTypePrefix="ObjJ_"
 	elementTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJCompositeElementType"
-	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJTokenType"
+	tokenTypeClass="cappuccino.ide.intellij.plugin.psi.types.ObjJElementType"
 	psiClassPrefix="ObjJ"
 	psiImplClassSuffix="Impl"
 	psiPackage="cappuccino.ide.intellij.plugin.psi"
 	psiImplPackage="cappuccino.ide.intellij.plugin.psi.impl"
 	generateTokenAccessors=true
-	elementTypeFactory("implementationDeclaration|methodHeader|protocolDeclaration|propertyName|instanceVariableDeclaration|accessorProperty|methodCall|selectorLiteral|functionDeclaration|functionLiteral|preprocessorDefineFunction|globalVariableDeclaration|importFile|importFramework|includeFile|includeFramework|varTypeId|variableName|typeDef|className|variableDeclaration|qualifiedReference|objectLiteral")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
+	elementTypeFactory("accessorProperty|className|functionDeclaration|functionLiteral|functionCall|globalVariableDeclaration|implementationDeclaration|importFile|importFramework|includeFile|includeFramework|instanceVariableDeclaration|methodCall|methodHeader|objectLiteral|preprocessorDefineFunction|propertyName|protocolDeclaration|qualifiedReference|selectorLiteral|typeDef|variableDeclaration|variableName|variableTypeId")="cappuccino.ide.intellij.plugin.psi.types.ObjJElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil"
 	//Tokens
 	tokens = [
@@ -124,21 +124,21 @@
 		PP_INCLUDE = 						'#include'
 
 		//'var' Types
-		//VAR_TYPE_ID = 					'id'
-		VAR_TYPE_BYTE = 					'regexp:((unsigned|signed)[ ]+)?byte'
-		VAR_TYPE_CHAR = 					'regexp:((unsigned|signed)[ ]+)?char'
-		VAR_TYPE_SHORT = 					'regexp:((unsigned|signed)[ ]+)?short'
-		VAR_TYPE_INT = 						'regexp:((unsigned|signed)[ ]+)?int'
-		VAR_TYPE_LONG_LONG = 				'regexp:((unsigned|signed)[ ]+)?long[ ]+long'
-		VAR_TYPE_LONG =						'regexp:((unsigned|signed)[ ]+)?long'
-		VAR_TYPE_SIGNED =					'signed'
-		VAR_TYPE_UNSIGNED = 				'unsigned'
-		VAR_TYPE_IBACTION = 				'IBAction'
-		VAR_TYPE_IBOUTLET = 				'IBOutlet'
-		VAR_TYPE_SEL = 						'SEL'
-		VAR_TYPE_FLOAT= 					'float'
-		VAR_TYPE_DOUBLE= 					'double'
-		VAR_TYPE_BOOL = 					'BOOL'
+		//VARIABLE_TYPE_ID = 					'id'
+		VARIABLE_TYPE_BYTE = 					'regexp:((unsigned|signed)[ ]+)?byte'
+		VARIABLE_TYPE_CHAR = 					'regexp:((unsigned|signed)[ ]+)?char'
+		VARIABLE_TYPE_SHORT = 					'regexp:((unsigned|signed)[ ]+)?short'
+		VARIABLE_TYPE_INT = 						'regexp:((unsigned|signed)[ ]+)?int'
+		VARIABLE_TYPE_LONG_LONG = 				'regexp:((unsigned|signed)[ ]+)?long[ ]+long'
+		VARIABLE_TYPE_LONG =						'regexp:((unsigned|signed)[ ]+)?long'
+		VARIABLE_TYPE_SIGNED =					'signed'
+		VARIABLE_TYPE_UNSIGNED = 				'unsigned'
+		VARIABLE_TYPE_IBACTION = 				'IBAction'
+		VARIABLE_TYPE_IBOUTLET = 				'IBOutlet'
+		VARIABLE_TYPE_SEL = 						'SEL'
+		VARIABLE_TYPE_FLOAT= 					'float'
+		VARIABLE_TYPE_DOUBLE= 					'double'
+		VARIABLE_TYPE_BOOL = 					'BOOL'
 		IMPORT_FRAMEWORK_LITERAL = 			'regexp:<.*/.*>'
 		//Keywords
 		BREAK =                          	'break'
@@ -597,7 +597,8 @@ globalVariableDeclaration
 		]
 		methods=[
 			getVariableNameString
-			getVariableType
+			getVariableTypeElement
+			getVariableTypeString
 			getFileName
 			createTreeStructureElement
 		]
@@ -692,7 +693,7 @@ accessorProperty
 		methods=[
 			accessorKind="/accessorPropertyType"
 			accessor="/selector"
-			getVarType
+			getVariableType
 			getContainingClass
 			isGetter
 			getSelectorList
@@ -710,6 +711,7 @@ accessorProperty
 			shouldResolve
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;
@@ -1028,7 +1030,7 @@ deleteStatement
 	;
 
 functionDeclaration
-	::= 'function' (<<notInMode "varDec">> functionName) formalParameterList blockElement
+	::= 'function' (<<notInMode "variableDec">> functionName) formalParameterList blockElement
 	{
 		pin=2
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJFunctionDeclarationElementMixin<?>"
@@ -1108,8 +1110,8 @@ methodHeader
 		methods = [
 			getSelectorList
 			getSelectorStrings
-			getParamTypes
-			getParamTypesAsStrings
+			getParameterTypes
+			getParameterTypesAsStrings
 			getSelectorString
 			getName
 			setName
@@ -1125,6 +1127,7 @@ methodHeader
 			createTreeStructureElement
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;
@@ -1154,7 +1157,7 @@ firstMethodDeclarationSelector
 		pin=1
 		extends=methodDeclarationSelector
 		methods=[
-			getVarType
+			getVariableType
 		]
 	}
 	;
@@ -1164,10 +1167,10 @@ methodDeclarationSelector
 	{
 		pin=2;
 		methods = [
-			getVarType
+			getVariableType
 			getContainingClassName
 			getContainingClass
-			getVarType
+			getVariableType
 			getFileName
 			getFormalVariableType
 		]
@@ -1621,7 +1624,7 @@ arrayLiteral
 	;
 
 private arrayLiteralExpressionList
-	::= (',')* expr arrayLiteralExpressionPrime
+	::= (',')* expr arrayLiteralExpressionPrime?
 	{
 		pin(".*")=3
 		recoverWhile=recover_arrayLiteralExpressionList
@@ -1813,11 +1816,14 @@ expr
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasBlockStatement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
 		]
 		methods = [
 			getBlock
 			shouldResolve
 			getBlockList
+			getQualifiedNameParts
+			getQualifiedNamePath
 		]
 		//recoverWhile=recover_statement
 	}
@@ -1885,6 +1891,8 @@ functionCall
 	::= (functionName|methodCall) arrayIndexSelector* arguments
 	{
 		pin=3
+		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJFunctionCallStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
@@ -2026,21 +2034,21 @@ nullLiterals
 	;
 
 formalVariableType
-	::= varTypeId
-	| 	VAR_TYPE_CHAR
-	| 	VAR_TYPE_BYTE
-	| 	VAR_TYPE_SHORT
-	| 	VAR_TYPE_INT
-	| 	VAR_TYPE_LONG_LONG
-	| 	VAR_TYPE_LONG
-	| 	VAR_TYPE_FLOAT
-	| 	VAR_TYPE_DOUBLE
-	| 	VAR_TYPE_IBOUTLET
-	| 	VAR_TYPE_IBACTION
-	| 	VAR_TYPE_BOOL
-	| 	VAR_TYPE_SEL
-	| 	VAR_TYPE_UNSIGNED
-	| 	VAR_TYPE_SIGNED
+	::= variableTypeId
+	| 	VARIABLE_TYPE_CHAR
+	| 	VARIABLE_TYPE_BYTE
+	| 	VARIABLE_TYPE_SHORT
+	| 	VARIABLE_TYPE_INT
+	| 	VARIABLE_TYPE_LONG_LONG
+	| 	VARIABLE_TYPE_LONG
+	| 	VARIABLE_TYPE_FLOAT
+	| 	VARIABLE_TYPE_DOUBLE
+	| 	VARIABLE_TYPE_IBOUTLET
+	| 	VARIABLE_TYPE_IBACTION
+	| 	VARIABLE_TYPE_BOOL
+	| 	VARIABLE_TYPE_SEL
+	| 	VARIABLE_TYPE_UNSIGNED
+	| 	VARIABLE_TYPE_SIGNED
 	| 	<<notInMode "implementationInstanceVariables">> (VOID|AT_ACTION)
 	| 	className classNameGeneric?
 	{
@@ -2060,30 +2068,30 @@ classNameGeneric
 	}
 	;
 
-varTypeId
-	::= 'id' ('<' varTypeIdClassName '>')?
+variableTypeId
+	::= 'id' ('<' variableTypeIdClassName '>')?
 	{
 		pin=1
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub>"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJResolveableElement<cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableTypeIdStub>"
 		]
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJStubBasedElementImpl<?>"
-		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVarTypeIdStub"
+		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableTypeIdStub"
 		methods=[
 			getIdType
 			shouldResolve
 		]
 	}
 	;
-private varTypeIdClassName
+private variableTypeIdClassName
 	::= className
 	{
 		pin=1
-		recoverWhile=recover_varTypeIdClassName
+		recoverWhile=recover_variableTypeIdClassName
 	}
 	;
-private recover_varTypeIdClassName
+private recover_variableTypeIdClassName
 	::= !('>'|')'|';'|'@accessors')
 	;
 
@@ -2115,7 +2123,7 @@ functionLiteral
 			getFunctionNameString
 			getFunctionNamesAsString
 			getReturnTypes
-			getParamNameElements
+			getParameterNameElements
 			getParameterNames
 			getFunctionNameNode
 			shouldResolve
@@ -2158,6 +2166,7 @@ selectorLiteral
 			getContainingSuperClass
 			getMethodHeaderCache
 			getSelectorStructs
+			isPrivate
 		]
 	}
 	;
@@ -2218,6 +2227,7 @@ qualifiedReference
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceStub"
 		implements= [
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
 		]
 		methods = [
 			primaryVar ="/variableName[0]"
@@ -2326,27 +2336,27 @@ className
 variableName
 	::= ID
 	|	'this'
-	| 	VAR_TYPE_CHAR
-	| 	VAR_TYPE_BYTE
-	| 	VAR_TYPE_SHORT
-	| 	VAR_TYPE_INT
-	| 	VAR_TYPE_LONG
-	| 	VAR_TYPE_FLOAT
-	| 	VAR_TYPE_DOUBLE
-	| 	VAR_TYPE_IBOUTLET
-	| 	VAR_TYPE_IBACTION
-	| 	VAR_TYPE_BOOL
-	| 	VAR_TYPE_SEL
-	| 	VAR_TYPE_UNSIGNED
-	| 	VAR_TYPE_SIGNED
+	| 	VARIABLE_TYPE_CHAR
+	| 	VARIABLE_TYPE_BYTE
+	| 	VARIABLE_TYPE_SHORT
+	| 	VARIABLE_TYPE_INT
+	| 	VARIABLE_TYPE_LONG
+	| 	VARIABLE_TYPE_FLOAT
+	| 	VARIABLE_TYPE_DOUBLE
+	| 	VARIABLE_TYPE_IBOUTLET
+	| 	VARIABLE_TYPE_IBACTION
+	| 	VARIABLE_TYPE_BOOL
+	| 	VARIABLE_TYPE_SEL
+	| 	VARIABLE_TYPE_UNSIGNED
+	| 	VARIABLE_TYPE_SIGNED
 	{
 
 		extends="cappuccino.ide.intellij.plugin.psi.impl.ObjJVariableNameMixin"
 		stubClass="cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJVariableNameStub"
 		implements=[
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJVariableNameElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement"
@@ -2374,6 +2384,8 @@ variableName
 			getMethodSelectors
 			getVariableType
 			createTreeStructureElement
+			isAssignedTo
+			getHasContainingClass
 		]
 	}
 	;

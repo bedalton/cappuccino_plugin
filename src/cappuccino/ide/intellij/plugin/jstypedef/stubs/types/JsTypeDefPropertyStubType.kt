@@ -38,7 +38,17 @@ class JsTypeDefPropertyStubType internal constructor(
         val propertyName = property.propertyNameString
         val typeList = InferenceResult(property.typeListTypes, property.isNullable)
         val static = property.parent is JsTypeDefVariableDeclaration
-        return JsTypeDefPropertyStubImpl(parent, fileName, enclosingNamespace, enclosingClass, property.namespaceComponents, propertyName, typeList, static, property.completionModifier)
+        return JsTypeDefPropertyStubImpl(
+                parent = parent,
+                fileName = fileName,
+                enclosingNamespace = enclosingNamespace,
+                enclosingClass = enclosingClass,
+                namespaceComponents = property.namespaceComponents,
+                propertyName = propertyName,
+                types = typeList,
+                static = static,
+                completionModifier = property.completionModifier
+        )
     }
 
     @Throws(IOException::class)

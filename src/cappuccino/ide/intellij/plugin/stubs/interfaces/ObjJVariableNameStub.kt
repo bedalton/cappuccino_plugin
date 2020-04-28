@@ -8,4 +8,7 @@ interface ObjJVariableNameStub : StubElement<ObjJVariableNameImpl>, ObjJResolvea
     val variableName: String
     val containingBlockRanges: List<Pair<Int, Int>>
     val greatestContainingBlockRange: Pair<Int, Int>?
+    val isAssignedTo:Boolean
+    val indexInQualifiedReference:Int
+    val hasContainingClass:Boolean
 }

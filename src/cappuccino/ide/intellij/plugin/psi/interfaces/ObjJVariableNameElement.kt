@@ -1,12 +1,13 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
+import cappuccino.ide.intellij.plugin.inference.Tag
 
 interface ObjJVariableNameElement {
 
     val cachedParentFunctionDeclaration:ObjJUniversalFunctionElement?
 
-    fun getCachedMethods(tag:Long):List<ObjJMethodHeaderDeclaration<*>>
+    fun getCachedMethods(tag: Tag):List<ObjJMethodHeaderDeclaration<*>>
 
-    fun getClassTypes(tag:Long):InferenceResult?
+    fun getClassTypes(tag: Tag):InferenceResult?
 }

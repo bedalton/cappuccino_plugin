@@ -9,11 +9,13 @@ import cappuccino.ide.intellij.plugin.psi.ObjJFunctionCall
 import cappuccino.ide.intellij.plugin.psi.ObjJFunctionName
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
-internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static: Boolean, tag: Long): InferenceResult? {
+internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     if (functionName == null)
         return null
+    ProgressIndicatorProvider.checkCanceled()
     if (functionName.indexInQualifiedReference == 0) {
         return findFunctionReturnTypesIfFirst(functionName, tag)
     }
@@ -52,7 +54,7 @@ internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTy
 
 }
 
-private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: Long): InferenceResult? {
+private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: Tag): InferenceResult? {
     val project: Project = functionName.project
     if (functionName.indexInQualifiedReference != 0) {
         return null
@@ -87,7 +89,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
         basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString
     val functionTypes = JsTypeDefFunctionsByNameIndex.instance[functionNameString, project].map {
-        //ProgressManager.checkCanceled()
+        ProgressIndicatorProvider.checkCanceled()
         it.toJsFunctionType(tag)
     }.toMutableList()
     val functionDeclarationAsJsFunctionType = functionDeclaration?.toJsFunctionType(tag)

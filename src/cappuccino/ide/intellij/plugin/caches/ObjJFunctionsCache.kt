@@ -24,7 +24,7 @@ class ObjJFunctionNameCache(functionName: ObjJFunctionNameElement) {
     val parentFunctionDeclarationElement
         get() = functionDeclarationsCache.value
 
-    fun getReturnType(tag:Long):InferenceResult?
+    fun getReturnType(tag:Tag):InferenceResult?
             = (parentFunctionDeclarationElement as? ObjJFunctionDeclarationElement<*> )?.getCachedReturnType(tag) ?: parentFunctionDeclarationElement?.getReturnTypes(tag)
 
     private fun createFunctionDeclarationsCache(
@@ -46,7 +46,7 @@ class ObjJFunctionDeclarationCache(functionDeclaration:ObjJFunctionDeclarationEl
     private val returnStatementsCache: CachedValue<Map<ObjJReturnStatement, InferenceResult?>>
     private var returnTypesInternal: InferenceResult? = null
 
-    fun returnTypes(tag:Long): InferenceResult {
+    fun returnTypes(tag:Tag): InferenceResult {
         if (modificationTracker.tagged(tag))
             return INFERRED_ANY_TYPE
         val types = returnStatementsCache.value?.values?.filterNotNull()
