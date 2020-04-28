@@ -22,7 +22,7 @@ internal fun annotateInvalidVoidStatements (
     )
     if (!hasNonType)
         return
-    val annotation = annotationHolder
+    annotationHolder
             .newAnnotation(HighlightSeverity.ERROR,
                     JsTypeDefBundle.message("jstypedef.annotation.error.invalid-void.message")
             )

@@ -18,7 +18,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
 
-internal fun annotateProperty(property:JsTypeDefProperty, annotationHolder: AnnotationHolder) {
+internal fun annotateProperty(property: JsTypeDefProperty, annotationHolder: AnnotationHolder) {
     val parentVariableDeclaration = property.parent as? JsTypeDefVariableDeclaration
     if (parentVariableDeclaration != null) {
         annotateVariableDec(property, parentVariableDeclaration, annotationHolder)
@@ -26,16 +26,16 @@ internal fun annotateProperty(property:JsTypeDefProperty, annotationHolder: Anno
 }
 
 @Suppress("UNUSED_PARAMETER")
-private fun annotateVariableDec(property:JsTypeDefProperty, parentVariableDeclaration:JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
+private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDeclaration: JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
     val className = property.propertyNameString
     val body = property.interfaceBodyProperty ?: return
     val constructors = body.interfaceConstructorList
     if (constructors.isEmpty())
         return
-    val properties= body.propertyList
+    val properties = body.propertyList
     if (properties.isEmpty())
         return
-    if (properties.none { it.propertyNameString == "prototype"})
+    if (properties.none { it.propertyNameString == "prototype" })
         return
     val interfaceElements = JsTypeDefClassesByNameIndex.instance[className, property.project].mapNotNull {
         it as? JsTypeDefInterfaceElement
@@ -49,15 +49,13 @@ private fun annotateVariableDec(property:JsTypeDefProperty, parentVariableDeclar
     val interfaceElement = interfaceElements.firstOrNull() ?: return
     val textRange = property.propertyName?.textRange ?: return
 
-    val annotation = annotationHolder.createAnnotation(
-            HighlightSeverity.WEAK_WARNING,
-            textRange,
-            "Variable declaration can be mapped to class"
-    )
-    annotation.registerFix(JsTypeDefVariableToClassFix(interfaceElement = interfaceElement, property = property))
+    annotationHolder.newAnnotation(HighlightSeverity.WEAK_WARNING, "Variable declaration can be mapped to class")
+            .range(textRange)
+            .withFix(JsTypeDefVariableToClassFix(interfaceElement = interfaceElement, property = property))
+            .create()
 }
 
-class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, property:JsTypeDefProperty) : IntentionAndQuickFixAction() {
+class JsTypeDefVariableToClassFix(interfaceElement: JsTypeDefInterfaceElement, property: JsTypeDefProperty) : IntentionAndQuickFixAction() {
     val property = SmartPointerManager.createPointer(property)
     val interfaceElement = SmartPointerManager.createPointer(interfaceElement)
     override fun getName(): String {
@@ -73,9 +71,10 @@ class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, pr
             return
     }
 
-    private fun applyFixActual(project: Project) : Boolean {
+    private fun applyFixActual(project: Project): Boolean {
 
-        return runWriteAction {val interfaceElement = interfaceElement.element ?: return@runWriteAction false
+        return runWriteAction {
+            val interfaceElement = interfaceElement.element ?: return@runWriteAction false
 
             val documentManager = PsiDocumentManager.getInstance(project)
             var cachedDocument = documentManager.getCachedDocument(interfaceElement.containingFile)
@@ -83,13 +82,14 @@ class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, pr
                 documentManager.commitDocument(cachedDocument)
             }
             val property = property.element ?: return@runWriteAction false
-            val propertyBody = property.interfaceBodyProperty ?: return@runWriteAction  false
+            val propertyBody = property.interfaceBodyProperty ?: return@runWriteAction false
 
             // Text and Element starts
             val textRange = interfaceElement.textRange
-            val textStart = interfaceElement.typeName?.startOffsetInParent ?: return@runWriteAction  false
+            val textStart = interfaceElement.typeName?.startOffsetInParent ?: return@runWriteAction false
             val interfaceText = interfaceElement.text
-            val bodyStartOffset = interfaceElement.openBrace?.startOffsetInParent?.plus(1) ?: return@runWriteAction false
+            val bodyStartOffset = interfaceElement.openBrace?.startOffsetInParent?.plus(1)
+                    ?: return@runWriteAction false
             if (bodyStartOffset < 1)
                 return@runWriteAction false
             val out = StringBuilder("class ")
@@ -97,7 +97,7 @@ class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, pr
             propertyBody.interfaceConstructorList.forEach {
                 out.append("\n\t").append(it.text)
             }
-            propertyBody.propertyList.filter{ it.propertyNameString != "prototype"}.forEach {
+            propertyBody.propertyList.filter { it.propertyNameString != "prototype" }.forEach {
                 out.append("\n\tstatic ").append(it.text)
             }
             propertyBody.functionList.forEach {
@@ -114,7 +114,7 @@ class JsTypeDefVariableToClassFix(interfaceElement:JsTypeDefInterfaceElement, pr
             if (cachedDocument != null) {
                 documentManager.commitDocument(cachedDocument)
             }
-            val variableDeclaration = property.parent as? JsTypeDefVariableDeclaration ?: return@runWriteAction  false
+            val variableDeclaration = property.parent as? JsTypeDefVariableDeclaration ?: return@runWriteAction false
             variableDeclaration.parent.node?.removeChild(variableDeclaration.node)
             return@runWriteAction true
         }

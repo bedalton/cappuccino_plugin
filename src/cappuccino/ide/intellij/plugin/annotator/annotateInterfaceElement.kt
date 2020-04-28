@@ -25,7 +25,7 @@ private fun annotateIfShouldBeTypeMap(element: JsTypeDefInterfaceElement, annota
         return
     val typeName = element.typeName ?: return
     val message = "definition should be typemap not interface"
-    val annotation = annotationHolder.newAnnotation(HighlightSeverity.WARNING, message)
+    annotationHolder.newAnnotation(HighlightSeverity.WARNING, message)
             .range(typeName.textRange)
             .withFix(InterfaceShouldBeTypeMapFix(interfaceElement = element))
             .create()

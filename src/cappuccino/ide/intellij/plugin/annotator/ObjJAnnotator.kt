@@ -84,7 +84,7 @@ class ObjJAnnotator : Annotator {
                 ?: return
         val messageKey = "objective-j.inspections.expr-use.previous-expression-is-not-closed"
         val message = ObjJBundle.message(messageKey)
-        val annotation = annotationHolder
+        annotationHolder
                 .newAnnotation(HighlightSeverity.ERROR, message)
                 .range(TextRange.create(
                         previousElement.textRange.endOffset - 1,

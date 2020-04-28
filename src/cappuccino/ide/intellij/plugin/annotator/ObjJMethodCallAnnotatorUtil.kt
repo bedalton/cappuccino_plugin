@@ -106,7 +106,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             val selector = selectors.getOrNull(0) ?: return true
             val messageKey = "objective-j.annotator-messages.method-call-annotator.selector-not-found.message";
             val message = ObjJBundle.message(messageKey, selector.getSelectorString(true))
-            val annotation = annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
+            annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
                     .range(selector)
                     .addInvalidSelectorFixes(methodCall, fullSelector)
                     .create()
@@ -120,7 +120,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         val messageKey = "objective-j.annotator-messages.method-call-annotator.selector-not-found.message";
         if (failIndex < 0) {
             val message = ObjJBundle.message(messageKey, fullSelector)
-            val annotation = annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
+            annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
                     .range(methodCall)
                     .addInvalidSelectorFixes(methodCall, fullSelector)
                     .create()
@@ -168,7 +168,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         // Create annotation
         val messageKey = "objective-j.annotator-messages.method-call-annotator.selector-not-found.message"
         val message = ObjJBundle.message(messageKey, selectorToFailPointTextSoFar);
-        val annotation = annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
+        annotationHolder.newAnnotation(HighlightSeverity.ERROR, message)
                 .range(failPoint!!)
                 .needsUpdateOnTyping(true)
                 .addInvalidSelectorFixes(methodCall, fullSelector) // Add fixes
