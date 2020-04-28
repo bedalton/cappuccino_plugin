@@ -4,25 +4,28 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJFunctionDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement
 import cappuccino.ide.intellij.plugin.structure.ObjJStructureViewElement
+import cappuccino.ide.intellij.plugin.utils.ifEmptyNull
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import icons.ObjJIcons
 
+@Suppress("DuplicatedCode")
 object ObjJTreeStructureUtil {
 
     fun createTreeStructureElement(declaration: ObjJImplementationDeclaration): ObjJStructureViewElement {
         val presentation: ItemPresentation = when {
-            declaration.isCategory -> PresentationData("${declaration.getClassName()} (${declaration.categoryNameString})", null, ObjJIcons.CATEGORY_ICON, null)
+            declaration.isCategory -> PresentationData("${declaration.className} (${declaration.categoryNameString})", null, ObjJIcons.CATEGORY_ICON, null)
             declaration.superClassName != null && declaration.superClassName?.isNotEmpty() == true -> PresentationData("${declaration.classNameString} : ${declaration.superClassName}", null, ObjJIcons.CLASS_ICON, null)
             else -> PresentationData(declaration.classNameString, null, ObjJIcons.CLASS_ICON, null)
         }
-        return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString)
+        return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString).withWeight(10)
     }
 
     fun getTreeStructureChildElements(declaration: ObjJImplementationDeclaration): Array<ObjJStructureViewElement> {
         val out: MutableList<ObjJStructureViewElement> = mutableListOf()
+        out.add(getHeaderStructureViewElement(declaration))
         declaration.instanceVariableList?.instanceVariableDeclarationList?.forEach {
             ProgressIndicatorProvider.checkCanceled()
             out.add(it.createTreeStructureElement())
@@ -34,17 +37,59 @@ object ObjJTreeStructureUtil {
         return out.toTypedArray()
     }
 
+    fun getHeaderStructureViewElement(declaration: ObjJImplementationDeclaration) : ObjJStructureViewElement {
+        var label = "implementation ${declaration.classNameString}"
+        if (declaration.isCategory) {
+            label += "(${declaration.categoryNameString})"
+        }
+        label += declaration.superClassName?.ifEmptyNull()?.let {
+            " : $it"
+        } ?: ""
+        val protocolList = declaration.getInheritedProtocols().joinToString(", ").ifEmptyNull()
+        if (protocolList != null) {
+            label += " <$protocolList>"
+        }
+        val presentation = PresentationData(label, null, ObjJIcons.AT_ICON, null)
+        return ObjJStructureViewElement(declaration.className, presentation, "___").withWeight(0)
+    }
+
     fun createTreeStructureElement(instanceVariable: ObjJInstanceVariableDeclaration): ObjJStructureViewElement {
         val label = "${instanceVariable.formalVariableType.text} ${instanceVariable.variableName?.text
                 ?: "{UNDEF}"}${if (instanceVariable.accessor != null) " @accessors" else ""}"
         val presentation = PresentationData(label, null, ObjJIcons.INSTANCE_VARIABLE_ICON, null)
         return ObjJStructureViewElement(instanceVariable, presentation, "_" + (instanceVariable.variableName?.text
-                ?: "UNDEF"))
+                ?: "UNDEF")).withWeight(20)
     }
 
     fun createTreeStructureElement(declaration: ObjJProtocolDeclaration): ObjJStructureViewElement {
         val presentation: ItemPresentation = PresentationData(declaration.classNameString, null, ObjJIcons.PROTOCOL_ICON, null)
-        return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString)
+        return ObjJStructureViewElement(declaration, presentation, "__"+declaration.classNameString).withWeight(10)
+    }
+
+    fun getTreeStructureChildElements(declaration: ObjJProtocolDeclaration): Array<ObjJStructureViewElement> {
+        val out: MutableList<ObjJStructureViewElement> = mutableListOf()
+        var label = "@protocol ${declaration.classNameString}"
+        val protocolList = declaration.getInheritedProtocols().joinToString(", ").ifEmptyNull()
+        if (protocolList != null) {
+            label += " <$protocolList>"
+        }
+        val presentation = PresentationData(label, null, null, null)
+        out.add(ObjJStructureViewElement(declaration.className, presentation, "___"))
+        declaration.getChildrenOfType(ObjJHasTreeStructureElement::class.java).forEach {
+            ProgressIndicatorProvider.checkCanceled()
+            out.add(it.createTreeStructureElement())
+        }
+        return out.toTypedArray()
+    }
+
+    fun getHeaderStructureViewElement(declaration: ObjJProtocolDeclaration) : ObjJStructureViewElement {
+        var label = "protocol ${declaration.classNameString}"
+        val protocolList = declaration.getInheritedProtocols().joinToString(", ").ifEmptyNull()
+        if (protocolList != null) {
+            label += " <$protocolList>"
+        }
+        val presentation = PresentationData(label, null, ObjJIcons.AT_ICON, null)
+        return ObjJStructureViewElement(declaration.className, presentation, "___").withWeight(0)
     }
 
     fun createTreeStructureElement(header: ObjJProtocolScopedMethodBlock): ObjJStructureViewElement {

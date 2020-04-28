@@ -1,33 +1,67 @@
 package cappuccino.ide.intellij.plugin.structure;
 
-import cappuccino.ide.intellij.plugin.psi.ObjJGlobalVariableDeclaration;
-import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration;
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodDeclaration;
-import cappuccino.ide.intellij.plugin.psi.ObjJMethodHeader;
+import cappuccino.ide.intellij.plugin.psi.*;
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement;
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasTreeStructureElement;
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.pom.Navigatable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ObjJStructureViewElement  implements StructureViewTreeElement, SortableTreeElement {
-    private ObjJHasTreeStructureElement element;
+public class ObjJStructureViewElement implements StructureViewTreeElement, SortableTreeElement {
+    private ObjJHasTreeStructureElement hasTreeStructureElements;
+    private final ObjJCompositeElement compositeElement;
 
-    @NotNull private final ItemPresentation itemPresentation;
-    @NotNull private final String alphaSortKey;
+    @NotNull
+    private final ItemPresentation itemPresentation;
+    @NotNull
+    private final String alphaSortKey;
     private final Boolean alwaysLeaf;
 
-    public ObjJStructureViewElement(ObjJHasTreeStructureElement element, @NotNull ItemPresentation itemPresentation, @Nullable
-            String alphaSortKey) {
-        this.element = element;
+    private Integer weight;
+
+    public ObjJStructureViewElement(ObjJHasTreeStructureElement element,
+                                    @NotNull
+                                            ItemPresentation itemPresentation,
+                                    @Nullable
+                                            String alphaSortKey) {
+        this.compositeElement = element;
+        this.hasTreeStructureElements = element;
         this.itemPresentation = itemPresentation;
         this.alphaSortKey = alphaSortKey != null ? alphaSortKey : "";
         this.alwaysLeaf = element instanceof ObjJInstanceVariableDeclaration ||
                 element instanceof ObjJGlobalVariableDeclaration ||
-        element instanceof ObjJMethodDeclaration ||
-        element instanceof ObjJMethodHeader;
+                element instanceof ObjJMethodDeclaration ||
+                element instanceof ObjJMethodHeader;
+    }
+
+    public ObjJStructureViewElement withWeight(final int weight) {
+        this.weight = weight;
+        return this;
+    }
+
+    @Nullable
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public ObjJStructureViewElement(ObjJCompositeElement element,
+                                    @NotNull
+                                            ItemPresentation itemPresentation,
+                                    @Nullable
+                                            String alphaSortKey) {
+        this.compositeElement = element;
+        this.itemPresentation = itemPresentation;
+        this.alphaSortKey = alphaSortKey != null ? alphaSortKey : "";
+        this.alwaysLeaf = element instanceof ObjJInstanceVariableDeclaration ||
+                element instanceof ObjJGlobalVariableDeclaration ||
+                element instanceof ObjJMethodDeclaration ||
+                element instanceof ObjJMethodHeader ||
+                element instanceof ObjJClassName
+        ;
     }
 
     public Boolean isAlwaysLeaf() {
@@ -36,22 +70,30 @@ public class ObjJStructureViewElement  implements StructureViewTreeElement, Sort
 
     @Override
     public Object getValue() {
-        return element;
+        return compositeElement;
     }
 
     @Override
     public void navigate(boolean requestFocus) {
-        element.navigate(requestFocus);
+        if (hasTreeStructureElements != null) {
+            hasTreeStructureElements.navigate(requestFocus);
+        }
+        if (compositeElement instanceof Navigatable) {
+            ((Navigatable) compositeElement).navigate(requestFocus);
+        }
     }
 
     @Override
     public boolean canNavigate() {
-        return element.canNavigate();
+        return compositeElement instanceof Navigatable && ((Navigatable) compositeElement).canNavigateToSource();
     }
 
     @Override
     public boolean canNavigateToSource() {
-        return element.canNavigateToSource();
+        if (hasTreeStructureElements != null) {
+            return hasTreeStructureElements.canNavigateToSource();
+        }
+        return compositeElement instanceof Navigatable && ((Navigatable) compositeElement).canNavigateToSource();
     }
 
     @NotNull
@@ -69,6 +111,11 @@ public class ObjJStructureViewElement  implements StructureViewTreeElement, Sort
     @NotNull
     @Override
     public TreeElement[] getChildren() {
-        return element.getTreeStructureChildElements();
+        final ObjJHasTreeStructureElement element = hasTreeStructureElements;
+        if (element == null) {
+            return new TreeElement[0];
+        }
+        final TreeElement[] elements = element.getTreeStructureChildElements();
+        return elements != null ? elements : new TreeElement[0];
     }
 }
