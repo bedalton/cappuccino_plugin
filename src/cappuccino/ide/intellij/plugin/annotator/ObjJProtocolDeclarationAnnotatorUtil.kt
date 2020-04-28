@@ -27,7 +27,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
      * @todo do not include protocols in different frameworks
      */
     private fun annotateIfDuplicateProtocol(thisProtocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolder) {
-        val classNameElement = thisProtocolDeclaration.getClassName() ?: return
+        val classNameElement = thisProtocolDeclaration.className ?: return
         val className = classNameElement.text
         val duplicates = ArrayList<ObjJProtocolDeclaration>()
         // Find all protocols with same name, and filter out THIS protocol

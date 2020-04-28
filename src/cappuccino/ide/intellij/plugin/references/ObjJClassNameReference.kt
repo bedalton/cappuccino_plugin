@@ -66,7 +66,7 @@ class ObjJClassNameReference(element: ObjJClassName) : PsiPolyVariantReferenceBa
         }
 
         for (classDec in classDeclarations) {
-            val classDecName = classDec.getClassName() ?: continue
+            val classDecName = classDec.className ?: continue
             if (classDecName.text.isNotEmpty() && !classDecName.isEquivalentTo(myElement) && classDec.shouldResolve()) {
                 classNames.add(classDecName)
             }

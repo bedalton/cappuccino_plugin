@@ -60,16 +60,16 @@ fun getContainingSuperClass(psiElement:ObjJCompositeElement, returnDefault: Bool
         return null
     }
     val containingClass = ObjJPsiImplUtil.getContainingClass(psiElement) ?: return null
-    val superClassName = getContainingSuperClassName(psiElement, returnDefault) ?: return if (returnDefault) containingClass.getClassName() else null
+    val superClassName = getContainingSuperClassName(psiElement, returnDefault) ?: return if (returnDefault) containingClass.className else null
 
     val superClassDeclarations = ArrayList<ObjJClassDeclarationElement<*>>(ObjJClassDeclarationsIndex.instance[superClassName, project])
     if (superClassDeclarations.size < 1) {
-        return if (returnDefault) containingClass.getClassName() else null
+        return if (returnDefault) containingClass.className else null
     }
     var className:ObjJClassName? = null
     for (superClassDec in superClassDeclarations) {
         if (superClassDec is ObjJImplementationDeclaration) {
-            className = superClassDec.getClassName() ?: continue
+            className = superClassDec.className ?: continue
             if (filter != null && filter(superClassDec)) {
                 return className
             }
@@ -100,7 +100,7 @@ fun getContainingClassWithSelector(containingClassName:String, selector:String, 
     var className:ObjJClassName? = null
     for (classDeclaration in classDeclarations) {
         if (classDeclaration is ObjJImplementationDeclaration) {
-            className = classDeclaration.getClassName() ?: continue
+            className = classDeclaration.className ?: continue
             if (classDeclaration.hasMethod(selector)) {
                 if (classDeclaration.isCategory) {
                     potential = className

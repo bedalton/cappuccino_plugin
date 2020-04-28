@@ -87,7 +87,7 @@ class ObjJFileCache(file:ObjJFile) {
     private val insideClassesCachedValue:CachedValue<List<ObjJClassName>> by lazy {
         val provider = CachedValueProvider {
             val classDeclarationNames = file.classDeclarations
-                .mapNotNull { it.getClassName() }
+                .mapNotNull { it.className }
             val atClassReferences = file.classDependencyStatements
                     .mapNotNull { it.className }
             val classNames = classDeclarationNames + atClassReferences

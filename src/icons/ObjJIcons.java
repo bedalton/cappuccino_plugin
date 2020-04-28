@@ -6,6 +6,7 @@ import javax.swing.*;
 
 public interface ObjJIcons {
     Icon DOCUMENT_ICON = IconLoader.getIcon("/icons/objj-document-icon.png");
+    Icon AT_ICON = IconLoader.getIcon("/icons/at-icon.png");
     Icon CLASS_ICON = IconLoader.getIcon("/icons/class-icon.png");
     Icon CATEGORY_ICON = IconLoader.getIcon("/icons/category-icon.png");
     Icon PROTOCOL_ICON = IconLoader.getIcon("/icons/protocol-icon.png");

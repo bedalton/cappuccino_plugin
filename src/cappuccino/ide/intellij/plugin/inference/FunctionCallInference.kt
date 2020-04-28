@@ -91,7 +91,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
         resolved.getCachedInferredTypes(tag) {
             inferTypeForResolved(resolved, tag)
         }
-    }.orEmpty().combine()
+    }.combine()
     if (out.types.isNotEmpty()) {
         return out
     }

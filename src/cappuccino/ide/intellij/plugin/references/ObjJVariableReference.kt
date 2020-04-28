@@ -158,7 +158,7 @@ class ObjJVariableReference(
 
     private fun multiResolve(tag: Tag, nullIfSelfReferencing: Boolean): Array<ResolveResult> {
         val classes = ObjJClassDeclarationsIndex.instance[myElement.text,myElement.project]
-                .mapNotNull { it.getClassName() }
+                .mapNotNull { it.className }
         if (classes.isNotEmpty())
             return PsiElementResolveResult.createResults(classes)
         val element = resolveInternal(tag)

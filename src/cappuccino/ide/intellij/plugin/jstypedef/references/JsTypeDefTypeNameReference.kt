@@ -38,7 +38,7 @@ class JsTypeDefTypeNameReference(element:JsTypeDefTypeName) : PsiPolyVariantRefe
 
             val fromTypeAlias = JsTypeDefTypeAliasIndex.instance.get(typeName, project).mapNotNull { it.typeName }
 
-            val fromObjJClass = ObjJClassDeclarationsIndex.instance.get(typeName, project).mapNotNull { it.getClassName() }
+            val fromObjJClass = ObjJClassDeclarationsIndex.instance.get(typeName, project).mapNotNull { it.className }
 
             val fromKeyList = JsTypeDefKeyListsByNameIndex.instance.get(typeName, project).mapNotNull { it.keyName }
             val fromObjJTypeDefElement = ObjJTypeDefIndex.instance.get(typeName, project).mapNotNull {

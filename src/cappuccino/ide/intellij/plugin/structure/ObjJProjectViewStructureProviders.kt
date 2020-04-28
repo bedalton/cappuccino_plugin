@@ -22,13 +22,11 @@ class ObjJExpandNodeProjectViewProvider : TreeStructureProvider, DumbAware {
 
             if (childValue != null) {
                 result.add(ObjJFileTreeNode(childValue.project, childValue, settings))
-            }
-            else {
+            } else {
                 result.add(child)
             }
 
         }
-
         return result
     }
 

@@ -103,11 +103,11 @@ object ObjJVariableNameResolveUtil {
         val variableNameText = variableNameElement.text
         var classNameElement: ObjJClassName? = null
         if (variableNameText == "self") {
-            classNameElement = ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
+            classNameElement = ObjJPsiImplUtil.getContainingClass(variableNameElement)?.className ?: return null
         }
         if (variableNameText == "super" && variableNameElement is ObjJHasContainingClass) {
             classNameElement = getContainingSuperClass(variableNameElement, true)
-                    ?: ObjJPsiImplUtil.getContainingClass(variableNameElement)?.getClassName() ?: return null
+                    ?: ObjJPsiImplUtil.getContainingClass(variableNameElement)?.className ?: return null
         }
 
         if (classNameElement == null) {

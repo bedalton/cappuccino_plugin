@@ -204,7 +204,6 @@
     <psi.referenceContributor implementation="cappuccino.ide.intellij.plugin.contributor.ObjJReferenceContributor"/>
     <completion.contributor language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJCompletionContributor" />
     <lang.braceMatcher language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJBraceMatcher"/>
-    <quoteHandler fileType="ObjectiveJ" className="cappuccino.ide.intellij.plugin.formatting.ObjJQuoteHandler"/>
     <enterBetweenBracesDelegate language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.formatting.ObjJEnterBetweenBracesDelegate" />
     <typedHandler implementation="cappuccino.ide.intellij.plugin.formatting.ObjJTypedHandlerDelegate" />
     <lang.namesValidator language="ObjectiveJ" implementationClass="cappuccino.ide.intellij.plugin.contributor.ObjJNameValidator" />
@@ -229,7 +228,7 @@
                      level="WEAK WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
-                     displayName="Overshadowing Variable Declarations"
+                     displayName="Overshadowing variable declarations"
                      shortName="VariableOvershadowsParentVariable"
     />
 
@@ -286,7 +285,7 @@
                      level="WARNING"
                      groupName="Objective-J"
                      enabledByDefault="true"
-                     displayName="Matching Arguments for String Format"
+                     displayName="Matching arguments for string format"
                      shortName="StringWithFormat"
                      order="before UndeclaredVariables"
     />
@@ -462,8 +461,8 @@
     <localInspection language="JsTypeDef" implementationClass="cappuccino.ide.intellij.plugin.jstypedef.inspections.JsTypeDefUnknownTypeInspection"
                      level="ERROR"
                      shortName="UnknownTypeInFile"
-                     groupName="JsTypeDef Inspections"
-                     displayName="Unknown Javascript Type Inspection"
+                     groupName="JsTypeDef"
+                     displayName="Unknown javascript type inspection"
                      enabledByDefault="true"
                      />
 
