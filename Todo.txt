@@ -1,0 +1,1 @@
+Fix space after method call in qualified varaible name
