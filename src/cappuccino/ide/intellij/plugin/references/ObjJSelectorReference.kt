@@ -92,8 +92,15 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
             return PsiElementResolveResult.createResults(allMatchingMethods)
         }
 
-        val matchingSelectorsInClass = allMatchingMethods.filter {
+        var matchingSelectorsInClass = allMatchingMethods.filter {
             it.containingClassName in classConstraints
+        }
+        if (matchingSelectorsInClass.isEmpty()) {
+            val targetClass = getTargetClass(myElement, tag).orEmpty()
+            val siblingClasses = getAllPossibleClassesWithSiblingTypes(project, targetClass, fullSelector)
+            matchingSelectorsInClass = allMatchingMethods.filter {
+                it.containingClassName in siblingClasses
+            }
         }
         val selectorLiterals = possibleSelectors.flatMap {
             ObjJSelectorInferredMethodIndex.instance[fullSelector, project]
@@ -102,7 +109,7 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
                         isSimilar(it)
                     }
         }
-        val out = selectorLiterals + matchingSelectorsInClass
+        var out = selectorLiterals + matchingSelectorsInClass
         return PsiElementResolveResult.createResults(out)
     }
 
@@ -140,6 +147,23 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
     }
 
     private fun getAllPossibleClassTypes(project: Project, baseClasses: Set<String>, selectorString: String): Set<String> {
+        val allSuperClasses = baseClasses.flatMap { className ->
+            ObjJInheritanceUtil.getAllInheritedClasses(className, project, true).filter {
+                val key = ObjJClassAndSelectorMethodIndex.getClassMethodKey(it, selectorString)
+                ObjJClassAndSelectorMethodIndex.instance.containsKey(key, project)
+            }
+        }
+        /*
+        val allChildClasses = baseClasses.flatMap {
+            ObjJClassInheritanceIndex.instance.getChildClassesAsStrings(it, project)
+        }
+        return (baseClasses + allSuperClasses + allChildClasses).toSet()
+         */
+        return (baseClasses + allSuperClasses).toSet()
+    }
+
+
+    private fun getAllPossibleClassesWithSiblingTypes(project: Project, baseClasses: Set<String>, selectorString: String): Set<String> {
         val allSuperClasses = baseClasses.flatMap { className ->
             ObjJInheritanceUtil.getAllInheritedClasses(className, project, true).filter {
                 val key = ObjJClassAndSelectorMethodIndex.getClassMethodKey(it, selectorString)
