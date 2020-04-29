@@ -566,7 +566,7 @@ variableAssignmentLogical
 	;
 
 private variableAssignmentSimple
-	::= varModifier <<enterMode "bodyVar">>variableDeclarationList<<exitMode "bodyVar">>
+	::= varModifier variableDeclarationList
 	{
 		pin=1
 	}
