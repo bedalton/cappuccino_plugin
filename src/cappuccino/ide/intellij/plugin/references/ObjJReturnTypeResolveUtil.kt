@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.ObjJCallTarget
 import cappuccino.ide.intellij.plugin.psi.ObjJMethodCall
 import cappuccino.ide.intellij.plugin.psi.ObjJSelector
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 
@@ -11,7 +12,7 @@ import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 /**
  * Attempts to get possible variable types from a selector
  */
-fun getClassConstraints(element: ObjJSelector, tag: Tag, strict:MutableList<String>? = null): List<String> {
+fun getClassConstraints(element: ObjJCompositeElement, tag: Tag, strict:MutableList<String>? = null): List<String> {
     return getClassConstraints(element.getParentOfType( ObjJHasMethodSelector::class.java), tag, strict)
 }
 

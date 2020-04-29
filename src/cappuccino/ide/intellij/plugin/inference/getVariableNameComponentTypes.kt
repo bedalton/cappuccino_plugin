@@ -1,6 +1,7 @@
 package cappuccino.ide.intellij.plugin.inference
 
 import cappuccino.ide.intellij.plugin.contributor.ObjJVariableTypeResolver
+import cappuccino.ide.intellij.plugin.indices.ObjJAssignedVariableNamesByBlockIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeDefNamedProperty
 import cappuccino.ide.intellij.plugin.jstypedef.contributor.JsTypeListType
@@ -11,13 +12,14 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNam
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefVariableDeclarationsByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -91,9 +93,20 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
     if (containingClass != null)
         return InferenceResult(types = setOf(containingClass).toJsTypeList())
 
+    (variableName.parent as? ObjJGlobalVariableDeclaration)?.let {
+        return inferExpressionType(it.expr, tag)
+    }
+    (variableName.parent?.parent as? ObjJVariableDeclaration)?.let {
+        if (it.hasVarKeyword()) {
+            return inferExpressionType(it.expr, tag)
+        }
+    }
 
-    if ((variableName.parent.parent as? ObjJVariableDeclaration)?.hasVarKeyword().orFalse() || variableName.parent is ObjJGlobalVariableDeclaration) {
-        return internalInferVariableTypeAtIndexZero(variableName, variableName, containingClass, tag, true)
+    if (variableName.getParentOfType(ObjJQualifiedReference::class.java)?.qualifiedNameParts?.size == 1) {
+        getPrevDeclarationType(variableName, tag)?.let {
+            if (it.withoutAnyType().isNotEmpty())
+                return it
+        }
     }
 
     val referencedVariable = if (!DumbService.isDumb(variableName.project))
@@ -104,6 +117,36 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
     return referencedVariable?.getCachedInferredTypes(tag) {
         return@getCachedInferredTypes internalInferVariableTypeAtIndexZero(variableName, referencedVariable, containingClass, tag, false)
     }
+}
+
+private fun getPrevDeclarationType(variableName: ObjJVariableName, tag: Tag): InferenceResult? {
+    var block: ObjJBlock? = variableName.getParentOfType(ObjJBlock::class.java)
+            ?: return null
+    val variableNameStartOffset = variableName.textRange.startOffset
+    val project = variableName.project
+    val file = variableName.containingFile
+    val variableNameString = variableName.text
+    while (block != null) {
+        val expressions = ObjJAssignedVariableNamesByBlockIndex.instance
+                .getInRangeFuzzy(file, variableNameString, block.textRange, project)
+                .filter { it.getParentOfType(ObjJQualifiedReference::class.java)?.qualifiedNameParts?.size == 1 }
+                .mapNotNull { it.getAssignmentExprOrNull() }
+                .filter {
+                    it.commonScope(variableName) != ReferencedInScope.UNDETERMINED
+                            && variableNameStartOffset > it.textRange.startOffset
+                }
+                .sortedBy {
+                    it.startOffsetInParent
+                }
+                .reversed()
+        for (expr in expressions) {
+            inferExpressionType(expr, tag)?.let {
+                return it
+            }
+        }
+        block = block.getParentOfType(ObjJBlock::class.java)
+    }
+    return null
 }
 
 /**
