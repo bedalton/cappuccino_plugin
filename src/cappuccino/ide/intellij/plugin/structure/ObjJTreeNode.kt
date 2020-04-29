@@ -27,6 +27,10 @@ class ObjJTreeNode(private val element: ObjJHasTreeStructureElement, project: Pr
         return alwaysLeaf
     }
 
+    override fun expandOnDoubleClick(): Boolean {
+        return false
+    }
+
     override fun navigate(requestFocus: Boolean) {
         element.navigate(requestFocus)
     }
