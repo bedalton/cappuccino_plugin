@@ -5,9 +5,6 @@ import cappuccino.ide.intellij.plugin.indices.ObjJClassInheritanceIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJSelectorInferredMethodIndex
 import cappuccino.ide.intellij.plugin.indices.ObjJUnifiedMethodIndex
 import cappuccino.ide.intellij.plugin.inference.*
-import cappuccino.ide.intellij.plugin.inference.createTag
-import cappuccino.ide.intellij.plugin.inference.toClassList
-import cappuccino.ide.intellij.plugin.inference.withoutAnyType
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
@@ -20,7 +17,7 @@ import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
 @Suppress("MoveVariableDeclarationIntoWhen")
-class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
+class ObjJSelectorReference(element: ObjJSelector, val tag: Tag = createTag()) : PsiPolyVariantReferenceBase<ObjJSelector>(element, TextRange.create(0, element.textLength)) {
 
     private var _classConstraints: Set<String>? = null
     private val fullSelector: String = myElement.getParentOfType(ObjJHasMethodSelector::class.java)!!.selectorString
@@ -67,7 +64,8 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
             is ObjJMethodCall -> {
                 if (declaredIn == DeclaredIn.USAGE)
                     return false
-                val thisTargetClasses = inferCallTargetType(parent.callTarget, tag)?.toClassList(null)?.withoutAnyType()?.ifEmpty{ null } ?: return true
+                val thisTargetClasses = inferCallTargetType(parent.callTarget, tag)?.toClassList(null)?.withoutAnyType()?.ifEmpty { null }
+                        ?: return true
                 return constraints.intersect(thisTargetClasses).isNotEmpty()
             }
             else -> return false
@@ -78,11 +76,11 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
         val project = myElement.project
         val index = myElement.selectorIndex
 
-        val possibleSelectors = getAccessorMethods() ?: listOf(fullSelector)
+        val possibleSelectors = getAccessorMethods().orEmpty() + fullSelector
         val classConstraints = callTargetClassTypesIfMethodCall
 
-        val allMatchingMethods = possibleSelectors.flatMap {
-            ObjJUnifiedMethodIndex.instance[fullSelector, project]
+        val allMatchingMethods = possibleSelectors.flatMap { aSelector ->
+            ObjJUnifiedMethodIndex.instance[aSelector, project]
                     .mapNotNull { it.selectorList.getOrNull(index) }
                     .filter {
                         isSimilar(it)
@@ -95,6 +93,13 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
         var matchingSelectorsInClass = allMatchingMethods.filter {
             it.containingClassName in classConstraints
         }
+        matchingSelectorsInClass
+                .minBy {
+                    classConstraints.indexOf(it.containingClassName)
+                }
+                ?.let {
+                    return PsiElementResolveResult.createResults(it)
+                }
         if (matchingSelectorsInClass.isEmpty()) {
             val targetClass = getTargetClass(myElement, tag).orEmpty()
             val siblingClasses = getAllPossibleClassesWithSiblingTypes(project, targetClass, fullSelector)
@@ -109,7 +114,7 @@ class ObjJSelectorReference(element: ObjJSelector, val  tag: Tag = createTag()) 
                         isSimilar(it)
                     }
         }
-        var out = selectorLiterals + matchingSelectorsInClass
+        val out = matchingSelectorsInClass + matchingSelectorsInClass
         return PsiElementResolveResult.createResults(out)
     }
 

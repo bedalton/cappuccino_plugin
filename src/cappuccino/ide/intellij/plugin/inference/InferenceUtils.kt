@@ -4,6 +4,8 @@ import cappuccino.ide.intellij.plugin.indices.ObjJIndexService
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJBlockElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.now
 import cappuccino.ide.intellij.plugin.utils.orElse
@@ -81,13 +83,12 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
     // Establish and store last text
 
 
-    var textParent: PsiElement = this
-    for (i in 0 until TEXT_DEPTH) {
-        val tempParent = textParent.parent
-                ?: break
-        if (tempParent !is ObjJBlockElement && tempParent !is ObjJFile)
-            textParent = tempParent
-    }
+    val textParent: PsiElement = this.getParentOfType(ObjJBlock::class.java)?.let {
+        if (this.parent is ObjJBlock)
+            it.parent
+        else
+            it
+    } ?: this.parent?.parent?.parent ?: this.parent?.parent ?: this.parent ?: this
     val thisText = textParent.text
     val lastText = this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
     val textIsUnchanged = lastText == text
