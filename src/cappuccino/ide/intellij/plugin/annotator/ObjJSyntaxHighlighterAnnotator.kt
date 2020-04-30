@@ -200,7 +200,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolderWrapper) {
         annotationHolder.newInfoAnnotation("")
                 .range(psiElement)
-                .withEnforcedTextAttributes(TextAttributes.ERASE_MARKER)
+                .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
                 .create()
     }
 
@@ -210,7 +210,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
     private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolderWrapper, attribute: TextAttributesKey, message: String? = null) {
         annotationHolder.newInfoAnnotation(message)
                 .range(psiElement)
-                .withTextAttributes(attribute)
+                .textAttributes(attribute)
                 .create()
     }
 }

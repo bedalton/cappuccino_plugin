@@ -117,11 +117,11 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (unimplementedMethods.required.isEmpty())
             return
         // Annotate and register fix for missing required members
-        val annotation = annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
+        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
                 .range(protocolNameElement)
+                .withFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
+                .textAttributes(VARIABLE_TYPE_WITH_ERROR)
                 .create()
-        annotation.registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
-        annotation.textAttributes = VARIABLE_TYPE_WITH_ERROR
     }
 
     private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
@@ -160,7 +160,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         }
         annotationHolder.newAnnotation(severity, message.format(classNameString))
                 .range(className.textRange)
-                .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                .textAttributes(VARIABLE_TYPE_WITH_ERROR)
                 .create()
     }
 
@@ -171,7 +171,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             return
         annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", superClassName))
                 .range(superClass)
-                .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                .textAttributes(VARIABLE_TYPE_WITH_ERROR)
                 .create()
     }
 
@@ -182,7 +182,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.protocol-annotator.possibly-undeclared-protocol.message", protocolNameString))
                     .range(protocolNameElement)
-                    .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                    .textAttributes(VARIABLE_TYPE_WITH_ERROR)
                     .create()
         }
     }

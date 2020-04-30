@@ -175,7 +175,7 @@ internal object ObjJMethodCallAnnotatorUtil {
         annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selectorToFailPointTextSoFar))
                 .range(failPoint!!)
                 .withFixes(fixes)
-                .withNeedsUpdateWithTyping(true)
+                .needsUpdateOnTyping(true)
                 .create()
     }
 
