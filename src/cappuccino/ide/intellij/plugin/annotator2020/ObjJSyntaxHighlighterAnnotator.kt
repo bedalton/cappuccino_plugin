@@ -12,6 +12,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.references.ObjJVariableReference
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
@@ -197,14 +198,20 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
      * Making it appear as regular text
      */
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
-        annotationHolder.createInfoAnnotation(psiElement, "").enforcedTextAttributes = TextAttributes.ERASE_MARKER
+        annotationHolder.newAnnotation(HighlightSeverity.INFORMATION, "")
+                .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+                .range(psiElement)
+                .create()
     }
 
     /**
      * Helper function to add color and style to a given element
      */
     private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolder, attribute: TextAttributesKey, message: String? = null) {
-        annotationHolder.createInfoAnnotation(psiElement, message).textAttributes = attribute
+        annotationHolder.newAnnotation(HighlightSeverity.INFORMATION, message ?: "")
+                .textAttributes(attribute)
+                .range(psiElement)
+                .create()
     }
 
     companion object {

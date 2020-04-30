@@ -14,18 +14,21 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-internal fun annotateInterfaceElement(element:JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
+internal fun annotateInterfaceElement(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
     annotateIfShouldBeTypeMap(element, annotationHolder)
 }
 
-private fun annotateIfShouldBeTypeMap(element:JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
+private fun annotateIfShouldBeTypeMap(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
     if (element.functionList.isNotEmpty() || element.namelessFunctionList.isNotEmpty())
         return
-    if (element.propertyList.isEmpty() || element.propertyList.any{ it.stringLiteral == null})
+    if (element.propertyList.isEmpty() || element.propertyList.any { it.stringLiteral == null })
         return
     val typeName = element.typeName ?: return
-    val annotation = annotationHolder.createAnnotation(HighlightSeverity.WARNING, typeName.textRange, "definition should be typemap not interface")
-    annotation.registerFix(InterfaceShouldBeTypeMapFix(interfaceElement = element))
+    val message = "definition should be typemap not interface"
+    annotationHolder.newAnnotation(HighlightSeverity.WARNING, message)
+            .range(typeName.textRange)
+            .withFix(InterfaceShouldBeTypeMapFix(interfaceElement = element))
+            .create()
 }
 
 
@@ -45,9 +48,10 @@ internal class InterfaceShouldBeTypeMapFix(interfaceElement: JsTypeDefInterfaceE
         LOGGER.severe("Failed to transform interface to typemap")
     }
 
-    private fun applyFixActual(project: Project) : Boolean {
+    private fun applyFixActual(project: Project): Boolean {
 
-        return runWriteAction {val interfaceElement = interfaceElement.element ?: return@runWriteAction false
+        return runWriteAction {
+            val interfaceElement = interfaceElement.element ?: return@runWriteAction false
 
             val documentManager = PsiDocumentManager.getInstance(project)
             var cachedDocument = documentManager.getCachedDocument(interfaceElement.containingFile)
