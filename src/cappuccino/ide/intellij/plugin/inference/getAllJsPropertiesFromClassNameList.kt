@@ -42,7 +42,7 @@ internal fun getAllPropertiesInParentTypes(parentTypes: InferenceResult, static:
     val childClassNameStrings = (parentTypes.classes + (if (parentTypes.types.any { it is JsTypeListType.JsTypeListArrayType }) "Array" else null)).filterNotNull()
 
     val classesWithSuperTypes = childClassNameStrings.mapNotNull {
-        ProgressIndicatorProvider.checkCanceled()
+        //ProgressIndicatorProvider.checkCanceled()
         getClassDefinition(project, it)
     }.withAllSuperClassNames(project)
 
@@ -53,7 +53,7 @@ internal fun getAllPropertiesInParentTypes(parentTypes: InferenceResult, static:
 }
 
 private fun getAllProperties(className: String, static: Boolean, parentTypes: InferenceResult, project: Project): List<JsNamedProperty> {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     // If class is union type, return properties for each class in union
     if (className.contains("&")) {
         return className.split("\\s*&\\s*".toRegex()).flatMap {
@@ -83,7 +83,7 @@ private fun getAllProperties(className: String, static: Boolean, parentTypes: In
 
 private fun getJsTypeDefAliasProperties(className: String, static: Boolean, parentTypes: InferenceResult, project: Project): List<JsNamedProperty> {
     return JsTypeDefTypeAliasIndex.instance[className, project].flatMap { typeAlias ->
-        ProgressIndicatorProvider.checkCanceled()
+        //ProgressIndicatorProvider.checkCanceled()
         typeAlias.typesList.functionTypes +
                 typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticProperties else it.instanceProperties } +
                 typeAlias.typesList.interfaceTypes.flatMap { if (static) it.staticFunctions else it.instanceFunctions } +

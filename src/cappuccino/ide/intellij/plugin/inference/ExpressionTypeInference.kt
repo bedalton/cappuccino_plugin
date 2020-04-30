@@ -19,7 +19,7 @@ fun inferExpressionType(expr: ObjJExpr?, tag: Tag): InferenceResult? {
 }
 
 private fun internalInferExpressionType(expr: ObjJExpr, tag: Tag): InferenceResult? {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     if (expr.text == "self") {
         val parentClass = expr.getParentOfType(ObjJClassDeclarationElement::class.java)
         if (parentClass != null)
@@ -79,7 +79,7 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult
         return null
     }
     return leftExpression.getCachedInferredTypes(tag) {
-        ProgressIndicatorProvider.checkCanceled()
+        //ProgressIndicatorProvider.checkCanceled()
         if (leftExpression.tagged(tag, false))
             return@getCachedInferredTypes null
 
@@ -168,11 +168,11 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult
 fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<ObjJRightExpr>, tag: Tag): InferenceResult? {
     if (leftExpression == null)// || level < 0)
         return null
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     var orExpressionType: InferenceResult? = null
     var current = INFERRED_EMPTY_TYPE
     for (rightExpr in rightExpressions) {
-        ProgressIndicatorProvider.checkCanceled()
+        //ProgressIndicatorProvider.checkCanceled()
         if (rightExpr.comparisonExprPrime != null)
             return InferenceResult(types = setOf(JS_BOOL).toJsTypeList(), isBoolean = true)
         if (rightExpr.ternaryExprPrime != null) {

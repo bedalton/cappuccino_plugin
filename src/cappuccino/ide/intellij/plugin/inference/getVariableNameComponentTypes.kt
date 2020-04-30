@@ -33,7 +33,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     if (variableName.tagged(tag, false)) {
         return null
     }
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         return inferVariableNameTypeAtIndexZero(variableName, tag)
     }
@@ -363,7 +363,7 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
     val variableNameString = variableName.text
     val fromBodyAssignments = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
             .flatMap { assignment ->
-                ProgressIndicatorProvider.checkCanceled()
+                //ProgressIndicatorProvider.checkCanceled()
                 listOf(assignment.variableAssignmentLogical?.qualifiedReference?.qualifiedNameParts?.firstOrNull()) +
                         assignment.variableDeclarationList?.variableNameList.orEmpty() +
                         assignment.variableDeclarationList?.variableDeclarationList?.flatMap { objJVariableDeclaration ->
@@ -373,7 +373,7 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
                         }.orEmpty()
             }
             .mapNotNull {
-                ProgressIndicatorProvider.checkCanceled()
+                //ProgressIndicatorProvider.checkCanceled()
                 getAssignedExpressions(it, variableNameString)
             }
 
@@ -386,13 +386,13 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
     val fromVariableDeclarations =
             variableName.getParentBlockChildrenOfType(ObjJExpr::class.java, true)
                     .flatMap { expr ->
-                        ProgressIndicatorProvider.checkCanceled()
+                        //ProgressIndicatorProvider.checkCanceled()
                         //ProgressManager.checkCanceled()
                         expr.leftExpr?.variableDeclaration?.qualifiedReferenceList?.mapNotNull {
                             it.qualifiedNameParts.firstOrNull()
                         } ?: emptyList()
                     }.mapNotNull {
-                        ProgressIndicatorProvider.checkCanceled()
+                        //ProgressIndicatorProvider.checkCanceled()
                         getAssignedExpressions(it, variableNameString)
                     }
     return fromBodyAssignments + fromGlobals + fromVariableDeclarations
