@@ -17,8 +17,7 @@ import cappuccino.ide.intellij.plugin.psi.utils.getSelectorStringFromSelectorLis
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.references.ObjJSuppressInspectionFlags
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
-import com.intellij.lang.annotation.Annotation
-import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
@@ -43,7 +42,7 @@ internal object ObjJMethodCallAnnotatorUtil {
      */
     fun annotateMethodCall(
             methodCall: ObjJMethodCall,
-            holder: AnnotationHolder) {
+            holder: AnnotationHolderWrapper) {
 
         //First validate that all selector sub elements are present
         validateMissingSelectorElements(methodCall, holder)
@@ -67,11 +66,13 @@ internal object ObjJMethodCallAnnotatorUtil {
      * @param methodCall method call to evaluate
      * @param holder annotation holder
      */
-    private fun validateMissingSelectorElements(methodCall: ObjJMethodCall, holder: AnnotationHolder) {
+    private fun validateMissingSelectorElements(methodCall: ObjJMethodCall, holder: AnnotationHolderWrapper) {
         if (methodCall.selectorList.size > 1) {
             for (selector in methodCall.qualifiedMethodCallSelectorList) {
                 if (selector.exprList.isEmpty() && selector.selector != null) {
-                    holder.createErrorAnnotation(selector.selector!!, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.method-call-missing-expression.message"))
+                    holder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.method-call-missing-expression.message"))
+                            .range(selector.selector!!)
+                            .create()
                     return
                 }
             }
@@ -84,7 +85,7 @@ internal object ObjJMethodCallAnnotatorUtil {
      * @param annotationHolder annotation annotationHolder
      * @return **true** if valid, **false** otherwise
      */
-    private fun validMethodSelector(methodCall: ObjJMethodCall, annotationHolder: AnnotationHolder): Boolean {
+    private fun validMethodSelector(methodCall: ObjJMethodCall, annotationHolder: AnnotationHolderWrapper): Boolean {
         // Get project
         val project = methodCall.project
 
@@ -109,8 +110,10 @@ internal object ObjJMethodCallAnnotatorUtil {
         // If selector is single in size, markup simply
         if (selectors.size == 1) {
             val selector = selectors.getOrNull(0) ?: return true
-            val annotation = annotationHolder.createErrorAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selector.getSelectorString(true)))
-            addInvalidSelectorFixes(annotation, methodCall, fullSelector)
+            annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selector.getSelectorString(true)))
+                    .range(selector)
+                    .withFixes(getInvalidSelectorFixes(methodCall, fullSelector))
+                    .create()
             return false
         }
 
@@ -119,8 +122,12 @@ internal object ObjJMethodCallAnnotatorUtil {
 
         //If fail index is less than one, mark all selectors and return;
         if (failIndex < 0) {
-            val annotation = annotationHolder.createErrorAnnotation(methodCall,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", fullSelector))
-            addInvalidSelectorFixes(annotation, methodCall, fullSelector)
+            val errorMessageKey = "objective-j.annotator-messages.method-call-annotator.selector-not-found.message"
+            val errorMessage = ObjJBundle.message(errorMessageKey, fullSelector);
+             annotationHolder.newErrorAnnotation(errorMessage)
+                     .range(methodCall)
+                     .withFixes(getInvalidSelectorFixes(methodCall, fullSelector))
+                     .create()
             return false
         }
 
@@ -133,7 +140,7 @@ internal object ObjJMethodCallAnnotatorUtil {
      * Annotates only the selectors not matching any known selector
      * Highlights these and adds fixes on a selector by selector basis
      */
-    private fun annotateInvalidSelectorsIndividually(methodCall:ObjJMethodCall, selectors:List<ObjJSelector>, failIndex:Int, fullSelector: String, annotationHolder: AnnotationHolder){
+    private fun annotateInvalidSelectorsIndividually(methodCall:ObjJMethodCall, selectors:List<ObjJSelector>, failIndex:Int, fullSelector: String, annotationHolder: AnnotationHolderWrapper){
         val selectorToFailPointTextSoFar = StringBuilder(getSelectorStringFromSelectorList(selectors.subList(0, failIndex)))
         val methodCallSelectors = methodCall.qualifiedMethodCallSelectorList
         val numSelectors = methodCallSelectors.size
@@ -153,7 +160,7 @@ internal object ObjJMethodCallAnnotatorUtil {
             selector:ObjJQualifiedMethodCallSelector,
             selectorToFailPointTextSoFar:StringBuilder,
             fullSelector: String,
-            annotationHolder: AnnotationHolder
+            annotationHolder: AnnotationHolderWrapper
     ) {
         // Uses fail point and not strictly the selector as some
         // qualified selectors do not have text selectors, but are just colons
@@ -162,23 +169,27 @@ internal object ObjJMethodCallAnnotatorUtil {
         // Append fail text to this option
         selectorToFailPointTextSoFar.append(getSelectorString(selector.selector, true))
 
+        // Get fixes
+        val fixes = getInvalidSelectorFixes(methodCall, fullSelector)
         // Create annotation
-        val annotation = annotationHolder.createErrorAnnotation(failPoint!!,  ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selectorToFailPointTextSoFar))
-        annotation.setNeedsUpdateOnTyping(true)
-        // Add fixes
-        addInvalidSelectorFixes(annotation, methodCall, fullSelector)
+        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.selector-not-found.message", selectorToFailPointTextSoFar))
+                .range(failPoint!!)
+                .withFixes(fixes)
+                .withNeedsUpdateWithTyping(true)
+                .create()
     }
 
     /**
      * Adds all fixes for an invalid selector
      * @todo add fix to add a selector matching to a class
      */
-    private fun addInvalidSelectorFixes(annotation: Annotation, methodCall: ObjJMethodCall, fullSelector: String) {
-        annotation.registerFix(ObjJAlterIgnoredSelector(fullSelector, true))
-        for(scope in scopeList) {
-            val fix = ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, scope)
-            annotation.registerFix(fix)
+    private fun getInvalidSelectorFixes(methodCall: ObjJMethodCall, fullSelector: String) : List<IntentionAction> {
+        val fixes = mutableListOf<IntentionAction>()
+        fixes.add(ObjJAlterIgnoredSelector(fullSelector, true))
+        fixes += scopeList.map {
+            ObjJAddSuppressInspectionForScope(methodCall, ObjJSuppressInspectionFlags.IGNORE_INVALID_SELECTOR, it)
         }
+        return fixes
     }
 
 
@@ -200,13 +211,15 @@ internal object ObjJMethodCallAnnotatorUtil {
     /**
      * Checks whether or not a selector is in any way ignored.
      */
-    private fun isIgnored(methodCall: ObjJMethodCall, fullSelector: String, annotationHolder: AnnotationHolder) : Boolean {
+    private fun isIgnored(methodCall: ObjJMethodCall, fullSelector: String, annotationHolder: AnnotationHolderWrapper) : Boolean {
         // Ensure that selector is not listed in project level ignore list
         if (ObjJPluginSettings.isIgnoredSelector(fullSelector)) {
             // If ignored, add fix to remove it from ignored list
             for (selector in methodCall.selectorList) {
-                annotationHolder.createInfoAnnotation(selector, ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.invalid-selector-ignored.message", fullSelector))
-                        .registerFix(ObjJAlterIgnoredSelector(fullSelector, false))
+                annotationHolder.newInfoAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-call-annotator.invalid-selector-ignored.message", fullSelector))
+                        .range(selector)
+                        .withFix(ObjJAlterIgnoredSelector(fullSelector, false))
+                        .create()
             }
             return true
         }

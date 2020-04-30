@@ -10,7 +10,7 @@ import com.intellij.psi.tree.ILazyParseableElementType
 
 object ObjJDocCommentParsableBlockToken {
     @JvmStatic
-    public val OBJJ_DOC_COMMENT_PARSABLE_BLOCK: ILazyParseableElementType = object : ILazyParseableElementType("ObjJ_DOC_COMMENT_PARSABLE_BLOCK", ObjJLanguage.instance) {
+    val OBJJ_DOC_COMMENT_PARSABLE_BLOCK: ILazyParseableElementType = object : ILazyParseableElementType("ObjJ_DOC_COMMENT_PARSABLE_BLOCK", ObjJLanguage.instance) {
         override fun parseContents(chameleon: ASTNode): ASTNode {
             val project = chameleon.psi.project
             val builder = PsiBuilderFactory.getInstance().createBuilder(project, chameleon, ObjJDocCommentLexer(), language,

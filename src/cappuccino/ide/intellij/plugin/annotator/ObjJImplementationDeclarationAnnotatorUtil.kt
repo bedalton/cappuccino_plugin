@@ -12,7 +12,6 @@ import cappuccino.ide.intellij.plugin.psi.ObjJInheritedProtocolList
 import cappuccino.ide.intellij.plugin.psi.ObjJInstanceVariableDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJClassTypePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.isUniversalMethodCaller
-import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.DumbService
 
@@ -25,7 +24,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     /**
      * Annotation entry point
      */
-    fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+    fun annotateImplementationDeclaration(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
         if (declaration.isCategory) {
             annotateIfUndefinedImplementationForCategory(declaration.className, annotationHolder)
         }/*else {
@@ -41,7 +40,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     /**
      * Annotate categories, if we cannot find a definition for their base implementation
      */
-    private fun annotateIfUndefinedImplementationForCategory(classNameElement: ObjJClassName?, annotationHolder: AnnotationHolder) {
+    private fun annotateIfUndefinedImplementationForCategory(classNameElement: ObjJClassName?, annotationHolder: AnnotationHolderWrapper) {
 
         // Check that className element is not null
         if (classNameElement == null) {
@@ -60,7 +59,9 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
                 return
             }
         }
-        annotationHolder.createErrorAnnotation(classNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
+        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undef-category-base-class.message", className))
+                .range(classNameElement)
+                .create()
     }
 
 
@@ -68,12 +69,14 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     @todo make smarter to work with duplicates in test files
     @todo check for duplicates only on import, to ensure no clash is made.
     @removed due to conflicts in library with test classes having the same name
-    private fun annotateIfDuplicateImplementation(thisImplementationDeclaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateIfDuplicateImplementation(thisImplementationDeclaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
         val classNameElement = thisImplementationDeclaration.getClassName() ?: return
         val className = classNameElement.text
         for (implementationDeclaration in ObjJImplementationDeclarationsIndex.instance.get(className, classNameElement.project)) {
             if (!implementationDeclaration.isCategory() && !implementationDeclaration.isEquivalentTo(thisImplementationDeclaration)) {
-                annotationHolder.createErrorAnnotation(classNameElement, "Duplicate class declared with name: <$className>")
+                annotationHolder.newErrorAnnotation("Duplicate class declared with name: <$className>")
+                    .range(classNameElement)
+                    .create()
                 return
             }
         }
@@ -82,7 +85,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     /**
      * Annotates protocol problems
      */
-    private fun annotateUnimplementedProtocols(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateUnimplementedProtocols(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
         val protocolListElement = declaration.inheritedProtocolList ?: return
         val protocols = protocolListElement.classNameList
         for (className in protocols) {
@@ -94,17 +97,19 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
     /**
      * Annotate undefined protocol names
      */
-    private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
+    private fun annotateUndefinedProtocolName(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolderWrapper) {
         val protocolName = protocolNameElement.text
         if (ObjJProtocolDeclarationsIndex.instance[protocolName, declaration.project].isEmpty()) {
-            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undec-protocol.message", protocolName))
+            annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.undec-protocol.message", protocolName))
+                    .range(protocolNameElement)
+                    .create()
         }
     }
 
     /**
      * Annotate unimplemented or partially implemented protocols
      */
-    private fun annotateUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolder) {
+    private fun annotateUnimplementedProtocolMethods(declaration: ObjJImplementationDeclaration, protocolNameElement: ObjJClassName, annotationHolder: AnnotationHolderWrapper) {
         // Get protocol name as string
         val protocolName = protocolNameElement.text
         // Find all unimplemented getMethods
@@ -112,12 +117,14 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         if (unimplementedMethods.required.isEmpty())
             return
         // Annotate and register fix for missing required members
-        val annotation = annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
+        val annotation = annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.missing-protocol-methods.message"))
+                .range(protocolNameElement)
+                .create()
         annotation.registerFix(ObjJMissingProtocolMethodFix(declaration, protocolName, unimplementedMethods))
         annotation.textAttributes = VARIABLE_TYPE_WITH_ERROR
     }
 
-    private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateInvalidClassNamesInInstanceVariables(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
         if (DumbService.isDumb(declaration.project)) {
             return
         }
@@ -127,7 +134,7 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
         }
     }
 
-    private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateInstanceVariableIfClassNameInvalid(variable: ObjJInstanceVariableDeclaration, annotationHolder: AnnotationHolderWrapper) {
         val variableType = variable.formalVariableType
         val className: ObjJClassName
         className = if (variableType.variableTypeId != null) {
@@ -151,23 +158,32 @@ internal object ObjJImplementationDeclarationAnnotatorUtil {
             severity = HighlightSeverity.WARNING
             message = ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", classNameString)
         }
-        annotationHolder.createAnnotation(severity, className.textRange, message.format(classNameString)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+        annotationHolder.newAnnotation(severity, message.format(classNameString))
+                .range(className.textRange)
+                .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                .create()
     }
 
-    private fun annotateInvalidSuperClass(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateInvalidSuperClass(declaration: ObjJImplementationDeclaration, annotationHolder: AnnotationHolderWrapper) {
         val superClass = declaration.superClass ?: return
         val superClassName = superClass.text
         if (ObjJImplementationDeclarationsIndex.instance.containsKey(superClassName, declaration.project))
             return
-        annotationHolder.createErrorAnnotation(superClass, ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", superClassName)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.implementation-annotator.instance-var.possibly-undec-class.message", superClassName))
+                .range(superClass)
+                .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                .create()
     }
 
-    internal fun annotateInvalidProtocolNames(declaration: ObjJInheritedProtocolList?, annotationHolder: AnnotationHolder) {
+    internal fun annotateInvalidProtocolNames(declaration: ObjJInheritedProtocolList?, annotationHolder: AnnotationHolderWrapper) {
         declaration?.classNameList?.forEach { protocolNameElement ->
             val protocolNameString = protocolNameElement.text ?: return
             if (ObjJProtocolDeclarationsIndex.instance.containsKey(protocolNameString, declaration.project))
                 return
-            annotationHolder.createErrorAnnotation(protocolNameElement, ObjJBundle.message("objective-j.annotator-messages.protocol-annotator.possibly-undeclared-protocol.message", protocolNameString)).textAttributes = VARIABLE_TYPE_WITH_ERROR
+            annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.protocol-annotator.possibly-undeclared-protocol.message", protocolNameString))
+                    .range(protocolNameElement)
+                    .withTextAttributes(VARIABLE_TYPE_WITH_ERROR)
+                    .create()
         }
     }
 

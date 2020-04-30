@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
+import cappuccino.ide.intellij.plugin.annotator.newAnnotationBuilder
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
@@ -49,7 +50,7 @@ private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDecla
     val interfaceElement = interfaceElements.firstOrNull() ?: return
     val textRange = property.propertyName?.textRange ?: return
 
-    annotationHolder.newAnnotation(HighlightSeverity.WEAK_WARNING, "Variable declaration can be mapped to class")
+    annotationHolder.newAnnotationBuilder(HighlightSeverity.WEAK_WARNING, "Variable declaration can be mapped to class")
             .range(textRange)
             .withFix(JsTypeDefVariableToClassFix(interfaceElement = interfaceElement, property = property))
             .create()
@@ -57,7 +58,7 @@ private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDecla
 
 class JsTypeDefVariableToClassFix(interfaceElement: JsTypeDefInterfaceElement, property: JsTypeDefProperty) : IntentionAndQuickFixAction() {
     val property = SmartPointerManager.createPointer(property)
-    val interfaceElement = SmartPointerManager.createPointer(interfaceElement)
+    private val interfaceElement = SmartPointerManager.createPointer(interfaceElement)
     override fun getName(): String {
         return "Map var declaration to class type"
     }

@@ -16,14 +16,14 @@ object ObjJMethodDeclarationAnnotator {
     /**
      * Annotates a method header declaration
      */
-    fun annotateMethodHeaderDeclarations(methodHeader: ObjJMethodHeader, annotationHolder: AnnotationHolder) {
+    fun annotateMethodHeaderDeclarations(methodHeader: ObjJMethodHeader, annotationHolder: AnnotationHolderWrapper) {
         annotateDuplicateSelectors(methodHeader, annotationHolder)
     }
 
     /**
      * Annotates duplicate method headers
      */
-    private fun annotateDuplicateSelectors(methodHeader: ObjJMethodHeader, annotationHolder: AnnotationHolder) {
+    private fun annotateDuplicateSelectors(methodHeader: ObjJMethodHeader, annotationHolder: AnnotationHolderWrapper) {
         val project = methodHeader.project
         val thisSelector = methodHeader.selectorString
         val containingClass = methodHeader.containingClass ?: return
@@ -41,7 +41,9 @@ object ObjJMethodDeclarationAnnotator {
             }
             // Check if method selectors can be considered duplicates or not.
             if (classMethodHeader.selectorString == thisSelector && ObjJMethodPsiUtils.hasSimilarDisposition(methodHeader, classMethodHeader as? ObjJMethodHeader)) {
-                annotationHolder.createErrorAnnotation(methodHeader, ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate-selector.message"))
+                annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.method-declaration-annotator.duplicate-selector.message"))
+                        .range(methodHeader)
+                        .create()
                 return
             }
         }

@@ -15,7 +15,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
     /**
      * Entry method to annotations
      */
-    fun annotateProtocolDeclaration(protocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolder) {
+    fun annotateProtocolDeclaration(protocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolderWrapper) {
         annotateIfDuplicateProtocol(protocolDeclaration, annotationHolder)
         ObjJImplementationDeclarationAnnotatorUtil.annotateInvalidProtocolNames(protocolDeclaration.inheritedProtocolList, annotationHolder)
     }
@@ -25,7 +25,7 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
      * Annotates protocol if another protocol exists with same name
      * @todo do not include protocols in different frameworks
      */
-    private fun annotateIfDuplicateProtocol(thisProtocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolder) {
+    private fun annotateIfDuplicateProtocol(thisProtocolDeclaration: ObjJProtocolDeclaration, annotationHolder: AnnotationHolderWrapper) {
         val classNameElement = thisProtocolDeclaration.className ?: return
         val className = classNameElement.text
         val duplicates = ArrayList<ObjJProtocolDeclaration>()
@@ -41,7 +41,9 @@ internal object ObjJProtocolDeclarationAnnotatorUtil {
         }
         val duplicatedInFileNameList = duplicates.joinToString(", ") { protocolDeclaration -> ObjJPsiFileUtil.getContainingFileName(protocolDeclaration) }
         val errorMessage = ObjJBundle.message("objective-j.annotator-messages.protocol-declaration.duplicate-declaration.message", className, duplicatedInFileNameList)
-        annotationHolder.createErrorAnnotation(classNameElement, errorMessage)
+        annotationHolder.newErrorAnnotation(errorMessage)
+                .range(classNameElement)
+                .create()
 
     }
 
