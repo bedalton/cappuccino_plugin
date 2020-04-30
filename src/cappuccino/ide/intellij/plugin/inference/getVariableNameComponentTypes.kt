@@ -14,12 +14,12 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
-import cappuccino.ide.intellij.plugin.psi.utils.docComment
-import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -33,7 +33,7 @@ fun getVariableNameComponentTypes(variableName: ObjJVariableName, parentTypes: I
     if (variableName.tagged(tag, false)) {
         return null
     }
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     if (variableName.indexInQualifiedReference == 0) {
         return inferVariableNameTypeAtIndexZero(variableName, tag)
     }
@@ -93,6 +93,11 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
     if (containingClass != null)
         return InferenceResult(types = setOf(containingClass).toJsTypeList())
 
+    if (variableName.text == "this") {
+        getThisType(variableName)?.let {
+            return it
+        }
+    }
     (variableName.parent as? ObjJGlobalVariableDeclaration)?.let {
         return inferExpressionType(it.expr, tag)
     }
@@ -117,6 +122,41 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
     return referencedVariable?.getCachedInferredTypes(tag) {
         return@getCachedInferredTypes internalInferVariableTypeAtIndexZero(variableName, referencedVariable, containingClass, tag, false)
     }
+}
+
+private fun getThisType(variableName: ObjJVariableName) : InferenceResult? {
+    LOGGER.info("Checking type for variable 0 == 'this'")
+    val parentFunction = variableName.getParentOfType(ObjJFunctionLiteral::class.java)
+    val parentVariableDeclaration = parentFunction?.parent?.parent?.parent as? ObjJVariableDeclaration
+    if (parentVariableDeclaration != null) {
+        val protoTypeClasses = parentVariableDeclaration.qualifiedNamePaths
+                .filter {
+                    LOGGER.info ("Checking qualifiedNamePath: ${it.joinToString(".") { it.name ?: "???" }}")
+                    it.getOrNull(1)?.name == "prototype"
+                }
+                .mapNotNull {
+                    it.getOrNull(0)?.name
+                }
+                .toSet()
+        if (protoTypeClasses.isNotEmpty()) {
+            return protoTypeClasses.toInferenceResult()
+        }
+        val index = JsTypeDefClassesByNameIndex.instance
+        val staticClasses = parentVariableDeclaration.qualifiedNamePaths
+                .filter { paths ->
+                    paths.size == 2 && paths.getOrNull(0)?.name?.let { index.containsKey(it, variableName.project) }.orFalse()
+                }
+                .mapNotNull {
+                    it.getOrNull(0)?.name
+                }
+                .toSet()
+        if (staticClasses.isNotEmpty()) {
+            return staticClasses.toInferenceResult()
+        }
+    } else {
+        LOGGER.info ("Parent.Parent is not variable declaration. Parent: ${parentFunction?.parent.elementType}. Parent.Parent: ${parentFunction?.parent?.parent?.elementType}")
+    }
+    return null
 }
 
 private fun getPrevDeclarationType(variableName: ObjJVariableName, tag: Tag): InferenceResult? {
@@ -323,7 +363,7 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
     val variableNameString = variableName.text
     val fromBodyAssignments = variableName.getParentBlockChildrenOfType(ObjJBodyVariableAssignment::class.java, true)
             .flatMap { assignment ->
-                ProgressIndicatorProvider.checkCanceled()
+                //ProgressIndicatorProvider.checkCanceled()
                 listOf(assignment.variableAssignmentLogical?.qualifiedReference?.qualifiedNameParts?.firstOrNull()) +
                         assignment.variableDeclarationList?.variableNameList.orEmpty() +
                         assignment.variableDeclarationList?.variableDeclarationList?.flatMap { objJVariableDeclaration ->
@@ -333,7 +373,7 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
                         }.orEmpty()
             }
             .mapNotNull {
-                ProgressIndicatorProvider.checkCanceled()
+                //ProgressIndicatorProvider.checkCanceled()
                 getAssignedExpressions(it, variableNameString)
             }
 
@@ -346,13 +386,13 @@ private fun getAllVariableAssignmentsWithName(variableName: ObjJVariableName): L
     val fromVariableDeclarations =
             variableName.getParentBlockChildrenOfType(ObjJExpr::class.java, true)
                     .flatMap { expr ->
-                        ProgressIndicatorProvider.checkCanceled()
+                        //ProgressIndicatorProvider.checkCanceled()
                         //ProgressManager.checkCanceled()
                         expr.leftExpr?.variableDeclaration?.qualifiedReferenceList?.mapNotNull {
                             it.qualifiedNameParts.firstOrNull()
                         } ?: emptyList()
                     }.mapNotNull {
-                        ProgressIndicatorProvider.checkCanceled()
+                        //ProgressIndicatorProvider.checkCanceled()
                         getAssignedExpressions(it, variableNameString)
                     }
     return fromBodyAssignments + fromGlobals + fromVariableDeclarations

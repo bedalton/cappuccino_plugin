@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project
 internal fun getFunctionComponentTypes(functionName: ObjJFunctionName?, parentTypes: InferenceResult?, static: Boolean, tag: Tag): InferenceResult? {
     if (functionName == null)
         return null
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     if (functionName.indexInQualifiedReference == 0) {
         return findFunctionReturnTypesIfFirst(functionName, tag)
     }
@@ -89,7 +89,7 @@ private fun findFunctionReturnTypesIfFirst(functionName: ObjJFunctionName, tag: 
     if (JsTypeDefClassesByNamespaceIndex.instance.containsKey(functionNameString, project))
         basicReturnTypes = basicReturnTypes.orEmpty() + functionNameString
     val functionTypes = JsTypeDefFunctionsByNameIndex.instance[functionNameString, project].map {
-        ProgressIndicatorProvider.checkCanceled()
+        //ProgressIndicatorProvider.checkCanceled()
         it.toJsFunctionType(tag)
     }.toMutableList()
     val functionDeclarationAsJsFunctionType = functionDeclaration?.toJsFunctionType(tag)

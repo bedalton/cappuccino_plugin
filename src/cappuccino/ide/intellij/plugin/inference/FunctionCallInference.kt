@@ -26,7 +26,7 @@ internal fun inferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Ta
 }
 
 internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall, tag: Tag): InferenceResult? {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     val functionName = functionCall.functionName ?: return null
     val functionNameString = functionName.text ?: return null
     if (functionNameString == "apply") {
@@ -102,7 +102,7 @@ internal fun internalInferFunctionCallReturnType(functionCall: ObjJFunctionCall,
 private fun inferTypeForResolved(resolved: PsiElement, tag: Tag): InferenceResult? {
     if (resolved.tagged(tag))
         return null
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     val function: ObjJUniversalFunctionElement? = when (resolved) {
         is ObjJVariableName -> resolved.parentFunctionDeclaration
         is ObjJFunctionName -> resolved.parentFunctionDeclaration
@@ -152,7 +152,7 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
             return null
         return InferenceResult(types = types)
     }
-    if (!ObjJPluginSettings.inferFunctionReturnTypeFromReturnStatements())
+    if (!ObjJPluginSettings.inferFunctionReturnTypeFromReturnStatements)
         return if (function.text.contains(hasReturnCallRegex)) INFERRED_ANY_TYPE else INFERRED_VOID_TYPE
 
     val returnStatementExpressions = if (function is ObjJFunctionDeclarationElement<*>)

@@ -28,7 +28,7 @@ private const val INFERRED_TYPES_MINOR_VERSION: Int = 0
 
 private const val INFERRED_TYPES_VERSION = 2 + INFERRED_TYPES_MINOR_VERSION + ObjJIndexService.INDEX_VERSION
 
-private const val CACHE_EXPIRY = 15000
+private const val CACHE_EXPIRY = 18000
 
 private const val TEXT_DEPTH = 3
 
@@ -82,16 +82,23 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
     val inferredVersionNumber = this.getUserData(INFERRED_TYPES_VERSION_USER_DATA_KEY)
     // Establish and store last text
 
-
     val textParent: PsiElement = this.getParentOfType(ObjJBlock::class.java)?.let {
         if (this.parent is ObjJBlock)
             it.parent
         else
             it
     } ?: this.parent?.parent?.parent ?: this.parent?.parent ?: this.parent ?: this
-    val thisText = textParent.text
+    val rangeStart = this.parent.textRange.startOffset;
+    val rangeEnd = this.textRange.endOffset
+    // Prevent being affected by self and later elements
+    val thisText = if (rangeStart != rangeEnd) {
+        val containingFile = textParent.containingFile ?: textParent.originalElement?.containingFile
+        containingFile?.text?.substring(rangeStart, rangeEnd) ?: textParent.text
+    } else {
+        textParent.text
+    }
     val lastText = this.getUserData(INFERRED_TYPES_LAST_TEXT).orElse("__#__")
-    val textIsUnchanged = lastText == text
+    val textIsUnchanged = lastText == thisText
     // Check cache without tagging
     if (tag == null && textIsUnchanged) {
         val inferred = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
@@ -122,7 +129,7 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
     }
 }
 
-class Tag(val tag: Long, var depth: Int = 16) {
+class Tag(val tag: Long, var depth: Int = ObjJPluginSettings.inferenceMaxDepth) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Tag) return false

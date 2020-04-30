@@ -5,8 +5,6 @@ import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import cappuccino.ide.intellij.plugin.utils.document
 import com.intellij.codeInspection.IntentionAndQuickFixAction
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -14,18 +12,17 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-internal fun annotateInterfaceElement(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
+internal fun annotateInterfaceElement(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolderWrapper) {
     annotateIfShouldBeTypeMap(element, annotationHolder)
 }
 
-private fun annotateIfShouldBeTypeMap(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolder) {
+private fun annotateIfShouldBeTypeMap(element: JsTypeDefInterfaceElement, annotationHolder: AnnotationHolderWrapper) {
     if (element.functionList.isNotEmpty() || element.namelessFunctionList.isNotEmpty())
         return
     if (element.propertyList.isEmpty() || element.propertyList.any { it.stringLiteral == null })
         return
     val typeName = element.typeName ?: return
-    val message = "definition should be typemap not interface"
-    val annotation = annotationHolder.newAnnotation(HighlightSeverity.WARNING, message)
+    annotationHolder.newWarningAnnotation("definition should be typemap not interface")
             .range(typeName.textRange)
             .withFix(InterfaceShouldBeTypeMapFix(interfaceElement = element))
             .create()

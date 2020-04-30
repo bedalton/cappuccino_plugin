@@ -6,11 +6,13 @@ import cappuccino.ide.intellij.plugin.inference.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasMethodSelector
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
+import cappuccino.ide.intellij.plugin.psi.interfaces.containingSuperClassName
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.AT_ACTION
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.UNDETERMINED
 import cappuccino.ide.intellij.plugin.psi.types.ObjJClassType.VOID_CLASS_NAME
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.stubs.stucts.ObjJSelectorStruct
 import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ArrayUtils.EMPTY_STRING_ARRAY
@@ -193,9 +195,12 @@ object ObjJMethodPsiUtils {
                 ?.getBlockChildrenOfType(ObjJReturnStatement::class.java, true)
                 ?.mapNotNull { it.expr } ?: emptyList()
         if (expressions.any { it.text == "self" })
-            return setOf("self")
+            return setOf(methodHeader.containingClassName)
         if (expressions.any { it.text == "super" })
-            return setOf("super")
+            return setOf(methodHeader.containingSuperClassName ?: methodHeader.containingClassName)
+        if (!ObjJPluginSettings.inferMethodReturnTypeFromReturnStatements) {
+            return emptySet()
+        }
         var out = INFERRED_EMPTY_TYPE
         expressions.forEach {
             //LOGGER.info("Checking return statement <${it.text ?: "_"}> for method call : <${methodHeader.text}>")

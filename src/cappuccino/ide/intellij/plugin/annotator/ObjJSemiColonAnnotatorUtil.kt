@@ -7,8 +7,6 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeType
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 
@@ -32,7 +30,7 @@ internal object ObjJSemiColonAnnotatorUtil {
      */
     fun annotateMissingSemiColons(
             element: ObjJNeedsSemiColon,
-            annotationHolder: AnnotationHolder) {
+            annotationHolder: AnnotationHolderWrapper) {
         //Checks whether this element actually requires a semi colon and whether it already has one
         if (!requiresSemiColon(element) || isNextElementSemiColonBlocking(element) || ObjJPsiImplUtil.eos(element)) {
             return
@@ -74,10 +72,9 @@ internal object ObjJSemiColonAnnotatorUtil {
      * @param element element to annotate
      * @param annotationHolder annotation holder
      */
-    private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolder) {
+    private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolderWrapper) {
         val errorRange = TextRange.create(element.textRange.endOffset - 1, element.textRange.endOffset)
-        val messageKey = "objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"
-        annotationHolder.newAnnotation(HighlightSeverity.ERROR, ObjJBundle.message(messageKey))
+        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"))
                 .range(errorRange)
                 .withFix(ObjJAddSemiColonIntention(element))
                 .create()

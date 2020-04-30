@@ -9,6 +9,9 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.stubs.stucts.toMethodStruct
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
@@ -25,12 +28,20 @@ internal fun inferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): Inferenc
 }
 
 private fun internalInferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): InferenceResult? {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     val project = methodCall.project
     val selector = methodCall.selectorString
     if (selector == "alloc" || selector == "alloc:") {
         return getAllocStatementType(methodCall)
     }
+
+    methodCall.selectorList.getOrNull(0)?.reference?.multiResolve(false)?.mapNotNull {
+        it.element.getParentOfType(ObjJMethodHeader::class.java)?.toMethodStruct(tag)?.returnType
+    }?.combine().let {
+        if (it?.withoutAnyType()?.isNotEmpty().orFalse())
+            return it
+    }
+
     val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
     val callTargetTypes = callTargetType?.classes.orEmpty().flatMap {
         ObjJInheritanceUtil.getAllInheritedClasses(it, project)
@@ -49,10 +60,10 @@ private fun internalInferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): I
     val methodDeclarations = getMethods.mapNotNull { it.getParentOfType(ObjJMethodDeclaration::class.java) }
     val returnTypesFromExpressions = methodDeclarations.flatMap { methodDeclaration ->
         methodDeclaration.getCachedInferredTypes(tag) {
-            ProgressIndicatorProvider.checkCanceled()
+            //ProgressIndicatorProvider.checkCanceled()
             if (methodDeclaration.tagged(tag))
                 return@getCachedInferredTypes null
-            ProgressIndicatorProvider.checkCanceled()
+            //ProgressIndicatorProvider.checkCanceled()
             if (methodDeclaration.methodHeader.explicitReturnType == "instancetype" && methodDeclaration.containingClassName !in anyTypes) {
                 return@getCachedInferredTypes setOf(methodDeclaration.containingClassName).toInferenceResult()
             }
@@ -94,10 +105,10 @@ private fun internalInferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): I
     // Accessors are different than instance var names
     val instanceVariableAccessorTypes = getMethods.mapNotNull { it.getParentOfType(ObjJInstanceVariableDeclaration::class.java) }.flatMap { instanceVariable ->
         instanceVariable.getCachedInferredTypes(tag) {
-            ProgressIndicatorProvider.checkCanceled()
+            //ProgressIndicatorProvider.checkCanceled()
             if (instanceVariable.tagged(tag))
                 return@getCachedInferredTypes null
-            ProgressIndicatorProvider.checkCanceled()
+            //ProgressIndicatorProvider.checkCanceled()
             return@getCachedInferredTypes setOf(instanceVariable.variableType).toInferenceResult()
         }?.classes.orEmpty()
     }
@@ -114,26 +125,11 @@ private fun getReturnTypesFromKnownClasses(project: Project, callTargetTypes: Se
     var nullable = false
     val types = callTargetTypes.flatMap { ObjJClassDeclarationsIndex.instance[it, project] }
             .flatMap { classDeclaration ->
-                ProgressIndicatorProvider.checkCanceled()
+                //ProgressIndicatorProvider.checkCanceled()
                 val outTemp = classDeclaration.getReturnTypesForSelector(selector, tag)
                 if (outTemp?.nullable.orFalse())
                     nullable = true
-                val out = outTemp?.types.orEmpty().toMutableSet()
-                if (out.any { it.typeName == "self" }) {
-                    out.addAll(callTargetTypes.toJsTypeList())
-                }
-                if (out.any { it.typeName == "super" }) {
-                    val superTypes = callTargetTypes
-                            .flatMap { targetType ->
-                                ObjJImplementationDeclarationsIndex.instance[targetType, project].mapNotNull {
-                                    it.superClassName
-                                }
-                            }
-                            .toSet()
-                            .toJsTypeList()
-                    out.addAll(superTypes)
-                }
-                out.filterNot { it.typeName == "self" || it.typeName == "super" }
+                outTemp?.types.orEmpty().filterNot { it.typeName == "self" || it.typeName == "super" }
             }
     return InferenceResult(
             types = types.toSet(),
@@ -176,7 +172,7 @@ fun inferCallTargetType(callTarget: ObjJCallTarget, tag: Tag): InferenceResult? 
 }
 
 private fun internalInferCallTargetType(callTarget: ObjJCallTarget, tag: Tag): InferenceResult? {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     val callTargetText = callTarget.text
     if (ObjJClassDeclarationsIndex.instance.containsKey(callTargetText, callTarget.project))
         return setOf(callTargetText).toInferenceResult()
@@ -190,7 +186,7 @@ private fun internalInferCallTargetType(callTarget: ObjJCallTarget, tag: Tag): I
 }
 
 fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration: ObjJMethodDeclaration, tag: Tag): Set<String> {
-    ProgressIndicatorProvider.checkCanceled()
+    //ProgressIndicatorProvider.checkCanceled()
     val simpleReturnType = methodDeclaration.methodHeader.explicitReturnType
     if (simpleReturnType != "id") {
         val type = simpleReturnType.stripRefSuffixes()
@@ -202,6 +198,9 @@ fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration: ObjJMe
             return setOf("self")
         if (expressions.any { it.text == "super" })
             return setOf("super")
+        if (!ObjJPluginSettings.inferMethodReturnTypeFromReturnStatements) {
+            return setOf("id")
+        }
         expressions.forEach {
             val type = inferExpressionType(it, tag)
             if (type != null)

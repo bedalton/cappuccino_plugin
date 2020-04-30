@@ -576,7 +576,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getReference(selector: ObjJSelector): PsiReference {
+    fun getReference(selector: ObjJSelector): ObjJSelectorReference {
         return ObjJSelectorReference(selector)
     }
 

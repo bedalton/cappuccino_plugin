@@ -29,7 +29,8 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
     }
 
     override fun getQuickNavigateInfo(element: PsiElement?, originalElement: PsiElement?): String? {
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
+        val comment = element?.docComment ?: originalElement?.docComment
+        ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         return InfoSwitch(element, originalElement)
                 .info(ObjJVariableName::class.java, orParent = false) {
                     it.quickInfo(comment)
@@ -129,7 +130,8 @@ class ObjJDocumentationProvider : AbstractDocumentationProvider() {
      */
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         //val doc = StringBuilder()
-        val comment = element?.docComment ?: originalElement?.docComment ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
+        val comment = element?.docComment ?: originalElement?.docComment
+        ?: CommentWrapper("", emptyList(), INFERRED_ANY_TYPE)
         ////LOGGER.warning(.info("Generating doc comment from comment <${comment.commentText}>")
         return comment.commentText
     }
@@ -167,7 +169,7 @@ private val PsiElement.containerName: String?
     get() {
         var container = (this as? ObjJHasContainingClass)?.containingClassNameOrNull
         if (container.isNullOrBlank())
-            container = this.containingFile?.name
+            container = this.containingFile?.name ?: this.originalElement?.containingFileName
         return container
 
     }
@@ -217,31 +219,44 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
             return out.toString()
         }
         val classNames = stripCPObject(inferenceResult, project) ?: "<Any?>"
+        val resolved = this.reference.resolve(true);
         ////LOGGER.warning(.info("Tried to infer types. Found: [$inferredTypes]")
-        if (this.reference.resolve(true)?.hasParentOfType(ObjJArguments::class.java).orFalse())
-            out.append("parameter")
+        if (resolved?.hasParentOfType(ObjJInstanceVariableDeclaration::class.java).orFalse()) {
+            out.append("instance var")
+        } else if (resolved?.hasParentOfType(ObjJArguments::class.java).orFalse())
+            out.append("parameter ")
         else
             out.append("var ").append(name)
         if (classNames.isNotNullOrBlank()) {
             out.append(": ").append(classNames)
         }
-        out.append(" in ").append(getLocationString(this))
+        getLocationString(this).trim().ifEmptyNull()?.let {
+            out.append(" in ").append(it)
+        }
         return out.toString()
     }
     val inferredTypes = inferQualifiedReferenceType(previousSiblings, forwardTag)
     val name = this.text
     var propertyTypes = getVariableNameComponentTypes(this, inferredTypes, false, createTag())?.toClassListString("&lt;Any&gt;")
     if (propertyTypes.isNotNullOrBlank()) {
-        val classNames = stripCPObject(inferredTypes, project) ?: "<Any?>"
+        val classNames = stripCPObject(inferredTypes, project)?.trim()
         if (propertyTypes?.startsWith("$name(").orFalse())
             propertyTypes = propertyTypes?.substring(name.length)
-        if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank())
-            out.append("property ").append(name)
+        if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
+            if (ObjJVariablePsiUtil.isNewVariableDec(this)) {
+                out.append("var ")
+            } else {
+                out.append("property ")
+            }
+            out.append(name)
+        }
         if (propertyTypes.isNotNullOrBlank() && propertyTypes !in anyTypes) {
             out.append(": ").append(propertyTypes)
         }
-        if (classNames.isNotNullOrBlank())
+        if (classNames.isNotNullOrBlank()) {
+            LOGGER.info("Appending classnames: <${classNames}>")
             out.append(" in ").append(classNames)
+        }
 
         if (propertyTypes.isNotNullOrBlank() || classNames.isNotNullOrBlank()) {
             return out.toString()
@@ -252,14 +267,16 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
     if (possibleClasses.isNotEmpty()) {
         out.append(" assumed to be [").append(possibleClasses.joinToString(" or ")).append("]")
     }
-    out.append(" in ").append(getLocationString(this))
+    getLocationString(this).trim().ifEmptyNull()?.let {
+        out.append(" in ").append(it)
+    }
     return out.toString()
 }
 
-private fun stripCPObject(inferredTypes:InferenceResult?, project:Project) : String? {
+private fun stripCPObject(inferredTypes: InferenceResult?, project: Project): String? {
     var classNamesTemp = inferredTypes?.toClassList(null).orEmpty()
-    classNamesTemp = if (classNamesTemp.any{ ObjJClassDeclarationsIndex.instance.containsKey(it, project)})
-        classNamesTemp.filter{ it == "CPObject" }.toSet()
+    classNamesTemp = if (classNamesTemp.any { ObjJClassDeclarationsIndex.instance.containsKey(it, project) })
+        classNamesTemp.filter { it == "CPObject" }.toSet()
     else
         classNamesTemp
     return classNamesTemp.joinToString("|").ifEmptyNull()
@@ -316,7 +333,8 @@ private val ObjJFunctionCall.functionDescription: String?
                 return "JsInterface $functionNameString"
             }
         }
-        val parentFunction = resolved?.parentFunctionDeclaration ?: functionDeclarationReference ?:  parentFunctionDeclaration
+        val parentFunction = resolved?.parentFunctionDeclaration ?: functionDeclarationReference
+        ?: parentFunctionDeclaration
         ?: return "Function ${functionName?.text}(...)"
         return parentFunction.description.presentableText
     }
