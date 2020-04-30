@@ -114,7 +114,7 @@ class ObjJSelectorReference(element: ObjJSelector, val tag: Tag = createTag()) :
                         isSimilar(it)
                     }
         }
-        val out = matchingSelectorsInClass + matchingSelectorsInClass
+        val out = matchingSelectorsInClass + matchingSelectorsInClass + selectorLiterals
         return PsiElementResolveResult.createResults(out)
     }
 
