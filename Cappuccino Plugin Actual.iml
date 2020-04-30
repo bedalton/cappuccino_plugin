@@ -9,7 +9,6 @@
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/src/cappuccino/ide/intellij/plugin/annotator2020" />
       <excludeFolder url="file://$MODULE_DIR$/src/cappuccino/ide/intellij/plugin/extensions" />
-      <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
