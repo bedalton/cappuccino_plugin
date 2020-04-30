@@ -152,7 +152,7 @@ fun inferFunctionDeclarationReturnType(function: ObjJUniversalFunctionElement, t
             return null
         return InferenceResult(types = types)
     }
-    if (!ObjJPluginSettings.inferFunctionReturnTypeFromReturnStatements())
+    if (!ObjJPluginSettings.inferFunctionReturnTypeFromReturnStatements)
         return if (function.text.contains(hasReturnCallRegex)) INFERRED_ANY_TYPE else INFERRED_VOID_TYPE
 
     val returnStatementExpressions = if (function is ObjJFunctionDeclarationElement<*>)

@@ -310,6 +310,8 @@ object ObjJMethodCallCompletionContributor {
                 .forEach {
                     if (it.isPrivate && !usePrivate)
                         return@forEach
+                    if (it.methodScope != targetScope)
+                        return@forEach
                     val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
                             resultSet = resultSet,
@@ -361,6 +363,8 @@ object ObjJMethodCallCompletionContributor {
             didAdd = true
             val selector = it.selectorStructs.getOrNull(0) ?: return@forEach
             if (it.isPrivate && !usePrivate)
+                return@forEach
+            if (it.methodScope != targetScope)
                 return@forEach
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
@@ -536,7 +540,7 @@ object ObjJMethodCallCompletionContributor {
     private fun getTargetScope(callTargetText: String, project: Project): MethodScope {
         return when {
             ObjJImplementationDeclarationsIndex.instance[callTargetText, project].isNotEmpty() -> MethodScope.STATIC
-            else -> MethodScope.ANY
+            else -> MethodScope.INSTANCE
         }
     }
 

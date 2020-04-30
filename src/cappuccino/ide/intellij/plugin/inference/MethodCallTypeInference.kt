@@ -9,6 +9,9 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.psi.utils.getBlockChildrenOfType
+import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
+import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
+import cappuccino.ide.intellij.plugin.stubs.stucts.toMethodStruct
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.stripRefSuffixes
@@ -31,6 +34,14 @@ private fun internalInferMethodCallType(methodCall: ObjJMethodCall, tag: Tag): I
     if (selector == "alloc" || selector == "alloc:") {
         return getAllocStatementType(methodCall)
     }
+
+    methodCall.selectorList.getOrNull(0)?.reference?.multiResolve(false)?.mapNotNull {
+        it.element.getParentOfType(ObjJMethodHeader::class.java)?.toMethodStruct(tag)?.returnType
+    }?.combine().let {
+        if (it?.withoutAnyType()?.isNotEmpty().orFalse())
+            return it
+    }
+
     val callTargetType = inferCallTargetType(methodCall.callTarget, tag)
     val callTargetTypes = callTargetType?.classes.orEmpty().flatMap {
         ObjJInheritanceUtil.getAllInheritedClasses(it, project)
@@ -118,22 +129,7 @@ private fun getReturnTypesFromKnownClasses(project: Project, callTargetTypes: Se
                 val outTemp = classDeclaration.getReturnTypesForSelector(selector, tag)
                 if (outTemp?.nullable.orFalse())
                     nullable = true
-                val out = outTemp?.types.orEmpty().toMutableSet()
-                if (out.any { it.typeName == "self" }) {
-                    out.addAll(callTargetTypes.toJsTypeList())
-                }
-                if (out.any { it.typeName == "super" }) {
-                    val superTypes = callTargetTypes
-                            .flatMap { targetType ->
-                                ObjJImplementationDeclarationsIndex.instance[targetType, project].mapNotNull {
-                                    it.superClassName
-                                }
-                            }
-                            .toSet()
-                            .toJsTypeList()
-                    out.addAll(superTypes)
-                }
-                out.filterNot { it.typeName == "self" || it.typeName == "super" }
+                outTemp?.types.orEmpty().filterNot { it.typeName == "self" || it.typeName == "super" }
             }
     return InferenceResult(
             types = types.toSet(),
@@ -202,6 +198,9 @@ fun getMethodDeclarationReturnTypeFromReturnStatements(methodDeclaration: ObjJMe
             return setOf("self")
         if (expressions.any { it.text == "super" })
             return setOf("super")
+        if (!ObjJPluginSettings.inferMethodReturnTypeFromReturnStatements) {
+            return setOf("id")
+        }
         expressions.forEach {
             val type = inferExpressionType(it, tag)
             if (type != null)

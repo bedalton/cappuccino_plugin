@@ -194,7 +194,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultSet.stopHere()
             }
 
-            prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER -> {
+            prevSibling.elementType !in ObjJTokenSets.CAN_COMPLETE_AFTER && prevSibling !is ObjJAssignmentOperator && prevSibling?.parent !is ObjJAccessor -> {
                 resultSet.stopHere()
             }
             else -> genericCompletion(element, resultSet)
@@ -373,6 +373,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             getKeywordCompletions(resultSet, variableName)
             addCompletionElementsSimple(resultSet, getInClassKeywords(variableName), 30.0)
             addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
+        } else {
+            LOGGER.info("Not adding variable name completions. {\n\tIsNotInMethodHeaderDeclaration: ${notInMethodHeaderDeclaration};\n\tisFirstInQualified: ${isFirstInQualifiedReference};\n\tHas Length: ${hasLength}\n}")
         }
         // Boolean to determine whether to add ignored property values
         val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary

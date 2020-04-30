@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs.stucts
 
+import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.inference.Tag
 import cappuccino.ide.intellij.plugin.inference.toJsTypeList
@@ -96,7 +97,7 @@ fun ObjJMethodHeader.toMethodStruct(tag:Tag) : ObjJMethodStruct {
     val returnType = if (returnTypeStrings.isNotEmpty())
         InferenceResult(types = returnTypeStrings)
     else
-        null
+        INFERRED_ANY_TYPE
     val out = ObjJMethodStruct(
             selectors = selectors,
             returnType = returnType,

@@ -65,11 +65,11 @@ private fun internalInferExpressionType(expr: ObjJExpr, tag: Tag): InferenceResu
     val types = leftExpressionType?.types.orEmpty() + rightExpressionsType?.types.orEmpty()
     return InferenceResult(
             types = types,
-            isNumeric = isNumeric,
+            isNumeric = isNumeric && !isBoolean && !isString,
             isBoolean = isBoolean,
             isRegex = isRegex,
             isDictionary = isDictionary,
-            isString = isString,
+            isString = isString && !isBoolean,
             isSelector = isSelector
     )
 }
@@ -203,13 +203,20 @@ fun rightExpressionTypes(leftExpression: ObjJLeftExpr?, rightExpressions: List<O
             current = current.copy(isBoolean = true, types = current.classes.plus(JS_BOOL).toJsTypeList())
         }
         if (rightExpr.mathExprPrime != null) {
-            val newTypes = inferExpressionType(rightExpr.mathExprPrime!!.expr, tag)?.classes.orEmpty() + current.classes
-            if (isNotNumber(newTypes))
-                return InferenceResult(
-                        types = setOf(JS_STRING).toJsTypeList(),
-                        isString = true
-                )
-            current = resolveToNumberType(newTypes)
+            val newTypes = inferExpressionType(rightExpr.mathExprPrime!!.expr, tag)
+                    ?: return current
+            val newClasses = newTypes.classes;
+            if (isNotNumber(newClasses)) {
+                if (newTypes.isBoolean) {
+                    return newTypes
+                } else {
+                    return InferenceResult(
+                            types = setOf(JS_STRING).toJsTypeList(),
+                            isString = true
+                    )
+                }
+            }
+            current = resolveToNumberType(newClasses)
         }
         if (rightExpr.arrayIndexSelector != null) {
             val types = current.types.flatMap {
@@ -318,8 +325,6 @@ private object IsBooleanUtil {
             return isBoolean(expr.ternaryExprPrime!!.ifTrue) || isBoolean(expr.ternaryExprPrime!!.ifFalse)
         }
         if (expr.instanceOfExprPrime != null)
-            return true
-        if (expr.comparisonExprPrime != null)
             return true
         return false
     }

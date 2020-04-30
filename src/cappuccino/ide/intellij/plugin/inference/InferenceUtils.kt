@@ -89,7 +89,7 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
             it
     } ?: this.parent?.parent?.parent ?: this.parent?.parent ?: this.parent ?: this
     val rangeStart = this.parent.textRange.startOffset;
-    val rangeEnd = this.textRange.startOffset
+    val rangeEnd = this.textRange.endOffset
     // Prevent being affected by self and later elements
     val thisText = if (rangeStart != rangeEnd) {
         val containingFile = textParent.containingFile ?: textParent.originalElement?.containingFile
@@ -129,7 +129,7 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
     }
 }
 
-class Tag(val tag: Long, var depth: Int = 16) {
+class Tag(val tag: Long, var depth: Int = ObjJPluginSettings.inferenceMaxDepth) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Tag) return false
