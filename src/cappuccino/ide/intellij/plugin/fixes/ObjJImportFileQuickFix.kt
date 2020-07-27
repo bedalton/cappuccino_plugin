@@ -34,10 +34,8 @@ import com.intellij.ui.components.JBList
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.ui.UIUtil
 import icons.ObjJIcons
-import javafx.geometry.Orientation
-import javafx.geometry.Pos
-import javafx.scene.layout.FlowPane
 import java.awt.Component
+import java.awt.FlowLayout
 import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
@@ -126,8 +124,8 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
         }
 
         mainLayout.selectedIndex = 0
-        val buttons = FlowPane(Orientation.HORIZONTAL)
-        buttons.alignment = Pos.CENTER_RIGHT
+        val buttons = JPanel();
+        buttons.layout = FlowLayout(FlowLayout.RIGHT)
 
         val dialog = DialogBuilder()
                 .setNorthPanel(JLabel(ObjJBundle.message("objective-j.inspections.not-imported.fix.add-import-title")))
