@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
-import cappuccino.ide.intellij.plugin.annotator.newAnnotationBuilder
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefAnonymousFunction
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefFunctionReturnType
@@ -14,7 +14,7 @@ import com.intellij.lang.annotation.HighlightSeverity
  */
 internal fun annotateInvalidMapReturnType(
         element: JsTypeDefValueOfKeyType,
-        annotationHolder: AnnotationHolder) {
+        annotationHolder: AnnotationHolderWrapper) {
     val hasFunctionParent = element.hasAnyParentOfType(
             JsTypeDefFunctionReturnType::class.java,
             JsTypeDefAnonymousFunction::class.java
@@ -24,7 +24,7 @@ internal fun annotateInvalidMapReturnType(
     }
     val messageKey = "jstypedef.annotation.error.invalid-map-return-type-usage.message"
     val message = JsTypeDefBundle.message(messageKey)
-    annotationHolder.newAnnotationBuilder(HighlightSeverity.ERROR, message)
+    annotationHolder.newErrorAnnotation(message)
             .range(element.textRange)
             .create()
 }

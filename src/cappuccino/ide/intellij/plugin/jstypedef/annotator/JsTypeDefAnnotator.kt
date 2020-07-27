@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.annotator.annotateInterfaceElement
 import cappuccino.ide.intellij.plugin.exceptions.IndexNotReadyRuntimeException
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
@@ -32,15 +33,15 @@ class JsTypeDefAnnotator : Annotator {
         if (DumbService.getInstance(element.project).isDumb) {
             return
         }
-
+        val annotationWrapper = AnnotationHolderWrapper(annotationHolder)
         // Actually annotate items
         try {
             // Redirects elements to appropriate annotators
             when (element) {
-                is JsTypeDefKeyOfType -> annotateInvalidKeyOfUsage(element, annotationHolder)
-                is JsTypeDefValueOfKeyType -> annotateInvalidMapReturnType(element, annotationHolder)
-                is JsTypeDefProperty -> annotateProperty(element, annotationHolder)
-                is JsTypeDefInterfaceElement -> annotateInterfaceElement(element, annotationHolder)
+                is JsTypeDefKeyOfType -> annotateInvalidKeyOfUsage(element, annotationWrapper)
+                is JsTypeDefValueOfKeyType -> annotateInvalidMapReturnType(element, annotationWrapper)
+                is JsTypeDefProperty -> annotateProperty(element, annotationWrapper)
+                is JsTypeDefInterfaceElement -> annotateInterfaceElement(element, annotationWrapper)
             }
             // Additional pass to annotate elements needing semi-colons
             // Cannot be combines to earlier calls, as this annotation may need to run in parallel

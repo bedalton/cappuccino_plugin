@@ -1,13 +1,11 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
-import cappuccino.ide.intellij.plugin.annotator.newAnnotationBuilder
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.jstypedef.fixes.RemoveElementInPipedListFix
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefGenericTypeTypes
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid
 import cappuccino.ide.intellij.plugin.psi.utils.hasAnyParentOfType
-import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 
 /**
@@ -15,7 +13,7 @@ import com.intellij.psi.PsiElement
  */
 internal fun annotateInvalidVoidStatements(
         element: PsiElement,
-        annotationHolder: AnnotationHolder) {
+        annotationHolder: AnnotationHolderWrapper) {
     val hasNonType = element.hasAnyParentOfType(
             JsTypeDefNoVoid::class.java,
             JsTypeDefGenericTypeTypes::class.java
@@ -23,9 +21,7 @@ internal fun annotateInvalidVoidStatements(
     if (!hasNonType)
         return
     annotationHolder
-            .newAnnotationBuilder(HighlightSeverity.ERROR,
-                    JsTypeDefBundle.message("jstypedef.annotation.error.invalid-void.message")
-            )
+            .newErrorAnnotation(JsTypeDefBundle.message("jstypedef.annotation.error.invalid-void.message"))
             .range(element.textRange)
             .withFix(RemoveElementInPipedListFix(
                     element,

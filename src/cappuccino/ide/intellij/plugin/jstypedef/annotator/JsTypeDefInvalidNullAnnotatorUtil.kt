@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
-import cappuccino.ide.intellij.plugin.annotator.newAnnotationBuilder
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.jstypedef.fixes.RemoveElementInPipedListFix
 import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefBundle
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.JsTypeDefNoVoid
@@ -14,12 +14,12 @@ import com.intellij.psi.PsiElement
  */
 internal fun annotateInvalidNullStatement (
             element: PsiElement,
-            annotationHolder: AnnotationHolder) {
+            annotationHolder: AnnotationHolderWrapper) {
     if (!element.hasParentOfType(JsTypeDefNoVoid::class.java))
         return
     val message = JsTypeDefBundle.message("jstypedef.annotation.error.invalid-null.message")
     annotationHolder
-            .newAnnotationBuilder(HighlightSeverity.ERROR, message)
+            .newErrorAnnotation(message)
             .range(element.textRange)
             .withFix(RemoveElementInPipedListFix(element, JsTypeDefBundle.message("jstypedef.annotation.error.invalid-null.quick-fix.remove-void.message")))
             .create()

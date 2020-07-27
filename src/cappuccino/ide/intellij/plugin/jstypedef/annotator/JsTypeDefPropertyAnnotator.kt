@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.jstypedef.annotator
 
-import cappuccino.ide.intellij.plugin.annotator.newAnnotationBuilder
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefInterfaceElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefProperty
@@ -19,7 +19,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
 
-internal fun annotateProperty(property: JsTypeDefProperty, annotationHolder: AnnotationHolder) {
+internal fun annotateProperty(property: JsTypeDefProperty, annotationHolder: AnnotationHolderWrapper) {
     val parentVariableDeclaration = property.parent as? JsTypeDefVariableDeclaration
     if (parentVariableDeclaration != null) {
         annotateVariableDec(property, parentVariableDeclaration, annotationHolder)
@@ -27,7 +27,7 @@ internal fun annotateProperty(property: JsTypeDefProperty, annotationHolder: Ann
 }
 
 @Suppress("UNUSED_PARAMETER")
-private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDeclaration: JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolder) {
+private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDeclaration: JsTypeDefVariableDeclaration, annotationHolder: AnnotationHolderWrapper) {
     val className = property.propertyNameString
     val body = property.interfaceBodyProperty ?: return
     val constructors = body.interfaceConstructorList
@@ -50,7 +50,7 @@ private fun annotateVariableDec(property: JsTypeDefProperty, parentVariableDecla
     val interfaceElement = interfaceElements.firstOrNull() ?: return
     val textRange = property.propertyName?.textRange ?: return
 
-    annotationHolder.newAnnotationBuilder(HighlightSeverity.WEAK_WARNING, "Variable declaration can be mapped to class")
+    annotationHolder.newWeakWarningAnnotation("Variable declaration can be mapped to class")
             .range(textRange)
             .withFix(JsTypeDefVariableToClassFix(interfaceElement = interfaceElement, property = property))
             .create()
