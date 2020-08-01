@@ -392,9 +392,10 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
     private fun addVariableNameCompletionElementsWithPriority(resultSet: CompletionResultSet, variables: List<ObjJVariableName>) {
+        val tag = createTag((now % 100000L).toInt())
         variables.forEach {
             ProgressManager.checkCanceled()
-            val type = inferQualifiedReferenceType(it.previousSiblings + it, createTag())?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
+            val type = inferQualifiedReferenceType(it.previousSiblings + it, tag)?.toClassListString()?.replace("(\\?\\s*\\||\\|\\s*\\?)".toRegex(), "")
             var lookupElement = LookupElementBuilder.create(it.text)
             if (type.isNotNullOrBlank())
                 lookupElement = lookupElement.withPresentableText("${it.text} : $type")
