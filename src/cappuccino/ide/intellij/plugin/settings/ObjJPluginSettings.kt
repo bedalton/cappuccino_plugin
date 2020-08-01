@@ -358,7 +358,7 @@ object ObjJPluginSettings {
 
     private const val INFERENCE_MAX_DEPTH_KEY = "objj.inference.INFERENCE_MAX_DEPTH"
     private const val INFERENCE_MAX_DEPTH_DEFAULT = 15
-    private const val INFERENCE_MINIMAL_DEPTH = 5;
+    private const val INFERENCE_MINIMAL_DEPTH = 5
     private val inferenceMaxDepthSetting = IntegerSetting(INFERENCE_MAX_DEPTH_KEY, INFERENCE_MAX_DEPTH_DEFAULT)
     val inferenceMaxDepth = inferenceMaxDepthSetting.value ?: INFERENCE_MAX_DEPTH_DEFAULT
 
