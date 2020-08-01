@@ -8,6 +8,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNam
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
@@ -43,9 +44,11 @@ internal fun internalInferQualifiedReferenceType(parts: List<ObjJQualifiedRefere
                 if (simpleType?.withoutAnyType().orEmpty().isNotEmpty())
                     return@getCachedInferredTypes simpleType
             }
-            if (i == parts.lastIndex && (part.parent is ObjJVariableDeclaration || part.parent.parent is ObjJVariableDeclaration)) {
-                val variableDeclarationExpr =
-                        (part.parent as? ObjJVariableDeclaration ?: part.parent.parent as ObjJVariableDeclaration).expr
+            if (i == parts.lastIndex && (part.parent is ObjJVariableDeclaration || part.parent?.parent is ObjJVariableDeclaration || part.parent?.parent?.parent is ObjJVariableDeclaration)) {
+                val variableDeclarationExpr = (part.parent as? ObjJVariableDeclaration
+                                ?: part.parent.parent as? ObjJVariableDeclaration
+                                ?: part.parent.parent.parent as ObjJVariableDeclaration
+                        ).expr
                                 ?: return@getCachedInferredTypes null
                 inferExpressionType(variableDeclarationExpr, tag)
             } else if (i == 0) {
