@@ -105,11 +105,7 @@ class ObjJFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, ObjJL
         if (!recursive) {
             return children
         }
-        val blockChildren = getChildrenOfType(ObjJBlock::class.java).flatMap {
-            it.getBlockChildrenOfType(aClass, true)
-        }
-        children.addAll(blockChildren)
-        return children
+        return PsiTreeUtil.collectElementsOfType(containingFile, aClass).toList()
     }
 
     override fun getStub(): ObjJFileStub? {

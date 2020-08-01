@@ -11,6 +11,7 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
 
 /**
@@ -107,16 +108,12 @@ fun <T : PsiElement> PsiElement.getParentBlockChildrenOfType(aClass: Class<T>, r
         @Suppress("UNCHECKED_CAST")
         return getParentBlockVariableNameChildren(recursive) as List<T>
     }
-
-    var block: ObjJBlock? = getParentOfType(ObjJBlock::class.java) ?: return (this.containingFile as? ObjJFile)?.getFileChildrenOfType(aClass, recursive) ?: return listOf()
-    val out = ArrayList<T>()
-    do {
-        if (block != null) {
-            out.addAll(block.getChildrenOfType(aClass))
-            block = block.getParentOfType(ObjJBlock::class.java)
-        }
-    } while (block != null && recursive)
-    return out
+    val block: ObjJBlock? = getParentOfType(ObjJBlock::class.java)
+            ?: return (this.containingFile as? ObjJFile)?.getFileChildrenOfType(aClass, recursive) ?: return listOf()
+    if (recursive) {
+        return PsiTreeUtil.collectElementsOfType(block, aClass).toList()
+    }
+    return block?.getChildrenOfType(aClass)?.toList().orEmpty()
 }
 
 private fun PsiElement.getParentBlockVariableNameChildren(recursive: Boolean): List<ObjJVariableName> {
