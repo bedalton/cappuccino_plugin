@@ -137,7 +137,7 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
     fun create() {
         val range = data.range
                 ?: throw Exception("Cannot create annotation without range")
-        val annotation = annotationHolder.createAnnotation(data.severity, data.range, data.message)
+        val annotation = annotationHolder.createAnnotation(data.severity, range, data.message)
         data.fixBuilderData.forEach {val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
             val union:FixUnion? = if (quickFix != null && intentionAction != null)
@@ -155,12 +155,12 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
                 } else if (intentionAction != null){
                     if (it.range != null) {
                         if (it.key != null) {
-                            annotation.registerFix(intentionAction!!, it.range, it.key)
+                            annotation.registerFix(intentionAction, it.range, it.key)
                         } else {
-                            annotation.registerFix(intentionAction!!, it.range)
+                            annotation.registerFix(intentionAction, it.range)
                         }
                     } else {
-                        annotation.registerFix(intentionAction!!)
+                        annotation.registerFix(intentionAction)
                     }
                 } else {
                     throw Exception("Cannot create fix without any fixes")
