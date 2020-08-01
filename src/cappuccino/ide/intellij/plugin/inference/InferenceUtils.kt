@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.lang.JsTypeDefFile
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.ObjJBlockElement
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.settings.ObjJPluginSettings
 import cappuccino.ide.intellij.plugin.utils.now
@@ -57,7 +58,6 @@ private object StatusFileChangeListener : PsiTreeAnyChangeAbstractAdapter() {
     override fun onChange(file: PsiFile?) {
         if (file !is ObjJFile && file !is JsTypeDefFile)
             return
-        //LOGGER.info("FILE CHANGED")
         internalTimeSinceLastFileChange = now
     }
 
@@ -88,11 +88,11 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
         else
             it
     } ?: this.parent?.parent?.parent ?: this.parent?.parent ?: this.parent ?: this
-    val rangeStart = this.parent.textRange.startOffset;
+    val rangeStart = textParent.textRange?.startOffset ?: this.parent.textRange.startOffset
     val rangeEnd = this.textRange.endOffset
     // Prevent being affected by self and later elements
     val thisText = if (rangeStart != rangeEnd) {
-        val containingFile = textParent.containingFile ?: textParent.originalElement?.containingFile
+        val containingFile = containingFile ?: originalElement?.containingFile
         containingFile?.text?.substring(rangeStart, rangeEnd) ?: textParent.text
     } else {
         textParent.text
@@ -106,7 +106,7 @@ internal fun <T : PsiElement> T.getCachedInferredTypes(tag: Tag?, getIfNull: (()
             return inferred
     }
     val tagged = tag != null && tagged(tag, false)
-    if (inferredVersionNumber == INFERRED_TYPES_VERSION && (tagged || textIsUnchanged)) {
+    if (inferredVersionNumber == INFERRED_TYPES_VERSION && tagged && textIsUnchanged) {
         val inferredTypes = this.getUserData(INFERRED_TYPES_USER_DATA_KEY)
         if (inferredTypes != null || tagged) {
             return inferredTypes
@@ -144,8 +144,8 @@ class Tag(val tag: Long, var depth: Int = ObjJPluginSettings.inferenceMaxDepth) 
     }
 }
 
-internal fun createTag(): Tag {
-    return Tag(StatusFileChangeListener.nextTag)
+internal fun createTag(offset:Int = 0): Tag {
+    return Tag(StatusFileChangeListener.nextTag + offset)
 }
 
 /**
@@ -196,7 +196,7 @@ internal data class TagList(var tags: Set<Tag> = setOf(), var completed: Mutable
             return false
         val newTags = tags.toMutableSet()
         if (tags.size > TAG_LIST_LENGTH)
-            newTags.remove(oldestTag)
+            oldestTag?.let { newTags.remove(it) }
         newTags.add(tag)
         tags = newTags
         return false
@@ -210,8 +210,8 @@ internal data class TagList(var tags: Set<Tag> = setOf(), var completed: Mutable
         completed.add(tag)
     }
 
-    private val oldestTag: Tag
-        get() = tags.minBy { it.tag } ?: createTag()
+    private val oldestTag: Tag?
+        get() = tags.minBy { it.tag }
 }
 
 private val PsiElement.isTextUnchanged: Boolean
