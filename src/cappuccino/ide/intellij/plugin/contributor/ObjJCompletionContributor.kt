@@ -5,6 +5,7 @@ import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
+import cappuccino.ide.intellij.plugin.psi.utils.previous
 import cappuccino.ide.intellij.plugin.utils.EditorUtil
 import com.intellij.codeInsight.completion.*
 import com.intellij.patterns.PlatformPatterns
@@ -29,7 +30,8 @@ class ObjJCompletionContributor : CompletionContributor() {
                 !ObjJVariablePsiUtil.isNewVariableDec(position) &&
                 !(position.text.contains("{") || position.text.contains("}")) &&
                 !position.text.matches("^[0-9]".toRegex()) &&
-                !position.text.contains(";") && position.prevSibling?.text?.endsWith(";")  == false
+                !position.text.contains(";") && position.prevSibling?.text?.endsWith(";")  == false &&
+                position.previous?.text.isNullOrEmpty()
     }
 
     override fun handleAutoCompletionPossibility(context: AutoCompletionContext): AutoCompletionDecision? {
