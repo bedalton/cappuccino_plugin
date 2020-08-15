@@ -54,7 +54,6 @@ fun getSelectorsFromIncompleteMethodCall(psiElement: PsiElement, selectorParentM
     if (psiElement is ObjJSelector || psiElement.parent is ObjJSelector) {
         return selectors
     }
-    LOGGER.info("Getting selectors from element ${psiElement.elementType} with parent ${psiElement.parent?.elementType}")
     // If psi parent is a qualified method call,
     // find it's index in selector array for autocompletion
     selectorIndex = if (psiElement.parent is ObjJQualifiedMethodCallSelector) {

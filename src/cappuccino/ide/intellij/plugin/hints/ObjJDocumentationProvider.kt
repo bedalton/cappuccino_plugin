@@ -254,7 +254,6 @@ private fun ObjJVariableName.quickInfo(comment: CommentWrapper? = null): String?
             out.append(": ").append(propertyTypes)
         }
         if (classNames.isNotNullOrBlank()) {
-            LOGGER.info("Appending classnames: <${classNames}>")
             out.append(" in ").append(classNames)
         }
 

@@ -62,7 +62,6 @@ object ObjJFileUtil {
             if (file.extension == "jar") {
                 val jar = VfsUtil.findFileByIoFile(file, true)
                         ?: return null
-                LOGGER.info("Found jar index path")
                 return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
             }
             val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")

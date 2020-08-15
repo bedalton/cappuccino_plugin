@@ -125,7 +125,6 @@ internal fun inferVariableNameTypeAtIndexZero(variableName: ObjJVariableName, ta
 }
 
 private fun getThisType(variableName: ObjJVariableName) : InferenceResult? {
-    LOGGER.info("Checking type for variable 0 == 'this'")
     val parentFunction = variableName.getParentOfType(ObjJFunctionLiteral::class.java)
     val parentVariableDeclaration = parentFunction?.parent?.parent?.parent as? ObjJVariableDeclaration
     if (parentVariableDeclaration != null) {
@@ -153,8 +152,6 @@ private fun getThisType(variableName: ObjJVariableName) : InferenceResult? {
         if (staticClasses.isNotEmpty()) {
             return staticClasses.toInferenceResult()
         }
-    } else {
-        LOGGER.info ("Parent.Parent is not variable declaration. Parent: ${parentFunction?.parent.elementType}. Parent.Parent: ${parentFunction?.parent?.parent?.elementType}")
     }
     return null
 }
