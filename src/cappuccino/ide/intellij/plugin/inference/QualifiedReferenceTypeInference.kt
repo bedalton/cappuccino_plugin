@@ -8,12 +8,10 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNam
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariablePsiUtil
 import cappuccino.ide.intellij.plugin.psi.utils.docComment
 import cappuccino.ide.intellij.plugin.stubs.types.TYPES_DELIM
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 
 internal fun inferQualifiedReferenceType(parts: List<ObjJQualifiedReferenceComponent>, tag: Tag): InferenceResult? {
