@@ -1,7 +1,7 @@
 package cappuccino.ide.intellij.plugin.comments.psi
 
 import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentStubElementTypes
-import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJ_DOC_COMMENT_TAG_LINE
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ObjJ_DOC_COMMENT_TAG_LINE
 import com.intellij.psi.tree.IElementType
 
 object ObjJDocCommentElementTypeFactory {

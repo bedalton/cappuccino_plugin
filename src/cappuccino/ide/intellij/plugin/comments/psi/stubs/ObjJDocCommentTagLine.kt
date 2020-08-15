@@ -8,10 +8,11 @@ import cappuccino.ide.intellij.plugin.jstypedef.stubs.readInferenceResult
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.writeInferenceResult
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes
+import cappuccino.ide.intellij.plugin.stubs.types.ObjJStubTypes.ObjJ_DOC_COMMENT_TAG_LINE
 import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.stubs.*
 
-val ObjJ_DOC_COMMENT_TAG_LINE = ObjJDocCommentTagLineStubElementType("ObjJDocComment_TAG_LINE")
 
 interface ObjJDocCommentTagLineStub : StubElement<ObjJDocCommentTagLineImpl> {
     val tag:ObjJDocCommentKnownTag
