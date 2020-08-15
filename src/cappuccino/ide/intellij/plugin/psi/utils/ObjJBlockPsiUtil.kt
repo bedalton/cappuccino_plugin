@@ -7,6 +7,7 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.utils.Filter
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
+import cappuccino.ide.intellij.plugin.utils.orTrue
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Pair
@@ -20,7 +21,7 @@ import java.util.*
  *
  * @param aClass      class of items to filter by
  * @param recursive   whether to check child blocks for matching child elements
- * @param filter      element filter
+ * @param aFilter      element filter
  * @param returnFirst return first item as singleton list
  * @param <T>         type of child element to work on
  * @return list of items matching class type and filter if applicable.
@@ -29,64 +30,33 @@ fun <T : PsiElement> ObjJBlock?.getBlockChildrenOfType(
         aClass: Class<T>,
         recursive: Boolean,
         returnFirst: Boolean = false,
-        offset: Int = -1,
-        filter: Filter<T>? = null): List<T> {
+        startOffset:Int? = null,
+        endOffset: Int? = null,
+        aFilter: Filter<T>? = null): List<T> {
     if (this == null) {
         return emptyList()
     }
-    val out = ArrayList<T>()
 
-    var currentBlocks: MutableList<ObjJBlock> = ArrayList()
-    currentBlocks.add(this)
-    currentBlocks.addAll(getBlocksBlocks(this))
 
-    var tempElements: List<T>
-    do {
-        //ProgressManager.checkCanceled()
-        val nextBlocks = ArrayList<ObjJBlock>()
-        //Loop through current level of blocks
-        for (block in currentBlocks) {
-            if (offset >= 0 && block.textRange.startOffset >= offset) {
-                continue
-            }
-            //Get this blocks children of type
-            tempElements = this.getChildrenOfType(aClass)
-
-            //Filter/return/add children
-            if (filter != null) {
-                for (element in tempElements) {
-                    if (filter(element)) {
-                        if (returnFirst) {
-                            return listOf(element)
-                        }
-                        if (offset < 0 || element.textRange.startOffset < offset) {
-                            out.add(element)
-                        }
-                    }
-                }
-            } else if (returnFirst && tempElements.isNotEmpty()) {
-                for (element in tempElements) {
-                    if (offset < 0 || element.textRange.startOffset > offset) {
-                        return listOf(element)
-                    }
-                }
-            } else if (offset < 0) {
-                out.addAll(tempElements)
-            } else {
-                for (element in tempElements) {
-                    if (element.textRange.startOffset > offset) {
-                        out.add(element)
-                    }
-                }
-            }
-            if (!this.isEquivalentTo(block) && recursive) {
-                out.addAll(block.getBlockChildrenOfType(aClass, recursive,returnFirst,offset, filter))
-
-            }
+    val inRange = { child:PsiElement ->
+        (endOffset == null || child.textRange.startOffset < endOffset) && (startOffset == null || child.textRange.startOffset > startOffset)
+    }
+    val children = if (recursive)
+        PsiTreeUtil.collectElementsOfType(this, aClass).toList()
+    else
+        this.getChildrenOfType(aClass)
+    if (returnFirst) {
+        children.firstOrNull { child -> inRange(child) && aFilter?.let { filter -> filter(child)}.orTrue() }?.let {
+            return listOf(it)
         }
-        currentBlocks = nextBlocks
-    } while (currentBlocks.isNotEmpty())
-    return out
+    }
+    return if (aFilter != null) {
+        children.filter {
+            inRange(it) && aFilter(it)
+        }
+    } else {
+        children.filter(inRange)
+    }
 }
 
 /**

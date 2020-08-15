@@ -31,6 +31,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.PsiTreeUtil
 
 @Suppress("UNUSED_PARAMETER")
 object JsTypeDefPsiImplUtil {
@@ -311,12 +312,7 @@ object JsTypeDefPsiImplUtil {
         if (!recursive) {
             return moduleIn.moduleList
         }
-        val allModules = mutableListOf<JsTypeDefModule>()
-        val currentModules = moduleIn.getChildrenOfType(JsTypeDefModule::class.java)
-        for (module in currentModules) {
-            allModules.addAll(getAllSubModules(module))
-        }
-        return allModules
+        return PsiTreeUtil.collectElementsOfType(moduleIn, JsTypeDefModule::class.java).toList()
     }
 
     @JvmStatic
