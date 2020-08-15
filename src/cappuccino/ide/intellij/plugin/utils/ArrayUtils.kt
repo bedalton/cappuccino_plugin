@@ -118,3 +118,7 @@ fun <Key, Type> MutableMap<Key, MutableList<Type>>.put(key:Key, item:Type) {
 
 fun <T> Collection<T>?.isNotNullOrEmpty() : Boolean
     = this != null && this.isNotEmpty()
+
+fun <T> List<T>.subList(startIndex:Int) : List<T> {
+    return subList(startIndex, size)
+}
