@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cappuccino.intellij.plugin</id>
   <name>Objective-J</name>
-  <version>0.4.4</version>
+  <version>0.4.5</version>
   <vendor url="https://github.com/bedalton/cappuccino_plugin">Cappuccino Plugin GitHub Page</vendor>
   <description><![CDATA[
     <h1>Objective-J Language plugin</h1>
@@ -50,6 +50,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+    <h4>Version: 0.4.5</h4>
+    <h5>Fixed</h5>
+    <ul>
+      <li>Remove dependency on JavaFX</li>
+    </ul>
+    <h5>Added</h5>
+    <ul>
+      <li>Argument placeholders in method calls</li>
+    </ul>
     <h4>Version: 0.4.4</h4>
     <h5>Fixed</h5>
     <ul>

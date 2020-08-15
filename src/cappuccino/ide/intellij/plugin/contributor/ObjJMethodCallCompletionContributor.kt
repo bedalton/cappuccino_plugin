@@ -24,6 +24,7 @@ import cappuccino.ide.intellij.plugin.stubs.stucts.getMethodStructs
 import cappuccino.ide.intellij.plugin.stubs.stucts.toSelectorStruct
 import cappuccino.ide.intellij.plugin.utils.ObjJInheritanceUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
+import cappuccino.ide.intellij.plugin.utils.subList
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -259,18 +260,19 @@ object ObjJMethodCallCompletionContributor {
                 continue
             }
             //Get the selector at index, or continue loop
-            val selector: ObjJSelectorStruct = getSelectorAtIndex(methodHeader, selectorIndex) ?: continue
+            val selectors = methodHeader.selectorStructs.subList(selectorIndex)
             //Determine the priority
             val priority: Double = GENERIC_METHOD_SUGGESTION_PRIORITY
-            out.add(SelectorCompletionPriorityTuple(selector, priority))
+            out.add(SelectorCompletionPriorityTuple(selectors, priority))
         }
         out.sortByDescending { it.priority }
         out.forEach {
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
-                    selectorStruct = it.selector,
+                    project = project,
+                    selectorStructs = it.selectors,
                     priority = it.priority,
-                    addSpaceAfterColon = true)
+                    icon = null)
         }
         return out.isNotEmpty()
     }
@@ -312,11 +314,11 @@ object ObjJMethodCallCompletionContributor {
                         return@forEach
                     if (it.methodScope != targetScope)
                         return@forEach
-                    val selectorStruct = it.selectors.getOrNull(selectorIndex) ?: return@forEach
+                    val selectorStruct = it.selectors.subList(selectorIndex).ifEmpty { null } ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
                             resultSet = resultSet,
-                            selectorStruct = selectorStruct,
-                            addSpaceAfterColon = true,
+                            project = project,
+                            selectorStructs = selectorStruct,
                             icon = ObjJIcons.METHOD_ICON,
                             priority = if (strictTypes == null || it.containingClassName in strictTypes) {
                                 TARGETTED_METHOD_SUGGESTION_PRIORITY
@@ -361,16 +363,17 @@ object ObjJMethodCallCompletionContributor {
             if (targetScope != it.methodScope)
                 return@forEach
             didAdd = true
-            val selector = it.selectorStructs.getOrNull(0) ?: return@forEach
+            val selectors = it.selectorStructs.ifEmpty { null } ?: return@forEach
             if (it.isPrivate && !usePrivate)
                 return@forEach
             if (it.methodScope != targetScope)
                 return@forEach
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
-                    selectorStruct = selector,
-                    priority = TARGETTED_METHOD_SUGGESTION_PRIORITY,
-                    addSpaceAfterColon = true)
+                    project = project,
+                    selectorStructs = selectors,
+                    priority = TARGETTED_METHOD_SUGGESTION_PRIORITY
+            )
         }
         return didAdd
     }
@@ -486,13 +489,13 @@ object ObjJMethodCallCompletionContributor {
         val priority: Double = getPriority(possibleContainingClassNames, className, TARGETTED_METHOD_SUGGESTION_PRIORITY, GENERIC_METHOD_SUGGESTION_PRIORITY)
 
         instanceVariable.getMethodStructs().forEach {
-            val selector = it.selectors.getOrNull(0) ?: return@forEach
+            val selector = it.selectors.ifEmpty { null } ?: return@forEach
             ObjJSelectorLookupUtil.addSelectorLookupElement(
                     resultSet = result,
-                    selectorStruct = selector,
+                    project = instanceVariable.project,
+                    selectorStructs = selector,
                     priority = priority,
-                    icon = ObjJIcons.ACCESSOR_ICON,
-                    addSpaceAfterColon = false
+                    icon = ObjJIcons.ACCESSOR_ICON
             )
         }
     }
@@ -516,16 +519,17 @@ object ObjJMethodCallCompletionContributor {
         var didAddOne = false
         ObjJUnifiedMethodIndex.instance
                 .getByPatternFlat(selectorString.toIndexPatternString(), project)
-                .mapNotNull { it.selectorStructs.getOrNull(selectorIndex) }
+                .mapNotNull { try {it.selectorStructs.subList(selectorIndex).ifEmpty { null } } catch (e:Exception) { null } }
                 .toSet()
                 .forEach {
                     if (!didAddOne)
                         didAddOne = true
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
                             resultSet = resultSet,
-                            selectorStruct = it,
-                            priority = TARGETTED_METHOD_SUGGESTION_PRIORITY,
-                            addSpaceAfterColon = false)
+                            project = project,
+                            selectorStructs = it,
+                            priority = TARGETTED_METHOD_SUGGESTION_PRIORITY
+                    )
                 }
         if (!didAddOne && useAllSelectors) {
             addSelectorLiteralCompletions(resultSet, psiElement, selectorLiteral, false)
@@ -566,7 +570,7 @@ object ObjJMethodCallCompletionContributor {
         }
     }
 
-    internal data class SelectorCompletionPriorityTuple(val selector: ObjJSelectorStruct, val priority: Double)
+    internal data class SelectorCompletionPriorityTuple(val selectors: List<ObjJSelectorStruct>, val priority: Double)
 
 }
 
