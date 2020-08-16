@@ -104,6 +104,8 @@ object ObjJMethodCallCompletionContributor {
         }
         val selectorIndex: Int = getSelectorIndex(selectors, psiElement)
 
+        if (selectors.lastIndex < selectorIndex)
+            return
         // Get all selectors possibly checked for
         addRespondsToSelectors(result, elementsParentMethodCall, selectorIndex)
 
@@ -313,6 +315,8 @@ object ObjJMethodCallCompletionContributor {
                     if (it.isPrivate && !usePrivate)
                         return@forEach
                     if (it.methodScope != targetScope)
+                        return@forEach
+                    if (selectorString == it.selectorString)
                         return@forEach
                     val selectorStruct = it.selectors.subList(selectorIndex).ifEmpty { null } ?: return@forEach
                     ObjJSelectorLookupUtil.addSelectorLookupElement(
