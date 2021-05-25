@@ -5,7 +5,7 @@ import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReferencePrime
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 import com.intellij.psi.PsiNamedElement
 
-interface ObjJQualifiedReferenceComponent : ObjJUniversalPsiElement, ObjJCompositeElement {
+interface ObjJQualifiedReferenceComponent : ObjJUniversalPsiElement {
     val indexInQualifiedReference:Int
 }
 
