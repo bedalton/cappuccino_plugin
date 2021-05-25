@@ -1,7 +1,6 @@
 package cappuccino.ide.intellij.plugin.comments.psi.stubs
 
 import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
-import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentOldTagLineImpl
 import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentTagLineImpl
 import cappuccino.ide.intellij.plugin.inference.INFERRED_ANY_TYPE
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
@@ -15,29 +14,29 @@ import cappuccino.ide.intellij.plugin.utils.orElse
 import com.intellij.psi.stubs.*
 
 
-interface ObjJDocCommentOldTagLineStub : StubElement<ObjJDocCommentOldTagLineImpl> {
+interface ObjJDocCommentTagLineStub : StubElement<ObjJDocCommentTagLineImpl> {
     val tag:ObjJDocCommentKnownTag
     val parameterName:String?
     val types:InferenceResult
     val commentText:String?
 }
 
-class ObjJDocCommentOldTagLineStubImpl(
+class ObjJDocCommentTagLineStubImpl(
         parent:StubElement<*>,
         override val tag:ObjJDocCommentKnownTag,
         override val parameterName:String?,
         override val types:InferenceResult = INFERRED_ANY_TYPE,
         override val commentText:String?
-): StubBase<ObjJDocCommentOldTagLineImpl>(parent, ObjJ_DOC_COMMENT_TAG_LINE), ObjJDocCommentOldTagLineStub;
+): StubBase<ObjJDocCommentTagLineImpl>(parent, ObjJ_DOC_COMMENT_TAG_LINE), ObjJDocCommentTagLineStub;
 
-class ObjJDocCommentOldTagLineStubElementType(debugName:String)
-    : IStubElementType<ObjJDocCommentOldTagLineStub, ObjJDocCommentOldTagLineImpl>(debugName, ObjJLanguage.instance)
+class ObjJDocCommentTagLineStubElementType(debugName:String)
+    : IStubElementType<ObjJDocCommentTagLineStub, ObjJDocCommentTagLineImpl>(debugName, ObjJLanguage.instance)
 {
-    override fun createPsi(stub: ObjJDocCommentOldTagLineStub): ObjJDocCommentOldTagLineImpl {
-        return ObjJDocCommentOldTagLineImpl(stub, this);
+    override fun createPsi(stub: ObjJDocCommentTagLineStub): ObjJDocCommentTagLineImpl {
+        return ObjJDocCommentTagLineImpl(stub, this);
     }
 
-    override fun serialize(stub: ObjJDocCommentOldTagLineStub, stream: StubOutputStream) {
+    override fun serialize(stub: ObjJDocCommentTagLineStub, stream: StubOutputStream) {
         stream.writeInt(ObjJDocCommentKnownTag.PARAM.ordinal)
         stream.writeName(stub.parameterName)
         val types = if (stub.types == INFERRED_ANY_TYPE) null else stub.types
@@ -45,7 +44,7 @@ class ObjJDocCommentOldTagLineStubElementType(debugName:String)
         stream.writeUTFFast(stub.commentText ?: "")
     }
 
-    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJDocCommentOldTagLineStub {
+    override fun deserialize(stream: StubInputStream, parent: StubElement<*>): ObjJDocCommentTagLineStub {
         val tagOrdinal = stream.readInt();
         val tagType = ObjJDocCommentKnownTag
                 .values()
@@ -56,7 +55,7 @@ class ObjJDocCommentOldTagLineStubElementType(debugName:String)
         val parameterName = stream.readNameAsString();
         val types = stream.readInferenceResult() ?: INFERRED_ANY_TYPE
         val commentText = stream.readUTFFast()
-        return ObjJDocCommentOldTagLineStubImpl(
+        return ObjJDocCommentTagLineStubImpl(
                 parent = parent,
                 tag = tagType,
                 types = types,
@@ -65,12 +64,12 @@ class ObjJDocCommentOldTagLineStubElementType(debugName:String)
         )
     }
 
-    override fun createStub(element: ObjJDocCommentOldTagLineImpl, parent: StubElement<*>): ObjJDocCommentOldTagLineStub {
+    override fun createStub(element: ObjJDocCommentTagLineImpl, parent: StubElement<*>): ObjJDocCommentTagLineStub {
         val tagType = element.tag ?: ObjJDocCommentKnownTag.UNKNOWN
         val types = element.types ?: INFERRED_ANY_TYPE
-        val parameterName = element.parameterNameString
+        val parameterName = element.parameterName
         val text = element.commentText
-        return ObjJDocCommentOldTagLineStubImpl(
+        return ObjJDocCommentTagLineStubImpl(
                 parent = parent,
                 tag = tagType,
                 types = types,
@@ -83,7 +82,7 @@ class ObjJDocCommentOldTagLineStubElementType(debugName:String)
         return "objj." + toString()
     }
 
-    override fun indexStub(stub: ObjJDocCommentOldTagLineStub, indexSink: IndexSink) {
+    override fun indexStub(stub: ObjJDocCommentTagLineStub, indexSink: IndexSink) {
     }
 
 }

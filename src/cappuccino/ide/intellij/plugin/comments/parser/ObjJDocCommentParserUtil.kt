@@ -10,6 +10,8 @@ import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceCompo
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil
 import cappuccino.ide.intellij.plugin.references.ObjJDocCommentNameElementReference
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
+import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType
+import cappuccino.ide.intellij.plugin.stubs.interfaces.QualifiedReferenceStubComponents
 import cappuccino.ide.intellij.plugin.stubs.types.toStubParts
 import com.intellij.psi.PsiElement
 
@@ -54,12 +56,29 @@ object ObjJDocCommentParserUtil {
 
     @JvmStatic
     fun getQualifiedNamePath(qualifiedReference:ObjJDocCommentQualifiedName) : List<ObjJQualifiedReferenceComponentPart> {
-        return qualifiedReference.toStubParts()
+        return qualifiedReference.qualifiedNameComponentList
+            .flatMap {
+                if (it.openBracket != null) {
+                    listOf(
+                        ObjJQualifiedReferenceComponentPart(it.text, ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME),
+                        ObjJQualifiedReferenceComponentPart("[]", ObjJQualifiedReferenceComponentPartType.ARRAY_COMPONENT)
+                    )
+                } else
+                    listOf(
+                        ObjJQualifiedReferenceComponentPart(it.text, ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME)
+                    )
+
+            }
     }
 
     @JvmStatic
-    fun getReference(namedElement:ObjJQualifiedReferenceComponent) : ObjJDocCommentNameElementReference {
+    fun getReference(namedElement:ObjJDocCommentQualifiedNameComponent) : ObjJDocCommentNameElementReference {
         return ObjJDocCommentNameElementReference(namedElement)
+    }
+
+    @JvmStatic
+    fun isArrayComponent(namedElement:ObjJDocCommentQualifiedNameComponent,) : Boolean {
+        return namedElement.openBracket != null
     }
 
     @JvmStatic
@@ -68,7 +87,7 @@ object ObjJDocCommentParserUtil {
                 .mapNotNull {
                     val parameterName = it.parameterName
                             ?: return@mapNotNull null
-                    val text = it.textLine?.text.orEmpty()
+                    val text = it.textElement?.text.orEmpty()
                     ObjJDocCommentTagLineStruct(it.tag ?: ObjJDocCommentKnownTag.UNKNOWN, parameterName, it.types, text)
                 }
     }
@@ -119,38 +138,98 @@ object ObjJDocCommentParserUtil {
         return ObjJDocCommentKnownTag.findByTagName(tagName)
     }
 
+
+    @JvmStatic
+    fun getTag(tagLine: ObjJDocCommentOldTagLine): ObjJDocCommentKnownTag? {
+        val tagName = tagLine.tagName.text
+        return ObjJDocCommentKnownTag.findByTagName(tagName)
+    }
+
     @JvmStatic
     fun getTypes(tagLine: ObjJDocCommentTagLine): InferenceResult? {
-        return tagLine.stub?.types ?: tagLine.typesList
-                .qualifiedNameList
-                .mapNotNull {
+        return tagLine.stub?.types ?: tagLine.typeList
+                .ifEmpty { null }
+                ?.mapNotNull {
                     JsTypeListType.JsTypeListBasicType(it.text)
                 }
-                .toSet().let {
+                ?.toSet()?.let {
                     InferenceResult(types = it)
                 }
     }
 
     @JvmStatic
-    fun getParameterNameElement(tagLine: ObjJDocCommentTagLine): ObjJDocCommentElement? {
-        return tagLine.parameterNameElementElement ?:
-        if (tagLine.typesList.qualifiedNameList.size == 1)
-            tagLine.typesList.qualifiedNameList.lastOrNull()
+    fun getTypes(tagLine: ObjJDocCommentOldTagLine): InferenceResult? {
+        return tagLine.stub?.types ?: tagLine.typeList
+            .ifEmpty { null }
+            ?.mapNotNull {
+                JsTypeListType.JsTypeListBasicType(it.text)
+            }
+            ?.toSet()?.let {
+                InferenceResult(types = it)
+            }
+    }
+
+    @JvmStatic
+    fun getParameterNameElement(tagLine: ObjJDocCommentOldTagLine): ObjJDocCommentElement? {
+        return tagLine.parameterName ?:
+        if (tagLine.oldTypesList.qualifiedNameList.size == 1)
+            tagLine.oldTypesList.qualifiedNameList.lastOrNull()
         else null
     }
 
     @JvmStatic
-    fun getParameterName(tagLine: ObjJDocCommentTagLine) : String? {
+    fun defaultValue(element:ObjJDocCommentDefaultValue) : String? {
+        return element.textElement?.text
+    }
+
+    @JvmStatic
+    fun getParameterNameString(tagLine: ObjJDocCommentTagLine) : String? {
+        return tagLine.stub?.parameterName ?: tagLine.qualifiedName?.text ?: tagLine.optionalParameter?.qualifiedName?.text
+    }
+
+
+    @JvmStatic
+    fun getParameterNameString(tagLine: ObjJDocCommentOldTagLine) : String? {
         return tagLine.stub?.parameterName ?: tagLine.parameterNameElement?.text
     }
 
     @JvmStatic
+    fun getTagNameString(tagLine: ObjJDocCommentTagLine) : String? {
+        return (tagLine.stub?.tag?: tagLine.tag)?.tagName
+    }
+
+
+    @JvmStatic
+    fun getTagNameString(tagLine: ObjJDocCommentOldTagLine) : String? {
+        return (tagLine.stub?.tag?: tagLine.tag)?.tagName
+    }
+
+    @JvmStatic
     fun getCommentText(tagLine:ObjJDocCommentTagLine) : String? {
-        return tagLine.stub?.commentText ?: tagLine.textLine?.text
+        return tagLine.stub?.commentText ?: tagLine.textElement?.text
+    }
+
+    @JvmStatic
+    fun getCommentText(tagLine:ObjJDocCommentOldTagLine) : String? {
+        return tagLine.stub?.commentText ?: tagLine.textElement?.text
     }
 
     @JvmStatic
     fun getTextLinesAsStrings(comment:ObjJDocCommentComment) : List<String> {
         return comment.stub?.textLines ?: comment.textLineList.mapNotNull { it.text }
     }
+
+    @JvmStatic
+    fun parseJsClass(comment:ObjJDocCommentComment) {
+        val name = comment
+        val properties = comment
+    }
+
+    @JvmStatic
+    fun buildObjectType(comment:ObjJDocCommentComment) {
+        val params = comment.tagLineList.filter {
+            it.tag == ObjJDocCommentKnownTag.PARAM
+        }
+    }
+
 }

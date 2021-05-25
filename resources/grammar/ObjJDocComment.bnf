@@ -10,20 +10,31 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="cappuccino.ide.intellij.plugin.comments.psi.api"
 	psiImplPackage="cappuccino.ide.intellij.plugin.comments.psi.impl"
-	elementTypeFactory("comment|tagLine")="cappuccino.ide.intellij.plugin.comments.psi.ObjJDocCommentElementTypeFactory.factory"
+	elementTypeFactory("comment|tagLine|oldTagLine")="cappuccino.ide.intellij.plugin.comments.psi.ObjJDocCommentElementTypeFactory.factory"
 	psiImplUtilClass="cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentParserUtil"
+	generateTokenAccessors=true
 	name(".*")="comment"
 	//Tokens
 	tokens = [
 		space = 							'regexp:\s+'
-		START =								"regexp:/[*][*!]*"
-		END =								'regexp:[*]+/'
-		LEADING_ASTERISK =					'regexp:[*]+'
-		TAG_NAME =							'regexp:@[a-zA-Z]+'
-		TAG_VALUE_DELIMITER =				'regexp:[|,]'
-		DOT =								'.'
+		OPEN_BRACE =						'{';
+		CLOSE_BRACE =						'}';
+		OPEN_PAREN =						'(';
+		CLOSE_PAREN = 						')';
+		OPEN_BRACKET =						'[';
+		CLOSE_BRACKET = 					']';
+		DASH = 								'-';
+		EQUALS = 							'=';
+		ELLIPSES_LITERAL = 					'...';
+		AS_LITERAL = 						'regexp:[aA][sS]';
+		START =								"regexp:/[*][*!]*";
+		END =								'regexp:[*]+/';
+		ASTERISK =							'*';
+		TAG_NAME =							'regexp:@[a-zA-Z]+';
+		TAG_VALUE_DELIMITER =				'regexp:[|,]';
+		DOT =								'.';
 		ID = 								'regexp:[_a-zA-Z$][a-zA-Z0-9_]*';
-		TEXT_BODY =							'regexp:[^ \n$]+';
+		TEXT_BODY =							'regexp:[-][^ \n$]+';
 	]
 }
 
@@ -56,18 +67,24 @@ comment
 
 private commentElement
 	::= commentLine
-	|	LEADING_ASTERISK
+	|	ASTERISK
 	;
 
 private commentLine
 	::= tagLine endOfLine?
 	|	textLine endOfLine?
 	|	emptyTagLine endOfLine?
+	|	oldTagLine
+	//|	commentSoup
 	| 	endOfLine
 	;
 
 tagLine
-	::= tagNameElement typesList parameterName? textLine?
+	::= tagNameElement typesList qualifiedName ('-'? textElement)?
+	|	tagNameElement typesList optionalParameter ('-'? textElement)?
+	|	tagNameElement qualifiedName ('-' textElement)?
+	|	tagNameElement typesList textElement?
+	|	tagNameElement qualifiedName AS_LITERAL qualifiedName
 	{
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub"
@@ -75,15 +92,57 @@ tagLine
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub>"
 		]
-		pin = 2;
+		pin(".*") = 2;
 		methods = [
 			getTag
 			getTypes
-			getParameterName
-			parameterNameElementElement="parameterName"
+			getParameterNameString
 			getCommentText
 			tagName = "tagNameElement"
+			borrowedThat = "/qualifiedName/[0]"
+			borrowedAs = "/qualifiedName/[1]"
+			getTagNameString
+		]
+	}
+	;
+
+oldTagLine
+	::= tagNameElement oldTypesList parameterName? textElement?
+	{
+		pin=2
+		methods = [
 			getParameterNameElement
+			getParameterNameString
+			getTag
+			getTypes
+			getCommentText
+			tagName = "tagNameElement"
+			getTagNameString
+			getParameterNameElement
+		]
+
+		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
+		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentOldTagLineStub"
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentOldTagLineStub>"
+		]
+	}
+	;
+
+optionalParameter
+	::= '[' qualifiedName defaultValue? ']'
+	{
+		pin=1
+	}
+	;
+
+defaultValue
+	::= '=' textElement
+	{
+		pin=1
+		methods = [
+			defaultValue
 		]
 	}
 	;
@@ -102,8 +161,27 @@ tagNameElement
 	::= TAG_NAME
 	;
 
-typesList
+private typesList
+	::= '{' '(' (type TAG_VALUE_DELIMITER)* type ')' '}'
+	|	'{' type '}'
+	{
+		pin(".*")=1
+	}
+	;
+
+oldTypesList
 	::= (qualifiedName TAG_VALUE_DELIMITER)* qualifiedName
+	;
+
+private ellipses
+	::= ELLIPSES_LITERAL
+	;
+
+type
+	::= ellipses? qualifiedName EQUALS?
+	{
+		pin=2
+	}
 	;
 
 qualifiedName
@@ -121,8 +199,9 @@ qualifiedName
 	;
 
 qualifiedNameComponent
-	::= ID
+	::= id ('[' ']')?
 	{
+		pin=1
 		implements = [
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
@@ -133,16 +212,17 @@ qualifiedNameComponent
 			setName
 			getIndexInQualifiedReference
 			getReference
+			isArrayComponent
 		]
 	}
 	;
 
 textLine
-	::= !(TAG_NAME) (TEXT_BODY|ID)+
+	::= !(TAG_NAME) (comment_element)+
 	;
 
 parameterName
-	::= ID
+	::= id
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
@@ -156,6 +236,33 @@ parameterName
 			getReference
 		]
 	}
+	;
+
+private id
+	::= ID
+	|	AS_LITERAL
+	;
+
+textElement
+	::= comment_element+
+	;
+
+private comment_element
+	::= TAG_NAME
+	|	TAG_VALUE_DELIMITER
+	|	DOT
+	|	DASH
+	|	OPEN_BRACE
+	|	CLOSE_BRACE
+	|	ASTERISK
+	|	OPEN_BRACKET
+	|	CLOSE_BRACKET
+	|	TEXT_BODY
+	|	ID
+	|	EQUALS
+	|	CLOSE_PAREN
+	|	OPEN_PAREN
+	|	AS_LITERAL
 	;
 
 private endOfLine

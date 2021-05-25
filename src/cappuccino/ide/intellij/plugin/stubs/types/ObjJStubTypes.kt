@@ -1,5 +1,6 @@
 package cappuccino.ide.intellij.plugin.stubs.types
 
+import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentOldTagLineStubElementType
 import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStubElementType
 
 
@@ -8,6 +9,7 @@ object ObjJStubTypes {
     val ACCESSOR_PROPERTY = ObjJAccessorPropertyStubType("ObjJ_ACCESSOR_PROPERTY")
     val CLASS_NAME = ObjJClassNameStubType("ObjJ_CLASS_NAME")
     val ObjJ_DOC_COMMENT_TAG_LINE = ObjJDocCommentTagLineStubElementType("ObjJDocComment_TAG_LINE")
+    val ObjJ_DOC_COMMENT_OLD_TAG_LINE = ObjJDocCommentOldTagLineStubElementType("ObjJDocComment_OLD_TAG_LINE")
     val FILE = ObjJFileStubType()
     val FUNCTION_DECLARATION = ObjJFunctionDeclarationStubType("ObjJ_FUNCTION_DECLARATION")
     val FUNCTION_LITERAL = ObjJFunctionLiteralStubType("ObjJ_FUNCTION_LITERAL")

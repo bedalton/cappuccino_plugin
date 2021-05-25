@@ -2,22 +2,36 @@ package cappuccino.ide.intellij.plugin.comments.parser
 
 import com.intellij.openapi.util.text.StringUtil
 
-enum class ObjJDocCommentKnownTag(val isReferenceRequired: Boolean) {
-    UNKNOWN(false),
-    AUTHOR(false),
-    THROWS(true),
-    DEPRECATED(false),
-    EXCEPTION(true),
-    PARAM(true),
-    RECEIVER(false),
-    RETURN(true),
-    SEE(true),
-    SINCE(false),
-    CONSTRUCTOR(false),
-    PROPERTY(true),
-    SAMPLE(true),
-    SUPPRESS(true),
-    VAR(true);
+enum class ObjJDocCommentKnownTag(val description:String, val isReferenceRequired: Boolean) {
+    UNKNOWN("unknown", false),
+    THROWS("throws", true),
+    DEPRECATED("deprecated",false),
+    EXCEPTION("exception", true),
+    PARAM("param", true),
+    CALLBACK("callback", true),
+    RECEIVER("receiver", false),
+    RETURN("return", true),
+    SEE("see", true),
+    SINCE("since", false),
+    CONSTRUCTOR("constructor", false),
+    PROPERTY("proprety", true),
+    SAMPLE("sample", true),
+    SUPPRESS("suppress", true),
+    VAR("var", true),
+    TYPEDEF("typedef", true),
+    TYPE("type", true),
+    ABSTRACT("This member must be implemented (or overridden) by the inheritor", true),
+    ACCESS("Specify the access level of this member (private, package-private, public, or protected)", true),
+    ALIAS("Treat a member as if it had a different name.", true),
+    ASYNC("Indicate that a function is asynchronous", false),
+    AUGMENTS("Indicate that a symbol inherits from, and adds to, a parent symbol", true),
+    AUTHOR("Identify the author of an item", false),
+    BORROWS("This object uses something from another object", false)
+    ;
+
+    val tagName:String by lazy {
+        name.toLowerCase()
+    }
 
 
     companion object {

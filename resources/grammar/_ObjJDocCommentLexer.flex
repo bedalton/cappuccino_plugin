@@ -16,8 +16,8 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 %{
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
 	private int identifierSteps = 0;
-
-
+	private boolean hasElementType = false;
+	private boolean inBeginning = false;
 		public _ObjJDocCommentLexer() {
 			this((java.io.Reader)null);
 		}
@@ -68,6 +68,19 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 		private boolean isLastToken() {
 			return zzMarkedPos == zzBuffer.length();
 		}
+
+		@Override
+		private void yybegin(int state) {
+		    if (state == CONTENTS) {
+		        identifierSteps = 0;
+				inBeginning = false;
+		        hasElementType = false;
+		    } else if (state == LINE_BEGINNING) {
+				inBeginning = false;
+		    }
+		    super.yybegin(state);
+		}
+
 %}
 
 %public
@@ -85,7 +98,7 @@ IDENTIFIER={ID_FIRST_CHAR}({ID_SECONDARY_CHAR}*)
 TAG_NAME={IDENTIFIER}
 TEXT=([^*\n]|"*"[^*/\n])+
 BLOCK_END=[*][/]
-%state LINE_BEGINNING TAG_BEGINNING TAG_TEXT_BEGINNING CONTENTS
+%state LINE_BEGINNING TAG_BEGINNING TAG_TEXT_BEGINNING CONTENTS DEFAULT_CONTENTS
 %%
 
 <YYINITIAL> {
@@ -108,7 +121,7 @@ BLOCK_END=[*][/]
 }
 <LINE_BEGINNING> {
 	"*" {
-		return ObjJDocComment_LEADING_ASTERISK;
+		return ObjJDocComment_ASTERISK;
 	}
 	"@"{TAG_NAME} {
 		ObjJDocCommentKnownTag tag = ObjJDocCommentKnownTag.Companion.findByTagName(zzBuffer.subSequence(zzStartRead, zzMarkedPos));
@@ -123,15 +136,24 @@ BLOCK_END=[*][/]
 }
 
 <TAG_BEGINNING> {
-    {IDENTIFIER} {
-          identifierSteps++;
-          if (identifierSteps > 2) {
-          	yypushback(yylength());
-          	yybegin(CONTENTS);
-			return ObjJDocComment_TEXT_BODY;
-          }
-          return ObjJDocComment_ID;
-	}
+	"{"				{ return ObjJDocComment_OPEN_BRACE; }
+	"}"				{ return ObjJDocComment_CLOSE_BRACE; }
+	"("				{ return ObjJDocComment_OPEN_PAREN; }
+	")"				{ return ObjJDocComment_CLOSE_PAREN; }
+	"["				{
+          inOptional = true;
+          return ObjJDocComment_OPEN_BRACKET;
+  	}
+	"]"				{ inOptional = false; return ObjJDocComment_CLOSE_BRACKET; }
+    "="				{
+        if (inBeginning)
+          	yybegin(DEFAULT_CONTENTS);
+	  	return ObjJDocComment_EQUALS;
+  	}
+  	"*"				{ return ObjJDocComment_ASTERISK; }
+	"as"			{ return ObjJDocComment_AS; }
+
+	"..."	{ return ObjJDocComment_ELLIPSES_LITERAL; }
 
 	"." {
           if (identifierSteps != 1)
@@ -144,6 +166,8 @@ BLOCK_END=[*][/]
           return ObjJDocComment_DOT;
       }
 
+	"-" 	{ yybegin(CONTENTS); return ObjJDocComment_DASH; }
+
     "|"|","	{
           if (identifierSteps != 1) {
 			yypushback(yylength());
@@ -153,6 +177,16 @@ BLOCK_END=[*][/]
           identifierSteps = 0;
 		return ObjJDocComment_TAG_VALUE_DELIMITER;
   }
+    {IDENTIFIER} {
+          identifierSteps++;
+          int steps = prevCharIs('{') ? 1 : (prevCharIs('}') ? 2 : 1);
+          if (identifierSteps > steps) {
+          	yypushback(yylength());
+          	yybegin(CONTENTS);
+			return ObjJDocComment_TEXT_BODY;
+          }
+          return ObjJDocComment_ID;
+	}
 
 	[^@\s.|,] {
 	  	yypushback(yylength());
@@ -165,5 +199,12 @@ BLOCK_END=[*][/]
 	  	yybegin(LINE_BEGINNING);
 	  	return ObjJDocComment_TEXT_BODY;
   	}
+}
+<DEFAULT_CONTENTS> {
+	[^\]]+ {
+	  	yybegin(LINE_BEGINNING);
+	  	return ObjJDocComment_TEXT_BODY;
+  	}
+
 }
 [^] { return ObjJDocComment_TEXT_BODY; }
