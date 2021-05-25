@@ -50,6 +50,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+    <h4>Version: 1.00.0</h4>
+    <h5>Breaking Changes</h5>
+    <ul>
+      <li>Remove dependency on JavaFX</li>
+    </ul>
     <h4>Version: 0.4.5</h4>
     <h5>Fixed</h5>
     <ul>

@@ -10,8 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/cappuccino/ide/intellij/plugin/annotator2020" />
       <excludeFolder url="file://$MODULE_DIR$/src/cappuccino/ide/intellij/plugin/extensions" />
     </content>
-    <orderEntry type="jdk" jdkName="IntelliJ IDEA Community Edition IC-193.6494.35" jdkType="IDEA JDK" />
+    <orderEntry type="jdk" jdkName="IntelliJ IDEA Community Edition IC-191.8026.42" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>
