@@ -41,6 +41,7 @@ object ObjJDocCommentParserUtil {
     @JvmStatic
     fun setName(oldName:ObjJDocCommentParameterName, newNameString:String) : PsiElement {
         val newName:ObjJDocCommentParameterName = ObjJElementFactory.createDocCommentParameterName(oldName.project, newNameString)
+            ?: return oldName
         return oldName.replace(newName)
     }
 
@@ -85,7 +86,7 @@ object ObjJDocCommentParserUtil {
     fun getTagLinesAsStructs(comment: ObjJDocCommentComment): List<ObjJDocCommentTagLineStruct> {
         return comment.stub?.tagLines ?: comment.tagLineList
                 .mapNotNull {
-                    val parameterName = it.parameterName
+                    val parameterName = it.parameterNameString
                             ?: return@mapNotNull null
                     val text = it.textElement?.text.orEmpty()
                     ObjJDocCommentTagLineStruct(it.tag ?: ObjJDocCommentKnownTag.UNKNOWN, parameterName, it.types, text)
@@ -159,7 +160,7 @@ object ObjJDocCommentParserUtil {
 
     @JvmStatic
     fun getTypes(tagLine: ObjJDocCommentOldTagLine): InferenceResult? {
-        return tagLine.stub?.types ?: tagLine.typeList
+        return tagLine.stub?.types ?: tagLine.oldTypesList.qualifiedNameList
             .ifEmpty { null }
             ?.mapNotNull {
                 JsTypeListType.JsTypeListBasicType(it.text)

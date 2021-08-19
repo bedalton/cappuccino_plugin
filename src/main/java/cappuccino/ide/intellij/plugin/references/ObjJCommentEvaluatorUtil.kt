@@ -50,7 +50,7 @@ object ObjJCommentEvaluatorUtil {
                 .sortedByDescending { it.textRange.startOffset }
                 .filterIsInstance<ObjJDocCommentParsableBlock>()
                 .flatMap {
-                    it.parameterTags.firstOrNull { it.parameterName == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
+                    it.parameterTags.firstOrNull { it.parameterNameString == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
                 }.firstOrNull()?.typeName ?: return null
                 /*
                 .flatMap { it.text.split("\n") }

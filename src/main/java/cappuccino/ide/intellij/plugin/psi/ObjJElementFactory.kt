@@ -220,13 +220,13 @@ object ObjJElementFactory {
 
     fun createDocCommentQualifiedReferenceComponent(project: Project, name:String) : ObjJDocCommentQualifiedNameComponent {
         val block = createFileFromText(project, "/* @var $name */").firstChild as ObjJDocCommentParsableBlock
-        return block.comment!!.tagLineList.first().typesList.qualifiedNameList.first().qualifiedNameComponentList.first()
+        return block.comment!!.oldTagLineList.first().oldTypesList.qualifiedNameList.first().qualifiedNameComponentList.first()
     }
 
 
-    fun createDocCommentParameterName(project: Project, name:String) : ObjJDocCommentParameterName {
+    fun createDocCommentParameterName(project: Project, name:String) : ObjJDocCommentParameterName? {
         val block = createFileFromText(project, "/* @var type $name */").firstChild as ObjJDocCommentParsableBlock
-        return block.comment!!.tagLineList.first().parameterNameElementElement!!
+        return block.comment!!.oldTagLineList.first().parameterName
     }
 
 }

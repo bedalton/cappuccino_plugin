@@ -67,11 +67,11 @@ class ObjJIndentProcessor(private val settings: CommonCodeStyleSettings, private
             return Indent.getNoneIndent()
         }
 
-        if ((elementType == ObjJDocComment_LEADING_ASTERISK || prevSibling == ObjJDocComment_LEADING_ASTERISK || elementType == ObjJDocComment_END))  {
+        if ((elementType == ObjJDocComment_ASTERISK || prevSibling == ObjJDocComment_ASTERISK || elementType == ObjJDocComment_END))  {
             return Indent.getSpaceIndent(1, false)
         }
 
-        if (parentType == ObjJDocComment_COMMENT && prevSiblingType != ObjJDocComment_LEADING_ASTERISK) {
+        if (parentType == ObjJDocComment_COMMENT && prevSiblingType != ObjJDocComment_ASTERISK) {
             return Indent.getNormalIndent()
         }
 

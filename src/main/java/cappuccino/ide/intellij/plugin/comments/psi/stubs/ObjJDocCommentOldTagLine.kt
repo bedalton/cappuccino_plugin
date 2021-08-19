@@ -67,7 +67,7 @@ class ObjJDocCommentTagLineStubElementType(debugName:String)
     override fun createStub(element: ObjJDocCommentTagLineImpl, parent: StubElement<*>): ObjJDocCommentTagLineStub {
         val tagType = element.tag ?: ObjJDocCommentKnownTag.UNKNOWN
         val types = element.types ?: INFERRED_ANY_TYPE
-        val parameterName = element.parameterName
+        val parameterName = element.parameterNameString
         val text = element.commentText
         return ObjJDocCommentTagLineStubImpl(
                 parent = parent,
