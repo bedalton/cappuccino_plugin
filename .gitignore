@@ -1,6 +1,7 @@
 **/.DS_Store
 /.idea
 /gen
+/build
 *.bak
 Plugin Description.html
 *.note.txt
@@ -76,3 +77,5 @@ fabric.properties
 Todo.txt
 
 /target
+
+.gradle
