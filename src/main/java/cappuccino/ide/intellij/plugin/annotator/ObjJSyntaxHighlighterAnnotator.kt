@@ -41,6 +41,11 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             is ObjJFunctionName -> if (psiElement.hasParentOfType(ObjJFunctionCall::class.java)) colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.FUNCTION_NAME)
             is ObjJFrameworkDescriptor -> colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.STRING)
             is ObjJPropertyName -> stripAnnotation(psiElement, annotationHolder)
+            is ObjJSelector -> if (psiElement.parent?.parent is ObjJMethodHeader)
+                colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.SELECTOR_DECLARATION)
+            else
+                colorize(psiElement, annotationHolder, ObjJSyntaxHighlighter.SELECTOR)
+
             else -> {
                 if (psiElement.isOrHasParentOfType(ObjJPropertyName::class.java)) {
                     stripAnnotation(psiElement, annotationHolder)
@@ -93,7 +98,7 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
         val index = parent.variableNameList.indexOf(variableNameElement)
         if (index == 0) {
             if (ObjJClassDeclarationsIndex.instance[variableName, project].isNotEmpty()) {// || variableName in ObjJTypeDefIndex.instance.getAllKeys(project)) {
-                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
+                colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.CLASS)
                 return
             }
         }
@@ -119,6 +124,8 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
             val containingClassName = (referencedVariable ?: variableNameElement).containingFileName
             val message = ObjJBundle.message("objective-j.general.defined-in-file.text", containingClassName)
             colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.FILE_LEVEL_VARIABLE, message)
+        } else {
+            colorize(variableNameElement, annotationHolder, ObjJSyntaxHighlighter.LOCAL_VARIABLE)
         }
 
     }
@@ -139,7 +146,14 @@ class ObjJSyntaxHighlighterAnnotator : Annotator {
      * Highlights a given classname element
      */
     private fun highlightClassName(classNameElement: ObjJClassName, annotationHolder: AnnotationHolderWrapper) {
-        colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
+        when (classNameElement.parent) {
+            is ObjJInheritedProtocolList -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.PROTOCOL_REFERENCE)
+            is ObjJSuperClass -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.CLASS_REFERENCE)
+            is ObjJImplementationDeclaration -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.CLASS)
+            is ObjJProtocolDeclaration -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.CLASS)
+            is ObjJClassDeclarationElement<*> -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.CLASS)
+            else -> colorize(classNameElement, annotationHolder, ObjJSyntaxHighlighter.VARIABLE_TYPE)
+        }
     }
 
     /**
