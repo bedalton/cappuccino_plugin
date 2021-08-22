@@ -47,7 +47,7 @@ class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
 }
 
 internal data class AnnotationBuilderData(
-        internal val message:String,
+        internal val message:String?,
         internal val severity: HighlightSeverity,
         internal val range: TextRange? = null,
         internal val fixBuilderData:List<FixBuilderData> = listOf(),
@@ -62,7 +62,7 @@ internal data class AnnotationBuilderData(
 class AnnotationBuilder private constructor(internal val annotationHolder: AnnotationHolder, internal val data:AnnotationBuilderData) {
 
     constructor(annotationHolder:AnnotationHolder, severity:HighlightSeverity, message: String?)
-            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message ?: ""))
+            : this(annotationHolder, AnnotationBuilderData(severity = severity, message = message))
 
     @Contract(pure = true)
     fun range(range:TextRange) : AnnotationBuilder {
