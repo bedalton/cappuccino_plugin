@@ -2004,7 +2004,7 @@ mathExprPrime
 	;
 
 mathOp
-	::= '+'|'-'|MULTIPLY|'/'|'%'|'<<'|'>>'|'<<<'|'>>>'|'^'|'~'|'&'|'|'
+	::= '+'|'-'|MULTIPLY|'/'|'%'|'<<'|'>>'|'<<<'|'>>>'|'^'|'&'|'|'
 	;
 
 assignmentOperator
@@ -2438,7 +2438,7 @@ singleQuoteStringLiteral
 
 private eos
 	::= <<lineTerminatorAhead>> ';'?
-	|	<<notLineTerminator>> ';'
+	|	';'
 	|	'}'
     ;
 
