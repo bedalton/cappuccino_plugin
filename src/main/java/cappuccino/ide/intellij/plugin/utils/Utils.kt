@@ -1,4 +1,5 @@
 package cappuccino.ide.intellij.plugin.utils
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import java.util.*
@@ -6,7 +7,7 @@ import java.util.*
 
 private const val PLUGIN_ID = "cappuccino.intellij.plugin"
 val PLUGIN by lazy {
-    val pluginId = PluginId.getId(PLUGIN_ID);
+    val pluginId = PluginId.getId(PLUGIN_ID)
     PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
 }
 val PLUGIN_VERSION:String by lazy {

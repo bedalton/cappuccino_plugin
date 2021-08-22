@@ -6,8 +6,8 @@ import javax.swing.JComponent
 
 class ObjJPluginSettingsConfigurable : Configurable {
 
-    private val pluginSettingsPanel:ObjJPluginSettingsPanel by lazy {
-        ObjJPluginSettingsPanel();
+    private val pluginSettingsPanel: ObjJPluginSettingsPanel by lazy {
+        ObjJPluginSettingsPanel()
     }
 
     override fun isModified(): Boolean {

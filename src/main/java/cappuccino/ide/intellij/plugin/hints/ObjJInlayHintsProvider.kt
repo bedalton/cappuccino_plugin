@@ -26,7 +26,7 @@ class ObjJInlayHintsProvider : InlayParameterHintsProvider {
             Option("objj.hints.function_parameter_name", "Function parameter names", true)
 
 
-    override fun getParameterHints(element: PsiElement): MutableList<InlayInfo> {
+    override fun getParameterHints(element: PsiElement?): MutableList<InlayInfo> {
         if (true || element == null)
             return mutableListOf()
         val project = element.project;

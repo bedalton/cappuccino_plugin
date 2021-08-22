@@ -353,7 +353,8 @@ object ObjJFunctionDeclarationPsiUtil {
      * Gets the function name node in  a function literal
      */
     fun getFunctionNameNode(
-            functionLiteral: ObjJFunctionLiteral): ObjJNamedElement? {
+        functionLiteral: ObjJFunctionLiteral
+    ): ObjJNamedElement? {
 
         // If is namelessParameter, ignore
         val expr = functionLiteral.getParentOfType(ObjJExpr::class.java)

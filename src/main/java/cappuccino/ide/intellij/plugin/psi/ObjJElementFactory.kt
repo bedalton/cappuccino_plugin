@@ -2,8 +2,6 @@
 
 package cappuccino.ide.intellij.plugin.psi
 
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentComment
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
 import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
@@ -16,7 +14,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
-import java.util.*
 
 object ObjJElementFactory {
     private val LOGGER = Logger.getInstance(ObjJElementFactory::class.java)
@@ -46,7 +43,7 @@ object ObjJElementFactory {
         ////LOGGER.info("Script text: <$scriptText>")
         val file = createFileFromText(project, scriptText)
         val functionDeclaration = file.getChildOfType( ObjJFunctionDeclaration::class.java)
-        return functionDeclaration!!.functionName
+        return functionDeclaration?.functionName
     }
 
     fun createSpace(project: Project): PsiElement {
@@ -71,7 +68,7 @@ object ObjJElementFactory {
             for (child in file.children) {
                 childElementTypes.add(child.node.elementType.toString())
             }
-            ////LOGGER.info("createSemiColonErrorElement(Project project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
+            ////LOGGER.info("createSemiColonErrorElement(project: Project) Failed. No error element found. Found <" + ArrayUtils.join(childElementTypes) + "> instead")
         }
         return errorElement
     }
@@ -178,7 +175,7 @@ object ObjJElementFactory {
         """.trimIndent()
         val file = createFileFromText(project, script)
         val returnTypeElement:ObjJMethodHeaderReturnTypeElement? = file.getChildOfType(ObjJProtocolDeclaration::class.java)?.getChildOfType(ObjJMethodHeader::class.java)?.methodHeaderReturnTypeElement
-        com.intellij.openapi.diagnostic.Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
+        Logger.getInstance(ObjJElementFactory::class.java).assertTrue(returnTypeElement != null)
         return returnTypeElement!!
     }
 
@@ -208,7 +205,7 @@ object ObjJElementFactory {
     fun createFrameworkFileNameElement(project:Project, fileNameIn:String) : ObjJFrameworkFileName {
         assert (fileNameIn.isNotNullOrBlank()) { "Filename cannot be blank;" }
         val fileName = if (fileNameIn.endsWith(".j")) fileNameIn else "$fileNameIn.j"
-        val script = "@import <framework/$fileName>";
+        val script = "@import <framework/$fileName>"
         val file = createFileFromText(project, script)
         val frameworkImportStatement = file.getChildOfType(ObjJImportBlock::class.java)!!.importStatementElementList[0]!!
         val framework = frameworkImportStatement.importFramework!!
@@ -220,13 +217,7 @@ object ObjJElementFactory {
 
     fun createDocCommentQualifiedReferenceComponent(project: Project, name:String) : ObjJDocCommentQualifiedNameComponent {
         val block = createFileFromText(project, "/* @var $name */").firstChild as ObjJDocCommentParsableBlock
-        return block.comment!!.tagLineList.first().typesList.qualifiedNameList.first().qualifiedNameComponentList.first()
-    }
-
-
-    fun createDocCommentParameterName(project: Project, name:String) : ObjJDocCommentParameterName {
-        val block = createFileFromText(project, "/* @var type $name */").firstChild as ObjJDocCommentParsableBlock
-        return block.comment!!.tagLineList.first().parameterNameElementElement!!
+        return block.comment!!.tagLines.first().parameterNameElement!!.qualifiedNameComponentList[0]
     }
 
 }

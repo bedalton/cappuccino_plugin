@@ -85,7 +85,7 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
             manager: CachedValuesManager,
             dependencies: Array<Any>
     ): CachedValue<List<ObjJProtocolDeclaration>> {
-        val provider = CachedValueProvider<List<ObjJProtocolDeclaration>> {
+        val provider = CachedValueProvider {
             val protocols = ObjJInheritanceUtil.getAllProtocols(declaration)
             CachedValueProvider.Result.create(protocols, dependencies)
         }
@@ -100,7 +100,7 @@ abstract class ObjJClassDeclarationsCache(declaration: ObjJClassDeclarationEleme
             manager: CachedValuesManager,
             dependencies: Array<Any>
     ): CachedValue<List<ObjJMethodHeader>> {
-        val provider = CachedValueProvider<List<ObjJMethodHeader>> {
+        val provider = CachedValueProvider {
             val internalMethods = getAllMethods(declaration)
             CachedValueProvider.Result.create(internalMethods, dependencies)
         }

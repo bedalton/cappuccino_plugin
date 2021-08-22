@@ -1,9 +1,8 @@
 package cappuccino.ide.intellij.plugin.utils
 
-import com.intellij.ide.plugins.PluginManagerCore
+import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtil
@@ -61,13 +60,20 @@ object ObjJFileUtil {
             }
             if (file.extension == "jar") {
                 val jar = VfsUtil.findFileByIoFile(file, true)
-                        ?: return null
+                    ?: return null
                 return JarFileSystem.getInstance().getJarRootForLocalFile(jar)
             }
-            val libFolder = VfsUtil.findFileByIoFile(file, true)?.findChild("lib")
-                    ?: VfsUtil.findFileByIoFile(file, true)?.findChild("Cappuccino Plugin")?.findChild("lib")
+            val root = VfsUtil.findFileByIoFile(file, true)
+            val libFolder =
+                root
+                    ?.findChild("lib")
+                    ?: root
+                        ?.findChild("Cappuccino Plugin")
+                        ?.findChild("lib")
                     ?: return DEBUG_PLUGIN_HOME_DIRECTORY
-            val jar = libFolder.findChild("Cappuccino Plugin.jar") ?: return DEBUG_PLUGIN_HOME_DIRECTORY
+            val jar = libFolder
+                .findChild("Objective-J-${PLUGIN_VERSION}.jar")
+                ?: return DEBUG_PLUGIN_HOME_DIRECTORY
             return JarFileSystem.getInstance().getJarRootForLocalFile(jar) ?: DEBUG_PLUGIN_HOME_DIRECTORY
         }
 

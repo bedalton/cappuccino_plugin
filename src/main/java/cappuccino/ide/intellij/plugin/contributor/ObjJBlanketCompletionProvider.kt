@@ -1,9 +1,8 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentParameterName
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentQualifiedNameComponent
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagNameElement
 import cappuccino.ide.intellij.plugin.contributor.ObjJClassNamesCompletionProvider.getClassNameCompletions
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJClassNameInsertHandler
@@ -53,13 +52,15 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     // Caret indicator for use in completion
     const val CARET_INDICATOR = CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED
 
-    //LOGGER.warning(@Suppress("unused")
+    @Suppress("UNUSED_VARIABLE")
     private val LOGGER by lazy {
         Logger.getLogger(ObjJBlanketCompletionProvider::class.java.name)
     }
     // Possible Accessor property types
     private val ACCESSOR_PROPERTY_TYPES = listOf("property", "getter", "setter", "readonly", "copy")
-    // Preproc # keywords
+
+    // Preprocessor # keywords
+    @Suppress("SpellCheckingInspection")
     private val PRE_PROC_KEYWORDS = listOf(
             "if",
             "include",
@@ -116,10 +117,6 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 addCompletionsForFrameworkFiles(resultSet, element)
             }
             element.isOrHasParentOfType(ObjJDocCommentQualifiedNameComponent::class.java) -> {
-                addDocCommentCompletions(element, prevSibling, resultSet)
-            }
-
-            element.isOrHasParentOfType(ObjJDocCommentParameterName::class.java) -> {
                 addDocCommentCompletions(element, prevSibling, resultSet)
             }
 
@@ -204,7 +201,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
     private fun addDocCommentCompletions(element: PsiElement, prevSibling: PsiElement?, resultSet: CompletionResultSet) {
         if (!prevSibling?.text.orEmpty().startsWith("@") && prevSibling?.text != "|" && prevSibling?.text != ".") {
-            val tag = element.getParentOfType(ObjJDocCommentTagLine::class.java)?.tag
+            val tag = element.getParentOfType(ObjJDocCommentTagLineBase::class.java)?.tag
             if (tag == ObjJDocCommentKnownTag.PARAM) {
                 addParamCompletions(element, resultSet)
             } else if (tag == ObjJDocCommentKnownTag.VAR || tag == ObjJDocCommentKnownTag.PARAM) {
@@ -234,7 +231,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     }
 
 
-    private fun addJsQualifiedTypeName(element:ObjJQualifiedReferenceComponent, resultSet: CompletionResultSet) {
+    private fun addJsQualifiedTypeName(element: ObjJUniversalQualifiedReferenceComponent, resultSet: CompletionResultSet) {
         val searchKey = Regex.escape(element.previousSiblings.joinToString(".") { it.text }.let{ if (it.isNotEmpty()) "$it." else it}+element.textWithoutCaret) + ".+"
         val keys = JsTypeDefClassesByNamespaceIndex.instance.getByPattern(searchKey, element.project).map { it.key }
         addCompletionElementsSimple(resultSet, keys)
@@ -375,7 +372,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
             addCompletionElementsSimple(resultSet, listOf("YES", "NO", "true", "false"), 30.0)
         }
         // Boolean to determine whether to add ignored property values
-        val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is abitrary
+        val shouldIgnoreIgnoredGlobals = element.text.length - CARET_INDICATOR.length < 5 // 5 is arbitrary
         var properties = JsTypeDefPropertiesByNameIndex.instance.getByPatternFlat(element.text.toIndexPatternString(), element.project).filterNot { it.isSilent }
         properties = properties.filter {
             it.enclosingNamespace.isEmpty()
@@ -412,17 +409,21 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     }
 
     private fun addGlobalVariableCompletions(resultSet: CompletionResultSet, variableName: PsiElement) {
-        ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach {
+        ObjJGlobalVariableNamesIndex.instance.getByPatternFlat(variableName.text.toIndexPatternString(), variableName.project).forEach { declaration ->
             ProgressManager.checkCanceled()
             ProgressIndicatorProvider.checkCanceled()
-            val parameters = it.variableName.parentFunctionDeclaration?.parameterNames
-                    ?: inferQualifiedReferenceType(listOf(it.variableName), createTag())?.functionTypes?.maxBy { it.parameters.size }?.parameters?.map { it.name }
+            val parameters = declaration.variableName.parentFunctionDeclaration?.parameterNames
+                    ?: inferQualifiedReferenceType(listOf(declaration.variableName), createTag())
+                        ?.functionTypes
+                        ?.maxBy { type -> type.parameters.size }
+                        ?.parameters
+                        ?.map { it.name }
             if (parameters != null) {
-                ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, it.variableNameString, parameters)
+                ObjJFunctionNameCompletionProvider.addGlobalFunctionName(resultSet, declaration.variableNameString, parameters)
             } else {
-                val lookupElement = LookupElementBuilder.create(it.variableNameString)
+                val lookupElement = LookupElementBuilder.create(declaration.variableNameString)
                         .withInsertHandler(ObjJVariableInsertHandler)
-                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(it.variableNameString, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY)))
+                resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElement, ObjJInsertionTracker.getPoints(declaration.variableNameString, ObjJCompletionContributor.GENERIC_INSTANCE_VARIABLE_SUGGESTION_PRIORITY)))
             }
         }
     }
@@ -447,7 +448,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
 
 
     /**
-     * Adds keywords only used at top level of file to resut set
+     * Adds keywords only used at top level of file to result set
      */
     private fun addFileLevelCompletions(resultSet: CompletionResultSet, element: PsiElement) {
         val prefix: String
@@ -459,7 +460,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                 resultsTemp = AT_KEYWORDS
                 prefix = "@"
             }
-            // Add #(preproc) fragments
+            // Add #(preprocessor) fragments
             element.isType(ObjJTypes.ObjJ_PP_FRAGMENT) || previousSiblingText == "#" -> {
                 resultsTemp = PRE_PROC_KEYWORDS
                 prefix = "#"
@@ -630,8 +631,8 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
     }
 
     private fun appendQualifiedReferenceCompletions(element: PsiElement, resultSet: CompletionResultSet) {
-        val qualifiedNameComponent = element as? ObjJQualifiedReferenceComponent
-                ?: element.parent as? ObjJQualifiedReferenceComponent ?: return
+        val qualifiedNameComponent = element as? ObjJUniversalQualifiedReferenceComponent
+                ?: element.parent as? ObjJUniversalQualifiedReferenceComponent ?: return
         val index = qualifiedNameComponent.indexInQualifiedReference
         if (index <= 0) {
             return
@@ -694,7 +695,7 @@ object ObjJBlanketCompletionProvider : CompletionProvider<CompletionParameters>(
                     .create(it.name)
             if (classStrings.isNotNullOrBlank()) {
                 lookupElementBuilder = lookupElementBuilder
-                        .withTailText(":" + classStrings)
+                        .withTailText(":$classStrings")
             }
             resultSet.addElement(PrioritizedLookupElement.withPriority(lookupElementBuilder, ObjJInsertionTracker.getPoints(it.name, ObjJCompletionContributor.FUNCTIONS_NOT_IN_FILE_PRIORITY)))
         }

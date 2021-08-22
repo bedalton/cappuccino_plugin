@@ -36,7 +36,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
         descriptors.add(descriptor)
     }
 
-    override fun getPlaceholderText(node: ASTNode): String? {
+    override fun getPlaceholderText(node: ASTNode): String {
         return "..."
     }
 
@@ -80,7 +80,7 @@ class ObjJCodeFoldingBuilder : FoldingBuilderEx() {
 
         fun execute(pragma:ObjJPreprocessorPragma, group:FoldingGroup) : FoldingDescriptor? {
             val startOffset:Int = pragma.textRange.endOffset
-            val endOffset:Int = pragma.getNextSiblingOfType(ObjJPreprocessorPragma::class.java)?.textRange?.endOffset ?: pragma.containingFile.textRange.endOffset ?: return null
+            val endOffset:Int = pragma.getNextSiblingOfType(ObjJPreprocessorPragma::class.java)?.textRange?.endOffset ?: pragma.containingFile?.textRange?.endOffset ?: return null
             if (startOffset >= endOffset) {
                 return null
             }
