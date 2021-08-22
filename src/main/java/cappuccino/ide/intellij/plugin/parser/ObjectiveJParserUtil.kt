@@ -19,7 +19,7 @@ import gnu.trove.TObjectLongHashMap
 class ObjectiveJParserUtil : GeneratedParserUtilBase() {
     companion object {
 
-        private var doAllowSemiColonAfterMethodHeader = false
+        private val ALLOW_SEMICOLONS_KEY = Key.create<Boolean>("ALLOW_SEMICOLONS")
         private val MODES_KEY = Key.create<TObjectLongHashMap<String>>("MODES_KEY")
 
         private fun getParsingModes(builder_: PsiBuilder): TObjectLongHashMap<String> {
@@ -76,12 +76,12 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
 
         @JvmStatic
         fun doAllowSemiColonAfterMethodHeader(builder_: PsiBuilder, level: Int): Boolean {
-            return doAllowSemiColonAfterMethodHeader
+            return builder_.getUserData(ALLOW_SEMICOLONS_KEY) ?: false
         }
 
         @JvmStatic
         fun doAllowSemiColonAfterMethodHeader(builder_: PsiBuilder, level: Int, doAllow: String): Boolean {
-            doAllowSemiColonAfterMethodHeader = doAllow.equals("true", ignoreCase = true)
+            builder_.putUserData(ALLOW_SEMICOLONS_KEY, doAllow.equals("true", ignoreCase = true))
             return true
         }
 
@@ -120,13 +120,22 @@ class ObjectiveJParserUtil : GeneratedParserUtilBase() {
             var i = 0
             var ahead = builder_.lookAhead(i)
             var hadLineTerminator = false
-            while (ahead === com.intellij.psi.TokenType.WHITE_SPACE || ahead === ObjJ_LINE_TERMINATOR) {
+            while (ahead === TokenType.WHITE_SPACE || ahead === ObjJ_LINE_TERMINATOR) {
                 if (ahead === ObjJ_LINE_TERMINATOR) {
                     hadLineTerminator = true
                 }
                 ahead = builder_.lookAhead(++i)
             }
-            return GeneratedParserUtilBase.eof(builder_, level_) || ObjJPsiImplUtil.eosToken(ahead, hadLineTerminator)
+            if (eof(builder_, level_))
+                return true
+
+            val text = builder_.originalText
+            var offset = builder_.currentOffset
+            while (text[offset] == ' ' || text[offset] == '\t')
+                offset++
+            if (text[offset] == '\n')
+                return true
+            return  ObjJPsiImplUtil.eosToken(ahead, hadLineTerminator)
 
         }
 
