@@ -3,7 +3,9 @@ package cappuccino.ide.intellij.plugin.psi.interfaces
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 
-interface ObjJHasQualifiedName : ObjJUniversalPsiElement {
-    val qualifiedNameParts:List<ObjJQualifiedReferenceComponent>
+interface HasQualifiedName<T:ObjJUniversalQualifiedReferenceComponent> : ObjJUniversalPsiElement {
+    val qualifiedNameParts:List<T>
     val qualifiedNamePath:List<ObjJQualifiedReferenceComponentPart>
 }
+
+interface ObjJHasQualifiedName: HasQualifiedName<ObjJUniversalQualifiedReferenceComponent>

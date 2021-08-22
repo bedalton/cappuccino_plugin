@@ -60,6 +60,7 @@ comment
 			getReturnType
 			getParameterTags
 			getTextLinesAsStrings
+			getTagLines
 		]
 
 	}
@@ -89,6 +90,7 @@ tagLine
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub"
 		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStub>"
 		]
@@ -96,34 +98,40 @@ tagLine
 		methods = [
 			getTag
 			getTypes
+			getTypesList
 			getParameterNameString
 			getCommentText
 			tagName = "tagNameElement"
-			borrowedThat = "/qualifiedName/[0]"
-			borrowedAs = "/qualifiedName/[1]"
+			getBorrowedThat
+			getBorrowedAs
 			getTagNameString
+			getParameterNameElement
 		]
 	}
 	;
 
 oldTagLine
-	::= tagNameElement oldTypesList parameterName? textElement?
+	::= tagNameElement oldTypesList qualifiedName? textElement?
 	{
 		pin=2
 		methods = [
-			getParameterNameElement
+			getQualifiedName
 			getParameterNameString
 			getTag
 			getTypes
+			getTypesList
 			getCommentText
 			tagName = "tagNameElement"
 			getTagNameString
 			getParameterNameElement
+			getOptionalParameter
 		]
 
 		extends="cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentStubBasedElementImpl<?>"
 		stubClass="cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentOldTagLineStub"
 		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase"
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentStubBasedElement<cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentOldTagLineStub>"
 		]
@@ -166,11 +174,19 @@ private typesList
 	|	'{' type '}'
 	{
 		pin(".*")=1
+		implements = [
+			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTypesListBase"
+		]
 	}
 	;
 
 oldTypesList
 	::= (qualifiedName TAG_VALUE_DELIMITER)* qualifiedName
+	{
+		implements = [
+    			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTypesListBase"
+    	]
+	}
 	;
 
 private ellipses
@@ -189,7 +205,7 @@ qualifiedName
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.HasQualifiedName<cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalQualifiedReferenceComponent>"
 		]
 		methods = [
 			getQualifiedNameParts
@@ -204,8 +220,8 @@ qualifiedNameComponent
 		pin=1
 		implements = [
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalNamedElement"
+			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalQualifiedReferenceComponent"
 		]
 		methods = [
 			getName
@@ -219,23 +235,6 @@ qualifiedNameComponent
 
 textLine
 	::= !(TAG_NAME) (comment_element)+
-	;
-
-parameterName
-	::= id
-	{
-		implements = [
-			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement"
-			"cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent"
-		]
-		methods = [
-			getName
-			setName
-			getIndexInQualifiedReference
-			getReference
-		]
-	}
 	;
 
 private id

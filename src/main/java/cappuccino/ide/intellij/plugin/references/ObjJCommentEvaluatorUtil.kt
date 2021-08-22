@@ -1,11 +1,9 @@
 package cappuccino.ide.intellij.plugin.references
 
-import cappuccino.ide.intellij.plugin.comments.parser.ObjJDocCommentKnownTag
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
 import cappuccino.ide.intellij.plugin.comments.psi.impl.ObjJDocCommentParsableBlock
 import cappuccino.ide.intellij.plugin.psi.ObjJComment
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalNamedElement
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTokenSets
 import cappuccino.ide.intellij.plugin.psi.utils.getChildrenOfType
 import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
@@ -44,13 +42,13 @@ object ObjJCommentEvaluatorUtil {
     /**
      * Gets the variable type if declared in an @var comment
      */
-    fun getVariableTypesInParent(element: ObjJNamedElement): String? {
+    fun getVariableTypesInParent(element: ObjJUniversalNamedElement): String? {
         val variableName = element.text
         return element.getParentBlockChildrenOfType(PsiCommentImpl::class.java, true)
                 .sortedByDescending { it.textRange.startOffset }
                 .filterIsInstance<ObjJDocCommentParsableBlock>()
                 .flatMap {
-                    it.parameterTags.firstOrNull { it.parameterName == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
+                    it.parameterTags.firstOrNull { it.parameterNameString == variableName }?.types?.types.orEmpty() + it.tagLinesAsStructs.firstOrNull{ it.name == variableName }?.types?.types.orEmpty()
                 }.firstOrNull()?.typeName ?: return null
                 /*
                 .flatMap { it.text.split("\n") }

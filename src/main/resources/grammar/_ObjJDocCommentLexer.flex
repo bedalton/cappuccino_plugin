@@ -17,69 +17,69 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
 	private int identifierSteps = 0;
 	private boolean hasElementType = false;
+	private boolean inOptional = false;
 	private boolean inBeginning = false;
-		public _ObjJDocCommentLexer() {
-			this((java.io.Reader)null);
+	public _ObjJDocCommentLexer() {
+		this((java.io.Reader)null);
+	}
+	public boolean prevCharIs(char c) {
+		if (zzMarkedPos == 0)
+			  return false;
+		int zzMarkedPos = zzCurrentPos;
+		while(zzMarkedPos != 0 && Character.isWhitespace(zzBuffer.charAt(zzMarkedPos))) {
+			  zzMarkedPos -= 1;
 		}
-		public boolean prevCharIs(char c) {
-			if (zzMarkedPos == 0)
-				  return false;
-			int zzMarkedPos = zzCurrentPos;
-			while(zzMarkedPos != 0 && Character.isWhitespace(zzBuffer.charAt(zzMarkedPos))) {
-				  zzMarkedPos -= 1;
+		return zzBuffer.charAt(zzMarkedPos) == c;
+	}
+
+	public boolean prevElementIsTag() {
+		char it = zzBuffer.charAt(zzMarkedPos);
+		boolean isDollar = false;
+		while(zzMarkedPos != 0 && Character.isWhitespace(it) || ID_VALID_CHARS.contains(it)) {
+			if (isDollar && it != '@')
+				return false;
+			if (it == '$') {
+				isDollar = true;
+			} else if (it == '@') {
+				return true;
+			} else {
+				isDollar = false;
 			}
-			return zzBuffer.charAt(zzMarkedPos) == c;
+			zzMarkedPos -= 1;
+			it = zzBuffer.charAt(zzMarkedPos);
 		}
+		return false;
+	}
 
-		public boolean prevElementIsTag() {
-			char it = zzBuffer.charAt(zzMarkedPos);
-			boolean isDollar = false;
-			while(zzMarkedPos != 0 && Character.isWhitespace(it) || ID_VALID_CHARS.contains(it)) {
-				if (isDollar && it != '@')
-					return false;
-				if (it == '$') {
-					isDollar = true;
-				} else if (it == '@') {
-					return true;
-				} else {
-					isDollar = false;
-				}
-				zzMarkedPos -= 1;
-				it = zzBuffer.charAt(zzMarkedPos);
-			}
-			return false;
-		}
+	public boolean prevCharIsDot() {
+		return prevCharIs('.');
+	}
+	public boolean prevCharIsPipe() {
+		return prevCharIs('|') || prevCharIs(',');
+	}
 
-		public boolean prevCharIsDot() {
-			return prevCharIs('.');
-		}
-		public boolean prevCharIsPipe() {
-			return prevCharIs('|') || prevCharIs(',');
-		}
+	public boolean prevCharIsPipeOrDot() {
+		return prevCharIsPipe() || prevCharIsDot();
+	}
 
-		public boolean prevCharIsPipeOrDot() {
-			return prevCharIsPipe() || prevCharIsDot();
-		}
+	private boolean yytextContainLineBreaks() {
+		return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
+	}
 
-		private boolean yytextContainLineBreaks() {
-			return CharArrayUtil.containLineBreaks(zzBuffer, zzStartRead, zzMarkedPos);
-		}
+	private boolean isLastToken() {
+		return zzMarkedPos == zzBuffer.length();
+	}
 
-		private boolean isLastToken() {
-			return zzMarkedPos == zzBuffer.length();
+	protected void myYbegin(int state) {
+		if (state == CONTENTS) {
+			identifierSteps = 0;
+			inBeginning = false;
+			hasElementType = false;
+		} else if (state == LINE_BEGINNING) {
+			inBeginning = false;
 		}
-
-		@Override
-		private void yybegin(int state) {
-		    if (state == CONTENTS) {
-		        identifierSteps = 0;
-				inBeginning = false;
-		        hasElementType = false;
-		    } else if (state == LINE_BEGINNING) {
-				inBeginning = false;
-		    }
-		    super.yybegin(state);
-		}
+		yybegin(state);
+	}
 
 %}
 
@@ -103,7 +103,7 @@ BLOCK_END=[*][/]
 
 <YYINITIAL> {
 	{BLOCKSTART} {
-		yybegin(LINE_BEGINNING);
+		myYbegin(LINE_BEGINNING);
 		return ObjJDocComment_START;
 	}
 }
@@ -114,7 +114,7 @@ BLOCK_END=[*][/]
 	}
 	{WHITE_SPACE_CHAR}+ {
 		if (yytextContainLineBreaks()) {
-			yybegin(LINE_BEGINNING);
+			myYbegin(LINE_BEGINNING);
 		}
 		return TokenType.WHITE_SPACE;
 	}
@@ -126,12 +126,12 @@ BLOCK_END=[*][/]
 	"@"{TAG_NAME} {
 		ObjJDocCommentKnownTag tag = ObjJDocCommentKnownTag.Companion.findByTagName(zzBuffer.subSequence(zzStartRead, zzMarkedPos));
 		identifierSteps = 0;
-		yybegin(tag != null && tag.isReferenceRequired() ? TAG_BEGINNING : CONTENTS);
+		myYbegin(tag != null && tag.isReferenceRequired() ? TAG_BEGINNING : CONTENTS);
 		return ObjJDocComment_TAG_NAME;
 	}
 	[^@\s] {
 	  	yypushback(yylength());
-	  	yybegin(CONTENTS);
+	  	myYbegin(CONTENTS);
 	}
 }
 
@@ -144,14 +144,20 @@ BLOCK_END=[*][/]
           inOptional = true;
           return ObjJDocComment_OPEN_BRACKET;
   	}
-	"]"				{ inOptional = false; return ObjJDocComment_CLOSE_BRACKET; }
+	"]"				{
+		if (inOptional) {
+			inOptional = false;
+			return ObjJDocComment_CLOSE_BRACKET;
+		}
+		return ObjJDocComment_TEXT_BODY;
+      }
     "="				{
         if (inBeginning)
-          	yybegin(DEFAULT_CONTENTS);
+          	myYbegin(DEFAULT_CONTENTS);
 	  	return ObjJDocComment_EQUALS;
   	}
   	"*"				{ return ObjJDocComment_ASTERISK; }
-	"as"			{ return ObjJDocComment_AS; }
+	"as"			{ return ObjJDocComment_AS_LITERAL; }
 
 	"..."	{ return ObjJDocComment_ELLIPSES_LITERAL; }
 
@@ -159,19 +165,19 @@ BLOCK_END=[*][/]
           if (identifierSteps != 1)
           {
 			yypushback(yylength());
-			yybegin(CONTENTS);
+			myYbegin(CONTENTS);
 			return ObjJDocComment_TEXT_BODY;
 		  }
           identifierSteps = 0;
           return ObjJDocComment_DOT;
       }
 
-	"-" 	{ yybegin(CONTENTS); return ObjJDocComment_DASH; }
+	"-" 	{ myYbegin(CONTENTS); return ObjJDocComment_DASH; }
 
     "|"|","	{
           if (identifierSteps != 1) {
 			yypushback(yylength());
-			yybegin(CONTENTS);
+			myYbegin(CONTENTS);
 			return ObjJDocComment_TEXT_BODY;
           }
           identifierSteps = 0;
@@ -182,7 +188,7 @@ BLOCK_END=[*][/]
           int steps = prevCharIs('{') ? 1 : (prevCharIs('}') ? 2 : 1);
           if (identifierSteps > steps) {
           	yypushback(yylength());
-          	yybegin(CONTENTS);
+          	myYbegin(CONTENTS);
 			return ObjJDocComment_TEXT_BODY;
           }
           return ObjJDocComment_ID;
@@ -190,19 +196,19 @@ BLOCK_END=[*][/]
 
 	[^@\s.|,] {
 	  	yypushback(yylength());
-		yybegin(CONTENTS);
+		myYbegin(CONTENTS);
   	}
 }
 
 <CONTENTS> {
 	{TEXT} {
-	  	yybegin(LINE_BEGINNING);
+	  	myYbegin(LINE_BEGINNING);
 	  	return ObjJDocComment_TEXT_BODY;
   	}
 }
 <DEFAULT_CONTENTS> {
 	[^\]]+ {
-	  	yybegin(LINE_BEGINNING);
+	  	myYbegin(LINE_BEGINNING);
 	  	return ObjJDocComment_TEXT_BODY;
   	}
 

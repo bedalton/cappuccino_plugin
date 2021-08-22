@@ -1,9 +1,8 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
+import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 import com.intellij.psi.PsiElement
 import java.util.logging.Logger
 
@@ -35,7 +34,11 @@ object ObjJQualifiedReferenceUtil {
     }
 
     @JvmOverloads
-    fun getQualifiedNameAsString(qualifiedReference: ObjJQualifiedReference?, defaultValue: String?, stopBeforeIndex: Int = -1): String? {
+    fun getQualifiedNameAsString(
+        qualifiedReference: ObjJQualifiedReference?,
+        defaultValue: String?,
+        stopBeforeIndex: Int = -1,
+    ): String? {
         if (qualifiedReference == null) {
             return defaultValue
         }
@@ -43,7 +46,8 @@ object ObjJQualifiedReferenceUtil {
         if (variableNames.isEmpty()) {
             return defaultValue
         }
-        val numVariableNames = if (stopBeforeIndex != -1 && variableNames.size > stopBeforeIndex) stopBeforeIndex else variableNames.size
+        val numVariableNames =
+            if (stopBeforeIndex != -1 && variableNames.size > stopBeforeIndex) stopBeforeIndex else variableNames.size
         val builder = StringBuilder(variableNames[0].text)
         for (i in 1 until numVariableNames) {
             builder.append(".").append(variableNames[i].text)
@@ -52,8 +56,9 @@ object ObjJQualifiedReferenceUtil {
         return builder.toString()
     }
 
-    fun resolveQualifiedReferenceVariable(variableName: ObjJQualifiedReferenceComponent): ObjJVariableName? {
-        val formalVariableTypeInstanceVariableList = ObjJVariableNameAggregatorUtil.getFormalVariableInstanceVariables(variableName)
+    fun resolveQualifiedReferenceVariable(variableName: ObjJUniversalQualifiedReferenceComponent): ObjJVariableName? {
+        val formalVariableTypeInstanceVariableList =
+            ObjJVariableNameAggregatorUtil.getFormalVariableInstanceVariables(variableName)
                 ?: return null
         return formalVariableTypeInstanceVariableList.firstOrNull { variable ->
             variable.text == variableName.text
@@ -121,10 +126,10 @@ object ObjJQualifiedReferenceUtil {
     }*/
 
     fun getIndexInQualifiedNameParent(elementIn: PsiElement?): Int {
-        val element = elementIn?.getSelfOrParentOfType(ObjJCompositeElement::class.java)
-                ?: return 0
-        val parent: ObjJHasQualifiedName = element.getParentOfType(ObjJHasQualifiedName::class.java)
-                ?: return 0
+        val element = elementIn?.getSelfOrParentOfType(ObjJUniversalPsiElement::class.java)
+            ?: return 0
+        val parent: HasQualifiedName<*> = element.getParentOfType(HasQualifiedName::class.java)
+            ?: return 0
         val parts = parent.qualifiedNameParts
         val index = if (parts.indexOf(element) >= 0)
             parts.indexOf(element)
@@ -139,24 +144,26 @@ object ObjJQualifiedReferenceUtil {
     }
 
 
-    fun getQualifiedNameParts(qualifiedName: ObjJQualifiedReference): List<ObjJQualifiedReferenceComponent> {
-        return qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+    fun getQualifiedNameParts(qualifiedName: ObjJQualifiedReference): List<ObjJUniversalQualifiedReferenceComponent> {
+        return qualifiedName.getChildrenOfType(ObjJUniversalQualifiedReferenceComponent::class.java)
     }
 
-    fun getQualifiedNameParts(expr: ObjJExpr): List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(expr: ObjJExpr): List<ObjJUniversalQualifiedReferenceComponent> {
         if (expr.expr != null)
             return getQualifiedNameParts(expr.expr!!)
         val leftExpr = expr.leftExpr ?: return emptyList()
-        val qualifiedReferenceComponents = leftExpr.qualifiedReference?.qualifiedNameParts.orEmpty().toMutableList()
+        val qualifiedReferenceComponents: MutableList<ObjJUniversalQualifiedReferenceComponent> =
+            leftExpr.qualifiedReference?.qualifiedNameParts.orEmpty().toMutableList()
         if (qualifiedReferenceComponents.isEmpty()) {
-            val first: ObjJQualifiedReferenceComponent = leftExpr.functionCall as? ObjJQualifiedReferenceComponent
-                    ?: leftExpr.methodCall as? ObjJQualifiedReferenceComponent
+            val first: ObjJUniversalQualifiedReferenceComponent =
+                leftExpr.functionCall as? ObjJUniversalQualifiedReferenceComponent
+                    ?: leftExpr.methodCall as? ObjJUniversalQualifiedReferenceComponent
                     ?: return emptyList()
             qualifiedReferenceComponents.add(first)
         }
         for (rightExpr in expr.rightExprList) {
             val qualifiedReferencePrime = rightExpr.qualifiedReferencePrime
-                    ?: return qualifiedReferenceComponents
+                ?: return qualifiedReferenceComponents
             qualifiedReferenceComponents.addAll(qualifiedReferencePrime.qualifiedNameParts)
         }
         return qualifiedReferenceComponents
@@ -166,12 +173,13 @@ object ObjJQualifiedReferenceUtil {
         return getQualifiedNameParts(expr).joinToString(".")
     }
 
-    fun getQualifiedNameParts(qualifiedName: ObjJQualifiedReferencePrime): List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(qualifiedName: ObjJQualifiedReferencePrime): List<ObjJUniversalQualifiedReferenceComponent> {
         val leftExpr = qualifiedName.getParentOfType(ObjJExpr::class.java)?.leftExpr
-        val leftComponent: ObjJQualifiedReferenceComponent? =
-                leftExpr?.functionCall
-                        ?: leftExpr?.methodCall
-        val rightChildren = qualifiedName.getChildrenOfType(ObjJQualifiedReferenceComponent::class.java)
+        val leftComponent = leftExpr
+            ?.functionCall
+            ?: leftExpr?.methodCall
+        val rightChildren: List<ObjJUniversalQualifiedReferenceComponent> =
+            qualifiedName.getChildrenOfType(ObjJUniversalQualifiedReferenceComponent::class.java)
         if (leftComponent != null)
             return listOf(leftComponent) + rightChildren
         val qualifiedReference = leftExpr?.qualifiedReference?.qualifiedNameParts ?: return emptyList()

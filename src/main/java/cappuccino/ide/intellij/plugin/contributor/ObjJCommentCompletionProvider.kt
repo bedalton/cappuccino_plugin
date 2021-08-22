@@ -1,6 +1,6 @@
 package cappuccino.ide.intellij.plugin.contributor
 
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase
 import cappuccino.ide.intellij.plugin.contributor.handlers.ObjJTrackInsertionHandler
 import cappuccino.ide.intellij.plugin.contributor.utils.ObjJCompletionElementProviderUtil.addCompletionElementsSimple
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefClassesByNameIndex
@@ -52,7 +52,7 @@ object ObjJCommentCompletionProvider {
      * Adds comment completions for a give line
      */
     private fun addCommentCompletionsForLine(resultSet: CompletionResultSet, element: PsiElement, textIn: String) {
-        val text = (element.getParentOfType(ObjJDocCommentTagLine::class.java)?.text ?: textIn).trim()
+        val text = (element.getParentOfType(ObjJDocCommentTagLineBase::class.java)?.text ?: textIn).trim()
         if (!text.contains("@v") && !text.contains("@i") && !text.contains("@p") && !text.contains("@r")) {
             return
         }

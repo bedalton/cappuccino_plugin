@@ -1,18 +1,16 @@
 package cappuccino.ide.intellij.plugin.psi.interfaces
 
-import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReference
-import cappuccino.ide.intellij.plugin.psi.ObjJQualifiedReferencePrime
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
-import com.intellij.psi.PsiNamedElement
 
-interface ObjJQualifiedReferenceComponent : ObjJUniversalPsiElement {
+
+interface ObjJUniversalQualifiedReferenceComponent : ObjJUniversalPsiElement {
     val indexInQualifiedReference:Int
 }
 
+interface ObjJQualifiedReferenceComponent : ObjJUniversalQualifiedReferenceComponent, ObjJCompositeElement
 
-
-val ObjJQualifiedReferenceComponent.previousSiblings:List<ObjJQualifiedReferenceComponent> get() {
-    val components = (parent as? ObjJHasQualifiedName)?.qualifiedNameParts
+val ObjJUniversalQualifiedReferenceComponent.previousSiblings: List<ObjJUniversalQualifiedReferenceComponent> get() {
+    val components = (parent as? HasQualifiedName<*>)?.qualifiedNameParts
             ?: return emptyList()
     val index = indexInQualifiedReference
     if (index < components.size && index > 0)

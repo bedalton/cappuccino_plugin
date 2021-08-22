@@ -1,10 +1,7 @@
 package cappuccino.ide.intellij.plugin.psi.utils
 
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasContainingClass
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJMethodHeaderDeclaration
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import java.util.logging.Logger
@@ -15,7 +12,7 @@ object ObjJVariableNameResolveUtil {
         Logger.getLogger(ObjJVariableNameResolveUtil::class.java.canonicalName)
     }
 
-    fun getVariableDeclarationElement(variableNameElement: ObjJQualifiedReferenceComponent): PsiElement? {
+    fun getVariableDeclarationElement(variableNameElement: ObjJUniversalQualifiedReferenceComponent): PsiElement? {
         val variableNameString = variableNameElement.text
 
         if (variableNameString == "class") {
@@ -98,7 +95,7 @@ object ObjJVariableNameResolveUtil {
     }
 
 
-    private fun getClassNameIfVariableNameIsStaticReference(variableNameElement: ObjJQualifiedReferenceComponent): ObjJClassName? {
+    private fun getClassNameIfVariableNameIsStaticReference(variableNameElement: ObjJUniversalQualifiedReferenceComponent): ObjJClassName? {
 
         val variableNameText = variableNameElement.text
         var classNameElement: ObjJClassName? = null
@@ -159,7 +156,7 @@ object ObjJVariableNameResolveUtil {
 
 
 
-    private fun isPrecedingVar(baseVar: ObjJQualifiedReferenceComponent, possibleFirstDeclaration: ObjJVariableName): Boolean {
+    private fun isPrecedingVar(baseVar: ObjJUniversalQualifiedReferenceComponent, possibleFirstDeclaration: ObjJVariableName): Boolean {
         // Variable is a proceeding variable if it is not in same file(globals),
         // Or if it is declared before other in same file.
         return baseVar.text == possibleFirstDeclaration.text && (!baseVar.containingFile.isEquivalentTo(possibleFirstDeclaration.containingFile) || baseVar.textRange.startOffset > possibleFirstDeclaration.textRange.startOffset) && baseVar.indexInQualifiedReference == possibleFirstDeclaration.indexInQualifiedReference

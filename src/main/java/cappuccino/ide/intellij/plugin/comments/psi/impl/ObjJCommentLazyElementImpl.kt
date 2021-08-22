@@ -2,7 +2,7 @@ package cappuccino.ide.intellij.plugin.comments.psi.impl
 
 import cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentParsableBlockToken.OBJJ_DOC_COMMENT_PARSABLE_BLOCK
 import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentComment
-import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLine
+import cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentTagLineBase
 import cappuccino.ide.intellij.plugin.comments.psi.stubs.ObjJDocCommentTagLineStruct
 import cappuccino.ide.intellij.plugin.inference.InferenceResult
 import cappuccino.ide.intellij.plugin.lang.ObjJLanguage
@@ -18,7 +18,7 @@ import com.intellij.psi.util.PsiTreeUtil
 interface ObjJDocCommentParsableBlock : ObjJCompositeElement, PsiComment {
     val parametersAsStructs: List<ObjJDocCommentTagLineStruct>
     val returnType: InferenceResult?
-    val parameterTags: List<ObjJDocCommentTagLine>
+    val parameterTags: List<ObjJDocCommentTagLineBase>
     val textLines:List<String>
     val comment: ObjJDocCommentComment?
     val tagLinesAsStructs: List<ObjJDocCommentTagLineStruct>
@@ -31,7 +31,7 @@ class ObjJDocCommentParsableBlockImpl(buffer: CharSequence?) : LazyParseablePsiE
 
     override val comment: ObjJDocCommentComment? get() = getChildOfType(ObjJDocCommentComment::class.java)
 
-    override val parameterTags: List<ObjJDocCommentTagLine>
+    override val parameterTags: List<ObjJDocCommentTagLineBase>
         get() = comment?.parameterTags.orEmpty()
 
     override val returnType: InferenceResult?

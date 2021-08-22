@@ -3,7 +3,7 @@ package cappuccino.ide.intellij.plugin.stubs.types
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.readNameAsString
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.impl.ObjJQualifiedReferenceImpl
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJHasQualifiedName
+import cappuccino.ide.intellij.plugin.psi.interfaces.HasQualifiedName
 import cappuccino.ide.intellij.plugin.stubs.impl.ObjJQualifiedReferenceStubImpl
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPart
 import cappuccino.ide.intellij.plugin.stubs.interfaces.ObjJQualifiedReferenceComponentPartType
@@ -37,7 +37,7 @@ class ObjJQualifiedReferenceStubType(debugName:String) : ObjJStubElementType<Obj
 
 }
 
-fun ObjJHasQualifiedName.toStubParts() : List<ObjJQualifiedReferenceComponentPart> {
+fun HasQualifiedName<*>.toStubParts() : List<ObjJQualifiedReferenceComponentPart> {
     return qualifiedNameParts.map { part ->
         when (part) {
             is ObjJArrayIndexSelector -> ObjJQualifiedReferenceComponentPart("[]", ObjJQualifiedReferenceComponentPartType.ARRAY_COMPONENT)

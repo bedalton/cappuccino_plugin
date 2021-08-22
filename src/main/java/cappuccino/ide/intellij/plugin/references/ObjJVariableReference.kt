@@ -10,10 +10,7 @@ import cappuccino.ide.intellij.plugin.inference.toClassList
 import cappuccino.ide.intellij.plugin.jstypedef.stubs.interfaces.JsTypeDefNamespacedComponent
 import cappuccino.ide.intellij.plugin.lang.ObjJFile
 import cappuccino.ide.intellij.plugin.psi.*
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJCompositeElement
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
+import cappuccino.ide.intellij.plugin.psi.interfaces.*
 import cappuccino.ide.intellij.plugin.psi.utils.*
 import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope.UNDETERMINED
 import cappuccino.ide.intellij.plugin.utils.orFalse
@@ -24,10 +21,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 
 class ObjJVariableReference(
-        element: ObjJQualifiedReferenceComponent,
-        private val nullIfSelfReferencing: Boolean? = null,
-        private val tag: Tag? = null
-) : PsiPolyVariantReferenceBase<ObjJQualifiedReferenceComponent>(element, TextRange.create(0, element.textLength)) {
+    element: ObjJUniversalQualifiedReferenceComponent,
+    private val nullIfSelfReferencing: Boolean? = null,
+    private val tag: Tag? = null
+) : PsiPolyVariantReferenceBase<ObjJUniversalQualifiedReferenceComponent>(element, TextRange.create(0, element.textLength)) {
     private var referencedInScope: ReferencedInScope? = null
 
     private val referencedElement: SmartPsiElementPointer<PsiElement>? by lazy {
@@ -133,7 +130,7 @@ class ObjJVariableReference(
             referencedInScope = referencedElement?.getContainingScope() ?: myElement.getContainingScope()
         }
 
-        //Finds this elements, and the new elements scope
+        //Finds these elements, and the new elements scope
         val sharedContext: PsiElement? = PsiTreeUtil.findCommonContext(myElement, otherElement)
         val sharedScope: ReferencedInScope = sharedContext?.getContainingScope() ?: UNDETERMINED
         if (sharedScope == UNDETERMINED && referencedInScope != UNDETERMINED) {

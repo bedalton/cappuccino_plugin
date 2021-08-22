@@ -13,15 +13,16 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefVariableDeclara
 import cappuccino.ide.intellij.plugin.jstypedef.psi.*
 import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNamedElement
-import cappuccino.ide.intellij.plugin.psi.utils.*
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalNamedElement
 import cappuccino.ide.intellij.plugin.psi.utils.LOGGER
+import cappuccino.ide.intellij.plugin.psi.utils.ReferencedInScope
+import cappuccino.ide.intellij.plugin.psi.utils.docComment
+import cappuccino.ide.intellij.plugin.psi.utils.getParentBlockChildrenOfType
 import cappuccino.ide.intellij.plugin.references.ObjJCommentEvaluatorUtil
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrBlank
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
 import cappuccino.ide.intellij.plugin.utils.substringFromEnd
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -192,7 +193,7 @@ private fun getPrevDeclarationType(variableName: ObjJVariableName, tag: Tag): In
 private fun internalInferVariableTypeAtIndexZero(variableName: ObjJVariableName, referencedVariable: PsiElement, containingClass: String?, tag: Tag, isVariableDec: Boolean): InferenceResult? {
     val project = variableName.project
     val variableNameString: String = variableName.text
-    val variableDefType = if (referencedVariable is ObjJNamedElement)
+    val variableDefType = if (referencedVariable is ObjJUniversalNamedElement)
         ObjJCommentEvaluatorUtil.getVariableTypesInParent(referencedVariable)
     else
         null

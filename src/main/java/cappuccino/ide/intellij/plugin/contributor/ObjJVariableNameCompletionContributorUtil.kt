@@ -1,19 +1,16 @@
 package cappuccino.ide.intellij.plugin.contributor
 
 import cappuccino.ide.intellij.plugin.indices.ObjJAssignedVariableNamesByBlockIndex
-import cappuccino.ide.intellij.plugin.indices.ObjJGlobalVariableNamesIndex
 import cappuccino.ide.intellij.plugin.psi.ObjJBlockElement
 import cappuccino.ide.intellij.plugin.psi.ObjJVariableName
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJBlock
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
-import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.LOGGER
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getIndexInQualifiedNameParent
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJQualifiedReferenceUtil.getQualifiedNameAsString
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJVariableNameAggregatorUtil.getPrecedingVariableAssignmentNameElements
 import cappuccino.ide.intellij.plugin.psi.utils.getParentOfType
 import cappuccino.ide.intellij.plugin.psi.utils.hasParentOfType
-import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.psi.PsiElement
 import java.util.regex.Pattern
 
@@ -64,7 +61,7 @@ object ObjJVariableNameCompletionContributorUtil {
         val pattern = Pattern.compile(variableNamePattern)
 
         //Get Qualified name reference for completion
-        val qualifiedNameIndex = (variableName as? ObjJQualifiedReferenceComponent)?.indexInQualifiedReference ?: 0
+        val qualifiedNameIndex = (variableName as? ObjJUniversalQualifiedReferenceComponent)?.indexInQualifiedReference ?: 0
         val rawCompletionElements = getPrecedingVariableAssignmentNameElements(variableName, qualifiedNameIndex)
 
         //Parse variable names to string

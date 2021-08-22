@@ -505,7 +505,7 @@ object ObjJVariableNameAggregatorUtil {
     }
 
 
-    fun getFormalVariableInstanceVariables(variableName: ObjJQualifiedReferenceComponent) : List<ObjJVariableName>? {
+    fun getFormalVariableInstanceVariables(variableName: ObjJUniversalQualifiedReferenceComponent) : List<ObjJVariableName>? {
         val index = variableName.indexInQualifiedReference
         if (index < 1) {
             return null

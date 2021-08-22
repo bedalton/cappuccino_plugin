@@ -10,11 +10,11 @@ import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefFunctionsByName
 import cappuccino.ide.intellij.plugin.jstypedef.indices.JsTypeDefPropertiesByNamespaceIndex
 import cappuccino.ide.intellij.plugin.jstypedef.psi.JsTypeDefClassElement
 import cappuccino.ide.intellij.plugin.jstypedef.psi.interfaces.toJsClassDefinition
-import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJQualifiedReferenceComponent
+import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJUniversalQualifiedReferenceComponent
 import cappuccino.ide.intellij.plugin.psi.interfaces.previousSiblings
 import cappuccino.ide.intellij.plugin.universal.psi.ObjJUniversalPsiElement
 
-internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedReferenceComponent, propertyName:String, tag: Tag) : List<ObjJUniversalPsiElement> {
+internal fun getJsNamedElementsForReferencedElement(psiElement: ObjJUniversalQualifiedReferenceComponent, propertyName:String, tag: Tag) : List<ObjJUniversalPsiElement> {
 
     val project = psiElement.project
 
@@ -81,6 +81,6 @@ internal fun getJsNamedElementsForReferencedElement(psiElement:ObjJQualifiedRefe
     return foundFunctions + foundProperties + otherResults
 }
 
-private fun List<ObjJQualifiedReferenceComponent>.types(tag: Tag) : Set<String> {
+private fun List<ObjJUniversalQualifiedReferenceComponent>.types(tag: Tag) : Set<String> {
     return inferQualifiedReferenceType(this, tag)?.toClassList(null)?.toSet().orEmpty()
 }

@@ -99,12 +99,12 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReference): List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReference): List<ObjJUniversalQualifiedReferenceComponent> {
         return ObjJQualifiedReferenceUtil.getQualifiedNameParts(qualifiedReference)
     }
 
     @JvmStatic
-    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReferencePrime): List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(qualifiedReference: ObjJQualifiedReferencePrime): List<ObjJUniversalQualifiedReferenceComponent> {
         return ObjJQualifiedReferenceUtil.getQualifiedNameParts(qualifiedReference)
     }
 
@@ -1209,7 +1209,7 @@ object ObjJPsiImplUtil {
     }
 
     @JvmStatic
-    fun getQualifiedNameParts(expr: ObjJExpr) : List<ObjJQualifiedReferenceComponent> {
+    fun getQualifiedNameParts(expr: ObjJExpr) : List<ObjJUniversalQualifiedReferenceComponent> {
         return ObjJQualifiedReferenceUtil.getQualifiedNameParts(expr)
     }
 
