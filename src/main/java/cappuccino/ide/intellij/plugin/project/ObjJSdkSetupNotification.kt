@@ -23,40 +23,29 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 
-class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifications) : EditorNotifications.Provider<EditorNotificationPanel>() {
-
-    init {
-        project.messageBus.connect(project).subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
-            override fun rootsChanged(event: ModuleRootEvent) {
-                notifications.updateAllNotifications()
-            }
-        })
-    }
+class ObjJSdkSetupNotification : EditorNotifications.Provider<EditorNotificationPanel>() {
 
     override fun getKey(): Key<EditorNotificationPanel> {
         return KEY
     }
 
-    override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor): EditorNotificationPanel? {
+    override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
+        registerListener(project)
         if (file.fileType !is ObjJFileType && file.fileType !is JsTypeDefFileType)
             return null
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile == null || psiFile.language != ObjJLanguage.instance) return null
 
         //val module = file.getModule(project) ?: return null
-        var needed:NeededFrameworks? = NeededFrameworks.BOTH
-        listOf(GlobalSearchScope.everythingScope(project)).forEach { searchScope ->
-            needed = getNeeded(project, searchScope, needed)
-            if (needed == null)
-                return null
+        val needed = getNeeded(project)
+        if (needed == NeededFrameworks.NONE) {
+            return null
         }
-        if (needed == null)
+
+        if (!canRegisterSourcesAsLibrary(needed.missing))
             return null
 
-        if (!canRegisterSourcesAsLibrary(needed!!.missing))
-            return null
-
-        return createPanel(psiFile, needed!!)
+        return createPanel(psiFile, needed)
     }
 
     companion object {
@@ -72,6 +61,7 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
                             NeededFrameworks.APPKIT -> "AppKit"
                             NeededFrameworks.FOUNDATION -> "Foundation"
                             NeededFrameworks.BOTH -> "Cappuccino"
+                            NeededFrameworks.NONE -> "None"
                         }
                         val didRegister = registerSourcesAsLibrary(module, libraryName, needed.missing)
                         if (!didRegister)
@@ -86,6 +76,16 @@ class ObjJSdkSetupNotification(val project: Project, notifications: EditorNotifi
 
         private val KEY: Key<EditorNotificationPanel> = Key.create("Setup ObjJ SDK")
     }
+}
+
+private fun getNeeded(project: Project): NeededFrameworks {
+    var needed:NeededFrameworks? = NeededFrameworks.BOTH
+    listOf(GlobalSearchScope.everythingScope(project)).forEach { searchScope ->
+        needed = getNeeded(project, searchScope, needed)
+        if (needed == null)
+            return NeededFrameworks.NONE
+    }
+    return needed ?: NeededFrameworks.NONE
 }
 
 private fun getNeeded(project: Project, searchScope: GlobalSearchScope, needed: NeededFrameworks?): NeededFrameworks? {
@@ -113,9 +113,7 @@ private fun getNeeded(project: Project, searchScope: GlobalSearchScope, hasFound
         if (hasFoundation && hasAppKit)
             return@forEach
         val plistName = findFrameworkNameInPlist(it)?.toLowerCase()
-        if (plistName == null) {
-            return@forEach
-        }
+            ?: return@forEach
         if (plistName == "foundation")
             hasFoundation = true
         else if (plistName == "appkit")
@@ -136,5 +134,27 @@ private const val FOUNDATION = "Foundation"
 internal enum class NeededFrameworks(val textLabel: String, val missing: List<String>) {
     APPKIT(cappuccino.ide.intellij.plugin.project.APPKIT, listOf(cappuccino.ide.intellij.plugin.project.APPKIT)),
     FOUNDATION(cappuccino.ide.intellij.plugin.project.FOUNDATION, listOf(cappuccino.ide.intellij.plugin.project.FOUNDATION)),
-    BOTH("${cappuccino.ide.intellij.plugin.project.APPKIT} and ${cappuccino.ide.intellij.plugin.project.FOUNDATION}", listOf(cappuccino.ide.intellij.plugin.project.APPKIT, cappuccino.ide.intellij.plugin.project.FOUNDATION))
+    BOTH("${cappuccino.ide.intellij.plugin.project.APPKIT} and ${cappuccino.ide.intellij.plugin.project.FOUNDATION}", listOf(cappuccino.ide.intellij.plugin.project.APPKIT, cappuccino.ide.intellij.plugin.project.FOUNDATION)),
+    NONE("None", listOf());
 }
+
+
+
+private fun registerListener(project: Project) {
+    if (project.getUserData(CONNECTION_KEY) == true)
+        return
+    project.putUserData(CONNECTION_KEY, true)
+    val connection = project.messageBus.connect(project)
+    connection.subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
+        override fun rootsChanged(event: ModuleRootEvent) {
+            if (project.isDisposed) {
+                project.putUserData(CONNECTION_KEY, false)
+                connection.disconnect()
+                return
+            }
+            EditorNotifications.updateAll()
+        }
+    })
+}
+
+private val CONNECTION_KEY = Key<Boolean>("cappuccino.id.intellij.plugin.project.NOTIFICATION_PROJECT_CONNECTED")
