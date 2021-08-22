@@ -9,6 +9,6 @@ import com.intellij.util.io.StringRef
 class ObjJClassNameStubImpl(parent:StubElement<*>, private val className:StringRef) : ObjJStubBaseImpl<ObjJClassNameImpl>(parent, ObjJStubTypes.CLASS_NAME), ObjJClassNameStub {
 
     constructor(parent:StubElement<*>, classNameString:String): this(parent, StringRef.fromString(classNameString))
-    override fun getClassName(): String = className.toString()
+    override val classNameString: String = className.toString()
 
 }

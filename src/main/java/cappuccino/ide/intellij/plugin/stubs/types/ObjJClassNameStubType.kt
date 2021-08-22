@@ -27,7 +27,7 @@ class ObjJClassNameStubType(
     override fun serialize(
             stub: ObjJClassNameStub,
             stream: StubOutputStream) {
-        stream.writeName(stub.getClassName())
+        stream.writeName(stub.classNameString)
     }
 
     @Throws(IOException::class)

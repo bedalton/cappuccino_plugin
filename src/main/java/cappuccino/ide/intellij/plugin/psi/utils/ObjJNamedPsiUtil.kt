@@ -27,7 +27,7 @@ object ObjJNamedPsiUtil {
     }
 
     fun getName(className: ObjJClassName): String {
-        return className.stub?.getClassName() ?: className.text
+        return className.stub?.classNameString ?: className.text
     }
 
     fun setName(className: ObjJClassName, newClassName: String?): PsiElement {
