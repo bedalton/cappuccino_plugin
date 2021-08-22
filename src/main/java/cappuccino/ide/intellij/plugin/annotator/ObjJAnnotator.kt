@@ -54,11 +54,6 @@ class ObjJAnnotator : Annotator {
                         .create()
                 else -> validateMiscElement(element, annotationHolder)
             }
-            // Additional pass to annotate elements needing semi-colons
-            // Cannot be combines to earlier calls, as this annotation may need to run in parallel
-            if (element is ObjJNeedsSemiColon) {
-                ObjJSemiColonAnnotatorUtil.annotateMissingSemiColons(element, annotationHolder)
-            }
         } catch (ignored: IndexNotReadyRuntimeException) {
             // Index was not ready, and threw exceptions due to the heavy uses of indexes in validation and annotation
         }
@@ -82,7 +77,7 @@ class ObjJAnnotator : Annotator {
     }
 
     private fun validateAndAnnotateExprIfPreviousExpressionIsNotClosed(element: ObjJExpr?, annotationHolder: AnnotationHolderWrapper) {
-        val previousElement = element?.getPreviousNonEmptySibling(true) as? ObjJNeedsSemiColon ?: return
+        val previousElement = element?.getPreviousNonEmptySibling(false) as? ObjJNeedsSemiColon ?: return
         annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.inspections.expr-use.previous-expression-is-not-closed"))
                 .range(TextRange.create(previousElement.textRange.endOffset - 1, previousElement.textRange.endOffset))
                 .withFix(ObjJAddSemiColonIntention(previousElement))

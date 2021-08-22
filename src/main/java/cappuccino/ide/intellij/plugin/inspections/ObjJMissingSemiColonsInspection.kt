@@ -1,14 +1,22 @@
-package cappuccino.ide.intellij.plugin.annotator
+package cappuccino.ide.intellij.plugin.inspections
 
+import cappuccino.ide.intellij.plugin.annotator.AnnotationHolderWrapper
 import cappuccino.ide.intellij.plugin.fixes.ObjJAddSemiColonIntention
 import cappuccino.ide.intellij.plugin.lang.ObjJBundle
+import cappuccino.ide.intellij.plugin.psi.ObjJExpr
+import cappuccino.ide.intellij.plugin.psi.ObjJVisitor
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJChildrenRequireSemiColons
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJNeedsSemiColon
 import cappuccino.ide.intellij.plugin.psi.types.ObjJTypes
 import cappuccino.ide.intellij.plugin.psi.utils.ObjJPsiImplUtil
 import cappuccino.ide.intellij.plugin.psi.utils.getNextNonEmptyNodeType
+import cappuccino.ide.intellij.plugin.psi.utils.getPreviousNonEmptySibling
+import cappuccino.ide.intellij.plugin.psi.utils.lineNumber
+import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
 
 /**
  * Annotator for missing semi-colons.
@@ -18,10 +26,30 @@ import com.intellij.psi.PsiElement
  *
  * @see ObjJChildrenRequireSemiColons
  */
-internal object ObjJSemiColonAnnotatorUtil {
+class ObjJMissingSemiColonsInspection: LocalInspectionTool() {
+
+    override fun getShortName(): String {
+        return "MissingSemiColons"
+    }
+
+    override fun getDisplayName(): String {
+        return ObjJBundle.message("objective-j.inspections.missing-semi-colon-inspection.display-name.text")
+    }
 
     private val NO_SEMI_COLON_BEFORE = arrayOf(ObjJTypes.ObjJ_CLOSE_PAREN, ObjJTypes.ObjJ_OPEN_PAREN, ObjJTypes.ObjJ_OPEN_BRACE, ObjJTypes.ObjJ_CLOSE_BRACE, ObjJTypes.ObjJ_COMMA, ObjJTypes.ObjJ_CLOSE_BRACKET, ObjJTypes.ObjJ_OPEN_BRACKET, ObjJTypes.ObjJ_COLON, ObjJTypes.ObjJ_SEMI_COLON)
 
+    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        return object : ObjJVisitor() {
+            override fun visitExpr(o: ObjJExpr) {
+                super.visitExpr(o)
+                validateAndAnnotateExprIfPreviousExpressionIsNotClosed(o, holder)
+            }
+            override fun visitNeedsSemiColon(element: ObjJNeedsSemiColon) {
+                super.visitNeedsSemiColon(element)
+                annotateMissingSemiColons(element, holder)
+            }
+        }
+    }
 
     /**
      * Actual annotation method for ObjJNeedsSemiColonElements
@@ -30,7 +58,8 @@ internal object ObjJSemiColonAnnotatorUtil {
      */
     fun annotateMissingSemiColons(
             element: ObjJNeedsSemiColon,
-            annotationHolder: AnnotationHolderWrapper) {
+            holder: ProblemsHolder
+    ) {
         //Checks whether this element actually requires a semi colon and whether it already has one
         if (!requiresSemiColon(element) || isNextElementSemiColonBlocking(element) || ObjJPsiImplUtil.eos(element)) {
             return
@@ -38,7 +67,7 @@ internal object ObjJSemiColonAnnotatorUtil {
 
         //Annotate element as it is missing semi-colon
         if (!didAnnotateWithErrorElement(element)) {
-            doAnnotateWithAnnotationHolder(element, annotationHolder)
+            doAnnotateWithAnnotationHolder(element, holder)
         }
 
     }
@@ -72,12 +101,14 @@ internal object ObjJSemiColonAnnotatorUtil {
      * @param element element to annotate
      * @param annotationHolder annotation holder
      */
-    private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, annotationHolder: AnnotationHolderWrapper) {
+    private fun doAnnotateWithAnnotationHolder(element: ObjJNeedsSemiColon, holder: ProblemsHolder) {
         val errorRange = TextRange.create(element.textRange.endOffset - 1, element.textRange.endOffset)
-        annotationHolder.newErrorAnnotation(ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"))
-                .range(errorRange)
-                .withFix(ObjJAddSemiColonIntention(element))
-                .create()
+        holder.registerProblem(
+            element,
+            errorRange,
+            ObjJBundle.message("objective-j.annotator-messages.semi-colon-annotator.missing-semi-colon.message"),
+            ObjJAddSemiColonIntention(element)
+        )
     }
 
     /**
@@ -93,6 +124,19 @@ internal object ObjJSemiColonAnnotatorUtil {
             psiElement.parent is ObjJChildrenRequireSemiColons
         else // Element does not need semi-colon, return false
             false
+    }
+
+
+    private fun validateAndAnnotateExprIfPreviousExpressionIsNotClosed(element: ObjJExpr?, holder: ProblemsHolder) {
+        val previousElement = element?.getPreviousNonEmptySibling(true) as? ObjJNeedsSemiColon ?: return
+        if (previousElement.lineNumber == element.lineNumber)
+            return
+        holder.registerProblem(
+            element.containingFile,
+            TextRange.create(previousElement.textRange.endOffset - 1, previousElement.textRange.endOffset),
+            ObjJBundle.message("objective-j.inspections.expr-use.previous-expression-is-not-closed"),
+            ObjJAddSemiColonIntention(previousElement)
+        )
     }
 
     /**
