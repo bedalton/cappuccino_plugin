@@ -50,10 +50,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
-    <h4>Version: 1.00.0</h4>
-    <h5>Breaking Changes</h5>
+    <h4>Version: 2021.08.21</h4>
     <ul>
-      <li>Remove dependency on JavaFX</li>
+      <li>Removed default styling to allow theme overrides</li>
+      <li>Made semi-colon check optional</li>
+      <li>Fixed exception on launch in Jetbrains 2021.2 products</li>
     </ul>
     <h4>Version: 0.4.5</h4>
     <h5>Fixed</h5>
@@ -202,8 +203,8 @@
     <!-- Highlighting -->
     <lang.syntaxHighlighterFactory key="ObjectiveJ"
                                    implementationClass="cappuccino.ide.intellij.plugin.lang.ObjJSyntaxHighlighterFactory"/>
-    <additionalTextAttributes scheme="Default" file="colorSchemes/ObjJColorSchemeDefault.xml"/>
-    <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/>
+    <!-- additionalTextAttributes scheme="Default" file="colorSchemes/ObjJColorSchemeDefault.xml"/>
+    <additionalTextAttributes scheme="Darcula" file="colorSchemes/ObjJColorSchemeDarcula.xml"/ -->
     <colorSettingsPage implementation="cappuccino.ide.intellij.plugin.lang.ObjJColorSettingsPage"/>
     <applicationConfigurable instance="cappuccino.ide.intellij.plugin.settings.ObjJPluginSettingsConfigurable" groupId="language"/>
     <!-- ObjJ Libraries -->
@@ -304,14 +305,15 @@
                      shortName="MethodHeaderDoesNotMatchSuperClass"
 
     />
+
     <localInspection language="ObjectiveJ"
-                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJStringWithFormatInspection"
-                     level="WARNING"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJMissingSemiColonsInspection"
+                     level="ERROR"
                      groupName="Objective-J"
                      enabledByDefault="true"
-                     displayName="Matching arguments for string format"
-                     shortName="StringWithFormat"
-                     order="before UndeclaredVariables"
+                     displayName="Missing semi-colons"
+                     shortName="MissingSemiColons"
+
     />
     <localInspection language="ObjectiveJ"
                      implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJUndeclaredVariableInspectionTool"
@@ -321,6 +323,15 @@
                      displayName="Possibly undeclared variables"
                      shortName="UndeclaredVariables"
                      order="last"
+    />
+    <localInspection language="ObjectiveJ"
+                     implementationClass="cappuccino.ide.intellij.plugin.inspections.ObjJStringWithFormatInspection"
+                     level="WARNING"
+                     groupName="Objective-J"
+                     enabledByDefault="true"
+                     displayName="Matching arguments for string format"
+                     shortName="StringWithFormat"
+                     order="before UndeclaredVariables"
     />
 
     <localInspection language="ObjectiveJ"

@@ -79,3 +79,5 @@ Todo.txt
 /target
 
 .gradle
+
+/local.properties

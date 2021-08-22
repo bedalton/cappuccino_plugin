@@ -1,17 +1,21 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
-import org.jetbrains.grammarkit.tasks.GenerateParser
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.jetbrains.intellij") version "0.6.1"
+    id("org.jetbrains.intellij") version "1.1.4"
     kotlin("jvm") version "1.4.10"
-    id("org.jetbrains.grammarkit") version "2019.1"
+    id("org.jetbrains.grammarkit") version "2021.1.3"
 }
 
 group = "cappuccino.ide.intellij.plugin"
-version = "0.4.5"
+version = "2021.08.21"
+val verifyPluginIDEDownloadDir: String? by project
 
 repositories {
+    maven {
+        url = uri("https://plugins.gradle.org/m2/")
+    }
+    gradlePluginPortal()
     mavenCentral()
 }
 sourceSets.main {
@@ -41,20 +45,50 @@ kotlin {
         )
     }
 
+    sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalJsExport")
+            languageSettings.useExperimentalAnnotation("kotlin.js.ExperimentalJsExport")
+            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalMultiplatform")
+            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+            languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+        }
+    }
+
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = "2019.1"
-    updateSinceUntilBuild = false
-    sameSinceUntilBuild = true
-    sandboxDirectory = "/Users/daniel/Projects/Intellij Sandbox"
-    setPlugins("PsiViewer:191.4212")
+    version.set("2019.1")
+    updateSinceUntilBuild.set(false)
+    sameSinceUntilBuild.set(true)
+    sandboxDir.set("/Users/daniel/Projects/Intellij Sandbox")
+
+}
+
+
+tasks.withType<org.jetbrains.intellij.tasks.RunPluginVerifierTask>().all {
+    this.ideVersions.set(listOf(
+        "IU-191.8026.42",
+        "IC-191.8026.42",
+        "IU-212.4037.9",
+        "IC-212.4037.9",
+        "IU-211.7142.13",
+        "IC-211.7142.13",
+        "IU-202.6948.69",
+        "IC-202.6948.69",
+        "PS-211.7628.25",
+        "PS-191.8026.56"
+    ))
+    if (verifyPluginIDEDownloadDir != null)
+        this.downloadDir.set(verifyPluginIDEDownloadDir)
+
 }
 
 tasks.withType<org.jetbrains.intellij.tasks.RunIdeTask>().all {
     maxHeapSize = "1g"
-    autoReloadPlugins = true
+    autoReloadPlugins.set(true)
 }
 
 tasks.register<GenerateLexer>("generateObjJLexer") {
