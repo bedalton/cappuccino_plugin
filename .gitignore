@@ -81,3 +81,4 @@ Todo.txt
 .gradle
 
 /local.properties
+*.ignore.txt
