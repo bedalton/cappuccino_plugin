@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <rect id="Typedef" x="0" y="0" width="16" height="16" style="fill:none;"/>
+    <clipPath id="_clip1">
+        <rect x="0" y="0" width="16" height="16"/>
+    </clipPath>
+    <g clip-path="url(#_clip1)">
+        <rect x="2.999" y="0.946" width="10.207" height="7.054" style="fill:none;"/>
+        <clipPath id="_clip2">
+            <rect x="2.999" y="0.946" width="10.207" height="7.054"/>
+        </clipPath>
+        <g clip-path="url(#_clip2)">
+            <g id="DocIcon--Symbol-" serif:id="DocIcon (Symbol)">
+                <path d="M13.064,15.999L2.999,15.999L2.999,5.978L8.032,5.978L8.032,0.946L13.064,0.946L13.064,15.999ZM7.03,4.976L2.999,4.976L2.999,4.974L7.03,0.974L7.03,4.976Z" style="fill:rgb(135,147,154);"/>
+            </g>
+        </g>
+        <rect x="0.846" y="8.839" width="16" height="7.416" style="fill:rgb(68,111,0);fill-opacity:0.8;"/>
+        <g id="Text" opacity="0.85">
+            <path d="M5.335,14.873L5.335,10.77L3.915,10.77L3.915,10.22L7.333,10.22L7.333,10.77L5.906,10.77L5.906,14.873L5.335,14.873Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.45px;"/>
+            <path d="M8.52,14.873L8.52,10.22L10.006,10.22C10.341,10.22 10.597,10.243 10.773,10.287C11.02,10.348 11.231,10.46 11.406,10.62C11.633,10.828 11.803,11.093 11.916,11.415C12.029,11.738 12.085,12.107 12.085,12.521C12.085,12.875 12.047,13.188 11.97,13.461C11.894,13.734 11.796,13.96 11.676,14.139C11.557,14.317 11.426,14.458 11.284,14.561C11.142,14.663 10.97,14.741 10.769,14.794C10.568,14.847 10.337,14.873 10.076,14.873L8.52,14.873ZM9.091,14.324L10.012,14.324C10.296,14.324 10.519,14.296 10.681,14.239C10.842,14.181 10.971,14.101 11.068,13.997C11.203,13.851 11.308,13.655 11.384,13.409C11.459,13.162 11.497,12.863 11.497,12.512C11.497,12.025 11.423,11.651 11.275,11.39C11.127,11.129 10.947,10.954 10.735,10.865C10.582,10.801 10.336,10.77 9.997,10.77L9.091,10.77L9.091,14.324Z" style="fill:white;fill-rule:nonzero;stroke:white;stroke-width:0.45px;"/>
+        </g>
+    </g>
+</svg>
