@@ -4,6 +4,7 @@ import cappuccino.ide.intellij.plugin.utils.orFalse
 import com.intellij.codeInsight.daemon.HighlightDisplayKey
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.*
+import com.intellij.codeInspection.ex.ProblemDescriptorImpl
 import com.intellij.lang.ASTNode
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
@@ -17,6 +18,8 @@ import com.intellij.psi.PsiFile
 import com.sun.xml.bind.v2.model.annotation.Quick
 import org.jetbrains.annotations.Contract
 import java.lang.reflect.TypeVariable
+
+typealias AnnotationBuilderImpl = com.intellij.lang.annotation.AnnotationBuilder
 
 class AnnotationHolderWrapper(private val annotationHolder: AnnotationHolder) {
 
@@ -137,7 +140,11 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
     fun create() {
         val range = data.range
                 ?: throw Exception("Cannot create annotation without range")
-        val annotation = annotationHolder.createAnnotation(data.severity, range, data.message)
+        var annotation: AnnotationBuilderImpl = data.message?.let { message ->
+            annotationHolder
+                .newAnnotation(data.severity, message)
+        } ?: annotationHolder.newSilentAnnotation(data.severity)
+        annotation = annotation.range(range)
         data.fixBuilderData.forEach {val intentionAction = it.intentionAction ?: it.quickFix as? IntentionAction
             val quickFix = it.quickFix ?: it.intentionAction as? LocalQuickFix
             val union:FixUnion? = if (quickFix != null && intentionAction != null)
@@ -145,11 +152,12 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
             else
                 null
             if (it.batch.orFalse()) {
-                annotation.registerBatchFix(union!!, it.range, it.key)
+                annotation = annotation.registerBatchFix(union!!, it.range, it.key)
             }
-            if (it.universal.orFalse())
-                annotation.registerUniversalFix(union!!, it.range, it.key)
-            if (!it.universal.orFalse() && it.batch.orFalse()) {
+            if (it.universal.orFalse()) {
+                annotation = annotation.registerBatchFix(union!!, it.range, it.key)
+            }
+            annotation = if (!it.universal.orFalse() && it.batch.orFalse()) {
                 if (quickFix != null) {
                     annotation.registerFix(quickFix, it.range, it.key, it.problemDescriptor!!)
                 } else if (intentionAction != null){
@@ -160,32 +168,35 @@ class AnnotationBuilder private constructor(internal val annotationHolder: Annot
                             annotation.registerFix(intentionAction, it.range)
                         }
                     } else {
-                        annotation.registerFix(intentionAction)
+                        annotation.registerFix(intentionAction, null)
                     }
                 } else {
                     throw Exception("Cannot create fix without any fixes")
                 }
+            } else {
+                annotation
             }
         }
         data.fixes.forEach {
-            annotation.registerFix(it)
+            annotation = annotation.registerFix(it)
         }
 
         data.tooltip?.let {
-            annotation.tooltip = it
+            annotation = annotation.tooltip(it)
         }
         data.enforcedTextAttributes?.let {
-            annotation.enforcedTextAttributes = it
+            annotation = annotation.enforcedTextAttributes(it)
         }
         data.textAttributes?.let {
-            annotation.textAttributes = it
+            annotation = annotation.textAttributes(it)
         }
         data.needsUpdateOnTyping?.let {
-            annotation.setNeedsUpdateOnTyping(it)
+            annotation = annotation.needsUpdateOnTyping(it)
         }
         data.highlightType?.let {
-            annotation.highlightType = it
+            annotation = annotation.highlightType(it)
         }
+        annotation.create()
     }
 
 
@@ -247,4 +258,53 @@ class FixUnion(val quickFix:LocalQuickFix, val intentionAction: IntentionAction)
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) = intentionAction.invoke(project, editor, file)
 
 
+}
+
+private fun AnnotationBuilderImpl.registerBatchFix(
+    fix: FixUnion,
+    range: TextRange? = null,
+    key: HighlightDisplayKey? = null,
+): AnnotationBuilderImpl {
+    var fixBuilder = newFix(fix)
+    if (key != null) {
+        fixBuilder = fixBuilder.key(key)
+    }
+    if (range != null) {
+        fixBuilder = fixBuilder.range(range)
+    }
+    return fixBuilder.registerFix()
+}
+
+private fun AnnotationBuilderImpl.registerFix(
+    fix: IntentionAction,
+    range: TextRange? = null,
+    key: HighlightDisplayKey? = null,
+): AnnotationBuilderImpl {
+    var fixBuilder = newFix(fix)
+    if (key != null) {
+        fixBuilder = fixBuilder.key(key)
+    }
+    if (range != null) {
+        fixBuilder = fixBuilder.range(range)
+    }
+    return fixBuilder.registerFix()
+}
+
+private fun AnnotationBuilderImpl.registerFix(
+    fix: LocalQuickFix,
+    range: TextRange?,
+    key: HighlightDisplayKey?,
+    problemDescriptor: ProblemDescriptor
+): AnnotationBuilderImpl {
+    var fixBuilder = newLocalQuickFix(
+        fix,
+        problemDescriptor
+    )
+    if (key != null) {
+        fixBuilder = fixBuilder.key(key)
+    }
+    if (range != null) {
+        fixBuilder = fixBuilder.range(range)
+    }
+    return fixBuilder.registerFix()
 }

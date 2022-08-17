@@ -9,6 +9,7 @@ import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFileReferenceRangeI
 import cappuccino.ide.intellij.plugin.jstypedef.psi.utils.getFrameworkTextRangeInComment
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbService
@@ -17,7 +18,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
 /**
- * Adds highlighting colors to Objective-J Fiels
+ * Adds highlighting colors to Objective-J File
  */
 class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
 
@@ -115,21 +116,33 @@ class JsTypeDefSyntaxHighlighterAnnotator : Annotator {
      * Making it appear as regular text
      */
     private fun stripAnnotation(psiElement: PsiElement, annotationHolder: AnnotationHolder) {
-        annotationHolder.createInfoAnnotation(psiElement, "").enforcedTextAttributes = TextAttributes.ERASE_MARKER
+        annotationHolder
+            .newSilentAnnotation(HighlightSeverity.INFORMATION)
+            .enforcedTextAttributes(TextAttributes.ERASE_MARKER)
+            .range(psiElement)
+            .create()
     }
 
     /**
      * Helper function to add color and style to a given element
      */
-    private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolder, attribute:TextAttributesKey, message:String? = null) {
-        annotationHolder.createInfoAnnotation(psiElement, message).textAttributes = attribute
+    private fun colorize(psiElement: PsiElement, annotationHolder: AnnotationHolder, attribute:TextAttributesKey) {
+        annotationHolder
+            .newSilentAnnotation(HighlightSeverity.INFORMATION)
+            .range(psiElement)
+            .textAttributes(attribute)
+            .create()
     }
 
     /**
      * Helper function to add color and style to a given element
      */
-    private fun colorize(range:TextRange, annotationHolder: AnnotationHolder, attribute:TextAttributesKey, message:String? = null) {
-        annotationHolder.createInfoAnnotation(range, message).textAttributes = attribute
+    private fun colorize(range:TextRange, annotationHolder: AnnotationHolder, attribute:TextAttributesKey) {
+        annotationHolder
+            .newSilentAnnotation(HighlightSeverity.INFORMATION)
+            .range(range)
+            .textAttributes(attribute)
+            .create()
     }
 
     companion object {
