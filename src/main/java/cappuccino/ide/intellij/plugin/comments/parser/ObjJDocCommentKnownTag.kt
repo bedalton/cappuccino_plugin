@@ -14,7 +14,7 @@ enum class ObjJDocCommentKnownTag(val description:String, val isReferenceRequire
     SEE("see", true),
     SINCE("since", false),
     CONSTRUCTOR("constructor", false),
-    PROPERTY("proprety", true),
+    PROPERTY("property", true),
     SAMPLE("sample", true),
     SUPPRESS("suppress", true),
     VAR("var", true),

@@ -48,11 +48,14 @@ object ObjJDocCommentParserUtil {
                         ObjJQualifiedReferenceComponentPart("[]",
                             ObjJQualifiedReferenceComponentPartType.ARRAY_COMPONENT)
                     )
-                } else
+                } else {
                     listOf(
-                        ObjJQualifiedReferenceComponentPart(it.text,
-                            ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME)
+                        ObjJQualifiedReferenceComponentPart(
+                            it.text,
+                            ObjJQualifiedReferenceComponentPartType.VARIABLE_NAME
+                        )
                     )
+                }
 
             }
     }
@@ -64,7 +67,14 @@ object ObjJDocCommentParserUtil {
 
     @JvmStatic
     fun isArrayComponent(namedElement: ObjJDocCommentQualifiedNameComponent): Boolean {
-        return namedElement.openBracket != null
+        return namedElement.openBracket != null || (namedElement.parent as? ObjJDocCommentQualifiedName)?.let {
+            it.genericType != null && it.qualifiedNameComponentList.joinToString(".").toLowerCase() == "array"
+        } == true
+    }
+
+    @JvmStatic
+    fun getGenericTypeList(generic: ObjJDocCommentGenericType): List<ObjJDocCommentType> {
+        return generic.typeList
     }
 
     @JvmStatic
@@ -270,6 +280,11 @@ object ObjJDocCommentParserUtil {
     @JvmStatic
     fun getBorrowedAs(tag: ObjJDocCommentTagLine): ObjJDocCommentQualifiedName? {
         return tag.getChildrenOfType(ObjJDocCommentQualifiedName::class.java).getOrNull(1)
+    }
+
+    @JvmStatic
+    fun getParameterType(comment: ObjJDocCommentComment, parameterName: String): JsTypeListType {
+
     }
 
 }

@@ -6,7 +6,6 @@ import cappuccino.ide.intellij.plugin.psi.*
 import cappuccino.ide.intellij.plugin.psi.interfaces.ObjJClassDeclarationElement
 import cappuccino.ide.intellij.plugin.utils.isNotNullOrEmpty
 import cappuccino.ide.intellij.plugin.utils.orFalse
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 
 fun inferExpressionType(expr: ObjJExpr?, tag: Tag): InferenceResult? {
     if (expr == null)
@@ -139,12 +138,12 @@ fun leftExpressionType(leftExpression: ObjJLeftExpr?, tag: Tag): InferenceResult
         }
         val objectLiteral = leftExpression.objectLiteral
         if (objectLiteral != null) {
-            val interaceBody = objectLiteral.toJsObjectTypeSimple()
+            val interfaceBody = objectLiteral.toJsObjectTypeSimple()
             val objectClass = if (objectLiteral.atOpenBrace != null) {
                 "CPDictionary"
             } else "Object"
             return@getCachedInferredTypes InferenceResult(
-                    types = setOf(JsTypeListType.JsTypeListBasicType(objectClass), interaceBody)
+                    types = setOf(JsTypeListType.JsTypeListBasicType(objectClass), interfaceBody)
             )
         }
         if (leftExpression.variableDeclaration?.expr != null) {

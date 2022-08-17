@@ -25,6 +25,8 @@
 		CLOSE_BRACKET = 					']';
 		DASH = 								'-';
 		EQUALS = 							'=';
+		LT =								'<';
+		GT =								'>';
 		ELLIPSES_LITERAL = 					'...';
 		AS_LITERAL = 						'regexp:[aA][sS]';
 		START =								"regexp:/[*][*!]*";
@@ -67,7 +69,7 @@ comment
 	;
 
 private commentElement
-	::= commentLine
+	::= ASTERISK* commentLine
 	|	ASTERISK
 	;
 
@@ -200,8 +202,16 @@ type
 	}
 	;
 
+
+genericType
+	::= DOT '<' (type ',') type '>'
+	{
+		pin=2
+	}
+	;
+
 qualifiedName
-	::= (qualifiedNameComponent '.')* qualifiedNameComponent
+	::= (qualifiedNameComponent '.')* qualifiedNameComponent genericType?
 	{
 		implements = [
 			"cappuccino.ide.intellij.plugin.comments.psi.api.ObjJDocCommentElement"

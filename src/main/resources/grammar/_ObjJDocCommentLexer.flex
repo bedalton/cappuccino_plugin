@@ -17,7 +17,7 @@ import static cappuccino.ide.intellij.plugin.comments.lexer.ObjJDocCommentTypes.
 	private static final List<String> ID_VALID_CHARS = Arrays.asList("_$@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
 	private int identifierSteps = 0;
 	private boolean hasElementType = false;
-	private boolean inOptional = false;
+	private int inOptional = 0;
 	private boolean inBeginning = false;
 	public _ObjJDocCommentLexer() {
 		this((java.io.Reader)null);
@@ -141,16 +141,18 @@ BLOCK_END=[*][/]
 	"("				{ return ObjJDocComment_OPEN_PAREN; }
 	")"				{ return ObjJDocComment_CLOSE_PAREN; }
 	"["				{
-          inOptional = true;
+          inOptional++;
           return ObjJDocComment_OPEN_BRACKET;
   	}
 	"]"				{
-		if (inOptional) {
-			inOptional = false;
+		if (inOptional > 0) {
+			inOptional--;
 			return ObjJDocComment_CLOSE_BRACKET;
 		}
 		return ObjJDocComment_TEXT_BODY;
       }
+    "<"   			{ return ObjJDocComment_LT; }
+    ">"  			{ return ObjJDocComment_GT; }
     "="				{
         if (inBeginning)
           	myYbegin(DEFAULT_CONTENTS);
@@ -184,9 +186,8 @@ BLOCK_END=[*][/]
 		return ObjJDocComment_TAG_VALUE_DELIMITER;
   }
     {IDENTIFIER} {
-          identifierSteps++;
           int steps = prevCharIs('{') ? 1 : (prevCharIs('}') ? 2 : 1);
-          if (identifierSteps > steps) {
+          if (identifierSteps++ > steps) {
           	yypushback(yylength());
           	myYbegin(CONTENTS);
 			return ObjJDocComment_TEXT_BODY;
