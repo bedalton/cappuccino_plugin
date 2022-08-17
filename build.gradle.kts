@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "cappuccino.ide.intellij.plugin"
-version = "2021.08.21"
+version = "2022.3.0"
 val verifyPluginIDEDownloadDir: String? by project
 
 repositories {
@@ -60,10 +60,11 @@ kotlin {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2019.1")
+    version.set("2020.1")
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(true)
     sandboxDir.set("/Users/daniel/Projects/Intellij Sandbox")
+    plugins.set(listOf("PsiViewer:201-SNAPSHOT"))//, "com.mallowigi.idea:10.0"))
 
 }
 
@@ -81,8 +82,9 @@ tasks.withType<org.jetbrains.intellij.tasks.RunPluginVerifierTask>().all {
         "PS-211.7628.25",
         "PS-191.8026.56"
     ))
-    if (verifyPluginIDEDownloadDir != null)
+    if (verifyPluginIDEDownloadDir != null) {
         this.downloadDir.set(verifyPluginIDEDownloadDir)
+    }
 
 }
 
