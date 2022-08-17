@@ -42,7 +42,7 @@ class ObjJCreateFileAction: CreateFileFromTemplateAction(
                         this.indexOf(".") < 0 || this.endsWith(".j")
                     }?.or(false) ?: false
                 })
-                .addKind("File", ObjJIcons.DOCUMENT_ICON, "file")
+                .addKind("File", ObjJIcons.DOCUMENT_ICON, "blank-file.j")
     }
 
     /**

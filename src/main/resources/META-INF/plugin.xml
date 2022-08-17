@@ -434,7 +434,7 @@
     <stubIndex implementation="cappuccino.ide.intellij.plugin.indices.ObjJVariableDeclarationsByNameIndex" />
 
 
-    <internalFileTemplate name="objective-j.file" />
+    <internalFileTemplate name="blank-file.j.ft" />
 
     <!-- =============================== -->
     <!-- ============ PLIST ============ -->
@@ -502,7 +502,7 @@
                      />
 
     <!-- File Template -->
-    <internalFileTemplate name="jstypedef.file" />
+    <internalFileTemplate name="typedef-file.jstypedef.ft" />
 
 
     <!-- =============================== -->
