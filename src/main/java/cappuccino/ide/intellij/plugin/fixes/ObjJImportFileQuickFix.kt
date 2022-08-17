@@ -17,7 +17,9 @@ import com.intellij.codeInsight.intention.impl.BaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.TransactionGuardImpl
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
@@ -81,10 +83,10 @@ abstract class ObjJImportFileQuickFix(private val thisFramework: String) : BaseI
                 dialogWrapper.close(0)
                 return@createFileChooserDialog
             }
-            TransactionGuardImpl.getInstance().submitTransaction(dialogWrapper.disposable, null, Runnable {
+            invokeLater {
                 addImport(project, file, selectedForImport, isFrameworkNode)
                 dialogWrapper.close(0)
-            })
+            }
         } ?: return "Failed to create dialog."
 
         SwingUtilities.invokeLater {
